@@ -336,3 +336,4 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 .DS_Store
+OutOfSchool/OutOfSchool.Tests/coverage.opencover.xml
