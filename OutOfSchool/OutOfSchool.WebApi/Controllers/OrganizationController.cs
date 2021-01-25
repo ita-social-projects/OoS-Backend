@@ -18,5 +18,10 @@ namespace OutOfSchool.Controllers
             _logger = logger;
         }
 
+        public IActionResult TestOk()
+        {
+            return this.Ok();
+        }
+
     }
 }
