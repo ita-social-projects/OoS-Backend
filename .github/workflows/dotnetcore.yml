@@ -65,6 +65,9 @@ jobs:
       with:
         dotnet-version: 3.1.402
         
+    - name: Clean
+      run: dotnet clean ./OutOfSchool/OutOfSchool.sln --configuration Release && dotnet nuget locals all --clear
+      
     - name: Restore dependencies
       run: dotnet restore ./OutOfSchool/
                
