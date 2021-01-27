@@ -27,6 +27,22 @@ namespace OutOfSchool
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAuthentication("Bearer")
+                .AddIdentityServerAuthentication("Bearer", options =>
+                {
+                    options.ApiName = "outofschoolapi";
+
+                    options.Authority = "https://localhost:44369";
+
+                    options.RequireHttpsMetadata = false;
+                });
+
+            services.AddCors(confg =>
+                confg.AddPolicy("AllowAll",
+                    p => p.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()));
+
             services.AddControllers();
             
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
@@ -43,6 +59,8 @@ namespace OutOfSchool
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseCors("AllowAll");
+
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
 
@@ -57,6 +75,7 @@ namespace OutOfSchool
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
