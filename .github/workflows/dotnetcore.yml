@@ -1,11 +1,13 @@
-﻿name: Build
+name: Build and test
 on:
   push:
     branches:
       - main
       - develop
+      - '*'
   pull_request:
     types: [opened, synchronize, reopened]
+    branches: [develop, main]
 jobs:
   build:
     name: Build
@@ -49,3 +51,25 @@ jobs:
           dotnet add OutOfSchool.Tests\OutOfSchool.Tests.csproj package coverlet.msbuild
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover -l:trx
           ..\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+  test:
+    name: Unit testing
+    runs-on: ${{ matrix.os }}
+    strategy: 
+      matrix: 
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.402
+        
+    - name: Restore dependencies
+      run: dotnet restore ./OutOfSchool/
+               
+    - name: Build
+      run: dotnet build --configuration Release --no-restore ./OutOfSchool
+      
+    - name: Test
+      run: dotnet test --no-restore --no-build --configuration Release ./OutOfSchool
