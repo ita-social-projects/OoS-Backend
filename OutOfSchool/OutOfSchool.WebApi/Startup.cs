@@ -32,7 +32,7 @@ namespace OutOfSchool
                 {
                     options.ApiName = "outofschoolapi";
 
-                    options.Authority = "https://localhost:44369";
+                    options.Authority = "https://localhost:5443";
 
                     options.RequireHttpsMetadata = false;
                 });

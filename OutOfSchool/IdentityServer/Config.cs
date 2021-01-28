@@ -42,7 +42,7 @@ namespace OutOfSchool.IdentityServer
                 new Client
                 {
                     ClientId = "m2m.client",
-                    ClientName = "Client Credentials Client",
+                    ClientName = "Client  Credentials Client",
 
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     ClientSecrets = {new Secret("SuperSecretPassword".Sha256())},
