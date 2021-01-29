@@ -1,4 +1,5 @@
-﻿using IdentityServer4.Services;
+﻿using System;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -39,7 +40,7 @@ namespace IdentityServer.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Login(string returnUrl)
+        public async Task<IActionResult> Login(string returnUrl="Login")
         {
             var externalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
             return View(new LoginViewModel
@@ -68,7 +69,7 @@ namespace IdentityServer.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register(string returnUrl)
+        public IActionResult Register(string returnUrl="Login")
         {
             return View(new RegisterViewModel { ReturnUrl = returnUrl });
         }
