@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <RootNamespace>OutOfSchool.Services</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Identity" />
+      <Folder Include="Migrations" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OutOfSchool.ApplicationCore\OutOfSchool.ApplicationCore.csproj" />
+    </ItemGroup>
+
+</Project>
