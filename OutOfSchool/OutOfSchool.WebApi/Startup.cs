@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services;
 
 namespace OutOfSchool
 {
@@ -26,6 +28,9 @@ namespace OutOfSchool
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            
+            services.AddDbContext<OutOfSchoolDbContext>(builder =>
+                builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
@@ -47,7 +52,7 @@ namespace OutOfSchool
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API");
             });
-
+            
             app.UseHttpsRedirection();
 
             app.UseRouting();
