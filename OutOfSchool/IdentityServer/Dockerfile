@@ -20,6 +20,7 @@ COPY ./OutOfSchool/*.sln ./
 COPY ./OutOfSchool/OutOfSchool.Tests/*.csproj ./OutOfSchool.Tests/
 COPY ./OutOfSchool/OutOfSchool.WebApi/*.csproj ./OutOfSchool.WebApi/
 COPY ./OutOfSchool/IdentityServer/*.csproj ./IdentityServer/
+COPY ./OutOfSchool/OutOfSchool.DataAccess/*.csproj ./OutOfSchool.DataAccess/
 
 RUN dotnet restore
 
