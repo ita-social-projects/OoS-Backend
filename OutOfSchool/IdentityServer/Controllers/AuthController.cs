@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using OutOfSchool.IdentityServer.Models;
+using OutOfSchool.Services.Models;
 
 namespace IdentityServer.Controllers
 {
@@ -82,16 +83,18 @@ namespace IdentityServer.Controllers
                 return View(vm);
             }
 
-            var user = new User() {FirstName = vm.FirstName, LastName = vm.LastName, UserName = vm.Username};
+            var user = new User()
+            {
+                UserName = vm.Username, 
+                PhoneNumber = vm.PhoneNumber, CreatingTime = DateTime.Now
+            };
             var result = await _userManager.CreateAsync(user, vm.Password);
-
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, false);
 
                 return Redirect(vm.ReturnUrl);
             }
-
             return View();
         }
     }

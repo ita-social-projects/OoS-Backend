@@ -1,3 +1,4 @@
+using System;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using Microsoft.AspNetCore.Hosting;
@@ -7,8 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.Extensions.Configuration;
 using OutOfSchool.IdentityServer;
 using OutOfSchool.IdentityServer.Data;
+using OutOfSchool.Services;
 
 namespace IdentityServer
 {
@@ -24,14 +27,16 @@ namespace IdentityServer
                     .Database.Migrate();
 
                 var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-                var identityContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
                 
                 identityContext.Database.Migrate();
                 context.Database.Migrate();
+                var apiSecret = scope.ServiceProvider.GetRequiredService<IConfiguration>()["outofschoolapi:ApiSecret"];
+                var clientSecret = scope.ServiceProvider.GetRequiredService<IConfiguration>()["m2m.client:ClientSecret"];
 
                 if (!context.Clients.Any())
                 {
-                    foreach (var client in Config.Clients)
+                    foreach (var client in Config.Clients(clientSecret))
                     {
                         context.Clients.Add(client.ToEntity());
                     }
@@ -48,7 +53,7 @@ namespace IdentityServer
                 }
                 if (!context.ApiResources.Any())
                 {
-                    foreach (var resource in Config.ApiResources)
+                    foreach (var resource in Config.ApiResources(apiSecret))
                     {
                         context.ApiResources.Add(resource.ToEntity());
                     }

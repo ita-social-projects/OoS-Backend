@@ -4,9 +4,9 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Organisation : User
+    public class Organization : User
     {
-        public long OrganisationId { get; set; }
+        public long OrganizationId { get; set; }
        
         [Required(ErrorMessage = "Title is required")]
         [DataType(DataType.Text)]
@@ -19,7 +19,7 @@ namespace OutOfSchool.Services.Models
         public string? Facebook { get; set; }
         
         [DataType(DataType.Url)]
-        public string? Istagram { get; set; }
+        public string? Instagram { get; set; }
         
         [MaxLength(750)]   
         [Required(ErrorMessage = "Description is required")]
@@ -43,7 +43,7 @@ namespace OutOfSchool.Services.Models
         public byte[]? Image { get; set; }
         
         [Required]
-        public OrganisationType Type { get; set; }
+        public OrganizationType Type { get; set; }
         
      
     }

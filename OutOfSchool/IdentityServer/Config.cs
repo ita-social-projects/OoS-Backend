@@ -25,17 +25,17 @@ namespace OutOfSchool.IdentityServer
                 new ApiScope("outofschoolapi.write")
             };
 
-        public static IEnumerable<ApiResource> ApiResources => new[]
+        public static IEnumerable<ApiResource> ApiResources(string apiSecret) => new[]
         {
             new ApiResource("outofschoolapi")
             {
                 Scopes = new List<string> { "outofschoolapi.read", "outofschoolapi.write"},
-                ApiSecrets = new List<Secret> {new Secret("ScopeSecret".Sha256())},
+                ApiSecrets = new List<Secret> {new Secret(apiSecret.Sha256())},
                 UserClaims = new List<string> {"role"}
             }
         };
 
-        public static IEnumerable<Client> Clients =>
+        public static IEnumerable<Client> Clients(string clientSecret) =>
             new[]
             {
                 // m2m client credentials flow client
@@ -45,7 +45,7 @@ namespace OutOfSchool.IdentityServer
                     ClientName = "Client  Credentials Client",
 
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    ClientSecrets = {new Secret("SuperSecretPassword".Sha256())},
+                    ClientSecrets = {new Secret(clientSecret.Sha256())},
 
                     AllowedScopes = { "outofschoolapi.read", "outofschoolapi.write" }
                 },

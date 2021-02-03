@@ -11,13 +11,15 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using OutOfSchool.IdentityServer.Models;
+
 using OutOfSchool.IdentityServer.Data;
 using System.Linq;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Models;
 
 namespace IdentityServer
 {
@@ -40,10 +42,11 @@ namespace IdentityServer
             var connString = _config["ConnectionStrings:DefaultConnection"];
 
             services
-                .AddDbContext<AppDbContext>(options => options
+                .AddDbContext<OutOfSchoolDbContext>(options => options
                     .UseSqlServer(connString,
                         optionsBuilder =>
-                            optionsBuilder.MigrationsAssembly(migrationsAssembly)));
+                            optionsBuilder.MigrationsAssembly("OutOfSchool.IdentityServer")));
+            //services.AddDbContext<OutOfSchoolDbContext>();
 
             services.AddIdentity<User, IdentityRole>(options =>
                 {
@@ -53,7 +56,7 @@ namespace IdentityServer
                     options.Password.RequireUppercase = false;
                     options.Password.RequiredLength = 6;
                 })
-                .AddEntityFrameworkStores<AppDbContext>()
+                .AddEntityFrameworkStores<OutOfSchoolDbContext>()
                 .AddDefaultTokenProviders();
 
             services.ConfigureApplicationCookie(config =>

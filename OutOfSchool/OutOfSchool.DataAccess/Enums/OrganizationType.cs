@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.Services.Enums
 {
-    public enum OrganisationType
+    public enum OrganizationType
     {
         FOP,
         Social,

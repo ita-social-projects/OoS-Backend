@@ -3,17 +3,15 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using OutOfSchool.IdentityServer.Data;
+using OutOfSchool.Services;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.AppMigrations
+namespace OutOfSchool.IdentityServer.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
-    [Migration("20210127203015_InitDb")]
-    partial class InitDb
+    [DbContext(typeof(OutOfSchoolDbContext))]
+    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -152,7 +150,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.AppMigrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("OutOfSchool.IdentityServer.Models.User", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -164,6 +162,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.AppMigrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatingTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -171,11 +176,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.AppMigrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -221,6 +223,72 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.AppMigrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("User");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Organization", b =>
+                {
+                    b.HasBaseType("OutOfSchool.Services.Models.User");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(750)
+                        .HasColumnType("nvarchar(750)");
+
+                    b.Property<string>("EDRPOU")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Facebook")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("INPP")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Instagram")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MFO")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("OrganizationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Website")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue("Organization");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
+                {
+                    b.HasBaseType("OutOfSchool.Services.Models.User");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("ParentId")
+                        .HasColumnType("bigint");
+
+                    b.HasDiscriminator().HasValue("Parent");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -234,7 +302,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.AppMigrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("OutOfSchool.IdentityServer.Models.User", null)
+                    b.HasOne("OutOfSchool.Services.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -243,7 +311,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.AppMigrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("OutOfSchool.IdentityServer.Models.User", null)
+                    b.HasOne("OutOfSchool.Services.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -258,7 +326,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.AppMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OutOfSchool.IdentityServer.Models.User", null)
+                    b.HasOne("OutOfSchool.Services.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -267,7 +335,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.AppMigrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("OutOfSchool.IdentityServer.Models.User", null)
+                    b.HasOne("OutOfSchool.Services.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
