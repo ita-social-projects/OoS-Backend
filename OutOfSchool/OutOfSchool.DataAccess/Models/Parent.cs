@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.Services.Models
 {
-    public class Parent : User
+    public class Parent
     {
         public long ParentId { get; set; }
         
