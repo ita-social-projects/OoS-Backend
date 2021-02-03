@@ -26,8 +26,9 @@ namespace IdentityServer
         private readonly IConfiguration _config;
         private readonly IWebHostEnvironment _env;
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
+            _env = env;
             _config = configuration;
         }
 
@@ -36,7 +37,7 @@ namespace IdentityServer
         {
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-            var connString = _config["AppDBContext:ConnectionString"];
+            var connString = _config["ConnectionStrings:DefaultConnection"];
 
             services
                 .AddDbContext<AppDbContext>(options => options
@@ -62,16 +63,18 @@ namespace IdentityServer
                 config.LogoutPath = "/Auth/Logout";
             });
 
-            services.AddIdentityServer()
+            services.AddIdentityServer(options =>
+                {
+                    if (_env.IsEnvironment("Release"))
+                        options.IssuerUri = "http://hostname:5443";
+                })
                 .AddDeveloperSigningCredential()
-                // this adds the config data from DB (clients, resources)
                 .AddConfigurationStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
                         builder.UseSqlServer(connString,
                             sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
-                // this adds the operational data from DB (codes, tokens, consents)
                 .AddOperationalStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
@@ -83,8 +86,7 @@ namespace IdentityServer
             services.AddControllersWithViews();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+       public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
             if (env.IsDevelopment())
@@ -93,6 +95,8 @@ namespace IdentityServer
             }
 
             app.UseRouting();
+
+            app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
             app.UseStaticFiles();
 

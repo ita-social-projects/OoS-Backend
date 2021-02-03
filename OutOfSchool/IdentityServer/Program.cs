@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using System.Linq;
 using System.Security.Claims;
 using OutOfSchool.IdentityServer;
+using OutOfSchool.IdentityServer.Data;
 
 namespace IdentityServer
 {
@@ -23,7 +24,9 @@ namespace IdentityServer
                     .Database.Migrate();
 
                 var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-
+                var identityContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                
+                identityContext.Database.Migrate();
                 context.Database.Migrate();
 
                 if (!context.Clients.Any())

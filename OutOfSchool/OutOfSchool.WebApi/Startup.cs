@@ -17,8 +17,11 @@ namespace OutOfSchool
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _environment;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
+            _environment = environment;
             Configuration = configuration;
         }
 
@@ -31,8 +34,7 @@ namespace OutOfSchool
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
                     options.ApiName = "outofschoolapi";
-
-                    options.Authority = "https://localhost:5443";
+                    options.Authority = Configuration["Identity:Authority"];
 
                     options.RequireHttpsMetadata = false;
                 });
