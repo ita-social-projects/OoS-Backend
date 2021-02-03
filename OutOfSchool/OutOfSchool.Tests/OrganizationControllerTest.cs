@@ -1,10 +1,11 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Controllers;
+using OutOfSchool.WebApi.Controllers;
 
 namespace OutOfSchool.Tests
 {
+    [TestFixture]
     public class Tests
     {
         private readonly ILogger<OrganizationController> _logger;
