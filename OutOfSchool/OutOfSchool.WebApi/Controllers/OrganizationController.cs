@@ -1,12 +1,11 @@
-
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     [Authorize]
     public class OrganizationController : ControllerBase
     {
@@ -21,6 +20,5 @@ namespace OutOfSchool.WebApi.Controllers
         {
             return this.Ok("Hello world");
         }
-
     }
 }
