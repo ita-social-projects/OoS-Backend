@@ -22,7 +22,6 @@ namespace OutOfSchool.Services.Models
 	
         public virtual IReadOnlyCollection<Child> Children { get; set; }
 
-
         public User User { get; set; }
     }
 }
