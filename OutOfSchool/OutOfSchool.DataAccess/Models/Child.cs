@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace OutOfSchool.Services.Models
+{
+    public class Child
+    {
+        public long ChildId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string MiddleName { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public int ParentId { get; set; }
+        public virtual Parent Parent { get; set; }
+    }
+}
