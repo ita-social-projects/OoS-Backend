@@ -25,7 +25,5 @@ namespace OutOfSchool.Services
         public DbSet<Subcategory> Subcategories { get; set; }
 
         public DbSet<Category> Categories { get; set; }
-
-
     }
 }
