@@ -8,7 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.IdentityServer;
 using OutOfSchool.IdentityServer.Data;
 using OutOfSchool.Services;
@@ -23,18 +25,21 @@ namespace IdentityServer
 
             using (var scope = host.Services.CreateScope())
             {
+                var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+                while (!context.Database.CanConnect())
+                {
+                    Task.Delay(500).Wait();
+                    Console.WriteLine("Waiting for db");
+                }
                 scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
                     .Database.Migrate();
-
-                var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
                 var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
                 var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
                 var apiSecret = configService["outofschoolapi:ApiSecret"];
                 var clientSecret = configService["m2m.client:ClientSecret"];
-
-                identityContext.Database.Migrate();
+                
                 context.Database.Migrate();
-
+                identityContext.Database.Migrate();
                 if (!context.Clients.Any())
                 {
                     foreach (var client in Config.Clients(clientSecret))

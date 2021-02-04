@@ -13,10 +13,10 @@ namespace OutOfSchool.Services
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=localhost,1433; Database=Master;User Id=SA;Password=Oos-password1",b =>
-            {
-                b.MigrationsAssembly("OutOfSchool.IdentityServer");
-            });
+            optionsBuilder.UseSqlServer("Server=localhost,1433; Database=Master;User Id=SA;Password=Oos-password1", b =>
+             {
+                 b.MigrationsAssembly("OutOfSchool.IdentityServer");
+             });
         }
 
         public DbSet<Parent> Parents { get; set; }
