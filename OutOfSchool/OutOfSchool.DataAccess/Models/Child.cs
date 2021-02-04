@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
@@ -6,6 +6,7 @@ namespace OutOfSchool.Services.Models
 {
     public class Child
     {
+
         public long Id { get; set; }
 
         [DataType(DataType.Text)]
@@ -27,5 +28,6 @@ namespace OutOfSchool.Services.Models
         public virtual Parent Parent { get; set; }
 
         public virtual SocialGroup SocialGroup { get; set; }
+
     }
 }
