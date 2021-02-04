@@ -1,25 +1,14 @@
-using IdentityServer4.Models;
-using IdentityServer4.Test;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using OutOfSchool.IdentityServer;
-using System;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
-using OutOfSchool.IdentityServer.Data;
-using System.Linq;
-using IdentityServer4.EntityFramework.DbContexts;
-using IdentityServer4.EntityFramework.Mappers;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using System.Reflection;
 
 namespace IdentityServer
 {
