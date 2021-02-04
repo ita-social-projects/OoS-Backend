@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.2");
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Organisation", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.Organization", b =>
                 {
                     b.Property<long>("OrganisationId")
                         .ValueGeneratedOnAdd()
@@ -91,7 +91,7 @@ namespace OutOfSchool.WebApi.Migrations
 
                     b.HasKey("OrganisationId");
 
-                    b.ToTable("Organisations");
+                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>

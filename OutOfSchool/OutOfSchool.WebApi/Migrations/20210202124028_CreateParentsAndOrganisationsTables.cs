@@ -8,7 +8,7 @@ namespace OutOfSchool.WebApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Organisations",
+                name: "Organizations",
                 columns: table => new
                 {
                     OrganisationId = table.Column<long>(type: "bigint", nullable: false)
@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Organisations");
+                name: "Organizations");
 
             migrationBuilder.DropTable(
                 name: "Parents");

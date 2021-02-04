@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
+    [Authorize]
     public class OrganizationController : ControllerBase
     {
         private readonly ILogger<OrganizationController> _logger;
@@ -16,8 +18,7 @@ namespace OutOfSchool.WebApi.Controllers
 
         public IActionResult TestOk()
         {
-            return this.Ok();
+            return this.Ok("Hello world");
         }
-
     }
 }

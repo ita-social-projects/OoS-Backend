@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services
 {
-    public class OutOfSchoolDbContext : DbContext
+    public class OutOfSchoolDbContext : IdentityDbContext<User>
     {
         public OutOfSchoolDbContext(DbContextOptions<OutOfSchoolDbContext> options) : base(options)
         {
@@ -12,10 +13,13 @@ namespace OutOfSchool.Services
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(b => b.MigrationsAssembly("OutOfSchool.WebApi"));
+            optionsBuilder.UseSqlServer("Server=localhost,1433; Database=Master;User Id=SA;Password=Oos-password1",b =>
+            {
+                b.MigrationsAssembly("OutOfSchool.IdentityServer");
+            });
         }
 
         public DbSet<Parent> Parents { get; set; }
-        public DbSet<Organisation> Organisations { get; set; }
+        public DbSet<Organization> Organizations { get; set; }
     }
 }
