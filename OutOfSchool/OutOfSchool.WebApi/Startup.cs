@@ -48,7 +48,7 @@ namespace OutOfSchool
             services.AddControllers();
             
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
+                builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
