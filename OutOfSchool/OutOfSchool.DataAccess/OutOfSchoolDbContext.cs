@@ -21,5 +21,6 @@ namespace OutOfSchool.Services
 
         public DbSet<Parent> Parents { get; set; }
         public DbSet<Organization> Organizations { get; set; }
+        public DbSet<Child> Children { get; set; }
     }
 }
