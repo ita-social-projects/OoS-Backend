@@ -28,11 +28,12 @@ namespace IdentityServer
 
                 var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
                 var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
-                
+                var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                var apiSecret = configService["outofschoolapi:ApiSecret"];
+                var clientSecret = configService["m2m.client:ClientSecret"];
+
                 identityContext.Database.Migrate();
                 context.Database.Migrate();
-                var apiSecret = scope.ServiceProvider.GetRequiredService<IConfiguration>()["outofschoolapi:ApiSecret"];
-                var clientSecret = scope.ServiceProvider.GetRequiredService<IConfiguration>()["m2m.client:ClientSecret"];
 
                 if (!context.Clients.Any())
                 {

@@ -35,7 +35,6 @@ namespace IdentityServer
                     .UseSqlServer(connString,
                         optionsBuilder =>
                             optionsBuilder.MigrationsAssembly("OutOfSchool.IdentityServer")));
-            //services.AddDbContext<OutOfSchoolDbContext>();
 
             services.AddIdentity<User, IdentityRole>(options =>
                 {
