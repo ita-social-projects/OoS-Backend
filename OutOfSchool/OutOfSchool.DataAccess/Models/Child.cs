@@ -7,6 +7,7 @@ namespace OutOfSchool.Services.Models
     public class Child
     {
 
+
         public long Id { get; set; }
 
         [DataType(DataType.Text)]
