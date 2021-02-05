@@ -7,12 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.IdentityServer;
-using OutOfSchool.IdentityServer.Data;
 using OutOfSchool.Services;
 
 namespace IdentityServer
@@ -41,6 +38,13 @@ namespace IdentityServer
 
                 context.Database.Migrate();
                 identityContext.Database.Migrate();
+                var manager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                if (!manager.Roles.Any())
+                {
+                    RolesInit(manager);
+                }
+
                 if (!context.Clients.Any())
                 {
                     foreach (var client in Config.Clients(clientSecret))
@@ -78,6 +82,21 @@ namespace IdentityServer
             }
 
             host.Run();
+        }
+
+        private static void RolesInit(RoleManager<IdentityRole> manager)
+        {
+            var roles = new IdentityRole[]
+            {
+                new IdentityRole {Name = "parent"},
+                new IdentityRole {Name = "organization"},
+                new IdentityRole {Name = "admin"}
+            };
+            foreach (var role in roles)
+            {
+                manager.CreateAsync(role).Wait();
+            }
+
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

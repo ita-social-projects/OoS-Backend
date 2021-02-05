@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using OutOfSchool.Services.Models;
 
 namespace IdentityServer.Controllers
@@ -14,12 +15,15 @@ namespace IdentityServer.Controllers
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
         private readonly IIdentityServerInteractionService _interactionService;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
+            RoleManager<IdentityRole> roleManager,
             IIdentityServerInteractionService interactionService)
         {
+            _roleManager = roleManager;
             _signInManager = signInManager;
             _userManager = userManager;
             _interactionService = interactionService;
@@ -41,7 +45,7 @@ namespace IdentityServer.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Login(string returnUrl="Login")
+        public async Task<IActionResult> Login(string returnUrl = "Login")
         {
             var externalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
             return View(new LoginViewModel
@@ -54,7 +58,13 @@ namespace IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel vm)
         {
-            // check if the model is valid
+            if (!ModelState.IsValid)
+            {
+                return View(new LoginViewModel
+                {
+                    ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync()
+                });
+            }
 
             var result = await _signInManager.PasswordSignInAsync(vm.Username, vm.Password, false, false);
 
@@ -64,20 +74,29 @@ namespace IdentityServer.Controllers
             }
             else if (result.IsLockedOut)
             {
-
+                return BadRequest();
             }
-            return View();
+            else
+            {
+                ModelState.AddModelError("", "Login or password is wrong");
+                
+                return View(new LoginViewModel
+                {
+                    ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync()
+                });
+            }
         }
 
         [HttpGet]
-        public IActionResult Register(string returnUrl="Login")
+        public IActionResult Register(string returnUrl = "Login")
         {
-            return View(new RegisterViewModel { ReturnUrl = returnUrl });
+            return View(new RegisterViewModel { ReturnUrl = returnUrl, AllRoles = _roleManager.Roles.ToList() });
         }
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel vm)
         {
+            //vm.AllRoles = _roleManager.Roles.ToList();
             if (!ModelState.IsValid)
             {
                 return View(vm);
@@ -85,17 +104,28 @@ namespace IdentityServer.Controllers
 
             var user = new User()
             {
-                UserName = vm.Username, 
-                PhoneNumber = vm.PhoneNumber, CreatingTime = DateTime.Now
+                UserName = vm.Username,
+                PhoneNumber = vm.PhoneNumber,
+                CreatingTime = DateTime.Now
             };
             var result = await _userManager.CreateAsync(user, vm.Password);
+            var selectedRole = _roleManager.Roles.First(role => role.Id == vm.UserRoleId).Name;
             if (result.Succeeded)
             {
-                await _signInManager.SignInAsync(user, false);
+                var resultRoleAssign = await _userManager.AddToRoleAsync(user, selectedRole);
+                if (resultRoleAssign.Succeeded)
+                {
+                    await _signInManager.SignInAsync(user, false);
 
-                return Redirect(vm.ReturnUrl);
+                    return Redirect(vm.ReturnUrl);
+                }
             }
-            return View();
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(vm);
         }
     }
 }
