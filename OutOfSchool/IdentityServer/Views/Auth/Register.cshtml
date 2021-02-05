@@ -35,6 +35,7 @@
             @Html.RadioButtonFor(model => model.UserRoleId, role.Id) @role<br />
         }
     </div>
+    <div  asp-validation-summary="ModelOnly"></div>
     <div>
         <button type="submit">Sign Up</button>
     </div>
