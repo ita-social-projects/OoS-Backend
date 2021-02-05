@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using OutOfSchool.Services.Models;
 
 namespace IdentityServer.Controllers
