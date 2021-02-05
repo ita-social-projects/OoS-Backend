@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +17,11 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize]
     public class ChildrenController : ControllerBase
     {
-        private ChildService childService;
+        private IChildService childService;
 
-        public ChildrenController(OutOfSchoolDbContext outOfSchoolDbContext)
+        public ChildrenController(IChildService childService)
         {
-            childService = new ChildService(outOfSchoolDbContext);
+            this.childService = childService;
         }
 
         [HttpGet]
@@ -31,9 +33,17 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Child>> CreateChildren(Child child)
+        public async Task<ActionResult<Child>> CreateChildren(ChildDTO childDTO)
         {
-            var newChild = await childService.Create(child);
+            ChildDTO child;
+            try
+            {
+                child = await childService.Create(childDTO);
+            }
+            catch
+            {
+                return BadRequest();
+            }
 
             return CreatedAtAction(
                 nameof(GetChildren),
