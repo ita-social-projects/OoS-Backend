@@ -29,7 +29,7 @@ namespace IdentityServer
                 while (!context.Database.CanConnect())
                 {
                     Task.Delay(500).Wait();
-                    Console.WriteLine("Waiting for db");
+                    Console.WriteLine("Waiting for db connection");
                 }
                 scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
                     .Database.Migrate();
@@ -37,7 +37,7 @@ namespace IdentityServer
                 var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
                 var apiSecret = configService["outofschoolapi:ApiSecret"];
                 var clientSecret = configService["m2m.client:ClientSecret"];
-                
+
                 context.Database.Migrate();
                 identityContext.Database.Migrate();
                 if (!context.Clients.Any())
