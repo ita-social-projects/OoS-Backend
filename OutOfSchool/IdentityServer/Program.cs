@@ -26,6 +26,7 @@ namespace IdentityServer
             using (var scope = host.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+                // TODO: Move from Console to logger
                 while (!context.Database.CanConnect())
                 {
                     Task.Delay(500).Wait();
