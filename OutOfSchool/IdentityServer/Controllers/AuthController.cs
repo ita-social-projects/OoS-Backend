@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Linq;
+using System.Threading.Tasks;
+using IdentityServer.Controllers;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 
-namespace IdentityServer.Controllers
+namespace OutOfSchool.IdentityServer.Controllers
 {
     public class AuthController : Controller
     {
@@ -32,10 +31,10 @@ namespace IdentityServer.Controllers
 
             var logoutRequest = await _interactionService.GetLogoutContextAsync(logoutId);
 
-            if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            // if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
+            // {
+            //     return RedirectToAction("Index", "Home");
+            // }
 
             return Redirect(logoutRequest.PostLogoutRedirectUri);
         }

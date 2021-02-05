@@ -44,7 +44,8 @@ namespace OutOfSchool.Services.Models
         
         [Required]
         public OrganizationType Type { get; set; }
-        
-     
+
+        public virtual User User { get; set; }
+        public long UserId { get; set; }
     }
 }

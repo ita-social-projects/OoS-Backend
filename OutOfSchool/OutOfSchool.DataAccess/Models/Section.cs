@@ -9,6 +9,8 @@ namespace OutOfSchool.Services.Models
     {
         public long SectionId { get; set; }
 
+        [DataType(DataType.Text)]
+        [Required(ErrorMessage = "Group title is required")]
         public string Title { get; set; }
 
         [DataType(DataType.PhoneNumber)]
@@ -21,17 +23,20 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Email is required")]
         public string Email { get; set; }
 
-        [DataType(DataType.Url)] public string? Website { get; set; }
+        [DataType(DataType.Url)] 
+        public string? Website { get; set; }
 
-        [DataType(DataType.Url)] public string? Facebook { get; set; }
+        [DataType(DataType.Url)] 
+        public string? Facebook { get; set; }
 
-        [DataType(DataType.Url)] public string? Istagram { get; set; }
+        [DataType(DataType.Url)] 
+        public string? Istagram { get; set; }
 
         public int MinAge { get; set; }
         public int MaxAge { get; set; }
         public int DaysPerWeek { get; set; }
 
-        public decimal? Cost { get; set; }
+        public decimal? Price { get; set; }
         public string Description { get; set; }
         public bool WithDisabilityOptions { get; set; }
         public string? DisabilityOptionsDesc { get; set; }

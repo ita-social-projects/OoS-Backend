@@ -3,10 +3,10 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
-    public class GroupDayOfWeek
+    public class SectionDayOfWeek
     {
-        public long GroupDayOfWeekId { get; set; }
-        public Group Group { get; set; }
+        public long SectionDayOfWeekId { get; set; }
+        public Section Section { get; set; }
         public DaysOfWeek Day { get; set; }
     }
 }
