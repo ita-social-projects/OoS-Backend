@@ -1,7 +1,9 @@
-﻿@model RegisterViewModel
+﻿@using Microsoft.AspNetCore.Identity
+@model RegisterViewModel
 
 <form asp-controller="Auth" asp-action="Register" method="post">
     <input type="hidden" asp-for="ReturnUrl" />
+    <input type="hidden" asp-for="AllRoles" />
     <div>
         <label>Username</label>
         <input asp-for="Username" />
@@ -26,6 +28,12 @@
         <label>Email</label>
         <input asp-for="Email" />
         <span asp-validation-for="Email"></span>
+    </div>
+    <div class="form-group">
+        @foreach (IdentityRole role in Model.AllRoles)
+        {
+            @Html.RadioButtonFor(model => model.UserRoleId, role.Id) @role<br />
+        }
     </div>
     <div>
         <button type="submit">Sign Up</button>

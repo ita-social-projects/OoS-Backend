@@ -18,7 +18,8 @@ namespace OutOfSchool.WebApi.Controllers
 
         public IActionResult TestOk()
         {
-            return this.Ok("Hello world");
+            var userRole = User.FindFirst("role")?.Value;
+            return this.Ok("Hello to "+userRole);
         }
     }
 }
