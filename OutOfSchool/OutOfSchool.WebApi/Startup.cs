@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -12,6 +13,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Interfaces;
+using OutOfSchool.WebApi.Services.Mapping;
 
 namespace OutOfSchool
 {
@@ -30,6 +36,7 @@ namespace OutOfSchool
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
@@ -49,7 +56,9 @@ namespace OutOfSchool
             
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
-
+            services.AddTransient<IChildService, ChildService>();
+            services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
+            services.AddSingleton(childMapper);
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
         }
