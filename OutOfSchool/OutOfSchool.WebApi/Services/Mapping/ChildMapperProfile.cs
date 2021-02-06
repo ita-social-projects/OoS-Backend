@@ -12,7 +12,7 @@ namespace OutOfSchool.WebApi.Services.Mapping
     {
         public ChildMapperProfile()
         {
-            CreateMap<Child, ChildDTO>().ReverseMap();
+            CreateMap<Child, ChildDTO>().ForMember(c => c.Id, d => d.MapFrom(child => child.ChildId)).ReverseMap();
         }
     }
 }
