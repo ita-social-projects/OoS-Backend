@@ -1,0 +1,23 @@
+﻿version: '3.4'
+services:
+  sql-server:
+    image: 'mcr.microsoft.com/azure-sql-edge'
+    environment:
+        ACCEPT_EULA: Y
+        MSSQL_SA_PASSWORD: Oos-password1
+    ports:
+        - "1433:1433"
+  webapi-server:
+    build: .
+    ports:
+        - "5000:5000"
+  identity-server:
+    build:
+        context: .
+        dockerfile: OutOfSchool/IdentityServer/Dockerfile
+    environment:
+        ConnectionStrings__DefaultConnection: "Server=sql-server; Database=Master;User Id=SA;Password=Oos-password1;"
+    depends_on:
+        - "sql-server"
+    ports: 
+        - "5443:5443"
