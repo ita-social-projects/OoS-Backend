@@ -9,7 +9,7 @@ namespace OutOfSchool.Services.Repository
     {
         Task<T> Create(T entity);
         void Update(T entity);
-        void Delete(T entity);
+        Task Delete(T entity);
         IEnumerable<T> GetAll();
         Task<T> GetById(long id);
     }

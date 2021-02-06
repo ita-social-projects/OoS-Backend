@@ -24,10 +24,10 @@ namespace OutOfSchool.Services.Repository
             return await Task.FromResult(entity);
         }
 
-        public void Delete(T entity)
+        public async Task Delete(T entity)
         {
             _dbSet.Remove(entity);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
 
         public IEnumerable<T> GetAll()
@@ -43,6 +43,7 @@ namespace OutOfSchool.Services.Repository
         public void Update(T entity)
         {
             _dbSet.Update(entity);
+            _dbContext.SaveChanges();
         }
     }
 }
