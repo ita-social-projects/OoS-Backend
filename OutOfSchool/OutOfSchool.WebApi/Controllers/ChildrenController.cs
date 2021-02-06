@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize]
     public class ChildrenController : ControllerBase
     {
-        private IChildService childService;
+        private IChildService _childService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildrenController"/> class.
@@ -26,7 +26,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="childService">Service for Child model.</param>
         public ChildrenController(IChildService childService)
         {
-            this.childService = childService;
+            _childService = childService;
         }
 
         /// <summary>
