@@ -17,11 +17,11 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize]
     public class ChildrenController : ControllerBase
     {
-        private IChildService childService;
+        private IChildService _childService;
 
         public ChildrenController(IChildService childService)
         {
-            this.childService = childService;
+            _childService = childService;
         }
 
         [HttpGet]
@@ -33,12 +33,12 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Child>> CreateChildren(ChildDTO childDTO)
+        public async Task<ActionResult<Child>> CreateChild(ChildDTO childDTO)
         {
             ChildDTO child;
             try
             {
-                child = await childService.Create(childDTO);
+                child = await _childService.Create(childDTO);
             }
             catch
             {

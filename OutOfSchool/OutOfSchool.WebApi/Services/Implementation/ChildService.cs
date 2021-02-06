@@ -17,10 +17,6 @@ namespace OutOfSchool.WebApi.Services
         private IEntityRepository<Child> _ChildRepository { get; set; }
         private readonly IMapper mapper;
 
-        public ChildService(OutOfSchoolDbContext context)
-        {
-            _ChildRepository = new EntityRepository<Child>(context);
-        }
         public ChildService(IEntityRepository<Child> entityRepository, IMapper mapper)
         {
             _ChildRepository = entityRepository;

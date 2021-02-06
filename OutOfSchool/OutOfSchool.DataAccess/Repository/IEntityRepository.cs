@@ -19,6 +19,7 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> Create(T entity);
 
+
         /// <summary>
         /// Update information about element.
         /// </summary>
@@ -51,6 +52,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="id">Key in database.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+
 
         Task<T> GetById(long id);
     }

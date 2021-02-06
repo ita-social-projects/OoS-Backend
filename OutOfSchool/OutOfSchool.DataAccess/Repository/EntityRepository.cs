@@ -35,6 +35,7 @@ namespace OutOfSchool.Services.Repository
             return await Task.FromResult(entity);
         }
 
+
         /// <inheritdoc/>
         public async Task Delete(T entity)
         {
