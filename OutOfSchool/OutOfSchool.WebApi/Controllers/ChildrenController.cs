@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             return CreatedAtAction(
                 nameof(GetChildren),
-                new { id = child.ChildId },
+                new { id = child.Id },
                 child);
         }
     }
