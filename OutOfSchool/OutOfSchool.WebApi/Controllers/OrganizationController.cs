@@ -6,7 +6,7 @@ namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class OrganizationController : ControllerBase
     {
         private readonly ILogger<OrganizationController> _logger;

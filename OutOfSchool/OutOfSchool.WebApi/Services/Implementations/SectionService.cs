@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Services.Implementations
     public class SectionService : ISectionService
     {
         private readonly IMapper _mapper;
-        private OutOfSchoolDbContext _context;
+        private readonly OutOfSchoolDbContext _context;
 
         public SectionService(IMapper mapper, OutOfSchoolDbContext context)
         {
@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services.Implementations
         {
             if (sectionDto == null)
             {
-                throw new ArgumentNullException($"{nameof(CreateAsync)} entity must not be null");
+                throw new ArgumentNullException($"{nameof(SectionDto)} entity must not be null");
             }
 
             try
@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Services.Implementations
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(CreateAsync)} could not be saved: {ex.Message}");
+                throw new Exception($"{nameof(SectionDto)} could not be saved: {ex.Message}");
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace OutOfSchool.Services.Models
@@ -36,10 +37,19 @@ namespace OutOfSchool.Services.Models
         public int MaxAge { get; set; }
         public int DaysPerWeek { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? Price { get; set; }
+        
+        [Required(ErrorMessage = "Description is required")]
+        [DataType(DataType.MultilineText)]
         public string Description { get; set; }
+        
         public bool WithDisabilityOptions { get; set; }
+        
+        [DataType(DataType.MultilineText)]
         public string? DisabilityOptionsDesc { get; set; }
+        
+        [DataType(DataType.MultilineText)]
         public byte[]? Image { get; set; }
 
         public Address Address { get; set; }

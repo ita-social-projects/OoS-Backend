@@ -14,16 +14,14 @@ namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes  = "Bearer")]
     public class SectionController : ControllerBase
     {
-        private ISectionService _sectionService;
-        private readonly IMapper _mapper;
+        private readonly ISectionService _sectionService;
 
-        public SectionController(ISectionService sectionService, IMapper mapper)
+        public SectionController(ISectionService sectionService)
         {
             _sectionService = sectionService;
-            _mapper = mapper;
         }
 
         [HttpPost]

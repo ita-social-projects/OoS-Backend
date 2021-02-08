@@ -20,6 +20,10 @@ namespace OutOfSchool.WebApi.Models.ModelsDto
         [DataType(DataType.Text)]
         public string MiddleName { get; set; }
         
+        [Required(ErrorMessage = "Short description is required")]
+        [DataType(DataType.MultilineText)]
+        public string Description { get; set; }
+        
         public byte[]? Image { get; set; }
     }
 }

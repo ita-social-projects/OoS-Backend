@@ -85,7 +85,8 @@ namespace OutOfSchool.IdentityServer.Controllers
             var user = new User()
             {
                 UserName = vm.Username, 
-                PhoneNumber = vm.PhoneNumber, CreatingTime = DateTime.Now
+                PhoneNumber = vm.PhoneNumber, 
+                CreatingTime = DateTime.Now
             };
             var result = await _userManager.CreateAsync(user, vm.Password);
             if (result.Succeeded)

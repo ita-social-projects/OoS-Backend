@@ -2,7 +2,7 @@
 {
     public class ProfileOfEducation
     {
-        public long ProfileId { get; set; }
+        public long ProfileOfEducationId { get; set; }
         public string Title { get; set; }
         public DirectionOfEducation DirectionOfEducation { get; set; }
     }

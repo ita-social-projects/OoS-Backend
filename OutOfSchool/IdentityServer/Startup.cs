@@ -93,6 +93,7 @@ namespace IdentityServer
 
             app.UseIdentityServer();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
