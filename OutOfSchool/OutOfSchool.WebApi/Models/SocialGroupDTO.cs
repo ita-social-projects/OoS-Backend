@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 
-
 namespace OutOfSchool.WebApi.Models
 {
     public class SocialGroupDTO
