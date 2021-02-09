@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Linq;
+using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
 
-namespace IdentityServer.Controllers
+namespace OutOfSchool.IdentityServer.Controllers
 {
     public class AuthController : Controller
     {
@@ -96,7 +94,6 @@ namespace IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel vm)
         {
-            //vm.AllRoles = _roleManager.Roles.ToList();
             if (!ModelState.IsValid)
             {
                 vm.AllRoles = _roleManager.Roles.ToList();

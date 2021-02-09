@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authentication;
 
-namespace IdentityServer.Controllers
+namespace OutOfSchool.IdentityServer.ViewModels
 {
     public class LoginViewModel
     {

@@ -26,7 +26,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\IdentityServer\OutOfSchool.IdentityServer.csproj" />
     <ProjectReference Include="..\OutOfSchool.WebApi\OutOfSchool.WebApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="IdentityServerTests\" />
   </ItemGroup>
 
 </Project>
