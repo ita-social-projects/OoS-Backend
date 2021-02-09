@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
-namespace IdentityServer.Controllers
+namespace OutOfSchool.IdentityServer.ViewModels
 {
     public class RegisterViewModel
     {

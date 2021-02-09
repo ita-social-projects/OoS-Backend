@@ -4,7 +4,7 @@ using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Services.Interfaces;
 
-namespace OutOfSchool.Tests
+namespace OutOfSchool.Tests.WebApiTests
 {
     [TestFixture]
     public class Tests
