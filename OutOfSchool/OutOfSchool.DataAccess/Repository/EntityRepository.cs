@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,6 +34,16 @@ namespace OutOfSchool.Services.Repository
         public IEnumerable<T> GetAll()
         {
             return _dbSet;
+        }
+        public IEnumerable<T> GetAllWithDetails(string includeProperties = "")
+        {
+            IQueryable<T> query = _dbSet;
+            foreach (var includeProperty in includeProperties.Split
+            (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+            return query;
         }
         
         public async Task<T> GetById(long id)
