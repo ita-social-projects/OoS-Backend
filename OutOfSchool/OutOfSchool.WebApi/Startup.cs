@@ -56,6 +56,7 @@ namespace OutOfSchool.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
+            var socialGroupMapper = new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
@@ -87,7 +88,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
 
             services.AddTransient<IProviderRepository, ProviderRepository>();
-
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();

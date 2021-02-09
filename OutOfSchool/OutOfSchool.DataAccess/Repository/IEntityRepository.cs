@@ -34,6 +34,7 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(T entity);
 
+
         /// <summary>
         /// Get all elements.
         /// </summary>
