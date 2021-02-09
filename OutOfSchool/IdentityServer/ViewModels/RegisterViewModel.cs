@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace IdentityServer.Controllers
+namespace OutOfSchool.IdentityServer.ViewModels
 {
     public class RegisterViewModel
     {

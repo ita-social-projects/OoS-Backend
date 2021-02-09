@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Linq;
+using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.Threading.Tasks;
+using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
 
-namespace IdentityServer.Controllers
+namespace OutOfSchool.IdentityServer.Controllers
 {
     public class AuthController : Controller
     {
