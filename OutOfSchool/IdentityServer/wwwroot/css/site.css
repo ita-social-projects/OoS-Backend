@@ -1,0 +1,57 @@
+﻿﻿.login__wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 10px;
+}
+.login__text, .login__label, .login__link{
+    font-weight: 400;
+    font-family: Roboto,Helvetica Neue,sans-serif;
+    letter-spacing: normal;
+}
+  .login__label{
+    margin-top: 10px;
+    font-size: 1.2rem;
+}
+.login__input{
+    max-width: 800px;
+    width: 100%;
+    height: 2rem;
+    border: none;
+    outline: none;
+    font-size: 2rem;
+    border-bottom: 1px solid silver;
+    cursor: text;
+}
+.login__input:focus{
+    border-bottom: 1px solid #4158d0; 
+}
+.login__button {
+    text-align: center;
+    outline: none;
+    border: none;
+    margin: 20px;
+    padding: 10px;
+    font-size: 1.5rem;
+    border-radius: 4px; 
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #fff;
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.5), 0 2px 2px 0 rgba(0, 0, 0, 0.5), 0 1px 5px 0 rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+.login__button:hover{
+    box-shadow: 0 3px 1px -2px  #4158d0, 0 2px 2px 0  #4158d0, 0 1px 5px 0 #4158d0;
+}
+.login .login__link {
+    border-bottom: 1px solid silver; 
+    text-decoration: none;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.87);
+}
+.login__link{
+    font-size: 1.5rem;
+}
+.login__link:hover, .login__input:focus, .login__button:hover{
+    color: #4158d0;
+}
