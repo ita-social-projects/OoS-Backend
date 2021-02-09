@@ -19,7 +19,7 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Interfaces;
 using OutOfSchool.WebApi.Services.Mapping;
 
-namespace OutOfSchool
+namespace OutOfSchool.WebApi
 {
     public class Startup
     {

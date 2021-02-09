@@ -3,7 +3,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers;
 
-namespace OutOfSchool.Tests
+namespace OutOfSchool.Tests.WebApiTests
 {
     [TestFixture]
     public class Tests
