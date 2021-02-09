@@ -37,6 +37,7 @@ namespace OutOfSchool
         public void ConfigureServices(IServiceCollection services)
         {
             var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
+            var socialGroupMapper = new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
@@ -59,6 +60,7 @@ namespace OutOfSchool
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddSingleton(childMapper);
+            services.AddSingleton(socialGroupMapper);
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
         }

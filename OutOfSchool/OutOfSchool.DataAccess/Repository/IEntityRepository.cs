@@ -11,6 +11,7 @@ namespace OutOfSchool.Services.Repository
         void Update(T entity);
         Task Delete(T entity);
         IEnumerable<T> GetAll();
+        IEnumerable<T> GetAllWithDetails(string includeProperties = "");
         Task<T> GetById(long id);
     }
 }
