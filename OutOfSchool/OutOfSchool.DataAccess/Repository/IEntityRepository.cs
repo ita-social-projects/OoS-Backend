@@ -1,6 +1,4 @@
-
-﻿using System.Collections.Generic;
-
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace OutOfSchool.Services.Repository
@@ -27,19 +25,20 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> Update(T entity);
 
+
         /// <summary>
         /// Delete element.
         /// </summary>
         /// <param name="entity">Entity.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(T entity);
-
-
+	
         /// <summary>
         /// Get all elements.
         /// </summary>
         /// <returns>List of all elements.</returns>
         Task<IEnumerable<T>> GetAll();
+
 
         /// <summary>
         /// Get all elements with details.
@@ -48,13 +47,12 @@ namespace OutOfSchool.Services.Repository
         /// <returns>List of all elements with included propertires.</returns>
         Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
 
+
         /// <summary>
         /// Get element by Id.
         /// </summary>
         /// <param name="id">Key in database.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-
-
         Task<T> GetById(long id);
     }
 }

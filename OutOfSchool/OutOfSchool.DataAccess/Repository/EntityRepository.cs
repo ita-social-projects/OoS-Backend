@@ -1,5 +1,4 @@
-
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +33,6 @@ namespace OutOfSchool.Services.Repository
             await dbContext.SaveChangesAsync();
             return await Task.FromResult(entity);
         }
-
 
         /// <inheritdoc/>
         public async Task Delete(T entity)
