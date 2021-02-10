@@ -5,6 +5,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Services
@@ -21,7 +22,7 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="ChildService"/> class.
         /// </summary>
         /// <param name="entityRepository">Repository for some entity.</param>
-        /// <param name="mapper">Mapper</param>
+        /// <param name="mapper">Mapper.</param>
         public ChildService(IEntityRepository<Child> entityRepository, IMapper mapper)
         {
             this.ChildRepository = entityRepository;
@@ -46,16 +47,11 @@ namespace OutOfSchool.WebApi.Services
             return await Task.FromResult(this.mapper.Map<Child, ChildDTO>(child_)).ConfigureAwait(false);
         }
 
-
         /// <inheritdoc/>
         public IEnumerable<ChildDTO> GetAll()
         {
-            IEnumerable<Child> children = this.ChildRepository.GetAll();
-            List<ChildDTO> childrenDTO = new List<ChildDTO>();
-            foreach (Child child in children)
-            {
-                childrenDTO.Add(this.mapper.Map<Child, ChildDTO>(child));
-            }
+            IEnumerable<ChildDTO> childrenDTO = this.ChildRepository.GetAll().Select(
+                x => this.mapper.Map<Child, ChildDTO>(x));
 
             return childrenDTO;
         }
