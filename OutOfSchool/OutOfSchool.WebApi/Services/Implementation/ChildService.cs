@@ -4,6 +4,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Services
@@ -43,6 +44,84 @@ namespace OutOfSchool.WebApi.Services
             Child newChild = this.mapper.Map<ChildDTO, Child>(child);
             var child_ = await this.ChildRepository.Create(newChild).ConfigureAwait(false);
             return await Task.FromResult(this.mapper.Map<Child, ChildDTO>(child_)).ConfigureAwait(false);
+        }
+
+
+        /// <inheritdoc/>
+        public IEnumerable<ChildDTO> GetAll()
+        {
+            IEnumerable<Child> children = this.ChildRepository.GetAll();
+            List<ChildDTO> childrenDTO = new List<ChildDTO>();
+            foreach (Child child in children)
+            {
+                childrenDTO.Add(this.mapper.Map<Child, ChildDTO>(child));
+            }
+
+            return childrenDTO;
+        }
+
+        /// <inheritdoc/>
+        public async Task<ChildDTO> GetById(long id)
+        {
+            Child child = this.ChildRepository.GetById(id).Result;
+            if (child == null)
+            {
+                throw new ArgumentException("Incorrect Id!", nameof(id));
+            }
+
+            return await Task.Run(() =>
+            {
+                return this.mapper.Map<Child, ChildDTO>(child);
+            }).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public void Update(ChildDTO childDTO)
+        {
+            if (childDTO == null)
+            {
+                throw new ArgumentNullException(nameof(childDTO), "Child was null.");
+            }
+
+            if (childDTO.DateOfBirth > DateTime.Now)
+            {
+                throw new ArgumentException("Wrong date of birth.", nameof(childDTO));
+            }
+
+            if (childDTO.FirstName.Length == 0)
+            {
+                throw new ArgumentException("Empty firstname.", nameof(childDTO));
+            }
+
+            if (childDTO.LastName.Length == 0)
+            {
+                throw new ArgumentException("Empty lastname.", nameof(childDTO));
+            }
+
+            if (childDTO.MiddleName.Length == 0)
+            {
+                throw new ArgumentException("Empty middlename.", nameof(childDTO));
+            }
+
+            Child child = this.mapper.Map<ChildDTO, Child>(childDTO);
+            this.ChildRepository.Update(child);
+        }
+
+        /// <inheritdoc/>
+        public async Task Delete(long id)
+        {
+            ChildDTO childDTO;
+            try
+            {
+                childDTO = await this.GetById(id).ConfigureAwait(false);
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new ArgumentNullException(nameof(id), ex.Message);
+            }
+
+            Child child = this.mapper.Map<ChildDTO, Child>(childDTO);
+            await this.ChildRepository.Delete(child).ConfigureAwait(false);
         }
     }
 }
