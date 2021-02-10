@@ -140,7 +140,6 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return this.BadRequest(ex.Message);
             }
-
         }
 
         /// <summary>
@@ -148,6 +147,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="childDTO">Entity.</param>
         /// <returns>Child's key.</returns>
+        [Authorize(Roles = "parent,admin")]
         [HttpPut]
         public async Task<ActionResult> Update(ChildDTO childDTO)
         {
@@ -164,40 +164,32 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 this.childService.Update(childDTO);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return this.BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return this.BadRequest(ex.Message);
+                return this.Ok(await this.childService.GetById(childDTO.Id).ConfigureAwait(false));
             }
             catch (Exception ex)
             {
                 return this.BadRequest(ex.Message);
             }
-
-            return this.Ok(await this.childService.GetById(childDTO.Id).ConfigureAwait(false));
         }
 
+        /// <summary>
+        /// Delete some element from database.
+        /// </summary>
+        /// <param name="id">Element's key.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "parent,admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(long id)
         {
             try
             {
                 await this.childService.Delete(id).ConfigureAwait(false);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return this.BadRequest(ex.Message);
+                return this.Ok();
             }
             catch (Exception ex)
             {
                 return this.BadRequest(ex.Message);
             }
-
-            return this.Ok();
         }
     }
 }
