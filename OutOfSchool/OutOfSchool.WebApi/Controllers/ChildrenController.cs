@@ -39,13 +39,12 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 children = this.childService.GetAll();
+                return this.Ok(children);
             }
             catch (Exception ex)
             {
                 return this.BadRequest(ex.Message);
             }
-
-            return this.Ok(children);
         }
 
         /// <summary>
@@ -54,19 +53,18 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Key in database.</param>
         /// <returns>Child element with some id.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ChildDTO>> GetByIdChild(long id)
+        public async Task<ActionResult<ChildDTO>> GetChildById(long id)
         {
             ChildDTO childDTO;
             try
             {
                 childDTO = await this.childService.GetById(id).ConfigureAwait(false);
-            } 
+                return this.Ok(childDTO);
+            }
             catch (ArgumentException ex)
             {
                 return this.BadRequest(ex.Message);
             }
-
-            return this.Ok(childDTO);
         }
 
         /// <summary>
@@ -74,6 +72,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="childDTO">Element which must be added.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "parent,admin")]
         [HttpPost]
         public async Task<ActionResult<Child>> CreateChild(ChildDTO childDTO)
         {
@@ -86,24 +85,15 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 child = await this.childService.Create(childDTO).ConfigureAwait(false);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return this.BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return this.BadRequest(ex.Message);
+                return this.CreatedAtAction(
+                    nameof(this.GetChildren),
+                    new { id = child.Id },
+                    child);
             }
             catch (Exception ex)
             {
                 return this.BadRequest(ex.Message);
             }
-
-            return this.CreatedAtAction(
-                nameof(this.GetChildren),
-                new { id = child.Id },
-                child);
         }
 
         /// <summary>
@@ -111,6 +101,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="childDTO">Entity.</param>
         /// <returns>Child's key.</returns>
+        [Authorize(Roles = "parent,admin")]
         [HttpPut]
         public async Task<ActionResult> Update(ChildDTO childDTO)
         {
@@ -127,40 +118,32 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 this.childService.Update(childDTO);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return this.BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return this.BadRequest(ex.Message);
+                return this.Ok(await this.childService.GetById(childDTO.Id).ConfigureAwait(false));
             }
             catch (Exception ex)
             {
                 return this.BadRequest(ex.Message);
             }
-
-            return this.Ok(await this.childService.GetById(childDTO.Id).ConfigureAwait(false));
         }
 
+        /// <summary>
+        /// Delete some element from database.
+        /// </summary>
+        /// <param name="id">Element's key.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "parent,admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(long id)
         {
             try
             {
                 await this.childService.Delete(id).ConfigureAwait(false);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return this.BadRequest(ex.Message);
+                return this.Ok();
             }
             catch (Exception ex)
             {
                 return this.BadRequest(ex.Message);
             }
-
-            return this.Ok();
         }
     }
 }
