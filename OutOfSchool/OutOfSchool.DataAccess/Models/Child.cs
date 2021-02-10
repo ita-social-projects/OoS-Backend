@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OutOfSchool.Services.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -18,6 +19,7 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Middle name is required")]
         public string MiddleName { get; set; }
         public DateTime DateOfBirth { get; set; }
+        public Gender Gender { get; set; }
         public int ParentId { get; set; }
         public int SocialGroupId { get; set; }
         public virtual Parent Parent { get; set; }

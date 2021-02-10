@@ -1,60 +1,76 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace OutOfSchool.Services.Repository
 {
-    public class EntityRepository<T> : IEntityRepository<T> where T : class, new()
+    /// <summary>
+    /// Repository for accessing the database.
+    /// </summary>
+    /// <typeparam name="T">Entity.</typeparam>
+    public class EntityRepository<T> : IEntityRepository<T>
+        where T : class, new()
     {
-        private OutOfSchoolDbContext _dbContext;
-        private DbSet<T> _dbSet;
+        private OutOfSchoolDbContext dbContext;
+        private DbSet<T> dbSet;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
+        /// </summary>
+        /// <param name="dbContext">OutOfSchoolDbContext</param>
         public EntityRepository(OutOfSchoolDbContext dbContext)
         {
-            _dbContext = dbContext;
-            _dbSet = _dbContext.Set<T>();
+            this.dbContext = dbContext;
+            this.dbSet = this.dbContext.Set<T>();
         }
 
+        /// <inheritdoc/>
         public async Task<T> Create(T entity)
         {
-            await _dbSet.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            await this.dbSet.AddAsync(entity);
+            await this.dbContext.SaveChangesAsync();
             return await Task.FromResult(entity);
         }
 
+        /// <inheritdoc/>
         public async Task Delete(T entity)
         {
-            _dbSet.Remove(entity);
-            await _dbContext.SaveChangesAsync();
+            this.dbSet.Remove(entity);
+            await this.dbContext.SaveChangesAsync();
         }
 
+        /// <inheritdoc/>
         public IEnumerable<T> GetAll()
         {
-            return _dbSet;
+            return this.dbSet;
         }
+
+        /// <inheritdoc/>
         public IEnumerable<T> GetAllWithDetails(string includeProperties = "")
         {
-            IQueryable<T> query = _dbSet;
-            foreach (var includeProperty in includeProperties.Split
-            (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            IQueryable<T> query = this.dbSet;
+            foreach (var includeProperty in includeProperties.Split(
+            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 query = query.Include(includeProperty);
             }
+
             return query;
         }
-        
+
+        /// <inheritdoc/>
         public async Task<T> GetById(long id)
         {
-            return await _dbSet.FindAsync(id).AsTask();
+            return await this.dbSet.FindAsync(id).AsTask();
         }
 
+        /// <inheritdoc/>
         public void Update(T entity)
         {
-            _dbSet.Update(entity);
-            _dbContext.SaveChanges();
+            this.dbSet.Update(entity);
+            this.dbContext.SaveChanges();
         }
     }
 }
