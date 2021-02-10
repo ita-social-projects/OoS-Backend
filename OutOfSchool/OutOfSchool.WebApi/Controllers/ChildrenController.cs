@@ -9,15 +9,13 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Controllers
 {
+
     /// <summary>
     /// Controller with CRUD operations for Child entity.
     /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize]
-    /// <summary>
-    /// Controller with CRUD operations for Child entity.
-    /// </summary>
     public class ChildrenController : ControllerBase
     {
         private IChildService childService;
@@ -143,6 +141,63 @@ namespace OutOfSchool.WebApi.Controllers
                 return this.BadRequest(ex.Message);
             }
 
+        }
+
+        /// <summary>
+        /// Update info about some child in database.
+        /// </summary>
+        /// <param name="childDTO">Entity.</param>
+        /// <returns>Child's key.</returns>
+        [HttpPut]
+        public async Task<ActionResult> Update(ChildDTO childDTO)
+        {
+            if (childDTO == null)
+            {
+                return this.BadRequest("Entity was null.");
+            }
+
+            if (!this.ModelState.IsValid)
+            {
+                return this.BadRequest(this.ModelState);
+            }
+
+            try
+            {
+                this.childService.Update(childDTO);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return this.BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return this.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return this.BadRequest(ex.Message);
+            }
+
+            return this.Ok(await this.childService.GetById(childDTO.Id).ConfigureAwait(false));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(long id)
+        {
+            try
+            {
+                await this.childService.Delete(id).ConfigureAwait(false);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return this.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return this.BadRequest(ex.Message);
+            }
+
+            return this.Ok();
         }
     }
 }
