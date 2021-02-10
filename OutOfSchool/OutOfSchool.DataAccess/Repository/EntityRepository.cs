@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +10,7 @@ namespace OutOfSchool.Services.Repository
     /// <summary>
     /// Repository for accessing the database.
     /// </summary>
-    /// <typeparam name="T">Etity.</typeparam>
+    /// <typeparam name="T">Entity.</typeparam>
     public class EntityRepository<T> : IEntityRepository<T>
         where T : class, new()
     {

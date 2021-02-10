@@ -25,7 +25,6 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> Update(T entity);
 
-
         /// <summary>
         /// Delete element.
         /// </summary>

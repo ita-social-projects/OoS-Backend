@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -16,9 +15,12 @@ namespace OutOfSchool.WebApi.Controllers
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize]
+    /// <summary>
+    /// Controller with CRUD operations for Child entity.
+    /// </summary>
     public class ChildrenController : ControllerBase
     {
-        private IChildService _childService;
+        private IChildService childService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildrenController"/> class.
@@ -26,7 +28,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="childService">Service for Child model.</param>
         public ChildrenController(IChildService childService)
         {
-            _childService = childService;
+            this.childService = childService;
         }
 
         /// <summary>
@@ -140,6 +142,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return this.BadRequest(ex.Message);
             }
+
         }
     }
 }
