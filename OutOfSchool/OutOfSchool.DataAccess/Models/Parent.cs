@@ -14,7 +14,7 @@ namespace OutOfSchool.Services.Models
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "Last name is required")]
         public string LastName { get; set; }
-        public virtual ICollection<Child> Children { get; set; }
+        public virtual IReadOnlyCollection<Child> Children { get; set; }
 
         public Parent()
         {
