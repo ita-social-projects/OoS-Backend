@@ -16,6 +16,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Implementation;
 using OutOfSchool.WebApi.Services.Interfaces;
 using OutOfSchool.WebApi.Services.Mapping;
 
@@ -38,6 +39,7 @@ namespace OutOfSchool
         {
             var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
             var socialGroupMapper = new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
+            var organizationMapper = new MapperConfiguration(x => x.AddProfile(new OrganizationMapperProfile())).CreateMapper();
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
@@ -57,10 +59,15 @@ namespace OutOfSchool
             
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
+
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddSingleton(childMapper);
             services.AddSingleton(socialGroupMapper);
+
+            services.AddTransient<IOrganizationService, OrganizationService>();
+            services.AddTransient<IEntityRepository<Organization>, EntityRepository<Organization>>();
+            services.AddSingleton(organizationMapper);
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
         }
