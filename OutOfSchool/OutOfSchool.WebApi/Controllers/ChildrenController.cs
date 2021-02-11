@@ -35,10 +35,9 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Child>> GetChildren()
         {
-            IEnumerable<ChildDTO> children;
             try
             {
-                children = this.childService.GetAll();
+                IEnumerable<ChildDTO> children = this.childService.GetAll();
                 return this.Ok(children);
             }
             catch (Exception ex)
@@ -55,10 +54,9 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ChildDTO>> GetChildById(long id)
         {
-            ChildDTO childDTO;
             try
             {
-                childDTO = await this.childService.GetById(id).ConfigureAwait(false);
+                ChildDTO childDTO = await this.childService.GetById(id).ConfigureAwait(false);
                 return this.Ok(childDTO);
             }
             catch (ArgumentException ex)
@@ -81,10 +79,9 @@ namespace OutOfSchool.WebApi.Controllers
                 return this.BadRequest(this.ModelState);
             }
 
-            ChildDTO child;
             try
             {
-                child = await this.childService.Create(childDTO).ConfigureAwait(false);
+                ChildDTO child = await this.childService.Create(childDTO).ConfigureAwait(false);
                 return this.CreatedAtAction(
                     nameof(this.GetChildren),
                     new { id = child.Id },
