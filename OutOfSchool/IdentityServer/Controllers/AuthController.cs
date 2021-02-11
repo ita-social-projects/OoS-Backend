@@ -99,6 +99,7 @@ namespace IdentityServer.Controllers
             //vm.AllRoles = _roleManager.Roles.ToList();
             if (!ModelState.IsValid)
             {
+                vm.AllRoles = _roleManager.Roles.ToList();
                 return View(vm);
             }
 
