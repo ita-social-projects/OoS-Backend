@@ -51,7 +51,10 @@ namespace OutOfSchool.WebApi.Models.ModelsDto
         
         [DataType(DataType.MultilineText)]
         public string? DisabilityOptionsDesc { get; set; }
+
+        public bool AddressSameAsOrganization { get; set; }
+        public AddressDto Address { get; set; }
         
-        public byte[]? Image { get; set; }
-       }
+        public string? Image { get; set; }
+    }
 }

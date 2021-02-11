@@ -6,7 +6,7 @@ namespace OutOfSchool.WebApi.Models.ModelsDto
 {
     public class TeacherDto
     {
-        public long TeacherId { get; set; }
+        public long Id { get; set; }
         
         [Required(ErrorMessage = "First name is required")]
         [DataType(DataType.Text)]
@@ -24,6 +24,6 @@ namespace OutOfSchool.WebApi.Models.ModelsDto
         [DataType(DataType.MultilineText)]
         public string Description { get; set; }
         
-        public byte[]? Image { get; set; }
+        public string? Image { get; set; }
     }
 }

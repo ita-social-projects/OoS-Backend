@@ -47,12 +47,12 @@ namespace OutOfSchool.Services.Models
         public string INPP { get; set; }
         
         [DataType(DataType.ImageUrl)]
-        public byte[]? Image { get; set; }
+        public string? Image { get; set; }
         
         [Required]
         public OrganizationType Type { get; set; }
 
-        public virtual User User { get; set; }
+        public User User { get; set; }
         public long UserId { get; set; }
     }
 }

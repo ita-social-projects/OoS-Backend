@@ -50,7 +50,7 @@ namespace OutOfSchool.Services.Models
         public string? DisabilityOptionsDesc { get; set; }
         
         [DataType(DataType.MultilineText)]
-        public byte[]? Image { get; set; }
+        public string? Image { get; set; }
 
         public Address Address { get; set; }
         public DirectionOfEducation DirectionOfEducation { get; set; }
