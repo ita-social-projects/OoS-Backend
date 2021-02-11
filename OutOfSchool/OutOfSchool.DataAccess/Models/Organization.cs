@@ -46,7 +46,6 @@ namespace OutOfSchool.Services.Models
             ErrorMessage = "INPP code must contain 12, 10 or 9 digits")]
         public string INPP { get; set; }
         
-        [DataType(DataType.ImageUrl)]
         public string? Image { get; set; }
         
         [Required]

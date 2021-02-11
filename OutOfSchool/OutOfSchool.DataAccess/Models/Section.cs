@@ -49,7 +49,6 @@ namespace OutOfSchool.Services.Models
         [DataType(DataType.MultilineText)]
         public string? DisabilityOptionsDesc { get; set; }
         
-        [DataType(DataType.MultilineText)]
         public string? Image { get; set; }
 
         public Address Address { get; set; }
