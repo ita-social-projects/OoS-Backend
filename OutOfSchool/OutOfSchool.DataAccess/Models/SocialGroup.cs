@@ -8,7 +8,7 @@ namespace OutOfSchool.Services.Models
     {
         public long SocialGroupId { get; set; }
         public string Name { get; set; }
-        public virtual ICollection<Child> Children { get; set; }
+        public virtual IReadOnlyCollection<Child> Children { get; set; }
 
         public SocialGroup()
         {
