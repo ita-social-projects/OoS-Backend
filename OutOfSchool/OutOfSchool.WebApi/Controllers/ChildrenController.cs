@@ -37,8 +37,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                IEnumerable<ChildDTO> children = this.childService.GetAll();
-                return this.Ok(children);
+                return this.Ok(this.childService.GetAll());
             }
             catch (Exception ex)
             {
