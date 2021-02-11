@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
@@ -44,7 +45,7 @@ namespace OutOfSchool.Services.Models
         
         [Required]
         public OrganizationType Type { get; set; }
-        
-     
+        public long UserId { get; set; }
+        public virtual IReadOnlyCollection<User> Users { get; set; }
     }
 }
