@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.WebApi.Models.ModelsDto
 {
     public class SectionDto
     {
+        public long Id { get; set; }
         
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "Group title is required")]
@@ -11,7 +13,7 @@ namespace OutOfSchool.WebApi.Models.ModelsDto
 
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
-        [RegularExpression(@"([0-9]{3})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})",
+        [RegularExpression(@"((\+)?\b(38)?(0[\d]{2}))([\d-]{7})",
             ErrorMessage = "Phone number format is incorrect. Example: 050-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
         public string Phone { get; set; }
@@ -33,12 +35,15 @@ namespace OutOfSchool.WebApi.Models.ModelsDto
         public int MinAge { get; set; }
         [Required]
         public int MaxAge { get; set; }
+        
         [Required]
         public int DaysPerWeek { get; set; }
-
-        public decimal? Cost { get; set; }
+        
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? Price { get; set; }
         
         [Required(ErrorMessage = "Description is required")]
+        [RegularExpression(@"(^\d+(,\d{1,2})?$)")]
         [DataType(DataType.MultilineText)]
         public string Description { get; set; }
         
@@ -48,6 +53,5 @@ namespace OutOfSchool.WebApi.Models.ModelsDto
         public string? DisabilityOptionsDesc { get; set; }
         
         public byte[]? Image { get; set; }
-
-    }
+       }
 }

@@ -16,7 +16,7 @@ namespace OutOfSchool.Services.Models
 
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
-        [RegularExpression(@"([0-9]{3})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})",
+        [RegularExpression(@"((\+)?\b(38)?(0[\d]{2}))([\d-]{7})",
             ErrorMessage = "Phone number format is incorrect. Example: XXX-XXX-XX-XX")]
         public string Phone { get; set; }
 
