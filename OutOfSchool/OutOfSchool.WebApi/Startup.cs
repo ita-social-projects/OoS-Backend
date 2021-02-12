@@ -12,7 +12,6 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Interfaces;
 using OutOfSchool.WebApi.Services.Mapping;
 using OutOfSchool.WebApi.Services.Implementations;
-using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi
 {
@@ -52,8 +51,7 @@ namespace OutOfSchool.WebApi
             services.AddControllers();
             
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString"), 
-                    optionsBuilder => optionsBuilder.MigrationsAssembly("OutOfSchool.WebApi")));
+                builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
 
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<ISectionService, SectionService>();

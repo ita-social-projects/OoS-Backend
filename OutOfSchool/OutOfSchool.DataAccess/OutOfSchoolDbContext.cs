@@ -1,8 +1,4 @@
-using System;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-
-using System.Text.RegularExpressions;
-
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 

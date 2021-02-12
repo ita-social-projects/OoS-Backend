@@ -1,12 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace OutOfSchool.WebApi.Models.ModelsDto
+﻿namespace OutOfSchool.WebApi.Models.ModelsDto
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+
     public class SectionDto
     {
         public long Id { get; set; }
-        
+
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "Group title is required")]
         public string Title { get; set; }
@@ -22,39 +22,41 @@ namespace OutOfSchool.WebApi.Models.ModelsDto
         [Required(ErrorMessage = "Email is required")]
         public string Email { get; set; }
 
-        [DataType(DataType.Url)] 
+        [DataType(DataType.Url)]
         public string? Website { get; set; }
 
-        [DataType(DataType.Url)] 
+        [DataType(DataType.Url)]
         public string? Facebook { get; set; }
 
-        [DataType(DataType.Url)] 
+        [DataType(DataType.Url)]
         public string? Istagram { get; set; }
-        
+
         [Required]
         public int MinAge { get; set; }
+
         [Required]
         public int MaxAge { get; set; }
-        
+
         [Required]
         public int DaysPerWeek { get; set; }
-        
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal? Price { get; set; }
-        
+
         [Required(ErrorMessage = "Description is required")]
         [RegularExpression(@"(^\d+(,\d{1,2})?$)")]
         [DataType(DataType.MultilineText)]
         public string Description { get; set; }
-        
+
         public bool WithDisabilityOptions { get; set; }
-        
+
         [DataType(DataType.MultilineText)]
         public string? DisabilityOptionsDesc { get; set; }
 
         public bool AddressSameAsOrganization { get; set; }
+
         public AddressDto Address { get; set; }
-        
+
         public string? Image { get; set; }
     }
 }

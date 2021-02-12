@@ -7,17 +7,17 @@ namespace OutOfSchool.Services.Models
     public class Organization
     {
         public long OrganizationId { get; set; }
-       
+
         [Required(ErrorMessage = "Title is required")]
         [DataType(DataType.Text)]
         public string Title { get; set; }
-        
+
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(@"((\+)?\b(38)?(0[\d]{2}))([\d-]{7})",
             ErrorMessage = "Phone number format is incorrect. Example: XXX-XXX-XX-XX")]
         public string Phone { get; set; }
-        
+
         [DataType(DataType.Url)]
         public string? Website { get; set; }
         
@@ -52,6 +52,5 @@ namespace OutOfSchool.Services.Models
         public OrganizationType Type { get; set; }
 
         public User User { get; set; }
-        public long UserId { get; set; }
     }
 }

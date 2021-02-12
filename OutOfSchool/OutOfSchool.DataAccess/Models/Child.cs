@@ -20,8 +20,6 @@ namespace OutOfSchool.Services.Models
         public string MiddleName { get; set; }
         public DateTime DateOfBirth { get; set; }
         public Gender Gender { get; set; }
-        public int ParentId { get; set; }
-        public int SocialGroupId { get; set; }
         public virtual Parent Parent { get; set; }
         public virtual SocialGroup SocialGroup { get; set; }
     }
