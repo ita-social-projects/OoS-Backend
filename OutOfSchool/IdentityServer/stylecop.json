@@ -9,6 +9,9 @@
   "settings": {
     "documentationRules": {
       "companyName": "PlaceholderCompany"
+    },
+    "orderingRules": {
+      "usingDirectivesPlacement": "outsideNamespace"
     }
   }
 }

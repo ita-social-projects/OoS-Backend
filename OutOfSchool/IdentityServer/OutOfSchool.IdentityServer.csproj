@@ -34,6 +34,15 @@
     <Folder Include="Data\Migrations\OutOfSchoolMigrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="stylecop.json" />
+    <AdditionalFiles Include="stylecop.json">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </AdditionalFiles>
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://json.schemastore.org/appsettings" appsettings_1release_1json__JsonSchema="https://json.schemastore.org/appsettings" /></VisualStudio></ProjectExtensions>
 
 </Project>

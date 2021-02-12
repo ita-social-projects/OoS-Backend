@@ -1,13 +1,13 @@
-﻿namespace IdentityServer.Controllers
-{
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using IdentityServer4.Services;
-    using Microsoft.AspNetCore.Identity;
-    using Microsoft.AspNetCore.Mvc;
-    using OutOfSchool.Services.Models;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using IdentityServer4.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Services.Models;
 
+namespace IdentityServer.Controllers
+{
     /// <summary>
     /// Handles authentication.
     /// Contains methods for log in and sign up.
@@ -32,42 +32,42 @@
             RoleManager<IdentityRole> roleManager,
             IIdentityServerInteractionService interactionService)
         {
-            this.roleManager = roleManager;
-            this.signInManager = signInManager;
-            this.userManager = userManager;
-            this.interactionService = interactionService;
+            roleManager = roleManager;
+            signInManager = signInManager;
+            userManager = userManager;
+            interactionService = interactionService;
         }
 
         /// <summary>
-        /// Logging out a user who is authenticated
+        /// Logging out a user who is authenticated.
         /// </summary>
         /// <param name="logoutId"> Identifier of cookie captured the current state needed for sign out.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpGet]
         public async Task<IActionResult> Logout(string logoutId)
         {
-            await this.signInManager.SignOutAsync();
+            await signInManager.SignOutAsync();
 
-            var logoutRequest = await this.interactionService.GetLogoutContextAsync(logoutId);
+            var logoutRequest = await interactionService.GetLogoutContextAsync(logoutId);
 
             if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
             {
-                return this.RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Home");
             }
 
-            return this.Redirect(logoutRequest.PostLogoutRedirectUri);
+            return Redirect(logoutRequest.PostLogoutRedirectUri);
         }
 
         /// <summary>
-        /// Generates a view for user to log in
+        /// Generates a view for user to log in.
         /// </summary>
         /// <param name="returnUrl"> URL used to redirect user back to client.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl = "Login")
         {
-            var externalProviders = await this.signInManager.GetExternalAuthenticationSchemesAsync();
-            return this.View(new LoginViewModel
+            var externalProviders = await signInManager.GetExternalAuthenticationSchemesAsync();
+            return View(new LoginViewModel
             {
                 ReturnUrl = returnUrl,
                 ExternalProviders = externalProviders,
@@ -75,18 +75,18 @@
         }
 
         /// <summary>
-        /// Authenticate user based on model
+        /// Authenticate user based on model.
         /// </summary>
         /// <param name="model"> View model that contains credentials for logging in.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (!this.ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return View(new LoginViewModel
                 {
-                    ExternalProviders = await this.signInManager.GetExternalAuthenticationSchemesAsync(),
+                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
                 });
             }
 
@@ -94,45 +94,45 @@
 
             if (result.Succeeded)
             {
-                return this.Redirect(model.ReturnUrl);
+                return Redirect(model.ReturnUrl);
             }
 
             if (result.IsLockedOut)
             {
-                return this.BadRequest();
+                return BadRequest();
             }
 
-            this.ModelState.AddModelError(string.Empty, "Login or password is wrong");
-            return this.View(new LoginViewModel
+            ModelState.AddModelError(string.Empty, "Login or password is wrong");
+            return View(new LoginViewModel
             {
-                ExternalProviders = await this.signInManager.GetExternalAuthenticationSchemesAsync(),
+                ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
             });
         }
 
         /// <summary>
-        /// Generates a view for user to register
+        /// Generates a view for user to register.
         /// </summary>
         /// <param name="returnUrl"> URL used to redirect user back to client.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpGet]
         public IActionResult Register(string returnUrl = "Login")
         {
-            return this.View(
-                new RegisterViewModel { ReturnUrl = returnUrl, AllRoles = this.roleManager.Roles.ToList() });
+            return View(
+                new RegisterViewModel { ReturnUrl = returnUrl, AllRoles = roleManager.Roles.ToList() });
         }
 
         /// <summary>
-        /// Creates user based on model
+        /// Creates user based on model.
         /// </summary>
         /// <param name="model"> View model that contains credentials for signing in.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!this.ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                model.AllRoles = this.roleManager.Roles.ToList();
-                return this.View(model);
+                model.AllRoles = roleManager.Roles.ToList();
+                return View(model);
             }
 
             var user = new User()
@@ -141,25 +141,25 @@
                 PhoneNumber = model.PhoneNumber,
                 CreatingTime = DateTime.Now,
             };
-            var result = await this.userManager.CreateAsync(user, model.Password);
-            var selectedRole = this.roleManager.Roles.First(role => role.Id == model.UserRoleId).Name;
+            var result = await userManager.CreateAsync(user, model.Password);
+            var selectedRole = roleManager.Roles.First(role => role.Id == model.UserRoleId).Name;
             if (result.Succeeded)
             {
-                var resultRoleAssign = await this.userManager.AddToRoleAsync(user, selectedRole);
+                var resultRoleAssign = await userManager.AddToRoleAsync(user, selectedRole);
                 if (resultRoleAssign.Succeeded)
                 {
-                    await this.signInManager.SignInAsync(user, false);
+                    await signInManager.SignInAsync(user, false);
 
-                    return this.Redirect(model.ReturnUrl);
+                    return Redirect(model.ReturnUrl);
                 }
             }
 
             foreach (var error in result.Errors)
             {
-                this.ModelState.AddModelError(string.Empty, error.Description);
+                ModelState.AddModelError(string.Empty, error.Description);
             }
 
-            return this.View(model);
+            return View(model);
         }
     }
 }
