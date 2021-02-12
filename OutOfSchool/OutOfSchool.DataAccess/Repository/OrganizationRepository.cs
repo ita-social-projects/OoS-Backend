@@ -1,6 +1,7 @@
 ﻿using OutOfSchool.Services.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,16 +14,12 @@ namespace OutOfSchool.Services.Repository
 
         }
 
-        public void CheckForUniqueness(Organization entity)
-        {
-            var organizations = GetAll();
-            foreach (var organization in organizations)
-            {
-                if(entity.EDRPOU == organization.EDRPOU || entity.INPP == organization.INPP)
-                {
-                    entity = null;
-                }
-            }         
-        }
+        /// <summary>
+        /// Checks entity elements for uniqueness
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns>Bool</returns>
+        public bool IsUnique(Organization entity) => GetAll().Any(x => x.EDRPOU == entity.EDRPOU || x.INPP == entity.INPP);
+
     }
 }
