@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
@@ -124,11 +125,6 @@ namespace OutOfSchool.IdentityServer.Controllers
             }
 
             return View(vm);
-        }
-        
-        public Task<IActionResult> ExternalLogin(string provider, string returnUrl)
-        {
-            throw new NotImplementedException();
         }
         
         public Task<IActionResult> ExternalLogin(string provider, string returnUrl)

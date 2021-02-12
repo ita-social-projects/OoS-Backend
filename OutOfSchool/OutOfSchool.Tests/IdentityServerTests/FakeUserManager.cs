@@ -9,9 +9,11 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Tests.IdentityServerTests
 {
-    public class FakeUserManager:UserManager<User>
-    {public FakeUserManager()
-            : base(new Mock<IUserStore<User>>().Object,
+    public class FakeUserManager : UserManager<User>
+    {
+        public FakeUserManager()
+            : base(
+                new Mock<IUserStore<User>>().Object,
                 new Mock<IOptions<IdentityOptions>>().Object,
                 new Mock<IPasswordHasher<User>>().Object,
                 new IUserValidator<User>[0],
@@ -20,7 +22,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
                 new Mock<IdentityErrorDescriber>().Object,
                 new Mock<IServiceProvider>().Object,
                 new Mock<ILogger<UserManager<User>>>().Object)
-        { }
-
+        {
+        }
     }
 }
