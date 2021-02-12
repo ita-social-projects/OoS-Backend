@@ -30,7 +30,6 @@ RUN dotnet build ./OutOfSchool.WebApi/OutOfSchool.WebApi.csproj -c $Configuratio
 FROM builder AS publish
 ARG Configuration=Release
 RUN dotnet publish ./OutOfSchool.WebApi/OutOfSchool.WebApi.csproj -c $Configuration -o /app
-#TODO: Remove unnecessary projects
 FROM base AS final
 COPY --from=publish /app .
 EXPOSE 5000 5001
