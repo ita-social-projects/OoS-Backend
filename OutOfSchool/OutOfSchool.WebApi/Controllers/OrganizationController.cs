@@ -69,7 +69,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="organizationDTO">Element which must be added.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        [Authorize(Roles = "organization,admin")]
         [HttpPost]
         public async Task<ActionResult<Organization>> CreateOrganization(OrganizationDTO organizationDTO)
         {
@@ -81,6 +81,7 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 OrganizationDTO organization = await this.organizationService.Create(organizationDTO).ConfigureAwait(false);
+                organization.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
                 return this.CreatedAtAction(
                     nameof(this.GetOrganizations),
                     new { id = organization.Id },

@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
     /// </summary>
     public class OrganizationService : IOrganizationService
     {
-        private IEntityRepository<Organization> OrganizationRepository { get; set; }
+        private OrganizationRepository OrganizationRepository { get; set; }
         private readonly IMapper mapper;
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
         /// </summary>
         /// <param name="entityRepository">Repository for some entity.</param>
         /// <param name="mapper">Mapper.</param>
-        public OrganizationService(IEntityRepository<Organization> entityRepository, IMapper mapper)
+        public OrganizationService(OrganizationRepository entityRepository, IMapper mapper)
         {
             this.OrganizationRepository = entityRepository;
             this.mapper = mapper;
@@ -39,8 +39,18 @@ namespace OutOfSchool.WebApi.Services.Implementation
             }
 
             Organization newOrganization = this.mapper.Map<OrganizationDTO, Organization>(organization);
-            var organization_ = await this.OrganizationRepository.Create(newOrganization).ConfigureAwait(false);
-            return await Task.FromResult(this.mapper.Map<Organization, OrganizationDTO>(organization_)).ConfigureAwait(false);
+          
+
+            if(OrganizationRepository.IsUnique(newOrganization))
+            {
+               
+                throw new ArgumentNullException(nameof(newOrganization), "There is already an organization with such data");
+            }
+            else
+            {
+                var organization_ = await this.OrganizationRepository.Create(newOrganization).ConfigureAwait(false);
+                return await Task.FromResult(this.mapper.Map<Organization, OrganizationDTO>(organization_)).ConfigureAwait(false);
+            }         
         }
 
         /// <inheritdoc/>
