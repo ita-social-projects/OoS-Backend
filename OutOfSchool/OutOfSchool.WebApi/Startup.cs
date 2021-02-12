@@ -67,6 +67,7 @@ namespace OutOfSchool
 
             services.AddTransient<IOrganizationService, OrganizationService>();
             services.AddTransient<IEntityRepository<Organization>, EntityRepository<Organization>>();
+            services.AddTransient<EntityRepository<Organization>, OrganizationRepository>();           
             services.AddSingleton(organizationMapper);
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
