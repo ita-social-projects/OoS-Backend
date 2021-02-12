@@ -38,10 +38,10 @@ namespace OutOfSchool.IdentityServer
 
             services.AddIdentity<User, IdentityRole>(options =>
                 {
-                    options.Password.RequireDigit = false;
+                    options.Password.RequireDigit = true;
                     options.Password.RequireLowercase = false;
-                    options.Password.RequireNonAlphanumeric = false;
-                    options.Password.RequireUppercase = false;
+                    options.Password.RequireNonAlphanumeric = true;
+                    options.Password.RequireUppercase = true;
                     options.Password.RequiredLength = 6;
                 })
                 .AddEntityFrameworkStores<OutOfSchoolDbContext>()
