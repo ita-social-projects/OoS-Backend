@@ -36,7 +36,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
             {
-                return RedirectToAction("Index", "Home");
+                throw new NotImplementedException();
             }
 
             return Redirect(logoutRequest.PostLogoutRedirectUri);
@@ -124,6 +124,11 @@ namespace OutOfSchool.IdentityServer.Controllers
             }
 
             return View(vm);
+        }
+        
+        public Task<IActionResult> ExternalLogin(string provider, string returnUrl)
+        {
+            throw new NotImplementedException();
         }
     }
 }
