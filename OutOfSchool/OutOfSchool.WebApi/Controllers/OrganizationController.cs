@@ -80,8 +80,8 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                OrganizationDTO organization = await this.organizationService.Create(organizationDTO).ConfigureAwait(false);
-                organization.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
+                organizationDTO.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
+                OrganizationDTO organization = await this.organizationService.Create(organizationDTO).ConfigureAwait(false);       
                 return this.CreatedAtAction(
                     nameof(this.GetOrganizations),
                     new { id = organization.Id },

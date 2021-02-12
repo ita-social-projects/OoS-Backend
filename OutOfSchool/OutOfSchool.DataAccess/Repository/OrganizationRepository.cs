@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.Services.Repository
 {
-    public class OrganizationRepository : EntityRepository<Organization>
+    public class OrganizationRepository : EntityRepository<Organization>,IOrganizationRepository
     {
         public OrganizationRepository(OutOfSchoolDbContext dbContext) : base(dbContext)
         {

@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
     /// </summary>
     public class OrganizationService : IOrganizationService
     {
-        private OrganizationRepository OrganizationRepository { get; set; }
+        private IOrganizationRepository OrganizationRepository { get; set; }
         private readonly IMapper mapper;
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
         /// </summary>
         /// <param name="entityRepository">Repository for some entity.</param>
         /// <param name="mapper">Mapper.</param>
-        public OrganizationService(OrganizationRepository entityRepository, IMapper mapper)
+        public OrganizationService(IOrganizationRepository entityRepository, IMapper mapper)
         {
             this.OrganizationRepository = entityRepository;
             this.mapper = mapper;
