@@ -172,5 +172,10 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             throw new NotImplementedException();
         }
+        
+        public Task<IActionResult> ExternalLogin(string provider, string returnUrl)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
