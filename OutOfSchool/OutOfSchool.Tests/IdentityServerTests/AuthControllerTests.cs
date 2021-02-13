@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -24,10 +26,10 @@ namespace OutOfSchool.Tests.IdentityServerTests
 
         public AuthControllerTests()
         {
-            this._mockRoleManager = GetMockRoleManager();
-            this._mockUserManager = new Mock<FakeUserManager>();
-            this._mockInteractionService = new Mock<IIdentityServerInteractionService>();
-            this._mockSignInManager = new Mock<FakeSignInManager>();
+            _mockRoleManager = GetMockRoleManager();
+            _mockUserManager = new Mock<FakeUserManager>();
+            _mockInteractionService = new Mock<IIdentityServerInteractionService>();
+            _mockSignInManager = new Mock<FakeSignInManager>();
         }
 
         [SetUp]
@@ -39,7 +41,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task LogoutWithLogoutId()
         {
             // Arrange
-            var authController = this.CreateAuthController;
+            var authController = CreateAuthController;
             var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
             logoutRequest.PostLogoutRedirectUri = "True logout id";
             _mockSignInManager.Setup(manager => manager.SignOutAsync())
@@ -57,7 +59,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task LogoutWithoutLogoutId()
         {
             // Arrange
-            var authController = this.CreateAuthController;
+            var authController = CreateAuthController;
             var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
             logoutRequest.PostLogoutRedirectUri = "";
             _mockSignInManager.Setup(manager => manager.SignOutAsync())
@@ -67,8 +69,26 @@ namespace OutOfSchool.Tests.IdentityServerTests
             // Act
 
             // Assert
-            var ex = Assert.ThrowsAsync<NotImplementedException>(() => this.CreateAuthController.Logout("Any logout ID"));
+            var ex = Assert.ThrowsAsync<NotImplementedException>(
+                () => CreateAuthController.Logout("Any logout ID"));
         }
+
+        [Test]
+        public async Task LoginWithReturnUrl()
+        {
+            // Arrange
+            var authController = CreateAuthController;
+            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
+            var authenticationSchemes = new List<AuthenticationScheme>();
+            logoutRequest.PostLogoutRedirectUri = "";
+            _mockSignInManager.Setup(manager => manager.GetExternalAuthenticationSchemesAsync())
+                .Returns(Task.FromResult<IEnumerable<AuthenticationScheme>>(authenticationSchemes));
+            // Act
+            var viewResult = await authController.Login("Return url");
+            // Assert
+            Assert.IsInstanceOf(typeof(ViewResult), viewResult);
+        }
+        
 
         public static Mock<RoleManager<IdentityRole>> GetMockRoleManager()
         {
