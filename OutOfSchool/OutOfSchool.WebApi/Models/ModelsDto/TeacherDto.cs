@@ -1,9 +1,9 @@
-﻿namespace OutOfSchool.WebApi.Models.ModelsDto
-{
-#nullable enable
-    using System.ComponentModel.DataAnnotations;
+﻿#nullable enable
+using System.ComponentModel.DataAnnotations;
 
-    public class TeacherDto
+namespace OutOfSchool.WebApi.Models.ModelsDto
+{
+    public class TeacherDTO
     {
         public long Id { get; set; }
 

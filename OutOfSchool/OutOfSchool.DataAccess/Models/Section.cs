@@ -51,8 +51,9 @@ namespace OutOfSchool.Services.Models
         
         public string? Image { get; set; }
 
-        public Address Address { get; set; }
-        public DirectionOfEducation DirectionOfEducation { get; set; }
-        public List<Teacher> Teachers { get; set; }
+        public virtual Organization Organization { get; set; }
+        public virtual Address Address { get; set; }
+        public virtual DirectionOfEducation DirectionOfEducation { get; set; }
+        public virtual List<Teacher> Teachers { get; set; }
     }
 }

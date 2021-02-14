@@ -6,6 +6,6 @@ namespace OutOfSchool.WebApi.Services.Interfaces
 {
     public interface ITeacherService
     {
-        Task<Teacher> CreateAsync(TeacherDto teacherDto);
+        Task<Teacher> CreateAsync(TeacherDTO teacherDto);
     }
 }

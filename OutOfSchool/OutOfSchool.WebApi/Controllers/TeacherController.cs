@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Controllers
             _teacherService = teacherService;
         }
         [HttpPost]
-        public async Task<ActionResult<Teacher>> Create([FromBody] TeacherDto teacher)
+        public async Task<ActionResult<Teacher>> Create([FromBody] TeacherDTO teacher)
         {
             if (ModelState.IsValid)
             {

@@ -8,7 +8,7 @@ namespace OutOfSchool.WebApi.Services.Mapping.TeacherProfile
     {
         public TeacherProfile()
         {
-            CreateMap<TeacherDto, Teacher>();
+            CreateMap<TeacherDTO, Teacher>();
         }
     }
 }

@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.ModelsDto;
 using OutOfSchool.WebApi.Services.Interfaces;
 
-namespace OutOfSchool.WebApi.Services.Implementations
+namespace OutOfSchool.WebApi.Services.Implementation
 {
     public class TeacherService : ITeacherService
     {
@@ -19,16 +19,16 @@ namespace OutOfSchool.WebApi.Services.Implementations
             _mapper = mapper;
         }
 
-        public async Task<Teacher> CreateAsync(TeacherDto teacherDto)
+        public async Task<Teacher> CreateAsync(TeacherDTO teacherDto)
         {
             if (teacherDto == null)
             {
-                throw new ArgumentNullException($"{nameof(TeacherDto)} entity must not be null");
+                throw new ArgumentNullException($"{nameof(TeacherDTO)} entity must not be null");
             }
 
             try
             {
-                var teacher = _mapper.Map<TeacherDto, Teacher>(teacherDto);
+                var teacher = _mapper.Map<TeacherDTO, Teacher>(teacherDto);
 
                 await _context.Teachers.AddAsync(teacher);
                 await _context.SaveChangesAsync();
@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services.Implementations
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(TeacherDto)} could not be saved: {ex.Message}");
+                throw new Exception($"{nameof(TeacherDTO)} could not be saved: {ex.Message}");
             }
         }
     }

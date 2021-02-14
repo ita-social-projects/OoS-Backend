@@ -1,9 +1,9 @@
-﻿namespace OutOfSchool.WebApi.Models.ModelsDto
-{
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-    public class SectionDto
+namespace OutOfSchool.WebApi.Models.ModelsDto
+{
+    public class SectionDTO
     {
         public long Id { get; set; }
 
@@ -55,8 +55,8 @@
 
         public bool AddressSameAsOrganization { get; set; }
 
-        public AddressDto Address { get; set; }
-
         public string? Image { get; set; }
+        
+        public AddressDTO Address { get; set; }
     }
 }

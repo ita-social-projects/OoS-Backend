@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.WebPages.Html;
 using AutoMapper;
@@ -14,25 +15,49 @@ namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes  = "Bearer")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class SectionController : ControllerBase
     {
-        private readonly ISectionService _sectionService;
+        private readonly ISectionService sectionService;
 
         public SectionController(ISectionService sectionService)
         {
-            _sectionService = sectionService;
+            this.sectionService = sectionService;
+        }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<Section>> GetSections()
+        {
+            try
+            {
+                return this.Ok(this.sectionService.GetAll());
+            }
+            catch (Exception ex)
+            {
+                return this.BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
-        public async Task<ActionResult<Section>> Create([FromBody] SectionDto section)
+        public async Task<ActionResult<Section>> Create(SectionDTO sectionDTO)
         {
-            if (ModelState.IsValid)
+            if (!this.ModelState.IsValid)
             {
-                return await _sectionService.CreateAsync(section);
+                return this.BadRequest(this.ModelState);
             }
 
-            return BadRequest(ModelState);
+            try
+            {
+                SectionDTO child = await this.sectionService.Create(sectionDTO).ConfigureAwait(false);
+                return this.CreatedAtAction(
+                    nameof(this.GetSections),
+                    new {id = child.Id},
+                    child);
+            }
+            catch (Exception ex)
+            {
+                return this.BadRequest(ex.Message);
+            }
         }
     }
 }

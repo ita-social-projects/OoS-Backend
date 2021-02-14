@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ModelsDto;
 
 namespace OutOfSchool.WebApi.Services.Mapping
 {

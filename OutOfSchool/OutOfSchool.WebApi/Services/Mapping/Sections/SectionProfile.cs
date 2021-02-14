@@ -8,7 +8,7 @@ namespace OutOfSchool.WebApi.Services.Mapping.Sections
     {
         public SectionProfile()
         {
-            CreateMap<SectionDto, Section>();
+            CreateMap<SectionDTO, Section>();
         }
     }
 }

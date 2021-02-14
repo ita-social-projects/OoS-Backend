@@ -1,14 +1,14 @@
-﻿using AutoMapper;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Models.ModelsDto;
+using OutOfSchool.WebApi.Services.Interfaces;
 
-namespace OutOfSchool.WebApi.Services
+namespace OutOfSchool.WebApi.Services.Implementation
 {
     /// <summary>
     /// Service with business logic for Child model.

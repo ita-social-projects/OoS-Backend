@@ -9,9 +9,9 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Implementation;
 using OutOfSchool.WebApi.Services.Interfaces;
 using OutOfSchool.WebApi.Services.Mapping;
-using OutOfSchool.WebApi.Services.Implementations;
 
 namespace OutOfSchool.WebApi
 {

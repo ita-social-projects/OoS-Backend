@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.WebApi.Models.ModelsDto
 {
-    public class AddressDto
+    public class AddressDTO
     {
         public long Id { get; set; }
 

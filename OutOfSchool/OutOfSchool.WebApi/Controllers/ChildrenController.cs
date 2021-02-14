@@ -6,6 +6,7 @@ using OutOfSchool.WebApi.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Models.ModelsDto;
 
 namespace OutOfSchool.WebApi.Controllers
 {
