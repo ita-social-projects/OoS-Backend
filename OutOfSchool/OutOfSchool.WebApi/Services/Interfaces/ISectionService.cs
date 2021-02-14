@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.ModelsDto;
 
@@ -6,6 +7,7 @@ namespace OutOfSchool.WebApi.Services.Interfaces
 {
     public interface ISectionService
     {
-        Task<Section> CreateAsync(SectionDto sectionDto);
+        Task<SectionDTO> Create(SectionDTO section);
+        IEnumerable<SectionDTO> GetAll();
     }
 }

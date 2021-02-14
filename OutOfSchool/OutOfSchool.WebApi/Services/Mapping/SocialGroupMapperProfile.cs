@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ModelsDto;
 using System.Linq;
 
 namespace OutOfSchool.WebApi.Services.Mapping
