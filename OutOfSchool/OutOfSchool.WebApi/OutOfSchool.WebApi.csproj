@@ -39,5 +39,14 @@
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="stylecop.json" />
+    <AdditionalFiles Include="stylecop.json">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </AdditionalFiles>
+  </ItemGroup>
+
 
 </Project>

@@ -17,22 +17,19 @@ RUN apt-get update \
 
 
 WORKDIR /OoS-Backend
-COPY ./OutOfSchool/*.sln ./
-COPY ./OutOfSchool/OutOfSchool.Tests/*.csproj ./OutOfSchool.Tests/
 COPY ./OutOfSchool/OutOfSchool.WebApi/*.csproj ./OutOfSchool.WebApi/
-COPY ./OutOfSchool/IdentityServer/*.csproj ./IdentityServer/
 COPY ./OutOfSchool/OutOfSchool.DataAccess/*.csproj ./OutOfSchool.DataAccess/
 
-RUN dotnet restore
+RUN dotnet restore ./OutOfSchool.WebApi/OutOfSchool.WebApi.csproj
 
-COPY ./OutOfSchool/ ./
+COPY ./OutOfSchool/OutOfSchool.WebApi/ ./OutOfSchool.WebApi/
+COPY ./OutOfSchool/OutOfSchool.DataAccess/ ./OutOfSchool.DataAccess/
 
-RUN dotnet build -c $Configuration -o /app
+RUN dotnet build ./OutOfSchool.WebApi/OutOfSchool.WebApi.csproj -c $Configuration -o /app
 
 FROM builder AS publish
 ARG Configuration=Release
-RUN dotnet publish -c $Configuration -o /app
-#TODO: Remove unnecessary projects
+RUN dotnet publish ./OutOfSchool.WebApi/OutOfSchool.WebApi.csproj -c $Configuration -o /app
 FROM base AS final
 COPY --from=publish /app .
 EXPOSE 5000 5001
