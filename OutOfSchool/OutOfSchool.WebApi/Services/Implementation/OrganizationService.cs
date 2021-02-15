@@ -61,16 +61,13 @@ namespace OutOfSchool.WebApi.Services.Implementation
         /// <inheritdoc/>
         public async Task<OrganizationDTO> GetById(long id)
         {
-            var organization = this.OrganizationRepository.GetById(id).Result;
+            var organization = await this.OrganizationRepository.GetById(id).ConfigureAwait(false);
             if (organization == null)
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));
             }
-
-            return await Task.Run(() =>
-            {
-                return this.mapper.Map<Organization, OrganizationDTO>(organization);
-            }).ConfigureAwait(false);
+            
+            return this.mapper.Map<Organization, OrganizationDTO>(organization);
         }
 
         /// <inheritdoc/>
