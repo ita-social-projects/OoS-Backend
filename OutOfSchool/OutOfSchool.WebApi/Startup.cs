@@ -8,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Implementation;
 using OutOfSchool.WebApi.Services.Interfaces;
 using OutOfSchool.WebApi.Services.Mapping;
@@ -32,7 +31,9 @@ namespace OutOfSchool.WebApi
         {
             var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
             var socialGroupMapper = new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
-                           
+            var sectionMapper = new MapperConfiguration(x => x.AddProfile(new SectionMapperProfile())).CreateMapper();
+            var teacherMapper = new MapperConfiguration(x => x.AddProfile(new TeacherMapperProfile())).CreateMapper();
+            
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
@@ -58,6 +59,11 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ITeacherService, TeacherService>();
 
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
+            services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
+            services.AddTransient<IEntityRepository<Section>, EntityRepository<Section>>();
+
+            services.AddSingleton(sectionMapper);
+            services.AddSingleton(teacherMapper);
             services.AddSingleton(childMapper);
             services.AddSingleton(socialGroupMapper);
 
@@ -74,6 +80,7 @@ namespace OutOfSchool.WebApi
             {
                 app.UseDeveloperExceptionPage();
             }
+            
             app.UseCors("AllowAll");
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
