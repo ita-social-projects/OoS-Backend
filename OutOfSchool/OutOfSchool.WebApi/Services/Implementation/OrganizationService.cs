@@ -42,9 +42,8 @@ namespace OutOfSchool.WebApi.Services.Implementation
           
 
             if(OrganizationRepository.IsUnique(newOrganization))
-            {
-               
-                throw new ArgumentNullException(nameof(newOrganization), "There is already an organization with such data");
+            {              
+                throw new ArgumentException(nameof(newOrganization), "There is already an organization with such data");
             }
             else
             {
@@ -56,16 +55,14 @@ namespace OutOfSchool.WebApi.Services.Implementation
         /// <inheritdoc/>
         public IEnumerable<OrganizationDTO> GetAll()
         {
-            IEnumerable<OrganizationDTO> organizationDTO = this.OrganizationRepository.GetAll().Select(
+            return this.OrganizationRepository.GetAll().Select(
                 x => this.mapper.Map<Organization, OrganizationDTO>(x));
-
-            return organizationDTO;
         }
 
         /// <inheritdoc/>
         public async Task<OrganizationDTO> GetById(long id)
         {
-            Organization organization = this.OrganizationRepository.GetById(id).Result;
+            var organization = this.OrganizationRepository.GetById(id).Result;
             if (organization == null)
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));

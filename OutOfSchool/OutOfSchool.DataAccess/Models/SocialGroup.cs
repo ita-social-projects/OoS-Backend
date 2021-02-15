@@ -6,7 +6,7 @@ namespace OutOfSchool.Services.Models
 {
     public class SocialGroup
     {
-        public long SocialGroupId { get; set; }
+        public long Id { get; set; }
         public string Name { get; set; }
         public virtual IReadOnlyCollection<Child> Children { get; set; }
 

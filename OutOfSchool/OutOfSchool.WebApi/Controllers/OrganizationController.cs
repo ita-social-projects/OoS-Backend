@@ -55,8 +55,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                OrganizationDTO organizationDTO = await this.organizationService.GetById(id).ConfigureAwait(false);
-                return this.Ok(organizationDTO);
+                return this.Ok(await this.organizationService.GetById(id).ConfigureAwait(false));
             }
             catch (ArgumentException ex)
             {

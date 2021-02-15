@@ -7,7 +7,7 @@ namespace OutOfSchool.Services.Models
 {
     public class Organization
     {
-        public long OrganizationId { get; set; }
+        public long Id { get; set; }
        
         [Required(ErrorMessage = "Title is required")]
         [DataType(DataType.Text)]

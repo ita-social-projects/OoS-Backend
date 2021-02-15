@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services.Mapping
         /// </summary>
         public OrganizationMapperProfile()
         {
-            this.CreateMap<Organization, OrganizationDTO>().ForMember(c => c.Id, d => d.MapFrom(organization => organization.OrganizationId)).ReverseMap();
+            this.CreateMap<Organization, OrganizationDTO>().ForMember(c => c.Id, d => d.MapFrom(organization => organization.Id)).ReverseMap();
         }
     }
 }
