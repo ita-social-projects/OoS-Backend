@@ -48,9 +48,9 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public IEnumerable<ChildDTO> GetAll()
+        public async Task<IEnumerable<ChildDTO>> GetAll()
         {
-            IEnumerable<ChildDTO> childrenDTO = this.ChildRepository.GetAll().Select(
+            IEnumerable<ChildDTO> childrenDTO = this.ChildRepository.GetAll().Result.Select(
                 x => this.mapper.Map<Child, ChildDTO>(x));
 
             return childrenDTO;
@@ -72,7 +72,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public void Update(ChildDTO childDTO)
+        public async Task<ChildDTO> Update(ChildDTO childDTO)
         {
             if (childDTO == null)
             {
@@ -99,8 +99,9 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException("Empty middlename.", nameof(childDTO));
             }
 
-            Child child = this.mapper.Map<ChildDTO, Child>(childDTO);
-            this.ChildRepository.Update(child);
+            return this.mapper.Map<Child, ChildDTO>(await this.ChildRepository
+                 .Update(this.mapper.Map<ChildDTO, Child>(childDTO))
+                 .ConfigureAwait(false));
         }
 
         /// <inheritdoc/>
@@ -114,10 +115,11 @@ namespace OutOfSchool.WebApi.Services
             catch (ArgumentNullException ex)
             {
                 throw new ArgumentNullException(nameof(id), ex.Message);
-            }
-
-            Child child = this.mapper.Map<ChildDTO, Child>(childDTO);
-            await this.ChildRepository.Delete(child).ConfigureAwait(false);
+            } 
+            
+            await this.ChildRepository
+                .Delete(this.mapper.Map<ChildDTO, Child>(childDTO))
+                .ConfigureAwait(false);
         }
     }
 }

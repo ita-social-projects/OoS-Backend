@@ -42,13 +42,14 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public IEnumerable<T> GetAll()
+        public async Task<IEnumerable<T>> GetAll()
         {
-            return this.dbSet;
+            return await Task.FromResult(this.dbSet);
+            //return await .dbSet.ToListAsync();
         }
 
         /// <inheritdoc/>
-        public IEnumerable<T> GetAllWithDetails(string includeProperties = "")
+        public async Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "")
         {
             IQueryable<T> query = this.dbSet;
             foreach (var includeProperty in includeProperties.Split(
@@ -56,8 +57,8 @@ namespace OutOfSchool.Services.Repository
             {
                 query = query.Include(includeProperty);
             }
-
-            return query;
+            
+            return await query.ToListAsync();
         }
 
         /// <inheritdoc/>
@@ -67,10 +68,13 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public void Update(T entity)
+        public async Task<T> Update(T entity)
         {
             this.dbSet.Update(entity);
-            this.dbContext.SaveChanges();
+            await this.dbContext.SaveChangesAsync();
+            return entity;
         }
+
+     
     }
 }

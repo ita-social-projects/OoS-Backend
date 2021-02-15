@@ -33,11 +33,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of all children.</returns>
         [HttpGet]
-        public ActionResult<IEnumerable<Child>> GetChildren()
+        public async Task<ActionResult<IEnumerable<Child>>> GetChildren()
         {
             try
             {
-                return this.Ok(this.childService.GetAll());
+                return this.Ok(await this.childService.GetAll());
             }
             catch (Exception ex)
             {
@@ -112,9 +112,8 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             try
-            {
-                this.childService.Update(childDTO);
-                return this.Ok(await this.childService.GetById(childDTO.Id).ConfigureAwait(false));
+            {               
+                return this.Ok(await this.childService.Update(childDTO));
             }
             catch (Exception ex)
             {

@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         /// Get all organizations from database.
         /// </summary>
         /// <returns>List of all organizations.</returns>
-        IEnumerable<OrganizationDTO> GetAll();
+        Task<IEnumerable<OrganizationDTO>> GetAll();
 
         /// <summary>
         /// Get organization by id.
@@ -32,10 +32,11 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         Task<OrganizationDTO> GetById(long id);
 
         /// <summary>
-        /// Update info in database.
+        /// Update information about element.
         /// </summary>
-        /// <param name="organizationDTO">Element with new info.</param>
-        void Update(OrganizationDTO organizationDTO);
+        /// <param name="organizationDTO"></param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<OrganizationDTO> Update(OrganizationDTO organizationDTO);
 
 
         /// <summary>

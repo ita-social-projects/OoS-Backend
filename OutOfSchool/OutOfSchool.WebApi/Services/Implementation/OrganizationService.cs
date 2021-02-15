@@ -40,7 +40,6 @@ namespace OutOfSchool.WebApi.Services.Implementation
 
             Organization newOrganization = this.mapper.Map<OrganizationDTO, Organization>(organization);
           
-
             if(OrganizationRepository.IsUnique(newOrganization))
             {              
                 throw new ArgumentException(nameof(newOrganization), "There is already an organization with such data");
@@ -53,9 +52,9 @@ namespace OutOfSchool.WebApi.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public IEnumerable<OrganizationDTO> GetAll()
+        public async Task<IEnumerable<OrganizationDTO>> GetAll()
         {
-            return this.OrganizationRepository.GetAll().Select(
+            return this.OrganizationRepository.GetAll().Result.Select(
                 x => this.mapper.Map<Organization, OrganizationDTO>(x));
         }
 
@@ -75,7 +74,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public void Update(OrganizationDTO organizationDTO)
+        public async Task<OrganizationDTO> Update(OrganizationDTO organizationDTO)
         {
             if (organizationDTO == null)
             {
@@ -107,8 +106,9 @@ namespace OutOfSchool.WebApi.Services.Implementation
                 throw new ArgumentException("Description is empty", nameof(organizationDTO));
             }
 
-            Organization organization = this.mapper.Map<OrganizationDTO, Organization>(organizationDTO);
-            this.OrganizationRepository.Update(organization);
+            return this.mapper.Map<Organization, OrganizationDTO>(await this.OrganizationRepository
+                 .Update(this.mapper.Map<OrganizationDTO, Organization>(organizationDTO))
+                 .ConfigureAwait(false));
         }
 
         /// <inheritdoc/>
@@ -124,8 +124,9 @@ namespace OutOfSchool.WebApi.Services.Implementation
                 throw new ArgumentNullException(nameof(id), ex.Message);
             }
 
-            Organization organization = this.mapper.Map<OrganizationDTO, Organization>(organizationDTO);
-            await this.OrganizationRepository.Delete(organization).ConfigureAwait(false);
+            await this.OrganizationRepository
+                .Delete(this.mapper.Map<OrganizationDTO, Organization>(organizationDTO))
+                .ConfigureAwait(false);
         }
     }
 }

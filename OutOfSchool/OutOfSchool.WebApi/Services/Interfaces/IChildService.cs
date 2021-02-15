@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         /// Get all children from database.
         /// </summary>
         /// <returns>List of all children.</returns>
-        IEnumerable<ChildDTO> GetAll();
+        Task<IEnumerable<ChildDTO>> GetAll();
 
         /// <summary>
         /// Get child with id.
@@ -29,12 +29,13 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         /// <returns>Child.</returns>
         Task<ChildDTO> GetById(long id);
 
-        /// <summary>
-        /// Update info in database.
-        /// </summary>
-        /// <param name="childDTO">Element with new info.</param>
-        void Update(ChildDTO childDTO);
 
+        /// <summary>
+        /// Update information about element.
+        /// </summary>
+        /// <param name="childDTO"></param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<ChildDTO> Update(ChildDTO childDTO);
 
         /// <summary>
         /// Delete some element in database.
