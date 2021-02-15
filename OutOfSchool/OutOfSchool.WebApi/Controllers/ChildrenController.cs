@@ -1,17 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.ModelsDto;
+using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi.Controllers
 {
     /// <summary>
-    /// Controller with CRUD operations for Child entity.
+    /// Controller with CRUD operations for a Child entity.
     /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models.ModelsDto;
@@ -12,11 +10,19 @@ using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi.Services.Implementation
 {
+    /// <summary>
+    /// Service with business logic for Section model.
+    /// </summary>
     public class SectionService : ISectionService
     {
         private IEntityRepository<Section> SectionRepository { get; set; }
         private readonly IMapper mapper;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SectionService"/> class.
+        /// </summary>
+        /// <param name="mapper">Mapper instance.</param>
+        /// <param name="sectionRepository">Repository for Section entity.</param>
         public SectionService(IMapper mapper, IEntityRepository<Section> sectionRepository)
         {
             this.mapper = mapper;
@@ -35,7 +41,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
             {
                 var newSection = mapper.Map<SectionDTO, Section>(section);
 
-                var section_ = await SectionRepository.Create(newSection).ConfigureAwait(false);
+                await SectionRepository.Create(newSection).ConfigureAwait(false);
 
                 return section;
             }
@@ -45,12 +51,13 @@ namespace OutOfSchool.WebApi.Services.Implementation
             }
         }
 
-        public IEnumerable<SectionDTO> GetAll()
+        /// <inheritdoc/>
+        public IEnumerable<SectionDTO> GetAllSections()
         {
-            var sectionDTO = this.SectionRepository.GetAll().Select(
-                x => this.mapper.Map<Section, SectionDTO>(x));
+            var sectionDto = SectionRepository.GetAll()
+                .Select(section => mapper.Map<Section, SectionDTO>(section));
 
-            return sectionDTO;
+            return sectionDto;
         }
     }
 }

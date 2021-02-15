@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Web.WebPages.Html;
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.ModelsDto;
 using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi.Controllers
 {
+    /// <summary>
+    /// Controller with CRUD operations for Section entity.
+    /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
@@ -20,43 +19,59 @@ namespace OutOfSchool.WebApi.Controllers
     {
         private readonly ISectionService sectionService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SectionController"/> class.
+        /// </summary>
+        /// <param name="sectionService">Service for Section model.</param>
         public SectionController(ISectionService sectionService)
         {
             this.sectionService = sectionService;
         }
 
+        /// <summary>
+        /// Get all sections from the database.
+        /// </summary>
+        /// <returns>List of all sections.</returns>
         [HttpGet]
         public ActionResult<IEnumerable<Section>> GetSections()
         {
             try
             {
-                return this.Ok(this.sectionService.GetAll());
+                return Ok(sectionService.GetAllSections());
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
+        /// <summary>
+        /// Add new section to the database.
+        /// </summary>
+        /// <param name="sectionDto">Entity which needs to be added.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPost]
-        public async Task<ActionResult<Section>> Create(SectionDTO sectionDTO)
+        public async Task<ActionResult<Section>> CreateSection(SectionDTO sectionDto)
         {
-            if (!this.ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                return this.BadRequest(this.ModelState);
+                return BadRequest(ModelState);
             }
 
             try
             {
-                SectionDTO child = await this.sectionService.Create(sectionDTO).ConfigureAwait(false);
-                return this.CreatedAtAction(
-                    nameof(this.GetSections),
-                    new {id = child.Id},
-                    child);
+                var section = await sectionService.Create(sectionDto).ConfigureAwait(false);
+                return CreatedAtAction(
+                    nameof(GetSections),
+                    new
+                    {
+                        id = section.Id,
+                    },
+                    section);
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
     }

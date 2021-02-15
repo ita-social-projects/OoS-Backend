@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models.ModelsDto
 {
@@ -53,10 +55,12 @@ namespace OutOfSchool.WebApi.Models.ModelsDto
         [DataType(DataType.MultilineText)]
         public string? DisabilityOptionsDesc { get; set; }
 
-        public bool AddressSameAsOrganization { get; set; }
-
         public string? Image { get; set; }
+
+        public ProfileOfEducationDTO ProfileOfEducation { get; set; }
         
-        public AddressDTO Address { get; set; }
+        public virtual AddressDTO Address { get; set; }
+        public virtual OrganizationDTO Organization { get; set; }
+        public virtual List<TeacherDTO> Teachers { get; set; }
     }
 }

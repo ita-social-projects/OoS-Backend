@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         Task<ChildDTO> Create(ChildDTO child);
 
         /// <summary>
-        /// Get all children from database.
+        /// Get all children from the database.
         /// </summary>
         /// <returns>List of all children.</returns>
         IEnumerable<ChildDTO> GetAll();
