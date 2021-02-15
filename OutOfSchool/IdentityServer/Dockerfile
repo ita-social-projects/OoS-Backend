@@ -16,22 +16,20 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /OoS-Backend
-COPY ./OutOfSchool/*.sln ./
-COPY ./OutOfSchool/OutOfSchool.Tests/*.csproj ./OutOfSchool.Tests/
-COPY ./OutOfSchool/OutOfSchool.WebApi/*.csproj ./OutOfSchool.WebApi/
 COPY ./OutOfSchool/IdentityServer/*.csproj ./IdentityServer/
 COPY ./OutOfSchool/OutOfSchool.DataAccess/*.csproj ./OutOfSchool.DataAccess/
 
-RUN dotnet restore
+RUN dotnet restore ./IdentityServer/OutOfSchool.IdentityServer.csproj
 
-COPY ./OutOfSchool/ ./
+COPY ./OutOfSchool/IdentityServer/ ./IdentityServer/
+COPY ./OutOfSchool/OutOfSchool.DataAccess/ ./OutOfSchool.DataAccess/
 
-WORKDIR /OoS-Backend
-RUN dotnet build -c $Configuration -o /app
+
+RUN dotnet build ./IdentityServer/OutOfSchool.IdentityServer.csproj -c $Configuration -o /app
 
 FROM builder AS publish
 ARG Configuration=Release
-RUN dotnet publish IdentityServer -c $Configuration -o /app
+RUN dotnet publish ./IdentityServer/OutOfSchool.IdentityServer.csproj -c $Configuration -o /app
 
 FROM base AS final
 WORKDIR /app
