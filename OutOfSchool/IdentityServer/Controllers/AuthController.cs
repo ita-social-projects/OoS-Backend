@@ -14,10 +14,9 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IIdentityServerInteractionService _interactionService;
 
-        public AuthController(
-            UserManager<User> userManager,
-            SignInManager<User> signInManager,
-            IIdentityServerInteractionService interactionService)
+        public AuthController(UserManager<User> userManager,
+                              SignInManager<User> signInManager,
+                              IIdentityServerInteractionService interactionService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -40,7 +39,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Login(string returnUrl="Login")
+        public async Task<IActionResult> Login(string returnUrl = "Login")
         {
             var externalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
             return View(new LoginViewModel
@@ -63,15 +62,15 @@ namespace OutOfSchool.IdentityServer.Controllers
             }
             else if (result.IsLockedOut)
             {
-
             }
+
             return View();
         }
 
         [HttpGet]
-        public IActionResult Register(string returnUrl="Login")
+        public IActionResult Register(string returnUrl = "Login")
         {
-            return View(new RegisterViewModel { ReturnUrl = returnUrl });
+            return View(new RegisterViewModel {ReturnUrl = returnUrl});
         }
 
         [HttpPost]
@@ -84,8 +83,8 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = new User()
             {
-                UserName = vm.Username, 
-                PhoneNumber = vm.PhoneNumber, 
+                UserName = vm.Username,
+                PhoneNumber = vm.PhoneNumber,
                 CreatingTime = DateTime.Now
             };
             var result = await _userManager.CreateAsync(user, vm.Password);
@@ -95,6 +94,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                 return Redirect(vm.ReturnUrl);
             }
+
             return View();
         }
     }

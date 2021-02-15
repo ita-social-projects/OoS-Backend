@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Reflection;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,10 +33,11 @@ namespace OutOfSchool.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
-            var socialGroupMapper = new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
+            var socialGroupMapper =
+                new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
             var sectionMapper = new MapperConfiguration(x => x.AddProfile(new SectionMapperProfile())).CreateMapper();
             var teacherMapper = new MapperConfiguration(x => x.AddProfile(new TeacherMapperProfile())).CreateMapper();
-            
+
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
@@ -50,7 +54,7 @@ namespace OutOfSchool.WebApi
                         .AllowAnyHeader()));
 
             services.AddControllers();
-            
+
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
 
@@ -68,7 +72,7 @@ namespace OutOfSchool.WebApi
             services.AddSingleton(socialGroupMapper);
 
             services.AddAutoMapper(typeof(Startup));
-            
+
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
         }
@@ -80,7 +84,7 @@ namespace OutOfSchool.WebApi
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
             app.UseCors("AllowAll");
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
@@ -88,22 +92,17 @@ namespace OutOfSchool.WebApi
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API");
-            });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); });
+
             
             app.UseHttpsRedirection();
 
             app.UseRouting();
-            
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }
