@@ -1,4 +1,6 @@
-﻿using OutOfSchool.Services.Enums;
+﻿using AutoMapper;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -16,5 +18,9 @@ namespace OutOfSchool.WebApi.Models
         public byte[]? Image { get; set; }
         public OrganizationType Type { get; set; }
         public long UserId { get; set; }
+        public static Organization ToDomain(OrganizationDTO organizationDTO , IMapper mapper)
+        {
+            return mapper.Map<OrganizationDTO, Organization>(organizationDTO);
+        }
     }
 }

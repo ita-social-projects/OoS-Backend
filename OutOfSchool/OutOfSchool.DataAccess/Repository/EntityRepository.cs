@@ -44,8 +44,7 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<IEnumerable<T>> GetAll()
         {
-            return await Task.FromResult(this.dbSet);
-            //return await .dbSet.ToListAsync();
+            return await this.dbSet.ToListAsync();         
         }
 
         /// <inheritdoc/>
@@ -73,8 +72,6 @@ namespace OutOfSchool.Services.Repository
             this.dbSet.Update(entity);
             await this.dbContext.SaveChangesAsync();
             return entity;
-        }
-
-     
+        }   
     }
 }

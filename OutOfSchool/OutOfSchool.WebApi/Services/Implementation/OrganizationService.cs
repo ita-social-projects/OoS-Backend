@@ -107,7 +107,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
             }
 
             return this.mapper.Map<Organization, OrganizationDTO>(await this.OrganizationRepository
-                 .Update(this.mapper.Map<OrganizationDTO, Organization>(organizationDTO))
+                 .Update(OrganizationDTO.ToDomain(organizationDTO,this.mapper))
                  .ConfigureAwait(false));
         }
 
@@ -125,7 +125,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
             }
 
             await this.OrganizationRepository
-                .Delete(this.mapper.Map<OrganizationDTO, Organization>(organizationDTO))
+                .Delete(OrganizationDTO.ToDomain(organizationDTO, this.mapper))
                 .ConfigureAwait(false);
         }
     }
