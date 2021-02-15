@@ -12,6 +12,7 @@ using NUnit.Framework;
 using OutOfSchool.IdentityServer.Controllers;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace OutOfSchool.Tests.IdentityServerTests
 {
@@ -83,9 +84,6 @@ namespace OutOfSchool.Tests.IdentityServerTests
             var authController = CreateAuthController;
             var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
             logoutRequest.PostLogoutRedirectUri = "";
-            // mockSignInManager.Setup(manager => manager.GetExternalAuthenticationSchemesAsync())
-            //     .Returns(Task.FromResult<IEnumerable<AuthenticationScheme>>(new List<AuthenticationScheme>()
-            //         {new AuthenticationScheme("Scheme", "Display type", typeof(HandleRequestContext<>))}));
 
             // Act
             var viewResult = await authController.Login(returnUrl);
@@ -94,33 +92,58 @@ namespace OutOfSchool.Tests.IdentityServerTests
             Assert.IsInstanceOf(typeof(ViewResult), viewResult);
         }
 
-        [TestCaseSource(nameof(GetViewModels))]
+        [TestCaseSource(nameof(GetLoginViewModels))]
         public async Task LoginWithLoginVMWithModelError(LoginViewModel loginViewModel)
         {
             // Arrange
             var authController = CreateAuthController;
             authController.ModelState.AddModelError(string.Empty, "Error");
-            // mockSignInManager.Setup(manager => manager.GetExternalAuthenticationSchemesAsync())
-            //     .Returns(Task.FromResult<IEnumerable<AuthenticationScheme>>(new List<AuthenticationScheme>()));
             // Act
-            var externalAuthenticationSchemesAsync = await mockSignInManager.Object.GetExternalAuthenticationSchemesAsync();
             var result = await authController.Login(loginViewModel);
             // Assert
             Assert.IsInstanceOf(typeof(ViewResult), result);
         }
 
-        public static IEnumerable<TestCaseData> GetViewModels
+        [TestCaseSource(nameof(GetLoginViewModels))]
+        public async Task LoginWithLoginVMWithoutModelError(LoginViewModel loginViewModel, KeyValuePair<SignInResult, Type> expectedResult)
+        {
+            // Arrange
+            var authController = CreateAuthController;
+            mockSignInManager.Setup(manager =>
+                    manager.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), false, false))
+                .ReturnsAsync(expectedResult.Key);
+            // Act
+            var result = await authController.Login(loginViewModel);
+            // Assert
+            Type type = expectedResult.Value;
+            Assert.IsInstanceOf(type, result);
+        }
+
+        public static IEnumerable<TestCaseData> GetLoginViewModels
         {
             get
             {
-                yield return new TestCaseData(
-                    new LoginViewModel {ReturnUrl = "Return url", ExternalProviders = GetSchemes});
-                yield return new TestCaseData(
-                    new LoginViewModel {ExternalProviders = GetSchemes});
-                yield return new TestCaseData(
-                    new LoginViewModel {ReturnUrl = "Return url"});
-                yield return new TestCaseData(
-                    new LoginViewModel());
+                foreach (var signInResult in GetSignInResults)
+                {
+                    yield return new TestCaseData(
+                        new LoginViewModel {ReturnUrl = "Return url", ExternalProviders = GetSchemes }, signInResult);
+                    yield return new TestCaseData(
+                        new LoginViewModel {ExternalProviders = GetSchemes }, signInResult);
+                    yield return new TestCaseData(
+                        new LoginViewModel {ReturnUrl = "Return url" }, signInResult);
+                    yield return new TestCaseData(
+                        new LoginViewModel(), signInResult);
+                }
+            }
+        }
+
+        public static IEnumerable<KeyValuePair<SignInResult, Type>> GetSignInResults
+        {
+            get
+            {
+                yield return new KeyValuePair<SignInResult, Type>(SignInResult.Success, typeof(RedirectResult));
+                yield return new KeyValuePair<SignInResult, Type>(SignInResult.Failed, typeof(ViewResult));
+                yield return new KeyValuePair<SignInResult, Type>(SignInResult.LockedOut, typeof(BadRequestResult));
             }
         }
 
