@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
@@ -29,7 +30,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
 
         public AuthControllerTests()
         {
-            mockRoleManager = GetMockRoleManager();
+            mockRoleManager = MockRoleManager;
             mockUserManager = new Mock<FakeUserManager>();
             mockInteractionService = new Mock<IIdentityServerInteractionService>();
             mockSignInManager = new Mock<FakeSignInManager>();
@@ -92,7 +93,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
             Assert.IsInstanceOf(typeof(ViewResult), viewResult);
         }
 
-        [TestCaseSource(nameof(GetLoginViewModels))]
+        [TestCaseSource(nameof(LoginViewModelsTestData))]
         public async Task LoginWithLoginVMWithModelError(LoginViewModel loginViewModel)
         {
             // Arrange
@@ -104,8 +105,9 @@ namespace OutOfSchool.Tests.IdentityServerTests
             Assert.IsInstanceOf(typeof(ViewResult), result);
         }
 
-        [TestCaseSource(nameof(GetLoginViewModels))]
-        public async Task LoginWithLoginVMWithoutModelError(LoginViewModel loginViewModel, KeyValuePair<SignInResult, Type> expectedResult)
+        [TestCaseSource(nameof(LoginViewModelsWithSignInResultTestData))]
+        public async Task LoginWithLoginVMWithoutModelError(
+            LoginViewModel loginViewModel, KeyValuePair<SignInResult, Type> expectedResult)
         {
             // Arrange
             var authController = CreateAuthController;
@@ -119,25 +121,164 @@ namespace OutOfSchool.Tests.IdentityServerTests
             Assert.IsInstanceOf(type, result);
         }
 
-        public static IEnumerable<TestCaseData> GetLoginViewModels
+        [TestCase("")]
+        [TestCase("Return url")]
+        public async Task RegisterWithReturnUrl(string returnUrl)
+        {
+            // Arrange 
+            var authController = CreateAuthController;
+            mockRoleManager.Setup(manager => manager.Roles)
+                .Returns(new List<IdentityRole>().AsQueryable());
+            // Act
+            var result = authController.Register(returnUrl);
+            // Assert
+            Assert.IsInstanceOf<ViewResult>(result);
+        }
+
+        [Test]
+        public async Task RegisterWithVMWithModelError()
+        {
+            // Arrange 
+            var authController = CreateAuthController;
+            mockRoleManager.Setup(manager => manager.Roles)
+                .Returns(new List<IdentityRole>().AsQueryable());
+            authController.ModelState.AddModelError("", "Message");
+            // Act
+            var result = await authController.Register(new RegisterViewModel());
+            // Assert
+            Assert.IsInstanceOf<ViewResult>(result);
+        }
+
+        [TestCaseSource(nameof(RegisterViewModelsTestData))]
+        public async Task RegisterWithVMWithoutModelError(RegisterViewModel viewModel)
+        {
+            // Arrange 
+            var authController = CreateAuthController;
+            mockRoleManager.Setup(manager => manager.Roles)
+                .Returns(
+                    new List<IdentityRole>() {new IdentityRole("testrole") {Id = viewModel.UserRoleId}}.AsQueryable());
+            mockUserManager.Setup(manager => manager.CreateAsync(It.IsAny<User>(), viewModel.Password))
+                .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
+            mockUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
+            mockSignInManager.Setup(manager => manager.SignInAsync(
+                    It.IsAny<User>(), It.IsAny<bool>(), It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            // Act
+            var result = await authController.Register(viewModel);
+            // Assert
+            Assert.IsInstanceOf<RedirectResult>(result);
+        }
+
+        [TestCaseSource(nameof(RegisterViewModelsTestData))]
+        public async Task RegisterWithVMAndIdentityError(RegisterViewModel viewModel)
+        {
+            // Arrange 
+            var authController = CreateAuthController;
+            var identityResult = IdentityResult.Failed(new List<IdentityError>()
+            {
+                new IdentityError() {Code = "User cant be created", Description = "The program failed to create user"},
+            }.ToArray());
+            mockRoleManager.Setup(manager => manager.Roles)
+                .Returns(
+                    new List<IdentityRole>() {new IdentityRole("testrole") {Id = viewModel.UserRoleId}}.AsQueryable());
+            mockUserManager.Setup(manager => manager.CreateAsync(It.IsAny<User>(), viewModel.Password))
+                .Returns(Task.FromResult<IdentityResult>(identityResult));
+            mockUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
+            mockSignInManager.Setup(manager => manager.SignInAsync(
+                    It.IsAny<User>(), It.IsAny<bool>(), It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            // Act
+            var result = await authController.Register(viewModel);
+            // Assert
+            Assert.IsInstanceOf<ViewResult>(result);
+        }
+        
+        [TestCaseSource(nameof(RegisterViewModelsTestData))]
+        public async Task RegisterWithVMAndAddToRoleError(RegisterViewModel viewModel)
+        {
+            // Arrange 
+            var authController = CreateAuthController;
+            var identityResultFailed = IdentityResult.Failed(new List<IdentityError>()
+            {
+                new IdentityError() {Code = "User cant be created", Description = "The program failed to create user"},
+            }.ToArray());
+            mockRoleManager.Setup(manager => manager.Roles)
+                .Returns(
+                    new List<IdentityRole>() {new IdentityRole("testrole") {Id = viewModel.UserRoleId}}.AsQueryable());
+            mockUserManager.Setup(manager => manager.CreateAsync(It.IsAny<User>(), viewModel.Password))
+                .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
+            mockUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<IdentityResult>(identityResultFailed));
+            // Act
+            var result = await authController.Register(viewModel);
+            // Assert
+            Assert.IsInstanceOf<ViewResult>(result);
+        }
+
+        [Test]
+        public async Task ExternalLoginNotImplemented()
+        {
+            // Arrange
+            var authController = CreateAuthController;
+
+            // Assert & Act
+            Assert.ThrowsAsync<NotImplementedException>(() =>
+                authController.ExternalLogin("Provider", "return url"));
+        }
+
+        public static IEnumerable<TestCaseData> RegisterViewModelsTestData =>
+            new List<TestCaseData>()
+            {
+                new TestCaseData(new RegisterViewModel()
+                {
+                    Username = "Baron", PhoneNumber = "0502391222", UserRoleId = "AdminRoleId", ReturnUrl = "Return url"
+                }),
+                new TestCaseData(new RegisterViewModel()
+                {
+                    Username = "Baron", PhoneNumber = "0502391222", UserRoleId = "AdminRoleId1",
+                    ReturnUrl = "Return url2",
+                }),
+            };
+
+        public static IEnumerable<LoginViewModel> LoginViewModels
+        {
+            get => new List<LoginViewModel>()
+            {
+                new LoginViewModel {ReturnUrl = "Return url", ExternalProviders = EmptySchemes},
+                new LoginViewModel {ExternalProviders = EmptySchemes},
+                new LoginViewModel {ReturnUrl = "Return url"},
+                new LoginViewModel(),
+            };
+        }
+
+        public static IEnumerable<TestCaseData> LoginViewModelsTestData
         {
             get
             {
-                foreach (var signInResult in GetSignInResults)
+                foreach (var loginViewModel in LoginViewModels)
                 {
-                    yield return new TestCaseData(
-                        new LoginViewModel {ReturnUrl = "Return url", ExternalProviders = GetSchemes }, signInResult);
-                    yield return new TestCaseData(
-                        new LoginViewModel {ExternalProviders = GetSchemes }, signInResult);
-                    yield return new TestCaseData(
-                        new LoginViewModel {ReturnUrl = "Return url" }, signInResult);
-                    yield return new TestCaseData(
-                        new LoginViewModel(), signInResult);
+                    yield return new TestCaseData(loginViewModel);
                 }
             }
         }
 
-        public static IEnumerable<KeyValuePair<SignInResult, Type>> GetSignInResults
+        public static IEnumerable<TestCaseData> LoginViewModelsWithSignInResultTestData
+        {
+            get
+            {
+                foreach (var signInResult in SignInAndActionResults)
+                {
+                    foreach (var loginViewModel in LoginViewModels)
+                    {
+                        yield return new TestCaseData(loginViewModel, signInResult);
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<KeyValuePair<SignInResult, Type>> SignInAndActionResults
         {
             get
             {
@@ -147,16 +288,13 @@ namespace OutOfSchool.Tests.IdentityServerTests
             }
         }
 
-        public static IEnumerable<AuthenticationScheme> GetSchemes
+        public static IEnumerable<AuthenticationScheme> EmptySchemes
         {
-            get { return new List<AuthenticationScheme>(); }
+            get => new List<AuthenticationScheme>();
         }
 
-        public static Mock<RoleManager<IdentityRole>> GetMockRoleManager()
-        {
-            var roleStore = new Mock<IRoleStore<IdentityRole>>();
-            return new Mock<RoleManager<IdentityRole>>(
-                roleStore.Object, null, null, null, null);
-        }
+        public static Mock<RoleManager<IdentityRole>> MockRoleManager =>
+            new Mock<RoleManager<IdentityRole>>(
+                new Mock<IRoleStore<IdentityRole>>().Object, null, null, null, null);
     }
 }
