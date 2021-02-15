@@ -37,11 +37,11 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                return this.Ok(await this.childService.GetAll());
+                return Ok(await childService.GetAll());
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -55,12 +55,12 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                ChildDTO childDTO = await this.childService.GetById(id).ConfigureAwait(false);
-                return this.Ok(childDTO);
+                ChildDTO childDTO = await childService.GetById(id).ConfigureAwait(false);
+                return Ok(childDTO);
             }
             catch (ArgumentException ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -73,22 +73,22 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Child>> CreateChild(ChildDTO childDTO)
         {
-            if (!this.ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                return this.BadRequest(this.ModelState);
+                return BadRequest(ModelState);
             }
 
             try
             {
-                ChildDTO child = await this.childService.Create(childDTO).ConfigureAwait(false);
-                return this.CreatedAtAction(
-                    nameof(this.GetChildren),
+                ChildDTO child = await childService.Create(childDTO).ConfigureAwait(false);
+                return CreatedAtAction(
+                    nameof(GetChildren),
                     new { id = child.Id },
                     child);
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -103,21 +103,21 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (childDTO == null)
             {
-                return this.BadRequest("Entity was null.");
+                return BadRequest("Entity was null.");
             }
 
-            if (!this.ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                return this.BadRequest(this.ModelState);
+                return BadRequest(ModelState);
             }
 
             try
             {               
-                return this.Ok(await this.childService.Update(childDTO));
+                return Ok(await childService.Update(childDTO));
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -132,12 +132,12 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                await this.childService.Delete(id).ConfigureAwait(false);
-                return this.Ok();
+                await childService.Delete(id).ConfigureAwait(false);
+                return Ok();
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
     }

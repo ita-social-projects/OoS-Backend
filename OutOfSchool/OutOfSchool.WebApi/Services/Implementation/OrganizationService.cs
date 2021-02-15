@@ -26,7 +26,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
         /// <param name="mapper">Mapper.</param>
         public OrganizationService(IOrganizationRepository entityRepository, IMapper mapper)
         {
-            this.OrganizationRepository = entityRepository;
+            OrganizationRepository = entityRepository;
             this.mapper = mapper;
         }
 
@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
                 throw new ArgumentNullException(nameof(organization), "Organization was null.");
             }
 
-            Organization newOrganization = this.mapper.Map<OrganizationDTO, Organization>(organization);
+            Organization newOrganization = mapper.Map<OrganizationDTO, Organization>(organization);
           
             if(OrganizationRepository.IsUnique(newOrganization))
             {              
@@ -46,28 +46,28 @@ namespace OutOfSchool.WebApi.Services.Implementation
             }
             else
             {
-                var organization_ = await this.OrganizationRepository.Create(newOrganization).ConfigureAwait(false);
-                return await Task.FromResult(this.mapper.Map<Organization, OrganizationDTO>(organization_)).ConfigureAwait(false);
+                var organization_ = await OrganizationRepository.Create(newOrganization).ConfigureAwait(false);
+                return await Task.FromResult(mapper.Map<Organization, OrganizationDTO>(organization_)).ConfigureAwait(false);
             }         
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<OrganizationDTO>> GetAll()
         {
-            return this.OrganizationRepository.GetAll().Result.Select(
-                x => this.mapper.Map<Organization, OrganizationDTO>(x));
+            return OrganizationRepository.GetAll().Result.Select(
+                x => mapper.Map<Organization, OrganizationDTO>(x));
         }
 
         /// <inheritdoc/>
         public async Task<OrganizationDTO> GetById(long id)
         {
-            var organization = await this.OrganizationRepository.GetById(id).ConfigureAwait(false);
+            var organization = await OrganizationRepository.GetById(id).ConfigureAwait(false);
             if (organization == null)
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));
             }
             
-            return this.mapper.Map<Organization, OrganizationDTO>(organization);
+            return mapper.Map<Organization, OrganizationDTO>(organization);
         }
 
         /// <inheritdoc/>
@@ -103,8 +103,8 @@ namespace OutOfSchool.WebApi.Services.Implementation
                 throw new ArgumentException("Description is empty", nameof(organizationDTO));
             }
 
-            return this.mapper.Map<Organization, OrganizationDTO>(await this.OrganizationRepository
-                 .Update(OrganizationDTO.ToDomain(organizationDTO,this.mapper))
+            return mapper.Map<Organization, OrganizationDTO>(await OrganizationRepository
+                 .Update(OrganizationDTO.ToDomain(organizationDTO, mapper))
                  .ConfigureAwait(false));
         }
 
@@ -114,15 +114,15 @@ namespace OutOfSchool.WebApi.Services.Implementation
             OrganizationDTO organizationDTO;
             try
             {
-                organizationDTO = await this.GetById(id).ConfigureAwait(false);
+                organizationDTO = await GetById(id).ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)
             {
                 throw new ArgumentNullException(nameof(id), ex.Message);
             }
 
-            await this.OrganizationRepository
-                .Delete(OrganizationDTO.ToDomain(organizationDTO, this.mapper))
+            await OrganizationRepository
+                .Delete(OrganizationDTO.ToDomain(organizationDTO, mapper))
                 .ConfigureAwait(false);
         }
     }

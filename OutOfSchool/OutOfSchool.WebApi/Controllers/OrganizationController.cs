@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Controllers
         public IActionResult TestOk()
         {
             var user = User?.FindFirst("role")?.Value;
-            return this.Ok("Hello to "+user ?? "unknown");
+            return Ok("Hello to "+user ?? "unknown");
         }
         
         /// <summary>
@@ -45,11 +45,11 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                return this.Ok(await this.organizationService.GetAll());
+                return Ok(await organizationService.GetAll());
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -63,11 +63,11 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                return this.Ok(await this.organizationService.GetById(id).ConfigureAwait(false));
+                return Ok(await organizationService.GetById(id).ConfigureAwait(false));
             }
             catch (ArgumentException ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -80,23 +80,23 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Organization>> CreateOrganization(OrganizationDTO organizationDTO)
         {
-            if (!this.ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                return this.BadRequest(this.ModelState);
+                return BadRequest(ModelState);
             }
 
             try
             {
                 organizationDTO.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
-                OrganizationDTO organization = await this.organizationService.Create(organizationDTO).ConfigureAwait(false);       
-                return this.CreatedAtAction(
-                    nameof(this.GetOrganizations),
+                OrganizationDTO organization = await organizationService.Create(organizationDTO).ConfigureAwait(false);       
+                return CreatedAtAction(
+                    nameof(GetOrganizations),
                     new { id = organization.Id },
                     organization);
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -111,21 +111,21 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (organizationDTO == null)
             {
-                return this.BadRequest("Entity was null.");
+                return BadRequest("Entity was null.");
             }
 
-            if (!this.ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                return this.BadRequest(this.ModelState);
+                return BadRequest(ModelState);
             }
 
             try
             {              
-                return this.Ok(await this.organizationService.Update(organizationDTO));
+                return Ok(await organizationService.Update(organizationDTO));
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -140,12 +140,12 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                await this.organizationService.Delete(id).ConfigureAwait(false);
-                return this.Ok();
+                await organizationService.Delete(id).ConfigureAwait(false);
+                return Ok();
             }
             catch (Exception ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
     }

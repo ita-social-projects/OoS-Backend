@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="mapper">Mapper.</param>
         public ChildService(IEntityRepository<Child> entityRepository, IMapper mapper)
         {
-            this.ChildRepository = entityRepository;
+            ChildRepository = entityRepository;
             this.mapper = mapper;
         }
 
@@ -42,16 +42,16 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException("Invalid Date of birth");
             }
 
-            Child newChild = this.mapper.Map<ChildDTO, Child>(child);
-            var child_ = await this.ChildRepository.Create(newChild).ConfigureAwait(false);
-            return await Task.FromResult(this.mapper.Map<Child, ChildDTO>(child_)).ConfigureAwait(false);
+            Child newChild = mapper.Map<ChildDTO, Child>(child);
+            var child_ = await ChildRepository.Create(newChild).ConfigureAwait(false);
+            return await Task.FromResult(mapper.Map<Child, ChildDTO>(child_)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ChildDTO>> GetAll()
         {
-            IEnumerable<ChildDTO> childrenDTO = this.ChildRepository.GetAll().Result.Select(
-                x => this.mapper.Map<Child, ChildDTO>(x));
+            IEnumerable<ChildDTO> childrenDTO = ChildRepository.GetAll().Result.Select(
+                x => mapper.Map<Child, ChildDTO>(x));
 
             return childrenDTO;
         }
@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> GetById(long id)
         {
-            Child child = this.ChildRepository.GetById(id).Result;
+            Child child = ChildRepository.GetById(id).Result;
             if (child == null)
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));
@@ -67,7 +67,7 @@ namespace OutOfSchool.WebApi.Services
 
             return await Task.Run(() =>
             {
-                return this.mapper.Map<Child, ChildDTO>(child);
+                return mapper.Map<Child, ChildDTO>(child);
             }).ConfigureAwait(false);
         }
 
@@ -99,8 +99,8 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException("Empty middlename.", nameof(childDTO));
             }
 
-            return this.mapper.Map<Child, ChildDTO>(await this.ChildRepository
-                 .Update(this.mapper.Map<ChildDTO, Child>(childDTO))
+            return mapper.Map<Child, ChildDTO>(await ChildRepository
+                 .Update(mapper.Map<ChildDTO, Child>(childDTO))
                  .ConfigureAwait(false));
         }
 
@@ -110,15 +110,15 @@ namespace OutOfSchool.WebApi.Services
             ChildDTO childDTO;
             try
             {
-                childDTO = await this.GetById(id).ConfigureAwait(false);
+                childDTO = await GetById(id).ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)
             {
                 throw new ArgumentNullException(nameof(id), ex.Message);
             } 
             
-            await this.ChildRepository
-                .Delete(this.mapper.Map<ChildDTO, Child>(childDTO))
+            await ChildRepository
+                .Delete(mapper.Map<ChildDTO, Child>(childDTO))
                 .ConfigureAwait(false);
         }
     }
