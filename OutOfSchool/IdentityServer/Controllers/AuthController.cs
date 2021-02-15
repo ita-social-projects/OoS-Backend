@@ -32,10 +32,10 @@ namespace IdentityServer.Controllers
             RoleManager<IdentityRole> roleManager,
             IIdentityServerInteractionService interactionService)
         {
-            roleManager = roleManager;
-            signInManager = signInManager;
-            userManager = userManager;
-            interactionService = interactionService;
+            this.roleManager = roleManager;
+            this.signInManager = signInManager;
+            this.userManager = userManager;
+            this.interactionService = interactionService;
         }
 
         /// <summary>
