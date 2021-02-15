@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using IdentityServer.Controllers;
 using System.Linq;
-using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -139,9 +138,6 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = new User()
             {
-                UserName = vm.Username,
-                PhoneNumber = vm.PhoneNumber,
-                CreatingTime = DateTime.Now
                 UserName = model.Username,
                 PhoneNumber = model.PhoneNumber,
                 CreatingTime = DateTime.Now,
