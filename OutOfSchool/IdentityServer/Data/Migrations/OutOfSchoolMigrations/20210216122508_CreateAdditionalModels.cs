@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
-    public partial class CreateMoreModels : Migration
+    public partial class CreateAdditionalModels : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -39,7 +39,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 name: "Address",
                 columns: table => new
                 {
-                    AddressId = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Region = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     District = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -51,20 +51,20 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Address", x => x.AddressId);
+                    table.PrimaryKey("PK_Address", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DirectionsOfEducation",
+                name: "Categories",
                 columns: table => new
                 {
-                    DirectionOfEducationId = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DirectionsOfEducation", x => x.DirectionOfEducationId);
+                    table.PrimaryKey("PK_Categories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -81,30 +81,30 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProfilesOfEducation",
+                name: "Subcategories",
                 columns: table => new
                 {
-                    ProfileOfEducationId = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DirectionOfEducationId = table.Column<long>(type: "bigint", nullable: true)
+                    CategoryId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProfilesOfEducation", x => x.ProfileOfEducationId);
+                    table.PrimaryKey("PK_Subcategories", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProfilesOfEducation_DirectionsOfEducation_DirectionOfEducationId",
-                        column: x => x.DirectionOfEducationId,
-                        principalTable: "DirectionsOfEducation",
-                        principalColumn: "DirectionOfEducationId",
+                        name: "FK_Subcategories_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Sections",
+                name: "Workshops",
                 columns: table => new
                 {
-                    SectionId = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -120,23 +120,30 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     WithDisabilityOptions = table.Column<bool>(type: "bit", nullable: false),
                     DisabilityOptionsDesc = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OrganizationId = table.Column<long>(type: "bigint", nullable: true),
                     AddressId = table.Column<long>(type: "bigint", nullable: true),
-                    DirectionOfEducationId = table.Column<long>(type: "bigint", nullable: true)
+                    CategoryId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Sections", x => x.SectionId);
+                    table.PrimaryKey("PK_Workshops", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Sections_Address_AddressId",
+                        name: "FK_Workshops_Address_AddressId",
                         column: x => x.AddressId,
                         principalTable: "Address",
-                        principalColumn: "AddressId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Sections_DirectionsOfEducation_DirectionOfEducationId",
-                        column: x => x.DirectionOfEducationId,
-                        principalTable: "DirectionsOfEducation",
-                        principalColumn: "DirectionOfEducationId",
+                        name: "FK_Workshops_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Workshops_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "OrganizationId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -182,16 +189,16 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     MiddleName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SectionId = table.Column<long>(type: "bigint", nullable: true)
+                    WorkshopId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Teachers", x => x.TeacherId);
                     table.ForeignKey(
-                        name: "FK_Teachers_Sections_SectionId",
-                        column: x => x.SectionId,
-                        principalTable: "Sections",
-                        principalColumn: "SectionId",
+                        name: "FK_Teachers_Workshops_WorkshopId",
+                        column: x => x.WorkshopId,
+                        principalTable: "Workshops",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -216,24 +223,29 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 column: "SocialGroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProfilesOfEducation_DirectionOfEducationId",
-                table: "ProfilesOfEducation",
-                column: "DirectionOfEducationId");
+                name: "IX_Subcategories_CategoryId",
+                table: "Subcategories",
+                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sections_AddressId",
-                table: "Sections",
+                name: "IX_Teachers_WorkshopId",
+                table: "Teachers",
+                column: "WorkshopId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Workshops_AddressId",
+                table: "Workshops",
                 column: "AddressId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sections_DirectionOfEducationId",
-                table: "Sections",
-                column: "DirectionOfEducationId");
+                name: "IX_Workshops_CategoryId",
+                table: "Workshops",
+                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Teachers_SectionId",
-                table: "Teachers",
-                column: "SectionId");
+                name: "IX_Workshops_OrganizationId",
+                table: "Workshops",
+                column: "OrganizationId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Organizations_AspNetUsers_UserId",
@@ -266,7 +278,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 name: "Children");
 
             migrationBuilder.DropTable(
-                name: "ProfilesOfEducation");
+                name: "Subcategories");
 
             migrationBuilder.DropTable(
                 name: "Teachers");
@@ -275,13 +287,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 name: "SocialGroup");
 
             migrationBuilder.DropTable(
-                name: "Sections");
+                name: "Workshops");
 
             migrationBuilder.DropTable(
                 name: "Address");
 
             migrationBuilder.DropTable(
-                name: "DirectionsOfEducation");
+                name: "Categories");
 
             migrationBuilder.DropIndex(
                 name: "IX_Parents_UserId",
