@@ -53,7 +53,7 @@ namespace OutOfSchool.Services.Repository
         Task<T> GetById(long id);
 
         /// <summary>
-        /// Get element by id with details.
+        /// Get elements by id with details.
         /// </summary>
         /// <param name="predicate">Filter with key.</param>
         /// <param name="includeProperties">Name of properties which should be included.</param>
