@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models.ModelsDto;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Interfaces;
 
-namespace OutOfSchool.WebApi.Services.Implementation
+namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
     /// Service with business logic for Child model.

@@ -1,7 +1,6 @@
 ﻿using OutOfSchool.WebApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using OutOfSchool.WebApi.Models.ModelsDto;
 
 namespace OutOfSchool.WebApi.Services.Interfaces
 {

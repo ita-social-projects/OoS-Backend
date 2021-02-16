@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models.ModelsDto;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Interfaces;
 
-namespace OutOfSchool.WebApi.Services.Implementation
+namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
     /// Service with business logic for Teacher model.
@@ -52,12 +52,12 @@ namespace OutOfSchool.WebApi.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public IEnumerable<TeacherDTO> GetAllTeachers()
+        public async Task<IEnumerable<TeacherDTO>> GetAllTeachers()
         {
-            IEnumerable<TeacherDTO> teacherDto = TeacherRepository.GetAll().Select(
-                teacher => mapper.Map<Teacher, TeacherDTO>(teacher));
-
-            return teacherDto;
+            var teachers = TeacherRepository.GetAll() 
+                .Select(teacher => mapper.Map<Teacher, TeacherDTO>(teacher)); 
+            
+            return await Task.FromResult(teachers);
         }
     }
 }

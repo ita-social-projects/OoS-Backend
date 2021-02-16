@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.WebApi.Models.ModelsDto
+namespace OutOfSchool.WebApi.Models
 {
     public class OrganizationDTO
     {

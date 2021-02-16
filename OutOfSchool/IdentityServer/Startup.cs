@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -8,9 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
-using System.Reflection;
 
-namespace IdentityServer
+namespace OutOfSchool.IdentityServer
 {
     public class Startup
     {
@@ -76,10 +76,9 @@ namespace IdentityServer
 
             services.AddControllersWithViews();
         }
-
-       public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -101,7 +100,5 @@ namespace IdentityServer
                 endpoints.MapDefaultControllerRoute();
             });
         }
-
     }
-
 }

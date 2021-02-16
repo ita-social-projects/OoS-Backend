@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models.ModelsDto;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi.Controllers

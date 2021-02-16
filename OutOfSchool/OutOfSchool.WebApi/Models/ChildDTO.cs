@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OutOfSchool.WebApi.Models.ModelsDto
+namespace OutOfSchool.WebApi.Models
 {
     public class ChildDTO
     {

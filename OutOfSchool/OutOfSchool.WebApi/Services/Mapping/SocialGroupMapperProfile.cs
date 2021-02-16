@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models.ModelsDto;
 using System.Linq;
+using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services.Mapping
 {
