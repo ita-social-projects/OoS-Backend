@@ -95,7 +95,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             if (result.Succeeded)
             {
-                return String.IsNullOrEmpty(vm.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(vm.ReturnUrl);
+                return String.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
 
             if (result.IsLockedOut)
