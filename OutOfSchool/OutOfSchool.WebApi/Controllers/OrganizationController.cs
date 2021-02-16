@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,8 +18,7 @@ namespace OutOfSchool.WebApi.Controllers
 
         public IActionResult TestOk()
         {
-            var user = User?.FindFirst("role")?.Value;
-            return this.Ok("Hello to "+user ?? "unknown");
+            return this.Ok("Hello world");
         }
     }
 }
