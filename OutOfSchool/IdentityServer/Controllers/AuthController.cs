@@ -33,10 +33,10 @@ namespace OutOfSchool.IdentityServer.Controllers
             RoleManager<IdentityRole> roleManager,
             IIdentityServerInteractionService interactionService)
         {
-            roleManager = roleManager;
-            signInManager = signInManager;
-            userManager = userManager;
-            interactionService = interactionService;
+            this.roleManager = roleManager;
+            this.signInManager = signInManager;
+            this.userManager = userManager;
+            this.interactionService = interactionService;
         }
 
         /// <summary>
@@ -51,10 +51,10 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var logoutRequest = await interactionService.GetLogoutContextAsync(logoutId);
 
-            // if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
-            // {
-            //     return RedirectToAction("Index", "Home");
-            // }
+            if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
             return Redirect(logoutRequest.PostLogoutRedirectUri);
         }

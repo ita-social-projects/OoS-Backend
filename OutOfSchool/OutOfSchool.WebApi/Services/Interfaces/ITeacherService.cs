@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using OutOfSchool.WebApi.Models.ModelsDto;
+using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services.Interfaces
 {
@@ -20,6 +20,6 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         /// Get all teachers from the database.
         /// </summary>
         /// <returns>List of all teachers.</returns>
-        IEnumerable<TeacherDTO> GetAllTeachers();
+        Task<IEnumerable<TeacherDTO>> GetAllTeachers();
     }
 }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models.ModelsDto;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi.Controllers
@@ -33,11 +33,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of teachers.</returns>
         [HttpGet]
-        public ActionResult<IEnumerable<Teacher>> GetTeachers()
+        public async Task<ActionResult<IEnumerable<Teacher>>> GetTeachers()
         {
             try
             {
-                return Ok(teacherService.GetAllTeachers());
+                return Ok(await teacherService.GetAllTeachers());
             }
             catch (Exception ex)
             {
@@ -63,10 +63,6 @@ namespace OutOfSchool.WebApi.Controllers
                 var teacher = await teacherService.Create(teacherDto).ConfigureAwait(false);
                 return CreatedAtAction(
                     nameof(GetTeachers),
-                    new
-                    {
-                        id = teacher.Id,
-                    },
                     teacher);
             }
             catch (Exception ex)
