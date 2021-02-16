@@ -6,7 +6,6 @@ using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -54,10 +53,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<TeacherDTO>> GetAllTeachers()
         {
-            var teachers = TeacherRepository.GetAll() 
-                .Select(teacher => mapper.Map<Teacher, TeacherDTO>(teacher)); 
-            
-            return await Task.FromResult(teachers);
+            var teachers = await Task.FromResult
+            (
+                TeacherRepository.GetAll()
+                    .Select(teacher => mapper.Map<Teacher, TeacherDTO>(teacher))
+            );
+
+            return teachers;
         }
     }
 }
