@@ -15,8 +15,8 @@ namespace OutOfSchool.WebApi.Services.Mapping
         /// </summary>
         public SocialGroupMapperProfile()
         {
-            this.CreateMap<SocialGroup, SocialGroupDTO>().ForMember(c => c.Id, d => d.MapFrom(socialGroup => socialGroup.SocialGroupId))
-                .ForMember(c => c.ChildrenIds, d => d.MapFrom(socialGroup => socialGroup.Children.Select(x => x.ChildId))).ReverseMap();
+            this.CreateMap<SocialGroup, SocialGroupDTO>().ForMember(c => c.Id, d => d.MapFrom(socialGroup => socialGroup.Id))
+                .ForMember(c => c.ChildrenIds, d => d.MapFrom(socialGroup => socialGroup.Children.Select(x => x.Id))).ReverseMap();
         }
     }
 }
