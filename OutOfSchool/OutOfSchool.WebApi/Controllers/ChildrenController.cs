@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
 {

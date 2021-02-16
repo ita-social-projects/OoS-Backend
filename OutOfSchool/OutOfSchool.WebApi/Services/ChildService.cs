@@ -6,7 +6,6 @@ using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi.Services
 {

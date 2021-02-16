@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
 {
@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Add a new teacher to the database.
         /// </summary>
-        /// <param name="teacherDto">Entity which needs to be added.</param>
+        /// <param name="teacherDto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPost]
         public async Task<ActionResult<Teacher>> Create(TeacherDTO teacherDto)

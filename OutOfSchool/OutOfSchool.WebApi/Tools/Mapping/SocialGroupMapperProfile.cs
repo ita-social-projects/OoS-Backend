@@ -1,9 +1,9 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using AutoMapper;
 using OutOfSchool.Services.Models;
-using System.Linq;
 using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Services.Mapping
+namespace OutOfSchool.WebApi.Tools.Mapping
 {
     /// <summary>
     /// SocialGroup Mapper. Map SocialGroup to SocialGroupDTO.

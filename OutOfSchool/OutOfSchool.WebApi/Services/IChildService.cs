@@ -1,8 +1,8 @@
-﻿using OutOfSchool.WebApi.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Services.Interfaces
+namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
     /// Interface of ChildService.

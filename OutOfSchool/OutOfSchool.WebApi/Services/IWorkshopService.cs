@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Services.Interfaces
+namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Interface of SectionService.
+    /// Interface of WorkshopService.
     /// </summary>
-    public interface ISectionService
+    public interface IWorkshopService
     {
         /// <summary>
         /// Add a new Workshop to the database.
@@ -20,6 +20,6 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         /// Get all sections from the database.
         /// </summary>
         /// <returns>List of all sections.</returns>
-        IEnumerable<WorkshopDTO> GetAllSections();
+        Task<IEnumerable<WorkshopDTO>> GetAllWorkshops();
     }
 }

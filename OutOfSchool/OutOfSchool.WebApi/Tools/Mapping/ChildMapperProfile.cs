@@ -2,7 +2,7 @@
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Services.Mapping
+namespace OutOfSchool.WebApi.Tools.Mapping
 {
     /// <summary>
     /// Child Mapper. Map Child to ChildDTO.
