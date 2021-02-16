@@ -12,8 +12,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.Interfaces;
-using OutOfSchool.WebApi.Services.Mapping;
+using OutOfSchool.WebApi.Tools.Mapping;
 
 namespace OutOfSchool.WebApi
 {
@@ -35,7 +34,7 @@ namespace OutOfSchool.WebApi
             var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
             var socialGroupMapper =
                 new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
-            var sectionMapper = new MapperConfiguration(x => x.AddProfile(new SectionMapperProfile())).CreateMapper();
+            var sectionMapper = new MapperConfiguration(x => x.AddProfile(new WorkshopMapperProfile())).CreateMapper();
             var teacherMapper = new MapperConfiguration(x => x.AddProfile(new TeacherMapperProfile())).CreateMapper();
 
             services.AddAuthentication("Bearer")
@@ -59,7 +58,7 @@ namespace OutOfSchool.WebApi
                 builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
 
             services.AddTransient<IChildService, ChildService>();
-            services.AddTransient<ISectionService, SectionService>();
+            services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<ITeacherService, TeacherService>();
 
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();

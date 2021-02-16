@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
 {
@@ -15,29 +15,29 @@ namespace OutOfSchool.WebApi.Controllers
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class SectionController : ControllerBase
+    public class WorkshopController : ControllerBase
     {
-        private readonly ISectionService sectionService;
+        private readonly IWorkshopService workshopService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SectionController"/> class.
+        /// Initializes a new instance of the <see cref="WorkshopController"/> class.
         /// </summary>
-        /// <param name="sectionService">Service for Workshop model.</param>
-        public SectionController(ISectionService sectionService)
+        /// <param name="workshopService">Service for Workshop model.</param>
+        public WorkshopController(IWorkshopService workshopService)
         {
-            this.sectionService = sectionService;
+            this.workshopService = workshopService;
         }
 
         /// <summary>
-        /// Get all sections from the database.
+        /// Get all workshops from the database.
         /// </summary>
-        /// <returns>List of all sections.</returns>
+        /// <returns>List of all workshops.</returns>
         [HttpGet]
-        public ActionResult<IEnumerable<Workshop>> GetSections()
+        public async Task<ActionResult<IEnumerable<Workshop>>> GetWorkshops()
         {
             try
             {
-                return Ok(sectionService.GetAllSections());
+                return Ok(await Task.FromResult(workshopService.GetAllWorkshops()));
             }
             catch (Exception ex)
             {
@@ -46,12 +46,12 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Add new section to the database.
+        /// Add new workshop to the database.
         /// </summary>
-        /// <param name="workshopDto">Entity which needs to be added.</param>
+        /// <param name="workshopDto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPost]
-        public async Task<ActionResult<Workshop>> CreateSection(WorkshopDTO workshopDto)
+        public async Task<ActionResult<Workshop>> CreateWorkshop(WorkshopDTO workshopDto)
         {
             if (!ModelState.IsValid)
             {
@@ -60,10 +60,10 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                var section = await sectionService.Create(workshopDto).ConfigureAwait(false);
+                var workshop = await workshopService.Create(workshopDto).ConfigureAwait(false);
                 return CreatedAtAction(
-                    nameof(GetSections),
-                    section);
+                    nameof(GetWorkshops),
+                    workshop);
             }
             catch (Exception ex)
             {

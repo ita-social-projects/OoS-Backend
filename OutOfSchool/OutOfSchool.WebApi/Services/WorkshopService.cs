@@ -6,27 +6,26 @@ using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
     /// Service with business logic for Workshop model.
     /// </summary>
-    public class SectionService : ISectionService
+    public class WorkshopService : IWorkshopService
     {
-        private IEntityRepository<Workshop> SectionRepository { get; set; }
+        private IEntityRepository<Workshop> WorkshopRepository { get; set; }
         private readonly IMapper mapper;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SectionService"/> class.
+        /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
         /// <param name="mapper">Mapper instance.</param>
-        /// <param name="sectionRepository">Repository for Workshop entity.</param>
-        public SectionService(IMapper mapper, IEntityRepository<Workshop> sectionRepository)
+        /// <param name="workshopRepository">Repository for Workshop entity.</param>
+        public WorkshopService(IMapper mapper, IEntityRepository<Workshop> workshopRepository)
         {
             this.mapper = mapper;
-            this.SectionRepository = sectionRepository;
+            WorkshopRepository = workshopRepository;
         }
 
         /// <inheritdoc/>
@@ -39,9 +38,9 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var newSection = mapper.Map<WorkshopDTO, Workshop>(workshop);
+                var newWorkshop = mapper.Map<WorkshopDTO, Workshop>(workshop);
 
-                await SectionRepository.Create(newSection).ConfigureAwait(false);
+                await WorkshopRepository.Create(newWorkshop).ConfigureAwait(false);
 
                 return workshop;
             }
@@ -52,12 +51,15 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public IEnumerable<WorkshopDTO> GetAllSections()
+        public async Task<IEnumerable<WorkshopDTO>> GetAllWorkshops()
         {
-            var sectionDto = SectionRepository.GetAll()
-                .Select(section => mapper.Map<Workshop, WorkshopDTO>(section));
+            var workshopDto = await Task.FromResult
+            (
+                WorkshopRepository.GetAll()
+                    .Select(workshop => mapper.Map<Workshop, WorkshopDTO>(workshop))
+            );
 
-            return sectionDto;
+            return workshopDto;
         }
     }
 }
