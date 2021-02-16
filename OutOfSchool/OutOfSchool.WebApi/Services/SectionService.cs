@@ -5,57 +5,57 @@ using System.Threading.Tasks;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models.ModelsDto;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Interfaces;
 
-namespace OutOfSchool.WebApi.Services.Implementation
+namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Service with business logic for Section model.
+    /// Service with business logic for Workshop model.
     /// </summary>
     public class SectionService : ISectionService
     {
-        private IEntityRepository<Section> SectionRepository { get; set; }
+        private IEntityRepository<Workshop> SectionRepository { get; set; }
         private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SectionService"/> class.
         /// </summary>
         /// <param name="mapper">Mapper instance.</param>
-        /// <param name="sectionRepository">Repository for Section entity.</param>
-        public SectionService(IMapper mapper, IEntityRepository<Section> sectionRepository)
+        /// <param name="sectionRepository">Repository for Workshop entity.</param>
+        public SectionService(IMapper mapper, IEntityRepository<Workshop> sectionRepository)
         {
             this.mapper = mapper;
             this.SectionRepository = sectionRepository;
         }
 
         /// <inheritdoc/>
-        public async Task<SectionDTO> Create(SectionDTO section)
+        public async Task<WorkshopDTO> Create(WorkshopDTO workshop)
         {
-            if (section == null)
+            if (workshop == null)
             {
-                throw new ArgumentNullException($"{nameof(SectionDTO)} entity must not be null");
+                throw new ArgumentNullException($"{nameof(WorkshopDTO)} entity must not be null");
             }
 
             try
             {
-                var newSection = mapper.Map<SectionDTO, Section>(section);
+                var newSection = mapper.Map<WorkshopDTO, Workshop>(workshop);
 
                 await SectionRepository.Create(newSection).ConfigureAwait(false);
 
-                return section;
+                return workshop;
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(SectionDTO)} could not be saved: {ex.Message}");
+                throw new Exception($"{nameof(WorkshopDTO)} could not be saved: {ex.Message}");
             }
         }
 
         /// <inheritdoc/>
-        public IEnumerable<SectionDTO> GetAllSections()
+        public IEnumerable<WorkshopDTO> GetAllSections()
         {
             var sectionDto = SectionRepository.GetAll()
-                .Select(section => mapper.Map<Section, SectionDTO>(section));
+                .Select(section => mapper.Map<Workshop, WorkshopDTO>(section));
 
             return sectionDto;
         }

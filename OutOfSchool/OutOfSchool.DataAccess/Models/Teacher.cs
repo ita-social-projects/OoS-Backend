@@ -11,6 +11,6 @@ namespace OutOfSchool.Services.Models
         public string MiddleName { get; set; }
         public string Description { get; set; }
         public string Image { get; set; }
-        public Section Section { get; set; }
+        public Workshop Workshop { get; set; }
     }
 }

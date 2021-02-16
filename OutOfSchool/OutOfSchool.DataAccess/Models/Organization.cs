@@ -53,6 +53,6 @@ namespace OutOfSchool.Services.Models
         public OrganizationType Type { get; set; }
 
         public User User { get; set; }
-        public List<Section> Sections { get; set; }
+        public List<Workshop> Workshops { get; set; }
     }
 }

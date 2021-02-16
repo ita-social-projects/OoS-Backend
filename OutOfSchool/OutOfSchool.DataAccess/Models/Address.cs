@@ -3,7 +3,7 @@
 {
     public class Address
     {
-        public long AddressId { get; set; }
+        public long Id { get; set; }
         public string Region { get; set; }
         public string District { get; set; }
         public string City { get; set; }

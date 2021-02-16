@@ -11,7 +11,7 @@ using Microsoft.Extensions.Hosting;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Services.Implementation;
+using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Interfaces;
 using OutOfSchool.WebApi.Services.Mapping;
 
@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi
 
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
-            services.AddTransient<IEntityRepository<Section>, EntityRepository<Section>>();
+            services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
 
             services.AddSingleton(sectionMapper);
             services.AddSingleton(teacherMapper);
@@ -94,7 +94,6 @@ namespace OutOfSchool.WebApi
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); });
 
-            
             app.UseHttpsRedirection();
 
             app.UseRouting();
