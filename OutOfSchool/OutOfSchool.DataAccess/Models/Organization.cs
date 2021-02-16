@@ -7,8 +7,8 @@ namespace OutOfSchool.Services.Models
 {
     public class Organization
     {
-        public long OrganizationId { get; set; }
-
+        public long Id { get; set; }
+       
         [Required(ErrorMessage = "Title is required")]
         [DataType(DataType.Text)]
         public string Title { get; set; }
@@ -50,9 +50,8 @@ namespace OutOfSchool.Services.Models
         public string? Image { get; set; }
         
         [Required]
-        public OrganizationType Type { get; set; }
-
-        public User User { get; set; }
-        public List<Workshop> Workshops { get; set; }
+        public virtual OrganizationType Type { get; set; }
+        public virtual List<Workshop> Workshops { get; set; }
+        public virtual IReadOnlyCollection<User> Users { get; set; }
     }
 }

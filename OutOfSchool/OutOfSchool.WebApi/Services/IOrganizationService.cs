@@ -1,41 +1,43 @@
-﻿using System.Collections.Generic;
+﻿using OutOfSchool.WebApi.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Services
+namespace OutOfSchool.WebApi.Services.Interfaces
 {
     /// <summary>
-    /// Interface of ChildService.
+    /// Interface of OrganizationService.
     /// </summary>
-    public interface IChildService
+    public interface IOrganizationService
     {
         /// <summary>
-        /// Add new Child to the database.
+        /// Add new Organization to the database.
         /// </summary>
-        /// <param name="child">ChildDTO element.</param>
+        /// <param name="organization">OrganizationDTO element.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ChildDTO> Create(ChildDTO child);
+        Task<OrganizationDTO> Create(OrganizationDTO organization);
 
         /// <summary>
-        /// Get all children from the database.
+        /// Get all organizations from database.
         /// </summary>
-        /// <returns>List of all children.</returns>
-        Task<IEnumerable<ChildDTO>> GetAll();
+        /// <returns>List of all organizations.</returns>
+        Task<IEnumerable<OrganizationDTO>> GetAll();
 
         /// <summary>
-        /// Get child with id.
+        /// Get organization by id.
         /// </summary>
         /// <param name="id">Key in table.</param>
-        /// <returns>Child.</returns>
-        Task<ChildDTO> GetById(long id);
-
+        /// <returns>Organization.</returns>
+        Task<OrganizationDTO> GetById(long id);
 
         /// <summary>
         /// Update information about element.
         /// </summary>
-        /// <param name="childDTO"></param>
+        /// <param name="organizationDTO"></param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ChildDTO> Update(ChildDTO childDTO);
+        Task<OrganizationDTO> Update(OrganizationDTO organizationDTO);
+
 
         /// <summary>
         /// Delete some element in database.

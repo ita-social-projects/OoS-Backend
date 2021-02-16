@@ -20,8 +20,9 @@ namespace OutOfSchool.Services.Repository
         /// <summary>
         /// Update information about element.
         /// </summary>
-        /// <param name="entity">Entity.</param>
-        void Update(T entity);
+        /// <param name="entity"></param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<T> Update(T entity);
 
         /// <summary>
         /// Delete element.
@@ -34,14 +35,14 @@ namespace OutOfSchool.Services.Repository
         /// Get all elements.
         /// </summary>
         /// <returns>List of all elements.</returns>
-        IEnumerable<T> GetAll();
+        Task<IEnumerable<T>> GetAll();
 
         /// <summary>
         /// Get all elements with details.
         /// </summary>
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>List of all elements with included propertires.</returns>
-        IEnumerable<T> GetAllWithDetails(string includeProperties = "");
+        Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
 
         /// <summary>
         /// Get element by Id.

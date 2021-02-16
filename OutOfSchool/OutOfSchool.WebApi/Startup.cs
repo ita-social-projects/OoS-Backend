@@ -13,6 +13,8 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Tools.Mapping;
+using OutOfSchool.WebApi.Services.Implementation;
+using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.WebApi
 {
@@ -32,11 +34,11 @@ namespace OutOfSchool.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
-            var socialGroupMapper =
-                new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
-            var sectionMapper = new MapperConfiguration(x => x.AddProfile(new WorkshopMapperProfile())).CreateMapper();
+            var socialGroupMapper = new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
+            var workshopMapper = new MapperConfiguration(x => x.AddProfile(new WorkshopMapperProfile())).CreateMapper();
             var teacherMapper = new MapperConfiguration(x => x.AddProfile(new TeacherMapperProfile())).CreateMapper();
-
+            var organizationMapper = new MapperConfiguration(x => x.AddProfile(new OrganizationMapperProfile())).CreateMapper();
+            
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
@@ -60,18 +62,20 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<ITeacherService, TeacherService>();
+            services.AddTransient<IOrganizationService, OrganizationService>();    
 
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
 
-            services.AddSingleton(sectionMapper);
+            services.AddSingleton(workshopMapper);
             services.AddSingleton(teacherMapper);
             services.AddSingleton(childMapper);
             services.AddSingleton(socialGroupMapper);
-
-            services.AddAutoMapper(typeof(Startup));
-
+            services.AddSingleton(organizationMapper);
+            
+            services.AddTransient<IOrganizationRepository, OrganizationRepository>();
+         
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
         }

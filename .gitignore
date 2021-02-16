@@ -337,3 +337,4 @@ fabric.properties
 
 .DS_Store
 OutOfSchool/OutOfSchool.Tests/coverage.opencover.xml
+OutOfSchool/.idea/.idea.OutOfSchool/.idea/*

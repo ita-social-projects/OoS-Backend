@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
+using AutoMapper;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -49,7 +51,10 @@ namespace OutOfSchool.WebApi.Models
         
         [Required]
         public OrganizationType Type { get; set; }
-
-        public OrganizationDTO Organization { get; set; }
+        
+        public static Organization ToDomain(OrganizationDTO organizationDTO , IMapper mapper)
+        {
+            return mapper.Map<OrganizationDTO, Organization>(organizationDTO);
+        }
     }
 }
