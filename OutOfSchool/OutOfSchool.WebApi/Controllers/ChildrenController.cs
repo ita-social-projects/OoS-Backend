@@ -113,8 +113,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                this.childService.Update(childDTO);
-                return this.Ok(await this.childService.GetById(childDTO.Id).ConfigureAwait(false));
+                return this.Ok(await this.childService.Update(childDTO).ConfigureAwait(false));
             }
             catch (Exception ex)
             {

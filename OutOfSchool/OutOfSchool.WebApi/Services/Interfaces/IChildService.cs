@@ -33,7 +33,8 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         /// Update info in database.
         /// </summary>
         /// <param name="childDTO">Element with new info.</param>
-        void Update(ChildDTO childDTO);
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task<ChildDTO> Update(ChildDTO childDTO);
 
 
         /// <summary>

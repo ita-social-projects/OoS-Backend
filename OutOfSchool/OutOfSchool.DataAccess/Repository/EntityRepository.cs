@@ -9,7 +9,7 @@ namespace OutOfSchool.Services.Repository
     /// <summary>
     /// Repository for accessing the database.
     /// </summary>
-    /// <typeparam name="T">Entity.</typeparam>
+    /// <typeparam name="T">Etity.</typeparam>
     public class EntityRepository<T> : IEntityRepository<T>
         where T : class, new()
     {

@@ -16,6 +16,7 @@ namespace OutOfSchool.WebApi.Services
     public class ChildService : IChildService
     {
         private IEntityRepository<Child> ChildRepository { get; set; }
+
         private readonly IMapper mapper;
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public void Update(ChildDTO childDTO)
+        public async Task<ChildDTO> Update(ChildDTO childDTO)
         {
             if (childDTO == null)
             {
@@ -100,7 +101,8 @@ namespace OutOfSchool.WebApi.Services
             }
 
             Child child = this.mapper.Map<ChildDTO, Child>(childDTO);
-            this.ChildRepository.Update(child);
+            Child newChild = await this.ChildRepository.Update(child).ConfigureAwait(false);
+            return this.mapper.Map<Child, ChildDTO>(newChild);
         }
 
         /// <inheritdoc/>
