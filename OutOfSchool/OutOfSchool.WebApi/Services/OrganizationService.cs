@@ -1,15 +1,13 @@
-﻿using AutoMapper;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Models;
 
-
-namespace OutOfSchool.WebApi.Services.Implementation
+namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
     ///  Service with business logic for Organization model.
@@ -38,24 +36,24 @@ namespace OutOfSchool.WebApi.Services.Implementation
                 throw new ArgumentNullException(nameof(organization), "Organization was null.");
             }
 
-            Organization newOrganization = mapper.Map<OrganizationDTO, Organization>(organization);
-          
-            if(OrganizationRepository.IsUnique(newOrganization))
-            {              
+            var newOrganization = mapper.Map<OrganizationDTO, Organization>(organization);
+
+            if (!OrganizationRepository.IsUnique(newOrganization))
+            {
                 throw new ArgumentException(nameof(newOrganization), "There is already an organization with such data");
             }
-            else
-            {
-                var organization_ = await OrganizationRepository.Create(newOrganization).ConfigureAwait(false);
-                return await Task.FromResult(mapper.Map<Organization, OrganizationDTO>(organization_)).ConfigureAwait(false);
-            }         
+
+            var organization_ = await OrganizationRepository.Create(newOrganization).ConfigureAwait(false);
+
+            return await Task.FromResult(mapper.Map<Organization, OrganizationDTO>(organization_))
+                .ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<OrganizationDTO>> GetAll()
         {
-            return OrganizationRepository.GetAll().Result.Select(
-                x => mapper.Map<Organization, OrganizationDTO>(x));
+            return await Task.Run(() => OrganizationRepository.GetAll().Result.Select(
+                x => mapper.Map<Organization, OrganizationDTO>(x))).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -66,7 +64,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));
             }
-            
+
             return mapper.Map<Organization, OrganizationDTO>(organization);
         }
 
@@ -103,15 +101,24 @@ namespace OutOfSchool.WebApi.Services.Implementation
                 throw new ArgumentException("Description is empty", nameof(organizationDTO));
             }
 
-            return mapper.Map<Organization, OrganizationDTO>(await OrganizationRepository
-                 .Update(OrganizationDTO.ToDomain(organizationDTO, mapper))
-                 .ConfigureAwait(false));
+            try
+            {
+                return mapper.Map<Organization, OrganizationDTO>(await OrganizationRepository
+                    .Update(mapper.Map<OrganizationDTO, Organization>(organizationDTO))
+                    .ConfigureAwait(false));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{nameof(organizationDTO)} could not be updated: {ex.Message}");
+            }
+            
         }
 
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
             OrganizationDTO organizationDTO;
+            
             try
             {
                 organizationDTO = await GetById(id).ConfigureAwait(false);
@@ -122,7 +129,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
             }
 
             await OrganizationRepository
-                .Delete(OrganizationDTO.ToDomain(organizationDTO, mapper))
+                .Delete(mapper.Map<OrganizationDTO, Organization>(organizationDTO))
                 .ConfigureAwait(false);
         }
     }

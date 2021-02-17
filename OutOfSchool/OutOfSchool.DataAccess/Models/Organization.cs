@@ -52,6 +52,6 @@ namespace OutOfSchool.Services.Models
         [Required]
         public virtual OrganizationType Type { get; set; }
         public virtual List<Workshop> Workshops { get; set; }
-        public virtual IReadOnlyCollection<User> Users { get; set; }
+        public virtual User User { get; set; }
     }
 }

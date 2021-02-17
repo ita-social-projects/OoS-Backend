@@ -1,10 +1,8 @@
-﻿using OutOfSchool.WebApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Services.Interfaces
+namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
     /// Interface of OrganizationService.
@@ -14,35 +12,34 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         /// <summary>
         /// Add new Organization to the database.
         /// </summary>
-        /// <param name="organization">OrganizationDTO element.</param>
+        /// <param name="organization">Organization entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<OrganizationDTO> Create(OrganizationDTO organization);
 
         /// <summary>
-        /// Get all organizations from database.
+        /// Get all organizations from the database.
         /// </summary>
         /// <returns>List of all organizations.</returns>
         Task<IEnumerable<OrganizationDTO>> GetAll();
 
         /// <summary>
-        /// Get organization by id.
+        /// Get organization by it's key.
         /// </summary>
-        /// <param name="id">Key in table.</param>
+        /// <param name="id">Key in the table.</param>
         /// <returns>Organization.</returns>
         Task<OrganizationDTO> GetById(long id);
 
         /// <summary>
-        /// Update information about element.
+        /// Update information about a specific Organization entity.
         /// </summary>
-        /// <param name="organizationDTO"></param>
+        /// <param name="organizationDTO">Organization entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<OrganizationDTO> Update(OrganizationDTO organizationDTO);
 
-
         /// <summary>
-        /// Delete some element in database.
+        ///  Delete organization from the database by it's key.
         /// </summary>
-        /// <param name="id">Element's key.</param>
+        /// <param name="id">Organization's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(long id);
     }

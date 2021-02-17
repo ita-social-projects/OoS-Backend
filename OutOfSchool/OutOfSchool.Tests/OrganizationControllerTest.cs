@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers;
-using OutOfSchool.WebApi.Services.Interfaces;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.Tests
 {

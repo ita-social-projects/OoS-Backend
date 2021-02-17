@@ -1,13 +1,12 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
 {
@@ -28,47 +27,37 @@ namespace OutOfSchool.WebApi.Controllers
             this.logger = logger;
             this.organizationService = organizationService;
         }
-        
-        
+
         public IActionResult TestOk()
         {
             var user = User?.FindFirst("role")?.Value;
-            return Ok("Hello to "+user ?? "unknown");
+            return Ok("Hello to " + user ?? "unknown");
         }
-        
+
         /// <summary>
-        /// Get all organization from database.
+        /// Get all organization from the database.
         /// </summary>
         /// <returns>List of all organizations.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Organization>>> GetOrganizations()
         {
-            try
-            {
-                return Ok(await organizationService.GetAll());
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(await organizationService.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Get organization by id.
+        /// Get organization by it's key.
         /// </summary>
-        /// <param name="id">Key in database.</param>
+        /// <param name="id">The key in the database.</param>
         /// <returns>Organization element with some id.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<OrganizationDTO>> GetOrganizationById(long id)
         {
-            try
-            {
-                return Ok(await organizationService.GetById(id).ConfigureAwait(false));
+            if (id == 0)
+            { 
+                return BadRequest("Id cannot be 0.");
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            return Ok(await organizationService.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -88,11 +77,13 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 organizationDTO.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
-                OrganizationDTO organization = await organizationService.Create(organizationDTO).ConfigureAwait(false);       
+                OrganizationDTO organization = await organizationService.Create(organizationDTO).ConfigureAwait(false);
                 return CreatedAtAction(
-                    nameof(GetOrganizations),
-                    new { id = organization.Id },
-                    organization);
+                    nameof(GetOrganizationById),
+                    new
+                    {
+                        id = organization.Id,
+                    });
             }
             catch (Exception ex)
             {
@@ -109,44 +100,31 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpPut]
         public async Task<ActionResult> Update(OrganizationDTO organizationDTO)
         {
-            if (organizationDTO == null)
-            {
-                return BadRequest("Entity was null.");
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            try
-            {              
-                return Ok(await organizationService.Update(organizationDTO));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(await organizationService.Update(organizationDTO).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Delete some element from database.
+        /// Delete a specific Organization entity from the database.
         /// </summary>
-        /// <param name="id">Element's key.</param>
+        /// <param name="id">Organization's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "organization,admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(long id)
         {
-            try
+            if (id == 0)
             {
-                await organizationService.Delete(id).ConfigureAwait(false);
-                return Ok();
+                return BadRequest("Id cannot be 0.");
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            await organizationService.Delete(id).ConfigureAwait(false);
+
+            return Ok();
         }
     }
 }

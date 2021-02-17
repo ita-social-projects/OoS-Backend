@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using OutOfSchool.Services.Enums;
 using AutoMapper;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
@@ -19,16 +19,16 @@ namespace OutOfSchool.WebApi.Models
             ErrorMessage = "Phone number format is incorrect. Example: XXX-XXX-XX-XX")]
         public string Phone { get; set; }
 
-        [DataType(DataType.Url)]
+        [DataType(DataType.Url)] 
         public string? Website { get; set; }
-        
-        [DataType(DataType.Url)]
+
+        [DataType(DataType.Url)] 
         public string? Facebook { get; set; }
-        
-        [DataType(DataType.Url)]
+
+        [DataType(DataType.Url)] 
         public string? Instagram { get; set; }
-        
-        [MaxLength(750)]   
+
+        [MaxLength(750)]
         [Required(ErrorMessage = "Description is required")]
         public string Description { get; set; }
 
@@ -38,23 +38,19 @@ namespace OutOfSchool.WebApi.Models
         public string MFO { get; set; }
 
         [Required(ErrorMessage = "EDRPOU code is required")]
-        [RegularExpression(@"^(\d{8}|\d{10})$", 
+        [RegularExpression(@"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU code must contain 8 or 10 digits")]
         public string EDRPOU { get; set; }
-        
+
         [Required(ErrorMessage = "INPP code is required")]
         [RegularExpression(@"^(\d{9}|\d{10}|\d{12})$",
             ErrorMessage = "INPP code must contain 12, 10 or 9 digits")]
         public string INPP { get; set; }
-        
+
         public string? Image { get; set; }
-        
-        [Required]
+
+        public long UserId { get; set; }
+        [Required] 
         public OrganizationType Type { get; set; }
-        
-        public static Organization ToDomain(OrganizationDTO organizationDTO , IMapper mapper)
-        {
-            return mapper.Map<OrganizationDTO, Organization>(organizationDTO);
-        }
     }
 }
