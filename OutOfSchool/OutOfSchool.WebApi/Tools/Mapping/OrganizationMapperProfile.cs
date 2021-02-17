@@ -1,12 +1,8 @@
 ﻿using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace OutOfSchool.WebApi.Services.Mapping
+namespace OutOfSchool.WebApi.Tools.Mapping
 {
     /// <summary>
     /// Organization Mapper. Map Organization to OrganizationDTO.
@@ -18,7 +14,7 @@ namespace OutOfSchool.WebApi.Services.Mapping
         /// </summary>
         public OrganizationMapperProfile()
         {
-            this.CreateMap<Organization, OrganizationDTO>().ReverseMap();
+            CreateMap<Organization, OrganizationDTO>().ReverseMap();
         }
     }
 }
