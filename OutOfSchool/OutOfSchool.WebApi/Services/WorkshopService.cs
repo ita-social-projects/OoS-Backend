@@ -33,16 +33,16 @@ namespace OutOfSchool.WebApi.Services
         {
             if (workshop == null)
             {
-                throw new ArgumentNullException($"{nameof(WorkshopDTO)} entity must not be null");
+                throw new ArgumentNullException($"{nameof(workshop)} entity must not be null");
             }
 
             try
             {
                 var newWorkshop = mapper.Map<WorkshopDTO, Workshop>(workshop);
 
-                await WorkshopRepository.Create(newWorkshop).ConfigureAwait(false);
+                var workshop_ = await WorkshopRepository.Create(newWorkshop).ConfigureAwait(false);
 
-                return workshop;
+                return mapper.Map<Workshop, WorkshopDTO>(workshop_);
             }
             catch (Exception ex)
             {
@@ -51,15 +51,75 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetAllWorkshops()
+        public async Task<IEnumerable<WorkshopDTO>> GetAll()
         {
-            var workshopDto = await Task.FromResult
-            (
-                WorkshopRepository.GetAll()
-                    .Select(workshop => mapper.Map<Workshop, WorkshopDTO>(workshop))
-            );
+            try
+            {
+                var workshopDto = await Task.Run(() =>
+                        WorkshopRepository.GetAll().Result
+                            .Select(workshop => mapper.Map<Workshop, WorkshopDTO>(workshop)))
+                    .ConfigureAwait(false);
 
-            return workshopDto;
+                return workshopDto;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Couldn't retrieve workshops: {ex.Message}");
+            }
+        }
+
+        public async Task<WorkshopDTO> GetById(long id)
+        {
+            var workshop = await WorkshopRepository.GetById(id).ConfigureAwait(false);
+
+            if (workshop == null)
+            {
+                throw new NullReferenceException($"There is no {nameof(workshop)} with id = {id}.");
+            }
+
+            try
+            {
+                return mapper.Map<Workshop, WorkshopDTO>(workshop);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Couldn't retrieve workshop: {ex.Message}");
+            }
+        }
+
+        public async Task<WorkshopDTO> Update(WorkshopDTO workshop)
+        {
+            if (workshop == null)
+            {
+                throw new ArgumentNullException($"{nameof(workshop)} was null.");
+            }
+
+            try
+            {
+                return mapper.Map<Workshop, WorkshopDTO>(await WorkshopRepository
+                    .Update(mapper.Map<WorkshopDTO, Workshop>(workshop))
+                    .ConfigureAwait(false));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{nameof(workshop)} could not be updated: {ex.Message}");
+            }
+        }
+
+        public async Task Delete(long id)
+        {
+            try
+            {
+                var workshopDto = await GetById(id).ConfigureAwait(false);
+
+                await WorkshopRepository
+                    .Delete(mapper.Map<WorkshopDTO, Workshop>(workshopDto))
+                    .ConfigureAwait(false);
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new ArgumentNullException(nameof(id), ex.Message);
+            }
         }
     }
 }

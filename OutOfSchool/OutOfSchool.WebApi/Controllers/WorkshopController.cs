@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -35,14 +36,22 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Workshop>>> GetWorkshops()
         {
-            try
-            {
-                return Ok(await Task.FromResult(workshopService.GetAllWorkshops()));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var workshops = await workshopService.GetAll().ConfigureAwait(false);
+
+            return Ok(workshops);
+        }
+
+        /// <summary>
+        /// Get workshop by it's id.
+        /// </summary>
+        /// <param name="id">Key in the database.</param>
+        /// <returns>Workshop entity.</returns>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<WorkshopDTO>> GetWorkshopById(long id)
+        {
+            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+
+            return Ok(workshop);
         }
 
         /// <summary>
@@ -50,6 +59,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="workshopDto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "organization,admin")]
         [HttpPost]
         public async Task<ActionResult<Workshop>> CreateWorkshop(WorkshopDTO workshopDto)
         {
@@ -58,17 +68,48 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var workshop = await workshopService.Create(workshopDto).ConfigureAwait(false);
+           
+            return CreatedAtAction(nameof(GetWorkshopById), new
             {
-                var workshop = await workshopService.Create(workshopDto).ConfigureAwait(false);
-                return CreatedAtAction(
-                    nameof(GetWorkshops),
-                    workshop);
-            }
-            catch (Exception ex)
+                id = workshop.Id,
+            });
+        }
+
+        /// <summary>
+        /// Update info about workshop entity.
+        /// </summary>
+        /// <param name="workshopDto">Workshop to update.</param>
+        /// <returns>Workshop.</returns>
+        [Authorize(Roles = "organization,admin")]
+        [HttpPut]
+        public async Task<ActionResult> Update(WorkshopDTO workshopDto)
+        {
+            if (!ModelState.IsValid)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ModelState);
             }
+
+            return Ok(await workshopService.Update(workshopDto).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Delete a specific workshop entity from the database.
+        /// </summary>
+        /// <param name="id">Workshop's key.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "parent,admin")]
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(long id)
+        {
+            if (id == 0)
+            {
+                return BadRequest("Id cannot be 0.");
+            }
+
+            await workshopService.Delete(id).ConfigureAwait(false);
+
+            return Ok();
         }
     }
 }
