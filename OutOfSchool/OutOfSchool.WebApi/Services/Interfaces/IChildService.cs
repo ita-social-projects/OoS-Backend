@@ -36,6 +36,12 @@ namespace OutOfSchool.WebApi.Services.Interfaces
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task<ChildDTO> Update(ChildDTO childDTO);
 
+        /// <summary>
+        /// Get Child by Id.
+        /// </summary>
+        /// <param name="id">Key in database.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<ChildDTO> GetByIdWithDetails(long id);
 
         /// <summary>
         /// Delete some element in database.

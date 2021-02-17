@@ -83,7 +83,7 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public async Task<T> GetByIdWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        public async Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "")
         {
             IQueryable<T> query = this.dbSet.Where(predicate);
             foreach (var includeProperty in includeProperties.Split(
@@ -94,7 +94,7 @@ namespace OutOfSchool.Services.Repository
 
             return await Task.Run(() =>
             {
-                return query.FirstOrDefault();
+                return query;
             }).ConfigureAwait(false);
         }
 

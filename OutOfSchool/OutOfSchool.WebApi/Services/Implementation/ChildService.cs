@@ -6,6 +6,7 @@ using OutOfSchool.WebApi.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Services
@@ -69,6 +70,17 @@ namespace OutOfSchool.WebApi.Services
             return await Task.Run(() =>
             {
                 return this.mapper.Map<Child, ChildDTO>(child);
+            }).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<ChildDTO> GetByIdWithDetails(long id)
+        {
+            Expression<Func<Child, bool>> filter = child => child.ChildId == id;
+            IEnumerable<Child> children = await this.ChildRepository.GetAllWIthDetails(filter, "Parent,SocialGroup").ConfigureAwait(false);
+            return await Task.Run(() =>
+            {
+                return this.mapper.Map<Child, ChildDTO>(children.FirstOrDefault());
             }).ConfigureAwait(false);
         }
 
