@@ -10,9 +10,9 @@ namespace OutOfSchool.WebApi.Services
     public interface IChildService
     {
         /// <summary>
-        /// Add new Child to the database.
+        /// Add a new Child to the database.
         /// </summary>
-        /// <param name="child">ChildDTO element.</param>
+        /// <param name="child">Child to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<ChildDTO> Create(ChildDTO child);
 
@@ -23,24 +23,24 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<ChildDTO>> GetAll();
 
         /// <summary>
-        /// Get child with id.
+        /// Get child by it's key.
         /// </summary>
-        /// <param name="id">Key in table.</param>
+        /// <param name="id">Key in the table.</param>
         /// <returns>Child.</returns>
         Task<ChildDTO> GetById(long id);
 
 
         /// <summary>
-        /// Update information about element.
+        /// Update information about child entity.
         /// </summary>
-        /// <param name="childDTO"></param>
+        /// <param name="childDTO">Child entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<ChildDTO> Update(ChildDTO childDTO);
 
         /// <summary>
         /// Delete some element in database.
         /// </summary>
-        /// <param name="id">Element's key.</param>
+        /// <param name="id">Child's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(long id);
     }

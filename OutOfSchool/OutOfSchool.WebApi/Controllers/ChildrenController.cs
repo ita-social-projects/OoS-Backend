@@ -14,7 +14,7 @@ namespace OutOfSchool.WebApi.Controllers
     /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ChildrenController : ControllerBase
     {
         private IChildService childService;
@@ -29,45 +29,37 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Get all children from database.
+        /// Get all children from the database.
         /// </summary>
         /// <returns>List of all children.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Child>>> GetChildren()
         {
-            try
-            {
-                return Ok(await childService.GetAll());
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(await childService.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Get child by id.
+        /// Get child by it's id.
         /// </summary>
-        /// <param name="id">Key in database.</param>
-        /// <returns>Child element with some id.</returns>
+        /// <param name="id">The key in the database.</param>
+        /// <returns>Child entity.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<ChildDTO>> GetChildById(long id)
         {
-            try
+            if (id == 0)
             {
-                ChildDTO childDTO = await childService.GetById(id).ConfigureAwait(false);
-                return Ok(childDTO);
+                return BadRequest("Id cannot be 0.");
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            
+            var childDTO = await childService.GetById(id).ConfigureAwait(false);
+
+            return Ok(childDTO);
         }
 
         /// <summary>
-        /// Method for create new child.
+        /// Method for creating a new child.
         /// </summary>
-        /// <param name="childDTO">Element which must be added.</param>
+        /// <param name="childDTO">Child entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPost]
@@ -78,67 +70,50 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                ChildDTO child = await childService.Create(childDTO).ConfigureAwait(false);
-                return CreatedAtAction(
-                    nameof(GetChildren),
-                    new { id = child.Id },
-                    child);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var child = await childService.Create(childDTO).ConfigureAwait(false);
+
+            return CreatedAtAction(
+                nameof(GetChildById),
+                new
+                {
+                    id = child.Id,
+                });
         }
 
         /// <summary>
-        /// Update info about some child in database.
+        /// Update info about a specific child in the database.
         /// </summary>
-        /// <param name="childDTO">Entity.</param>
+        /// <param name="childDTO">Child entity.</param>
         /// <returns>Child's key.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPut]
         public async Task<ActionResult> Update(ChildDTO childDTO)
         {
-            if (childDTO == null)
-            {
-                return BadRequest("Entity was null.");
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            try
-            {               
-                return Ok(await childService.Update(childDTO));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(await childService.Update(childDTO).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Delete some element from database.
+        /// Delete a specific Child entity from the database.
         /// </summary>
-        /// <param name="id">Element's key.</param>
+        /// <param name="id">Child's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(long id)
         {
-            try
+            if (id == 0)
             {
-                await childService.Delete(id).ConfigureAwait(false);
-                return Ok();
+                return BadRequest("Id cannot be 0.");
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            await childService.Delete(id).ConfigureAwait(false);
+            
+            return Ok();
         }
     }
 }

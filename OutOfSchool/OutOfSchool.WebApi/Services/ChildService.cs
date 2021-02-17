@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildService"/> class.
         /// </summary>
-        /// <param name="entityRepository">Repository for some entity.</param>
+        /// <param name="entityRepository">Repository for the Child entity.</param>
         /// <param name="mapper">Mapper.</param>
         public ChildService(IEntityRepository<Child> entityRepository, IMapper mapper)
         {
@@ -41,33 +41,47 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException("Invalid Date of birth");
             }
 
-            Child newChild = mapper.Map<ChildDTO, Child>(child);
-            var child_ = await ChildRepository.Create(newChild).ConfigureAwait(false);
-            return await Task.FromResult(mapper.Map<Child, ChildDTO>(child_)).ConfigureAwait(false);
+            try
+            {
+                var newChild = mapper.Map<ChildDTO, Child>(child);
+
+                var child_ = await ChildRepository.Create(newChild).ConfigureAwait(false);
+
+                return mapper.Map<Child, ChildDTO>(child_);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{nameof(child)} could not be saved: {ex.Message}");
+            }
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ChildDTO>> GetAll()
         {
-            IEnumerable<ChildDTO> childrenDTO = ChildRepository.GetAll().Result.Select(
-                x => mapper.Map<Child, ChildDTO>(x));
+            try
+            {
+                var childrenDto = await Task.Run(() => ChildRepository.GetAll().Result.Select(
+                    x => mapper.Map<Child, ChildDTO>(x))).ConfigureAwait(false);
 
-            return childrenDTO;
+                return childrenDto;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Couldn't retrieve Children: {ex.Message}");
+            }
         }
 
         /// <inheritdoc/>
         public async Task<ChildDTO> GetById(long id)
         {
-            Child child = ChildRepository.GetById(id).Result;
+            var child = await ChildRepository.GetById(id).ConfigureAwait(false);
+
             if (child == null)
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));
             }
 
-            return await Task.Run(() =>
-            {
-                return mapper.Map<Child, ChildDTO>(child);
-            }).ConfigureAwait(false);
+            return mapper.Map<Child, ChildDTO>(child);
         }
 
         /// <inheritdoc/>
@@ -98,15 +112,23 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException("Empty middlename.", nameof(childDTO));
             }
 
-            return mapper.Map<Child, ChildDTO>(await ChildRepository
-                 .Update(mapper.Map<ChildDTO, Child>(childDTO))
-                 .ConfigureAwait(false));
+            try
+            {
+                return mapper.Map<Child, ChildDTO>(await ChildRepository
+                    .Update(mapper.Map<ChildDTO, Child>(childDTO))
+                    .ConfigureAwait(false));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{nameof(childDTO)} could not be updated: {ex.Message}");
+            }
         }
 
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
             ChildDTO childDTO;
+
             try
             {
                 childDTO = await GetById(id).ConfigureAwait(false);
@@ -114,8 +136,8 @@ namespace OutOfSchool.WebApi.Services
             catch (ArgumentNullException ex)
             {
                 throw new ArgumentNullException(nameof(id), ex.Message);
-            } 
-            
+            }
+
             await ChildRepository
                 .Delete(mapper.Map<ChildDTO, Child>(childDTO))
                 .ConfigureAwait(false);
