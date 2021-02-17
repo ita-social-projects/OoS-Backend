@@ -12,7 +12,7 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Add a new Teacher to the database.
         /// </summary>
-        /// <param name="teacher">Entity which needs to be added.</param>
+        /// <param name="teacher">Teacher to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<TeacherDTO> Create(TeacherDTO teacher);
         
@@ -21,5 +21,26 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <returns>List of all teachers.</returns>
         Task<IEnumerable<TeacherDTO>> GetAllTeachers();
+
+        /// <summary>
+        /// Get teacher by it's key.
+        /// </summary>
+        /// <param name="id">Teacher's key.</param>
+        /// <returns>Teacher.</returns>
+        Task<TeacherDTO> GetById(long id);
+
+        /// <summary>
+        /// Update information about a specific teacher.
+        /// </summary>
+        /// <param name="teacher">Teacher to update.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<TeacherDTO> Update(TeacherDTO teacher);
+
+        /// <summary>
+        /// Delete teacher from the database by it's key.
+        /// </summary>
+        /// <param name="id">Teacher's key.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task Delete(long id);
     }
 }

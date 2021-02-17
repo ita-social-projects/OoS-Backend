@@ -40,9 +40,9 @@ namespace OutOfSchool.WebApi.Services
             {
                 var newTeacher = mapper.Map<TeacherDTO, Teacher>(teacher);
 
-                await TeacherRepository.Create(newTeacher).ConfigureAwait(false);
+                var teacher_ = await TeacherRepository.Create(newTeacher).ConfigureAwait(false);
 
-                return teacher;
+                return mapper.Map<Teacher, TeacherDTO>(teacher_);
             }
             catch (Exception ex)
             {
@@ -53,13 +53,70 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<TeacherDTO>> GetAllTeachers()
         {
-            var teachers = await Task.FromResult
-            (
-                TeacherRepository.GetAll()
-                    .Select(teacher => mapper.Map<Teacher, TeacherDTO>(teacher))
-            );
+            try
+            {
+                var teachers = await Task.Run(() =>
+                        TeacherRepository.GetAll().Result
+                            .Select(teacher => mapper.Map<Teacher, TeacherDTO>(teacher)))
+                    .ConfigureAwait(false);
 
-            return teachers;
+                return teachers;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Couldn't retrieve Teachers: {ex.Message}");
+            }
+        }
+
+        public async Task<TeacherDTO> GetById(long id)
+        {
+            var teacher = await TeacherRepository.GetById(id).ConfigureAwait(false);
+
+            if (teacher == null)
+            {
+                throw new ArgumentNullException($"There is no {nameof(teacher)} with id = {id}.");
+            }
+
+            return mapper.Map<Teacher, TeacherDTO>(teacher);
+        }
+
+        public async Task<TeacherDTO> Update(TeacherDTO teacher)
+        {
+            if (teacher == null)
+            {
+                throw new ArgumentNullException($"{nameof(teacher)} was null.");
+            }
+
+            try
+            {
+                await TeacherRepository.Update(mapper.Map<TeacherDTO, Teacher>(teacher)).ConfigureAwait(false);
+
+                return mapper.Map<Teacher, TeacherDTO>(await TeacherRepository
+                    .Update(mapper.Map<TeacherDTO, Teacher>(teacher))
+                    .ConfigureAwait(false));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{nameof(TeacherDTO)} could not be updated: {ex.Message}");
+            }
+        }
+
+        public async Task Delete(long id)
+        {
+            TeacherDTO teacherDto;
+
+            try
+            {
+                teacherDto = await GetById(id).ConfigureAwait(false);
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new ArgumentNullException(nameof(id), ex.Message);
+            }
+
+            await TeacherRepository
+                .Delete(mapper.Map<TeacherDTO, Teacher>(teacherDto))
+                .ConfigureAwait(false);
         }
     }
 }

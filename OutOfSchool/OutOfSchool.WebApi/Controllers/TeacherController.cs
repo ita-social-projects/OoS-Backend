@@ -14,7 +14,7 @@ namespace OutOfSchool.WebApi.Controllers
     /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer ")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class TeacherController : ControllerBase
     {
         private readonly ITeacherService teacherService;
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.teacherService = teacherService;
         }
-        
+
         /// <summary>
         /// Get all teachers from the database.
         /// </summary>
@@ -35,14 +35,25 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Teacher>>> GetTeachers()
         {
-            try
+            return Ok(await teacherService.GetAllTeachers().ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get teacher by it's id.
+        /// </summary>
+        /// <param name="id">Teacher's key.</param>
+        /// <returns>Teacher.</returns>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<TeacherDTO>> GetTeacherById(long id)
+        {
+            if (id == 0)
             {
-                return Ok(await teacherService.GetAllTeachers());
+                return BadRequest("Id cannot be 0.");
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            var teacherDto = await teacherService.GetById(id).ConfigureAwait(false);
+
+            return Ok(teacherDto);
         }
 
         /// <summary>
@@ -51,24 +62,57 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="teacherDto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPost]
-        public async Task<ActionResult<Teacher>> Create(TeacherDTO teacherDto)
+        public async Task<ActionResult<Teacher>> CreateTeacher(TeacherDTO teacherDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            try
+            var teacher = await teacherService.Create(teacherDto).ConfigureAwait(false);
+
+            return CreatedAtAction(
+                nameof(GetTeacherById),
+                new
+                {
+                    id = teacher.Id,
+                });
+        }
+
+        /// <summary>
+        /// Update info about a specific teacher in the database.
+        /// </summary>
+        /// <param name="teacherDto">Teacher to update.</param>
+        /// <returns>Teacher's key.</returns>
+        [Authorize(Roles = "organization,admin")]
+        [HttpPut]
+        public async Task<ActionResult> Update(TeacherDTO teacherDto)
+        {
+            if (!ModelState.IsValid)
             {
-                var teacher = await teacherService.Create(teacherDto).ConfigureAwait(false);
-                return CreatedAtAction(
-                    nameof(GetTeachers),
-                    teacher);
+                return BadRequest(ModelState);
             }
-            catch (Exception ex)
+
+            return Ok(await teacherService.Update(teacherDto).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Delete a specific Teacher entity from the database.
+        /// </summary>
+        /// <param name="id">Teacher's key.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "organization,admin")]
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(long id)
+        {
+            if (id == 0)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("Id cannot be 0.");
             }
+
+            await teacherService.Delete(id).ConfigureAwait(false);
+
+            return Ok();
         }
     }
 }
