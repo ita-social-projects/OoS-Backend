@@ -58,7 +58,7 @@ namespace OutOfSchool
             services.AddControllers();
             
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
+                builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();

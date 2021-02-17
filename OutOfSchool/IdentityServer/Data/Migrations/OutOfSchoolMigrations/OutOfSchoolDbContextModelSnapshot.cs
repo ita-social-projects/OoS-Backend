@@ -150,9 +150,55 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MiddleName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("ParentId1")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("SocialGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("SocialGroupId1")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId1");
+
+                    b.HasIndex("SocialGroupId1");
+
+                    b.ToTable("Children");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Organization", b =>
                 {
-                    b.Property<long>("OrganizationId")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .UseIdentityColumn();
@@ -190,17 +236,20 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Website")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("OrganizationId");
+                    b.HasKey("Id");
 
                     b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
-                    b.Property<long>("ParentId")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .UseIdentityColumn();
@@ -213,9 +262,24 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ParentId");
+                    b.HasKey("Id");
 
                     b.ToTable("Parents");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SocialGroup");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
@@ -257,6 +321,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<long?>("OrganizationId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -285,6 +352,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("AspNetUsers");
                 });
@@ -338,6 +407,43 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId1");
+
+                    b.HasOne("OutOfSchool.Services.Models.SocialGroup", "SocialGroup")
+                        .WithMany("Children")
+                        .HasForeignKey("SocialGroupId1");
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("SocialGroup");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Organization", null)
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationId");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Organization", b =>
+                {
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
+                {
+                    b.Navigation("Children");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
+                {
+                    b.Navigation("Children");
                 });
 #pragma warning restore 612, 618
         }
