@@ -70,9 +70,8 @@ namespace OutOfSchool.Tests.IdentityServerTests
                 .Returns(Task.CompletedTask);
             mockInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult(logoutRequest));
-            // Act
 
-            // Assert
+            // Act & Assert
             var ex = Assert.ThrowsAsync<NotImplementedException>(
                 () => CreateAuthController.Logout("Any logout ID"));
         }
@@ -216,7 +215,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
             // Assert
             Assert.IsInstanceOf<ViewResult>(result);
         }
-
+    
         [Test]
         public async Task ExternalLoginNotImplemented()
         {
