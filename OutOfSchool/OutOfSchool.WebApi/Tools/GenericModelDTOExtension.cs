@@ -15,7 +15,14 @@ namespace OutOfSchool.WebApi.Tools
             return mapper.Map<U, T>(obj);
         }
 
-
+        /// <summary>
+        /// wdwdwdwdwdwwd
+        /// </summary>
+        /// <typeparam name="U"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="mapper"></param>
+        /// <returns></returns>
         public static U ToModel<U, T>(this T obj, IMapper mapper)
            where T : class
            where U : class
