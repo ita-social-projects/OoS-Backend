@@ -3,7 +3,7 @@ using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Tools.Mapping
+namespace OutOfSchool.WebApi.Mapping
 {
     /// <summary>
     /// SocialGroup Mapper. Map SocialGroup to SocialGroupDTO.
