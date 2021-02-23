@@ -37,10 +37,11 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task Delete(T entity)
         {
-            this.dbSet.Remove(entity);
+           
+            this.dbSet.Remove(entity);        
             await this.dbContext.SaveChangesAsync();
         }
-
+        
         /// <inheritdoc/>
         public async Task<IEnumerable<T>> GetAll()
         {

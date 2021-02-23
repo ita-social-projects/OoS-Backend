@@ -40,12 +40,11 @@ namespace OutOfSchool.Services.Models
             ErrorMessage = "INPP code should contain 12, 10 or 9 digits")]
         public string INPP { get; set; }
         
-        [DataType(DataType.ImageUrl)]
-        public byte[]? Image { get; set; }
+        //[DataType(DataType.ImageUrl)]
+        //public byte[]? Image { get; set; }
         
         [Required]
         public OrganizationType Type { get; set; }
-        public long UserId { get; set; }
-        public virtual IReadOnlyCollection<User> Users { get; set; }
+        public long UserId { get; set; } 
     }
 }

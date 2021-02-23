@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers;
+using OutOfSchool.WebApi.Services.Implementation;
 using OutOfSchool.WebApi.Services.Interfaces;
 
 namespace OutOfSchool.Tests
@@ -17,6 +18,7 @@ namespace OutOfSchool.Tests
         {
             _logger = new Mock<ILogger<OrganizationController>>().Object;
             organizationService = new Mock<IOrganizationService>().Object;
+           
         }
         [SetUp]
         public void Setup()
@@ -26,7 +28,9 @@ namespace OutOfSchool.Tests
         [Test]
         public void Test1()
         {
+            
             CreateOrganizationController.TestOk();
+            
             Assert.Pass();
         }
     }

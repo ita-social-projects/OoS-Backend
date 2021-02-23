@@ -3,6 +3,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Interfaces;
+using OutOfSchool.WebApi.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,9 +104,10 @@ namespace OutOfSchool.WebApi.Services.Implementation
                 throw new ArgumentException("Description is empty", nameof(organizationDTO));
             }
 
-            return mapper.Map<Organization, OrganizationDTO>(await OrganizationRepository
-                 .Update(OrganizationDTO.ToDomain(organizationDTO, mapper))
-                 .ConfigureAwait(false));
+            return (await OrganizationRepository
+                 .Update(organizationDTO.ToDomain<Organization, OrganizationDTO>(mapper))
+                 .ConfigureAwait(false))
+                 .ToModel<OrganizationDTO, Organization>(mapper);
         }
 
         /// <inheritdoc/>
@@ -122,7 +124,7 @@ namespace OutOfSchool.WebApi.Services.Implementation
             }
 
             await OrganizationRepository
-                .Delete(OrganizationDTO.ToDomain(organizationDTO, mapper))
+                .Delete(mapper.Map<OrganizationDTO, Organization>(organizationDTO))
                 .ConfigureAwait(false);
         }
     }
