@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Mapping.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -14,102 +15,99 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class OrganizationService : IOrganizationService
     {
-        private IOrganizationRepository OrganizationRepository { get; set; }
-        private readonly IMapper mapper;
+        private IOrganizationRepository _repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrganizationService"/> class.
         /// </summary>
         /// <param name="entityRepository">Repository for some entity.</param>
-        /// <param name="mapper">Mapper.</param>
-        public OrganizationService(IOrganizationRepository entityRepository, IMapper mapper)
+        public OrganizationService(IOrganizationRepository entityRepository)
         {
-            OrganizationRepository = entityRepository;
-            this.mapper = mapper;
+            _repository = entityRepository;
         }
 
         /// <inheritdoc/>
-        public async Task<OrganizationDTO> Create(OrganizationDTO organization)
+        public async Task<OrganizationDTO> Create(OrganizationDTO organizationDto)
         {
-            if (organization == null)
+            if (organizationDto == null)
             {
-                throw new ArgumentNullException(nameof(organization), "Organization was null.");
+                throw new ArgumentNullException(nameof(organizationDto), "Organization was null.");
             }
 
-            var newOrganization = mapper.Map<OrganizationDTO, Organization>(organization);
+            var organization = organizationDto.ToDomain();
 
-            if (!OrganizationRepository.IsUnique(newOrganization))
+            if (!_repository.IsUnique(organization))
             {
-                throw new ArgumentException(nameof(newOrganization), "There is already an organization with such data");
+                throw new ArgumentException(nameof(organization), "There is already an organizationDto with such data");
             }
 
-            var organization_ = await OrganizationRepository.Create(newOrganization).ConfigureAwait(false);
+            var newOrganization = await _repository.Create(organization).ConfigureAwait(false);
 
-            return await Task.FromResult(mapper.Map<Organization, OrganizationDTO>(organization_))
-                .ConfigureAwait(false);
+            return newOrganization.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<OrganizationDTO>> GetAll()
         {
-            return await Task.Run(() => OrganizationRepository.GetAll().Result.Select(
-                x => mapper.Map<Organization, OrganizationDTO>(x))).ConfigureAwait(false);
+             var organizations = await _repository.GetAll().ConfigureAwait(false);
+            
+             return organizations.Select(organization => organization.ToModel());
         }
 
         /// <inheritdoc/>
         public async Task<OrganizationDTO> GetById(long id)
         {
-            var organization = await OrganizationRepository.GetById(id).ConfigureAwait(false);
+            var organization = await _repository.GetById(id).ConfigureAwait(false);
             if (organization == null)
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));
             }
 
-            return mapper.Map<Organization, OrganizationDTO>(organization);
+            return organization.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<OrganizationDTO> Update(OrganizationDTO organizationDTO)
+        public async Task<OrganizationDTO> Update(OrganizationDTO organizationDto)
         {
-            if (organizationDTO == null)
+            if (organizationDto == null)
             {
-                throw new ArgumentNullException(nameof(organizationDTO), "Organization was null.");
+                throw new ArgumentNullException(nameof(organizationDto), "Organization was null.");
             }
 
-            if (organizationDTO.EDRPOU.Length == 0)
+            if (organizationDto.EDRPOU.Length == 0)
             {
-                throw new ArgumentException("EDRPOU code is empty", nameof(organizationDTO));
+                throw new ArgumentException("EDRPOU code is empty", nameof(organizationDto));
             }
 
-            if (organizationDTO.INPP.Length == 0)
+            if (organizationDto.INPP.Length == 0)
             {
-                throw new ArgumentException("INPP code is empty", nameof(organizationDTO));
+                throw new ArgumentException("INPP code is empty", nameof(organizationDto));
             }
 
-            if (organizationDTO.MFO.Length == 0)
+            if (organizationDto.MFO.Length == 0)
             {
-                throw new ArgumentException("MFO code is empty", nameof(organizationDTO));
+                throw new ArgumentException("MFO code is empty", nameof(organizationDto));
             }
 
-            if (organizationDTO.Title.Length == 0)
+            if (organizationDto.Title.Length == 0)
             {
-                throw new ArgumentException("Title is empty", nameof(organizationDTO));
+                throw new ArgumentException("Title is empty", nameof(organizationDto));
             }
 
-            if (organizationDTO.Description.Length == 0)
+            if (organizationDto.Description.Length == 0)
             {
-                throw new ArgumentException("Description is empty", nameof(organizationDTO));
+                throw new ArgumentException("Description is empty", nameof(organizationDto));
             }
 
             try
             {
-                return mapper.Map<Organization, OrganizationDTO>(await OrganizationRepository
-                    .Update(mapper.Map<OrganizationDTO, Organization>(organizationDTO))
-                    .ConfigureAwait(false));
+                var organization = await _repository.Update(organizationDto.ToDomain()).ConfigureAwait(false);
+              
+                return organization.ToModel();
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(organizationDTO)} could not be updated: {ex.Message}");
+                throw new Exception($"{nameof(organizationDto)} could not be updated: {ex.Message}");
             }
             
         }
@@ -117,19 +115,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            OrganizationDTO organizationDTO;
+            OrganizationDTO organizationDto;
             
             try
             {
-                organizationDTO = await GetById(id).ConfigureAwait(false);
+                organizationDto = await GetById(id).ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)
             {
                 throw new ArgumentNullException(nameof(id), ex.Message);
             }
 
-            await OrganizationRepository
-                .Delete(mapper.Map<OrganizationDTO, Organization>(organizationDTO))
+            await _repository
+                .Delete(organizationDto.ToDomain())
                 .ConfigureAwait(false);
         }
     }

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using NuGet.Frameworks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Mapping.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -14,35 +16,32 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class WorkshopService : IWorkshopService
     {
-        private IEntityRepository<Workshop> WorkshopRepository { get; set; }
-        private readonly IMapper mapper;
+        private IEntityRepository<Workshop> _repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
-        /// <param name="mapper">Mapper instance.</param>
-        /// <param name="workshopRepository">Repository for Workshop entity.</param>
-        public WorkshopService(IMapper mapper, IEntityRepository<Workshop> workshopRepository)
+        /// <param name="repository">Repository for Workshop entity.</param>
+        public WorkshopService(EntityRepository<Workshop> repository)
         {
-            this.mapper = mapper;
-            WorkshopRepository = workshopRepository;
+            _repository = repository;
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> Create(WorkshopDTO workshop)
+        public async Task<WorkshopDTO> Create(WorkshopDTO workshopDto)
         {
-            if (workshop == null)
+            if (workshopDto == null)
             {
-                throw new ArgumentNullException($"{nameof(workshop)} entity must not be null");
+                throw new ArgumentNullException($"{nameof(workshopDto)} entity must not be null");
             }
 
             try
             {
-                var newWorkshop = mapper.Map<WorkshopDTO, Workshop>(workshop);
+                var workshop = workshopDto.ToDomain();
 
-                var workshop_ = await WorkshopRepository.Create(newWorkshop).ConfigureAwait(false);
+                var newWorkshop = await _repository.Create(workshop).ConfigureAwait(false);
 
-                return mapper.Map<Workshop, WorkshopDTO>(workshop_);
+                return newWorkshop.ToModel();
             }
             catch (Exception ex)
             {
@@ -55,12 +54,11 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var workshopDto = await Task.Run(() =>
-                        WorkshopRepository.GetAll().Result
-                            .Select(workshop => mapper.Map<Workshop, WorkshopDTO>(workshop)))
-                    .ConfigureAwait(false);
+                var workshops = await _repository.GetAll().ConfigureAwait(false);
 
-                return workshopDto;
+                var workshopsDto = workshops.Select(workshop => workshop.ToModel());
+
+                return workshopsDto;
             }
             catch (Exception ex)
             {
@@ -70,7 +68,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<WorkshopDTO> GetById(long id)
         {
-            var workshop = await WorkshopRepository.GetById(id).ConfigureAwait(false);
+            var workshop = await _repository.GetById(id).ConfigureAwait(false);
 
             if (workshop == null)
             {
@@ -79,30 +77,30 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                return mapper.Map<Workshop, WorkshopDTO>(workshop);
+                return workshop.ToModel();
             }
             catch (Exception ex)
             {
-                throw new Exception($"Couldn't retrieve workshop: {ex.Message}");
+                throw new Exception($"Couldn't retrieve workshopDto: {ex.Message}");
             }
         }
 
-        public async Task<WorkshopDTO> Update(WorkshopDTO workshop)
+        public async Task<WorkshopDTO> Update(WorkshopDTO workshopDto)
         {
-            if (workshop == null)
+            if (workshopDto == null)
             {
-                throw new ArgumentNullException($"{nameof(workshop)} was null.");
+                throw new ArgumentNullException($"{nameof(workshopDto)} was null.");
             }
 
             try
             {
-                return mapper.Map<Workshop, WorkshopDTO>(await WorkshopRepository
-                    .Update(mapper.Map<WorkshopDTO, Workshop>(workshop))
-                    .ConfigureAwait(false));
+                var workshop = await _repository.Update(workshopDto.ToDomain()).ConfigureAwait(false);
+
+                return workshop.ToModel();
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(workshop)} could not be updated: {ex.Message}");
+                throw new Exception($"{nameof(workshopDto)} could not be updated: {ex.Message}");
             }
         }
 
@@ -112,8 +110,8 @@ namespace OutOfSchool.WebApi.Services
             {
                 var workshopDto = await GetById(id).ConfigureAwait(false);
 
-                await WorkshopRepository
-                    .Delete(mapper.Map<WorkshopDTO, Workshop>(workshopDto))
+                await _repository
+                    .Delete(workshopDto.ToDomain())
                     .ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)

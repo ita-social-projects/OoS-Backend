@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Mapping.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -14,35 +15,32 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class TeacherService : ITeacherService
     {
-        private IEntityRepository<Teacher> TeacherRepository { get; set; }
-        private readonly IMapper mapper;
+        private IEntityRepository<Teacher> _repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TeacherService"/> class.
         /// </summary>
-        /// <param name="mapper">Mapper.</param>
-        /// <param name="teacherRepository">Repository for Teacher entity.</param>
-        public TeacherService(IMapper mapper, IEntityRepository<Teacher> teacherRepository)
+        /// <param name="repository">Repository for Teacher entity.</param>
+        public TeacherService(IEntityRepository<Teacher> repository)
         {
-            this.mapper = mapper;
-            TeacherRepository = teacherRepository;
+            _repository = repository;
         }
 
         /// <inheritdoc/>
-        public async Task<TeacherDTO> Create(TeacherDTO teacher)
+        public async Task<TeacherDTO> Create(TeacherDTO teacherDto)
         {
-            if (teacher == null)
+            if (teacherDto == null)
             {
                 throw new ArgumentNullException($"{nameof(TeacherDTO)} entity must not be null");
             }
 
             try
             {
-                var newTeacher = mapper.Map<TeacherDTO, Teacher>(teacher);
+                var teacher = teacherDto.ToDomain();
 
-                var teacher_ = await TeacherRepository.Create(newTeacher).ConfigureAwait(false);
+                var newTeacher = await _repository.Create(teacher).ConfigureAwait(false);
 
-                return mapper.Map<Teacher, TeacherDTO>(teacher_);
+                return newTeacher.ToModel();
             }
             catch (Exception ex)
             {
@@ -55,12 +53,10 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var teachers = await Task.Run(() =>
-                        TeacherRepository.GetAll().Result
-                            .Select(teacher => mapper.Map<Teacher, TeacherDTO>(teacher)))
-                    .ConfigureAwait(false);
+                var teachers = await _repository.GetAll().ConfigureAwait(false);
+                var teachersDto = teachers.Select(teacher => teacher.ToModel());
 
-                return teachers;
+                return teachersDto;
             }
             catch (Exception ex)
             {
@@ -70,30 +66,28 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<TeacherDTO> GetById(long id)
         {
-            var teacher = await TeacherRepository.GetById(id).ConfigureAwait(false);
+            var teacher = await _repository.GetById(id).ConfigureAwait(false);
 
             if (teacher == null)
             {
                 throw new ArgumentNullException($"There is no {nameof(teacher)} with id = {id}.");
             }
 
-            return mapper.Map<Teacher, TeacherDTO>(teacher);
+            return teacher.ToModel();
         }
 
-        public async Task<TeacherDTO> Update(TeacherDTO teacher)
+        public async Task<TeacherDTO> Update(TeacherDTO teacherDto)
         {
-            if (teacher == null)
+            if (teacherDto == null)
             {
-                throw new ArgumentNullException($"{nameof(teacher)} was null.");
+                throw new ArgumentNullException($"{nameof(teacherDto)} was null.");
             }
 
             try
             {
-                await TeacherRepository.Update(mapper.Map<TeacherDTO, Teacher>(teacher)).ConfigureAwait(false);
-
-                return mapper.Map<Teacher, TeacherDTO>(await TeacherRepository
-                    .Update(mapper.Map<TeacherDTO, Teacher>(teacher))
-                    .ConfigureAwait(false));
+                var teacher = await _repository.Update(teacherDto.ToDomain()).ConfigureAwait(false);
+              
+                return teacher.ToModel();
             }
             catch (Exception ex)
             {
@@ -114,8 +108,8 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException(nameof(id), ex.Message);
             }
 
-            await TeacherRepository
-                .Delete(mapper.Map<TeacherDTO, Teacher>(teacherDto))
+            await _repository
+                .Delete(teacherDto.ToDomain())
                 .ConfigureAwait(false);
         }
     }
