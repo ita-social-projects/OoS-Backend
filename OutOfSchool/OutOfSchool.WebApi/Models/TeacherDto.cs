@@ -9,18 +9,23 @@ namespace OutOfSchool.WebApi.Models
 
         [Required(ErrorMessage = "First name is required")]
         [DataType(DataType.Text)]
+        [MaxLength(30)]
+        [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "First name cannot contains digits")]
         public string FirstName { get; set; }
 
         [Required(ErrorMessage = "Last name is required")]
         [DataType(DataType.Text)]
+        [MaxLength(30)]
+        [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Last name cannot contains digits")]
         public string LastName { get; set; }
 
         [Required(ErrorMessage = "Middle name is required")]
         [DataType(DataType.Text)]
+        [MaxLength(30)]
+        [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Middle name cannot contains digits")]
         public string MiddleName { get; set; }
 
-        [Required(ErrorMessage = "Short description is required")]
-        [DataType(DataType.MultilineText)]
+        [MaxLength(300)]
         public string Description { get; set; }
 
         public string? Image { get; set; }

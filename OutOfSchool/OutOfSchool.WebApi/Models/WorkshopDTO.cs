@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.IO;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -8,14 +11,15 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        [DataType(DataType.Text)]
         [Required(ErrorMessage = "Group title is required")]
+        [MinLength(1)]
+        [MaxLength(60)]
         public string Title { get; set; }
 
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
-        [RegularExpression(@"((\+)?\b(38)?(0[\d]{2}))([\d-]{7})",
-            ErrorMessage = "Phone number format is incorrect. Example: 050-123-45-67")]
+        [RegularExpression(@"([\d]{9})",
+            ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
         public string Phone { get; set; }
 
@@ -23,43 +27,59 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "Email is required")]
         public string Email { get; set; }
 
-        [DataType(DataType.Url)]
+        [MaxLength(30)]
         public string? Website { get; set; }
 
-        [DataType(DataType.Url)]
+        [MaxLength(30)]
         public string? Facebook { get; set; }
 
-        [DataType(DataType.Url)]
-        public string? Istagram { get; set; }
+        [MaxLength(30)]
+        public string? Instagram { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Specify children' min age")] 
+        [Range(0, 16, ErrorMessage = "Min age should be a number from 0 to 16")]
         public int MinAge { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Specify children' max age")] 
+        [Range(0, 16, ErrorMessage = "Max age should be a number from 0 to 16")]
         public int MaxAge { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Specify how many times per week lessons will be held")] 
+        [Range(1, 7, ErrorMessage = "Field should be a digit from 1 to 7")]
         public int DaysPerWeek { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
+        [Column(TypeName = "decimal(18,2)")] 
+        [Range(1, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal? Price { get; set; }
-
+        
         [Required(ErrorMessage = "Description is required")]
         [RegularExpression(@"(^\d+(,\d{1,2})?$)")]
-        [DataType(DataType.MultilineText)]
+        [MaxLength(500)]
         public string Description { get; set; }
 
         public bool WithDisabilityOptions { get; set; }
 
-        [DataType(DataType.MultilineText)]
+        [MaxLength(200)]
         public string? DisabilityOptionsDesc { get; set; }
 
         public string? Image { get; set; }
-
-        public SubcategoryDTO Subcategory { get; set; }
         
+        [Required(ErrorMessage = "Enter information about the head of workshop")]
+        [MaxLength(50, ErrorMessage = "Field should be longer than 50 characters")]
+        public string Head { get; set; }
+
+        [Required(ErrorMessage = "Head's birthday should be specified")]
+        [DataType(DataType.Date)]
+        public DateTime HeadBirthDate { get; set; }
+
+        public CategoryDTO Category { get; set; }
         public virtual AddressDTO Address { get; set; }
         public virtual OrganizationDTO Organization { get; set; }
         public virtual List<TeacherDTO> Teachers { get; set; }
+        
+        // public static WorkshopDTO ToModel(Workshop workshop)
+        // {
+        //     return AutoMapper.Mapper.Map<WorkshopDTO>(workshop);
+        // }
     }
 }
