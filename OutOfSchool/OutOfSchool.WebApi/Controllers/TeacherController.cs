@@ -51,9 +51,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest("Id cannot be 0.");
             }
 
-            var teacherDto = await teacherService.GetById(id).ConfigureAwait(false);
-
-            return Ok(teacherDto);
+            return Ok(await teacherService.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -61,6 +59,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="teacherDto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "organization,admin")]
         [HttpPost]
         public async Task<ActionResult<Teacher>> CreateTeacher(TeacherDTO teacherDto)
         {

@@ -12,9 +12,9 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Add a new Child to the database.
         /// </summary>
-        /// <param name="child">Child to add.</param>
+        /// <param name="childDTo">Child to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ChildDTO> Create(ChildDTO child);
+        Task<ChildDTO> Create(ChildDTO childDTo);
 
         /// <summary>
         /// Get all children from the database.
@@ -23,7 +23,7 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<ChildDTO>> GetAll();
 
         /// <summary>
-        /// Get child by it's key.
+        /// Get childDTo by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Child.</returns>
@@ -31,11 +31,11 @@ namespace OutOfSchool.WebApi.Services
 
 
         /// <summary>
-        /// Update information about child entity.
+        /// Update information about childDTo entity.
         /// </summary>
-        /// <param name="childDTO">Child entity to update.</param>
+        /// <param name="childDto">Child entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ChildDTO> Update(ChildDTO childDTO);
+        Task<ChildDTO> Update(ChildDTO childDto);
 
         /// <summary>
         /// Delete some element in database.

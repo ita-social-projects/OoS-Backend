@@ -10,11 +10,11 @@ namespace OutOfSchool.WebApi.Services
     public interface IWorkshopService
     {
         /// <summary>
-        /// Add a new workshop to the database.
+        /// Add a new workshopDto to the database.
         /// </summary>
-        /// <param name="workshop">Workshop to add.</param>
+        /// <param name="workshopDto">Workshop to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<WorkshopDTO> Create(WorkshopDTO workshop);
+        Task<WorkshopDTO> Create(WorkshopDTO workshopDto);
 
         /// <summary>
         /// Get all workshops from the database.
@@ -23,21 +23,21 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<WorkshopDTO>> GetAll();
         
         /// <summary>
-        /// Get workshop by it'ss key.
+        /// Get workshopDto by it'ss key.
         /// </summary>
         /// <param name="id">Workshop's key.</param>
         /// <returns>Workshop.</returns>
         Task<WorkshopDTO> GetById(long id);
 
         /// <summary>
-        /// Update information about a specific workshop entity.
+        /// Update information about a specific workshopDto entity.
         /// </summary>
         /// <param name="workshopDto">Workshop entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<WorkshopDTO> Update(WorkshopDTO workshopDto);
 
         /// <summary>
-        /// Delete workshop from the database by it's key.
+        /// Delete workshopDto from the database by it's key.
         /// </summary>
         /// <param name="id">Workshop's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>

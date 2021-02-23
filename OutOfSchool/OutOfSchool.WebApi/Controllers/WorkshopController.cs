@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of all workshops.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Workshop>>> GetWorkshops()
+        public async Task<ActionResult<IEnumerable<WorkshopDTO>>> GetWorkshops()
         {
             var workshops = await workshopService.GetAll().ConfigureAwait(false);
 
@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Key in the database.</param>
         /// <returns>Workshop entity.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<WorkshopDTO>> GetWorkshopById(long id)
+        public async Task<ActionResult> GetWorkshopById(long id)
         {
             var workshop = await workshopService.GetById(id).ConfigureAwait(false);
 
@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "organization,admin")]
         [HttpPost]
-        public async Task<ActionResult<Workshop>> CreateWorkshop(WorkshopDTO workshopDto)
+        public async Task<ActionResult> CreateWorkshop(WorkshopDTO workshopDto)
         {
             if (!ModelState.IsValid)
             {

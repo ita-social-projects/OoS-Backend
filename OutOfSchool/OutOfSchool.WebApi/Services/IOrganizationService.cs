@@ -12,9 +12,9 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Add new Organization to the database.
         /// </summary>
-        /// <param name="organization">Organization entity to add.</param>
+        /// <param name="organizationDto">Organization entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<OrganizationDTO> Create(OrganizationDTO organization);
+        Task<OrganizationDTO> Create(OrganizationDTO organizationDto);
 
         /// <summary>
         /// Get all organizations from the database.
@@ -23,7 +23,7 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<OrganizationDTO>> GetAll();
 
         /// <summary>
-        /// Get organization by it's key.
+        /// Get organizationDto by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Organization.</returns>
@@ -32,12 +32,12 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Update information about a specific Organization entity.
         /// </summary>
-        /// <param name="organizationDTO">Organization entity to add.</param>
+        /// <param name="organizationDto">Organization entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<OrganizationDTO> Update(OrganizationDTO organizationDTO);
+        Task<OrganizationDTO> Update(OrganizationDTO organizationDto);
 
         /// <summary>
-        ///  Delete organization from the database by it's key.
+        ///  Delete organizationDto from the database by it's key.
         /// </summary>
         /// <param name="id">Organization's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>

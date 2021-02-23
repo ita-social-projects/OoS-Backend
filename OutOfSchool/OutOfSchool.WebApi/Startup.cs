@@ -11,8 +11,8 @@ using Microsoft.Extensions.Hosting;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Mapping;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Tools.Mapping;
 
 namespace OutOfSchool.WebApi
 {
