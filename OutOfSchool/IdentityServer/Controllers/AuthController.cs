@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
 
@@ -19,6 +20,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> userManager;
         private readonly IIdentityServerInteractionService interactionService;
         private readonly RoleManager<IdentityRole> roleManager;
+        private readonly ILogger<AuthController> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -27,12 +29,15 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="signInManager"> ASP.Net Core Identity Sign in Manager.</param>
         /// <param name="roleManager">ASP.Net Core Identity Role Manager.</param>
         /// <param name="interactionService"> Identity Server 4 interaction service.</param>
+        /// <param name="logger"> ILogger class.</param>
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             RoleManager<IdentityRole> roleManager,
-            IIdentityServerInteractionService interactionService)
+            IIdentityServerInteractionService interactionService,
+            ILogger<AuthController> logger)
         {
+            this.logger = logger;
             this.roleManager = roleManager;
             this.signInManager = signInManager;
             this.userManager = userManager;
@@ -146,15 +151,19 @@ namespace OutOfSchool.IdentityServer.Controllers
             if (result.Succeeded)
             {
                 var selectedRole = roleManager.Roles.First(role => role.Id == model.UserRoleId).Name;
-                var resultRoleAssign = await userManager.AddToRoleAsync(user, selectedRole);
-                if (resultRoleAssign.Succeeded)
+                var roleAssignResult = await userManager.AddToRoleAsync(user, selectedRole);
+                if (roleAssignResult.Succeeded)
                 {
                     await signInManager.SignInAsync(user, false);
 
                     return Redirect(model.ReturnUrl);
                 }
-                await userManager.DeleteAsync(user);
-                foreach (var error in resultRoleAssign.Errors)
+                var deletionResult = await userManager.DeleteAsync(user);
+                if (!deletionResult.Succeeded)
+                {
+                    logger.Log(LogLevel.Warning, "User was created without role");
+                }
+                foreach (var error in roleAssignResult.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }

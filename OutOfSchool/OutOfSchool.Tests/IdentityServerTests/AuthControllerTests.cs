@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.IdentityServer.Controllers;
@@ -26,6 +27,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         private readonly Mock<RoleManager<IdentityRole>> fakeRoleManager;
 
         private AuthController authController;
+        private Mock<ILogger<AuthController>> fakeLogger;
 
         public AuthControllerTests()
         {
@@ -33,6 +35,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
             fakeUserManager = new Mock<FakeUserManager>();
             fakeInteractionService = new Mock<IIdentityServerInteractionService>();
             fakeSignInManager = new Mock<FakeSignInManager>();
+            fakeLogger = new Mock<ILogger<AuthController>>();
         }
 
         [SetUp]
@@ -42,7 +45,8 @@ namespace OutOfSchool.Tests.IdentityServerTests
                 fakeUserManager.Object,
                 fakeSignInManager.Object, 
                 fakeRoleManager.Object,
-                fakeInteractionService.Object);
+                fakeInteractionService.Object,
+                fakeLogger.Object);
         }
 
         [Test]
@@ -258,11 +262,16 @@ namespace OutOfSchool.Tests.IdentityServerTests
         {
             // Arrange
             var authController = this.authController;
-            var error = new IdentityError()
+            var roleAssignError = new IdentityError()
             {
                 Code = "Role cant be assigned", Description = "An error occurred during assigning to role",
             };
-            var addToRoleFailed = IdentityResult.Failed(new List<IdentityError> { error }.ToArray());
+            var deleteUserError = new IdentityError()
+            {
+                Code = "User could be deleted", Description = "An error occurred during deleting user",
+            };
+            var addToRoleFailed = IdentityResult.Failed(new List<IdentityError> { roleAssignError }.ToArray());
+            var deletionOfUserFailed = IdentityResult.Failed(new List<IdentityError> { deleteUserError }.ToArray());
             fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(
                     new List<IdentityRole>() 
@@ -276,14 +285,15 @@ namespace OutOfSchool.Tests.IdentityServerTests
                 .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
             fakeUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
                 .Returns(Task.FromResult<IdentityResult>(addToRoleFailed));
-
+            fakeUserManager.Setup(manager => manager.DeleteAsync(It.IsAny<User>()))
+                .Returns(Task.FromResult(deletionOfUserFailed));
             // Act
             var result = await authController.Register(viewModel);
             var errorMessageFromController = authController.ModelState.Values.FirstOrDefault()
                 .Errors.FirstOrDefault().ErrorMessage;
 
             // Assert
-            Assert.That(errorMessageFromController, Is.EqualTo(error.Description));
+            Assert.That(errorMessageFromController, Is.EqualTo(roleAssignError.Description));
             Assert.IsInstanceOf<ViewResult>(result);
         }
 
