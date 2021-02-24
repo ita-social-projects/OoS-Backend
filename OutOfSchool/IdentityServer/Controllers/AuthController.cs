@@ -119,7 +119,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         public IActionResult Register(string returnUrl = "Login")
         {
             return View(
-                new RegisterViewModel { ReturnUrl = returnUrl, AllRoles = roleManager.Roles.ToList() });
+                new RegisterViewModel {ReturnUrl = returnUrl, AllRoles = roleManager.Roles.ToList()});
         }
 
         /// <summary>
@@ -143,9 +143,9 @@ namespace OutOfSchool.IdentityServer.Controllers
                 CreatingTime = DateTime.Now,
             };
             var result = await userManager.CreateAsync(user, model.Password);
-            var selectedRole = roleManager.Roles.First(role => role.Id == model.UserRoleId).Name;
             if (result.Succeeded)
             {
+                var selectedRole = roleManager.Roles.First(role => role.Id == model.UserRoleId).Name;
                 var resultRoleAssign = await userManager.AddToRoleAsync(user, selectedRole);
                 if (resultRoleAssign.Succeeded)
                 {
@@ -153,16 +153,22 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                     return Redirect(model.ReturnUrl);
                 }
+                await userManager.DeleteAsync(user);
+                foreach (var error in resultRoleAssign.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
             }
-
-            foreach (var error in result.Errors)
+            else
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
             }
-
             return View(model);
         }
-        
+
         public Task<IActionResult> ExternalLogin(string provider, string returnUrl)
         {
             throw new NotImplementedException();

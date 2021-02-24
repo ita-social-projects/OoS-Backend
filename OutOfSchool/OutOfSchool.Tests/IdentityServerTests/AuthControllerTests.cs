@@ -20,20 +20,20 @@ namespace OutOfSchool.Tests.IdentityServerTests
     [TestFixture]
     public class AuthControllerTests
     {
-        private readonly Mock<FakeUserManager> mockUserManager;
-        private readonly Mock<FakeSignInManager> mockSignInManager;
-        private readonly Mock<IIdentityServerInteractionService> mockInteractionService;
-        private readonly Mock<RoleManager<IdentityRole>> mockRoleManager;
+        private readonly Mock<FakeUserManager> fakeUserManager;
+        private readonly Mock<FakeSignInManager> fakeSignInManager;
+        private readonly Mock<IIdentityServerInteractionService> fakeInteractionService;
+        private readonly Mock<RoleManager<IdentityRole>> fakeRoleManager;
 
-        public AuthController CreateAuthController => new AuthController(mockUserManager.Object,
-            mockSignInManager.Object, mockRoleManager.Object, mockInteractionService.Object);
+        public AuthController CreateAuthController => new AuthController(fakeUserManager.Object,
+            fakeSignInManager.Object, fakeRoleManager.Object, fakeInteractionService.Object);
 
         public AuthControllerTests()
         {
-            mockRoleManager = MockRoleManager;
-            mockUserManager = new Mock<FakeUserManager>();
-            mockInteractionService = new Mock<IIdentityServerInteractionService>();
-            mockSignInManager = new Mock<FakeSignInManager>();
+            fakeRoleManager = MockRoleManager;
+            fakeUserManager = new Mock<FakeUserManager>();
+            fakeInteractionService = new Mock<IIdentityServerInteractionService>();
+            fakeSignInManager = new Mock<FakeSignInManager>();
         }
 
         [SetUp]
@@ -42,15 +42,15 @@ namespace OutOfSchool.Tests.IdentityServerTests
         }
 
         [Test]
-        public async Task LogoutWithLogoutId()
+        public async Task Logout_WithLogoutId_ReturnsRedirectResult()
         {
             // Arrange
             var authController = CreateAuthController;
             var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
             logoutRequest.PostLogoutRedirectUri = "True logout id";
-            mockSignInManager.Setup(manager => manager.SignOutAsync())
+            fakeSignInManager.Setup(manager => manager.SignOutAsync())
                 .Returns(Task.CompletedTask);
-            mockInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
+            fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult(logoutRequest));
             // Act
             var result = await CreateAuthController.Logout("Any logout ID");
@@ -60,15 +60,15 @@ namespace OutOfSchool.Tests.IdentityServerTests
         }
 
         [Test]
-        public async Task LogoutWithoutLogoutId()
+        public async Task Logout_WithoutLogoutId_ThrowsNotImplementedException()
         {
             // Arrange
             var authController = CreateAuthController;
             var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
             logoutRequest.PostLogoutRedirectUri = "";
-            mockSignInManager.Setup(manager => manager.SignOutAsync())
+            fakeSignInManager.Setup(manager => manager.SignOutAsync())
                 .Returns(Task.CompletedTask);
-            mockInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
+            fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult(logoutRequest));
 
             // Act & Assert
@@ -76,9 +76,9 @@ namespace OutOfSchool.Tests.IdentityServerTests
                 () => CreateAuthController.Logout("Any logout ID"));
         }
 
-        [TestCase("")]
+        [TestCase(null)]
         [TestCase("Return url")]
-        public async Task LoginWithReturnUrl(string returnUrl)
+        public async Task Login_WithAndWithoutReturnUrl_ReturnsViewResult(string returnUrl)
         {
             // Arrange
             var authController = CreateAuthController;
@@ -86,138 +86,205 @@ namespace OutOfSchool.Tests.IdentityServerTests
             logoutRequest.PostLogoutRedirectUri = "";
 
             // Act
-            var viewResult = await authController.Login(returnUrl);
+            IActionResult viewResult;
+            viewResult = returnUrl == null ? await authController.Login() : await authController.Login(returnUrl);
 
             // Assert
             Assert.IsInstanceOf(typeof(ViewResult), viewResult);
         }
 
         [TestCaseSource(nameof(LoginViewModelsTestData))]
-        public async Task LoginWithLoginVMWithModelError(LoginViewModel loginViewModel)
+        public async Task Login_WithLoginVMAndWithModelError_ReturnsViewWithModelErrors(LoginViewModel loginViewModel)
         {
             // Arrange
             var authController = CreateAuthController;
-            authController.ModelState.AddModelError(string.Empty, "Error");
+            var fakeErrorMessage = "Model is invalid";
+            authController.ModelState.AddModelError(string.Empty, fakeErrorMessage);
+            var errorMessage = authController.ModelState.Values.FirstOrDefault().Errors.FirstOrDefault().ErrorMessage;
+
             // Act
             var result = await authController.Login(loginViewModel);
+
             // Assert
+            Assert.That(errorMessage, Is.EqualTo(fakeErrorMessage));
             Assert.IsInstanceOf(typeof(ViewResult), result);
         }
 
         [TestCaseSource(nameof(LoginViewModelsWithSignInResultTestData))]
-        public async Task LoginWithLoginVMWithoutModelError(
+        public async Task Login_WithLoginVMWithoutModelError_ReturnsActionResult(
             LoginViewModel loginViewModel, KeyValuePair<SignInResult, Type> expectedResult)
         {
             // Arrange
             var authController = CreateAuthController;
-            mockSignInManager.Setup(manager =>
+            fakeSignInManager.Setup(manager =>
                     manager.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), false, false))
                 .ReturnsAsync(expectedResult.Key);
+
             // Act
             var result = await authController.Login(loginViewModel);
+
             // Assert
             Type type = expectedResult.Value;
             Assert.IsInstanceOf(type, result);
         }
 
-        [TestCase("")]
-        [TestCase("Return url")]
-        public async Task RegisterWithReturnUrl(string returnUrl)
+        [Test]
+        public async Task Register_WithoutReturnUrl_ReturnsViewResult()
         {
             // Arrange 
             var authController = CreateAuthController;
-            mockRoleManager.Setup(manager => manager.Roles)
+            fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(new List<IdentityRole>().AsQueryable());
+
             // Act
-            var result = authController.Register(returnUrl);
+            IActionResult result = authController.Register();
+            RegisterViewModel viewResultModel = (RegisterViewModel) ((ViewResult) result).Model;
+
             // Assert
+            Assert.That(viewResultModel.ReturnUrl, Is.EqualTo("Login"));
             Assert.IsInstanceOf<ViewResult>(result);
         }
 
         [Test]
-        public async Task RegisterWithVMWithModelError()
+        public async Task Register_WithReturnUrl_ReturnsViewResult()
+        {
+            // Arrange
+            var returnUrl = "Return url";
+            var authController = CreateAuthController;
+            fakeRoleManager.Setup(manager => manager.Roles)
+                .Returns(new List<IdentityRole>().AsQueryable());
+
+            // Act
+            IActionResult result = authController.Register(returnUrl);
+            RegisterViewModel viewResultModel = (RegisterViewModel) ((ViewResult) result).Model;
+
+            // Assert
+            Assert.That(viewResultModel.ReturnUrl, Is.EqualTo(returnUrl));
+            Assert.IsInstanceOf<ViewResult>(result);
+        }
+
+        [Test]
+        public async Task Register_WithVMAndWithModelError_ReturnsViewResultWithModelErrors()
         {
             // Arrange 
+            var fakeModelErrorMessage = "Model State is invalid";
             var authController = CreateAuthController;
-            mockRoleManager.Setup(manager => manager.Roles)
+            fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(new List<IdentityRole>().AsQueryable());
-            authController.ModelState.AddModelError("", "Message");
+            authController.ModelState.AddModelError(string.Empty, fakeModelErrorMessage);
+
             // Act
             var result = await authController.Register(new RegisterViewModel());
+            var errorMessageFromController = authController.ModelState.Values.FirstOrDefault()
+                .Errors.FirstOrDefault().ErrorMessage;
+
             // Assert
+            Assert.That(errorMessageFromController, Is.EqualTo(fakeModelErrorMessage));
             Assert.IsInstanceOf<ViewResult>(result);
         }
 
         [TestCaseSource(nameof(RegisterViewModelsTestData))]
-        public async Task RegisterWithVMWithoutModelError(RegisterViewModel viewModel)
+        public async Task Register_WithVmAndWithoutModelError_ReturnsRedirect(RegisterViewModel viewModel)
         {
-            // Arrange 
+            // Arrange
             var authController = CreateAuthController;
-            mockRoleManager.Setup(manager => manager.Roles)
+
+            fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(
-                    new List<IdentityRole>() {new IdentityRole("testrole") {Id = viewModel.UserRoleId}}.AsQueryable());
-            mockUserManager.Setup(manager => manager.CreateAsync(It.IsAny<User>(), viewModel.Password))
+                    new List<IdentityRole>()
+                    {
+                        new IdentityRole("testrole")
+                            { Id = viewModel.UserRoleId},
+                    }.AsQueryable());
+
+            fakeUserManager.Setup(manager => manager.CreateAsync(It.IsAny<User>(), viewModel.Password))
                 .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
-            mockUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+            fakeUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
                 .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
-            mockSignInManager.Setup(manager => manager.SignInAsync(
+            fakeSignInManager.Setup(manager => manager.SignInAsync(
                     It.IsAny<User>(), It.IsAny<bool>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
+
             // Act
             var result = await authController.Register(viewModel);
+
             // Assert
             Assert.IsInstanceOf<RedirectResult>(result);
         }
 
         [TestCaseSource(nameof(RegisterViewModelsTestData))]
-        public async Task RegisterWithVMAndIdentityError(RegisterViewModel viewModel)
+        public async Task Register_WithVMAndCreateUserError_ReturnsView(RegisterViewModel viewModel)
         {
             // Arrange 
             var authController = CreateAuthController;
-            var identityResult = IdentityResult.Failed(new List<IdentityError>()
-            {
-                new IdentityError() {Code = "User cant be created", Description = "The program failed to create user"},
-            }.ToArray());
-            mockRoleManager.Setup(manager => manager.Roles)
+            var error = new IdentityError()
+                { Code = "User cant be created", Description = "The program failed to create user"};
+            var identityResult = IdentityResult.Failed(new List<IdentityError> { error }.ToArray());
+
+            fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(
-                    new List<IdentityRole>() {new IdentityRole("testrole") {Id = viewModel.UserRoleId}}.AsQueryable());
-            mockUserManager.Setup(manager => manager.CreateAsync(It.IsAny<User>(), viewModel.Password))
+                    new List<IdentityRole>()
+                    {
+                        new IdentityRole("testrole")
+                        {
+                            Id = viewModel.UserRoleId,
+                        },
+                    }.AsQueryable());
+
+            fakeUserManager.Setup(manager => manager.CreateAsync(It.IsAny<User>(), viewModel.Password))
                 .Returns(Task.FromResult<IdentityResult>(identityResult));
-            mockUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+            fakeUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
                 .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
-            mockSignInManager.Setup(manager => manager.SignInAsync(
+            fakeSignInManager.Setup(manager => manager.SignInAsync(
                     It.IsAny<User>(), It.IsAny<bool>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
+
             // Act
             var result = await authController.Register(viewModel);
+            var errorMessageFromController = authController.ModelState.Values.FirstOrDefault()
+                .Errors.FirstOrDefault().ErrorMessage;
+
             // Assert
+            Assert.That(errorMessageFromController, Is.EqualTo(error.Description));
             Assert.IsInstanceOf<ViewResult>(result);
         }
-        
+
         [TestCaseSource(nameof(RegisterViewModelsTestData))]
-        public async Task RegisterWithVMAndAddToRoleError(RegisterViewModel viewModel)
+        public async Task Register_WithVMAndAddToRoleError_ReturnsView(RegisterViewModel viewModel)
         {
-            // Arrange 
+            // Arrange
             var authController = CreateAuthController;
-            var identityResultFailed = IdentityResult.Failed(new List<IdentityError>()
+            var error = new IdentityError()
             {
-                new IdentityError() {Code = "User cant be created", Description = "The program failed to create user"},
-            }.ToArray());
-            mockRoleManager.Setup(manager => manager.Roles)
+                Code = "Role cant be assigned", Description = "An error occurred during assigning to role",
+            };
+            var addToRoleFailed = IdentityResult.Failed(new List<IdentityError> { error }.ToArray());
+            fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(
-                    new List<IdentityRole>() {new IdentityRole("testrole") {Id = viewModel.UserRoleId}}.AsQueryable());
-            mockUserManager.Setup(manager => manager.CreateAsync(It.IsAny<User>(), viewModel.Password))
+                    new List<IdentityRole>() 
+                        {
+                            new IdentityRole("testrole")
+                            { Id = viewModel.UserRoleId },
+                        }
+                        .AsQueryable());
+
+            fakeUserManager.Setup(manager => manager.CreateAsync(It.IsAny<User>(), viewModel.Password))
                 .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
-            mockUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
-                .Returns(Task.FromResult<IdentityResult>(identityResultFailed));
+            fakeUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<IdentityResult>(addToRoleFailed));
+
             // Act
             var result = await authController.Register(viewModel);
+            var errorMessageFromController = authController.ModelState.Values.FirstOrDefault()
+                .Errors.FirstOrDefault().ErrorMessage;
+
             // Assert
+            Assert.That(errorMessageFromController, Is.EqualTo(error.Description));
             Assert.IsInstanceOf<ViewResult>(result);
         }
-    
+
         [Test]
-        public async Task ExternalLoginNotImplemented()
+        public async Task ExternalLogin_ReturnsNotImplementedEx()
         {
             // Arrange
             var authController = CreateAuthController;
@@ -232,11 +299,16 @@ namespace OutOfSchool.Tests.IdentityServerTests
             {
                 new TestCaseData(new RegisterViewModel()
                 {
-                    Username = "Baron", PhoneNumber = "0502391222", UserRoleId = "AdminRoleId", ReturnUrl = "Return url"
+                    Username = "Baron",
+                    PhoneNumber = "0502391222",
+                    UserRoleId = "AdminRoleId",
+                    ReturnUrl = "Return url",
                 }),
                 new TestCaseData(new RegisterViewModel()
                 {
-                    Username = "Baron", PhoneNumber = "0502391222", UserRoleId = "AdminRoleId1",
+                    Username = "Baron",
+                    PhoneNumber = "0502391222",
+                    UserRoleId = "AdminRoleId1",
                     ReturnUrl = "Return url2",
                 }),
             };
@@ -245,9 +317,11 @@ namespace OutOfSchool.Tests.IdentityServerTests
         {
             get => new List<LoginViewModel>()
             {
-                new LoginViewModel {ReturnUrl = "Return url", ExternalProviders = EmptySchemes},
-                new LoginViewModel {ExternalProviders = EmptySchemes},
-                new LoginViewModel {ReturnUrl = "Return url"},
+                new LoginViewModel {
+                    ReturnUrl = "Return url", 
+                    ExternalProviders = EmptySchemes, },
+                new LoginViewModel { ExternalProviders = EmptySchemes },
+                new LoginViewModel { ReturnUrl = "Return url" },
                 new LoginViewModel(),
             };
         }
