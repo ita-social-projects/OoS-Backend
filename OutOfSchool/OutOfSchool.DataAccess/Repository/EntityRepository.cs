@@ -79,7 +79,7 @@ namespace OutOfSchool.Services.Repository
 
             return await Task.Run(() =>
             {
-                return query;
+                return query.ToList();
             }).ConfigureAwait(false);
         }
 

@@ -9,10 +9,11 @@ namespace OutOfSchool.Services
         public OutOfSchoolDbContext(DbContextOptions<OutOfSchoolDbContext> options)
             : base(options)
         {
+
         }
 
         public DbSet<Parent> Parents { get; set; }
-
+	
         public DbSet<Provider> Providers { get; set; }
 
         public DbSet<Child> Children { get; set; }
@@ -25,5 +26,7 @@ namespace OutOfSchool.Services
 
         public DbSet<Category> Categories { get; set; }
 
+
+        public DbSet<SocialGroup> SocialGroups { get; set; }
     }
 }
