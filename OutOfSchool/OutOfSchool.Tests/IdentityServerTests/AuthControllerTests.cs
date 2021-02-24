@@ -25,8 +25,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         private readonly Mock<IIdentityServerInteractionService> fakeInteractionService;
         private readonly Mock<RoleManager<IdentityRole>> fakeRoleManager;
 
-        public AuthController CreateAuthController => new AuthController(fakeUserManager.Object,
-            fakeSignInManager.Object, fakeRoleManager.Object, fakeInteractionService.Object);
+        private AuthController authController;
 
         public AuthControllerTests()
         {
@@ -39,13 +38,18 @@ namespace OutOfSchool.Tests.IdentityServerTests
         [SetUp]
         public void Setup()
         {
+            authController = new AuthController(
+                fakeUserManager.Object,
+                fakeSignInManager.Object, 
+                fakeRoleManager.Object,
+                fakeInteractionService.Object);
         }
 
         [Test]
         public async Task Logout_WithLogoutId_ReturnsRedirectResult()
         {
             // Arrange
-            var authController = CreateAuthController;
+            var authController = this.authController;
             var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
             logoutRequest.PostLogoutRedirectUri = "True logout id";
             fakeSignInManager.Setup(manager => manager.SignOutAsync())
@@ -53,7 +57,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
             fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult(logoutRequest));
             // Act
-            var result = await CreateAuthController.Logout("Any logout ID");
+            var result = await this.authController.Logout("Any logout ID");
 
             // Assert
             Assert.IsInstanceOf(typeof(RedirectResult), result);
@@ -63,7 +67,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task Logout_WithoutLogoutId_ThrowsNotImplementedException()
         {
             // Arrange
-            var authController = CreateAuthController;
+            var authController = this.authController;
             var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
             logoutRequest.PostLogoutRedirectUri = "";
             fakeSignInManager.Setup(manager => manager.SignOutAsync())
@@ -73,7 +77,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
 
             // Act & Assert
             var ex = Assert.ThrowsAsync<NotImplementedException>(
-                () => CreateAuthController.Logout("Any logout ID"));
+                () => this.authController.Logout("Any logout ID"));
         }
 
         [TestCase(null)]
@@ -81,7 +85,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task Login_WithAndWithoutReturnUrl_ReturnsViewResult(string returnUrl)
         {
             // Arrange
-            var authController = CreateAuthController;
+            var authController = this.authController;
             var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
             logoutRequest.PostLogoutRedirectUri = "";
 
@@ -97,7 +101,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task Login_WithLoginVMAndWithModelError_ReturnsViewWithModelErrors(LoginViewModel loginViewModel)
         {
             // Arrange
-            var authController = CreateAuthController;
+            var authController = this.authController;
             var fakeErrorMessage = "Model is invalid";
             authController.ModelState.AddModelError(string.Empty, fakeErrorMessage);
             var errorMessage = authController.ModelState.Values.FirstOrDefault().Errors.FirstOrDefault().ErrorMessage;
@@ -115,7 +119,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
             LoginViewModel loginViewModel, KeyValuePair<SignInResult, Type> expectedResult)
         {
             // Arrange
-            var authController = CreateAuthController;
+            var authController = this.authController;
             fakeSignInManager.Setup(manager =>
                     manager.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), false, false))
                 .ReturnsAsync(expectedResult.Key);
@@ -132,7 +136,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task Register_WithoutReturnUrl_ReturnsViewResult()
         {
             // Arrange 
-            var authController = CreateAuthController;
+            var authController = this.authController;
             fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(new List<IdentityRole>().AsQueryable());
 
@@ -150,7 +154,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         {
             // Arrange
             var returnUrl = "Return url";
-            var authController = CreateAuthController;
+            var authController = this.authController;
             fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(new List<IdentityRole>().AsQueryable());
 
@@ -168,7 +172,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         {
             // Arrange 
             var fakeModelErrorMessage = "Model State is invalid";
-            var authController = CreateAuthController;
+            var authController = this.authController;
             fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(new List<IdentityRole>().AsQueryable());
             authController.ModelState.AddModelError(string.Empty, fakeModelErrorMessage);
@@ -187,7 +191,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task Register_WithVmAndWithoutModelError_ReturnsRedirect(RegisterViewModel viewModel)
         {
             // Arrange
-            var authController = CreateAuthController;
+            var authController = this.authController;
 
             fakeRoleManager.Setup(manager => manager.Roles)
                 .Returns(
@@ -216,7 +220,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task Register_WithVMAndCreateUserError_ReturnsView(RegisterViewModel viewModel)
         {
             // Arrange 
-            var authController = CreateAuthController;
+            var authController = this.authController;
             var error = new IdentityError()
                 { Code = "User cant be created", Description = "The program failed to create user"};
             var identityResult = IdentityResult.Failed(new List<IdentityError> { error }.ToArray());
@@ -253,7 +257,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task Register_WithVMAndAddToRoleError_ReturnsView(RegisterViewModel viewModel)
         {
             // Arrange
-            var authController = CreateAuthController;
+            var authController = this.authController;
             var error = new IdentityError()
             {
                 Code = "Role cant be assigned", Description = "An error occurred during assigning to role",
@@ -287,7 +291,7 @@ namespace OutOfSchool.Tests.IdentityServerTests
         public async Task ExternalLogin_ReturnsNotImplementedEx()
         {
             // Arrange
-            var authController = CreateAuthController;
+            var authController = this.authController;
 
             // Assert & Act
             Assert.ThrowsAsync<NotImplementedException>(() =>
