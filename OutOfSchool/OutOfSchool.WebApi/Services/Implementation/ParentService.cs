@@ -90,6 +90,26 @@ namespace OutOfSchool.WebApi.Services.Implementation
         /// <inheritdoc/>
         public async Task Update(ParentDTO parent)
         {
+            if (parent == null)
+            {
+                throw new ArgumentException(nameof(parent), "Parent is null");
+            }
+
+            if (parent.FirstName.Length == 0)
+            {
+                throw new ArgumentException("Empty firstname.", nameof(parent));
+            }
+
+            if (parent.LastName.Length == 0)
+            {
+                throw new ArgumentException("Empty lastname.", nameof(parent));
+            }
+
+            if (parent.MiddleName.Length == 0)
+            {
+                throw new ArgumentException("Empty middlename.", nameof(parent));
+            }
+
             Parent tmp = await this.ParentRepository.GetById((int)parent.Id).ConfigureAwait(false);
             if (tmp == null)
             {
