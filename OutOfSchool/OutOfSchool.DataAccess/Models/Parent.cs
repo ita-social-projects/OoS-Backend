@@ -5,7 +5,7 @@ namespace OutOfSchool.Services.Models
 {
     public class Parent
     {
-        public long ParentId { get; set; }
+        public long Id { get; set; }
         
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "First name is required")]
