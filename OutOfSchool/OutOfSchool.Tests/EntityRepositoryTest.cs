@@ -28,7 +28,7 @@ namespace OutOfSchool.Tests
             {
 
                 var repository = new EntityRepository<Child>(context);
-                Expression<Func<Child, bool>> filter = child => child.ChildId == id;
+                Expression<Func<Child, bool>> filter = child => child.Id == id;
                 //Act
 
                 var child = repository.GetAllWIthDetails(filter).Result;
@@ -52,7 +52,7 @@ namespace OutOfSchool.Tests
                 var children = repository.GetAll();
 
                 //Assert
-                Assert.AreEqual(4, children.Count());
+                Assert.AreEqual(4, children.Result.Count());
             }
         }
 
@@ -63,14 +63,14 @@ namespace OutOfSchool.Tests
             {
 
                 var repository = new EntityRepository<SocialGroup>(context);
-                SocialGroup socialGroup = new SocialGroup { SocialGroupId = 1, Name = "sg1" };
+                SocialGroup socialGroup = new SocialGroup { Id = 1, Name = "sg1" };
                 //Act
 
                 repository.Delete(socialGroup);
                 var socialGroups = repository.GetAll();
 
                 //Assert
-                Assert.AreEqual(2, socialGroups.Count());
+                Assert.AreEqual(2, socialGroups.Result.Count());
 
             }
         }
@@ -88,7 +88,7 @@ namespace OutOfSchool.Tests
                 var socialGroups = repository.GetAll();
 
                 //Assert
-                Assert.AreEqual(3, socialGroups.Count());
+                Assert.AreEqual(3, socialGroups.Result.Count());
 
             }
         }
@@ -102,11 +102,11 @@ namespace OutOfSchool.Tests
                 var repository = new EntityRepository<SocialGroup>(context);
 
                 //Act
-                SocialGroup socialGroup = new SocialGroup { SocialGroupId = 2, Name = "sg22" };
+                SocialGroup socialGroup = new SocialGroup { Id = 2, Name = "sg22" };
                 var socialGroup1 = repository.Update(socialGroup).Result;
 
                 //Assert
-                Assert.AreEqual(2, socialGroup1.SocialGroupId);
+                Assert.AreEqual(2, socialGroup1.Id);
                 Assert.AreEqual("sg22", socialGroup1.Name);
 
             }

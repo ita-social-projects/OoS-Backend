@@ -57,7 +57,6 @@ namespace OutOfSchool.Services.Repository
             {
                 query = query.Include(includeProperty);
             }
-
             return await query.ToListAsync();
         }
 

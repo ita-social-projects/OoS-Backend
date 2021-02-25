@@ -1,5 +1,4 @@
-
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Mapping.Extensions;
 using OutOfSchool.WebApi.Models;
+
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -60,7 +60,6 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var children = await repository.GetAll().ConfigureAwait(false);
-
                 return children.Select(child => child.ToModel()).ToList();
             }
             catch (Exception ex)
@@ -80,6 +79,18 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return child.ToModel();
+        }
+
+
+        /// <inheritdoc/>
+        public async Task<ChildDTO> GetByIdWithDetails(long id)
+        {
+            Expression<Func<Child, bool>> filter = child => child.Id == id;
+            IEnumerable<Child> children = await this.repository.GetAllWIthDetails(filter, "Parent,SocialGroup").ConfigureAwait(false);
+            return await Task.Run(() =>
+            {
+                return children.FirstOrDefault().ToModel();
+            }).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -113,7 +124,6 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-
                 return child.ToModel();
             }
             catch (Exception ex)

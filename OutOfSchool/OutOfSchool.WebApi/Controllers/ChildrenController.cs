@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services.Interfaces;
+using OutOfSchool.WebApi.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

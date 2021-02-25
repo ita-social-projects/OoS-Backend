@@ -39,14 +39,12 @@ namespace OutOfSchool.Services.Repository
         /// <returns>List of all elements.</returns>
         Task<IEnumerable<T>> GetAll();
 
-
         /// <summary>
         /// Get all elements with details.
         /// </summary>
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>List of all elements with included propertires.</returns>
         Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
-
 
         /// <summary>
         /// Get element by Id.
@@ -62,5 +60,6 @@ namespace OutOfSchool.Services.Repository
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "");
+
     }
 }
