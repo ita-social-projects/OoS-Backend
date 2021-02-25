@@ -44,4 +44,3 @@ namespace OutOfSchool.WebApi.Services
         Task Delete(long id);
     }
 }
-
