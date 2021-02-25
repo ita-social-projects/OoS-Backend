@@ -90,7 +90,7 @@ namespace IdentityServer
             {
                 new IdentityRole {Name = "parent"},
                 new IdentityRole {Name = "organization"},
-                new IdentityRole {Name = "admin"}
+                new IdentityRole {Name = "admin"},
             };
             foreach (var role in roles)
             {
