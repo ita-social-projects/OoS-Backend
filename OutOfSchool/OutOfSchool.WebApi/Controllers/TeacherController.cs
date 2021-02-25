@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Teacher>>> GetTeachers()
         {
-            return Ok(await teacherService.GetAllTeachers().ConfigureAwait(false));
+            return Ok(await teacherService.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>

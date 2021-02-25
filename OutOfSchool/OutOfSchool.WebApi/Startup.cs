@@ -12,6 +12,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Mapping;
+using OutOfSchool.WebApi.Mapping.Extensions;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi
@@ -31,12 +32,6 @@ namespace OutOfSchool.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
-            var socialGroupMapper = new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
-            var workshopMapper = new MapperConfiguration(x => x.AddProfile(new WorkshopMapperProfile())).CreateMapper();
-            var teacherMapper = new MapperConfiguration(x => x.AddProfile(new TeacherMapperProfile())).CreateMapper();
-            var organizationMapper = new MapperConfiguration(x => x.AddProfile(new OrganizationMapperProfile())).CreateMapper();
-            
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
@@ -60,22 +55,18 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<ITeacherService, TeacherService>();
-            services.AddTransient<IOrganizationService, OrganizationService>();    
+            services.AddTransient<IOrganizationService, OrganizationService>();
 
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
 
-            services.AddSingleton(workshopMapper);
-            services.AddSingleton(teacherMapper);
-            services.AddSingleton(childMapper);
-            services.AddSingleton(socialGroupMapper);
-            services.AddSingleton(organizationMapper);
-            
             services.AddTransient<IOrganizationRepository, OrganizationRepository>();
-         
+
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
+
+            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -90,11 +81,11 @@ namespace OutOfSchool.WebApi
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
-
+            
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); });
-
+            
             app.UseHttpsRedirection();
 
             app.UseRouting();
