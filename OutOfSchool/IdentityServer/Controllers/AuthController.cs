@@ -1,12 +1,13 @@
-﻿using System;
-using System.Linq;
+using System;
 using System.Threading.Tasks;
+using IdentityServer.Controllers;
+using System.Linq;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
 
-namespace IdentityServer.Controllers
+namespace OutOfSchool.IdentityServer.Controllers
 {
     /// <summary>
     /// Handles authentication.

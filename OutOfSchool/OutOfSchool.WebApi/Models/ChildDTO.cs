@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -12,7 +9,9 @@ namespace OutOfSchool.WebApi.Models
         public string LastName { get; set; }
         public string MiddleName { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public int ParentId { get; set; }
-        public int SocialGroupId { get; set; }
+        
+        public long ParentId { get; set; }
+        
+        public long SocialGroupId { get; set; }
     }
 }

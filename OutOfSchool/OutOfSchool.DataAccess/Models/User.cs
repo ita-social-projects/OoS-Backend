@@ -8,7 +8,6 @@ namespace OutOfSchool.Services.Models
 {
     public class User : IdentityUser
     {
-        
         [DataType(DataType.DateTime)]
         public DateTime CreatingTime { get; set; }
         

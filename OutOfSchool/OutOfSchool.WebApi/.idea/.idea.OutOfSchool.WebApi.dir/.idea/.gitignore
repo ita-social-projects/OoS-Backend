@@ -1,0 +1,13 @@
+﻿# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/contentModel.xml
+/.idea.OutOfSchool.WebApi.iml
+/modules.xml
+/projectSettingsUpdater.xml
+# Datasource local storage ignored files
+/../../../../../../../../../../:\Styding\Programming\SOFTSERVE\OoS-Backend\OutOfSchool\OutOfSchool.WebApi\.idea\.idea.OutOfSchool.WebApi.dir\.idea/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/

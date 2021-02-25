@@ -12,7 +12,13 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Title is required")]
         [DataType(DataType.Text)]
         public string Title { get; set; }
-        
+
+        [DataType(DataType.PhoneNumber)]
+        [Required(ErrorMessage = "Phone number is required")]
+        [RegularExpression(@"((\+)?\b(38)?(0[\d]{2}))([\d-]{7})",
+            ErrorMessage = "Phone number format is incorrect. Example: XXX-XXX-XX-XX")]
+        public string Phone { get; set; }
+
         [DataType(DataType.Url)]
         public string? Website { get; set; }
         
@@ -27,25 +33,27 @@ namespace OutOfSchool.Services.Models
         public string Description { get; set; }
 
         [Required(ErrorMessage = "MFO code is required")]
-        [MinLength(6, ErrorMessage = "MFO code should contain 6 digits")]
+        [RegularExpression(@"(^[0-9]{1,6}$)", ErrorMessage = "Invalid MFO format. Example: XXX XXX")]
+        [MinLength(6, ErrorMessage = "MFO code must contain 6 digits")]
         public string MFO { get; set; }
 
         [Required(ErrorMessage = "EDRPOU code is required")]
         [RegularExpression(@"^(\d{8}|\d{10})$", 
-            ErrorMessage = "EDRPOU code should contain 8 or 10 digits")]
+            ErrorMessage = "EDRPOU code must contain 8 or 10 digits")]
         public string EDRPOU { get; set; }
         
         [Required(ErrorMessage = "INPP code is required")]
         [RegularExpression(@"^(\d{9}|\d{10}|\d{12})$",
-            ErrorMessage = "INPP code should contain 12, 10 or 9 digits")]
+            ErrorMessage = "INPP code must contain 12, 10 or 9 digits")]
         public string INPP { get; set; }
         
-        [DataType(DataType.ImageUrl)]
-        public byte[]? Image { get; set; }
+        public string? Image { get; set; }
         
         [Required]
-        public OrganizationType Type { get; set; }
-        public long UserId { get; set; }
-        public virtual IReadOnlyCollection<User> Users { get; set; }
+        public virtual OrganizationType Type { get; set; }
+        
+        public virtual List<Workshop> Workshops { get; set; }
+        
+        public virtual User User { get; set; }
     }
 }
