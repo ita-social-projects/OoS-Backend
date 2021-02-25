@@ -11,37 +11,37 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    ///  Service with business logic for Organization model.
+    /// Implements the interface with CRUD functionality for Organization entity.
     /// </summary>
     public class OrganizationService : IOrganizationService
     {
-        private IOrganizationRepository _repository;
+        private IOrganizationRepository repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrganizationService"/> class.
         /// </summary>
-        /// <param name="entityRepository">Repository for some entity.</param>
-        public OrganizationService(IOrganizationRepository entityRepository)
+        /// <param name="repository">Repository for some entity.</param>
+        public OrganizationService(IOrganizationRepository repository)
         {
-            _repository = entityRepository;
+            this.repository = repository;
         }
 
         /// <inheritdoc/>
-        public async Task<OrganizationDTO> Create(OrganizationDTO organizationDto)
+        public async Task<OrganizationDTO> Create(OrganizationDTO dto)
         {
-            if (organizationDto == null)
+            if (dto == null)
             {
-                throw new ArgumentNullException(nameof(organizationDto), "Organization was null.");
+                throw new ArgumentNullException(nameof(dto), "Organization was null.");
             }
 
-            var organization = organizationDto.ToDomain();
+            var organization = dto.ToDomain();
 
-            if (!_repository.IsUnique(organization))
+            if (!repository.IsUnique(organization))
             {
                 throw new ArgumentException(nameof(organization), "There is already an organizationDto with such data");
             }
 
-            var newOrganization = await _repository.Create(organization).ConfigureAwait(false);
+            var newOrganization = await repository.Create(organization).ConfigureAwait(false);
 
             return newOrganization.ToModel();
         }
@@ -49,15 +49,15 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<OrganizationDTO>> GetAll()
         {
-             var organizations = await _repository.GetAll().ConfigureAwait(false);
+             var organizations = await repository.GetAll().ConfigureAwait(false);
             
-             return organizations.Select(organization => organization.ToModel());
+             return organizations.Select(organization => organization.ToModel()).ToList();
         }
 
         /// <inheritdoc/>
         public async Task<OrganizationDTO> GetById(long id)
         {
-            var organization = await _repository.GetById(id).ConfigureAwait(false);
+            var organization = await repository.GetById(id).ConfigureAwait(false);
             if (organization == null)
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));
@@ -67,68 +67,63 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<OrganizationDTO> Update(OrganizationDTO organizationDto)
+        public async Task<OrganizationDTO> Update(OrganizationDTO dto)
         {
-            if (organizationDto == null)
+            if (dto == null)
             {
-                throw new ArgumentNullException(nameof(organizationDto), "Organization was null.");
+                throw new ArgumentNullException(nameof(dto), "Organization was null.");
             }
 
-            if (organizationDto.EDRPOU.Length == 0)
+            if (dto.EDRPOU.Length == 0)
             {
-                throw new ArgumentException("EDRPOU code is empty", nameof(organizationDto));
+                throw new ArgumentException("EDRPOU code is empty", nameof(dto));
             }
 
-            if (organizationDto.INPP.Length == 0)
+            if (dto.INPP.Length == 0)
             {
-                throw new ArgumentException("INPP code is empty", nameof(organizationDto));
+                throw new ArgumentException("INPP code is empty", nameof(dto));
             }
 
-            if (organizationDto.MFO.Length == 0)
+            if (dto.MFO.Length == 0)
             {
-                throw new ArgumentException("MFO code is empty", nameof(organizationDto));
+                throw new ArgumentException("MFO code is empty", nameof(dto));
             }
 
-            if (organizationDto.Title.Length == 0)
+            if (dto.Title.Length == 0)
             {
-                throw new ArgumentException("Title is empty", nameof(organizationDto));
+                throw new ArgumentException("Title is empty", nameof(dto));
             }
 
-            if (organizationDto.Description.Length == 0)
+            if (dto.Description.Length == 0)
             {
-                throw new ArgumentException("Description is empty", nameof(organizationDto));
+                throw new ArgumentException("Description is empty", nameof(dto));
             }
 
             try
             {
-                var organization = await _repository.Update(organizationDto.ToDomain()).ConfigureAwait(false);
+                var organization = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
               
                 return organization.ToModel();
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(organizationDto)} could not be updated: {ex.Message}");
+                throw new Exception($"{nameof(dto)} could not be updated: {ex.Message}");
             }
-            
         }
-
+        
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            OrganizationDTO organizationDto;
-            
             try
             {
-                organizationDto = await GetById(id).ConfigureAwait(false);
+                await repository
+                    .Delete(await repository.GetById(id).ConfigureAwait(false))
+                    .ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)
             {
                 throw new ArgumentNullException(nameof(id), ex.Message);
             }
-
-            await _repository
-                .Delete(organizationDto.ToDomain())
-                .ConfigureAwait(false);
         }
     }
 }

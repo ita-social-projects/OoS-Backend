@@ -11,11 +11,11 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Service with business logic for Teacher model.
+    /// Implements the interface with CRUD functionality for Teacher entity.
     /// </summary>
     public class TeacherService : ITeacherService
     {
-        private IEntityRepository<Teacher> _repository;
+        private IEntityRepository<Teacher> repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TeacherService"/> class.
@@ -23,22 +23,22 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Repository for Teacher entity.</param>
         public TeacherService(IEntityRepository<Teacher> repository)
         {
-            _repository = repository;
+            this.repository = repository;
         }
 
         /// <inheritdoc/>
-        public async Task<TeacherDTO> Create(TeacherDTO teacherDto)
+        public async Task<TeacherDTO> Create(TeacherDTO dto)
         {
-            if (teacherDto == null)
+            if (dto == null)
             {
                 throw new ArgumentNullException($"{nameof(TeacherDTO)} entity must not be null");
             }
 
             try
             {
-                var teacher = teacherDto.ToDomain();
+                var teacher = dto.ToDomain();
 
-                var newTeacher = await _repository.Create(teacher).ConfigureAwait(false);
+                var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
                 return newTeacher.ToModel();
             }
@@ -49,14 +49,12 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<TeacherDTO>> GetAllTeachers()
+        public async Task<IEnumerable<TeacherDTO>> GetAll()
         {
             try
             {
-                var teachers = await _repository.GetAll().ConfigureAwait(false);
-                var teachersDto = teachers.Select(teacher => teacher.ToModel());
-
-                return teachersDto;
+                var teachers = await repository.GetAll().ConfigureAwait(false);
+                return teachers.Select(teacher => teacher.ToModel()).ToList();
             }
             catch (Exception ex)
             {
@@ -66,7 +64,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<TeacherDTO> GetById(long id)
         {
-            var teacher = await _repository.GetById(id).ConfigureAwait(false);
+            var teacher = await repository.GetById(id).ConfigureAwait(false);
 
             if (teacher == null)
             {
@@ -76,16 +74,16 @@ namespace OutOfSchool.WebApi.Services
             return teacher.ToModel();
         }
 
-        public async Task<TeacherDTO> Update(TeacherDTO teacherDto)
+        public async Task<TeacherDTO> Update(TeacherDTO dto)
         {
-            if (teacherDto == null)
+            if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(teacherDto)} was null.");
+                throw new ArgumentNullException($"{nameof(dto)} was null.");
             }
 
             try
             {
-                var teacher = await _repository.Update(teacherDto.ToDomain()).ConfigureAwait(false);
+                var teacher = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
               
                 return teacher.ToModel();
             }
@@ -97,20 +95,16 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task Delete(long id)
         {
-            TeacherDTO teacherDto;
-
             try
             {
-                teacherDto = await GetById(id).ConfigureAwait(false);
+                await repository
+                    .Delete(await repository.GetById(id).ConfigureAwait(false))
+                    .ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)
             {
                 throw new ArgumentNullException(nameof(id), ex.Message);
             }
-
-            await _repository
-                .Delete(teacherDto.ToDomain())
-                .ConfigureAwait(false);
         }
     }
 }

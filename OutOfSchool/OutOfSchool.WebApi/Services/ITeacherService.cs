@@ -5,39 +5,39 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Interface of TeacherService.
+    /// Defines interface for CRUD functionality for Teacher entity.
     /// </summary>
     public interface ITeacherService
     {
         /// <summary>
-        /// Add a new Teacher to the database.
+        /// Add entity.
         /// </summary>
-        /// <param name="teacherDto">Teacher to add.</param>
+        /// <param name="dto">Teacher to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherDTO> Create(TeacherDTO teacherDto);
+        Task<TeacherDTO> Create(TeacherDTO dto);
         
         /// <summary>
-        /// Get all teachers from the database.
+        /// Get all entities.
         /// </summary>
         /// <returns>List of all teachers.</returns>
-        Task<IEnumerable<TeacherDTO>> GetAllTeachers();
+        Task<IEnumerable<TeacherDTO>> GetAll();
 
         /// <summary>
-        /// Get teacherDto by it's key.
+        /// Get entity by it's key.
         /// </summary>
         /// <param name="id">Teacher's key.</param>
         /// <returns>Teacher.</returns>
         Task<TeacherDTO> GetById(long id);
 
         /// <summary>
-        /// Update information about a specific teacherDto.
+        /// Update entity.
         /// </summary>
-        /// <param name="teacherDto">Teacher to update.</param>
+        /// <param name="dto">Teacher to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherDTO> Update(TeacherDTO teacherDto);
+        Task<TeacherDTO> Update(TeacherDTO dto);
 
         /// <summary>
-        /// Delete teacherDto from the database by it's key.
+        /// Delete entity.
         /// </summary>
         /// <param name="id">Teacher's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>

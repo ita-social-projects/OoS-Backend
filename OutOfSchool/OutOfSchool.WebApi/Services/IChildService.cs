@@ -5,16 +5,16 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Interface of ChildService.
+    /// Defines interface for CRUD functionality for Child entity.
     /// </summary>
     public interface IChildService
     {
         /// <summary>
-        /// Add a new Child to the database.
+        /// Add entity.
         /// </summary>
-        /// <param name="childDTo">Child to add.</param>
+        /// <param name="dto">Child to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ChildDTO> Create(ChildDTO childDTo);
+        Task<ChildDTO> Create(ChildDTO dto);
 
         /// <summary>
         /// Get all children from the database.
@@ -23,22 +23,21 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<ChildDTO>> GetAll();
 
         /// <summary>
-        /// Get childDTo by it's key.
+        /// Get entity by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Child.</returns>
         Task<ChildDTO> GetById(long id);
 
-
         /// <summary>
-        /// Update information about childDTo entity.
+        /// Update entity.
         /// </summary>
-        /// <param name="childDto">Child entity to update.</param>
+        /// <param name="dto">Child entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ChildDTO> Update(ChildDTO childDto);
+        Task<ChildDTO> Update(ChildDTO dto);
 
         /// <summary>
-        /// Delete some element in database.
+        /// Delete entity.
         /// </summary>
         /// <param name="id">Child's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>

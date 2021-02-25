@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Components.Web;
 using NuGet.Frameworks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -12,34 +13,34 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Service with business logic for Workshop model.
+    /// Implements the interface with CRUD functionality for Workshop entity.
     /// </summary>
     public class WorkshopService : IWorkshopService
     {
-        private IEntityRepository<Workshop> _repository;
+        private IEntityRepository<Workshop> repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
         /// <param name="repository">Repository for Workshop entity.</param>
-        public WorkshopService(EntityRepository<Workshop> repository)
+        public WorkshopService(IEntityRepository<Workshop> repository)
         {
-            _repository = repository;
+            this.repository = repository;
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> Create(WorkshopDTO workshopDto)
+        public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
-            if (workshopDto == null)
+            if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(workshopDto)} entity must not be null");
+                throw new ArgumentNullException($"{nameof(dto)} entity must not be null");
             }
 
             try
             {
-                var workshop = workshopDto.ToDomain();
+                var workshop = dto.ToDomain();
 
-                var newWorkshop = await _repository.Create(workshop).ConfigureAwait(false);
+                var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
 
                 return newWorkshop.ToModel();
             }
@@ -54,21 +55,19 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var workshops = await _repository.GetAll().ConfigureAwait(false);
+                var workshops = await repository.GetAll().ConfigureAwait(false);
 
-                var workshopsDto = workshops.Select(workshop => workshop.ToModel());
-
-                return workshopsDto;
+                return workshops.Select(workshop => workshop.ToModel()).ToList();
             }
             catch (Exception ex)
             {
-                throw new Exception($"Couldn't retrieve workshops: {ex.Message}");
+                throw new Exception($"Couldn't retrieve Workshops: {ex.Message}");
             }
         }
 
         public async Task<WorkshopDTO> GetById(long id)
         {
-            var workshop = await _repository.GetById(id).ConfigureAwait(false);
+            var workshop = await repository.GetById(id).ConfigureAwait(false);
 
             if (workshop == null)
             {
@@ -85,22 +84,22 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        public async Task<WorkshopDTO> Update(WorkshopDTO workshopDto)
+        public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
-            if (workshopDto == null)
+            if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(workshopDto)} was null.");
+                throw new ArgumentNullException($"{nameof(dto)} was null.");
             }
 
             try
             {
-                var workshop = await _repository.Update(workshopDto.ToDomain()).ConfigureAwait(false);
+                var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
                 return workshop.ToModel();
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(workshopDto)} could not be updated: {ex.Message}");
+                throw new Exception($"{nameof(dto)} could not be updated: {ex.Message}");
             }
         }
 
@@ -108,10 +107,8 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var workshopDto = await GetById(id).ConfigureAwait(false);
-
-                await _repository
-                    .Delete(workshopDto.ToDomain())
+                await repository
+                    .Delete(await repository.GetById(id).ConfigureAwait(false))
                     .ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)

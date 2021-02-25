@@ -11,45 +11,45 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Service with business logic for Child model.
+    /// Implements the interface with CRUD functionality for Child entity.
     /// </summary>
     public class ChildService : IChildService
     {
-        private IEntityRepository<Child> _repository;
+        private IEntityRepository<Child> repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildService"/> class.
         /// </summary>
-        /// <param name="entityRepository">Repository for the Child entity.</param>
-        public ChildService(IEntityRepository<Child> entityRepository)
+        /// <param name="repository">Repository for the Child entity.</param>
+        public ChildService(IEntityRepository<Child> repository)
         {
-            _repository = entityRepository;
+            this.repository = repository;
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDTO> Create(ChildDTO childDTo)
+        public async Task<ChildDTO> Create(ChildDTO dto)
         {
-            if (childDTo == null)
+            if (dto == null)
             {
-                throw new ArgumentNullException(nameof(childDTo), "Child was null.");
+                throw new ArgumentNullException(nameof(dto), "Child was null.");
             }
 
-            if (childDTo.DateOfBirth > DateTime.Now)
+            if (dto.DateOfBirth > DateTime.Now)
             {
                 throw new ArgumentException("Invalid Date of birth");
             }
 
             try
             {
-                var child = childDTo.ToDomain();
+                var child = dto.ToDomain();
 
-                var newChild = await _repository.Create(child).ConfigureAwait(false);
+                var newChild = await repository.Create(child).ConfigureAwait(false);
 
                 return newChild.ToModel();
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(childDTo)} could not be saved: {ex.Message}");
+                throw new Exception($"{nameof(dto)} could not be saved: {ex.Message}");
             }
         }
 
@@ -58,11 +58,9 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var children = await _repository.GetAll().ConfigureAwait(false);
+                var children = await repository.GetAll().ConfigureAwait(false);
                
-                var childrenDto = children.Select(child => child.ToModel());
-
-                return childrenDto;
+                return children.Select(child => child.ToModel()).ToList();
             }
             catch (Exception ex)
             {
@@ -73,7 +71,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> GetById(long id)
         {
-            var child = await _repository.GetById(id).ConfigureAwait(false);
+            var child = await repository.GetById(id).ConfigureAwait(false);
 
             if (child == null)
             {
@@ -84,62 +82,58 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDTO> Update(ChildDTO childDto)
+        public async Task<ChildDTO> Update(ChildDTO dto)
         {
-            if (childDto == null)
+            if (dto == null)
             {
-                throw new ArgumentNullException(nameof(childDto), "Child was null.");
+                throw new ArgumentNullException(nameof(dto), "Child was null.");
             }
 
-            if (childDto.DateOfBirth > DateTime.Now)
+            if (dto.DateOfBirth > DateTime.Now)
             {
-                throw new ArgumentException("Wrong date of birth.", nameof(childDto));
+                throw new ArgumentException("Wrong date of birth.", nameof(dto));
             }
 
-            if (childDto.FirstName.Length == 0)
+            if (dto.FirstName.Length == 0)
             {
-                throw new ArgumentException("Empty firstname.", nameof(childDto));
+                throw new ArgumentException("Empty firstname.", nameof(dto));
             }
 
-            if (childDto.LastName.Length == 0)
+            if (dto.LastName.Length == 0)
             {
-                throw new ArgumentException("Empty lastname.", nameof(childDto));
+                throw new ArgumentException("Empty lastname.", nameof(dto));
             }
 
-            if (childDto.MiddleName.Length == 0)
+            if (dto.MiddleName.Length == 0)
             {
-                throw new ArgumentException("Empty middlename.", nameof(childDto));
+                throw new ArgumentException("Empty middlename.", nameof(dto));
             }
 
             try
             {
-                var child = await _repository.Update(childDto.ToDomain()).ConfigureAwait(false);
+                var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
               
                 return child.ToModel();
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(childDto)} could not be updated: {ex.Message}");
+                throw new Exception($"{nameof(dto)} could not be updated: {ex.Message}");
             }
         }
 
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            ChildDTO childDto;
-
             try
             {
-                childDto = await GetById(id).ConfigureAwait(false);
+                await repository
+                    .Delete(await repository.GetById(id).ConfigureAwait(false))
+                    .ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)
             {
                 throw new ArgumentNullException(nameof(id), ex.Message);
             }
-
-            await _repository
-                .Delete(childDto.ToDomain())
-                .ConfigureAwait(false);
         }
     }
 }
