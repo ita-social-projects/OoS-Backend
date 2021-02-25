@@ -64,14 +64,16 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<TeacherDTO> GetById(long id)
         {
-            var teacher = await repository.GetById(id).ConfigureAwait(false);
-
-            if (teacher == null)
+            try
             {
-                throw new ArgumentNullException($"There is no {nameof(teacher)} with id = {id}.");
+                var teacher = await repository.GetById(id).ConfigureAwait(false);
+                
+                return teacher.ToModel();
             }
-
-            return teacher.ToModel();
+            catch (Exception e)
+            {
+                throw new Exception($"There is no {nameof(Teacher)} with id = {id}. {e.Message}");
+            }
         }
 
         public async Task<TeacherDTO> Update(TeacherDTO dto)
@@ -84,7 +86,7 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var teacher = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-              
+
                 return teacher.ToModel();
             }
             catch (Exception ex)
