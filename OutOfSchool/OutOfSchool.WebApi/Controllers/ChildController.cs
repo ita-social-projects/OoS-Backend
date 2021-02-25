@@ -14,15 +14,15 @@ namespace OutOfSchool.WebApi.Controllers
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class ChildrenController : ControllerBase
+    public class ChildController : ControllerBase
     {
         private IChildService childService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChildrenController"/> class.
+        /// Initializes a new instance of the <see cref="ChildController"/> class.
         /// </summary>
         /// <param name="childService">Service for Child model.</param>
-        public ChildrenController(IChildService childService)
+        public ChildController(IChildService childService)
         {
             this.childService = childService;
         }
