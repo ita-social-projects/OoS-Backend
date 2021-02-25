@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#nullable enable
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -6,9 +7,9 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        public string Region { get; set; }
+        public string? Region { get; set; }
 
-        public string District { get; set; }
+        public string? District { get; set; }
         
         [Required(ErrorMessage = "City is required")]
         [DataType(DataType.Text)]
@@ -24,6 +25,7 @@ namespace OutOfSchool.WebApi.Models
         public string Building { get; set; }
         
         public double Latitude { get; set; }
+        
         public double Longitude { get; set; }
     }
 }

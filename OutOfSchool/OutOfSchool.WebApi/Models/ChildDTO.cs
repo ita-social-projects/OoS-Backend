@@ -9,7 +9,9 @@ namespace OutOfSchool.WebApi.Models
         public string LastName { get; set; }
         public string MiddleName { get; set; }
         public DateTime DateOfBirth { get; set; }
+        
         public long ParentId { get; set; }
+        
         public long SocialGroupId { get; set; }
     }
 }

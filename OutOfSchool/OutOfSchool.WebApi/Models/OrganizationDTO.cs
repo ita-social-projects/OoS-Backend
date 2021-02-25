@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Models
 
         public long UserId { get; set; }
         
-        [Required(ErrorMessage = "Specify the type of organization")] 
+        [Required(ErrorMessage = "Type of organization is required")] 
         public OrganizationType Type { get; set; }
     }
 }

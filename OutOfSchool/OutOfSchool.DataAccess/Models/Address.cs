@@ -1,12 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿#nullable enable
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
 {
     public class Address
     {
         public long Id { get; set; }
-        public string Region { get; set; }
-        public string District { get; set; }
+        
+        public string? Region { get; set; }
+        
+        public string? District { get; set; }
         
         [Required(ErrorMessage = "City is required")]
         [DataType(DataType.Text)]
@@ -20,7 +23,9 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Building number is required")]
         [MaxLength(15)]
         public string BuildingNumb { get; set; }
+        
         public double Latitude { get; set; }
+        
         public double Longitude { get; set; }
     }
 }

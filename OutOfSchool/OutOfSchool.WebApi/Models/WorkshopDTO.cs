@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,7 +12,7 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        [Required(ErrorMessage = "Group title is required")]
+        [Required(ErrorMessage = "Workshop title is required")]
         [MinLength(1)]
         [MaxLength(60)]
         public string Title { get; set; }
@@ -36,11 +37,11 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(30)]
         public string? Instagram { get; set; }
 
-        [Required(ErrorMessage = "Specify children' min age")] 
+        [Required(ErrorMessage = "Children's min age is required")] 
         [Range(0, 16, ErrorMessage = "Min age should be a number from 0 to 16")]
         public int MinAge { get; set; }
 
-        [Required(ErrorMessage = "Specify children' max age")] 
+        [Required(ErrorMessage = "Children's max age is required")] 
         [Range(0, 16, ErrorMessage = "Max age should be a number from 0 to 16")]
         public int MaxAge { get; set; }
 
@@ -64,22 +65,20 @@ namespace OutOfSchool.WebApi.Models
 
         public string? Image { get; set; }
         
-        [Required(ErrorMessage = "Enter information about the head of workshop")]
-        [MaxLength(50, ErrorMessage = "Field should be longer than 50 characters")]
+        [Required(ErrorMessage = "Head's information is required")]
+        [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
         public string Head { get; set; }
 
-        [Required(ErrorMessage = "Head's birthday should be specified")]
+        [Required(ErrorMessage = "Head's birthday is required")]
         [DataType(DataType.Date)]
         public DateTime HeadBirthDate { get; set; }
 
         public CategoryDTO Category { get; set; }
-        public virtual AddressDTO Address { get; set; }
-        public virtual OrganizationDTO Organization { get; set; }
-        public virtual List<TeacherDTO> Teachers { get; set; }
         
-        // public static WorkshopDTO ToModel(Workshop workshop)
-        // {
-        //     return AutoMapper.Mapper.Map<WorkshopDTO>(workshop);
-        // }
+        public virtual AddressDTO Address { get; set; }
+        
+        public virtual OrganizationDTO Organization { get; set; }
+        
+        public virtual List<TeacherDTO> Teachers { get; set; }
     }
 }
