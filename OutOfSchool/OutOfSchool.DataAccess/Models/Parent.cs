@@ -24,5 +24,7 @@ namespace OutOfSchool.Services.Models
         {
             Children = new List<Child>();
         }
-    }
+
+        public User User { get; set; }
+   }
 }

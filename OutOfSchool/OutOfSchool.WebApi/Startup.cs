@@ -1,26 +1,21 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO;
+using System.Reflection;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Mapping;
+using OutOfSchool.WebApi.Mapping.Extensions;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.Implementation;
-using OutOfSchool.WebApi.Services.Interfaces;
-using OutOfSchool.WebApi.Services.Mapping;
 
-namespace OutOfSchool
+namespace OutOfSchool.WebApi
 {
     public class Startup
     {
@@ -37,9 +32,6 @@ namespace OutOfSchool
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var childMapper = new MapperConfiguration(x => x.AddProfile(new ChildMapperProfile())).CreateMapper();
-            var socialGroupMapper = new MapperConfiguration(x => x.AddProfile(new SocialGroupMapperProfile())).CreateMapper();
-            var organizationMapper = new MapperConfiguration(x => x.AddProfile(new OrganizationMapperProfile())).CreateMapper();
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
@@ -56,20 +48,25 @@ namespace OutOfSchool
                         .AllowAnyHeader()));
 
             services.AddControllers();
-            
+
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
 
             services.AddTransient<IChildService, ChildService>();
-            services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
-            services.AddSingleton(childMapper);
-            services.AddSingleton(socialGroupMapper);
+            services.AddTransient<IWorkshopService, WorkshopService>();
+            services.AddTransient<ITeacherService, TeacherService>();
+            services.AddTransient<IOrganizationService, OrganizationService>();
 
-            services.AddTransient<IOrganizationService, OrganizationService>();           
+            services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
+            services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
+            services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
+
             services.AddTransient<IOrganizationRepository, OrganizationRepository>();
-            services.AddSingleton(organizationMapper);
+
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
+
+            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,17 +76,15 @@ namespace OutOfSchool
             {
                 app.UseDeveloperExceptionPage();
             }
+
             app.UseCors("AllowAll");
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
-
+            
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API");
-            });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); });
             
             app.UseHttpsRedirection();
 
@@ -98,10 +93,7 @@ namespace OutOfSchool
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }
