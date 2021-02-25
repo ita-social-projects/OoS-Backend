@@ -19,6 +19,8 @@ namespace OutOfSchool.Tests
     {
         [Test]
         [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
         public void GetAllWIthDetails_FilterWithId_ReturnSingleEntity(long id)
         {
 
@@ -33,6 +35,80 @@ namespace OutOfSchool.Tests
 
                 //Assert
                 Assert.AreEqual(1, child.Count());
+            }
+        }
+
+        [Test]
+        public void Create_NewEntity_AddNewEntityToDatabase()
+        {
+            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            {
+
+                var repository = new EntityRepository<Child>(context);
+                Child child = new Child {FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 4, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 }; 
+                //Act
+
+                var child1 = repository.Create(child).Result;
+                var children = repository.GetAll();
+
+                //Assert
+                Assert.AreEqual(4, children.Count());
+            }
+        }
+
+        [Test]
+        public void Delete_DeleteEntity_DeleteFromDatabase()
+        {
+            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            {
+
+                var repository = new EntityRepository<SocialGroup>(context);
+                SocialGroup socialGroup = new SocialGroup { SocialGroupId = 1, Name = "sg1" };
+                //Act
+
+                repository.Delete(socialGroup);
+                var socialGroups = repository.GetAll();
+
+                //Assert
+                Assert.AreEqual(2, socialGroups.Count());
+
+            }
+        }
+
+        [Test]
+        public void GetAll_ReturnAllValues()
+        {
+            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            {
+
+                var repository = new EntityRepository<SocialGroup>(context);
+           
+                //Act
+ 
+                var socialGroups = repository.GetAll();
+
+                //Assert
+                Assert.AreEqual(3, socialGroups.Count());
+
+            }
+        }
+
+        [Test]
+        public void Update_UpatedInfo_UpdateEntityInDatabase()
+        {
+            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            {
+
+                var repository = new EntityRepository<SocialGroup>(context);
+
+                //Act
+                SocialGroup socialGroup = new SocialGroup { SocialGroupId = 2, Name = "sg22" };
+                var socialGroup1 = repository.Update(socialGroup).Result;
+
+                //Assert
+                Assert.AreEqual(2, socialGroup1.SocialGroupId);
+                Assert.AreEqual("sg22", socialGroup1.Name);
+
             }
         }
     }
