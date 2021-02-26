@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Models
         public string INPP { get; set; }
         //public byte[]? Image { get; set; }
         public OrganizationType Type { get; set; }
-        public long UserId { get; set; }
+        public string UserId { get; set; }
 
     }
 }

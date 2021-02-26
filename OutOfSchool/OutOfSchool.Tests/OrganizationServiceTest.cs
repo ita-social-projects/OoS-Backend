@@ -19,22 +19,28 @@ namespace OutOfSchool.Tests
     [TestFixture]
     public class OrganizationServiceTest
     {
-        private OutOfSchoolDbContext _context;
-        private OrganizationRepository organizationRepository;
-        private readonly IMapper mapper = new MapperConfiguration(x => x.AddProfile(new OrganizationMapperProfile())).CreateMapper();
-        private OrganizationService _organizationService;
+        private readonly OutOfSchoolDbContext _context;
+        private readonly OrganizationRepository organizationRepository;
+        private readonly  OrganizationService _organizationService;
+        private readonly IMapper mapper;
 
-
-        [OneTimeSetUp]
-        public void Setup()
+        public OrganizationServiceTest()
         {
+            mapper = new MapperConfiguration(x => x.AddProfile(new OrganizationMapperProfile()))
+               .CreateMapper();
+
             var dbContextOptions =
-                new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase("TestDB").UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            _context = new OutOfSchoolDbContext(dbContextOptions.Options);
-           
+                new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                .Options;
+
+            _context = new OutOfSchoolDbContext(dbContextOptions);
+
             organizationRepository = new OrganizationRepository(_context);
             _organizationService = new OrganizationService(organizationRepository, mapper);
         }
+       
 
         [OneTimeTearDown]
         public void TearDown()
@@ -43,8 +49,9 @@ namespace OutOfSchool.Tests
         }
 
         [Test,Order(1)]
-        public async Task CreateOrganization_Succsess()
+        public async Task Create_Organization_ReturnsCreatedOrganization()
         {
+            // Arrange
             var newOrganization = new OrganizationDTO
             {
                 Id = 0b101,
@@ -57,26 +64,32 @@ namespace OutOfSchool.Tests
                 EDRPOU = "12345678",
                 INPP = "1234567891",              
                 Type = OrganizationType.FOP,
-                UserId = 0xFF
+                UserId = "123"
             };
 
+            //Act
             var organization = await _organizationService.Create(newOrganization).ConfigureAwait(false);
            
-            Assert.That(newOrganization.Id, Is.EqualTo(organization.Id), "Id`s are equal");
+            //Assert
+            Assert.That(newOrganization.Id, Is.EqualTo(organization.Id), "Id's are equal");
             Assert.That(newOrganization.Title, Is.EqualTo(organization.Title), "Titles are equal");                   
         }
 
         [Test, Order(3)]
-        public void CreateOrganization_ArgumentNullException()
+        public void Create_Organization_ReturnsArgumentNullException()
         {
+            // Arrange
+            OrganizationDTO organization = null;
 
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentNullException>(
-                async () => await _organizationService.Create(null).ConfigureAwait(false));
+                async () => await _organizationService.Create(organization).ConfigureAwait(false));
         }
 
         [Test, Order(4)]
-        public void CreateOrganization_CheckForUniqueness()
+        public void Create_NotUniqueOrganization_ReturnsArgumentException()
         {
+            // Arrange
             var newOrganization = new OrganizationDTO
             {
                 Id = 10,
@@ -89,43 +102,57 @@ namespace OutOfSchool.Tests
                 EDRPOU = "12345678",
                 INPP = "1234567891",
                 Type = OrganizationType.TOV,
-                UserId = 245
+                UserId = "123"
             };
 
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await _organizationService.Create(newOrganization).ConfigureAwait(false));
-            
+                async () => await _organizationService.Create(newOrganization).ConfigureAwait(false));           
         }
 
         [Test, Order(5)]
-        public async Task GetAllOrganizations_Succsess()
-        {          
+        public async Task GetAll_Organizations_ReturnsSameAmountOrganizations()
+        {
+            // Arrange
+            var allOrganizations = await _organizationService.GetAll();
 
-            var organizations = await _organizationService.GetAll();
+            // Act
+            var amountOrganizations = allOrganizations.ToList().Count;
 
-            Assert.AreEqual(_context.Organizations.ToList().Count, organizations.ToList().Count);
+            // Assert
+            Assert.AreEqual(_context.Organizations.ToList().Count, amountOrganizations);
         }
 
         [Test, Order(2)]
-        public async Task GetOrganizationById_Succsess()
-        {          
-            var organization = await _organizationService.GetById(0b101).ConfigureAwait(false);
+        public async Task Get_OrganizationById_ReturnsOrganizationWithSameId()
+        {
+            // Arrange
+            long id = 0b101;
 
-            Assert.AreEqual(0b101, organization.Id);
+            // Act
+            var organization = await _organizationService.GetById(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(id, organization.Id);
         }
 
         [Test, Order(6)]
-        public async Task GetOrganizationById_ArgumentException()
+        public async Task Get_OrganizationById_ReturnsArgumentException()
         {
+            // Arrange
+            long nonexistentId = 1234;
+
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await _organizationService.GetById(1111).ConfigureAwait(false));
+                async () => await _organizationService.GetById(nonexistentId).ConfigureAwait(false));
         }
 
 
         [Test,Order(7)]
-        public async Task UpdateOrganization_Sucsess()
+        public async Task Update_Organization_ReturnsUpdatedOrganization()
         {
-            var newOrganization = new OrganizationDTO
+            // Arrange
+            var oldOrganization = new OrganizationDTO
             {
                 Id = 0b101,
                 Title = "Title",
@@ -137,28 +164,35 @@ namespace OutOfSchool.Tests
                 EDRPOU = "12345678",
                 INPP = "1234567891",
                 Type = OrganizationType.FOP,
-                UserId = 0xFF
+                UserId = "123"
             };
 
-            _context.Entry<Organization>(await organizationRepository.GetById(newOrganization.Id)).State = EntityState.Detached;
+            _context.Entry<Organization>(await organizationRepository.GetById(oldOrganization.Id)).State = EntityState.Detached;
 
-            var organization = await _organizationService.Update(newOrganization).ConfigureAwait(false);
+            // Act
+            var updatedOrganization = await _organizationService.Update(oldOrganization).ConfigureAwait(false);
 
-            Assert.That(newOrganization.Facebook, Is.EqualTo(organization.Facebook));
-            Assert.That(newOrganization.Instagram, Is.EqualTo(organization.Instagram));
+            // Assert
+            Assert.That(oldOrganization.Facebook, Is.EqualTo(updatedOrganization.Facebook));
+            Assert.That(oldOrganization.Instagram, Is.EqualTo(updatedOrganization.Instagram));
         }
 
         [Test, Order(8)]
-        public async Task UpdateOrganization_ArgumentNullException()
+        public async Task Update_Organization_ReturnsArgumentNullException()
         {
+            // Arrange
+            OrganizationDTO oldOrganization = null;
+
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentNullException>(
-                  async () => await _organizationService.Update(null).ConfigureAwait(false));     
+                  async () => await _organizationService.Update(oldOrganization).ConfigureAwait(false));     
         }
 
         [Test, Order(9)]
-        public async Task UpdateOrganization_EmptyEDRPOU()
+        public async Task Update_OrganizationWithEmptyEDRPOU_ReturnsArgumentException()
         {
-            var newOrganization = new OrganizationDTO
+            // Arrange
+            var organization = new OrganizationDTO
             {
                 Id = 0b101,
                 Title = "Title",
@@ -170,17 +204,19 @@ namespace OutOfSchool.Tests
                 EDRPOU = string.Empty,
                 INPP = "1234567891",
                 Type = OrganizationType.FOP,
-                UserId = 0xFF
-            };         
+                UserId = "123"
+            };
 
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                   async () => await _organizationService.Update(newOrganization).ConfigureAwait(false));
+                   async () => await _organizationService.Update(organization).ConfigureAwait(false));
         }
 
         [Test, Order(10)]
-        public async Task UpdateOrganization_EmptyINPP()
+        public async Task Update_OrganizationWithEmptyINPP_ReturnsArgumentException()
         {
-            var newOrganization = new OrganizationDTO
+            // Arrange
+            var organization = new OrganizationDTO
             {
                 Id = 0b101,
                 Title = "Title",
@@ -192,17 +228,19 @@ namespace OutOfSchool.Tests
                 EDRPOU = "12345678",
                 INPP = string.Empty,
                 Type = OrganizationType.FOP,
-                UserId = 0xFF
+                UserId = "123"
             };
 
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                   async () => await _organizationService.Update(newOrganization).ConfigureAwait(false));
+                   async () => await _organizationService.Update(organization).ConfigureAwait(false));
         }
 
         [Test, Order(11)]
-        public async Task UpdateOrganization_EmptyMFO()
+        public async Task Update_OrganizationWithEmptyMFO_ReturnsArgumentException()
         {
-            var newOrganization = new OrganizationDTO
+            // Arrange
+            var organization = new OrganizationDTO
             {
                 Id = 0b101,
                 Title = "Title",
@@ -214,17 +252,19 @@ namespace OutOfSchool.Tests
                 EDRPOU = "12345678",
                 INPP = "1234567891",
                 Type = OrganizationType.FOP,
-                UserId = 0xFF
+                UserId = "123"
             };
 
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                   async () => await _organizationService.Update(newOrganization).ConfigureAwait(false));
+                   async () => await _organizationService.Update(organization).ConfigureAwait(false));
         }
 
         [Test, Order(12)]
-        public async Task UpdateOrganization_EmptyTitle()
+        public async Task Update_OrganizationWithEmptyTitle_ReturnsArgumentException()
         {
-            var newOrganization = new OrganizationDTO
+            // Arrange
+            var organization = new OrganizationDTO
             {
                 Id = 0b101,
                 Title = string.Empty,
@@ -236,17 +276,19 @@ namespace OutOfSchool.Tests
                 EDRPOU = "12345678",
                 INPP = "1234567891",
                 Type = OrganizationType.FOP,
-                UserId = 0xFF
+                UserId = "123"
             };
 
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                   async () => await _organizationService.Update(newOrganization).ConfigureAwait(false));
+                   async () => await _organizationService.Update(organization).ConfigureAwait(false));
         }
 
         [Test, Order(13)]
-        public async Task UpdateOrganization_EmptyDescription()
+        public async Task Update_OrganizationWithEmptyDescription_ReturnsArgumentException()
         {
-            var newOrganization = new OrganizationDTO
+            // Arrange
+            var organization = new OrganizationDTO
             {
                 Id = 0b101,
                 Title = "Title",
@@ -258,23 +300,27 @@ namespace OutOfSchool.Tests
                 EDRPOU = "12345678",
                 INPP = "1234567891",
                 Type = OrganizationType.FOP,
-                UserId = 0xFF
+                UserId = "123"
             };
 
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                   async () => await _organizationService.Update(newOrganization).ConfigureAwait(false));
+                   async () => await _organizationService.Update(organization).ConfigureAwait(false));
         }
 
         [Test, Order(14)]
-        public async Task DeleteOrganization_Sucsess()
-        {          
-            long id = 0b101;
+        public async Task Delete_Organization_DeletedFromDatabase()
+        {
+            // Arrange
+            long organizationId = 0b101;
 
-            _context.Entry<Organization>(await organizationRepository.GetById(id)).State = EntityState.Detached;
+            _context.Entry<Organization>(await organizationRepository.GetById(organizationId)).State = EntityState.Detached;
 
-            await _organizationService.Delete(id);
+            // Act
+            await _organizationService.Delete(organizationId);
             var organizations = await _organizationService.GetAll();
 
+            // Assert
             Assert.AreEqual(_context.Organizations.ToList().Count, organizations.ToList().Count);
         }
 

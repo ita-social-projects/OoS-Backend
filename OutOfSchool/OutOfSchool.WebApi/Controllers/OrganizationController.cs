@@ -41,8 +41,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of all organizations.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Organization>>> GetOrganizations()
-        {
+        public async Task<IActionResult> GetOrganizations()
+        {         
             try
             {
                 return Ok(await organizationService.GetAll());
@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Key in database.</param>
         /// <returns>Organization element with some id.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrganizationDTO>> GetOrganizationById(long id)
+        public async Task<IActionResult> GetOrganizationById(long id)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "organization,admin")]
         [HttpPost]
-        public async Task<ActionResult<Organization>> CreateOrganization(OrganizationDTO organizationDTO)
+        public async Task<IActionResult> CreateOrganization(OrganizationDTO organizationDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -87,7 +87,9 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                organizationDTO.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
+                
+                organizationDTO.UserId = User.FindFirst("sub")?.Value;
+
                 OrganizationDTO organization = await organizationService.Create(organizationDTO).ConfigureAwait(false);       
                 return CreatedAtAction(
                     nameof(GetOrganizations),
@@ -107,7 +109,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>Organization's key.</returns>
         [Authorize(Roles = "organization,admin")]
         [HttpPut]
-        public async Task<ActionResult> Update(OrganizationDTO organizationDTO)
+        public async Task<IActionResult> Update(OrganizationDTO organizationDTO)
         {
             if (organizationDTO == null)
             {
@@ -136,7 +138,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "organization,admin")]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(long id)
         {
             try
             {
