@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.WebApi.Models
 {
-    public class Parent
+    public class ParentDTO
     {
         public long Id { get; set; }
 
@@ -24,13 +27,6 @@ namespace OutOfSchool.Services.Models
         [MaxLength(30)]
         [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Last name cannot contains digits")]
         public string LastName { get; set; }
-        public virtual IReadOnlyCollection<Child> Children { get; set; }
-
-        public Parent()
-        {
-            Children = new List<Child>();
-        }
         public long UserId { get; set; }
-        public virtual User User { get; set; }
-   }
+    }
 }
