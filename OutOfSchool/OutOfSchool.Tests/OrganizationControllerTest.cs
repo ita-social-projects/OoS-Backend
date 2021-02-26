@@ -22,12 +22,5 @@ namespace OutOfSchool.Tests
         public void Setup()
         {
         }
-
-        [Test]
-        public void Test1()
-        {
-            CreateOrganizationController.TestOk();
-            Assert.Pass();
-        }
     }
 }

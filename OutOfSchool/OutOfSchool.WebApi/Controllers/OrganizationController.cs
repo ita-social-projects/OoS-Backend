@@ -28,11 +28,6 @@ namespace OutOfSchool.WebApi.Controllers
             this.organizationService = organizationService;
         }
 
-        public IActionResult TestOk()
-        {
-            var user = User?.FindFirst("role")?.Value;
-            return Ok("Hello to " + user ?? "unknown");
-        }
 
         /// <summary>
         /// Get all organization from the database.
