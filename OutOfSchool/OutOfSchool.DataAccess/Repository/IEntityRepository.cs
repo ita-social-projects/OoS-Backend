@@ -15,21 +15,21 @@ namespace OutOfSchool.Services.Repository
         /// <summary>
         /// Add new element.
         /// </summary>
-        /// <param name="entity">Entity.</param>
+        /// <param name="entity">Entity to create.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> Create(T entity);
 
         /// <summary>
         /// Update information about element.
         /// </summary>
-        /// <param name="entity">Entity.</param>
+        /// <param name="entity">Entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> Update(T entity);
 
         /// <summary>
         /// Delete element.
         /// </summary>
-        /// <param name="entity">Entity.</param>
+        /// <param name="entity">Entity to delete.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(T entity);
 
