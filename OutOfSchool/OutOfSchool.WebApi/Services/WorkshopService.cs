@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Mvc;
 using NuGet.Frameworks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Mapping.Extensions;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ResultModel;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -29,91 +31,75 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+        public async Task<Result<WorkshopDTO>> Create(WorkshopDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException($"{nameof(dto)} entity must not be null");
-            }
-
             try
             {
                 var workshop = dto.ToDomain();
 
                 var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
 
-                return newWorkshop.ToModel();
+                return Result<WorkshopDTO>.GetSuccess(newWorkshop.ToModel());
             }
-            catch (Exception ex)
+            catch
             {
-                throw new Exception($"{nameof(WorkshopDTO)} could not be saved: {ex.Message}");
+                return Result<WorkshopDTO>.GetError(ErrorCode.InternalServerError, "Internal server error");
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetAll()
+        public async Task<Result<IEnumerable<WorkshopDTO>>> GetAll()
         {
-            try
-            {
-                var workshops = await repository.GetAll().ConfigureAwait(false);
+            var workshops = await repository.GetAll().ConfigureAwait(false);
 
-                return workshops.Select(workshop => workshop.ToModel()).ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Couldn't retrieve Workshops: {ex.Message}");
-            }
+            return Result<IEnumerable<WorkshopDTO>>.GetSuccess(
+                workshops.Select(workshop => workshop.ToModel()).ToList());
         }
 
-        public async Task<WorkshopDTO> GetById(long id)
+        public async Task<Result<WorkshopDTO>> GetById(long id)
         {
             var workshop = await repository.GetById(id).ConfigureAwait(false);
 
             if (workshop == null)
             {
-                throw new NullReferenceException($"There is no {nameof(workshop)} with id = {id}.");
+                return Result<WorkshopDTO>.GetError(ErrorCode.NotFound, $"Workshop with id = {id} was not found.");
             }
 
-            try
-            {
-                return workshop.ToModel();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Couldn't retrieve workshopDto: {ex.Message}");
-            }
+            return Result<WorkshopDTO>.GetSuccess(workshop.ToModel());
         }
 
-        public async Task<WorkshopDTO> Update(WorkshopDTO dto)
+        public async Task<Result<WorkshopDTO>> Update(WorkshopDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException($"{nameof(dto)} was null.");
-            }
-
             try
             {
+                if (dto == null)
+                {
+                    return Result<WorkshopDTO>.GetError(ErrorCode.NotFound, "Workshop item is null.");
+                }
+
                 var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                return workshop.ToModel();
+                return Result<WorkshopDTO>.GetSuccess(workshop.ToModel());
             }
-            catch (Exception ex)
+            catch
             {
-                throw new Exception($"{nameof(dto)} could not be updated: {ex.Message}");
+                return Result<WorkshopDTO>.GetError(ErrorCode.InternalServerError, "Internal server error.");
             }
         }
 
-        public async Task Delete(long id)
+        public async Task<Result<long>> Delete(long id)
         {
             try
             {
-                await repository
-                    .Delete(await repository.GetById(id).ConfigureAwait(false))
-                    .ConfigureAwait(false);
+                var dtoToDelete = new WorkshopDTO() { Id = id };
+                
+                await repository.Delete(dtoToDelete.ToDomain()).ConfigureAwait(false);
+                
+                return Result<long>.GetSuccess(id);
             }
-            catch (ArgumentNullException ex)
+            catch 
             {
-                throw new ArgumentNullException(nameof(id), ex.Message);
+                return Result<long>.GetError(ErrorCode.NotFound, $"Workshop with id = {id} was not found.");
             }
         }
     }

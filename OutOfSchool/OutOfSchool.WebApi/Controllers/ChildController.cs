@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -34,7 +35,9 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Child>>> GetChildren()
         {
-            return Ok(await childService.GetAll().ConfigureAwait(false));
+            var children = await childService.GetAll().ConfigureAwait(false);
+            
+            return children.ToActionResult();
         }
 
         /// <summary>
@@ -45,55 +48,37 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ChildDTO>> GetChildById(long id)
         {
-            if (id == 0)
-            {
-                return BadRequest("Id cannot be 0.");
-            }
-            
-            var childDTO = await childService.GetById(id).ConfigureAwait(false);
+            var child = await childService.GetById(id).ConfigureAwait(false);
 
-            return Ok(childDTO);
+            return child.ToActionResult();
         }
 
         /// <summary>
         /// Method for creating a new child.
         /// </summary>
-        /// <param name="childDTO">Child entity to add.</param>
+        /// <param name="dto">Child entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPost]
-        public async Task<ActionResult<Child>> CreateChild(ChildDTO childDTO)
+        public async Task<ActionResult<Child>> CreateChild(ChildDTO dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var child = await childService.Create(dto).ConfigureAwait(false);
 
-            var child = await childService.Create(childDTO).ConfigureAwait(false);
-
-            return CreatedAtAction(
-                nameof(GetChildById),
-                new
-                {
-                    id = child.Id,
-                });
+            return child.ToActionResult();
         }
 
         /// <summary>
         /// Update info about a specific child in the database.
         /// </summary>
-        /// <param name="childDTO">Child entity.</param>
+        /// <param name="dto">Child entity.</param>
         /// <returns>Child's key.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPut]
-        public async Task<ActionResult> Update(ChildDTO childDTO)
+        public async Task<ActionResult> UpdateChild(ChildDTO dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var child = await childService.Update(dto).ConfigureAwait(false);
 
-            return Ok(await childService.Update(childDTO).ConfigureAwait(false));
+            return child.ToActionResult();
         }
 
         /// <summary>
@@ -103,16 +88,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(long id)
+        public async Task<ActionResult> DeleteChild(long id)
         {
-            if (id == 0)
-            {
-                return BadRequest("Id cannot be 0.");
-            }
+            var childId = await childService.Delete(id).ConfigureAwait(false);
 
-            await childService.Delete(id).ConfigureAwait(false);
-            
-            return Ok();
+            return childId.ToActionResult();
         }
     }
 }

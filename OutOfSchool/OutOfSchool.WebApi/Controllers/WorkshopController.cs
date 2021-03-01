@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Services.Models;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -38,7 +40,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             var workshops = await workshopService.GetAll().ConfigureAwait(false);
 
-            return Ok(workshops);
+            return workshops.ToActionResult();
         }
 
         /// <summary>
@@ -51,7 +53,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             var workshop = await workshopService.GetById(id).ConfigureAwait(false);
 
-            return Ok(workshop);
+            return workshop.ToActionResult();
         }
 
         /// <summary>
@@ -63,17 +65,9 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateWorkshop(WorkshopDTO workshopDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var workshop = await workshopService.Create(workshopDto).ConfigureAwait(false);
-           
-            return CreatedAtAction(nameof(GetWorkshopById), new
-            {
-                id = workshop.Id,
-            });
+
+            return workshop.ToActionResult();
         }
 
         /// <summary>
@@ -85,12 +79,9 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpPut]
         public async Task<ActionResult> Update(WorkshopDTO workshopDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var workshop = await workshopService.Update(workshopDto).ConfigureAwait(false);
 
-            return Ok(await workshopService.Update(workshopDto).ConfigureAwait(false));
+            return workshop.ToActionResult();
         }
 
         /// <summary>
@@ -102,14 +93,9 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(long id)
         {
-            if (id == 0)
-            {
-                return BadRequest("Id cannot be 0.");
-            }
+            var workshopId = await workshopService.Delete(id).ConfigureAwait(false);
 
-            await workshopService.Delete(id).ConfigureAwait(false);
-
-            return Ok();
+            return workshopId.ToActionResult();
         }
     }
 }
