@@ -48,7 +48,8 @@ jobs:
           cd .\OutOfSchool\ 
           ..\.sonar\scanner\dotnet-sonarscanner begin /k:"ita-social-projects-oos-backend" /o:"ita-social-projects" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vstest.reportsPaths="/OutOfSchool.Tests/TestResults/*.trx" /d:"sonar.verbose=true" /d:"sonar.cs.opencover.reportsPaths"="/OutOfSchool.Tests/coverage.opencover.xml"
           dotnet build      
-          dotnet add OutOfSchool.Tests\OutOfSchool.Tests.csproj package coverlet.msbuild
+          dotnet add OutOfSchool.Identity.Tests\OutOfSchool.IdentityServer.Tests.csproj package coverlet.msbuild
+          dotnet add OutOfSchool.WebApi.Tests\OutOfSchool.WebApi.Tests.csproj package coverlet.msbuild
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover -l:trx
           ..\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
