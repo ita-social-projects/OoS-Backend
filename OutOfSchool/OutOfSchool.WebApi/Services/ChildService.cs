@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Mapping.Extensions;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ResultModel;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -27,112 +28,77 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDTO> Create(ChildDTO dto)
+        public async Task<Result<ChildDTO>> Create(ChildDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException(nameof(dto), "Child was null.");
-            }
-
-            if (dto.DateOfBirth > DateTime.Now)
-            {
-                throw new ArgumentException("Invalid Date of birth");
-            }
-
             try
             {
                 var child = dto.ToDomain();
 
                 var newChild = await repository.Create(child).ConfigureAwait(false);
 
-                return newChild.ToModel();
+                return Result<ChildDTO>.GetSuccess(newChild.ToModel());
             }
-            catch (Exception ex)
+            catch
             {
-                throw new Exception($"{nameof(dto)} could not be saved: {ex.Message}");
+                return Result<ChildDTO>.GetError(ErrorCode.InternalServerError, "Internal server error");
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChildDTO>> GetAll()
+        public async Task<Result<IEnumerable<ChildDTO>>> GetAll()
         {
-            try
-            {
-                var children = await repository.GetAll().ConfigureAwait(false);
-               
-                return children.Select(child => child.ToModel()).ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Couldn't retrieve Children: {ex.Message}");
-            }
+            var children = await repository.GetAll().ConfigureAwait(false);
+
+            return Result<IEnumerable<ChildDTO>>.GetSuccess(children.Select(child => child.ToModel()).ToList());
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDTO> GetById(long id)
+        public async Task<Result<ChildDTO>> GetById(long id)
         {
             var child = await repository.GetById(id).ConfigureAwait(false);
 
             if (child == null)
             {
-                throw new ArgumentException("Incorrect Id!", nameof(id));
+                return Result<ChildDTO>.GetError(ErrorCode.NotFound, $"Child with id = {id} was not found.");
             }
 
-            return child.ToModel();
+            return Result<ChildDTO>.GetSuccess(child.ToModel());
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDTO> Update(ChildDTO dto)
+        public async Task<Result<ChildDTO>> Update(ChildDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException(nameof(dto), "Child was null.");
-            }
-
-            if (dto.DateOfBirth > DateTime.Now)
-            {
-                throw new ArgumentException("Wrong date of birth.", nameof(dto));
-            }
-
-            if (dto.FirstName.Length == 0)
-            {
-                throw new ArgumentException("Empty firstname.", nameof(dto));
-            }
-
-            if (dto.LastName.Length == 0)
-            {
-                throw new ArgumentException("Empty lastname.", nameof(dto));
-            }
-
-            if (dto.MiddleName.Length == 0)
-            {
-                throw new ArgumentException("Empty middlename.", nameof(dto));
-            }
-
             try
             {
+                if (dto == null)
+                {
+                    return Result<ChildDTO>.GetError(ErrorCode.NotFound, "Child item is null.");
+                }
+
                 var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-              
-                return child.ToModel();
+
+                return Result<ChildDTO>.GetSuccess(child.ToModel());
             }
-            catch (Exception ex)
+            catch
             {
-                throw new Exception($"{nameof(dto)} could not be updated: {ex.Message}");
+                return Result<ChildDTO>.GetError(ErrorCode.InternalServerError, "Internal server error.");
             }
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task<Result<long>> Delete(long id)
         {
             try
             {
-                await repository
-                    .Delete(await repository.GetById(id).ConfigureAwait(false))
-                    .ConfigureAwait(false);
+                var dtoToDelete = new ChildDTO() { Id = id };
+                
+                await repository.Delete(dtoToDelete.ToDomain()).ConfigureAwait(false);
+                
+                return Result<long>.GetSuccess(id);
             }
-            catch (ArgumentNullException ex)
+            catch
             {
-                throw new ArgumentNullException(nameof(id), ex.Message);
+                return Result<long>.GetError(ErrorCode.NotFound, $"Child with id = {id} was not found.");
             }
         }
     }
