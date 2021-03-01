@@ -5,20 +5,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
+
 
 namespace OutOfSchool.WebApi
 {
     public class Startup
     {
-        private readonly IWebHostEnvironment environment;
+        private ILogger logger;
 
-        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+        public Startup(IConfiguration configuration)
         {
-            this.environment = environment;
             Configuration = configuration;
         }
 
@@ -33,6 +35,8 @@ namespace OutOfSchool.WebApi
             }
 
             app.UseCors("AllowAll");
+
+            app.UseMiddleware<ExceptionMiddlewareExtension>();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
@@ -73,7 +77,7 @@ namespace OutOfSchool.WebApi
             services.AddControllers();
 
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
+                builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
