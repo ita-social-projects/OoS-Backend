@@ -1,3 +1,4 @@
+﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -48,7 +49,7 @@ namespace OutOfSchool.WebApi.Controllers
         public async Task<ActionResult<OrganizationDTO>> GetOrganizationById(long id)
         {
             if (id == 0)
-            { 
+            {
                 return BadRequest("Id cannot be 0.");
             }
 
