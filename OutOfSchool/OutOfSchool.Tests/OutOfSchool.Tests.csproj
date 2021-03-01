@@ -34,4 +34,9 @@
     <ProjectReference Include="..\OutOfSchool.WebApi\OutOfSchool.WebApi.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="IdentityServerTests\" />
+    <Folder Include="WebApiTests\Services\" />
+  </ItemGroup>
+
 </Project>
