@@ -3,7 +3,7 @@ using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Mapping.Extensions
+namespace OutOfSchool.WebApi.Extensions
 {
     public static class MappingExtensions
     {
