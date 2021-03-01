@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using AutoMapper;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Mapping.Extensions
+namespace OutOfSchool.WebApi.Extensions
 {
     public static class MappingExtensions
     {
