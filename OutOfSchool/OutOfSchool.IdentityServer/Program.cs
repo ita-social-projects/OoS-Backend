@@ -23,14 +23,13 @@ namespace IdentityServer
             using (var scope = host.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-
-                // TODO: Move from Console to logger
+               
                 while (!context.Database.CanConnect())
                 {
                     Task.Delay(500).Wait();
                     Console.WriteLine("Waiting for db connection");
                 }
-
+                
                 scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
                     .Database.Migrate();
                 var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
