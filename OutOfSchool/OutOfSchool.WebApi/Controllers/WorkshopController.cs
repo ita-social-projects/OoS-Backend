@@ -1,112 +1,151 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
 {
-    /// <summary>
-    /// Controller with CRUD operations for Workshop entity.
-    /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class WorkshopController : ControllerBase
+    public class OrganizationController : ControllerBase
     {
-        private readonly IWorkshopService workshopService;
+        private readonly IOrganizationService service;
+
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkshopController"/> class.
+        /// Initializes a new instance of the <see cref="OrganizationController"/> class.
         /// </summary>
-        /// <param name="workshopService">Service for Workshop model.</param>
-        public WorkshopController(IWorkshopService workshopService)
+        /// <param name="service">Service for Organization model.</param>
+        public OrganizationController(IOrganizationService service)
         {
-            this.workshopService = workshopService;
+            this.service = service;
         }
 
+
         /// <summary>
-        /// Get all workshops from the database.
+        /// Get all organization from the database.
         /// </summary>
-        /// <returns>List of all workshops.</returns>
+        /// <returns>List of all organizations.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WorkshopDTO>>> GetWorkshops()
+        public async Task<IActionResult> Get()
         {
-            var workshops = await workshopService.GetAll().ConfigureAwait(false);
+            var organizations = await service.GetAll().ConfigureAwait(false);
 
-            return Ok(workshops);
+            if (!organizations.Any())
+            {
+                return NoContent();
+            }
+            
+            return Ok(organizations);
         }
 
         /// <summary>
-        /// Get workshop by it's id.
+        /// Get organization by it's key.
         /// </summary>
-        /// <param name="id">Key in the database.</param>
-        /// <returns>Workshop entity.</returns>
+        /// <param name="id">The key in the database.</param>
+        /// <returns>Organization element with some id.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetWorkshopById(long id)
+        public async Task<IActionResult> GetById(long id)
         {
-            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+            if (id < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    "The id is less than 1 or greater than number of table entities.");
+            }
 
-            return Ok(workshop);
+            return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Add new workshop to the database.
+        /// Method for creating new organization.
         /// </summary>
-        /// <param name="workshopDto">Entity to add.</param>
+        /// <param name="dto">Element which must be added.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]
+        [Authorize(Roles = "organization,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult> CreateWorkshop(WorkshopDTO workshopDto)
+        public async Task<IActionResult> Create(OrganizationDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var workshop = await workshopService.Create(workshopDto).ConfigureAwait(false);
-
-            return CreatedAtAction(nameof(GetWorkshopById), new
+            try
             {
-                id = workshop.Id,
-            });
+                dto.UserId = User.FindFirst("sub")?.Value;
+                
+                var organization = await service.Create(dto).ConfigureAwait(false);
+
+                return CreatedAtAction(
+                    nameof(GetById),
+                    new { id = organization.Id, },
+                    organization);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
-        /// Update info about workshop entity.
+        /// Update info about some organization in database.
         /// </summary>
-        /// <param name="workshopDto">Workshop to update.</param>
-        /// <returns>Workshop.</returns>
-        [Authorize(Roles = "provider,admin")]
+        /// <param name="dto">Entity.</param>
+        /// <returns>Organization's key.</returns>
+        [Authorize(Roles = "organization,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<ActionResult> Update(WorkshopDTO workshopDto)
+        public async Task<IActionResult> Update(OrganizationDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await workshopService.Update(workshopDto).ConfigureAwait(false));
+            return Ok(await service.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Delete a specific workshop entity from the database.
+        /// Delete a specific Organization entity from the database.
         /// </summary>
-        /// <param name="id">Workshop's key.</param>
+        /// <param name="id">Organization's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        [Authorize(Roles = "organization,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(long id)
         {
-            if (id == 0)
+            if (id < 1)
             {
-                return BadRequest("Id cannot be 0.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    "The id is less than 1 or greater than number of table entities.");
             }
 
-            await workshopService.Delete(id).ConfigureAwait(false);
+            await service.Delete(id).ConfigureAwait(false);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

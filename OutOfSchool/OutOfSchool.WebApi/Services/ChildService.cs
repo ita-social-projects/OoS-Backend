@@ -1,12 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Mapping.Extensions;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -15,67 +16,59 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ChildService : IChildService
     {
-        private IEntityRepository<Child> repository;
+        private readonly IEntityRepository<Child> repository;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildService"/> class.
         /// </summary>
         /// <param name="repository">Repository for the Child entity.</param>
-        public ChildService(IEntityRepository<Child> repository)
+        /// <param name="logger">Logger.</param>
+        public ChildService(IEntityRepository<Child> repository, ILogger logger)
         {
             this.repository = repository;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>
         public async Task<ChildDTO> Create(ChildDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException(nameof(dto), "Child was null.");
-            }
+            logger.Information("Child creating was started.");
 
-            if (dto.DateOfBirth > DateTime.Now)
-            {
-                throw new ArgumentException("Invalid Date of birth");
-            }
+            var child = dto.ToDomain();
 
-            try
-            {
-                var child = dto.ToDomain();
+            var newChild = await repository.Create(child).ConfigureAwait(false);
 
-                var newChild = await repository.Create(child).ConfigureAwait(false);
-
-                return newChild.ToModel();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"{nameof(dto)} could not be saved: {ex.Message}");
-            }
+            return newChild.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ChildDTO>> GetAll()
         {
-            try
-            {
-                var children = await repository.GetAll().ConfigureAwait(false);
-                return children.Select(child => child.ToModel()).ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Couldn't retrieve Children: {ex.Message}");
-            }
+            logger.Information("Process of getting all Children started.");
+
+            var children = await repository.GetAll().ConfigureAwait(false);
+
+            logger.Information(!children.Any()
+                ? "Child table is empty."
+                : "Successfully got all records from the Child table.");
+
+            return children.Select(x => x.ToModel()).ToList();
         }
 
         /// <inheritdoc/>
         public async Task<ChildDTO> GetById(long id)
         {
+            logger.Information("Process of getting Child by id started.");
+
             var child = await repository.GetById(id).ConfigureAwait(false);
 
             if (child == null)
             {
-                throw new ArgumentException("Incorrect Id!", nameof(id));
+                throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
             }
+
+            logger.Information($"Successfully got a Child with id = {id}.");
 
             return child.ToModel();
         }
@@ -94,55 +87,42 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> Update(ChildDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException(nameof(dto), "Child was null.");
-            }
-
-            if (dto.DateOfBirth > DateTime.Now)
-            {
-                throw new ArgumentException("Wrong date of birth.", nameof(dto));
-            }
-
-            if (dto.FirstName.Length == 0)
-            {
-                throw new ArgumentException("Empty firstname.", nameof(dto));
-            }
-
-            if (dto.LastName.Length == 0)
-            {
-                throw new ArgumentException("Empty lastname.", nameof(dto));
-            }
-
-            if (dto.Patronymic.Length == 0)
-            {
-                throw new ArgumentException("Empty patronymic.", nameof(dto));
-            }
+            logger.Information("Child updating was launched.");
 
             try
             {
                 var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+
+                logger.Information("Child successfully updated.'");
+
                 return child.ToModel();
             }
-            catch (Exception ex)
+            catch (DbUpdateConcurrencyException)
             {
-                throw new Exception($"{nameof(dto)} could not be updated: {ex.Message}");
+                logger.Error("Updating failed. There is no Child in the Db with such an id.");
+                throw;
             }
         }
 
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
+            logger.Information("Child deleting was launched.");
+
+            var entity = new Child { Id = id };
+
             try
             {
-                await repository
-                    .Delete(await repository.GetById(id).ConfigureAwait(false))
-                    .ConfigureAwait(false);
+                await repository.Delete(entity).ConfigureAwait(false);
+
+                logger.Information("Child successfully deleted.");
             }
-            catch (ArgumentNullException ex)
+            catch (DbUpdateConcurrencyException)
             {
-                throw new ArgumentNullException(nameof(id), ex.Message);
+                logger.Error("Deleting failed. There is no Child in the Db with such an id.");
+                throw;
             }
         }
     }
 }
+
