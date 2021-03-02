@@ -78,7 +78,7 @@ namespace OutOfSchool.WebApi.Controllers
                     new
                     {
                         id = provider.Id,
-                    });
+                    }, provider);              
             }
             catch (Exception ex)
             {
