@@ -9,13 +9,13 @@ namespace OutOfSchool.Tests
     [TestFixture]
     public class Tests
     {
-        private readonly ILogger<ProviderController> _logger;
+        private readonly ILogger<ProviderController> logger;
         private IProviderService organizationService;
-        public ProviderController CreateOrganizationController => new ProviderController(_logger, organizationService);
+        public ProviderController CreateOrganizationController => new ProviderController(logger, organizationService);
 
         public Tests()
         {
-            _logger = new Mock<ILogger<ProviderController>>().Object;
+            logger = new Mock<ILogger<ProviderController>>().Object;
             organizationService = new Mock<IProviderService>().Object;
         }
         [SetUp]
