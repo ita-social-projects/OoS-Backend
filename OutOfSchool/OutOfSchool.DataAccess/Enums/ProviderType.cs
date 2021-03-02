@@ -2,8 +2,10 @@
 {
     public enum ProviderType
     {
-        State,
-        Common,
-        Private
+        FOP,
+        Social,
+        TOV,
+        Private,
+        EducationalInstitution
     }
 }
