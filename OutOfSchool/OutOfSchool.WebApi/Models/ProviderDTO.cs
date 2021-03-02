@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class OrganizationDTO
+    public class ProviderDTO
     {
         public long Id { get; set; }
 

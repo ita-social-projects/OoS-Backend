@@ -71,7 +71,7 @@ namespace OutOfSchool.Services.Models
         [DataType(DataType.Date)]
         public DateTime HeadBirthDate { get; set; }
 
-        public virtual Organization Organization { get; set; }
+        public virtual Provider Provider { get; set; }
         public virtual Address Address { get; set; }
         
         public virtual Category Category { get; set; }

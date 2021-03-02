@@ -11,67 +11,67 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Implements the interface with CRUD functionality for Organization entity.
+    /// Implements the interface with CRUD functionality for Provider entity.
     /// </summary>
-    public class OrganizationService : IOrganizationService
+    public class ProviderService : IProviderService
     {
-        private IOrganizationRepository repository;
+        private IProviderRepository repository;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OrganizationService"/> class.
+        /// Initializes a new instance of the <see cref="ProviderService"/> class.
         /// </summary>
         /// <param name="repository">Repository for some entity.</param>
-        public OrganizationService(IOrganizationRepository repository)
+        public ProviderService(IProviderRepository repository)
         {
             this.repository = repository;
         }
 
         /// <inheritdoc/>
-        public async Task<OrganizationDTO> Create(OrganizationDTO dto)
+        public async Task<ProviderDTO> Create(ProviderDTO dto)
         {
             if (dto == null)
             {
-                throw new ArgumentNullException(nameof(dto), "Organization was null.");
+                throw new ArgumentNullException(nameof(dto), "Provider was null.");
             }
 
-            var organization = dto.ToDomain();
+            var provider = dto.ToDomain();
 
-            if (!repository.IsUnique(organization))
+            if (!repository.IsUnique(provider))
             {
-                throw new ArgumentException(nameof(organization), "There is already an organizationDto with such data");
+                throw new ArgumentException(nameof(provider), "There is already an providerDto with such data");
             }
 
-            var newOrganization = await repository.Create(organization).ConfigureAwait(false);
+            var newOrganization = await repository.Create(provider).ConfigureAwait(false);
 
             return newOrganization.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<OrganizationDTO>> GetAll()
+        public async Task<IEnumerable<ProviderDTO>> GetAll()
         {
-             var organizations = await repository.GetAll().ConfigureAwait(false);
+             var providers = await repository.GetAll().ConfigureAwait(false);
             
-             return organizations.Select(organization => organization.ToModel()).ToList();
+             return providers.Select(organization => organization.ToModel()).ToList();
         }
 
         /// <inheritdoc/>
-        public async Task<OrganizationDTO> GetById(long id)
+        public async Task<ProviderDTO> GetById(long id)
         {
-            var organization = await repository.GetById(id).ConfigureAwait(false);
-            if (organization == null)
+            var provider = await repository.GetById(id).ConfigureAwait(false);
+            if (provider == null)
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));
             }
 
-            return organization.ToModel();
+            return provider.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<OrganizationDTO> Update(OrganizationDTO dto)
+        public async Task<ProviderDTO> Update(ProviderDTO dto)
         {
             if (dto == null)
             {
-                throw new ArgumentNullException(nameof(dto), "Organization was null.");
+                throw new ArgumentNullException(nameof(dto), "Provider was null.");
             }
 
             if (dto.EDRPOU.Length == 0)
@@ -101,9 +101,9 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var organization = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var provider = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
               
-                return organization.ToModel();
+                return provider.ToModel();
             }
             catch (Exception ex)
             {

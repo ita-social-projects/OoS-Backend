@@ -5,7 +5,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Organization
+    public class Provider
     {
         public long Id { get; set; }
 

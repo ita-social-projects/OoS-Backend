@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using AutoMapper;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
@@ -36,10 +32,10 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
             return teacherDto;
         }
 
-        public static OrganizationDTO ToModel(this Organization organization)
+        public static ProviderDTO ToModel(this Provider provider)
         {
-            var organizationDto = Mapper<Organization, OrganizationDTO>(organization,
-                cfg => { cfg.CreateMap<Organization, OrganizationDTO>(); });
+            var organizationDto = Mapper<Provider, ProviderDTO>(provider,
+                cfg => { cfg.CreateMap<Provider, ProviderDTO>(); });
             return organizationDto;
         }
 
@@ -74,10 +70,10 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
             return teacher;
         }
         
-        public static Organization ToDomain(this OrganizationDTO organizationDto)
+        public static Provider ToDomain(this ProviderDTO providerDto)
         {
-            var organization = Mapper<OrganizationDTO, Organization>(organizationDto,
-                cfg => { cfg.CreateMap<OrganizationDTO, Organization>(); });
+            var organization = Mapper<ProviderDTO, Provider>(providerDto,
+                cfg => { cfg.CreateMap<ProviderDTO, Provider>(); });
             return organization;
         }
         

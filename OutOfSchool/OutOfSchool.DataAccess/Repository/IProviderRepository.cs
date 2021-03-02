@@ -5,8 +5,8 @@ using System.Text;
 
 namespace OutOfSchool.Services.Repository
 {
-    public interface IOrganizationRepository : IEntityRepository<Organization>
+    public interface IProviderRepository : IEntityRepository<Provider>
     {
-        bool IsUnique(Organization entity);
+        bool IsUnique(Provider entity);
     }
 }

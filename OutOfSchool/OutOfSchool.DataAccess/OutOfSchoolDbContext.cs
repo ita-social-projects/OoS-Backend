@@ -12,7 +12,7 @@ namespace OutOfSchool.Services
         }
 
         public DbSet<Parent> Parents { get; set; }
-        public DbSet<Organization> Organizations { get; set; }
+        public DbSet<Provider> Providers { get; set; }
         public DbSet<Child> Children { get; set; }
         public DbSet<Workshop> Workshops { get; set; }
         public DbSet<Teacher> Teachers { get; set; }

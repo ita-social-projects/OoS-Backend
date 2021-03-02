@@ -55,13 +55,13 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<ITeacherService, TeacherService>();
-            services.AddTransient<IOrganizationService, OrganizationService>();
+            services.AddTransient<IProviderService, ProviderService>();
 
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
 
-            services.AddTransient<IOrganizationRepository, OrganizationRepository>();
+            services.AddTransient<IProviderRepository, ProviderRepository>();
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();

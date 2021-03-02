@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="workshopDto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "provider,admin")]
         [HttpPost]
         public async Task<ActionResult> CreateWorkshop(WorkshopDTO workshopDto)
         {
@@ -81,7 +81,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="workshopDto">Workshop to update.</param>
         /// <returns>Workshop.</returns>
-        [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "provider,admin")]
         [HttpPut]
         public async Task<ActionResult> Update(WorkshopDTO workshopDto)
         {

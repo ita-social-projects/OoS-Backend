@@ -77,7 +77,7 @@ namespace OutOfSchool.WebApi.Models
         
         public virtual AddressDTO Address { get; set; }
         
-        public virtual OrganizationDTO Organization { get; set; }
+        public virtual ProviderDTO Provider { get; set; }
         
         public virtual List<TeacherDTO> Teachers { get; set; }
     }

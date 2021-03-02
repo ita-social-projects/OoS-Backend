@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.Services.Repository
 {
-    public class OrganizationRepository : EntityRepository<Organization>,IOrganizationRepository
+    public class ProviderRepository : EntityRepository<Provider>,IProviderRepository
     {
-        public OrganizationRepository(OutOfSchoolDbContext dbContext) : base(dbContext)
+        public ProviderRepository(OutOfSchoolDbContext dbContext) : base(dbContext)
         {
 
         }
@@ -19,6 +19,6 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="entity"></param>
         /// <returns>Bool</returns>
-        public bool IsUnique(Organization entity) => GetAll().Result.Any(x => x.EDRPOU == entity.EDRPOU || x.INPP == entity.INPP);
+        public bool IsUnique(Provider entity) => GetAll().Result.Any(x => x.EDRPOU == entity.EDRPOU || x.INPP == entity.INPP);
     }
 }
