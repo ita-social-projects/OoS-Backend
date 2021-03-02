@@ -84,7 +84,6 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long AddressId { get; set; }
 
-        [Required]
         public string UserId { get; set; }
         public virtual List<Workshop> Workshops { get; set; }
         public virtual User User { get; set; }
