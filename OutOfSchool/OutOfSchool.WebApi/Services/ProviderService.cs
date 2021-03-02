@@ -36,7 +36,7 @@ namespace OutOfSchool.WebApi.Services
 
             var provider = dto.ToDomain();
 
-            if (!repository.IsUnique(provider))
+            if (repository.IsNotUnique(provider))
             {
                 throw new ArgumentException(nameof(provider), "There is already an providerDto with such data");
             }
