@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
@@ -11,26 +12,29 @@ namespace OutOfSchool.WebApi.Models
 
         [Required(ErrorMessage = "Title is required")]
         [DataType(DataType.Text)]
+        [MaxLength(60)]
+        [MinLength(1)]
         public string Title { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
         [DataType(DataType.Text)]
-        [MaxLength(128)]
+        [MaxLength(60)]
+        [MinLength(1)]
         public string ShortTitle { get; set; }
 
         [DataType(DataType.Url)]
-        [MaxLength(64)]
+        [MaxLength(30)]
         public string? Website { get; set; }
 
         [DataType(DataType.Url)]
-        [MaxLength(64)]
+        [MaxLength(30)]
         public string? Facebook { get; set; }
 
         [DataType(DataType.Url)]
-        [MaxLength(64)]
+        [MaxLength(30)]
         public string? Instagram { get; set; }
 
-        [MaxLength(750)]
+        [MaxLength(500)]
         [Required(ErrorMessage = "Description is required")]
         public string Description { get; set; }
 
@@ -52,13 +56,15 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(@"^(\d{9}|\d{10}|\d{12})$",
             ErrorMessage = "INPP code must contain 12, 10 or 9 digits")]
         public string INPP { get; set; }
-        [MaxLength(255)]
+        [MaxLength(50)]
         public string? Director { get; set; }
         [MaxLength(255)]
         public string? DirectorPosition { get; set; }
         [MaxLength(128)]
         public string? AuthorityHolder { get; set; }
 
+        [DataType(DataType.Date)]
+        public DateTime DirectorBirthDay { get; set; }
 
         [DataType(DataType.PhoneNumber)]
         [RegularExpression(@"([\d]{9})",
