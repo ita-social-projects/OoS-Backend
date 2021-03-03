@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of Parents.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ParentDTO>>> GetParents()
+        public async Task<IActionResult> GetParents()
         {
             try
             {
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Key in table.</param>
         /// <returns>Parent with define id.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ParentDTO>> GetParentById(long id)
+        public async Task<IActionResult> GetParentById(long id)
         {
             try
             {
@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPost]
-        public async Task<ActionResult<ParentDTO>> CreateParent(ParentDTO parentDTO)
+        public async Task<IActionResult> CreateParent(ParentDTO parentDTO)
         {
             if (!ModelState.IsValid)
             {
