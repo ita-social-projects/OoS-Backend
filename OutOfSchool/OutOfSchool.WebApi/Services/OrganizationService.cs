@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -15,7 +14,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class OrganizationService : IOrganizationService
     {
-        private IOrganizationRepository repository;
+        private readonly IOrganizationRepository repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrganizationService"/> class.
@@ -29,16 +28,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<OrganizationDTO> Create(OrganizationDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException(nameof(dto), "Organization was null.");
-            }
-
             var organization = dto.ToDomain();
 
             if (!repository.IsUnique(organization))
             {
-                throw new ArgumentException(nameof(organization), "There is already an organizationDto with such data");
+                throw new ArgumentException(nameof(organization), "There is already an organization with a such data");
             }
 
             var newOrganization = await repository.Create(organization).ConfigureAwait(false);
@@ -49,9 +43,9 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<OrganizationDTO>> GetAll()
         {
-             var organizations = await repository.GetAll().ConfigureAwait(false);
-            
-             return organizations.Select(organization => organization.ToModel()).ToList();
+            var organizations = await repository.GetAll().ConfigureAwait(false);
+
+            return organizations.Select(organization => organization.ToModel()).ToList();
         }
 
         /// <inheritdoc/>
@@ -60,7 +54,8 @@ namespace OutOfSchool.WebApi.Services
             var organization = await repository.GetById(id).ConfigureAwait(false);
             if (organization == null)
             {
-                throw new ArgumentException("Incorrect Id!", nameof(id));
+                throw new ArgumentOutOfRangeException(id.ToString(),
+                    "The id is greater than number of table entities.");
             }
 
             return organization.ToModel();
@@ -69,61 +64,17 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<OrganizationDTO> Update(OrganizationDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException(nameof(dto), "Organization was null.");
-            }
+            var organization = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-            if (dto.EDRPOU.Length == 0)
-            {
-                throw new ArgumentException("EDRPOU code is empty", nameof(dto));
-            }
-
-            if (dto.INPP.Length == 0)
-            {
-                throw new ArgumentException("INPP code is empty", nameof(dto));
-            }
-
-            if (dto.MFO.Length == 0)
-            {
-                throw new ArgumentException("MFO code is empty", nameof(dto));
-            }
-
-            if (dto.Title.Length == 0)
-            {
-                throw new ArgumentException("Title is empty", nameof(dto));
-            }
-
-            if (dto.Description.Length == 0)
-            {
-                throw new ArgumentException("Description is empty", nameof(dto));
-            }
-
-            try
-            {
-                var organization = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-              
-                return organization.ToModel();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"{nameof(dto)} could not be updated: {ex.Message}");
-            }
+            return organization.ToModel();
         }
-        
+
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            try
-            {
-                await repository
-                    .Delete(await repository.GetById(id).ConfigureAwait(false))
-                    .ConfigureAwait(false);
-            }
-            catch (ArgumentNullException ex)
-            {
-                throw new ArgumentNullException(nameof(id), ex.Message);
-            }
+            var dtoToDelete = new Organization() { Id = id };
+
+            await repository.Delete(dtoToDelete).ConfigureAwait(false);
         }
     }
 }
