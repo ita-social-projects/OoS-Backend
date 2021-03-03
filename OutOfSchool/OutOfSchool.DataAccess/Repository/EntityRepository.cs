@@ -53,10 +53,11 @@ namespace OutOfSchool.Services.Repository
         {
             IQueryable<T> query = dbSet;
             foreach (var includeProperty in includeProperties.Split(
-            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Skip(1))
             {
                 query = query.Include(includeProperty);
             }
+
             return await query.ToListAsync();
         }
 

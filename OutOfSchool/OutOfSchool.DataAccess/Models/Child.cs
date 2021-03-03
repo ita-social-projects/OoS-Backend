@@ -20,7 +20,7 @@ namespace OutOfSchool.Services.Models
 
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "Middle name is required")]
-        public string MiddleName { get; set; }
+        public string Patronymic { get; set; }
 
         public DateTime DateOfBirth { get; set; } = default;
 
@@ -30,9 +30,9 @@ namespace OutOfSchool.Services.Models
 
         public virtual SocialGroup SocialGroup { get; set; }
 
-        public int ParentId { get; set; }
+        public long ParentId { get; set; }
 
-        public int SocialGroupId { get; set; }
+        public long SocialGroupId { get; set; }
 
         public virtual Parent Parent { get; set; }
 

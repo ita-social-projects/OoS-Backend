@@ -12,7 +12,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
     [DbContext(typeof(OutOfSchoolDbContext))]
     [Migration("20210312115930_Init")]
     partial class Init
-    {
+   {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
@@ -227,14 +227,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("MiddleName")
+                    b.Property<long>("ParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Patronymic")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("ParentId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("SocialGroupId")
+                    b.Property<long>("SocialGroupId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -385,11 +385,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .UseIdentityColumn();
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("SocialGroup");
+                    b.ToTable("SocialGroups");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Subcategory", b =>
@@ -666,11 +667,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("OutOfSchool.Services.Models.SocialGroup", "SocialGroup")
                         .WithMany("Children")
-                        .HasForeignKey("SocialGroupId");
+                        .HasForeignKey("SocialGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Parent");
 
