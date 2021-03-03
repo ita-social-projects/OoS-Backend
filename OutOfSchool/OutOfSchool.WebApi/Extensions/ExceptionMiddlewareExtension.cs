@@ -12,16 +12,16 @@ namespace OutOfSchool.WebApi.Extensions
 {
     public class ExceptionMiddlewareExtension
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionMiddlewareExtension> _logger;
+        private readonly RequestDelegate next;
+        private readonly ILogger<ExceptionMiddlewareExtension> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionMiddlewareExtensions"/> class.
         /// </summary>
         public ExceptionMiddlewareExtension(RequestDelegate next, ILogger<ExceptionMiddlewareExtension> logger)
         {
-            _next = next;
-            _logger = logger;
+            this.next = next;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -31,11 +31,11 @@ namespace OutOfSchool.WebApi.Extensions
         {
             try
             {
-                await _next(context);
+                await next(context);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Something went wrong: {ex}");
+                logger.LogError($"Something went wrong: {ex}");
                 await HandleExceptionAsync(context, ex).ConfigureAwait(false);
             }
         }

@@ -8,7 +8,7 @@ namespace OutOfSchool.Services.Models
 {
     public class Teacher
     {
-        public long TeacherId { get; set; }
+        public long Id { get; set; }
         
         [Required(ErrorMessage = "First name is required")]
         [DataType(DataType.Text)]
