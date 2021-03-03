@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -15,7 +13,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class TeacherService : ITeacherService
     {
-        private IEntityRepository<Teacher> repository;
+        private readonly IEntityRepository<Teacher> repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TeacherService"/> class.
@@ -29,84 +27,43 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<TeacherDTO> Create(TeacherDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException($"{nameof(TeacherDTO)} entity must not be null");
-            }
+            var teacher = dto.ToDomain();
 
-            try
-            {
-                var teacher = dto.ToDomain();
+            var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
-                var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
-
-                return newTeacher.ToModel();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"{nameof(TeacherDTO)} could not be saved: {ex.Message}");
-            }
+            return newTeacher.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<TeacherDTO>> GetAll()
         {
-            try
-            {
-                var teachers = await repository.GetAll().ConfigureAwait(false);
-                return teachers.Select(teacher => teacher.ToModel()).ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Couldn't retrieve Teachers: {ex.Message}");
-            }
+            var teachers = await repository.GetAll().ConfigureAwait(false);
+
+            return teachers.Select(teacher => teacher.ToModel()).ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<TeacherDTO> GetById(long id)
         {
-            try
-            {
-                var teacher = await repository.GetById(id).ConfigureAwait(false);
-                
-                return teacher.ToModel();
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"There is no {nameof(Teacher)} with id = {id}. {e.Message}");
-            }
+            var teacher = await repository.GetById(id).ConfigureAwait(false);
+
+            return teacher.ToModel();
         }
 
+        /// <inheritdoc/>
         public async Task<TeacherDTO> Update(TeacherDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException($"{nameof(dto)} was null.");
-            }
+            var teacher = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-            try
-            {
-                var teacher = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-
-                return teacher.ToModel();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"{nameof(TeacherDTO)} could not be updated: {ex.Message}");
-            }
+            return teacher.ToModel();
         }
 
+        /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            try
-            {
-                await repository
-                    .Delete(await repository.GetById(id).ConfigureAwait(false))
-                    .ConfigureAwait(false);
-            }
-            catch (ArgumentNullException ex)
-            {
-                throw new ArgumentNullException(nameof(id), ex.Message);
-            }
+            var dtoToDelete = new Teacher() {Id = id};
+
+            await repository.Delete(dtoToDelete).ConfigureAwait(false);
         }
     }
 }

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.ResultModel;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -16,7 +13,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ChildService : IChildService
     {
-        private IEntityRepository<Child> repository;
+        private readonly IEntityRepository<Child> repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildService"/> class.
@@ -28,78 +25,45 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ChildDTO>> Create(ChildDTO dto)
+        public async Task<ChildDTO> Create(ChildDTO dto)
         {
-            try
-            {
-                var child = dto.ToDomain();
+            var child = dto.ToDomain();
 
-                var newChild = await repository.Create(child).ConfigureAwait(false);
+            var newChild = await repository.Create(child).ConfigureAwait(false);
 
-                return Result<ChildDTO>.GetSuccess(newChild.ToModel());
-            }
-            catch
-            {
-                return Result<ChildDTO>.GetError(ErrorCode.InternalServerError, "Internal server error");
-            }
+            return newChild.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<Result<IEnumerable<ChildDTO>>> GetAll()
+        public async Task<IEnumerable<ChildDTO>> GetAll()
         {
             var children = await repository.GetAll().ConfigureAwait(false);
 
-            return Result<IEnumerable<ChildDTO>>.GetSuccess(children.Select(child => child.ToModel()).ToList());
+            return children.Select(x => x.ToModel()).ToList();
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ChildDTO>> GetById(long id)
+        public async Task<ChildDTO> GetById(long id)
         {
             var child = await repository.GetById(id).ConfigureAwait(false);
 
-            if (child == null)
-            {
-                return Result<ChildDTO>.GetError(ErrorCode.NotFound, $"Child with id = {id} was not found.");
-            }
-
-            return Result<ChildDTO>.GetSuccess(child.ToModel());
+            return child.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ChildDTO>> Update(ChildDTO dto)
+        public async Task<ChildDTO> Update(ChildDTO dto)
         {
-            try
-            {
-                if (dto == null)
-                {
-                    return Result<ChildDTO>.GetError(ErrorCode.NotFound, "Child item is null.");
-                }
+            var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-
-                return Result<ChildDTO>.GetSuccess(child.ToModel());
-            }
-            catch
-            {
-                return Result<ChildDTO>.GetError(ErrorCode.InternalServerError, "Internal server error.");
-            }
+            return child.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<Result<long>> Delete(long id)
+        public async Task Delete(long id)
         {
-            try
-            {
-                var dtoToDelete = new ChildDTO() { Id = id };
-                
-                await repository.Delete(dtoToDelete.ToDomain()).ConfigureAwait(false);
-                
-                return Result<long>.GetSuccess(id);
-            }
-            catch
-            {
-                return Result<long>.GetError(ErrorCode.NotFound, $"Child with id = {id} was not found.");
-            }
+            var dtoToDelete = new Child { Id = id };
+
+            await repository.Delete(dtoToDelete).ConfigureAwait(false);
         }
     }
 }

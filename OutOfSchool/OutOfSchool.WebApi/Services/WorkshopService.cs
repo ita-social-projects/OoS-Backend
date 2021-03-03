@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Mvc;
-using NuGet.Frameworks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.ResultModel;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -19,7 +13,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class WorkshopService : IWorkshopService
     {
-        private IEntityRepository<Workshop> repository;
+        private readonly IEntityRepository<Workshop> repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -31,76 +25,45 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<WorkshopDTO>> Create(WorkshopDTO dto)
+        public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
-            try
-            {
-                var workshop = dto.ToDomain();
+            var workshop = dto.ToDomain();
 
-                var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
+            var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
 
-                return Result<WorkshopDTO>.GetSuccess(newWorkshop.ToModel());
-            }
-            catch
-            {
-                return Result<WorkshopDTO>.GetError(ErrorCode.InternalServerError, "Internal server error");
-            }
+            return newWorkshop.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<Result<IEnumerable<WorkshopDTO>>> GetAll()
+        public async Task<IEnumerable<WorkshopDTO>> GetAll()
         {
             var workshops = await repository.GetAll().ConfigureAwait(false);
 
-            return Result<IEnumerable<WorkshopDTO>>.GetSuccess(
-                workshops.Select(workshop => workshop.ToModel()).ToList());
+            return workshops.Select(workshop => workshop.ToModel()).ToList();
         }
 
-        public async Task<Result<WorkshopDTO>> GetById(long id)
+        /// <inheritdoc/>
+        public async Task<WorkshopDTO> GetById(long id)
         {
             var workshop = await repository.GetById(id).ConfigureAwait(false);
 
-            if (workshop == null)
-            {
-                return Result<WorkshopDTO>.GetError(ErrorCode.NotFound, $"Workshop with id = {id} was not found.");
-            }
-
-            return Result<WorkshopDTO>.GetSuccess(workshop.ToModel());
+            return workshop.ToModel();
         }
 
-        public async Task<Result<WorkshopDTO>> Update(WorkshopDTO dto)
+        /// <inheritdoc/>
+        public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
-            try
-            {
-                if (dto == null)
-                {
-                    return Result<WorkshopDTO>.GetError(ErrorCode.NotFound, "Workshop item is null.");
-                }
-
-                var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-
-                return Result<WorkshopDTO>.GetSuccess(workshop.ToModel());
-            }
-            catch
-            {
-                return Result<WorkshopDTO>.GetError(ErrorCode.InternalServerError, "Internal server error.");
-            }
+            var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+            
+            return workshop.ToModel();
         }
 
-        public async Task<Result<long>> Delete(long id)
+        /// <inheritdoc/>
+        public async Task Delete(long id)
         {
-            try
-            {
-                var dtoToDelete = new WorkshopDTO() { Id = id };
+            var dtoToDelete = new Workshop() { Id = id };
                 
-                await repository.Delete(dtoToDelete.ToDomain()).ConfigureAwait(false);
-                
-                return Result<long>.GetSuccess(id);
-            }
-            catch 
-            {
-                return Result<long>.GetError(ErrorCode.NotFound, $"Workshop with id = {id} was not found.");
-            }
+            await repository.Delete(dtoToDelete).ConfigureAwait(false);
         }
     }
 }
