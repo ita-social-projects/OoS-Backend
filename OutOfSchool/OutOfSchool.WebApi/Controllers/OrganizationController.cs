@@ -5,7 +5,9 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
@@ -16,7 +18,7 @@ namespace OutOfSchool.WebApi.Controllers
     public class OrganizationController : ControllerBase
     {
         private readonly ILogger<OrganizationController> logger;
-        private IOrganizationService organizationService;
+        private readonly IOrganizationService organizationService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrganizationController"/> class.
@@ -33,6 +35,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get all organization from the database.
         /// </summary>
         /// <returns>List of all organizations.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Organization>>> GetOrganizations()
         {
@@ -44,12 +47,15 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">The key in the database.</param>
         /// <returns>Organization element with some id.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
         public async Task<ActionResult<OrganizationDTO>> GetOrganizationById(long id)
         {
-            if (id == 0)
-            { 
-                return BadRequest("Id cannot be 0.");
+            if (id < 1 || organizationService.GetAll().Result.AsQueryable().Count() < id)
+            {
+                throw new ArgumentOutOfRangeException(id.ToString(), "The id is less than 1 or greater than number of table entities.");
             }
 
             return Ok(await organizationService.GetById(id).ConfigureAwait(false));
@@ -58,11 +64,14 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Method for creating new organization.
         /// </summary>
-        /// <param name="organizationDTO">Element which must be added.</param>
+        /// <param name="dto">Element which must be added.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "organization,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult<Organization>> CreateOrganization(OrganizationDTO organizationDTO)
+        public async Task<ActionResult<Organization>> CreateOrganization(OrganizationDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -71,8 +80,10 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                organizationDTO.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
-                OrganizationDTO organization = await organizationService.Create(organizationDTO).ConfigureAwait(false);
+                dto.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
+                
+                var organization = await organizationService.Create(dto).ConfigureAwait(false);
+                
                 return CreatedAtAction(
                     nameof(GetOrganizationById),
                     new
@@ -89,18 +100,21 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Update info about some organization in database.
         /// </summary>
-        /// <param name="organizationDTO">Entity.</param>
+        /// <param name="dto">Entity.</param>
         /// <returns>Organization's key.</returns>
         [Authorize(Roles = "organization,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<ActionResult> Update(OrganizationDTO organizationDTO)
+        public async Task<ActionResult> UpdateOrganization(OrganizationDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await organizationService.Update(organizationDTO).ConfigureAwait(false));
+            return Ok(await organizationService.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -109,14 +123,17 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Organization's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "organization,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(long id)
+        public async Task<ActionResult> DeleteOrganization(long id)
         {
-            if (id == 0)
+            if (id < 1 || organizationService.GetAll().Result.AsQueryable().Count() < id)
             {
-                return BadRequest("Id cannot be 0.");
+                throw new ArgumentOutOfRangeException(id.ToString(),
+                    "The id is less than 1 or greater than number of table entities.");
             }
-
+            
             await organizationService.Delete(id).ConfigureAwait(false);
 
             return Ok();
