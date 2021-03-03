@@ -5,7 +5,6 @@
 }
 <form class="login__wrapper" asp-controller="Auth" asp-action="Register" method="post">
     <input type="hidden" asp-for="ReturnUrl" />
-    <input type="hidden" asp-for="AllRoles" />
     <div>
         <label class="login__label">Username</label>
         <input class="login__input" asp-for="Username" />
@@ -31,15 +30,10 @@
         <input class="login__input" asp-for="Email" />
         <span asp-validation-for="Email"></span>
     </div>
-    <div class="form-group">
-        @foreach (IdentityRole role in Model.AllRoles)
-        {
-            @Html.RadioButtonFor(model => model.UserRoleId, role.Id) @role<br />
-        }
-    </div>
-    <div  asp-validation-summary="ModelOnly"></div>
+   <div  asp-validation-summary="ModelOnly"></div>
     <div>
-        <button class="login__button" type="submit">Sign Up</button>
+        <button class="login__button" type="submit" name="Organization" >Зареєструватись як надавач послуг</button>
+        <button class="login__button" type="submit" name="Parent" >Зареєструватись як parent?</button>
     </div>
 </form>
 <div class="login__wrapper">

@@ -33,9 +33,5 @@ namespace IdentityServer.Controllers
         [DataType(DataType.DateTime)]
         public DateTime? LastLogin { get; set; }
         public string ReturnUrl { get; set; }
-        [Required]
-        public string UserRoleId { get; set; }  
-        public List<IdentityRole> AllRoles { get; set; }
-
     }
 }

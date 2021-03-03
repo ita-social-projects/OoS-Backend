@@ -119,7 +119,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         public IActionResult Register(string returnUrl = "Login")
         {
             return View(
-                new RegisterViewModel { ReturnUrl = returnUrl, AllRoles = roleManager.Roles.ToList() });
+                new RegisterViewModel { ReturnUrl = returnUrl });
         }
 
         /// <summary>
@@ -132,10 +132,8 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             if (!ModelState.IsValid)
             {
-                model.AllRoles = roleManager.Roles.ToList();
                 return View(model);
             }
-
             var user = new User()
             {
                 UserName = model.Username,
@@ -143,10 +141,18 @@ namespace OutOfSchool.IdentityServer.Controllers
                 CreatingTime = DateTime.Now,
             };
             var result = await userManager.CreateAsync(user, model.Password);
-            var selectedRole = roleManager.Roles.First(role => role.Id == model.UserRoleId).Name;
+           
             if (result.Succeeded)
             {
-                var resultRoleAssign = await userManager.AddToRoleAsync(user, selectedRole);
+                IdentityResult resultRoleAssign = IdentityResult.Failed();
+                if (Request.Form["organization"].Count == 1)
+                {
+                    resultRoleAssign = await userManager.AddToRoleAsync(user, "provider");
+                } else
+                if (Request.Form["Parent"].Count == 1)
+                {
+                    resultRoleAssign = await userManager.AddToRoleAsync(user, "parent");
+                }
                 if (resultRoleAssign.Succeeded)
                 {
                     await signInManager.SignInAsync(user, false);

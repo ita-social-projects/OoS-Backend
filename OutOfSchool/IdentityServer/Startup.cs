@@ -72,7 +72,8 @@ namespace OutOfSchool.IdentityServer
                         builder.UseSqlServer(connString,
                             sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
-                .AddAspNetIdentity<User>();
+                .AddAspNetIdentity<User>()
+                .AddProfileService<ProfileService>();
 
             services.AddControllersWithViews();
         }
