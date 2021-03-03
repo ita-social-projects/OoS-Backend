@@ -84,22 +84,6 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "")
-        {
-            IQueryable<T> query = this.dbSet.Where(predicate);
-            foreach (var includeProperty in includeProperties.Split(
-            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-
-            return await Task.Run(() =>
-            {
-                return query.ToList();
-            }).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
         public async Task<T> Update(T entity)
         {
             dbSet.Update(entity);
