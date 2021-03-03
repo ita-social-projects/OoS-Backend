@@ -37,7 +37,8 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task Delete(T entity)
         {
-            this.dbSet.Remove(entity);
+            dbContext.Entry(entity).State = EntityState.Deleted;
+            
             await this.dbContext.SaveChangesAsync();
         }
 
@@ -69,7 +70,8 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<T> Update(T entity)
         {
-            this.dbSet.Update(entity);
+            dbContext.Entry(entity).State = EntityState.Modified;
+            
             await this.dbContext.SaveChangesAsync();
             return entity;
         }   
