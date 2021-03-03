@@ -141,55 +141,5 @@ namespace OutOfSchool.WebApi.Controllers
                 return this.BadRequest(ex.Message);
             }
         }
-
-        /// <summary>
-        /// Update info about some child in database.
-        /// </summary>
-        /// <param name="childDTO">Entity.</param>
-        /// <returns>Child's key.</returns>
-        [Authorize(Roles = "parent,admin")]
-        [HttpPut]
-        public async Task<ActionResult> Update(ChildDTO childDTO)
-        {
-            if (childDTO == null)
-            {
-                return this.BadRequest("Entity was null.");
-            }
-
-            if (!this.ModelState.IsValid)
-            {
-                return this.BadRequest(this.ModelState);
-            }
-
-            try
-            {
-                this.childService.Update(childDTO);
-                return this.Ok(await this.childService.GetById(childDTO.Id).ConfigureAwait(false));
-            }
-            catch (Exception ex)
-            {
-                return this.BadRequest(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Delete some element from database.
-        /// </summary>
-        /// <param name="id">Element's key.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(long id)
-        {
-            try
-            {
-                await this.childService.Delete(id).ConfigureAwait(false);
-                return this.Ok();
-            }
-            catch (Exception ex)
-            {
-                return this.BadRequest(ex.Message);
-            }
-        }
     }
 }
