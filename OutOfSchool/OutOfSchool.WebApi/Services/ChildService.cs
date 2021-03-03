@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -93,7 +92,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Child successfully updated.'");
+                logger.Information("Child successfully updated.");
 
                 return child.ToModel();
             }
