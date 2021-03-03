@@ -10,8 +10,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210224072449_AddWorkshopHeadInfo")]
-    partial class AddWorkshopHeadInfo
+    [Migration("20210303124137_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
