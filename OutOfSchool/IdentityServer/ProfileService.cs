@@ -22,7 +22,6 @@ namespace OutOfSchool.IdentityServer
 
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
-            var user = await userManager.GetUserAsync(context.Subject);
 
             var claims = new List<Claim>
             {

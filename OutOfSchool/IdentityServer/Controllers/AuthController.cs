@@ -147,7 +147,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 IdentityResult resultRoleAssign = IdentityResult.Failed();
                 if (Request.Form["organization"].Count == 1)
                 {
-                    resultRoleAssign = await userManager.AddToRoleAsync(user, "organization");
+                    resultRoleAssign = await userManager.AddToRoleAsync(user, "provider");
                 } else
                 if (Request.Form["Parent"].Count == 1)
                 {
