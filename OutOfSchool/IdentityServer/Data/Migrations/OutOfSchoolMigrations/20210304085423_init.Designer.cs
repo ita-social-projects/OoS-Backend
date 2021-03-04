@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigration
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210304084739_init")]
+    [Migration("20210304085423_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

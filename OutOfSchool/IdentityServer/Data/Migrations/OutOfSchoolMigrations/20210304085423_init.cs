@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigration
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     public partial class init : Migration
     {
