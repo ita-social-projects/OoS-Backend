@@ -7,6 +7,6 @@ namespace OutOfSchool.Services.Repository
 {
     public interface IProviderRepository : IEntityRepository<Provider>
     {
-        bool IsNotUnique(Provider entity);
+        bool IsUnique(Provider entity);
     }
 }
