@@ -14,18 +14,14 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
-
+using Serilog;
 
 namespace OutOfSchool.WebApi
 {
     public class Startup
     {
-        private readonly IWebHostEnvironment _environment;
-        private ILogger logger;
-
-        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+        public Startup(IConfiguration configuration)
         {
-            _environment = environment;
             Configuration = configuration;
         }
 
@@ -64,6 +60,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
 
             services.AddTransient<IOrganizationRepository, OrganizationRepository>();
+            
+            services.AddSingleton(Log.Logger);
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
@@ -82,7 +80,7 @@ namespace OutOfSchool.WebApi
             app.UseCors("AllowAll");
             
             app.UseMiddleware<ExceptionMiddlewareExtension>();
-
+            
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
             
@@ -92,6 +90,8 @@ namespace OutOfSchool.WebApi
             
             app.UseHttpsRedirection();
 
+            app.UseSerilogRequestLogging();
+            
             app.UseRouting();
 
             app.UseAuthentication();
