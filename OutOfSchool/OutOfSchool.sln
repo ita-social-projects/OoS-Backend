@@ -5,11 +5,6 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi", "OutOfSchool.WebApi\OutOfSchool.WebApi.csproj", "{CD28DCB5-C0F3-4011-B56C-AD2BCF795F72}"
 EndProject
-<<<<<<< HEAD
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi.Tests", "OutOfSchool.Tests\OutOfSchool.WebApi.Tests.csproj", "{DBFAA66A-08FC-4388-BE77-134665192B38}"
-EndProject
-=======
->>>>>>> develop
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.IdentityServer", "IdentityServer\OutOfSchool.IdentityServer.csproj", "{22539DBF-6A8C-425E-A01C-7D3D226FCE68}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.DataAccess", "OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj", "{4DBB87B9-8B99-4A06-A623-0B852F054543}"
