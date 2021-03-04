@@ -15,7 +15,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ProviderService : IProviderService
     {
-        private IProviderRepository repository;
+        private readonly IProviderRepository repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderService"/> class.

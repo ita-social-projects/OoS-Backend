@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Controllers
     public class ProviderController : ControllerBase
     {
         private readonly ILogger<ProviderController> logger;
-        private IProviderService providerService;
+        private readonly IProviderService providerService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
