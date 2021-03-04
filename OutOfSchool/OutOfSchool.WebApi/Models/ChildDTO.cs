@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -28,6 +29,9 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "Birthday is required")]
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; }
+
+        [Required(ErrorMessage = "Gender is required")]
+        public Gender Gender { get; set; }
         
         public long ParentId { get; set; }
         
