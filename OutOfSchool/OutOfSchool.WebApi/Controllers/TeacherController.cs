@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>List of teachers.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Teacher>>> GetTeachers()
+        public async Task<IActionResult> GetTeachers()
         {
             return Ok(await teacherService.GetAll().ConfigureAwait(false));
         }
@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<ActionResult<TeacherDTO>> GetTeacherById(long id)
+        public async Task<IActionResult> GetTeacherById(long id)
         {
             if (id < 1 || teacherService.GetAll().Result.AsQueryable().Count() < id)
             {
@@ -68,7 +68,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult<Teacher>> CreateTeacher(TeacherDTO teacherDto)
+        public async Task<IActionResult> CreateTeacher(TeacherDTO teacherDto)
         {
             if (!ModelState.IsValid)
             {
@@ -95,7 +95,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<ActionResult> Update(TeacherDTO dto)
+        public async Task<IActionResult> Update(TeacherDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -114,7 +114,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteTeacher(long id)
+        public async Task<IActionResult> DeleteTeacher(long id)
         {
             if (id < 1 || teacherService.GetAll().Result.AsQueryable().Count() < id)
             {

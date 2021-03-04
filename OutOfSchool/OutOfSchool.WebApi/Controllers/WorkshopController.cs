@@ -9,67 +9,87 @@ using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
 {
+    /// <summary>
+    /// Controller with CRUD operations for Workshop entity.
+    /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class OrganizationController : ControllerBase
+    public class WorkshopController : ControllerBase
     {
-        private readonly IOrganizationService service;
-
+        private readonly IWorkshopService service;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OrganizationController"/> class.
+        /// Initializes a new instance of the <see cref="WorkshopController"/> class.
         /// </summary>
-        /// <param name="service">Service for Organization model.</param>
-        public OrganizationController(IOrganizationService service)
+        /// <param name="service">Service for Workshop model.</param>
+        public WorkshopController(IWorkshopService service)
         {
             this.service = service;
         }
 
-
         /// <summary>
-        /// Get all organization from the database.
+        /// Get all workshops from the database.
         /// </summary>
-        /// <returns>List of all organizations.</returns>
+        /// <returns>List of all workshops.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var organizations = await service.GetAll().ConfigureAwait(false);
+            var workshops = await service.GetAll().ConfigureAwait(false);
 
-            if (!organizations.Any())
+            if (!workshops.Any())
             {
                 return NoContent();
             }
             
-            return Ok(organizations);
+            return Ok(workshops);
         }
 
         /// <summary>
-        /// Get organization by it's key.
+        /// Get workshop by it's id.
         /// </summary>
-        /// <param name="id">The key in the database.</param>
-        /// <returns>Organization element with some id.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        /// <param name="id">Key in the database.</param>
+        /// <returns>Workshop entity.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(long id)
         {
             if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
-                    "The id is less than 1 or greater than number of table entities.");
+                    "The id is cannot be less than 1.");
             }
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Method for creating new organization.
+        /// Get workshops by organization id.
+        /// </summary>
+        /// <param name="id">Key in the database.</param>
+        /// <returns>Workshop entities.</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByOrganization(long id)
+        {
+            if (id < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    "The id is cannot be less than 1.");
+            }
+
+            return Ok(await service.GetWorkshopsByOrganization(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Add new workshop to the database.
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -78,7 +98,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(OrganizationDTO dto)
+        public async Task<IActionResult> Create(WorkshopDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -86,21 +106,23 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             var workshop = await service.Create(dto).ConfigureAwait(false);
-
-            return Ok(workshop.ToDomain());
+            
+            return CreatedAtAction(nameof(GetById), 
+                new { id = workshop.Id, }, 
+                workshop);
         }
 
         /// <summary>
-        /// Update info about some organization in database.
+        /// Update info about workshop entity.
         /// </summary>
-        /// <param name="dto">Entity to update.</param>
+        /// <param name="dto">Workshop to update.</param>
         /// <returns>Workshop.</returns>
         [Authorize(Roles = "organization,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(OrganizationDTO dto)
+        public async Task<IActionResult> Update(WorkshopDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -111,11 +133,11 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Delete a specific Organization entity from the database.
+        /// Delete a specific workshop entity from the database.
         /// </summary>
-        /// <param name="id">Organization's key.</param>
+        /// <param name="id">Workshop's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "parent,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
@@ -125,7 +147,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
-                    "The id is less than 1 or greater than number of table entities.");
+                    "The id cannot be less than 1.");
             }
 
             await service.Delete(id).ConfigureAwait(false);
