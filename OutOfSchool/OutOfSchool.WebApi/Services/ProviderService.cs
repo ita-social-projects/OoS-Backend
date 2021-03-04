@@ -43,13 +43,6 @@ namespace OutOfSchool.WebApi.Services
      
             return CreateInternal(provider);
         }
-        private async Task<ProviderDto> CreateInternal(Provider provider)
-        {
-            var newProvider= await repository.Create(provider).ConfigureAwait(false);
-
-            return newProvider.ToModel();
-        }
-
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ProviderDto>> GetAll()
@@ -99,6 +92,12 @@ namespace OutOfSchool.WebApi.Services
             {
                 throw new ArgumentNullException(nameof(id), ex.Message);
             }
+        }
+        private async Task<ProviderDto> CreateInternal(Provider provider)
+        {
+            var newProvider = await repository.Create(provider).ConfigureAwait(false);
+
+            return newProvider.ToModel();
         }
     }
 }
