@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!repository.IsUnique(provider))
             {
-                throw new ArgumentException("There is already an providerDto with such data", nameof(provider));
+                throw new ArgumentException("There is already an providerDto with such data");
             }
 
             var newOrganization = await repository.Create(provider).ConfigureAwait(false);
@@ -69,36 +69,6 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ProviderDto> Update(ProviderDto dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException(nameof(dto), "Provider was null.");
-            }
-
-            if (dto.EDRPOU.Length == 0)
-            {
-                throw new ArgumentException("EDRPOU code is empty", nameof(dto));
-            }
-
-            if (dto.INPP.Length == 0)
-            {
-                throw new ArgumentException("INPP code is empty", nameof(dto));
-            }
-
-            if (dto.MFO.Length == 0)
-            {
-                throw new ArgumentException("MFO code is empty", nameof(dto));
-            }
-
-            if (dto.Title.Length == 0)
-            {
-                throw new ArgumentException("Title is empty", nameof(dto));
-            }
-
-            if (dto.Description.Length == 0)
-            {
-                throw new ArgumentException("Description is empty", nameof(dto));
-            }
-
             try
             {
                 var provider = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
