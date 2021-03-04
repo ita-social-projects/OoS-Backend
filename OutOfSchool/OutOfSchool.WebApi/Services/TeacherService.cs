@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -14,30 +17,48 @@ namespace OutOfSchool.WebApi.Services
     public class TeacherService : ITeacherService
     {
         private readonly IEntityRepository<Teacher> repository;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TeacherService"/> class.
         /// </summary>
         /// <param name="repository">Repository for Teacher entity.</param>
-        public TeacherService(IEntityRepository<Teacher> repository)
+        public TeacherService(IEntityRepository<Teacher> repository, ILogger logger)
         {
             this.repository = repository;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>
         public async Task<TeacherDTO> Create(TeacherDTO dto)
         {
+            logger.Information("Teacher creating was started.");
+
             var teacher = dto.ToDomain();
 
-            var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
+            try
+            {
+                var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
-            return newTeacher.ToModel();
+                return newTeacher.ToModel();
+            }
+            catch (DbUpdateException)
+            {
+                logger.Error("Creating failed. Verify all information you have entered are valid.");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<TeacherDTO>> GetAll()
         {
+            logger.Information("Process of getting all Teachers started.");
+
             var teachers = await repository.GetAll().ConfigureAwait(false);
+
+            logger.Information(!teachers.Any()
+                ? "Teacher table is empty."
+                : "Successfully got all records from the Teacher table.");
 
             return teachers.Select(teacher => teacher.ToModel()).ToList();
         }
@@ -45,7 +66,17 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<TeacherDTO> GetById(long id)
         {
+            logger.Information("Process of getting Teacher by id started.");
+
             var teacher = await repository.GetById(id).ConfigureAwait(false);
+
+            if (teacher == null)
+            {
+                throw new ArgumentOutOfRangeException(id.ToString(),
+                    "The id cannot be greater than number of table entities.");
+            }
+
+            logger.Information($"Successfully got a Teacher with id = {id}.");
 
             return teacher.ToModel();
         }
@@ -53,17 +84,41 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<TeacherDTO> Update(TeacherDTO dto)
         {
-            var teacher = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+            logger.Information("Teacher updating was launched.");
 
-            return teacher.ToModel();
+            try
+            {
+                var teacher = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+
+                logger.Information("Updating successfully finished.");
+
+                return teacher.ToModel();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.Error("Updating failed. There is no Teacher in the Db with such an id.");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
+            logger.Information("Teacher deleting was launched.");
+
             var dtoToDelete = new Teacher() {Id = id};
 
-            await repository.Delete(dtoToDelete).ConfigureAwait(false);
+            try
+            {
+                await repository.Delete(dtoToDelete).ConfigureAwait(false);
+
+                logger.Information("Deleting successfully finished.");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.Error("Deleting failed. There is no Teacher in the Db with such an id.");
+                throw;
+            }
         }
     }
 }

@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -14,38 +17,66 @@ namespace OutOfSchool.WebApi.Services
     public class WorkshopService : IWorkshopService
     {
         private readonly IEntityRepository<Workshop> repository;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
         /// <param name="repository">Repository for Workshop entity.</param>
-        public WorkshopService(IEntityRepository<Workshop> repository)
+        public WorkshopService(IEntityRepository<Workshop> repository, ILogger logger)
         {
             this.repository = repository;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>
         public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
+            logger.Information("Workshop creating was started.");
+
             var workshop = dto.ToDomain();
+            
+            try
+            {
+                var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
 
-            var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
-
-            return newWorkshop.ToModel();
+                return newWorkshop.ToModel();
+            }
+            catch (DbUpdateException)
+            {
+                logger.Error("Creating failed. Verify all information you have entered are valid.");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopDTO>> GetAll()
         {
+            logger.Information("Process of getting all Workshops started.");
+
             var workshops = await repository.GetAll().ConfigureAwait(false);
 
-            return workshops.Select(workshop => workshop.ToModel()).ToList();
+            logger.Information(!workshops.Any()
+                ? "Workshop table is empty."
+                : "Successfully got all records from the Workshop table.");
+
+            return workshops.Select(x => x.ToModel()).ToList();
         }
 
         /// <inheritdoc/>
         public async Task<WorkshopDTO> GetById(long id)
         {
+            logger.Information("Process of getting Workshop by id started.");
+
             var workshop = await repository.GetById(id).ConfigureAwait(false);
+
+            if (workshop == null)
+            {
+                throw new ArgumentOutOfRangeException(id.ToString(),
+                    "The id cannot be greater than number of table entities.");
+            }
+
+            logger.Information($"Successfully got a Workshop with id = {id}.");
 
             return workshop.ToModel();
         }
@@ -53,17 +84,41 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
-            var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-            
-            return workshop.ToModel();
+            logger.Information("Workshop updating was launched.");
+
+            try
+            {
+                var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+
+                logger.Information("Updating successfully finished.");
+
+                return workshop.ToModel();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.Error("Updating failed. There is no Workshop in the Db with such an id.");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
+            logger.Information("Workshop deleting was launched.");
+            
             var dtoToDelete = new Workshop() { Id = id };
                 
-            await repository.Delete(dtoToDelete).ConfigureAwait(false);
+            try
+            {
+                await repository.Delete(dtoToDelete).ConfigureAwait(false);
+
+                logger.Information("Deleting successfully finished.");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.Error("Deleting failed. There is no Workshop in the Db with such an id.");
+                throw;
+            }
         }
     }
 }
