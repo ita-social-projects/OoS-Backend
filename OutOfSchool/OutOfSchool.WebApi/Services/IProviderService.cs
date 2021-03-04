@@ -14,27 +14,27 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Provider entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ProviderDTO> Create(ProviderDTO dto);
+        Task<ProviderDto> Create(ProviderDto dto);
 
         /// <summary>
         /// Get all entities.
         /// </summary>
         /// <returns>List of all providers.</returns>
-        Task<IEnumerable<ProviderDTO>> GetAll();
+        Task<IEnumerable<ProviderDto>> GetAll();
 
         /// <summary>
         /// Get entity by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Provider.</returns>
-        Task<ProviderDTO> GetById(long id);
+        Task<ProviderDto> GetById(long id);
 
         /// <summary>
         /// Update entity.
         /// </summary>
         /// <param name="dto">Provider entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ProviderDTO> Update(ProviderDTO dto);
+        Task<ProviderDto> Update(ProviderDto dto);
 
         /// <summary>
         ///  Delete entity.

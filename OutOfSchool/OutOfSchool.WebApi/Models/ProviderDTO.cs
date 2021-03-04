@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class ProviderDTO
+    public class ProviderDto
     {
         public long Id { get; set; }
 

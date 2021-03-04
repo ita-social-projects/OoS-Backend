@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDTO> Create(ProviderDTO dto)
+        public async Task<ProviderDto> Create(ProviderDto dto)
         {
             if (dto == null)
             {
@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ProviderDTO>> GetAll()
+        public async Task<IEnumerable<ProviderDto>> GetAll()
         {
              var providers = await repository.GetAll().ConfigureAwait(false);
             
@@ -55,7 +55,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDTO> GetById(long id)
+        public async Task<ProviderDto> GetById(long id)
         {
             var provider = await repository.GetById(id).ConfigureAwait(false);
             if (provider == null)
@@ -67,7 +67,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDTO> Update(ProviderDTO dto)
+        public async Task<ProviderDto> Update(ProviderDto dto)
         {
             if (dto == null)
             {

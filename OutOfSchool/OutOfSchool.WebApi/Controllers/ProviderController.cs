@@ -21,13 +21,13 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
         /// </summary>
+        /// <param name="logger">Logging mechanism</param>
         /// <param name="providerService">Service for Provider model.</param>
         public ProviderController(ILogger<ProviderController> logger, IProviderService providerService)
         {
             this.logger = logger;
             this.providerService = providerService;
         }
-
 
         /// <summary>
         /// Get all providers from the database.
@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">The key in the database.</param>
         /// <returns>Provider element with some id.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProviderDTO>> GetProviderById(long id)
+        public async Task<ActionResult<ProviderDto>> GetProviderById(long id)
         {
             if (id == 0)
             { 
@@ -56,13 +56,13 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Method for creating new provider.
+        /// Create new provider.
         /// </summary>
         /// <param name="providerDTO">Element which must be added.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
         [HttpPost]
-        public async Task<ActionResult<Provider>> Create(ProviderDTO providerDTO)
+        public async Task<ActionResult<Provider>> Create(ProviderDto providerDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -72,7 +72,7 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 providerDTO.UserId = User.FindFirst("sub")?.Value;
-                ProviderDTO provider = await providerService.Create(providerDTO).ConfigureAwait(false);
+                ProviderDto provider = await providerService.Create(providerDTO).ConfigureAwait(false);
                 return CreatedAtAction(
                     nameof(GetProviderById),
                     new
@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Controllers
                         id = provider.Id,
                     }, provider);              
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -93,7 +93,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>Provider's key.</returns>
         [Authorize(Roles = "provider,admin")]
         [HttpPut]
-        public async Task<ActionResult> Update(ProviderDTO providerDTO)
+        public async Task<ActionResult> Update(ProviderDto providerDTO)
         {
             if (!ModelState.IsValid)
             {

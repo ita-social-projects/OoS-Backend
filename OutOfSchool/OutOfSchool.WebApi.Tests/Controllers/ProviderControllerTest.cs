@@ -11,7 +11,7 @@ namespace OutOfSchool.Tests
     {
         private readonly ILogger<ProviderController> logger;
         private IProviderService providerService;
-        public ProviderController CreateOrganizationController => new ProviderController(logger, providerService);
+        public ProviderController CreateProviderController => new ProviderController(logger, providerService);
 
         public Tests()
         {
