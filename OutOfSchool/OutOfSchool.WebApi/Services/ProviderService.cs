@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!repository.IsUnique(provider))
             {
-                throw new ArgumentException(nameof(provider), "There is already an providerDto with such data");
+                throw new ArgumentException("There is already an providerDto with such data", nameof(provider));
             }
 
             var newOrganization = await repository.Create(provider).ConfigureAwait(false);
