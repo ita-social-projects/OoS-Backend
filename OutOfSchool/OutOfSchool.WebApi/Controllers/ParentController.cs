@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -6,6 +7,7 @@ using OutOfSchool.WebApi.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Controllers
@@ -35,6 +37,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of Parents.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentDTO>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetParents()
         {
             try
@@ -54,6 +58,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Key in table.</param>
         /// <returns>Parent with define id.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetParentById(long id)
         {
             try
@@ -74,6 +80,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPost]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateParent(ParentDTO parentDTO)
         {
             if (!ModelState.IsValid)
@@ -104,6 +113,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>Parent's key.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Update(ParentDTO parentDTO)
         {
             if (parentDTO == null)
@@ -134,6 +145,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Delete(long id)
         {
             try
@@ -153,6 +166,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>Authorized parent's profile.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ParentDTO>> GetParentProfile()
         {
             try
