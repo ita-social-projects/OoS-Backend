@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>List of all organizations.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Organization>>> GetOrganizations()
+        public async Task<IActionResult> GetOrganizations()
         {
             return Ok(await organizationService.GetAll().ConfigureAwait(false));
         }
@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrganizationDTO>> GetOrganizationById(long id)
+        public async Task<IActionResult> GetOrganizationById(long id)
         {
             if (id < 1 || organizationService.GetAll().Result.AsQueryable().Count() < id)
             {
@@ -76,7 +76,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult<Organization>> CreateOrganization(OrganizationDTO dto)
+        public async Task<IActionResult> CreateOrganization(OrganizationDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -112,7 +112,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<ActionResult> UpdateOrganization(OrganizationDTO dto)
+        public async Task<IActionResult> UpdateOrganization(OrganizationDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -131,7 +131,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteOrganization(long id)
+        public async Task<IActionResult> DeleteOrganization(long id)
         {
             if (id < 1 || organizationService.GetAll().Result.AsQueryable().Count() < id)
             {

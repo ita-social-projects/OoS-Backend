@@ -39,11 +39,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>List of all workshops.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WorkshopDTO>>> GetWorkshops()
+        public async Task<IActionResult> GetWorkshops()
         {
-            var workshops = await workshopService.GetAll().ConfigureAwait(false);
-
-            return Ok(workshops.ToList());
+            return Ok(await workshopService.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>
@@ -54,16 +52,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> GetWorkshopById(long id)
+        public async Task<IActionResult> GetWorkshopById(long id)
         {
-            if (id < 1)
+            if (id < 1 || workshopService.GetAll().Result.AsQueryable().Count() < id)
             {
-                throw new ArgumentOutOfRangeException(id.ToString());
+                throw new ArgumentOutOfRangeException(id.ToString(), "The id is less than 1 or greater than number of table entities.");
             }
-
-            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
-
-            return Ok(workshop);
+            
+            return Ok(workshopService.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -76,16 +72,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult> CreateWorkshop(WorkshopDTO dto)
+        public async Task<IActionResult> CreateWorkshop(WorkshopDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var workshop = await workshopService.Create(dto).ConfigureAwait(false);
-
-            return Ok(workshop.ToDomain());
+            return Ok(await workshopService.Create(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -98,11 +92,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<ActionResult> Update(WorkshopDTO dto)
+        public async Task<IActionResult> Update(WorkshopDTO dto)
         {
-            var workshop = await workshopService.Update(dto).ConfigureAwait(false);
-
-            return Ok(workshop);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            return Ok( await workshopService.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -114,8 +111,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(long id)
         {
+            if (id < 1 || workshopService.GetAll().Result.AsQueryable().Count() < id)
+            {
+                throw new ArgumentOutOfRangeException(id.ToString(),
+                    "The id is less than 1 or greater than number of table entities.");
+            }
+            
             await workshopService.Delete(id).ConfigureAwait(false);
 
             return Ok();
