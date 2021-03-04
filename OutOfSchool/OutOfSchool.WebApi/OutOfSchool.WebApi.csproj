@@ -46,7 +46,6 @@
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\.editorconfig" Link=".editorconfig" />
     <Content Remove="stylecop.json" />
     <AdditionalFiles Include="stylecop.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
