@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -33,13 +34,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
-            logger.Information("Workshop creating was started.");
+            logger.Information("Teacher creating was started.");
 
-            var workshop = dto.ToDomain();
+            var teacher = dto.ToDomain();
             
-            var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
+            var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
-            return newWorkshop.ToModel();
+            return newTeacher.ToModel();
         }
 
         /// <inheritdoc/>
@@ -59,18 +60,18 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> GetById(long id)
         {
-            logger.Information("Process of getting Workshop by id started.");
+            logger.Information("Process of getting Teacher by id started.");
 
-            var workshop = await repository.GetById(id).ConfigureAwait(false);
+            var teacher = await repository.GetById(id).ConfigureAwait(false);
 
-            if (workshop == null)
+            if (teacher == null)
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
             }
 
-            logger.Information($"Successfully got a Workshop with id = {id}.");
+            logger.Information($"Successfully got a Teacher with id = {id}.");
 
-            return workshop.ToModel();
+            return teacher.ToModel();
         }
 
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
@@ -103,19 +104,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Workshop deleting was launched.");
+             logger.Information("Teacher deleting was launched.");
 
-            var entity = new Workshop() { Id = id };
+            var entity = new Teacher() { Id = id };
 
             try
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Workshop successfully deleted.");
+                logger.Information("Teacher successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed. There is no Workshop in the Db with such an id.");
+                logger.Error("Deleting failed. There is no Teacher in the Db with such an id.");
                 throw;
             }
         }

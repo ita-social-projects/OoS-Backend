@@ -40,6 +40,12 @@ namespace OutOfSchool.WebApi.Services
             var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
             return newTeacher.ToModel();
+            
+            catch (DbUpdateException)
+            {
+                logger.Error("Creating failed. Verify all information you have entered are valid.");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
@@ -96,7 +102,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Teacher deleting was launched.");
+           logger.Information("Teacher deleting was launched.");
 
             var entity = new Teacher() { Id = id };
 

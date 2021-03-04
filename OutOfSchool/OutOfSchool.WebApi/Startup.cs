@@ -11,14 +11,12 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
-
+using Serilog;
 
 namespace OutOfSchool.WebApi
 {
     public class Startup
     {
-        private ILogger logger;
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;

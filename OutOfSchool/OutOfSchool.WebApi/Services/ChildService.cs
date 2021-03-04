@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -35,10 +36,18 @@ namespace OutOfSchool.WebApi.Services
             logger.Information("Child creating was started.");
 
             var child = dto.ToDomain();
+            
+            try
+            {
+                var newChild = await repository.Create(child).ConfigureAwait(false);
 
-            var newChild = await repository.Create(child).ConfigureAwait(false);
-
-            return newChild.ToModel();
+                return newChild.ToModel();
+            }
+            catch (DbUpdateException)
+            {
+                logger.Error("Creating failed. Verify all information you have entered are valid.");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
@@ -106,7 +115,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Child deleting was launched.");
+           logger.Information("Child deleting was launched.");
 
             var entity = new Child { Id = id };
 
