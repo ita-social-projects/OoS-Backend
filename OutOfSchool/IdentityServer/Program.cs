@@ -89,8 +89,8 @@ namespace IdentityServer
             var roles = new IdentityRole[]
             {
                 new IdentityRole {Name = "parent"},
-                new IdentityRole {Name = "organization"},
-                new IdentityRole {Name = "admin"}
+                new IdentityRole {Name = "provider"},
+                new IdentityRole {Name = "admin"},
             };
             foreach (var role in roles)
             {
