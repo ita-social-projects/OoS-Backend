@@ -23,55 +23,55 @@ namespace OutOfSchool.Services.Repository
         public EntityRepository(OutOfSchoolDbContext dbContext)
         {
             this.dbContext = dbContext;
-            this.dbSet = this.dbContext.Set<T>();
+            dbSet = this.dbContext.Set<T>();
         }
 
         /// <inheritdoc/>
         public async Task<T> Create(T entity)
         {
-            await this.dbSet.AddAsync(entity);
-            await this.dbContext.SaveChangesAsync();
+            await dbSet.AddAsync(entity);
+            await dbContext.SaveChangesAsync();
             return await Task.FromResult(entity);
         }
 
         /// <inheritdoc/>
         public async Task Delete(T entity)
         {
-            this.dbSet.Remove(entity);
-            await this.dbContext.SaveChangesAsync();
+            dbSet.Remove(entity);
+            await dbContext.SaveChangesAsync();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<T>> GetAll()
         {
-            return await this.dbSet.ToListAsync();         
+            return await dbSet.ToListAsync();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "")
         {
-            IQueryable<T> query = this.dbSet;
+            IQueryable<T> query = dbSet;
             foreach (var includeProperty in includeProperties.Split(
             new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 query = query.Include(includeProperty);
             }
-            
+
             return await query.ToListAsync();
         }
 
         /// <inheritdoc/>
         public async Task<T> GetById(long id)
         {
-            return await this.dbSet.FindAsync(id).AsTask();
+            return await dbSet.FindAsync(id).AsTask();
         }
 
         /// <inheritdoc/>
         public async Task<T> Update(T entity)
         {
-            this.dbSet.Update(entity);
-            await this.dbContext.SaveChangesAsync();
+            dbSet.Update(entity);
+            await dbContext.SaveChangesAsync();
             return entity;
-        }   
+        }
     }
 }

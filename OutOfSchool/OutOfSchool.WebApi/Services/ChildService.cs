@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var children = await repository.GetAll().ConfigureAwait(false);
-               
+
                 return children.Select(child => child.ToModel()).ToList();
             }
             catch (Exception ex)
@@ -112,7 +112,7 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-              
+
                 return child.ToModel();
             }
             catch (Exception ex)

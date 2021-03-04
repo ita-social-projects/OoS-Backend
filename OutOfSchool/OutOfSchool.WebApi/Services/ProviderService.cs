@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Mapping.Extensions;
@@ -40,7 +39,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 throw new ArgumentException("There is already an providerDto with such data");
             }
-     
+
             return CreateInternal(provider);
         }
 
@@ -48,7 +47,7 @@ namespace OutOfSchool.WebApi.Services
         public async Task<IEnumerable<ProviderDto>> GetAll()
         {
              var providers = await repository.GetAll().ConfigureAwait(false);
-            
+
              return providers.Select(organization => organization.ToModel()).ToList();
         }
 
@@ -70,7 +69,7 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var provider = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-              
+
                 return provider.ToModel();
             }
             catch (Exception ex)
@@ -78,7 +77,7 @@ namespace OutOfSchool.WebApi.Services
                 throw new Exception($"{nameof(dto)} could not be updated: {ex.Message}");
             }
         }
-        
+
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
@@ -93,6 +92,7 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException(nameof(id), ex.Message);
             }
         }
+
         private async Task<ProviderDto> CreateInternal(Provider provider)
         {
             var newProvider = await repository.Create(provider).ConfigureAwait(false);

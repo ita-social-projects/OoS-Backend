@@ -1,8 +1,6 @@
 ﻿using System;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace OutOfSchool.Services.Models
 {
@@ -10,7 +8,7 @@ namespace OutOfSchool.Services.Models
     {
         [DataType(DataType.DateTime)]
         public DateTime CreatingTime { get; set; }
-        
+
         [DataType(DataType.DateTime)]
         public DateTime? LastLogin { get; set; }
     }

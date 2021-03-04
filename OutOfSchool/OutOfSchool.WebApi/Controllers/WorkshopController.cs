@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -69,7 +66,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             var workshop = await workshopService.Create(workshopDto).ConfigureAwait(false);
-           
+
             return CreatedAtAction(nameof(GetWorkshopById), new
             {
                 id = workshop.Id,

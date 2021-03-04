@@ -56,10 +56,13 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(@"^(\d{9}|\d{10}|\d{12})$",
             ErrorMessage = "INPP code must contain 12, 10 or 9 digits")]
         public string INPP { get; set; }
+
         [MaxLength(50)]
         public string Director { get; set; }
+
         [MaxLength(255)]
         public string DirectorPosition { get; set; }
+
         [MaxLength(128)]
         public string AuthorityHolder { get; set; }
 
@@ -71,6 +74,7 @@ namespace OutOfSchool.WebApi.Models
             ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
         public string DirectorPhonenumber { get; set; }
+
         public string ManagerialBody { get; set; }
 
         [Required]
@@ -78,20 +82,27 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         public ProviderType Type { get; set; }
+
         public string Form { get; set; }
+
         [Required]
         public ProviderProfile Profile { get; set; }
+
         [MaxLength(20)]
         public string Index { get; set; }
+
         public bool isSubmitPZ_1 { get; set; }
 
         [DataType(DataType.ImageUrl)]
         public string AttachedDocuments { get; set; }
+
         [Required]
         public long AddressId { get; set; }
 
         public string UserId { get; set; }
+
         public virtual List<Workshop> Workshops { get; set; }
+
         public virtual User User { get; set; }
     }
 }

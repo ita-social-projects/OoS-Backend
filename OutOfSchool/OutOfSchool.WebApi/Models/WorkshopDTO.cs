@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.IO;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -52,7 +50,7 @@ namespace OutOfSchool.WebApi.Models
         [Column(TypeName = "decimal(18,2)")] 
         [Range(1, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal? Price { get; set; }
-        
+
         [Required(ErrorMessage = "Description is required")]
         [RegularExpression(@"(^\d+(,\d{1,2})?$)")]
         [MaxLength(500)]
@@ -64,7 +62,7 @@ namespace OutOfSchool.WebApi.Models
         public string? DisabilityOptionsDesc { get; set; }
 
         public string? Image { get; set; }
-        
+
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
         public string Head { get; set; }
@@ -74,11 +72,11 @@ namespace OutOfSchool.WebApi.Models
         public DateTime HeadBirthDate { get; set; }
 
         public CategoryDTO Category { get; set; }
-        
+
         public virtual AddressDTO Address { get; set; }
-        
+
         public virtual ProviderDto? Provider { get; set; }
-        
+
         public virtual List<TeacherDTO> Teachers { get; set; }
     }
 }

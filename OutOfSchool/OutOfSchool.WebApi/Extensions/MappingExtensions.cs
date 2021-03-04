@@ -34,7 +34,8 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
 
         public static ProviderDto ToModel(this Provider provider)
         {
-            var organizationDto = Mapper<Provider, ProviderDto>(provider,
+            var organizationDto = Mapper<Provider, ProviderDto>(
+                provider,
                 cfg => { cfg.CreateMap<Provider, ProviderDto>(); });
             return organizationDto;
         }
@@ -63,20 +64,21 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
                 Mapper<WorkshopDTO, Workshop>(workshopDto, cfg => { cfg.CreateMap<WorkshopDTO, Workshop>(); });
             return workshop;
         }
-        
+
         public static Teacher ToDomain(this TeacherDTO teacherDto)
         {
             var teacher = Mapper<TeacherDTO, Teacher>(teacherDto, cfg => { cfg.CreateMap<TeacherDTO, Teacher>(); });
             return teacher;
         }
-        
+
         public static Provider ToDomain(this ProviderDto providerDto)
         {
-            var organization = Mapper<ProviderDto, Provider>(providerDto,
+            var organization = Mapper<ProviderDto, Provider>(
+                providerDto,
                 cfg => { cfg.CreateMap<ProviderDto, Provider>(); });
             return organization;
         }
-        
+
         public static Child ToDomain(this ChildDTO childDto)
         {
             var child = childDto.Mapper<ChildDTO, Child>(

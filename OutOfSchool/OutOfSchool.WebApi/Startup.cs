@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Reflection;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,8 +8,6 @@ using Microsoft.Extensions.Hosting;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Mapping;
-using OutOfSchool.WebApi.Mapping.Extensions;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi
@@ -81,11 +76,11 @@ namespace OutOfSchool.WebApi
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
-            
+
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); });
-            
+
             app.UseHttpsRedirection();
 
             app.UseRouting();

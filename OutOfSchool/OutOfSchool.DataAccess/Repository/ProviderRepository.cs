@@ -1,9 +1,6 @@
 ﻿using OutOfSchool.Services.Models;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace OutOfSchool.Services.Repository
 {
@@ -15,9 +12,9 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <summary>
-        /// Checks entity elements for uniqueness
+        /// Checks entity elements for uniqueness.
         /// </summary>
-        /// <param name="entity"></param>
+        /// <param name="entity">Entity.</param>
         /// <returns>Bool</returns>
         public bool IsUnique(Provider entity) => GetAll().Result.Any(x => x.EDRPOU != entity.EDRPOU || x.INPP != entity.INPP);
     }
