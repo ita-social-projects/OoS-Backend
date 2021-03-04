@@ -3,8 +3,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using System;
-using System.Collections.Generic;
-using System.Text;
+
 namespace OutOfSchool.Tests
 {
     public static class UnitTestHelper
@@ -18,8 +17,10 @@ namespace OutOfSchool.Tests
             {
                 SeedData(context);
             }
+
             return options;
         }
+
         public static void SeedData(OutOfSchoolDbContext context)
         {
             context.SocialGroups.Add(new SocialGroup { Id = 1, Name = "sg1" });

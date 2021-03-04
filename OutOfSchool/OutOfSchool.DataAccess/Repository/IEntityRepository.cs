@@ -19,7 +19,6 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> Create(T entity);
 
-
         /// <summary>
         /// Update information about element.
         /// </summary>
@@ -33,7 +32,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="entity">Entity.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(T entity);
-	
+
         /// <summary>
         /// Get all elements.
         /// </summary>
@@ -61,7 +60,5 @@ namespace OutOfSchool.Services.Repository
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "");
-
     }
 }
-

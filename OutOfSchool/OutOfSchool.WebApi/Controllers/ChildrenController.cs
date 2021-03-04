@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Controllers
 {
-
     /// <summary>
     /// Controller with CRUD operations for Child entity.
     /// </summary>
@@ -18,7 +17,7 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize]
     public class ChildrenController : ControllerBase
     {
-        private IChildService childService;
+        private readonly IChildService childService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildrenController"/> class.

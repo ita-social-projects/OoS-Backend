@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Mapping.Extensions;
 using OutOfSchool.WebApi.Models;
-
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -81,7 +79,6 @@ namespace OutOfSchool.WebApi.Services
 
             return child.ToModel();
         }
-
 
         /// <inheritdoc/>
         public async Task<ChildDTO> GetByIdWithDetails(long id)
