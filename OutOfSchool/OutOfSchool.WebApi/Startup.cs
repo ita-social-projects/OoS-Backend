@@ -56,10 +56,12 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IOrganizationService, OrganizationService>();
+            services.AddTransient<IParentService, ParentService>();
 
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
+            services.AddTransient<IEntityRepository<Parent>, EntityRepository<Parent>>();
 
             services.AddTransient<IOrganizationRepository, OrganizationRepository>();
 

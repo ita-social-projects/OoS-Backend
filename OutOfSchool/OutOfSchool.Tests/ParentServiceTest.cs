@@ -18,17 +18,17 @@ namespace OutOfSchool.Tests
         [TestFixture]
         public class ParentServiceTest
         {
-            private OutOfSchoolDbContext _context;
-            private IEntityRepository<Parent> _entityRepository;
-            private IParentService _service;
+            private OutOfSchoolDbContext context;
+            private IEntityRepository<Parent> entityRepository;
+            private IParentService service;
 
             [SetUp]
             public void SetUp()
             {
                 var options = new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(databaseName: "Test").Options;
-                _context = new OutOfSchoolDbContext(options);
-                _entityRepository = new EntityRepository<Parent>(_context);
-                _service = new ParentService(_entityRepository);
+                context = new OutOfSchoolDbContext(options);
+                entityRepository = new EntityRepository<Parent>(context);
+                service = new ParentService(entityRepository);
             }
 
             [Test]
@@ -40,7 +40,7 @@ namespace OutOfSchool.Tests
 
                 //Act
 
-                var parent = await _service.Create(newParent).ConfigureAwait(false);
+                var parent = await service.Create(newParent).ConfigureAwait(false);
 
                 //Assert
 
@@ -54,16 +54,16 @@ namespace OutOfSchool.Tests
 
                 var parent1 = new ParentDTO { FirstName = "Test", MiddleName = "Test", LastName = "Test" };
                 var parent2 = new ParentDTO { FirstName = "Test", MiddleName = "Test", LastName = "Test" };
-                await _service.Create(parent1);
-                await _service.Create(parent2);
+                await service.Create(parent1);
+                await service.Create(parent2);
 
                 //Act
 
-                var list = await _service.GetAll();
+                var list = await service.GetAll();
 
                 //Assert
 
-                Assert.AreEqual(_context.Parents.Count(), list.Count());
+                Assert.AreEqual(context.Parents.Count(), list.Count());
             }
 
             [Test]
@@ -72,13 +72,13 @@ namespace OutOfSchool.Tests
                 //Arrange
 
                 var parent = new ParentDTO { FirstName = "Yehor", MiddleName = "Test", LastName = "Test" };
-                await _service.Create(parent);
-                long id = _context.Parents.Where(x => x.FirstName == "Yehor").FirstOrDefault().Id;
-                ParentDTO parentFromContext = _context.Parents.Where(x => x.Id == id).FirstOrDefault().ToModel();
+                await service.Create(parent);
+                long id = context.Parents.Where(x => x.FirstName == "Yehor").FirstOrDefault().Id;
+                ParentDTO parentFromContext = context.Parents.Where(x => x.Id == id).FirstOrDefault().ToModel();
 
                 //Act
 
-                ParentDTO parentGetByID = await this._service.GetById(id);
+                ParentDTO parentGetByID = await this.service.GetById(id);
 
                 //Assert
 
@@ -92,15 +92,15 @@ namespace OutOfSchool.Tests
                 //Arrange
 
                 var parent = new ParentDTO { FirstName = "Delete", MiddleName = "Test", LastName = "Test" };
-                _service.Create(parent);
-                long id = _context.Parents.Where(x => x.FirstName == parent.FirstName).FirstOrDefault().Id;
+                service.Create(parent);
+                long id = context.Parents.Where(x => x.FirstName == parent.FirstName).FirstOrDefault().Id;
 
                 //Act
 
-                _service.Delete(id);
+                service.Delete(id);
 
                 //Assert
-                Assert.AreEqual(_context.Parents.Where(x => x.Id == id).FirstOrDefault(), null);
+                Assert.AreEqual(context.Parents.Where(x => x.Id == id).FirstOrDefault(), null);
             }
 
             [Test]
@@ -109,18 +109,18 @@ namespace OutOfSchool.Tests
                 //Arrange
 
                 var parent = new ParentDTO { FirstName = "Update", MiddleName = "Test", LastName = "Test" };
-                _service.Create(parent);
-                int id = (int)_context.Parents.Where(x => x.FirstName == "Update").FirstOrDefault().Id;
+                service.Create(parent);
+                int id = (int)context.Parents.Where(x => x.FirstName == "Update").FirstOrDefault().Id;
                 parent.Id = id;
                 parent.FirstName = "Update2";
 
                 //Act
 
-                _service.Update(parent);
+                service.Update(parent);
 
                  //Assert
 
-                Assert.AreNotEqual(_context.Parents.Where(x => x.FirstName == parent.FirstName), null);
+                Assert.AreNotEqual(context.Parents.Where(x => x.FirstName == parent.FirstName), null);
             }
 
 
@@ -130,12 +130,12 @@ namespace OutOfSchool.Tests
                 //Arrange 
 
                 var parent1 = new ParentDTO { FirstName = "Update", MiddleName = "Test", LastName = "Test" };
-                _service.Create(parent1);
-                int id = (int)_context.Parents.Select(x => x.Id).Max() + 10;
+                service.Create(parent1);
+                int id = (int)context.Parents.Select(x => x.Id).Max() + 10;
 
                 //Act and Assert
 
-                Assert.That(() => _service.Delete(id), Throws.ArgumentException);
+                Assert.That(() => service.Delete(id), Throws.ArgumentException);
             }
 
             [Test]
@@ -144,12 +144,12 @@ namespace OutOfSchool.Tests
                 //Arrange
 
                 var parent1 = new ParentDTO { FirstName = "Update", MiddleName = "Test", LastName = "Test" };
-                _service.Create(parent1);
-                int id = (int)_context.Parents.Select(x => x.Id).Max() + 10;
+                service.Create(parent1);
+                int id = (int)context.Parents.Select(x => x.Id).Max() + 10;
 
                 //Act and Assert
 
-                Assert.That(() => _service.GetById(id), Throws.ArgumentException);
+                Assert.That(() => service.GetById(id), Throws.ArgumentException);
             }
 
 
@@ -158,7 +158,7 @@ namespace OutOfSchool.Tests
             {
                 //Act and Assert
 
-                Assert.That(() => _service.Create(parent), Throws.ArgumentException);
+                Assert.That(() => service.Create(parent), Throws.ArgumentException);
             }
 
             [TestCaseSource(nameof(ParentModelsData))]
@@ -166,12 +166,12 @@ namespace OutOfSchool.Tests
             {
                 //Arrange
 
-                _service.Create(new ParentDTO() { FirstName = "Test25", MiddleName = "Test", LastName = "Test" });
-                 if (parent != null) parent.Id = _context.Parents.First().Id;
+                service.Create(new ParentDTO() { FirstName = "Test25", MiddleName = "Test", LastName = "Test" });
+                 if (parent != null) parent.Id = context.Parents.First().Id;
 
                 //Act and Assert
 
-                Assert.That(() => _service.Update(parent), Throws.ArgumentException);
+                Assert.That(() => service.Update(parent), Throws.ArgumentException);
             }
 
             public static IEnumerable<TestCaseData> ParentModelsData=>
