@@ -31,14 +31,14 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                throw new ArgumentNullException(nameof(dto), "Provider was null.");
+                throw new ArgumentNullException("Provider was null.", nameof(dto));
             }
 
             var provider = dto.ToDomain();
 
             if (!repository.IsUnique(provider))
             {
-                throw new ArgumentException(nameof(provider), "There is already an providerDto with such data");
+                throw new ArgumentException("There is already an providerDto with such data", nameof(provider));
             }
 
             var newOrganization = await repository.Create(provider).ConfigureAwait(false);
@@ -71,7 +71,8 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                throw new ArgumentNullException(nameof(dto), "Provider was null.");
+               
+                throw new ArgumentNullException("Provider was null", nameof(dto));
             }
 
             if (dto.EDRPOU.Length == 0)
