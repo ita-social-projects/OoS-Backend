@@ -2,7 +2,7 @@ using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi
         {
             // Read Configuration from appSettings
             var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile("appsettings.Development.json")
                 .Build();
             
             // Initialize Logger
@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi
                 .ReadFrom.Configuration(config, sectionName: "Logging")
                 .Enrich.FromLogContext()
                 .WriteTo.File(
-                    path: "log.txt", 
+                    path: config.GetSection("Logging:FilePath").Value, 
                     rollingInterval: RollingInterval.Day, 
                     retainedFileCountLimit: 2, 
                     fileSizeLimitBytes: null)
