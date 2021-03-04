@@ -36,7 +36,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>List of all children.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Child>>> GetChildren()
+        public async Task<ActionResult> GetChildren()
         {
             return Ok(await childService.GetAll().ConfigureAwait(false));
         }
@@ -50,11 +50,11 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<ActionResult<ChildDTO>> GetChildById(long id)
+        public async Task<IActionResult> GetChildById(long id)
         {
-            if (id < 1 || childService.GetAll().Result.AsQueryable().Count() < id)
+            if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(), "The id is less than 1 or greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(id.ToString(), $"The id cannot be less than 1.");
             }
 
             return Ok(await childService.GetById(id).ConfigureAwait(false));
@@ -70,16 +70,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult<Child>> CreateChild(ChildDTO dto)
+        public async Task<IActionResult> CreateChild(ChildDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var child = await childService.Create(dto).ConfigureAwait(false);
-
-            return Ok(child);
+            return Ok(await childService.Create(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -113,10 +111,10 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteChild(long id)
         {
-            if (id < 1 || childService.GetAll().Result.AsQueryable().Count() < id)
+            if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(id.ToString(),
-                    "The id is less than 1 or greater than number of table entities.");
+                    "The id cannot be less than 1.");
             }
 
             await childService.Delete(id).ConfigureAwait(false);
