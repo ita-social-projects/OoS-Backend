@@ -1,5 +1,5 @@
 @using Microsoft.AspNetCore.Identity
-@model RegisterViewModel
+@model OutOfSchool.IdentityServer.ViewModels.RegisterViewModel
 @{
     Layout = "_Layout";
 }
@@ -32,7 +32,7 @@
     </div>
    <div  asp-validation-summary="ModelOnly"></div>
     <div>
-        <button class="login__button" type="submit" name="Organization" >Зареєструватись як надавач послуг</button>
+        <button class="login__button" type="submit" name="Provider" >Зареєструватись як надавач послуг</button>
         <button class="login__button" type="submit" name="Parent" >Зареєструватись як parent?</button>
     </div>
 </form>
