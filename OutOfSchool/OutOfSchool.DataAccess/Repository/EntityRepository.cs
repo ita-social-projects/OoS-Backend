@@ -19,7 +19,7 @@ namespace OutOfSchool.Services.Repository
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
         /// </summary>
-        /// <param name="dbContext">OutOfSchoolDbContext</param>
+        /// <param name="dbContext">OutOfSchoolDbContext.</param>
         public EntityRepository(OutOfSchoolDbContext dbContext)
         {
             this.dbContext = dbContext;

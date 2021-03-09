@@ -4,6 +4,6 @@
     {
         State,
         Common,
-        Private
+        Private,
     }
 }

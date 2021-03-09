@@ -6,6 +6,6 @@
         Social,
         TOV,
         Private,
-        EducationalInstitution
+        EducationalInstitution,
     }
 }

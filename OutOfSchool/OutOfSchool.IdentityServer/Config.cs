@@ -1,5 +1,5 @@
-﻿using IdentityServer4.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using IdentityServer4.Models;
 using IdentityServer4;
 
 namespace OutOfSchool.IdentityServer
@@ -14,15 +14,15 @@ namespace OutOfSchool.IdentityServer
                 new IdentityResource
                 {
                     Name = "role",
-                    UserClaims = new List<string> {"role"}
-                }
+                    UserClaims = new List<string> { "role" },
+                },
             };
 
         public static IEnumerable<ApiScope> ApiScopes =>
             new[]
             {
                 new ApiScope("outofschoolapi.read"),
-                new ApiScope("outofschoolapi.write")
+                new ApiScope("outofschoolapi.write"),
             };
 
         public static IEnumerable<ApiResource> ApiResources(string apiSecret) => new[]
@@ -31,8 +31,8 @@ namespace OutOfSchool.IdentityServer
             {
                 Scopes = new List<string> { "outofschoolapi.read", "outofschoolapi.write"},
                 ApiSecrets = new List<Secret> {new Secret(apiSecret.Sha256())},
-                UserClaims = new List<string> {"role"}
-            }
+                UserClaims = new List<string> { "role" },
+            },
         };
 
         public static IEnumerable<Client> Clients(string clientSecret) =>
@@ -45,9 +45,9 @@ namespace OutOfSchool.IdentityServer
                     ClientName = "Client  Credentials Client",
 
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    ClientSecrets = {new Secret(clientSecret.Sha256())},
+                    ClientSecrets = { new Secret(clientSecret.Sha256()) },
 
-                    AllowedScopes = { "outofschoolapi.read", "outofschoolapi.write" }
+                    AllowedScopes = { "outofschoolapi.read", "outofschoolapi.write" },
                 },
 
                 new Client
@@ -64,12 +64,12 @@ namespace OutOfSchool.IdentityServer
 
                     AllowedScopes = {
                         IdentityServerConstants.StandardScopes.OpenId,
-                        "outofschoolapi.read", "outofschoolapi.write"
+                        "outofschoolapi.read", "outofschoolapi.write",
                     },
 
                     AllowAccessTokensViaBrowser = true,
                     RequireConsent = false,
-                }
+                },
             };
     }
 }

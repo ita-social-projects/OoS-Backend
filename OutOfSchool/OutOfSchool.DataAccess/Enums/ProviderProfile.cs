@@ -14,6 +14,6 @@
         BibliothecalBibliographical,
         SociallyRehabilitating,
         Curative,
-        Humanitarian
+        Humanitarian,
     }
 }
