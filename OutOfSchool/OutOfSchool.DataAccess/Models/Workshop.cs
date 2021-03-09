@@ -53,7 +53,6 @@ namespace OutOfSchool.Services.Models
         public decimal Price { get; set; } = default;
 
         [Required(ErrorMessage = "Description is required")]
-        [RegularExpression(@"(^\d+(,\d{1,2})?$)")]
         [MaxLength(500)]
         public string Description { get; set; }
 
