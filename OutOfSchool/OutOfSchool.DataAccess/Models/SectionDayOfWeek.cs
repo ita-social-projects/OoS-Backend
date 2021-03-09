@@ -1,6 +1,5 @@
 ﻿using System;
 
-
 namespace OutOfSchool.Services.Models
 {
     public class SectionDayOfWeek
