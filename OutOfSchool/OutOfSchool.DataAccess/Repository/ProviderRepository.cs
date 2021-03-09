@@ -1,9 +1,9 @@
-﻿using OutOfSchool.Services.Models;
-using System.Linq;
+﻿using System.Linq;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
 {
-    public class ProviderRepository : EntityRepository<Provider>,IProviderRepository
+    public class ProviderRepository : EntityRepository<Provider>, IProviderRepository
     {
         public ProviderRepository(OutOfSchoolDbContext dbContext)
             : base(dbContext)

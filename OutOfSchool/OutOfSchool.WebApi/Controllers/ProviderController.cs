@@ -1,13 +1,13 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using OutOfSchool.WebApi.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Models;
+using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
 {
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Controllers
         public async Task<ActionResult<ProviderDto>> GetProviderById(long id)
         {
             if (id == 0)
-            { 
+            {
                 return BadRequest("Id cannot be 0.");
             }
 
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Controllers
                     new
                     {
                         id = provider.Id,
-                    }, provider);              
+                    }, provider);
             }
             catch (ArgumentException ex)
             {

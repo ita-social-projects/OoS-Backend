@@ -22,11 +22,11 @@ namespace OutOfSchool.Services.Models
             @"([\d]{9})",
             ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
 
         [DataType(DataType.EmailAddress)]
         [Required(ErrorMessage = "Email is required")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [DataType(DataType.Url)]
         public string? Website { get; set; }
@@ -56,7 +56,7 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Description is required")]
         [RegularExpression(@"(^\d+(,\d{1,2})?$)")]
         [MaxLength(500)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         public bool WithDisabilityOptions { get; set; }
 
@@ -67,18 +67,18 @@ namespace OutOfSchool.Services.Models
 
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
-        public string Head { get; set; }
+        public string? Head { get; set; }
 
         [Required(ErrorMessage = "Head's birthday is required")]
         [DataType(DataType.Date)]
         public DateTime HeadBirthDate { get; set; }
 
-        public virtual Provider Provider { get; set; }
+        public virtual Provider? Provider { get; set; }
 
-        public virtual Address Address { get; set; }
+        public virtual Address? Address { get; set; }
 
-        public virtual Category Category { get; set; }
+        public virtual Category? Category { get; set; }
 
-        public virtual List<Teacher> Teachers { get; set; }
+        public virtual List<Teacher>? Teachers { get; set; }
     }
 }
