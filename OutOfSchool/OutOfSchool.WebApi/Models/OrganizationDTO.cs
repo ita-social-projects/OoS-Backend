@@ -15,9 +15,8 @@ namespace OutOfSchool.WebApi.Models
 
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
-        [RegularExpression(@"([\d]{9})",
-            ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
-        [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
+        [RegularExpression(@"((\+)?\b(38)?(0[\d]{2}))([\d-]{7})",
+            ErrorMessage = "Phone number format is incorrect. Example: XXX-XXX-XX-XX")]
         public string Phone { get; set; }
 
         [DataType(DataType.Url)] 
