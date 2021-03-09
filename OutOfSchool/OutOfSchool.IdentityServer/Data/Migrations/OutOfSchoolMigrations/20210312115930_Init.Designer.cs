@@ -13,7 +13,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
     [Migration("20210312115930_Init")]
     partial class Init
    {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+       protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
