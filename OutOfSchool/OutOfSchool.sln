@@ -16,6 +16,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.IdentityServer.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi.Tests", "OutOfSchool.WebApi.Tests\OutOfSchool.WebApi.Tests.csproj", "{858FFC94-4A9B-4A91-917E-F672455F1B32}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.IdentityServer", "OutOfSchool.IdentityServer\OutOfSchool.IdentityServer.csproj", "{B59E4559-57B7-4AD9-BA1E-3ED48D340357}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{858FFC94-4A9B-4A91-917E-F672455F1B32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{858FFC94-4A9B-4A91-917E-F672455F1B32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{858FFC94-4A9B-4A91-917E-F672455F1B32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B59E4559-57B7-4AD9-BA1E-3ED48D340357}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B59E4559-57B7-4AD9-BA1E-3ED48D340357}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B59E4559-57B7-4AD9-BA1E-3ED48D340357}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B59E4559-57B7-4AD9-BA1E-3ED48D340357}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -31,7 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Migrations\OutOfSchoolMigrations" />
     <Folder Include="Data\Migrations\OutOfSchoolMigrations\" />
   </ItemGroup>
 
