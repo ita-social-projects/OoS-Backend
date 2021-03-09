@@ -74,30 +74,11 @@ namespace OutOfSchool.WebApi.Services
 
         private async Task UpdateValidation(ParentDTO parent)
         {
-            if (parent == null)
-            {
-                throw new ArgumentException(nameof(parent), "Parent is null");
-            }
-
-            if (parent.FirstName.Length == 0)
-            {
-                throw new ArgumentException(nameof(parent), "Empty firstname.");
-            }
-
-            if (parent.LastName.Length == 0)
-            {
-                throw new ArgumentException(nameof(parent), "Empty lastname.");
-            }
-
-            if (parent.MiddleName.Length == 0)
-            {
-                throw new ArgumentException(nameof(parent), "Empty middlename.");
-            }
-
+            CreateValidation(parent);
             Parent tmp = await repository.GetById((int)parent.Id).ConfigureAwait(false);
             if (tmp == null)
             {
-                throw new ArgumentException(nameof(parent), "Wrong id");
+                throw new ArgumentException("Wrong id", nameof(parent));
             }
         }
 
@@ -105,22 +86,22 @@ namespace OutOfSchool.WebApi.Services
         {
             if (parent == null)
             {
-                throw new ArgumentException(nameof(parent), "Parent is null");
+                throw new ArgumentException("Parent is null", nameof(parent));
             }
 
             if (parent.FirstName.Length == 0)
             {
-                throw new ArgumentException(nameof(parent), "Empty firstname.");
+                throw new ArgumentException("Empty firstname.", nameof(parent));
             }
 
             if (parent.LastName.Length == 0)
             {
-                throw new ArgumentException(nameof(parent), "Empty lastname.");
+                throw new ArgumentException("Empty lastname.", nameof(parent));
             }
 
             if (parent.MiddleName.Length == 0)
             {
-                throw new ArgumentException(nameof(parent), "Empty middlename.");
+                throw new ArgumentException("Empty middlename.", nameof(parent));
             }
         }
     }
