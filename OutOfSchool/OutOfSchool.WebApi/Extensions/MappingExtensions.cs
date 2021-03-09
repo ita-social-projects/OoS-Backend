@@ -60,23 +60,30 @@ namespace OutOfSchool.WebApi.Extensions
         public static Workshop ToDomain(this WorkshopDTO workshopDto)
         {
             var workshop =
-                Mapper<WorkshopDTO, Workshop>(workshopDto, cfg => { cfg.CreateMap<WorkshopDTO, Workshop>(); });
+                Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
+                {
+                    cfg.CreateMap<WorkshopDTO, Workshop>()
+                        .ForMember(dest => dest.Address, opt => opt.Ignore())
+                        .ForMember(dest => dest.Organization, opt => opt.Ignore())
+                        .ForMember(dest => dest.Teachers, opt => opt.Ignore())
+                        .ForMember(dest => dest.Category, opt => opt.Ignore());
+                });
             return workshop;
         }
-        
+
         public static Teacher ToDomain(this TeacherDTO teacherDto)
         {
             var teacher = Mapper<TeacherDTO, Teacher>(teacherDto, cfg => { cfg.CreateMap<TeacherDTO, Teacher>(); });
             return teacher;
         }
-        
+
         public static Organization ToDomain(this OrganizationDTO organizationDto)
         {
             var organization = Mapper<OrganizationDTO, Organization>(organizationDto,
                 cfg => { cfg.CreateMap<OrganizationDTO, Organization>(); });
             return organization;
         }
-        
+
         public static Child ToDomain(this ChildDTO childDto)
         {
             var child = childDto.Mapper<ChildDTO, Child>(
