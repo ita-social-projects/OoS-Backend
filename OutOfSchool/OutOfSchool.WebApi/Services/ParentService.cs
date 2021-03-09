@@ -28,6 +28,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> Create(ParentDTO parent)
         {
+            CreateValidation(parent);
             Parent res = await repository.Create(parent.ToDomain()).ConfigureAwait(false);
             return res.ToModel();
         }
@@ -66,19 +67,61 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> Update(ParentDTO parent)
         {
-            if (parent == null)
-            {
-                throw new ArgumentException("Parent is null", nameof(parent));
-            }
-
-
-            Parent tmp = await this.repository.GetById((int)parent.Id).ConfigureAwait(false);
-            if (tmp == null)
-            {
-                throw new ArgumentException("Wrong id", nameof(parent));
-            }
+                await UpdateValidation(parent);
                 Parent res = await repository.Update(parent.ToDomain());
                 return res.ToModel();
+        }
+
+        private async Task UpdateValidation(ParentDTO parent)
+        {
+            if (parent == null)
+            {
+                throw new ArgumentException(nameof(parent), "Parent is null");
+            }
+
+            if (parent.FirstName.Length == 0)
+            {
+                throw new ArgumentException(nameof(parent), "Empty firstname.");
+            }
+
+            if (parent.LastName.Length == 0)
+            {
+                throw new ArgumentException(nameof(parent), "Empty lastname.");
+            }
+
+            if (parent.MiddleName.Length == 0)
+            {
+                throw new ArgumentException(nameof(parent), "Empty middlename.");
+            }
+
+            Parent tmp = await repository.GetById((int)parent.Id).ConfigureAwait(false);
+            if (tmp == null)
+            {
+                throw new ArgumentException(nameof(parent), "Wrong id");
+            }
+        }
+
+        public void CreateValidation(ParentDTO parent)
+        {
+            if (parent == null)
+            {
+                throw new ArgumentException(nameof(parent), "Parent is null");
+            }
+
+            if (parent.FirstName.Length == 0)
+            {
+                throw new ArgumentException(nameof(parent), "Empty firstname.");
+            }
+
+            if (parent.LastName.Length == 0)
+            {
+                throw new ArgumentException(nameof(parent), "Empty lastname.");
+            }
+
+            if (parent.MiddleName.Length == 0)
+            {
+                throw new ArgumentException(nameof(parent), "Empty middlename.");
+            }
         }
     }
 }
