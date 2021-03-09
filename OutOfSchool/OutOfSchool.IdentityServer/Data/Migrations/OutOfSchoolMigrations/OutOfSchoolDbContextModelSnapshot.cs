@@ -328,7 +328,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<bool>("IsSubmitPZ_1")
+                    b.Property<bool>("IsSubmitPZ1")
                         .HasColumnType("bit");
 
                     b.Property<string>("KOATUU")

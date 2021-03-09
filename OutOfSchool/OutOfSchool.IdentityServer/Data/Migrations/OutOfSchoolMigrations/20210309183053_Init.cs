@@ -247,7 +247,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     Form = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Profile = table.Column<int>(type: "int", nullable: false),
                     Index = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    IsSubmitPZ_1 = table.Column<bool>(type: "bit", nullable: false),
+                    IsSubmitPZ1 = table.Column<bool>(type: "bit", nullable: false),
                     AttachedDocuments = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AddressId = table.Column<long>(type: "bigint", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
