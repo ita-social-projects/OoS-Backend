@@ -52,7 +52,14 @@ namespace OutOfSchool.WebApi.Extensions
         public static Workshop ToDomain(this WorkshopDTO workshopDto)
         {
             var workshop =
-                Mapper<WorkshopDTO, Workshop>(workshopDto, cfg => { cfg.CreateMap<WorkshopDTO, Workshop>(); });
+                Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
+                {
+                    cfg.CreateMap<WorkshopDTO, Workshop>()
+                        .ForMember(dest => dest.Address, opt => opt.Ignore())
+                        .ForMember(dest => dest.Organization, opt => opt.Ignore())
+                        .ForMember(dest => dest.Teachers, opt => opt.Ignore())
+                        .ForMember(dest => dest.Category, opt => opt.Ignore());
+                });
             return workshop;
         }
 
