@@ -1,5 +1,5 @@
-﻿#nullable enable
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+#nullable enable
 
 namespace OutOfSchool.Services.Models
 {

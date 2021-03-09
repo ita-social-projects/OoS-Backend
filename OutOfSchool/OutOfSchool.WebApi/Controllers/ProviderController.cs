@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
         /// </summary>
-        /// <param name="logger">Logging mechanism</param>
+        /// <param name="logger">Logging mechanism.</param>
         /// <param name="providerService">Service for Provider model.</param>
         public ProviderController(ILogger<ProviderController> logger, IProviderService providerService)
         {

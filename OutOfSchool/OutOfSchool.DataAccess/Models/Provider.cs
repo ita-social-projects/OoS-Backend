@@ -95,7 +95,7 @@ namespace OutOfSchool.Services.Models
         [MaxLength(20)]
         public string? Index { get; set; }
 
-        public bool IsSubmitPZ_1 { get; set; }
+        public bool IsSubmitPZ1 { get; set; }
 
         [DataType(DataType.ImageUrl)]
         public string? AttachedDocuments { get; set; }

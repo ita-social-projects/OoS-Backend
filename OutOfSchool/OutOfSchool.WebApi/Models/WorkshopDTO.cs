@@ -13,18 +13,19 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "Workshop title is required")]
         [MinLength(1)]
         [MaxLength(60)]
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
-        [RegularExpression(@"([\d]{9})",
+        [RegularExpression(
+            @"([\d]{9})",
             ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
 
         [DataType(DataType.EmailAddress)]
         [Required(ErrorMessage = "Email is required")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [MaxLength(30)]
         public string? Website { get; set; }
@@ -35,15 +36,15 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(30)]
         public string? Instagram { get; set; }
 
-        [Required(ErrorMessage = "Children's min age is required")] 
+        [Required(ErrorMessage = "Children's min age is required")]
         [Range(0, 16, ErrorMessage = "Min age should be a number from 0 to 16")]
         public int MinAge { get; set; }
 
-        [Required(ErrorMessage = "Children's max age is required")] 
+        [Required(ErrorMessage = "Children's max age is required")]
         [Range(0, 16, ErrorMessage = "Max age should be a number from 0 to 16")]
         public int MaxAge { get; set; }
 
-        [Required(ErrorMessage = "Specify how many times per week lessons will be held")] 
+        [Required(ErrorMessage = "Specify how many times per week lessons will be held")]
         [Range(1, 7, ErrorMessage = "Field should be a digit from 1 to 7")]
         public int DaysPerWeek { get; set; }
 
@@ -54,7 +55,7 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "Description is required")]
         [RegularExpression(@"(^\d+(,\d{1,2})?$)")]
         [MaxLength(500)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         public bool WithDisabilityOptions { get; set; }
 
@@ -65,18 +66,18 @@ namespace OutOfSchool.WebApi.Models
 
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
-        public string Head { get; set; }
+        public string? Head { get; set; }
 
         [Required(ErrorMessage = "Head's birthday is required")]
         [DataType(DataType.Date)]
         public DateTime HeadBirthDate { get; set; }
 
-        public CategoryDTO Category { get; set; }
+        public CategoryDTO? Category { get; set; }
 
-        public virtual AddressDTO Address { get; set; }
+        public virtual AddressDTO? Address { get; set; }
 
         public virtual ProviderDto? Provider { get; set; }
 
-        public virtual List<TeacherDTO> Teachers { get; set; }
+        public virtual List<TeacherDTO>? Teachers { get; set; }
     }
 }

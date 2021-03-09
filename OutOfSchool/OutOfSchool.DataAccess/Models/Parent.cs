@@ -5,6 +5,11 @@ namespace OutOfSchool.Services.Models
 {
     public class Parent
     {
+        public Parent()
+        {
+            Children = new List<Child>();
+        }
+
         public long Id { get; set; }
 
         [DataType(DataType.Text)]
@@ -17,11 +22,6 @@ namespace OutOfSchool.Services.Models
 
         public virtual IReadOnlyCollection<Child> Children { get; set; }
 
-        public Parent()
-        {
-            Children = new List<Child>();
-        }
-
         public User User { get; set; }
-   }
+    }
 }

@@ -44,16 +44,19 @@ namespace OutOfSchool.WebApi.Models
         public string MFO { get; set; }
 
         [Required(ErrorMessage = "EDRPOU code is required")]
-        [RegularExpression(@"^(\d{8}|\d{10})$",
+        [RegularExpression(
+            @"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU code must contain 8 or 10 digits")]
         public string EDRPOU { get; set; }
 
-        [RegularExpression(@"^(\d{10})$",
+        [RegularExpression(
+            @"^(\d{10})$",
             ErrorMessage = "KOATUU code must contain 10 digits")]
         public string KOATUU { get; set; }
 
         [Required(ErrorMessage = "INPP code is required")]
-        [RegularExpression(@"^(\d{9}|\d{10}|\d{12})$",
+        [RegularExpression(
+            @"^(\d{9}|\d{10}|\d{12})$",
             ErrorMessage = "INPP code must contain 12, 10 or 9 digits")]
         public string INPP { get; set; }
 
@@ -70,7 +73,8 @@ namespace OutOfSchool.WebApi.Models
         public DateTime DirectorBirthDay { get; set; }
 
         [DataType(DataType.PhoneNumber)]
-        [RegularExpression(@"([\d]{9})",
+        [RegularExpression(
+            @"([\d]{9})",
             ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
         public string DirectorPhonenumber { get; set; }
@@ -91,7 +95,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(20)]
         public string Index { get; set; }
 
-        public bool isSubmitPZ_1 { get; set; }
+        public bool IsSubmitPZ1 { get; set; }
 
         [DataType(DataType.ImageUrl)]
         public string AttachedDocuments { get; set; }

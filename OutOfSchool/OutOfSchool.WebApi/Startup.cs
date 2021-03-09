@@ -14,11 +14,11 @@ namespace OutOfSchool.WebApi
 {
     public class Startup
     {
-        private readonly IWebHostEnvironment _environment;
+        private readonly IWebHostEnvironment environment;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
-            _environment = environment;
+            this.environment = environment;
             Configuration = configuration;
         }
 
@@ -37,7 +37,8 @@ namespace OutOfSchool.WebApi
                 });
 
             services.AddCors(confg =>
-                confg.AddPolicy("AllowAll",
+                confg.AddPolicy(
+                    "AllowAll",
                     p => p.AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader()));
