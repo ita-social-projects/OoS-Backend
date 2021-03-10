@@ -17,6 +17,7 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
             return destination;
         }
 
+#pragma warning disable SA1124 // Do not use regions
         #region ToModel
 
         public static WorkshopDTO ToModel(this Workshop workshop)
@@ -95,4 +96,5 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
 
         #endregion
     }
+#pragma warning restore SA1124 // Do not use regions
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using IdentityServer4.Models;
 using IdentityServer4;
+using IdentityServer4.Models;
 
 namespace OutOfSchool.IdentityServer
 {
@@ -29,8 +29,8 @@ namespace OutOfSchool.IdentityServer
         {
             new ApiResource("outofschoolapi")
             {
-                Scopes = new List<string> { "outofschoolapi.read", "outofschoolapi.write"},
-                ApiSecrets = new List<Secret> {new Secret(apiSecret.Sha256())},
+                Scopes = new List<string> { "outofschoolapi.read", "outofschoolapi.write" },
+                ApiSecrets = new List<Secret> { new Secret(apiSecret.Sha256()) },
                 UserClaims = new List<string> { "role" },
             },
         };
@@ -62,7 +62,8 @@ namespace OutOfSchool.IdentityServer
                     PostLogoutRedirectUris = { "http://localhost:4200" },
                     AllowedCorsOrigins = { "http://localhost:4200" },
 
-                    AllowedScopes = {
+                    AllowedScopes =
+                    {
                         IdentityServerConstants.StandardScopes.OpenId,
                         "outofschoolapi.read", "outofschoolapi.write",
                     },

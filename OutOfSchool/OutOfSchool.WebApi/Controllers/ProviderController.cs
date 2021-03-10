@@ -80,6 +80,11 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
+                if (providerDTO == null)
+                {
+                    throw new ArgumentNullException(nameof(providerDTO), "Provider was null.");
+                }
+
                 providerDTO.UserId = User.FindFirst("sub")?.Value;
                 ProviderDto provider = await providerService.Create(providerDTO).ConfigureAwait(false);
                 return CreatedAtAction(

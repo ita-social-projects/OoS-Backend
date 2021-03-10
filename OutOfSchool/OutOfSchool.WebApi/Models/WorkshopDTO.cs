@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Models
         [Range(1, 7, ErrorMessage = "Field should be a digit from 1 to 7")]
         public int DaysPerWeek { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")] 
+        [Column(TypeName = "decimal(18,2)")]
         [Range(1, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal? Price { get; set; }
 
