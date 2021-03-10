@@ -78,6 +78,6 @@ namespace OutOfSchool.WebApi.Models
 
         public virtual ProviderDto? Provider { get; set; }
 
-        public virtual List<TeacherDTO>? Teachers { get; set; }
+        public virtual List<TeacherDTO>? Teachers { get;  }
     }
 }

@@ -8,6 +8,6 @@ namespace OutOfSchool.WebApi.Models
 
         public string Name { get; set; }
 
-        public ICollection<long> ChildrenIds { get; set; }
+        public ICollection<long> ChildrenIds { get; }
     }
 }

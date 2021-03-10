@@ -91,6 +91,13 @@ namespace IdentityServer
             host.Run();
         }
 
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+
         private static void RolesInit(RoleManager<IdentityRole> manager)
         {
             var roles = new IdentityRole[]
@@ -104,12 +111,5 @@ namespace IdentityServer
                 manager.CreateAsync(role).Wait();
             }
         }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
     }
 }
