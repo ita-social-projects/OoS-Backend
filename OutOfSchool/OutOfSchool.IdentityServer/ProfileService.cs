@@ -12,7 +12,7 @@ namespace OutOfSchool.IdentityServer
 {
     public class ProfileService : IProfileService
     {
-        private UserManager<User> userManager;
+        private readonly UserManager<User> userManager;
 
         public ProfileService(UserManager<User> userManager)
         {
