@@ -7,16 +7,6 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
 {
     public static class MappingExtensions
     {
-        private static TDestination Mapper<TSource, TDestination>(
-            this TSource source,
-            Action<IMapperConfigurationExpression> configure)
-        {
-            var config = new MapperConfiguration(configure);
-            var mapper = config.CreateMapper();
-            var destination = mapper.Map<TDestination>(source);
-            return destination;
-        }
-
 #pragma warning disable SA1124 // Do not use regions
         #region ToModel
 
@@ -95,6 +85,15 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
         }
 
         #endregion
+        private static TDestination Mapper<TSource, TDestination>(
+          this TSource source,
+          Action<IMapperConfigurationExpression> configure)
+        {
+            var config = new MapperConfiguration(configure);
+            var mapper = config.CreateMapper();
+            var destination = mapper.Map<TDestination>(source);
+            return destination;
+        }
     }
 #pragma warning restore SA1124 // Do not use regions
 }
