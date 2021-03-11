@@ -33,19 +33,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<TeacherDTO> Create(TeacherDTO dto)
         {
-            logger.Information("Teacher creating was started.");
+           logger.Information("Teacher creating was started.");
 
             var teacher = dto.ToDomain();
             
             var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
             return newTeacher.ToModel();
-            
-            catch (DbUpdateException)
-            {
-                logger.Error("Creating failed. Verify all information you have entered are valid.");
-                throw;
-            }
         }
 
         /// <inheritdoc/>

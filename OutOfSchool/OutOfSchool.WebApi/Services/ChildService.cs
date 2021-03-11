@@ -36,18 +36,10 @@ namespace OutOfSchool.WebApi.Services
             logger.Information("Child creating was started.");
 
             var child = dto.ToDomain();
-            
-            try
-            {
-                var newChild = await repository.Create(child).ConfigureAwait(false);
 
-                return newChild.ToModel();
-            }
-            catch (DbUpdateException)
-            {
-                logger.Error("Creating failed. Verify all information you have entered are valid.");
-                throw;
-            }
+            var newChild = await repository.Create(child).ConfigureAwait(false);
+
+            return newChild.ToModel();
         }
 
         /// <inheritdoc/>

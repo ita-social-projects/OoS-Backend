@@ -36,11 +36,11 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Teacher creating was started.");
 
-            var teacher = dto.ToDomain();
-            
-            var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
+            var workshop = dto.ToDomain();
 
-            return newTeacher.ToModel();
+            var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
+
+            return newWorkshop.ToModel();
         }
 
         /// <inheritdoc/>
@@ -104,9 +104,9 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-             logger.Information("Teacher deleting was launched.");
+            logger.Information("Workshop deleting was launched.");
 
-            var entity = new Teacher() { Id = id };
+            var entity = new Workshop() { Id = id };
 
             try
             {
