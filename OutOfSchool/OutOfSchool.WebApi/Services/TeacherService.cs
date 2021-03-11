@@ -35,18 +35,10 @@ namespace OutOfSchool.WebApi.Services
             logger.Information("Teacher creating was started.");
 
             var teacher = dto.ToDomain();
+            
+            var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
-            try
-            {
-                var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
-
-                return newTeacher.ToModel();
-            }
-            catch (DbUpdateException)
-            {
-                logger.Error("Creating failed. Verify all information you have entered are valid.");
-                throw;
-            }
+            return newTeacher.ToModel();
         }
 
         /// <inheritdoc/>
@@ -106,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Teacher deleting was launched.");
 
-            var dtoToDelete = new Teacher() {Id = id};
+            var dtoToDelete = new Teacher() { Id = id };
 
             try
             {

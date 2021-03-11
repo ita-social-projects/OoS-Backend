@@ -33,38 +33,30 @@ namespace OutOfSchool.WebApi.Services
         public async Task<OrganizationDTO> Create(OrganizationDTO dto)
         {
             logger.Information("Organization creating was started.");
-            
+
             var organization = dto.ToDomain();
-            
+
             if (!repository.IsUnique(organization))
             {
                 throw new ArgumentException(nameof(organization), "There is already an organization with a such data");
             }
-            
-            try
-            {
-                var newOrganization = await repository.Create(organization).ConfigureAwait(false);
 
-                return newOrganization.ToModel();
-            }
-            catch (DbUpdateException)
-            {
-                logger.Error("Creating failed. Verify all information you have entered are valid.");
-                throw;
-            }
+            var newOrganization = await repository.Create(organization).ConfigureAwait(false);
+
+            return newOrganization.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<OrganizationDTO>> GetAll()
         {
             logger.Information("Process of getting all Organizations started.");
-            
+
             var organizations = await repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!organizations.Any()
                 ? "Organization table is empty."
                 : "Successfully got all records from the Organization table.");
-            
+
             return organizations.Select(organization => organization.ToModel()).ToList();
         }
 
@@ -72,9 +64,9 @@ namespace OutOfSchool.WebApi.Services
         public async Task<OrganizationDTO> GetById(long id)
         {
             logger.Information("Process of getting Organization by id started.");
-            
+
             var organization = await repository.GetById(id).ConfigureAwait(false);
-           
+
             if (organization == null)
             {
                 throw new ArgumentOutOfRangeException(id.ToString(),
@@ -82,7 +74,7 @@ namespace OutOfSchool.WebApi.Services
             }
 
             logger.Information($"Successfully got a Organization with id = {id}.");
-            
+
             return organization.ToModel();
         }
 
@@ -107,7 +99,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            var dtoToDelete = new Organization() {Id = id};
+            var dtoToDelete = new Organization() { Id = id };
 
             try
             {

@@ -35,18 +35,10 @@ namespace OutOfSchool.WebApi.Services
             logger.Information("Workshop creating was started.");
 
             var workshop = dto.ToDomain();
-            
-            try
-            {
-                var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
 
-                return newWorkshop.ToModel();
-            }
-            catch (DbUpdateException)
-            {
-                logger.Error("Creating failed. Verify all information you have entered are valid.");
-                throw;
-            }
+            var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
+
+            return newWorkshop.ToModel();
         }
 
         /// <inheritdoc/>
@@ -105,9 +97,9 @@ namespace OutOfSchool.WebApi.Services
         public async Task Delete(long id)
         {
             logger.Information("Workshop deleting was launched.");
-            
+
             var dtoToDelete = new Workshop() { Id = id };
-                
+
             try
             {
                 await repository.Delete(dtoToDelete).ConfigureAwait(false);
