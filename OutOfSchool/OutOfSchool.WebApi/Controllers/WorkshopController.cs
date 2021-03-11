@@ -60,32 +60,10 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    "The id is cannot be less than 1.");
+                throw new ArgumentOutOfRangeException(id.ToString(), "The id is cannot be less than 1.");
             }
-
-            return Ok(await service.GetById(id).ConfigureAwait(false));
-        }
-
-        /// <summary>
-        /// Get workshops by organization id.
-        /// </summary>
-        /// <param name="id">Key in the database.</param>
-        /// <returns>Workshop entities.</returns>
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByOrganization(long id)
-        {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    "The id is cannot be less than 1.");
-            }
-
-            return Ok(await service.GetWorkshopsByOrganization(id).ConfigureAwait(false));
+            
+            return Ok(await workshopService.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
