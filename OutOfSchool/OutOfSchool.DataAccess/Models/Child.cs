@@ -24,6 +24,10 @@ namespace OutOfSchool.Services.Models
 
         public Gender Gender { get; set; }
 
+        public long AddressId { get; set; }
+
+        public virtual Address Address { get; set; }
+
         public virtual Parent Parent { get; set; }
 
         public virtual SocialGroup SocialGroup { get; set; }
@@ -31,5 +35,7 @@ namespace OutOfSchool.Services.Models
         public long ParentId { get; set; }
 
         public long SocialGroupId { get; set; }
+	
+        public virtual BirthCertificate BirthCertificate { get; set; }
     }
 }
