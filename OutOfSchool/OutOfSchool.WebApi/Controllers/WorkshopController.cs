@@ -54,12 +54,12 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetWorkshopById(long id)
         {
-            if (id < 1 || workshopService.GetAll().Result.AsQueryable().Count() < id)
+            if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(), "The id is less than 1 or greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(id.ToString(), "The id is cannot be less than 1.");
             }
             
-            return Ok(workshopService.GetById(id).ConfigureAwait(false));
+            return Ok(await workshopService.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -113,10 +113,11 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            if (id < 1 || workshopService.GetAll().Result.AsQueryable().Count() < id)
+            if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(),
-                    "The id is less than 1 or greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(
+                    id.ToString(),
+                    "The id cannot be less than 1.");
             }
             
             await workshopService.Delete(id).ConfigureAwait(false);
