@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Services.Enums;
+using System;
 
 namespace OutOfSchool.WebApi.Models
 {
