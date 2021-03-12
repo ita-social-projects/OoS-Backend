@@ -15,6 +15,6 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="entity">Entity.</param>
         /// <returns>Bool.</returns>
-        public bool IsUnique(Provider entity) => GetAll().Result.Any(x => x.EDRPOU != entity.EDRPOU || x.INPP != entity.INPP);
+        public bool IsAlreadyExisted(Provider entity) => GetAll().Result.Any(x => x.EDRPOU == entity.EDRPOU || x.INPP == entity.INPP);
     }
 }
