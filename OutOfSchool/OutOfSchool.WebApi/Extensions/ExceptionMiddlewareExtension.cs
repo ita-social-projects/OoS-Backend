@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Extensions
             }
             catch (Exception ex)
             {
-                logger.LogError($"Something went wrong: {ex}");
+                logger.LogError("Something went wrong:", ex.Message);
                 await HandleExceptionAsync(context, ex).ConfigureAwait(false);
             }
         }
