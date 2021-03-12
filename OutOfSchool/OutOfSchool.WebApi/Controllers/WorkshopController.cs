@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -22,15 +16,15 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class WorkshopController : ControllerBase
     {
-        private readonly IWorkshopService workshopService;
+        private readonly IWorkshopService service;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
         /// </summary>
-        /// <param name="workshopService">Service for Workshop model.</param>
-        public WorkshopController(IWorkshopService workshopService)
+        /// <param name="service">Service for Workshop model.</param>
+        public WorkshopController(IWorkshopService service)
         {
-            this.workshopService = workshopService;
+            this.service = service;
         }
 
         /// <summary>
@@ -39,9 +33,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>List of all workshops.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<IActionResult> GetWorkshops()
+        public async Task<IActionResult> Get()
         {
-            return Ok(await workshopService.GetAll().ConfigureAwait(false));
+            return Ok(await service.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>
@@ -52,14 +46,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetWorkshopById(long id)
+        public async Task<IActionResult> GetById(long id)
         {
             if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(id.ToString(), "The id is cannot be less than 1.");
             }
             
-            return Ok(await workshopService.GetById(id).ConfigureAwait(false));
+            return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -72,14 +66,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> CreateWorkshop(WorkshopDTO dto)
+        public async Task<IActionResult> Create(WorkshopDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await workshopService.Create(dto).ConfigureAwait(false));
+            return Ok(await service.Create(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -99,7 +93,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
             
-            return Ok( await workshopService.Update(dto).ConfigureAwait(false));
+            return Ok( await service.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -120,7 +114,7 @@ namespace OutOfSchool.WebApi.Controllers
                     "The id cannot be less than 1.");
             }
             
-            await workshopService.Delete(id).ConfigureAwait(false);
+            await service.Delete(id).ConfigureAwait(false);
 
             return Ok();
         }

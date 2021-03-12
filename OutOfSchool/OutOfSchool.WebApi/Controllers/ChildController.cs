@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -19,15 +16,15 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ChildController : ControllerBase
     {
-        private readonly IChildService childService;
+        private readonly IChildService service;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildController"/> class.
         /// </summary>
-        /// <param name="childService">Service for Child model.</param>
-        public ChildController(IChildService childService)
+        /// <param name="service">Service for Child model.</param>
+        public ChildController(IChildService service)
         {
-            this.childService = childService;
+            this.service = service;
         }
 
         /// <summary>
@@ -36,9 +33,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>List of all children.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<ActionResult> GetChildren()
+        public async Task<ActionResult> Get()
         {
-            return Ok(await childService.GetAll().ConfigureAwait(false));
+            return Ok(await service.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>
@@ -50,14 +47,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetChildById(long id)
+        public async Task<IActionResult> GetById(long id)
         {
             if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(id.ToString(), $"The id cannot be less than 1.");
             }
 
-            return Ok(await childService.GetById(id).ConfigureAwait(false));
+            return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -70,14 +67,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> CreateChild(ChildDTO dto)
+        public async Task<IActionResult> Create(ChildDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await childService.Create(dto).ConfigureAwait(false));
+            return Ok(await service.Create(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -90,14 +87,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<ActionResult> UpdateChild(ChildDTO dto)
+        public async Task<ActionResult> Update(ChildDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await childService.Update(dto).ConfigureAwait(false));
+            return Ok(await service.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -109,7 +106,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteChild(long id)
+        public async Task<ActionResult> Delete(long id)
         {
             if (id < 1)
             {
@@ -117,7 +114,7 @@ namespace OutOfSchool.WebApi.Controllers
                     "The id cannot be less than 1.");
             }
 
-            await childService.Delete(id).ConfigureAwait(false);
+            await service.Delete(id).ConfigureAwait(false);
 
             return Ok();
         }
