@@ -17,7 +17,7 @@ namespace OutOfSchool.Services.Models
         public string LastName { get; set; }
 
         [DataType(DataType.Text)]
-        [Required(ErrorMessage = "Middle name is required")]
+        [Required(ErrorMessage = "Patronymic name is required")]
         public string Patronymic { get; set; }
 
         public DateTime DateOfBirth { get; set; } = default;

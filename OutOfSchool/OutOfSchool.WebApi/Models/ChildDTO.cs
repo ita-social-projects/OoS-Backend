@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(30)]
         [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "First name cannot contains digits")]
         public string FirstName { get; set; } = string.Empty;
-
+        
         [Required(ErrorMessage = "Last name is required")]
         [DataType(DataType.Text)]
         [MaxLength(30)]

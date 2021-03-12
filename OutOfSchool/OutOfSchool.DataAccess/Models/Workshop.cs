@@ -13,7 +13,7 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Workshop title is required")]
         [MinLength(1)]
         [MaxLength(60)]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
@@ -21,11 +21,11 @@ namespace OutOfSchool.Services.Models
             @"([\d]{9})",
             ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
-        public string Phone { get; set; }
+        public string Phone { get; set; } = string.Empty;
 
         [DataType(DataType.EmailAddress)]
         [Required(ErrorMessage = "Email is required")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
         public string Website { get; set; } = string.Empty;
@@ -54,7 +54,7 @@ namespace OutOfSchool.Services.Models
 
         [Required(ErrorMessage = "Description is required")]
         [MaxLength(500)]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         public bool WithDisabilityOptions { get; set; } = default;
 
@@ -65,7 +65,7 @@ namespace OutOfSchool.Services.Models
 
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
-        public string Head { get; set; }
+        public string Head { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Head's birthday is required")]
         [DataType(DataType.Date)]
