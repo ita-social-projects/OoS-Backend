@@ -1,13 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
@@ -17,17 +13,15 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class OrganizationController : ControllerBase
     {
-        private readonly ILogger<OrganizationController> logger;
-        private readonly IOrganizationService organizationService;
+        private readonly IOrganizationService service;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrganizationController"/> class.
         /// </summary>
-        /// <param name="organizationService">Service for Organization model.</param>
-        public OrganizationController(ILogger<OrganizationController> logger, IOrganizationService organizationService)
+        /// <param name="service">Service for Organization model.</param>
+        public OrganizationController(IOrganizationService service)
         {
-            this.logger = logger;
-            this.organizationService = organizationService;
+            this.service = service;
         }
 
 
@@ -37,9 +31,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>List of all organizations.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<IActionResult> GetOrganizations()
+        public async Task<IActionResult> Get()
         {
-            return Ok(await organizationService.GetAll().ConfigureAwait(false));
+            return Ok(await service.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>
@@ -51,14 +45,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetOrganizationById(long id)
+        public async Task<IActionResult> GetById(long id)
         {
-            if (id < 1 || organizationService.GetAll().Result.AsQueryable().Count() < id)
+            if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(id.ToString(), "The id is less than 1 or greater than number of table entities.");
             }
 
-            return Ok(await organizationService.GetById(id).ConfigureAwait(false));
+            return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -82,10 +76,10 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 dto.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
                 
-                var organization = await organizationService.Create(dto).ConfigureAwait(false);
+                var organization = await service.Create(dto).ConfigureAwait(false);
                 
                 return CreatedAtAction(
-                    nameof(GetOrganizationById),
+                    nameof(GetById),
                     new
                     {
                         id = organization.Id,
@@ -107,14 +101,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> UpdateOrganization(OrganizationDTO dto)
+        public async Task<IActionResult> Update(OrganizationDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await organizationService.Update(dto).ConfigureAwait(false));
+            return Ok(await service.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -126,15 +120,15 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrganization(long id)
+        public async Task<IActionResult> Delete(long id)
         {
-            if (id < 1 || organizationService.GetAll().Result.AsQueryable().Count() < id)
+            if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(id.ToString(),
                     "The id is less than 1 or greater than number of table entities.");
             }
             
-            await organizationService.Delete(id).ConfigureAwait(false);
+            await service.Delete(id).ConfigureAwait(false);
 
             return Ok();
         }

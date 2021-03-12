@@ -17,15 +17,15 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class TeacherController : ControllerBase
     {
-        private readonly ITeacherService teacherService;
+        private readonly ITeacherService service;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TeacherController"/> class.
         /// </summary>
-        /// <param name="teacherService">Service for Teacher model.</param>
-        public TeacherController(ITeacherService teacherService)
+        /// <param name="service">Service for Teacher model.</param>
+        public TeacherController(ITeacherService service)
         {
-            this.teacherService = teacherService;
+            this.service = service;
         }
 
         /// <summary>
@@ -34,9 +34,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>List of teachers.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<IActionResult> GetTeachers()
+        public async Task<IActionResult> Get()
         {
-            return Ok(await teacherService.GetAll().ConfigureAwait(false));
+            return Ok(await service.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>
@@ -50,39 +50,33 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTeacherById(long id)
         {
-            if (id < 1 || teacherService.GetAll().Result.AsQueryable().Count() < id)
+            if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(), "The id is less than 1 or greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(id.ToString(),
+                    "The id is less than 1 or greater than number of table entities.");
             }
 
-            return Ok(await teacherService.GetById(id).ConfigureAwait(false));
+            return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
         /// Add a new teacher to the database.
         /// </summary>
-        /// <param name="teacherDto">Entity to add.</param>
+        /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "organization,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> CreateTeacher(TeacherDTO teacherDto)
+        public async Task<IActionResult> Create(TeacherDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var teacher = await teacherService.Create(teacherDto).ConfigureAwait(false);
-
-            return CreatedAtAction(
-                nameof(GetTeacherById),
-                new
-                {
-                    id = teacher.Id,
-                });
+            return Ok(await service.Create(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -102,7 +96,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok(await teacherService.Update(dto).ConfigureAwait(false));
+            return Ok(await service.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -114,15 +108,15 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTeacher(long id)
+        public async Task<IActionResult> Delete(long id)
         {
-            if (id < 1 || teacherService.GetAll().Result.AsQueryable().Count() < id)
+            if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(id.ToString(),
                     "The id is less than 1 or greater than number of table entities.");
             }
 
-            await teacherService.Delete(id).ConfigureAwait(false);
+            await service.Delete(id).ConfigureAwait(false);
 
             return Ok();
         }

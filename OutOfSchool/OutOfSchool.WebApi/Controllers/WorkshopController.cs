@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Controllers
                 throw new ArgumentOutOfRangeException(id.ToString(), "The id is cannot be less than 1.");
             }
             
-            return Ok(await workshopService.GetById(id).ConfigureAwait(false));
+            return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
