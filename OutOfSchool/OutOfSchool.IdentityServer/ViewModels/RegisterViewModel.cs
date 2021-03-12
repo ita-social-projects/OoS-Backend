@@ -30,7 +30,7 @@ namespace IdentityServer.Controllers
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(
-            @"([0-9]{3})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})", 
+            @"([0-9]{3})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})",
             ErrorMessage = "Phone number format is incorrect. Example: +38XXX-XXX-XX-XX")]
         public string PhoneNumber { get; set; }
 
