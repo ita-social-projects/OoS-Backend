@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
@@ -31,10 +30,10 @@ namespace OutOfSchool.Services.Models
         public DateTime BirthDay { get; set; }
 
         [MaxLength(300)]
-        public string? Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
-        public string? Image { get; set; }
+        public string Image { get; set; } = string.Empty;
 
-        public Workshop? Workshop { get; set; }
+        public Workshop Workshop { get; set; }
     }
 }

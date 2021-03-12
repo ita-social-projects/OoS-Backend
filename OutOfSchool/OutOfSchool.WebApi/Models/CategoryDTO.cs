@@ -6,7 +6,7 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        public string Title { get; set; }
+        public string Title { get; set; } = default;
 
         public virtual List<SubcategoryDTO> Subcategories { get; }
     }

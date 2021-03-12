@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-#nullable enable
 
 namespace OutOfSchool.Services.Models
 {
@@ -7,9 +6,9 @@ namespace OutOfSchool.Services.Models
     {
         public long Id { get; set; }
 
-        public string? Region { get; set; }
+        public string Region { get; set; } = string.Empty;
 
-        public string? District { get; set; }
+        public string District { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "City is required")]
         [DataType(DataType.Text)]
@@ -24,8 +23,8 @@ namespace OutOfSchool.Services.Models
         [MaxLength(15)]
         public string BuildingNumb { get; set; } = string.Empty;
 
-        public double Latitude { get; set; }
+        public double Latitude { get; set; } = default;
 
-        public double Longitude { get; set; }
+        public double Longitude { get; set; } = default;
     }
 }

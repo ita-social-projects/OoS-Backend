@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -26,8 +25,8 @@ namespace OutOfSchool.WebApi.Models
         public string MiddleName { get; set; } = string.Empty;
 
         [MaxLength(300)]
-        public string? Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
-        public string? Image { get; set; }
+        public string Image { get; set; } = string.Empty;
     }
 }

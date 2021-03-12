@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
@@ -24,15 +23,15 @@ namespace OutOfSchool.Services.Models
 
         [DataType(DataType.Url)]
         [MaxLength(30)]
-        public string? Website { get; set; }
+        public string Website { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
         [MaxLength(30)]
-        public string? Facebook { get; set; }
+        public string Facebook { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
         [MaxLength(30)]
-        public string? Instagram { get; set; }
+        public string Instagram { get; set; } = string.Empty;
 
         [MaxLength(500)]
         [Required(ErrorMessage = "Description is required")]
@@ -52,7 +51,7 @@ namespace OutOfSchool.Services.Models
         [RegularExpression(
             @"^(\d{10})$",
             ErrorMessage = "KOATUU code must contain 10 digits")]
-        public string? KOATUU { get; set; }
+        public string KOATUU { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "INPP code is required")]
         [RegularExpression(
@@ -61,25 +60,25 @@ namespace OutOfSchool.Services.Models
         public string INPP { get; set; } = string.Empty;
 
         [MaxLength(50)]
-        public string? Director { get; set; }
+        public string Director { get; set; } = string.Empty;
 
         [MaxLength(255)]
-        public string? DirectorPosition { get; set; }
+        public string DirectorPosition { get; set; } = string.Empty;
 
         [MaxLength(128)]
-        public string? AuthorityHolder { get; set; }
+        public string AuthorityHolder { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
-        public DateTime DirectorBirthDay { get; set; }
+        public DateTime DirectorBirthDay { get; set; } = default;
 
         [DataType(DataType.PhoneNumber)]
         [RegularExpression(
             @"([\d]{9})",
             ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
-        public string? DirectorPhonenumber { get; set; }
+        public string DirectorPhonenumber { get; set; } = string.Empty;
 
-        public string? ManagerialBody { get; set; }
+        public string ManagerialBody { get; set; } = string.Empty;
 
         [Required]
         public OwnershipType Ownership { get; set; }
@@ -87,18 +86,18 @@ namespace OutOfSchool.Services.Models
         [Required]
         public ProviderType Type { get; set; }
 
-        public string? Form { get; set; }
+        public string Form { get; set; } = string.Empty;
 
         [Required]
         public ProviderProfile Profile { get; set; }
 
         [MaxLength(20)]
-        public string? Index { get; set; }
+        public string Index { get; set; } = string.Empty;
 
-        public bool IsSubmitPZ1 { get; set; }
+        public bool IsSubmitPZ1 { get; set; } = default;
 
         [DataType(DataType.ImageUrl)]
-        public string? AttachedDocuments { get; set; }
+        public string AttachedDocuments { get; set; } = string.Empty;
 
         [Required]
         public long AddressId { get; set; }
@@ -106,8 +105,8 @@ namespace OutOfSchool.Services.Models
         [Required]
         public string UserId { get; set; } = string.Empty;
 
-        public virtual List<Workshop>? Workshops { get; set; }
+        public virtual List<Workshop> Workshops { get; set; }
 
-        public virtual User? User { get; set; }
+        public virtual User User { get; set; }
     }
 }

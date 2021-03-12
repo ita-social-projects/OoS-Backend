@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -28,13 +27,13 @@ namespace OutOfSchool.WebApi.Models
         public string Email { get; set; } = string.Empty;
 
         [MaxLength(30)]
-        public string? Website { get; set; }
+        public string Website { get; set; } = string.Empty;
 
         [MaxLength(30)]
-        public string? Facebook { get; set; }
+        public string Facebook { get; set; } = string.Empty;
 
         [MaxLength(30)]
-        public string? Instagram { get; set; }
+        public string Instagram { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Children's min age is required")]
         [Range(0, 16, ErrorMessage = "Min age should be a number from 0 to 16")]
@@ -50,19 +49,19 @@ namespace OutOfSchool.WebApi.Models
 
         [Column(TypeName = "decimal(18,2)")]
         [Range(1, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
-        public decimal? Price { get; set; }
+        public decimal Price { get; set; } = default;
 
         [Required(ErrorMessage = "Description is required")]
         [RegularExpression(@"(^\d+(,\d{1,2})?$)")]
         [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
 
-        public bool WithDisabilityOptions { get; set; }
+        public bool WithDisabilityOptions { get; set; } = default;
 
         [MaxLength(200)]
-        public string? DisabilityOptionsDesc { get; set; }
+        public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
-        public string? Image { get; set; }
+        public string Image { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
@@ -72,12 +71,12 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.Date)]
         public DateTime HeadBirthDate { get; set; }
 
-        public CategoryDTO? Category { get; set; }
+        public CategoryDTO Category { get; set; }
 
-        public virtual AddressDTO? Address { get; set; }
+        public virtual AddressDTO Address { get; set; }
 
-        public virtual ProviderDto? Provider { get; set; }
+        public virtual ProviderDto Provider { get; set; }
 
-        public virtual List<TeacherDTO>? Teachers { get;  }
+        public virtual List<TeacherDTO> Teachers { get; }
     }
 }

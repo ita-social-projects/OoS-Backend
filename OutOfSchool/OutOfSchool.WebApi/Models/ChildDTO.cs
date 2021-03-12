@@ -6,16 +6,16 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
-        public string MiddleName { get; set; }
+        public string MiddleName { get; set; } = string.Empty;
 
-        public DateTime DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; } = default;
 
-        public long ParentId { get; set; }
+        public long ParentId { get; set; } = default;
 
-        public long SocialGroupId { get; set; }
+        public long SocialGroupId { get; set; } = default;
     }
 }

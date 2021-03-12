@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Models
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
         public string? DirectorPhonenumber { get; set; }
 
-        public string? ManagerialBody { get; set; }
+        public string ManagerialBody { get; set; } = string.Empty;
 
         [Required]
         public OwnershipType Ownership { get; set; }

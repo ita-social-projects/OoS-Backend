@@ -8,6 +8,6 @@ namespace OutOfSchool.Services.Models
 
         public Workshop Workshop { get; set; }
 
-        public DayOfWeek DayOfWeek { get; set; }
+        public DayOfWeek DayOfWeek { get; set; } = default;
     }
 }
