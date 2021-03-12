@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -11,23 +10,23 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.Text)]
         [MaxLength(30)]
         [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "First name cannot contains digits")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Last name is required")]
         [DataType(DataType.Text)]
         [MaxLength(30)]
         [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Last name cannot contains digits")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Middle name is required")]
         [DataType(DataType.Text)]
         [MaxLength(30)]
         [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Middle name cannot contains digits")]
-        public string MiddleName { get; set; }
+        public string MiddleName { get; set; } = string.Empty;
 
         [MaxLength(300)]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
-        public string? Image { get; set; }
+        public string Image { get; set; } = string.Empty;
     }
 }

@@ -12,15 +12,15 @@ namespace OutOfSchool.Services.Models
         
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "First name is required")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
         
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "Last name is required")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
         
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "Middle name is required")]
-        public string MiddleName { get; set; }
+        public string MiddleName { get; set; } = string.Empty;
         
         public DateTime DateOfBirth { get; set; }
         

@@ -1,10 +1,8 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.IO;
-using OutOfSchool.Services.Models;
+
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -15,27 +13,27 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "Workshop title is required")]
         [MinLength(1)]
         [MaxLength(60)]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(@"([\d]{9})",
             ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
-        public string Phone { get; set; }
+        public string Phone { get; set; } = string.Empty;
 
         [DataType(DataType.EmailAddress)]
         [Required(ErrorMessage = "Email is required")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [MaxLength(30)]
-        public string? Website { get; set; }
+        public string Website { get; set; } = string.Empty;
 
         [MaxLength(30)]
-        public string? Facebook { get; set; }
+        public string Facebook { get; set; } = string.Empty;
 
         [MaxLength(30)]
-        public string? Instagram { get; set; }
+        public string Instagram { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Children's min age is required")] 
         [Range(0, 16, ErrorMessage = "Min age should be a number from 0 to 16")]
@@ -60,13 +58,13 @@ namespace OutOfSchool.WebApi.Models
         public bool WithDisabilityOptions { get; set; }
 
         [MaxLength(200)]
-        public string? DisabilityOptionsDesc { get; set; }
+        public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
-        public string? Image { get; set; }
+        public string Image { get; set; } = string.Empty;
         
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
-        public string Head { get; set; }
+        public string Head { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Head's birthday is required")]
         [DataType(DataType.Date)]
