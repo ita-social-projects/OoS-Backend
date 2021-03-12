@@ -329,7 +329,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     MinAge = table.Column<int>(type: "int", nullable: false),
                     MaxAge = table.Column<int>(type: "int", nullable: false),
                     DaysPerWeek = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     WithDisabilityOptions = table.Column<bool>(type: "bit", nullable: false),
                     DisabilityOptionsDesc = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
