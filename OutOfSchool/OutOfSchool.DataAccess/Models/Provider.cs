@@ -13,13 +13,13 @@ namespace OutOfSchool.Services.Models
         [DataType(DataType.Text)]
         [MaxLength(60)]
         [MinLength(1)]
-        public string Title { get; set; } = string.Empty;
+        public string Title { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
         [DataType(DataType.Text)]
         [MaxLength(60)]
         [MinLength(1)]
-        public string ShortTitle { get; set; } = string.Empty;
+        public string ShortTitle { get; set; }
 
         [DataType(DataType.Url)]
         [MaxLength(30)]
@@ -35,18 +35,18 @@ namespace OutOfSchool.Services.Models
 
         [MaxLength(500)]
         [Required(ErrorMessage = "Description is required")]
-        public string Description { get; set; } = string.Empty;
+        public string Description { get; set; }
 
         [Required(ErrorMessage = "MFO code is required")]
         [RegularExpression(@"(^[0-9]{1,6}$)", ErrorMessage = "Invalid MFO format. Example: XXX XXX")]
         [MinLength(6, ErrorMessage = "MFO code must contain 6 digits")]
-        public string MFO { get; set; } = string.Empty;
+        public string MFO { get; set; }
 
         [Required(ErrorMessage = "EDRPOU code is required")]
         [RegularExpression(
             @"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU code must contain 8 or 10 digits")]
-        public string EDRPOU { get; set; } = string.Empty;
+        public string EDRPOU { get; set; }
 
         [RegularExpression(
             @"^(\d{10})$",
@@ -57,7 +57,7 @@ namespace OutOfSchool.Services.Models
         [RegularExpression(
             @"^(\d{9}|\d{10}|\d{12})$",
             ErrorMessage = "INPP code must contain 12, 10 or 9 digits")]
-        public string INPP { get; set; } = string.Empty;
+        public string INPP { get; set; }
 
         [MaxLength(50)]
         public string Director { get; set; } = string.Empty;
@@ -103,7 +103,7 @@ namespace OutOfSchool.Services.Models
         public long AddressId { get; set; }
 
         [Required]
-        public string UserId { get; set; } = string.Empty;
+        public string UserId { get; set; }
 
         public virtual List<Workshop> Workshops { get; set; }
 

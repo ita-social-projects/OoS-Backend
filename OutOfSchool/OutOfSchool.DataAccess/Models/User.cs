@@ -10,6 +10,6 @@ namespace OutOfSchool.Services.Models
         public DateTime CreatingTime { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime? LastLogin { get; set; }
+        public DateTime LastLogin { get; set; }
     }
 }

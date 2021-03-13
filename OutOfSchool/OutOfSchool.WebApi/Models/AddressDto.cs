@@ -13,15 +13,15 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "City is required")]
         [DataType(DataType.Text)]
         [MaxLength(15)]
-        public string City { get; set; } = string.Empty;
+        public string City { get; set; }
 
         [Required(ErrorMessage = "Street is required")]
         [MaxLength(30)]
-        public string Street { get; set; } = string.Empty;
+        public string Street { get; set; }
 
         [Required(ErrorMessage = "Building number is required")]
         [MaxLength(15)]
-        public string Building { get; set; } = string.Empty;
+        public string Building { get; set; }
 
         public double Latitude { get; set; } = default;
 

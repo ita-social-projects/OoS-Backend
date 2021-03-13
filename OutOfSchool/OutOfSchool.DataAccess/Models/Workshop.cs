@@ -55,7 +55,7 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Description is required")]
         [RegularExpression(@"(^\d+(,\d{1,2})?$)")]
         [MaxLength(500)]
-        public string Description { get; set; } = string.Empty;
+        public string Description { get; set; }
 
         public bool WithDisabilityOptions { get; set; } = default;
 
@@ -66,7 +66,7 @@ namespace OutOfSchool.Services.Models
 
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
-        public string Head { get; set; } = string.Empty;
+        public string Head { get; set; }
 
         [Required(ErrorMessage = "Head's birthday is required")]
         [DataType(DataType.Date)]
