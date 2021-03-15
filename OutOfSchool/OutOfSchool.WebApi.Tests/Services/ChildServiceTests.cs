@@ -69,6 +69,111 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.ThrowsAsync<ArgumentException>(() => childService.Create(child));
         }
 
+        [Test]
+        public void ChildService_GetById_ReturnsChildEntity()
+        {
+            var expected = GetTestChildDTO().ToList().First();
+            var mockRepository = new Mock<IEntityRepository<Child>>();
+            mockRepository.Setup(m => m.GetById(It.IsAny<long>())).Returns(Task.FromResult(GetTestChildEntities().First()));
+            IChildService childService = new ChildService(mockRepository.Object);
+
+            var actual = childService.GetById(1).Result;
+
+            Assert.AreEqual(expected.Id, actual.Id);
+            Assert.AreEqual(expected.FirstName, actual.FirstName);
+            Assert.AreEqual(expected.LastName, actual.LastName);
+            Assert.AreEqual(expected.Patronymic, actual.Patronymic);
+        }
+
+        [Test]
+        public void ChildService_Update_ReturnsUpdatedChild()
+        {
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            var mockRepository = new Mock<IEntityRepository<Child>>();
+            mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
+            IChildService childService = new ChildService(mockRepository.Object);
+
+            var actual = childService.Update(child).Result;
+
+            mockRepository.Verify(x => x.Update(It.Is<Child>(c => c.Id == childUpdated.Id && c.FirstName == childUpdated.FirstName && c.LastName == childUpdated.LastName && c.Patronymic == childUpdated.Patronymic)), Times.Once);
+        }
+
+        [Test]
+        public void ChildService_Update_ThrowsArgumentNullException()
+        {
+            ChildDTO child = null;
+            Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            var mockRepository = new Mock<IEntityRepository<Child>>();
+            mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
+            IChildService childService = new ChildService(mockRepository.Object);
+
+            Assert.ThrowsAsync<ArgumentNullException>(() => childService.Update(child));
+        }
+
+        [Test]
+        public void ChildService_Update_ThrowsArgumentExceptionWrongDateOfBirth()
+        {
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2023, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            var mockRepository = new Mock<IEntityRepository<Child>>();
+            mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
+            IChildService childService = new ChildService(mockRepository.Object);
+
+            Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
+        }
+
+        [Test]
+        public void ChildService_Update_ThrowsArgumentExceptionEmptyFirstname()
+        {
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            var mockRepository = new Mock<IEntityRepository<Child>>();
+            mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
+            IChildService childService = new ChildService(mockRepository.Object);
+
+            Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
+        }
+
+        [Test]
+        public void ChildService_Update_ThrowsArgumentExceptionEmptyLastname()
+        {
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            var mockRepository = new Mock<IEntityRepository<Child>>();
+            mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
+            IChildService childService = new ChildService(mockRepository.Object);
+
+            Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
+        }
+
+        [Test]
+        public void ChildService_Update_ThrowsArgumentExceptionEmptyPatronymic()
+        {
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            var mockRepository = new Mock<IEntityRepository<Child>>();
+            mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
+            IChildService childService = new ChildService(mockRepository.Object);
+
+            Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
+        }
+
+        [Test]
+        public void ChildService_Delete_DeletesChild()
+        {
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn1", LastName = "ln1", Patronymic = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            var mockRepository = new Mock<IEntityRepository<Child>>();
+            mockRepository.Setup(m => m.Delete(It.IsAny<Child>()));
+            mockRepository.Setup(m => m.GetById(It.IsAny<long>())).Returns(Task.FromResult(GetTestChildEntities().First()));
+
+            IChildService childService = new ChildService(mockRepository.Object);
+
+            childService.Delete(1);
+
+            mockRepository.Verify(x => x.Delete(It.Is<Child>(c => c.Id == child.Id && c.FirstName == child.FirstName && c.LastName == child.LastName && c.Patronymic == child.Patronymic)), Times.Once);
+        }
+
         private IEnumerable<ChildDTO> GetTestChildDTO()
         {
             return new List<ChildDTO>()
