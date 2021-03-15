@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(dto)} entity must not be null");
+                throw new ArgumentNullException(nameof(dto), "Workshop was null.");
             }
 
             try
@@ -85,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(dto)} was null.");
+                throw new ArgumentNullException(nameof(dto), "Workshop was null.");
             }
 
             try
