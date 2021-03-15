@@ -5,9 +5,12 @@ namespace OutOfSchool.Services.Repository
 {
     public class ProviderRepository : EntityRepository<Provider>, IProviderRepository
     {
+        private readonly OutOfSchoolDbContext db;
+
         public ProviderRepository(OutOfSchoolDbContext dbContext)
-            : base(dbContext)
+         : base(dbContext)
         {
+            db = dbContext;
         }
 
         /// <summary>
@@ -15,6 +18,6 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="entity">Entity.</param>
         /// <returns>Bool.</returns>
-        public bool IsAlreadyExisted(Provider entity) => GetAll().Result.Any(x => x.EDRPOU == entity.EDRPOU || x.INPP == entity.INPP);
+        public bool Exists(Provider entity) => db.Providers.Any(x => x.EDRPOU == entity.EDRPOU || x.INPP == entity.INPP);
     }
 }

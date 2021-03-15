@@ -4,6 +4,6 @@ namespace OutOfSchool.Services.Repository
 {
     public interface IProviderRepository : IEntityRepository<Provider>
     {
-        bool IsAlreadyExisted(Provider entity);
+        bool Exists(Provider entity);
     }
 }
