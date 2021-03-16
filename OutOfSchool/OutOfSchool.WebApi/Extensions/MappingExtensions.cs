@@ -12,37 +12,29 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static WorkshopDTO ToModel(this Workshop workshop)
         {
-            var workshopDto =
-                Mapper<Workshop, WorkshopDTO>(workshop, cfg => { cfg.CreateMap<Workshop, WorkshopDTO>(); });
-            return workshopDto;
+            return Mapper<Workshop, WorkshopDTO>(workshop, cfg => { cfg.CreateMap<Workshop, WorkshopDTO>(); });
         }
 
         public static TeacherDTO ToModel(this Teacher teacher)
         {
-            var teacherDto = Mapper<Teacher, TeacherDTO>(teacher, cfg => { cfg.CreateMap<Teacher, TeacherDTO>(); });
-            return teacherDto;
+            return Mapper<Teacher, TeacherDTO>(teacher, cfg => { cfg.CreateMap<Teacher, TeacherDTO>(); });;
         }
 
         public static ProviderDto ToModel(this Provider provider)
         {
-            var organizationDto = Mapper<Provider, ProviderDto>(
-                provider,
+            var organizationDto = Mapper<Provider, ProviderDto>(provider,
                 cfg => { cfg.CreateMap<Provider, ProviderDto>(); });
             return organizationDto;
         }
 
         public static ChildDTO ToModel(this Child child)
         {
-            var childDto = child.Mapper<Child, ChildDTO>(
-                cfg => { cfg.CreateMap<Child, ChildDTO>(); });
-            return childDto;
+            return child.Mapper<Child, ChildDTO>(cfg => { cfg.CreateMap<Child, ChildDTO>(); });
         }
 
         public static CategoryDTO ToModel(this Category category)
         {
-            var categoryDto =
-                Mapper<Category, CategoryDTO>(category, cfg => { cfg.CreateMap<Category, CategoryDTO>(); });
-            return categoryDto;
+            return Mapper<Category, CategoryDTO>(category, cfg => { cfg.CreateMap<Category, CategoryDTO>(); });
         }
 
         #endregion
@@ -51,44 +43,36 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static Workshop ToDomain(this WorkshopDTO workshopDto)
         {
-            var workshop =
-                Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
-                {
-                    cfg.CreateMap<WorkshopDTO, Workshop>()
-                        .ForMember(dest => dest.Address, opt => opt.Ignore())
-                        .ForMember(dest => dest.Organization, opt => opt.Ignore())
-                        .ForMember(dest => dest.Teachers, opt => opt.Ignore())
-                        .ForMember(dest => dest.Category, opt => opt.Ignore());
-                });
-            return workshop;
+            return Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
+            {
+                cfg.CreateMap<WorkshopDTO, Workshop>()
+                    .ForMember(dest => dest.Address, opt => opt.Ignore())
+                    .ForMember(dest => dest.Organization, opt => opt.Ignore())
+                    .ForMember(dest => dest.Teachers, opt => opt.Ignore())
+                    .ForMember(dest => dest.Category, opt => opt.Ignore());
+            });
         }
 
         public static Teacher ToDomain(this TeacherDTO teacherDto)
         {
-            var teacher = Mapper<TeacherDTO, Teacher>(teacherDto, cfg => { cfg.CreateMap<TeacherDTO, Teacher>(); });
-            return teacher;
+            return Mapper<TeacherDTO, Teacher>(teacherDto, cfg => { cfg.CreateMap<TeacherDTO, Teacher>(); });
         }
 
         public static Provider ToDomain(this ProviderDto providerDto)
         {
-            var organization = Mapper<ProviderDto, Provider>(
-                providerDto,
+            var organization = Mapper<ProviderDto, Provider>(providerDto,
                 cfg => { cfg.CreateMap<ProviderDto, Provider>(); });
             return organization;
         }
 
         public static Child ToDomain(this ChildDTO childDto)
         {
-            var child = childDto.Mapper<ChildDTO, Child>(
-                cfg => { cfg.CreateMap<ChildDTO, Child>(); });
-            return child;
+            return childDto.Mapper<ChildDTO, Child>(cfg => { cfg.CreateMap<ChildDTO, Child>(); });
         }
 
         public static Category ToDomain(this CategoryDTO categoryDto)
         {
-            var category =
-                Mapper<CategoryDTO, Category>(categoryDto, cfg => { cfg.CreateMap<CategoryDTO, Category>(); });
-            return category;
+            return Mapper<CategoryDTO, Category>(categoryDto, cfg => { cfg.CreateMap<CategoryDTO, Category>(); });
         }
 
         #endregion
