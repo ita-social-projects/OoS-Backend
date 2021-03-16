@@ -48,12 +48,13 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTeacherById(long id)
+        public async Task<IActionResult> GetById(long id)
         {
             if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(),
-                    "The id is less than 1 or greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    "The id cannot be less than 1.");
             }
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
@@ -112,8 +113,9 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(),
-                    "The id is less than 1 or greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(        
+                    nameof(id),
+                    message: "The id cannot be less than 1.");
             }
 
             await service.Delete(id).ConfigureAwait(false);

@@ -49,7 +49,9 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(), "The id is less than 1 or greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    "The id is less than 1 or greater than number of table entities.");
             }
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
@@ -65,7 +67,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> CreateOrganization(OrganizationDTO dto)
+        public async Task<IActionResult> Create(OrganizationDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -124,7 +126,8 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(),
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
                     "The id is less than 1 or greater than number of table entities.");
             }
             

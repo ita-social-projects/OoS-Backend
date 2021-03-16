@@ -60,7 +60,9 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(), "The id is cannot be less than 1.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id), 
+                    "The id is cannot be less than 1.");
             }
             
             return Ok(await service.GetById(id).ConfigureAwait(false));
