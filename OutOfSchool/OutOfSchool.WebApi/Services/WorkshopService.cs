@@ -112,7 +112,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Teacher successfully deleted.");
+                logger.Information("Workshop successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
