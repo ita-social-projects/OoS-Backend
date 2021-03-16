@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Extensions
         private readonly ILogger<ExceptionMiddlewareExtension> logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExceptionMiddlewareExtensions"/> class.
+        /// Initializes a new instance of the <see cref="ExceptionMiddlewareExtension"/> class.
         /// </summary>
         public ExceptionMiddlewareExtension(RequestDelegate next, ILogger<ExceptionMiddlewareExtension> logger)
         {
@@ -47,7 +47,6 @@ namespace OutOfSchool.WebApi.Extensions
 
             return context.Response.WriteAsync(JsonSerializer.Serialize(new ErrorDetails()
             {
-                StatusCode = context.Response.StatusCode,
                 Message = "Internal Server Error. " + exception.Message,
             }));
         }
@@ -58,8 +57,7 @@ namespace OutOfSchool.WebApi.Extensions
         public ErrorDetails()
         {
         }
-
-        public int StatusCode { get; set; }
+        
         public string Message { get; set; }
     }
 }
