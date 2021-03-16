@@ -14,25 +14,25 @@ namespace OutOfSchool.IdentityServer
 {
     public class Startup
     {
-        private readonly IConfiguration _config;
-        private readonly IWebHostEnvironment _env;
+        private readonly IConfiguration config;
+        private readonly IWebHostEnvironment env;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            _env = env;
-            _config = configuration;
+            this.env = env;
+            config = configuration;
         }
-
 
         public void ConfigureServices(IServiceCollection services)
         {
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-            var connString = _config["ConnectionStrings:DefaultConnection"];
+            var connString = config["ConnectionStrings:DefaultConnection"];
 
             services
                 .AddDbContext<OutOfSchoolDbContext>(options => options
-                    .UseSqlServer(connString,
+                    .UseSqlServer(
+                        connString,
                         optionsBuilder =>
                             optionsBuilder.MigrationsAssembly("OutOfSchool.IdentityServer")));
 
@@ -56,20 +56,24 @@ namespace OutOfSchool.IdentityServer
 
             services.AddIdentityServer(options =>
                 {
-                    if (_env.IsEnvironment("Release"))
+                    if (env.IsEnvironment("Release"))
+                    {
                         options.IssuerUri = "http://hostname:5443";
+                    }
                 })
                 .AddDeveloperSigningCredential()
                 .AddConfigurationStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
-                        builder.UseSqlServer(connString,
+                        builder.UseSqlServer(
+                            connString,
                             sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 .AddOperationalStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
-                        builder.UseSqlServer(connString,
+                        builder.UseSqlServer(
+                            connString,
                             sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 .AddAspNetIdentity<User>()
@@ -77,7 +81,7 @@ namespace OutOfSchool.IdentityServer
 
             services.AddControllersWithViews();
         }
-        
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

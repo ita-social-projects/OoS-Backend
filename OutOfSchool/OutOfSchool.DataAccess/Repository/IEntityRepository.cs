@@ -20,7 +20,7 @@ namespace OutOfSchool.Services.Repository
         /// <summary>
         /// Update information about element.
         /// </summary>
-        /// <param name="entity"></param>
+        /// <param name="entity">Entity.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> Update(T entity);
 

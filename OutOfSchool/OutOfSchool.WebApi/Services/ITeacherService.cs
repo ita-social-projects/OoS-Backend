@@ -15,7 +15,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="dto">Teacher to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<TeacherDTO> Create(TeacherDTO dto);
-        
+
         /// <summary>
         /// Get all entities.
         /// </summary>

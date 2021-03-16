@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return BadRequest("Id cannot be 0.");
             }
-            
+
             var childDTO = await childService.GetById(id).ConfigureAwait(false);
 
             return Ok(childDTO);
@@ -111,7 +111,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             await childService.Delete(id).ConfigureAwait(false);
-            
+
             return Ok();
         }
     }

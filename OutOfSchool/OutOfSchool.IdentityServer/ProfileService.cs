@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
-using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Identity;
 using OutOfSchool.Services.Models;
 
@@ -13,7 +12,7 @@ namespace OutOfSchool.IdentityServer
 {
     public class ProfileService : IProfileService
     {
-        protected UserManager<User> userManager;
+        private readonly UserManager<User> userManager;
 
         public ProfileService(UserManager<User> userManager)
         {
@@ -22,7 +21,6 @@ namespace OutOfSchool.IdentityServer
 
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
-
             var claims = new List<Claim>
             {
                 context.Subject.Claims.FirstOrDefault(claim => claim.Type == "name"),

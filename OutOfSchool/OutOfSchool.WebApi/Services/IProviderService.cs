@@ -5,41 +5,41 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Defines interface for CRUD functionality for Organization entity.
+    /// Defines interface for CRUD functionality for Provider entity.
     /// </summary>
-    public interface IOrganizationService
+    public interface IProviderService
     {
         /// <summary>
         /// Add entity.
         /// </summary>
-        /// <param name="dto">Organization entity to add.</param>
+        /// <param name="dto">Provider entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<OrganizationDTO> Create(OrganizationDTO dto);
+        Task<ProviderDto> Create(ProviderDto dto);
 
         /// <summary>
         /// Get all entities.
         /// </summary>
-        /// <returns>List of all organizations.</returns>
-        Task<IEnumerable<OrganizationDTO>> GetAll();
+        /// <returns>List of all providers.</returns>
+        Task<IEnumerable<ProviderDto>> GetAll();
 
         /// <summary>
         /// Get entity by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>
-        /// <returns>Organization.</returns>
-        Task<OrganizationDTO> GetById(long id);
+        /// <returns>Provider.</returns>
+        Task<ProviderDto> GetById(long id);
 
         /// <summary>
         /// Update entity.
         /// </summary>
-        /// <param name="dto">Organization entity to add.</param>
+        /// <param name="dto">Provider entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<OrganizationDTO> Update(OrganizationDTO dto);
+        Task<ProviderDto> Update(ProviderDto dto);
 
         /// <summary>
         ///  Delete entity.
         /// </summary>
-        /// <param name="id">Organization's key.</param>
+        /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(long id);
     }

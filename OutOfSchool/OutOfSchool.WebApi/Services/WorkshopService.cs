@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Components.Web;
-using NuGet.Frameworks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Mapping.Extensions;
@@ -33,7 +30,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(dto)} entity must not be null");
+                throw new ArgumentNullException(nameof(dto), "Workshop was null.");
             }
 
             try
@@ -88,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(dto)} was null.");
+                throw new ArgumentNullException(nameof(dto), "Workshop was null.");
             }
 
             try

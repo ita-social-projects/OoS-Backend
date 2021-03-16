@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using AutoMapper;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
@@ -11,16 +7,7 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
 {
     public static class MappingExtensions
     {
-        private static TDestination Mapper<TSource, TDestination>(
-            this TSource source,
-            Action<IMapperConfigurationExpression> configure)
-        {
-            var config = new MapperConfiguration(configure);
-            var mapper = config.CreateMapper();
-            var destination = mapper.Map<TDestination>(source);
-            return destination;
-        }
-
+#pragma warning disable SA1124 // Do not use regions
         #region ToModel
 
         public static WorkshopDTO ToModel(this Workshop workshop)
@@ -36,10 +23,11 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
             return teacherDto;
         }
 
-        public static OrganizationDTO ToModel(this Organization organization)
+        public static ProviderDto ToModel(this Provider provider)
         {
-            var organizationDto = Mapper<Organization, OrganizationDTO>(organization,
-                cfg => { cfg.CreateMap<Organization, OrganizationDTO>(); });
+            var organizationDto = Mapper<Provider, ProviderDto>(
+                provider,
+                cfg => { cfg.CreateMap<Provider, ProviderDto>(); });
             return organizationDto;
         }
 
@@ -67,20 +55,21 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
                 Mapper<WorkshopDTO, Workshop>(workshopDto, cfg => { cfg.CreateMap<WorkshopDTO, Workshop>(); });
             return workshop;
         }
-        
+
         public static Teacher ToDomain(this TeacherDTO teacherDto)
         {
             var teacher = Mapper<TeacherDTO, Teacher>(teacherDto, cfg => { cfg.CreateMap<TeacherDTO, Teacher>(); });
             return teacher;
         }
-        
-        public static Organization ToDomain(this OrganizationDTO organizationDto)
+
+        public static Provider ToDomain(this ProviderDto providerDto)
         {
-            var organization = Mapper<OrganizationDTO, Organization>(organizationDto,
-                cfg => { cfg.CreateMap<OrganizationDTO, Organization>(); });
+            var organization = Mapper<ProviderDto, Provider>(
+                providerDto,
+                cfg => { cfg.CreateMap<ProviderDto, Provider>(); });
             return organization;
         }
-        
+
         public static Child ToDomain(this ChildDTO childDto)
         {
             var child = childDto.Mapper<ChildDTO, Child>(
@@ -96,5 +85,15 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
         }
 
         #endregion
+        private static TDestination Mapper<TSource, TDestination>(
+          this TSource source,
+          Action<IMapperConfigurationExpression> configure)
+        {
+            var config = new MapperConfiguration(configure);
+            var mapper = config.CreateMapper();
+            var destination = mapper.Map<TDestination>(source);
+            return destination;
+        }
     }
+#pragma warning restore SA1124 // Do not use regions
 }

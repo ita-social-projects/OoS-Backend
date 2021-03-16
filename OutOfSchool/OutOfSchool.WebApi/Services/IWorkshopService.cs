@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <returns>List of all workshops.</returns>
         Task<IEnumerable<WorkshopDTO>> GetAll();
-        
+
         /// <summary>
         /// Get entity by it's key.
         /// </summary>

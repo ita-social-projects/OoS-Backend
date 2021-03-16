@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -59,7 +56,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="workshopDto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "provider,admin")]
         [HttpPost]
         public async Task<ActionResult> CreateWorkshop(WorkshopDTO workshopDto)
         {
@@ -69,7 +66,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             var workshop = await workshopService.Create(workshopDto).ConfigureAwait(false);
-           
+
             return CreatedAtAction(nameof(GetWorkshopById), new
             {
                 id = workshop.Id,
@@ -81,7 +78,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="workshopDto">Workshop to update.</param>
         /// <returns>Workshop.</returns>
-        [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "provider,admin")]
         [HttpPut]
         public async Task<ActionResult> Update(WorkshopDTO workshopDto)
         {

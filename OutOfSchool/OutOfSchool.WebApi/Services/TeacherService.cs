@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Mapping.Extensions;
@@ -31,7 +30,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(TeacherDTO)} entity must not be null");
+                throw new ArgumentNullException(nameof(dto), "Teacher was null.");
             }
 
             try
@@ -67,7 +66,7 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var teacher = await repository.GetById(id).ConfigureAwait(false);
-                
+
                 return teacher.ToModel();
             }
             catch (Exception e)
@@ -80,7 +79,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                throw new ArgumentNullException($"{nameof(dto)} was null.");
+                throw new ArgumentNullException(nameof(dto), "Teacher was null.");
             }
 
             try
