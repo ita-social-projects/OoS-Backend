@@ -23,6 +23,7 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="TeacherService"/> class.
         /// </summary>
         /// <param name="repository">Repository for Teacher entity.</param>
+        /// <param name="logger">Logger.</param>
         public TeacherService(IEntityRepository<Teacher> repository, ILogger logger)
         {
             this.repository = repository;
@@ -64,8 +65,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (teacher == null)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(),
-                    "The id cannot be greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
             }
 
             logger.Information($"Successfully got a Teacher with id = {id}.");
@@ -82,7 +82,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var teacher = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Updating successfully finished.");
+                logger.Information("Teacher successfully updated.");
 
                 return teacher.ToModel();
             }
@@ -98,13 +98,13 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Teacher deleting was launched.");
 
-            var dtoToDelete = new Teacher() { Id = id };
+            var entity = new Teacher() { Id = id };
 
             try
             {
-                await repository.Delete(dtoToDelete).ConfigureAwait(false);
+                await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Deleting successfully finished.");
+                logger.Information("Teacher successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {

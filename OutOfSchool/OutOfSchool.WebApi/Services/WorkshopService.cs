@@ -23,6 +23,7 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
         /// <param name="repository">Repository for Workshop entity.</param>
+        /// <param name="logger">Logger.</param>
         public WorkshopService(IEntityRepository<Workshop> repository, ILogger logger)
         {
             this.repository = repository;
@@ -64,8 +65,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (workshop == null)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(),
-                    "The id cannot be greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
             }
 
             logger.Information($"Successfully got a Workshop with id = {id}.");
@@ -82,7 +82,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Updating successfully finished.");
+                logger.Information("Workshop successfully updated.");
 
                 return workshop.ToModel();
             }
@@ -98,13 +98,13 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Workshop deleting was launched.");
 
-            var dtoToDelete = new Workshop() { Id = id };
+            var entity = new Workshop() { Id = id };
 
             try
             {
-                await repository.Delete(dtoToDelete).ConfigureAwait(false);
+                await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Deleting successfully finished.");
+                logger.Information("Workshop successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {

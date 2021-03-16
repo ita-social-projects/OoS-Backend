@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -67,8 +65,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (child == null)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(),
-                    "The id cannot be greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
             }
 
             logger.Information($"Successfully got a Child with id = {id}.");
@@ -85,7 +82,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Updating successfully finished.");
+                logger.Information("Child successfully updated.'");
 
                 return child.ToModel();
             }
@@ -101,13 +98,13 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Child deleting was launched.");
 
-            var dtoToDelete = new Child { Id = id };
+            var entity = new Child { Id = id };
 
             try
             {
-                await repository.Delete(dtoToDelete).ConfigureAwait(false);
+                await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Deleting successfully finished.");
+                logger.Information("Child successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {

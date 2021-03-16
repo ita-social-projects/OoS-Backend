@@ -23,6 +23,7 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="OrganizationService"/> class.
         /// </summary>
         /// <param name="repository">Repository for some entity.</param>
+        /// <param name="logger">Logger.</param>
         public OrganizationService(IOrganizationRepository repository, ILogger logger)
         {
             this.repository = repository;
@@ -38,7 +39,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!repository.IsUnique(organization))
             {
-                throw new ArgumentException(nameof(organization), "There is already an organization with a such data");
+                throw new ArgumentException("There is already an organization with such a data");
             }
 
             var newOrganization = await repository.Create(organization).ConfigureAwait(false);
@@ -69,8 +70,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (organization == null)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(),
-                    "The id cannot be greater number of table entities.");
+                throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
             }
 
             logger.Information($"Successfully got a Organization with id = {id}.");
@@ -85,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var organization = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Updating successfully finished.");
+                logger.Information("Organization successfully updated.");
 
                 return organization.ToModel();
             }
@@ -99,13 +99,15 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            var dtoToDelete = new Organization() { Id = id };
+            logger.Information("Organization deleting was launched.");
+            
+            var entity = new Organization() { Id = id };
 
             try
             {
-                await repository.Delete(dtoToDelete).ConfigureAwait(false);
+                await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Deleting successfully finished.");
+                logger.Information("Organization successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
