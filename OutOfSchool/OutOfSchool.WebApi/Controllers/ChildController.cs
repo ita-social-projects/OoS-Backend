@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>List of all children.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
-        public async Task<ActionResult> Get()
+        public async Task<IActionResult> Get()
         {
             return Ok(await service.GetAll().ConfigureAwait(false));
         }
@@ -51,7 +51,9 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(), $"The id cannot be less than 1.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id), 
+                    $"The id cannot be less than 1.");
             }
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
@@ -87,7 +89,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<ActionResult> Update(ChildDTO dto)
+        public async Task<IActionResult> Update(ChildDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -106,11 +108,12 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(long id)
         {
             if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(id.ToString(),
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
                     "The id cannot be less than 1.");
             }
 
