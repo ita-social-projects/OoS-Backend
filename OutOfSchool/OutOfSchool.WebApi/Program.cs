@@ -1,7 +1,9 @@
 using System;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.IdentityModel.Protocols;
 using Serilog;
 
@@ -11,24 +13,24 @@ namespace OutOfSchool.WebApi
     {
         public static void Main(string[] args)
         {
-            // Read Configuration from appSettings
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.Development.json")
-                .Build();
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             
-            // Initialize Logger
+            var config = new ConfigurationBuilder()
+                .AddJsonFile($"appsettings.{environment}.json")
+                .Build();
+
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(config, sectionName: "Logging")
                 .Enrich.FromLogContext()
                 .WriteTo.File(
-                    path: config.GetSection("Logging:FilePath").Value, 
-                    rollingInterval: RollingInterval.Day, 
-                    retainedFileCountLimit: 2, 
+                    path: config.GetSection("Logging:FilePath").Value,
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 2,
                     fileSizeLimitBytes: null)
                 .WriteTo.Debug()
                 .WriteTo.Console()
                 .CreateLogger();
-            
+
             try
             {
                 Log.Information("Application has started.");
@@ -43,13 +45,10 @@ namespace OutOfSchool.WebApi
                 Log.CloseAndFlush();
             }
         }
-        
+
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseSerilog() // Uses Serilog instead of default .NET Logger
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+                .UseSerilog()
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
 }
