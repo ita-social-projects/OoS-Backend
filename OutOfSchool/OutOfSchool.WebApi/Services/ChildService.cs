@@ -114,9 +114,9 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException("Empty lastname.", nameof(dto));
             }
 
-            if (dto.MiddleName.Length == 0)
+            if (dto.Patronymic.Length == 0)
             {
-                throw new ArgumentException("Empty middlename.", nameof(dto));
+                throw new ArgumentException("Empty patronymic.", nameof(dto));
             }
 
             try
