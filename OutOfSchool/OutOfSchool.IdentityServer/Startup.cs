@@ -23,7 +23,6 @@ namespace OutOfSchool.IdentityServer
             _config = configuration;
         }
 
-
         public void ConfigureServices(IServiceCollection services)
         {
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
