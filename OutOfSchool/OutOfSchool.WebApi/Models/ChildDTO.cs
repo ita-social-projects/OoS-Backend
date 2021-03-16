@@ -11,7 +11,7 @@ namespace OutOfSchool.WebApi.Models
 
         public string LastName { get; set; } = string.Empty;
 
-        public string MiddleName { get; set; } = string.Empty;
+        public string Patronymic { get; set; } = string.Empty;
 
         public DateTime DateOfBirth { get; set; } = default;
 
