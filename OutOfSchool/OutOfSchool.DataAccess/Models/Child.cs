@@ -31,9 +31,5 @@ namespace OutOfSchool.Services.Models
         public long ParentId { get; set; }
 
         public long SocialGroupId { get; set; }
-
-        public virtual Parent Parent { get; set; }
-
-        public virtual SocialGroup SocialGroup { get; set; }
     }
 }
