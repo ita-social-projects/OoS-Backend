@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Mapping.Extensions;
@@ -59,7 +59,6 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var children = await repository.GetAll().ConfigureAwait(false);
-
                 return children.Select(child => child.ToModel()).ToList();
             }
             catch (Exception ex)
@@ -79,6 +78,17 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return child.ToModel();
+        }
+
+        /// <inheritdoc/>
+        public async Task<ChildDTO> GetByIdWithDetails(long id)
+        {
+            Expression<Func<Child, bool>> filter = child => child.Id == id;
+            IEnumerable<Child> children = await this.repository.GetAllWIthDetails(filter, "Parent,SocialGroup").ConfigureAwait(false);
+            return await Task.Run(() =>
+            {
+                return children.FirstOrDefault().ToModel();
+            }).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -104,15 +114,14 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException("Empty lastname.", nameof(dto));
             }
 
-            if (dto.MiddleName.Length == 0)
+            if (dto.Patronymic.Length == 0)
             {
-                throw new ArgumentException("Empty middlename.", nameof(dto));
+                throw new ArgumentException("Empty patronymic.", nameof(dto));
             }
 
             try
             {
                 var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
-
                 return child.ToModel();
             }
             catch (Exception ex)

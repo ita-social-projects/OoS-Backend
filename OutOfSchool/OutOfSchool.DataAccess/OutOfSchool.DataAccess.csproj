@@ -5,14 +5,15 @@
         <RootNamespace>OutOfSchool.Services</RootNamespace>
     </PropertyGroup>
   <PropertyGroup>
-    <CodeAnalysisRuleSet>$(SolutionDir)\StyleCopRules\YourStyleCopFile.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>$(ProjectDir)\StyleCopRules\YourStyleCopFile.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+
   
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
-  
+
     <ItemGroup>
       <None Remove="stylecop.json" />
     </ItemGroup>

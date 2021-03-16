@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,6 +65,22 @@ namespace OutOfSchool.Services.Repository
         public async Task<T> GetById(long id)
         {
             return await dbSet.FindAsync(id).AsTask();
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        {
+            IQueryable<T> query = this.dbSet.Where(predicate);
+            foreach (var includeProperty in includeProperties.Split(
+            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await Task.Run(() =>
+            {
+                return query.ToList();
+            }).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

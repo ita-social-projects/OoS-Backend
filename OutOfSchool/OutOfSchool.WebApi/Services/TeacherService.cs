@@ -66,7 +66,6 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var teacher = await repository.GetById(id).ConfigureAwait(false);
-
                 return teacher.ToModel();
             }
             catch (Exception e)

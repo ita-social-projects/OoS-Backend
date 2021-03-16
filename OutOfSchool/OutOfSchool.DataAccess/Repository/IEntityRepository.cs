@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace OutOfSchool.Services.Repository
@@ -50,5 +52,13 @@ namespace OutOfSchool.Services.Repository
         /// <param name="id">Key in database.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> GetById(long id);
+
+        /// <summary>
+        /// Get elements by id with details.
+        /// </summary>
+        /// <param name="predicate">Filter with key.</param>
+        /// <param name="includeProperties">Name of properties which should be included.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "");
     }
 }
