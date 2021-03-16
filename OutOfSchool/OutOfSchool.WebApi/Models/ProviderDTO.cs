@@ -16,22 +16,22 @@ namespace OutOfSchool.WebApi.Models
         [MinLength(1)]
         public string Title { get; set; }
 
-        [Required(ErrorMessage = "Title is required")]
+        [Required(ErrorMessage = "ShortTitle is required")]
         [DataType(DataType.Text)]
         [MaxLength(60)]
         [MinLength(1)]
         public string ShortTitle { get; set; }
 
         [DataType(DataType.Url)]
-        [MaxLength(30)]
+        [MaxLength(100)]
         public string Website { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
-        [MaxLength(30)]
+        [MaxLength(100)]
         public string Facebook { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
-        [MaxLength(30)]
+        [MaxLength(100)]
         public string Instagram { get; set; } = string.Empty;
 
         [MaxLength(500)]

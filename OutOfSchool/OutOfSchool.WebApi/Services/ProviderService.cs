@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Mapping.Extensions;
@@ -30,14 +31,14 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                throw new ArgumentNullException(nameof(dto), "Provider was null.");
+                throw new ArgumentNullException(nameof(dto), "Provider is null.");
             }
 
             var provider = dto.ToDomain();
 
             if (repository.Exists(provider))
             {
-                throw new ArgumentException("There is already an providerDto with such data");
+                throw new ArgumentException("There is already an provider with such data");
             }
 
             return CreateInternal(provider);
@@ -55,6 +56,7 @@ namespace OutOfSchool.WebApi.Services
         public async Task<ProviderDto> GetById(long id)
         {
             var provider = await repository.GetById(id).ConfigureAwait(false);
+
             if (provider == null)
             {
                 throw new ArgumentException("Incorrect Id!", nameof(id));
@@ -72,9 +74,9 @@ namespace OutOfSchool.WebApi.Services
 
                 return provider.ToModel();
             }
-            catch (Exception ex)
+            catch (DbUpdateConcurrencyException)
             {
-                throw new Exception($"{nameof(dto)} could not be updated: {ex.Message}");
+                throw;
             }
         }
 
@@ -87,9 +89,9 @@ namespace OutOfSchool.WebApi.Services
                     .Delete(await repository.GetById(id).ConfigureAwait(false))
                     .ConfigureAwait(false);
             }
-            catch (ArgumentNullException ex)
+            catch (DbUpdateConcurrencyException)
             {
-                throw new ArgumentNullException(nameof(id), ex.Message);
+                throw;
             }
         }
 

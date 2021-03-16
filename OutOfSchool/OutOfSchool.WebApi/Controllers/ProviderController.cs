@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
         /// </summary>
-        /// <param name="logger">Logging mechanism.</param>
+        /// <param name="logger">Logging instance.</param>
         /// <param name="providerService">Service for Provider model.</param>
         public ProviderController(ILogger<ProviderController> logger, IProviderService providerService)
         {
@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IEnumerable<Provider>>> GetProviders()
+        public async Task<IActionResult> GetProviders()
         {
             return Ok(await providerService.GetAll().ConfigureAwait(false));
         }
@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ProviderDto>> GetProviderById(long id)
+        public async Task<IActionResult> GetProviderById(long id)
         {
             if (id == 0)
             {
@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<Provider>> Create(ProviderDto providerDTO)
+        public async Task<IActionResult> Create(ProviderDto providerDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (providerDTO == null)
             {
-                return BadRequest(providerDTO);
+                return BadRequest("Provider is null.");
             }
 
             try
@@ -110,7 +110,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> Update(ProviderDto providerDTO)
+        public async Task<IActionResult> Update(ProviderDto providerDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -130,7 +130,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(long id)
         {
             if (id == 0)
             {
