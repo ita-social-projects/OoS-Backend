@@ -30,8 +30,7 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; } = default;
 
-        [Required(ErrorMessage = "Gender is required")]
-        public Gender Gender { get; set; }
+        public Gender Gender { get; set; } = default;
 
         public long ParentId { get; set; } = default;
 
