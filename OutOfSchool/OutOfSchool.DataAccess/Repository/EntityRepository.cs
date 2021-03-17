@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,13 +52,28 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "")
         {
-            IQueryable<T> query = this.dbSet;
+            var query = this.dbSet.Include(includeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)[0]);
+            
             foreach (var includeProperty in includeProperties.Split(
-            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Skip(1))
             {
                 query = query.Include(includeProperty);
             }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        {
+            var query = this.dbSet.Where(predicate);
             
+            foreach (var includeProperty in includeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
             return await query.ToListAsync();
         }
 
