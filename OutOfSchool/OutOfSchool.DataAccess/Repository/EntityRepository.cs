@@ -52,9 +52,22 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "")
         {
-            IQueryable<T> query = dbSet;
+            var query = dbSet;
             foreach (var includeProperty in includeProperties.Split(
-            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Skip(1))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        {
+            var query = this.dbSet.Where(predicate);
+            
+            foreach (var includeProperty in includeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 query = query.Include(includeProperty);
             }
@@ -66,22 +79,6 @@ namespace OutOfSchool.Services.Repository
         public async Task<T> GetById(long id)
         {
             return await dbSet.FindAsync(id).AsTask();
-        }
-
-        /// <inheritdoc/>
-        public async Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "")
-        {
-            IQueryable<T> query = this.dbSet.Where(predicate);
-            foreach (var includeProperty in includeProperties.Split(
-            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-
-            return await Task.Run(() =>
-            {
-                return query.ToList();
-            }).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

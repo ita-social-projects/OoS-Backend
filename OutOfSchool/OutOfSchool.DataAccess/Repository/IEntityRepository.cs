@@ -38,14 +38,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <returns>List of all elements.</returns>
         Task<IEnumerable<T>> GetAll();
-
-        /// <summary>
-        /// Get all elements with details.
-        /// </summary>
-        /// <param name="includeProperties">Name of properties which should be included.</param>
-        /// <returns>List of all elements with included propertires.</returns>
-        Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
-
+        
         /// <summary>
         /// Get element by Id.
         /// </summary>
@@ -54,11 +47,26 @@ namespace OutOfSchool.Services.Repository
         Task<T> GetById(long id);
 
         /// <summary>
+        /// Get all elements with details.
+        /// </summary>
+        /// <param name="includeProperties">Name of properties which should be included.</param>
+        /// <returns>List of all elements with included propertires.</returns>
+        Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
+        
+        /// <summary>
         /// Get elements by id with details.
         /// </summary>
         /// <param name="predicate">Filter with key.</param>
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "");
+        Task<T> GetById(long id);
+
+        /// <summary>
+        /// Get elements by a specific filter.
+        /// </summary>
+        /// <param name="predicate">Filter with key.</param>
+        /// <param name="includeProperties">Name of properties which should be included.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "");
     }
 }
