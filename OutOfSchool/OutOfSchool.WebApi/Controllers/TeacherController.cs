@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -32,10 +33,19 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of teachers.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok(await service.GetAll().ConfigureAwait(false));
+            var teachers = await service.GetAll().ConfigureAwait(false);
+
+            if (!teachers.Any())
+            {
+                return NoContent();
+            }
+            
+            return Ok(teachers);
         }
 
         /// <summary>
@@ -112,14 +122,14 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (id < 1)
             {
-                throw new ArgumentOutOfRangeException(        
+                throw new ArgumentOutOfRangeException(
                     nameof(id),
                     message: "The id cannot be less than 1.");
             }
 
             await service.Delete(id).ConfigureAwait(false);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

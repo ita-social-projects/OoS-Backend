@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -32,10 +33,19 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of all workshops.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok(await service.GetAll().ConfigureAwait(false));
+            var workshops = await service.GetAll().ConfigureAwait(false);
+
+            if (!workshops.Any())
+            {
+                return NoContent();
+            }
+            
+            return Ok(workshops);
         }
 
         /// <summary>
@@ -83,7 +93,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "organization,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -97,10 +107,9 @@ namespace OutOfSchool.WebApi.Controllers
 
             var workshop = await service.Create(dto).ConfigureAwait(false);
             
-            return CreatedAtAction(nameof(GetById), new
-            {
-                id = workshop.Id,
-            }, workshop);
+            return CreatedAtAction(nameof(GetById), 
+                new { id = workshop.Id, }, 
+                workshop);
         }
 
         /// <summary>
@@ -143,7 +152,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             await service.Delete(id).ConfigureAwait(false);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

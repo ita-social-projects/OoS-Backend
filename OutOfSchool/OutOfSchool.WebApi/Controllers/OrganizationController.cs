@@ -35,10 +35,19 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of all organizations.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok(await service.GetAll().ConfigureAwait(false));
+            var organizations = await service.GetAll().ConfigureAwait(false);
+
+            if (!organizations.Any())
+            {
+                return NoContent();
+            }
+            
+            return Ok(organizations);
         }
 
         /// <summary>
@@ -87,12 +96,10 @@ namespace OutOfSchool.WebApi.Controllers
 
                 return CreatedAtAction(
                     nameof(GetById),
-                    new
-                    {
-                        id = organization.Id,
-                    }, organization);
+                    new { id = organization.Id, },
+                    organization);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -138,7 +145,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             await service.Delete(id).ConfigureAwait(false);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -32,10 +33,19 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of all children.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok(await service.GetAll().ConfigureAwait(false));
+            var children = await service.GetAll().ConfigureAwait(false);
+
+            if (!children.Any())
+            {
+                return NoContent();
+            }
+            
+            return Ok(children);
         }
 
         /// <summary>
@@ -119,7 +129,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             await service.Delete(id).ConfigureAwait(false);
 
-            return Ok();
+            return NoContent();
         }
     }
 }
