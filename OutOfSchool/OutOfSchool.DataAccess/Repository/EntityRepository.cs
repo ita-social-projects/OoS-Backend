@@ -52,7 +52,7 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "")
         {
-            var query = dbSet;
+            IQueryable<T> query = dbSet;
             foreach (var includeProperty in includeProperties.Split(
                 new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Skip(1))
             {
