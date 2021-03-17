@@ -21,9 +21,7 @@ namespace OutOfSchool.Services.Models
         public string LastName { get; set; } = string.Empty;
         
         public virtual IReadOnlyCollection<Child> Children { get; set; }
-
-        public virtual IReadOnlyCollection<Child> Children { get; set; }
-
+        
         public User User { get; set; }
     }
 }
