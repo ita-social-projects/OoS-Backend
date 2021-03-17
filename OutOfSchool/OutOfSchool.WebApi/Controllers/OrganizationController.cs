@@ -1,8 +1,12 @@
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -14,6 +18,7 @@ namespace OutOfSchool.WebApi.Controllers
     public class OrganizationController : ControllerBase
     {
         private readonly IOrganizationService service;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrganizationController"/> class.
@@ -76,16 +81,16 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                dto.UserId = Convert.ToInt64(User.FindFirst("sub")?.Value);
+                dto.UserId = User.FindFirst("sub")?.Value;
                 
                 var organization = await service.Create(dto).ConfigureAwait(false);
-                
+
                 return CreatedAtAction(
                     nameof(GetById),
                     new
                     {
                         id = organization.Id,
-                    });
+                    }, organization);
             }
             catch (Exception ex)
             {
@@ -130,7 +135,7 @@ namespace OutOfSchool.WebApi.Controllers
                     nameof(id),
                     "The id is less than 1 or greater than number of table entities.");
             }
-            
+
             await service.Delete(id).ConfigureAwait(false);
 
             return Ok();
