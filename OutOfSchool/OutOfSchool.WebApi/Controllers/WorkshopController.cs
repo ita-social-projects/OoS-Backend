@@ -51,11 +51,31 @@ namespace OutOfSchool.WebApi.Controllers
             if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(id), 
+                    nameof(id),
                     "The id is cannot be less than 1.");
             }
-            
+
             return Ok(await service.GetById(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get workshops by organization id.
+        /// </summary>
+        /// <param name="id">Key in the database.</param>
+        /// <returns>Workshop entities.</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByOrganization(long id)
+        {
+            if (id < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    "The id is cannot be less than 1.");
+            }
+
+            return Ok(await service.GetWorkshopsByOrganization(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -63,7 +83,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "organization,admin")]
+        // [Authorize(Roles = "organization,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -75,7 +95,12 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Create(dto).ConfigureAwait(false));
+            var workshop = await service.Create(dto).ConfigureAwait(false);
+            
+            return CreatedAtAction(nameof(GetById), new
+            {
+                id = workshop.Id,
+            }, workshop);
         }
 
         /// <summary>
@@ -94,8 +119,8 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
-            
-            return Ok( await service.Update(dto).ConfigureAwait(false));
+
+            return Ok(await service.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -115,7 +140,7 @@ namespace OutOfSchool.WebApi.Controllers
                     nameof(id),
                     "The id cannot be less than 1.");
             }
-            
+
             await service.Delete(id).ConfigureAwait(false);
 
             return Ok();

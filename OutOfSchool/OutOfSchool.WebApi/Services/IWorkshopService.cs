@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
 
@@ -28,6 +30,13 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Workshop's key.</param>
         /// <returns>Workshop.</returns>
         Task<WorkshopDTO> GetById(long id);
+
+        /// <summary>
+        /// Get all workshops by organization Id.
+        /// </summary>
+        /// <param name="id">Organization's key.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id);
 
         /// <summary>
         /// Update entity.
