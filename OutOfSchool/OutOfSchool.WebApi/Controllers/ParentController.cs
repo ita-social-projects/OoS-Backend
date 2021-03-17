@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -21,14 +22,17 @@ namespace OutOfSchool.WebApi.Controllers
     public class ParentController : ControllerBase
     {
         private readonly IParentService parentService;
+        private readonly ILogger<ParentController> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParentController"/> class.
         /// Initialization of ParentController.
         /// </summary>
+        /// <param name="logger">Logging instance.</param>
         /// <param name="parentService">Service for ParentCOntroller</param>
-        public ParentController(IParentService parentService)
+        public ParentController(ILogger<ParentController> logger, IParentService parentService)
         {
+            this.logger = logger;
             this.parentService = parentService;
         }
 
@@ -41,15 +45,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetParents()
         {
-            try
-            {
-                var parents = await parentService.GetAll().ConfigureAwait(false);
-                return Ok(parents);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+                return Ok(await parentService.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>
