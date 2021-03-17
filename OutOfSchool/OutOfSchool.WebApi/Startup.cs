@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
 
             services.AddTransient<IProviderRepository, ProviderRepository>();
-            
+
             services.AddSingleton(Log.Logger);
 
             // Register the Swagger generator, defining 1 or more Swagger documents
@@ -74,20 +74,20 @@ namespace OutOfSchool.WebApi
             }
 
             app.UseCors("AllowAll");
-            
+
             app.UseMiddleware<ExceptionMiddlewareExtension>();
-            
+
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
-            
+
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); });
-            
+
             app.UseHttpsRedirection();
 
             app.UseSerilogRequestLogging();
-            
+
             app.UseRouting();
 
             app.UseAuthentication();

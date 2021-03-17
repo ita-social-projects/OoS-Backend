@@ -9,7 +9,7 @@ namespace OutOfSchool.WebApi.Models
         public string Region { get; set; } = string.Empty;
 
         public string District { get; set; } = string.Empty;
-        
+
         [Required(ErrorMessage = "City is required")]
         [DataType(DataType.Text)]
         [MaxLength(15)]

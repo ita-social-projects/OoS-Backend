@@ -70,7 +70,8 @@ namespace OutOfSchool.WebApi.Services
 
             if (provider == null)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(nameof(id),
+                    "The id cannot be greater than number of table entities.");
             }
 
             logger.Information($"Successfully got a Provider with id = {id}.");
@@ -100,7 +101,7 @@ namespace OutOfSchool.WebApi.Services
         public async Task Delete(long id)
         {
             logger.Information("Provider deleting was launched.");
-            
+
             var entity = new Provider() { Id = id };
 
             try

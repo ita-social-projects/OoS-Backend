@@ -24,7 +24,7 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Middle name cannot contains digits")]
         public string MiddleName { get; set; } = string.Empty;
 
-        [MaxLength(300)]
+        [MaxLength(300)] 
         public string Description { get; set; } = string.Empty;
 
         public string Image { get; set; } = string.Empty;

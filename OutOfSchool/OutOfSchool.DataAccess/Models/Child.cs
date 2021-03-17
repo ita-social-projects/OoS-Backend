@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
@@ -10,19 +10,19 @@ namespace OutOfSchool.Services.Models
 
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "First name is required")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "Last name is required")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [DataType(DataType.Text)]
         [Required(ErrorMessage = "Patronymic name is required")]
-        public string Patronymic { get; set; }
+        public string Patronymic { get; set; } = string.Empty;
 
-        public DateTime DateOfBirth { get; set; } = default;
+        public DateTime DateOfBirth { get; set; }
 
-        public Gender Gender { get; set; } = default;
+        public Gender Gender { get; set; }
 
         public virtual Parent Parent { get; set; }
 

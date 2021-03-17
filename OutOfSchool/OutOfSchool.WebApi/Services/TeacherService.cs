@@ -33,10 +33,10 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<TeacherDTO> Create(TeacherDTO dto)
         {
-           logger.Information("Teacher creating was started.");
+            logger.Information("Teacher creating was started.");
 
             var teacher = dto.ToDomain();
-            
+
             var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
             return newTeacher.ToModel();
@@ -65,7 +65,8 @@ namespace OutOfSchool.WebApi.Services
 
             if (teacher == null)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(nameof(id),
+                    "The id cannot be greater than number of table entities.");
             }
 
             logger.Information($"Successfully got a Teacher with id = {id}.");
@@ -96,7 +97,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-           logger.Information("Teacher deleting was launched.");
+            logger.Information("Teacher deleting was launched.");
 
             var entity = new Teacher() { Id = id };
 

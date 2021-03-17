@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Services
             var newChild = await repository.Create(child).ConfigureAwait(false);
 
             logger.Information("Child created successfully.");
-            
+
             return newChild.ToModel();
         }
 
@@ -81,14 +81,14 @@ namespace OutOfSchool.WebApi.Services
         public async Task<ChildDTO> GetByIdWithDetails(long id)
         {
             logger.Information("Process of getting child's details was launched.");
-            
+
             Expression<Func<Child, bool>> filter = child => child.Id == id;
-            
+
             var children =
                 await this.repository.GetByFilter(filter, "Parent,SocialGroup").ConfigureAwait(false);
-            
+
             logger.Information("Child details successfully retrieved.");
-            
+
             return await Task.Run(() => children.FirstOrDefault().ToModel()).ConfigureAwait(false);
         }
 

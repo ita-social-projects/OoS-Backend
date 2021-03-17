@@ -1,10 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Hosting.Internal;
-using Microsoft.IdentityModel.Protocols;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -14,7 +11,7 @@ namespace OutOfSchool.WebApi
         public static void Main(string[] args)
         {
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            
+
             var config = new ConfigurationBuilder()
                 .AddJsonFile($"appsettings.{environment}.json")
                 .Build();
