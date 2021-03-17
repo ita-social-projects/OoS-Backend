@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
@@ -39,6 +40,8 @@ namespace OutOfSchool.WebApi.Services
 
             var newChild = await repository.Create(child).ConfigureAwait(false);
 
+            logger.Information("Child created successfully.");
+            
             return newChild.ToModel();
         }
 
@@ -65,7 +68,8 @@ namespace OutOfSchool.WebApi.Services
 
             if (child == null)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(nameof(id),
+                    "The id cannot be greater than number of table entities.");
             }
 
             logger.Information($"Successfully got a Child with id = {id}.");
@@ -76,12 +80,16 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> GetByIdWithDetails(long id)
         {
+            logger.Information("Process of getting child's details was launched.");
+            
             Expression<Func<Child, bool>> filter = child => child.Id == id;
-            IEnumerable<Child> children = await this.repository.GetAllWIthDetails(filter, "Parent,SocialGroup").ConfigureAwait(false);
-            return await Task.Run(() =>
-            {
-                return children.FirstOrDefault().ToModel();
-            }).ConfigureAwait(false);
+            
+            var children =
+                await this.repository.GetByFilter(filter, "Parent,SocialGroup").ConfigureAwait(false);
+            
+            logger.Information("Child details successfully retrieved.");
+            
+            return await Task.Run(() => children.FirstOrDefault().ToModel()).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -107,7 +115,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-           logger.Information("Child deleting was launched.");
+            logger.Information("Child deleting was launched.");
 
             var entity = new Child { Id = id };
 
@@ -125,4 +133,3 @@ namespace OutOfSchool.WebApi.Services
         }
     }
 }
-

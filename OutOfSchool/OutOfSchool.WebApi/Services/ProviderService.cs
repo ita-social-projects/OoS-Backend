@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Mapping.Extensions;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -16,51 +17,63 @@ namespace OutOfSchool.WebApi.Services
     public class ProviderService : IProviderService
     {
         private readonly IProviderRepository repository;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderService"/> class.
         /// </summary>
-        /// <param name="repository">Repository for some entity.</param>
-        public ProviderService(IProviderRepository repository)
+        /// <param name="repository">Repository.</param>
+        /// <param name="logger">Logger.</param>
+        public ProviderService(IProviderRepository repository, ILogger logger)
         {
             this.repository = repository;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>
-        public Task<ProviderDto> Create(ProviderDto dto)
+        public async Task<ProviderDto> Create(ProviderDto dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentNullException(nameof(dto), "Provider is null.");
-            }
+            logger.Information("Provider creating was started.");
 
             var provider = dto.ToDomain();
 
             if (repository.Exists(provider))
             {
-                throw new ArgumentException("There is already an provider with such data");
+                throw new ArgumentException("There is already a provider with such a data");
             }
 
-            return CreateInternal(provider);
+            var newProvider = await repository.Create(provider).ConfigureAwait(false);
+
+            return newProvider.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ProviderDto>> GetAll()
         {
-             var providers = await repository.GetAll().ConfigureAwait(false);
+            logger.Information("Process of getting all Providers started.");
 
-             return providers.Select(organization => organization.ToModel()).ToList();
+            var providers = await repository.GetAll().ConfigureAwait(false);
+
+            logger.Information(!providers.Any()
+                ? "Provider table is empty."
+                : "Successfully got all records from the Provider table.");
+
+            return providers.Select(provider => provider.ToModel()).ToList();
         }
 
         /// <inheritdoc/>
         public async Task<ProviderDto> GetById(long id)
         {
+            logger.Information("Process of getting Provider by id started.");
+
             var provider = await repository.GetById(id).ConfigureAwait(false);
 
             if (provider == null)
             {
-                throw new ArgumentException("Incorrect Id!", nameof(id));
+                throw new ArgumentOutOfRangeException(nameof(id), "The id cannot be greater than number of table entities.");
             }
+
+            logger.Information($"Successfully got a Provider with id = {id}.");
 
             return provider.ToModel();
         }
@@ -72,10 +85,13 @@ namespace OutOfSchool.WebApi.Services
             {
                 var provider = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
+                logger.Information("Provider successfully updated.");
+
                 return provider.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
+                logger.Error("Updating failed. There is no Provider in the Db with such an id.");
                 throw;
             }
         }
@@ -83,23 +99,21 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
+            logger.Information("Provider deleting was launched.");
+            
+            var entity = new Provider() { Id = id };
+
             try
             {
-                await repository
-                    .Delete(await repository.GetById(id).ConfigureAwait(false))
-                    .ConfigureAwait(false);
+                await repository.Delete(entity).ConfigureAwait(false);
+
+                logger.Information("Provider successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
+                logger.Error("Deleting failed. There is no Provider in the Db with such an id.");
                 throw;
             }
-        }
-
-        private async Task<ProviderDto> CreateInternal(Provider provider)
-        {
-            var newProvider = await repository.Create(provider).ConfigureAwait(false);
-
-            return newProvider.ToModel();
         }
     }
 }
