@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services
             logger.Information("Teacher creating was started.");
 
             var workshop = dto.ToDomain();
-
+            
             var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
 
             return newWorkshop.ToModel();
@@ -72,6 +72,13 @@ namespace OutOfSchool.WebApi.Services
             logger.Information($"Successfully got a Teacher with id = {id}.");
 
             return teacher.ToModel();
+        }
+
+        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
+        {
+            var workshops = await repository.GetByFilter(x => x.Organization.Id == id).ConfigureAwait(false);
+
+            return workshops.Select(x => x.ToModel()).ToList();
         }
 
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
