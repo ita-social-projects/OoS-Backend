@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services
 
             var organization = dto.ToDomain();
 
-            if (!repository.IsUnique(organization))
+            if (repository.Exists(organization))
             {
                 throw new ArgumentException("There is already an organization with such a data");
             }
