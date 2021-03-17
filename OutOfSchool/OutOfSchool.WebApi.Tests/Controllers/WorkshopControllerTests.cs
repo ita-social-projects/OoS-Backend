@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,11 +8,10 @@ using NUnit.Framework;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Controllers;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.Tests
+namespace OutOfSchool.WebApi.Tests.Controllers
 {
     [TestFixture]
     public class WorkshopControllerTests
@@ -94,17 +92,17 @@ namespace OutOfSchool.Tests
         }
 
         [Test]
-        public async Task CreateWorkshop_WhenModelIsValid_ShouldReturnOkObjectResult()
+        public async Task CreateWorkshop_WhenModelIsValid_ShouldReturnCreatedAtActionResult()
         {
             // Arrange
             service.Setup(x => x.Create(workshop)).ReturnsAsync(workshop);
 
             // Act 
-            var result = await controller.Create(workshop).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.Create(workshop).ConfigureAwait(false) as CreatedAtActionResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(result.StatusCode, 201);
         }
 
         [Test]
@@ -171,22 +169,22 @@ namespace OutOfSchool.Tests
 
         [Test]
         [TestCase(1)]
-        public async Task DeleteWorkshop_WhenIdIsValid_ShouldReturnOkObjectResult(long id)
+        public async Task DeleteWorkshop_WhenIdIsValid_ShouldReturnNoContentResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
 
             // Act
-            var result = await controller.Delete(id) as OkResult;
+            var result = await controller.Delete(id) as NoContentResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(result.StatusCode, 204);
         }
 
         [Test]
         [TestCase(0)]
-        public async Task DeleteWorkshop_WhenIdIsNotValid_ShouldReturnBadRequestObjectResult(long id)
+        public void DeleteWorkshop_WhenIdIsNotValid_ShouldReturnBadRequestObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
