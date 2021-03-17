@@ -51,8 +51,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get workshop by it's id.
         /// </summary>
-        /// <param name="id">Key in the database.</param>
-        /// <returns>Workshop entity.</returns>
+        /// <param name="id">Workshop's id.</param>
+        /// <returns>Workshop.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -66,26 +66,6 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
-        }
-
-        /// <summary>
-        /// Get workshops by organization id.
-        /// </summary>
-        /// <param name="id">Key in the database.</param>
-        /// <returns>Workshop entities.</returns>
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByOrganization(long id)
-        {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    "The id is cannot be less than 1.");
-            }
-
-            return Ok(await service.GetWorkshopsByOrganization(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -133,9 +113,9 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Delete a specific workshop entity from the database.
+        /// Delete a specific workshop from the database.
         /// </summary>
-        /// <param name="id">Workshop's key.</param>
+        /// <param name="id">Workshop's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]

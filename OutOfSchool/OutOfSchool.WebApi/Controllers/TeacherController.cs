@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get teacher by it's id.
         /// </summary>
-        /// <param name="id">Teacher's key.</param>
+        /// <param name="id">Teacher's id.</param>
         /// <returns>Teacher.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -93,7 +93,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Update info about a specific teacher in the database.
         /// </summary>
         /// <param name="dto">Teacher to update.</param>
-        /// <returns>Teacher's key.</returns>
+        /// <returns>Teacher.</returns>
         [Authorize(Roles = "organization,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -112,7 +112,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Delete a specific Teacher entity from the database.
         /// </summary>
-        /// <param name="id">Teacher's key.</param>
+        /// <param name="id">Teacher's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "organization,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
