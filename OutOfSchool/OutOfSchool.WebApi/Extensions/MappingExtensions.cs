@@ -10,6 +10,13 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
 #pragma warning disable SA1124 // Do not use regions
         #region ToModel
 
+        public static AddressDto ToModel(this Address address)
+        {
+            var addressDto =
+                Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
+            return addressDto;
+        }
+
         public static WorkshopDTO ToModel(this Workshop workshop)
         {
             var workshopDto =
@@ -48,6 +55,13 @@ namespace OutOfSchool.WebApi.Mapping.Extensions
         #endregion
 
         #region ToDomain
+
+        public static Address ToDomain(this AddressDto addressDto)
+        {
+            var address =
+                Mapper<AddressDto, Address>(addressDto, cfg => { cfg.CreateMap<AddressDto, Address>(); });
+            return address;
+        }
 
         public static Workshop ToDomain(this WorkshopDTO workshopDto)
         {

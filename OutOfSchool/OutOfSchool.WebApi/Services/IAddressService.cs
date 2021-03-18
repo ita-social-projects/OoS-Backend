@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Address entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<AddressDto> Update(ProviderDto dto);
+        Task<AddressDto> Update(AddressDto dto);
 
         /// <summary>
         ///  Delete entity.
