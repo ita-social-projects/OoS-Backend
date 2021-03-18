@@ -35,5 +35,7 @@ namespace OutOfSchool.WebApi.Models
         public long ParentId { get; set; } = default;
 
         public long SocialGroupId { get; set; } = default;
+
+        public long AddressId { get; set; } = default;
     }
 }

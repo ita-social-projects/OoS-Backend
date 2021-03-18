@@ -35,7 +35,7 @@ namespace OutOfSchool.Services.Models
         public long ParentId { get; set; }
 
         public long SocialGroupId { get; set; }
-	
+
         public virtual BirthCertificate BirthCertificate { get; set; }
     }
 }
