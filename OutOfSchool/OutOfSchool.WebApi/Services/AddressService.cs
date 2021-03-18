@@ -15,7 +15,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class AddressService : IAddressService
     {
-        private IEntityRepository<Address> repository;
+        private readonly IEntityRepository<Address> repository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AddressService"/> class.
