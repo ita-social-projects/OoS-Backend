@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             var teacher = await service.Create(dto).ConfigureAwait(false);
-            
+
             return CreatedAtAction(
                 nameof(GetById),
                 new { id = teacher.Id, },
