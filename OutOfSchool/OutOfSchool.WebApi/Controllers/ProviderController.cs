@@ -28,7 +28,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.service = service;
         }
-        
+
         /// <summary>
         /// Get all Provider from the database.
         /// </summary>
@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return NoContent();
             }
-            
+
             return Ok(organizations);
         }
 
@@ -90,12 +90,12 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 dto.UserId = User.FindFirst("sub")?.Value;
-                
+
                 var organization = await service.Create(dto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                     nameof(GetById),
-                    new { id = organization.Id, },
+                    new {id = organization.Id,},
                     organization);
             }
             catch (ArgumentException ex)

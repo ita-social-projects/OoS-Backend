@@ -60,16 +60,16 @@ namespace OutOfSchool.WebApi.Models
             ErrorMessage = "INPP code must contain 12, 10 or 9 digits")]
         public string INPP { get; set; } = string.Empty;
 
-        [MaxLength(50)] 
+        [MaxLength(50)]
         public string Director { get; set; } = string.Empty;
 
-        [MaxLength(255)] 
+        [MaxLength(255)]
         public string DirectorPosition { get; set; } = string.Empty;
 
-        [MaxLength(128)] 
+        [MaxLength(128)]
         public string AuthorityHolder { get; set; } = string.Empty;
 
-        [DataType(DataType.Date)] 
+        [DataType(DataType.Date)]
         public DateTime DirectorBirthDay { get; set; } = default;
 
         [DataType(DataType.PhoneNumber)]
@@ -81,31 +81,31 @@ namespace OutOfSchool.WebApi.Models
 
         public string ManagerialBody { get; set; } = string.Empty;
 
-        [Required] 
+        [Required]
         public OwnershipType Ownership { get; set; }
 
-        [Required] 
+        [Required]
         public ProviderType Type { get; set; }
 
         public string Form { get; set; } = string.Empty;
 
-        [Required] 
+        [Required]
         public ProviderProfile Profile { get; set; }
 
-        [MaxLength(20)] 
+        [MaxLength(20)]
         public string Index { get; set; } = string.Empty;
 
         public bool IsSubmitPZ1 { get; set; } = default;
 
-        [DataType(DataType.ImageUrl)] 
+        [DataType(DataType.ImageUrl)]
         public string AttachedDocuments { get; set; } = string.Empty;
 
-        [Required] 
+        [Required]
         public long AddressId { get; set; }
 
         public string UserId { get; set; } = string.Empty;
 
-        public virtual List<Workshop> Workshops { get; }
+        public virtual IEnumerable<Workshop> Workshops { get; }
 
         public virtual User User { get; set; }
     }

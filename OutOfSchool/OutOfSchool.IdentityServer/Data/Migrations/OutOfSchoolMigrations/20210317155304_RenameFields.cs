@@ -120,15 +120,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             migrationBuilder.DropForeignKey(
                 name: "FK_Children_Parents_ParentId",
                 table: "Children");
-            
+
             migrationBuilder.DropForeignKey(
                 name: "FK_Children_SocialGroups_SocialGroupId",
                 table: "Children");
-            
+
             migrationBuilder.DropForeignKey(
                 name: "FK_Workshops_Addresses_AddressId",
                 table: "Workshops");
-            
+
             migrationBuilder.DropForeignKey(
                 name: "FK_Workshops_Providers_ProviderId",
                 table: "Workshops");
@@ -136,15 +136,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             migrationBuilder.DropPrimaryKey(
                 name: "PK_SocialGroups",
                 table: "SocialGroups");
-            
+
             migrationBuilder.DropPrimaryKey(
                 name: "PK_Addresses",
                 table: "Addresses");
-            
+
             migrationBuilder.RenameTable(
                 name: "SocialGroups",
                 newName: "SocialGroup");
-            
+
             migrationBuilder.RenameTable(
                 name: "Addresses",
                 newName: "Address");
@@ -153,7 +153,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 name: "Patronymic",
                 table: "Children",
                 newName: "MiddleName");
-            
+
             migrationBuilder.AlterColumn<decimal>(
                 name: "Price",
                 table: "Workshops",
@@ -161,7 +161,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 nullable: true,
                 oldClrType: typeof(decimal),
                 oldType: "decimal(18,2)");
-            
+
             migrationBuilder.AlterColumn<long>(
                 name: "SocialGroupId",
                 table: "Children",
@@ -169,7 +169,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 nullable: true,
                 oldClrType: typeof(long),
                 oldType: "bigint");
-            
+
             migrationBuilder.AlterColumn<long>(
                 name: "ParentId",
                 table: "Children",
@@ -177,7 +177,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 nullable: true,
                 oldClrType: typeof(long),
                 oldType: "bigint");
-            
+
             migrationBuilder.AlterColumn<DateTime>(
                 name: "LastLogin",
                 table: "AspNetUsers",
@@ -185,12 +185,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 nullable: true,
                 oldClrType: typeof(DateTime),
                 oldType: "datetime2");
-            
+
             migrationBuilder.AddPrimaryKey(
                 name: "PK_SocialGroup",
                 table: "SocialGroup",
                 column: "Id");
-            
+
             migrationBuilder.AddPrimaryKey(
                 name: "PK_Address",
                 table: "Address",
@@ -203,7 +203,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 principalTable: "Parents",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
-            
+
             migrationBuilder.AddForeignKey(
                 name: "FK_Children_SocialGroup_SocialGroupId",
                 table: "Children",
@@ -211,7 +211,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 principalTable: "SocialGroup",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
-            
+
             migrationBuilder.AddForeignKey(
                 name: "FK_Workshops_Address_AddressId",
                 table: "Workshops",

@@ -8,6 +8,7 @@ namespace OutOfSchool.WebApi.Extensions
     public static class MappingExtensions
     {
 #pragma warning disable SA1124 // Do not use regions
+
         #region ToModel
 
         public static WorkshopDTO ToModel(this Workshop workshop)
@@ -22,9 +23,9 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static ProviderDto ToModel(this Provider provider)
         {
-           return Mapper<Provider, ProviderDto>(
-               provider,
-               cfg => { cfg.CreateMap<Provider, ProviderDto>(); });
+            return Mapper<Provider, ProviderDto>(
+                provider,
+                cfg => { cfg.CreateMap<Provider, ProviderDto>(); });
         }
 
         public static ChildDTO ToModel(this Child child)
@@ -45,8 +46,8 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
             {
-                cfg.CreateMap<ProviderDto, Provider>(); 
-                
+                cfg.CreateMap<ProviderDto, Provider>();
+
                 cfg.CreateMap<WorkshopDTO, Workshop>()
                     .ForMember(dest => dest.Address, opt => opt.Ignore())
                     .ForMember(dest => dest.Teachers, opt => opt.Ignore())
@@ -77,9 +78,10 @@ namespace OutOfSchool.WebApi.Extensions
         }
 
         #endregion
+
         private static TDestination Mapper<TSource, TDestination>(
-          this TSource source,
-          Action<IMapperConfigurationExpression> configure)
+            this TSource source,
+            Action<IMapperConfigurationExpression> configure)
         {
             var config = new MapperConfiguration(configure);
             var mapper = config.CreateMapper();

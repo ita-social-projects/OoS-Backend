@@ -31,7 +31,7 @@ namespace OutOfSchool.WebApi.Extensions
         {
             try
             {
-                await next(context);
+                await next(context).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -57,7 +57,7 @@ namespace OutOfSchool.WebApi.Extensions
         public ErrorDetails()
         {
         }
-        
+
         public string Message { get; set; }
     }
 }

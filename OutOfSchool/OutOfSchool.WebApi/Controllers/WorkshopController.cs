@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return NoContent();
             }
-            
+
             return Ok(workshops);
         }
 
@@ -86,9 +86,9 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             var workshop = await service.Create(dto).ConfigureAwait(false);
-            
-            return CreatedAtAction(nameof(GetById), 
-                new { id = workshop.Id, }, 
+
+            return CreatedAtAction(nameof(GetById),
+                new {id = workshop.Id,},
                 workshop);
         }
 

@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return NoContent();
             }
-            
+
             return Ok(teachers);
         }
 

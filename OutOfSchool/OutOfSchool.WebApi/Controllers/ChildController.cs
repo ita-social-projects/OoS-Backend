@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return NoContent();
             }
-            
+
             return Ok(children);
         }
 
@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Controllers
             if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(id), 
+                    nameof(id),
                     $"The id cannot be less than 1.");
             }
 

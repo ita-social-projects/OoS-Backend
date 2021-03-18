@@ -95,7 +95,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(10)]
-        public async Task GetById_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
+        public void GetById_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
         {
             // Assert
             Assert.That(async () => await service.GetById(10), Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
@@ -124,36 +124,40 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var changedEntity = new WorkshopDTO()
             {
-               Title = "Title1",
+                Title = "Title1",
             };
 
             // Assert
-            Assert.That(async () => await service.Update(changedEntity).ConfigureAwait(false), Throws.Exception.TypeOf<DbUpdateConcurrencyException>());
+            Assert.That(
+                async () => await service.Update(changedEntity).ConfigureAwait(false),
+                Throws.Exception.TypeOf<DbUpdateConcurrencyException>());
         }
-        
+
         [Test]
         [TestCase(1)]
         public async Task Delete_WhenIdIsValid_ShouldDeleteEntity(long id)
         {
             // Act
             var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
-            
+
             context.Entry<Workshop>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
-            
+
             await service.Delete(id).ConfigureAwait(false);
-            
+
             var countAfterDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
-            
+
             // Assert
             Assert.That(countAfterDeleting, Is.Not.EqualTo(countBeforeDeleting));
         }
-        
+
         [Test]
         [TestCase(10)]
         public void Delete_WhenIdIsNotValid_ShouldThrowDbUpdateConcurrencyException(long id)
         {
             // Assert
-            Assert.That(async () => await service.Delete(id).ConfigureAwait(false), Throws.Exception.TypeOf<DbUpdateConcurrencyException>());
+            Assert.That(
+                async () => await service.Delete(id).ConfigureAwait(false),
+                Throws.Exception.TypeOf<DbUpdateConcurrencyException>());
         }
 
         private void SeedDatabase()
