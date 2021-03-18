@@ -17,7 +17,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     District = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     City = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
                     Street = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                    BuildingNumb = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
+                    BuildingNumber = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
                 },
