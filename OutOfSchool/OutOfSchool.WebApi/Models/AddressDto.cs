@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class AddressDTO
+    public class AddressDto
     {
         public long Id { get; set; }
 
