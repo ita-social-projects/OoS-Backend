@@ -5,6 +5,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+[assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1012:OpeningBracesMustBeSpacedCorrectly", Justification = "Reviewed.")]
+[assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1013:ClosingBracesMustBeSpacedCorrectly", Justification = "Reviewed.")]
 [assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1200:Using directives should be placed correctly", Justification = "Correct placement of the using directive does not affect project performance.")]
 [assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1602:Enumeration items should be documented", Justification = "The names of the enum elements should be informative enough on their own.")]
 [assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Model is a simple self-documenting class.")]
