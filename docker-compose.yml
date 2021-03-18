@@ -14,7 +14,7 @@ services:
   identity-server:
     build:
         context: .
-        dockerfile: OutOfSchool/IdentityServer/Dockerfile
+        dockerfile: OutOfSchool/OutOfSchool.IdentityServer/Dockerfile
     environment:
         ConnectionStrings__DefaultConnection: "Server=sql-server; Database=Master;User Id=SA;Password=Oos-password1;"
     depends_on:
