@@ -79,7 +79,9 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IProviderService, ProviderService>();
+            services.AddTransient<IAddressService, AddressService>();
 
+            services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
