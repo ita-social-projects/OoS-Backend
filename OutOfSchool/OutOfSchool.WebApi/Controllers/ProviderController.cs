@@ -55,7 +55,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Provider's id.</param>
         /// <returns>Provider.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
@@ -75,8 +74,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "organization,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
@@ -95,7 +94,7 @@ namespace OutOfSchool.WebApi.Controllers
 
                 return CreatedAtAction(
                     nameof(GetById),
-                    new {id = organization.Id,},
+                    new { id = organization.Id, },
                     organization);
             }
             catch (ArgumentException ex)

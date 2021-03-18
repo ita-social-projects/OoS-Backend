@@ -73,8 +73,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "organization,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
@@ -87,8 +87,9 @@ namespace OutOfSchool.WebApi.Controllers
 
             var workshop = await service.Create(dto).ConfigureAwait(false);
 
-            return CreatedAtAction(nameof(GetById),
-                new {id = workshop.Id,},
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = workshop.Id, },
                 workshop);
         }
 
@@ -97,7 +98,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Workshop to update.</param>
         /// <returns>Workshop.</returns>
-        [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -118,7 +119,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Workshop's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)

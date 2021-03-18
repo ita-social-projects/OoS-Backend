@@ -54,7 +54,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">The key in the database.</param>
         /// <returns>Child entity.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
@@ -75,7 +74,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Child entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
@@ -85,8 +84,13 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
+            
+            var child = await service.Create(dto).ConfigureAwait(false);
 
-            return Ok(await service.Create(dto).ConfigureAwait(false));
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = child.Id, },
+                child);
         }
 
         /// <summary>
@@ -115,7 +119,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Child's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)

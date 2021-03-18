@@ -74,8 +74,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "organization,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
@@ -86,7 +86,12 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Create(dto).ConfigureAwait(false));
+            var teacher = await service.Create(dto).ConfigureAwait(false);
+            
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = teacher.Id, },
+                teacher);
         }
 
         /// <summary>
@@ -94,7 +99,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Teacher to update.</param>
         /// <returns>Teacher.</returns>
-        [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -114,8 +119,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Teacher's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "organization,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
