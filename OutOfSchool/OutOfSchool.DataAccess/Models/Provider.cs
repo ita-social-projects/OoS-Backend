@@ -108,5 +108,7 @@ namespace OutOfSchool.Services.Models
         public virtual List<Workshop> Workshops { get; set; }
 
         public virtual User User { get; set; }
+
+        public virtual Address Address { get; set; }
     }
 }

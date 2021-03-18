@@ -108,5 +108,7 @@ namespace OutOfSchool.WebApi.Models
         public virtual List<Workshop> Workshops { get; }
 
         public virtual User User { get; set; }
+
+        public virtual Address Address { get; set; }
     }
 }
