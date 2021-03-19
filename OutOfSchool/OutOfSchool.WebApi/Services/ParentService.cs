@@ -25,33 +25,9 @@ namespace OutOfSchool.WebApi.Services
             this.repository = entityRepository;
         }
 
-        public static void CreateValidation(ParentDTO parent)
-        {
-            if (parent == null)
-            {
-                throw new ArgumentException("Parent is null", nameof(parent));
-            }
-
-            if (parent.FirstName.Length == 0)
-            {
-                throw new ArgumentException("Empty firstname.", nameof(parent));
-            }
-
-            if (parent.LastName.Length == 0)
-            {
-                throw new ArgumentException("Empty lastname.", nameof(parent));
-            }
-
-            if (parent.MiddleName.Length == 0)
-            {
-                throw new ArgumentException("Empty middlename.", nameof(parent));
-            }
-        }
-
         /// <inheritdoc/>
         public async Task<ParentDTO> Create(ParentDTO parent)
         {
-            CreateValidation(parent);
             Parent res = await repository.Create(parent.ToDomain()).ConfigureAwait(false);
             return res.ToModel();
         }
@@ -102,7 +78,6 @@ namespace OutOfSchool.WebApi.Services
 
         private async Task UpdateValidation(ParentDTO parent)
         {
-            CreateValidation(parent);
             Parent tmp = await repository.GetById((int)parent.Id).ConfigureAwait(false);
             if (tmp == null)
             {
