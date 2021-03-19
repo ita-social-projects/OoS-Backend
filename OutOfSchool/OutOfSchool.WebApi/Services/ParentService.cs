@@ -66,11 +66,6 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> Update(ParentDTO parent)
         {
-            if (parent == null)
-            {
-                throw new ArgumentException("Parent cannot be null", nameof(parent));
-            }
-
             await UpdateValidation(parent).ConfigureAwait(false);
             Parent res = await repository.Update(parent.ToDomain()).ConfigureAwait(false);
             return res.ToModel();
