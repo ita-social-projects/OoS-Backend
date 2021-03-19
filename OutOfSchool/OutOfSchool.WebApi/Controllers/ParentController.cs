@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Initialization of ParentController.
         /// </summary>
         /// <param name="logger">Logging instance.</param>
-        /// <param name="parentService">Service for ParentCOntroller</param>
+        /// <param name="parentService">Service for ParentCOntroller.</param>
         public ParentController(ILogger<ParentController> logger, IParentService parentService)
         {
             this.logger = logger;
@@ -88,9 +88,16 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
+                if (parentDTO == null)
+                {
+                    throw new ArgumentException("ParentDTO object cannot be null.", nameof(parentDTO));
+                }
+
                 parentDTO.Id = default;
                 ParentDTO parent = await parentService.Create(parentDTO).ConfigureAwait(false);
-                return CreatedAtAction(nameof(GetParentById), new
+                return CreatedAtAction(
+                nameof(GetParentById),
+                new
                 {
                     id = parent.Id,
                 },

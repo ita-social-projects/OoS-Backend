@@ -25,6 +25,29 @@ namespace OutOfSchool.WebApi.Services
             this.repository = entityRepository;
         }
 
+        public static void CreateValidation(ParentDTO parent)
+        {
+            if (parent == null)
+            {
+                throw new ArgumentException("Parent is null", nameof(parent));
+            }
+
+            if (parent.FirstName.Length == 0)
+            {
+                throw new ArgumentException("Empty firstname.", nameof(parent));
+            }
+
+            if (parent.LastName.Length == 0)
+            {
+                throw new ArgumentException("Empty lastname.", nameof(parent));
+            }
+
+            if (parent.MiddleName.Length == 0)
+            {
+                throw new ArgumentException("Empty middlename.", nameof(parent));
+            }
+        }
+
         /// <inheritdoc/>
         public async Task<ParentDTO> Create(ParentDTO parent)
         {
@@ -67,32 +90,14 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> Update(ParentDTO parent)
         {
+            if (parent == null)
+            {
+                throw new ArgumentException("Parent cannot be null", nameof(parent));
+            }
+
             await UpdateValidation(parent).ConfigureAwait(false);
             Parent res = await repository.Update(parent.ToDomain()).ConfigureAwait(false);
             return res.ToModel();
-        }
-
-        public static void CreateValidation(ParentDTO parent)
-        {
-            if (parent == null)
-            {
-                throw new ArgumentException("Parent is null", nameof(parent));
-            }
-
-            if (parent.FirstName.Length == 0)
-            {
-                throw new ArgumentException("Empty firstname.", nameof(parent));
-            }
-
-            if (parent.LastName.Length == 0)
-            {
-                throw new ArgumentException("Empty lastname.", nameof(parent));
-            }
-
-            if (parent.MiddleName.Length == 0)
-            {
-                throw new ArgumentException("Empty middlename.", nameof(parent));
-            }
         }
 
         private async Task UpdateValidation(ParentDTO parent)
