@@ -33,5 +33,7 @@ namespace OutOfSchool.Services.Models
         /// Date of issue of the birth certificate.
         /// </summary>
         public DateTime SvidDate { get; set; }
+
+        public virtual Child Child { get; set; }
     }
 }
