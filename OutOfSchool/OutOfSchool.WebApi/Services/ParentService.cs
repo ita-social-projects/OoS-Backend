@@ -71,13 +71,17 @@ namespace OutOfSchool.WebApi.Services
             return res.ToModel();
         }
 
-        private async Task UpdateValidation(ParentDTO parent)
+        private static void IsNotNull(ParentDTO parent)
         {
             if (parent == null)
             {
                 throw new ArgumentException("Parent cannot be null.", nameof(parent));
             }
+        }
 
+        private async Task UpdateValidation(ParentDTO parent)
+        {
+            IsNotNull(parent);
             Parent tmp = await repository.GetById((int)parent.Id).ConfigureAwait(false);
             if (tmp == null)
             {
