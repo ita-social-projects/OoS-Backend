@@ -81,6 +81,11 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateParent(ParentDTO parentDTO)
         {
+            if (parentDTO == null)
+            {
+                return BadRequest("Entity was null.");
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -88,11 +93,6 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                if (parentDTO == null)
-                {
-                    throw new ArgumentException("ParentDTO object cannot be null.", nameof(parentDTO));
-                }
-
                 parentDTO.Id = default;
                 ParentDTO parent = await parentService.Create(parentDTO).ConfigureAwait(false);
                 return CreatedAtAction(
