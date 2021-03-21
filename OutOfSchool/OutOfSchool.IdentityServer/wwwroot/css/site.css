@@ -41,7 +41,7 @@
     cursor: pointer;
 }
 .login__button:hover{
-    box-shadow: 0 3px 1px -2px  #4158d0, 0 2px 2px 0  #4158d0, 0 1px 5px 0 #4158d0;
+    box-shadow: 0 3px 1px -2px #4158d0, 0 2px 2px 0  #4158d0, 0 1px 5px 0 #4158d0;
 }
 .login .login__link {
     border-bottom: 1px solid silver; 
@@ -55,3 +55,279 @@
 .login__link:hover, .login__input:focus, .login__button:hover{
     color: #4158d0;
 }
+
+.registration_wrapper {
+    background: #FFFFFF;
+    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
+    border-radius: 5px;
+    padding: 3rem 4.3125rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 640px;
+    margin: 48px auto;
+  }
+  .registration_title {
+    line-height: 20px;
+    text-align: center;
+    color: #444444;
+    margin: 0;
+  }
+  .registration_subtitle {
+    line-height: 18px;
+    text-align: center;
+    color: #AAAAAA;
+    margin: 16px 0 0 0;
+  }
+  .registration_social {
+    margin-top: 24px;
+  }
+  .registration_button {
+    border: none;
+    outline: none;
+    background: inherit;
+    margin: 0 0.3rem;
+    cursor: pointer;
+  }
+  .registration_option {
+    font-size: 0.8125rem;
+    line-height: 18px;
+    text-align: center;
+    color: #333333;
+    position: relative;
+    margin-top: 24px;
+  }
+  .registration_option:after {
+    content: '';
+    display: block;
+    position: absolute;
+    height: 1px;
+    width: 7rem;
+    background-color: #E3E3E3;
+    left: 0%;
+    top: 50%;
+    transform: translate(-120%, -50%);
+  }
+  .registration_option:before {
+    content: '';
+    display: block;
+    position: absolute;
+    height: 1px;
+    width: 7rem;
+    background-color: #E3E3E3;
+    right: 0%;
+    top: 50%;
+    transform: translate(120%, -50%);
+  }
+  .registration_form {
+    margin-top: 24px;
+    width: 25.625rem;
+  }
+  .registration_star {
+    color: red;
+    display: inline;
+  }
+  .registration_list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .registration_item {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    margin: 16px 0;
+    box-sizing: border-box;
+  }
+  .registration_item-maturity {
+    flex-direction: row;
+    gap: 8px;
+    font-family: Open Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 18px;
+    color: #444444;
+    margin-top: 24px;
+  }
+  .registration_item-accept {
+    margin: 24px auto 0 auto;
+    text-align: center;
+    display: block;
+    font-family: Open Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 18px;
+    color: #333333;
+    width: 95%;
+  }
+  .registration_item-tip {
+    margin: 0;
+    font-family: Open Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 18px;
+    color: #AAAAAA;
+  }
+  .registration_item-password {
+    margin-bottom: 8px;
+  }
+  .registration_link {
+    color: #3849F9;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+  .registration_as {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-top: 8px;
+  }
+  .registration_type {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    height: 34px;
+    padding: 0;
+    font-family: Open Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 0.8125rem;
+    line-height: 100%;
+    color: #272425;
+    background: inherit;
+    outline: none;
+    cursor: pointer;
+    border: 1px solid #E3E3E3;
+    transition: 0.5s ease all;
+  }
+  .registration_type:nth-child(1) {
+    border-radius: 20px 0 0 20px;
+    border-right: none;
+  }
+  .registration_type:nth-child(2) {
+    border-radius: 0 20px 20px 0;
+    border-left: none;
+  }
+  .registration_type:hover {
+    border-color: #3849F9;
+  }
+  .registration_type:hover ~ .registration_divider {
+    background: #3849F9;
+  }
+  .registration_type-active {
+    border-color: #3849F9;
+    color: #3849F9;
+    background: rgba(56, 73, 249, 0.07);
+  }
+  .registration_type-active ~ .registration_divider {
+    background: #3849F9;
+  }
+  .registration_type-active svg path {
+    fill: #3849F9;
+  }
+  .registration_divider {
+    transition: 0.5s ease all;
+    position: absolute;
+    height: 100%;
+    width: 1px;
+    background: #E3E3E3;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .registration_icon-person {
+    height: 13px;
+    width: 11px;
+  }
+  .registration_icon-provider {
+    width: 13px;
+    height: 17px;
+  }
+  .registration_input {
+    border: 1px solid #E3E3E3;
+    border-radius: 20px;
+    height: 30px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 0 0 0 16px;
+    outline: none;
+    font-family: Open Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 30px;
+    color: #333333;
+  }
+  .registration_input-password {
+    font-size: 30px;
+    padding-right: 30px;
+  }
+  .registration_label {
+    font-family: Innerspace;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 13px;
+    line-height: 15px;
+    color: #333333;
+  }
+  .registration_phone {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+  }
+  .registration_phone-code {
+    margin-top: 8px;
+    border: 1px solid #E3E3E3;
+    border-radius: 21px;
+    height: 30px;
+    width: 59px;
+    text-align: center;
+    font-family: Open Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 26px;
+    color: #333333;
+  }
+  .registration_submit {
+    border: none;
+    outline: none;
+    height: 34px;
+    width: 12rem;
+    margin: 16px auto;
+    background: #3849F9;
+    border-radius: 20px;
+    font-family: Innerspace;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 13px;
+    line-height: 34px;
+    color: #FFFFFF;
+    cursor: pointer;
+  }
+  .registration_privacy {
+    border: none;
+    outline: none;
+    background: inherit;
+    position: absolute;
+    bottom: 0;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .registration_privacy img {
+    height: 16px;
+    width: auto;
+  }  
