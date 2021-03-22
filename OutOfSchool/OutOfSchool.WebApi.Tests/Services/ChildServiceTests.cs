@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             mockRepository.Setup(m => m.Create(It.IsAny<Child>())).Returns(Task.FromResult(CreatedChild));
             IChildService childService = new ChildService(mockRepository.Object);
 
-            ChildDTO child = new ChildDTO { Id = 20, FirstName = "fn3", LastName = "ln3", Patronymic = "mn3", DateOfBirth = new DateTime(2021, 3, 20), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
+            ChildDTO child = new ChildDTO { Id = 20, FirstName = "fn3", LastName = "ln3", Patronymic = "mn3", DateOfBirth = new DateTime(DateTime.Now.Year+1, 3, 20), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Create(child));
         }
