@@ -34,9 +34,7 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException(nameof(dto), "Address is null.");
             }
 
-            var address = dto.ToDomain();
-
-            return CreateInternal(address);
+            return CreateInternal(dto.ToDomain());
         }
 
         /// <inheritdoc/>
@@ -54,7 +52,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (address == null)
             {
-                throw new ArgumentException("Incorrect Id!", nameof(id));
+                throw new ArgumentException("Incorrect Id", nameof(id));
             }
 
             return address.ToModel();
