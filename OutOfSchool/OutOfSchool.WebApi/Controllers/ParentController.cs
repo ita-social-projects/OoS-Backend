@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ParentController : ControllerBase
     {
-        private readonly IParentService parentService;
+        private readonly IParentService service;
         private readonly ILogger<ParentController> logger;
 
         /// <summary>
@@ -29,11 +29,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// Initialization of ParentController.
         /// </summary>
         /// <param name="logger">Logging instance.</param>
-        /// <param name="parentService">Service for ParentCOntroller.</param>
-        public ParentController(ILogger<ParentController> logger, IParentService parentService)
+        /// <param name="service">Service for ParentCOntroller.</param>
+        public ParentController(ILogger<ParentController> logger, IParentService service)
         {
             this.logger = logger;
-            this.parentService = parentService;
+            this.service = service;
         }
 
         /// <summary>
@@ -43,9 +43,10 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetParents()
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Get()
         {
-                return Ok(await parentService.GetAll().ConfigureAwait(false));
+                return Ok(await service.GetAll().ConfigureAwait(false));
         }
 
         /// <summary>
@@ -56,11 +57,12 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetParentById(long id)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetById(long id)
         {
             try
             {
-                ParentDTO parentDTO = await parentService.GetById(id).ConfigureAwait(false);
+                ParentDTO parentDTO = await service.GetById(id).ConfigureAwait(false);
                 return Ok(parentDTO);
             }
             catch (ArgumentException ex)
@@ -79,7 +81,8 @@ namespace OutOfSchool.WebApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateParent(ParentDTO parentDTO)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Create(ParentDTO parentDTO)
         {
             if (parentDTO == null)
             {
@@ -94,9 +97,9 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 parentDTO.Id = default;
-                ParentDTO parent = await parentService.Create(parentDTO).ConfigureAwait(false);
+                ParentDTO parent = await service.Create(parentDTO).ConfigureAwait(false);
                 return CreatedAtAction(
-                nameof(GetParentById),
+                nameof(GetById),
                 new
                 {
                     id = parent.Id,
@@ -118,6 +121,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Update(ParentDTO parentDTO)
         {
             if (parentDTO == null)
@@ -132,7 +136,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                return Ok(await parentService.Update(parentDTO).ConfigureAwait(false));
+                return Ok(await service.Update(parentDTO).ConfigureAwait(false));
             }
             catch (ArgumentException ex)
             {
@@ -149,11 +153,12 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(long id)
         {
             try
             {
-                await parentService.Delete(id).ConfigureAwait(false);
+                await service.Delete(id).ConfigureAwait(false);
                 return Ok();
             }
             catch (ArgumentException ex)
@@ -170,12 +175,13 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ParentDTO>> GetParentProfile()
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ParentDTO>> GetProfile()
         {
             try
             {
                 int id = int.Parse(this.GetJwtClaimByName("sid"));
-                ParentDTO parentDTO = await this.parentService.GetById(id).ConfigureAwait(false);
+                ParentDTO parentDTO = await service.GetById(id).ConfigureAwait(false);
                 return this.Ok(parentDTO);
             }
             catch (ArgumentException ex)
