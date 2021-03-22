@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Services;
+using System.Globalization;
 
 namespace OutOfSchool.WebApi
 {
@@ -32,6 +34,21 @@ namespace OutOfSchool.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
+            var supportedCultures = new[]
+            {
+                  new CultureInfo("en"),
+                  new CultureInfo("uk"),
+            };
+
+            var requestLocalization = new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("en"),
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures,
+            };
+
+            app.UseRequestLocalization(requestLocalization);
+
             app.UseCors("AllowAll");
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
@@ -54,6 +71,7 @@ namespace OutOfSchool.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
