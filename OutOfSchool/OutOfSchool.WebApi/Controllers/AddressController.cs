@@ -14,17 +14,14 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class AddressController : ControllerBase
     {
-        private readonly ILogger<AddressController> logger;
         private readonly IAddressService addressService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AddressController"/> class.
         /// </summary>
-        /// <param name="logger">Logging instance.</param>
         /// <param name="addressService">Service for Address model.</param>
-        public AddressController(ILogger<AddressController> logger, IAddressService addressService)
+        public AddressController(IAddressService addressService)
         {
-            this.logger = logger;
             this.addressService = addressService;
         }
 
@@ -51,9 +48,9 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAddressById(long id)
         {
-            if (id == 0)
+            if (id <= 0)
             {
-                return BadRequest("Id cannot be 0.");
+                return BadRequest("Id cannot be 0 or less than 0.");
             }
 
             return Ok(await addressService.GetById(id).ConfigureAwait(false));
@@ -129,9 +126,9 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(long id)
         {
-            if (id == 0)
+            if (id <= 0)
             {
-                return BadRequest("Id cannot be 0.");
+                return BadRequest("Id cannot be 0 or less than 0.");
             }
 
             await addressService.Delete(id).ConfigureAwait(false);
