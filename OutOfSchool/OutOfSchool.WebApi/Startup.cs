@@ -1,3 +1,4 @@
+using System.Globalization;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,7 +11,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Services;
-using System.Globalization;
+using Serilog;
 
 namespace OutOfSchool.WebApi
 {
@@ -105,6 +106,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
 
             services.AddTransient<IProviderRepository, ProviderRepository>();
+
+            services.AddSingleton(Log.Logger);
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
