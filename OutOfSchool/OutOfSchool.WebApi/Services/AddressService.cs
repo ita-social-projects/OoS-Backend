@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Mapping.Extensions;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using Serilog;
 
