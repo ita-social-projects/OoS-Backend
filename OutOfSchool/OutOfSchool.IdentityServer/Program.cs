@@ -24,7 +24,6 @@ namespace IdentityServer
             {
                 var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
 
-                // TODO: Move from Console to logger
                 while (!context.Database.CanConnect())
                 {
                     Task.Delay(500).Wait();
@@ -93,18 +92,15 @@ namespace IdentityServer
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
 
         private static void RolesInit(RoleManager<IdentityRole> manager)
         {
             var roles = new IdentityRole[]
             {
-                new IdentityRole { Name = "parent" },
-                new IdentityRole { Name = "provider" },
-                new IdentityRole { Name = "admin" },
+                new IdentityRole {Name = "parent"},
+                new IdentityRole {Name = "provider"},
+                new IdentityRole {Name = "admin"},
             };
             foreach (var role in roles)
             {

@@ -38,8 +38,9 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task Delete(T entity)
         {
-            dbSet.Remove(entity);
-            await dbContext.SaveChangesAsync();
+            dbContext.Entry(entity).State = EntityState.Deleted;
+            
+            await this.dbContext.SaveChangesAsync();
         }
 
         /// <inheritdoc/>
@@ -53,7 +54,20 @@ namespace OutOfSchool.Services.Repository
         {
             IQueryable<T> query = dbSet;
             foreach (var includeProperty in includeProperties.Split(
-            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        {
+            var query = this.dbSet.Where(predicate);
+            
+            foreach (var includeProperty in includeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 query = query.Include(includeProperty);
             }
@@ -68,26 +82,11 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "")
-        {
-            IQueryable<T> query = this.dbSet.Where(predicate);
-            foreach (var includeProperty in includeProperties.Split(
-            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-
-            return await Task.Run(() =>
-            {
-                return query.ToList();
-            }).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
         public async Task<T> Update(T entity)
         {
-            dbSet.Update(entity);
-            await dbContext.SaveChangesAsync();
+            dbContext.Entry(entity).State = EntityState.Modified;
+            
+            await this.dbContext.SaveChangesAsync();
             return entity;
         }
     }

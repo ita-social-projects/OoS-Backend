@@ -1,13 +1,14 @@
-﻿using NUnit.Framework;
-using System;
-using OutOfSchool.Services.Models;
+﻿using System;
 using System.Linq;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services;
-using OutOfSchool.Services.Repository;
 using System.Linq.Expressions;
+using NUnit.Framework;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests;
 
-namespace OutOfSchool.Tests
+namespace OutOfSchool.WebApi.Tests
 {
     [TestFixture]
     public class EntityRepositoryTest
@@ -38,7 +39,7 @@ namespace OutOfSchool.Tests
                 Expression<Func<Child, bool>> filter = child => child.Id == 1;
 
                 // Act
-                var child = repository.GetAllWIthDetails(filter, "SocialGroup").Result;
+                var child = repository.GetByFilter(filter, "SocialGroup").Result;
 
                 // Assert
                 Assert.AreEqual(1, child.Count());

@@ -30,6 +30,13 @@ namespace OutOfSchool.WebApi.Services
         Task<WorkshopDTO> GetById(long id);
 
         /// <summary>
+        /// Get all workshops by organization Id.
+        /// </summary>
+        /// <param name="id">Organization's key.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id);
+
+        /// <summary>
         /// Update entity.
         /// </summary>
         /// <param name="dto">Workshop entity to update.</param>

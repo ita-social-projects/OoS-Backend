@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210317110230_ChangeUserIdType")]
+    partial class ChangeUserIdType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,7 +188,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Addresses");
+                    b.ToTable("Address");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Category", b =>
@@ -225,14 +227,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ParentId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Patronymic")
+                    b.Property<string>("MiddleName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("SocialGroupId")
+                    b.Property<long?>("ParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SocialGroupId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -244,6 +246,63 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Children");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Organization", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(750)
+                        .HasColumnType("nvarchar(750)");
+
+                    b.Property<string>("EDRPOU")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Facebook")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("INPP")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Instagram")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MFO")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Website")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Organizations");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
                     b.Property<long>("Id")
@@ -253,136 +312,20 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
-
-                    b.Property<string>("MiddleName")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("UserId1")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId1");
-
-                    b.ToTable("Parents");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .UseIdentityColumn();
-
-                    b.Property<long>("AddressId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("AttachedDocuments")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AuthorityHolder")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Director")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("DirectorBirthDay")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DirectorPhone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DirectorPosition")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("EDRPOU")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Facebook")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Form")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("INPP")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Index")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Instagram")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsSubmitPZ1")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("KOATUU")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MFO")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ManagerialBody")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Ownership")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Profile")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShortTitle")
-                        .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Website")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Providers");
+                    b.ToTable("Parents");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
@@ -397,7 +340,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SocialGroups");
+                    b.ToTable("SocialGroup");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Subcategory", b =>
@@ -485,7 +428,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("LastLogin")
+                    b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("LockoutEnabled")
@@ -588,15 +531,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("MinAge")
                         .HasColumnType("int");
 
+                    b.Property<long?>("OrganizationId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<long?>("ProviderId")
-                        .HasColumnType("bigint");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -615,7 +558,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("ProviderId");
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Workshops");
                 });
@@ -675,37 +618,31 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ParentId");
 
                     b.HasOne("OutOfSchool.Services.Models.SocialGroup", "SocialGroup")
                         .WithMany("Children")
-                        .HasForeignKey("SocialGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SocialGroupId");
 
                     b.Navigation("Parent");
 
                     b.Navigation("SocialGroup");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.Organization", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
@@ -738,15 +675,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .WithMany()
                         .HasForeignKey("CategoryId");
 
-                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
+                    b.HasOne("OutOfSchool.Services.Models.Organization", "Organization")
                         .WithMany("Workshops")
-                        .HasForeignKey("ProviderId");
+                        .HasForeignKey("OrganizationId");
 
                     b.Navigation("Address");
 
                     b.Navigation("Category");
 
-                    b.Navigation("Provider");
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Category", b =>
@@ -754,14 +691,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Subcategories");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Organization", b =>
+                {
+                    b.Navigation("Workshops");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
                     b.Navigation("Children");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
-                {
-                    b.Navigation("Workshops");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>

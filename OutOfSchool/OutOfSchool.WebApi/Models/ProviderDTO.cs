@@ -41,13 +41,13 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "MFO code is required")]
         [RegularExpression(@"(^[0-9]{1,6}$)", ErrorMessage = "Invalid MFO format. Example: XXX XXX")]
         [MinLength(6, ErrorMessage = "MFO code must contain 6 digits")]
-        public string MFO { get; set; }
+        public string MFO { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "EDRPOU code is required")]
         [RegularExpression(
             @"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU code must contain 8 or 10 digits")]
-        public string EDRPOU { get; set; }
+        public string EDRPOU { get; set; } = string.Empty;
 
         [RegularExpression(
             @"^(\d{10})$",
@@ -58,7 +58,7 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(
             @"^(\d{9}|\d{10}|\d{12})$",
             ErrorMessage = "INPP code must contain 12, 10 or 9 digits")]
-        public string INPP { get; set; }
+        public string INPP { get; set; } = string.Empty;
 
         [MaxLength(50)]
         public string Director { get; set; } = string.Empty;
@@ -105,7 +105,7 @@ namespace OutOfSchool.WebApi.Models
 
         public string UserId { get; set; } = string.Empty;
 
-        public virtual List<Workshop> Workshops { get; }
+        public virtual IEnumerable<Workshop> Workshops { get; }
 
         public virtual User User { get; set; }
     }

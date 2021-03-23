@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Mapping.Extensions;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
