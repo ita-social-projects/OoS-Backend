@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using System;
 
 namespace OutOfSchool.Tests
 {

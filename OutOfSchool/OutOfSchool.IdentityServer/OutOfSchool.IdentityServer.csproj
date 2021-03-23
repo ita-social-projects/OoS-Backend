@@ -32,10 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Migrations\OutOfSchoolMigrations\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Remove="stylecop.json" />
     <AdditionalFiles Include="stylecop.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
