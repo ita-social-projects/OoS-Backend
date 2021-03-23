@@ -19,7 +19,6 @@ namespace OutOfSchool.WebApi.Controllers
     {
         private readonly IProviderService service;
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
         /// </summary>

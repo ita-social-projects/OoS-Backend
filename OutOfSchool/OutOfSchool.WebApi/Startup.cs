@@ -12,7 +12,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
-using System.Globalization;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -50,7 +49,7 @@ namespace OutOfSchool.WebApi
             app.UseRequestLocalization(requestLocalization);
 
             app.UseCors("AllowAll");
-          
+
             app.UseMiddleware<ExceptionMiddlewareExtension>();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
@@ -61,7 +60,7 @@ namespace OutOfSchool.WebApi
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); });
 
             app.UseHttpsRedirection();
-          
+
             app.UseSerilogRequestLogging();
 
             app.UseRouting();
@@ -71,7 +70,7 @@ namespace OutOfSchool.WebApi
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
-      
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -86,7 +85,8 @@ namespace OutOfSchool.WebApi
                 });
 
             services.AddCors(confg =>
-                confg.AddPolicy("AllowAll",
+                confg.AddPolicy(
+                    "AllowAll",
                     p => p.AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader()));
