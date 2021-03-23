@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Mapping.Extensions;
@@ -84,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
 
                 return address.ToModel();
             }
-            catch (DataException)
+            catch (DbUpdateConcurrencyException)
             {
                 logger.Error("Updating failed. There is no Address in the Db with such an id.");
                 throw;
@@ -104,7 +105,7 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.Information("Address successfully deleted.");
             }
-            catch (DataException)
+            catch (DbUpdateConcurrencyException)
             {
                 logger.Error("Deleting failed. There is no Address in the Db with such an id.");
                 throw;
