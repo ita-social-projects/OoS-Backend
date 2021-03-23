@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
 
 namespace OutOfSchool.WebApi.Models
 {

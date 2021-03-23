@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -15,25 +17,33 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class WorkshopController : ControllerBase
     {
-        private readonly IWorkshopService workshopService;
+        private readonly IWorkshopService service;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
         /// </summary>
-        /// <param name="workshopService">Service for Workshop model.</param>
-        public WorkshopController(IWorkshopService workshopService)
+        /// <param name="service">Service for Workshop model.</param>
+        public WorkshopController(IWorkshopService service)
         {
-            this.workshopService = workshopService;
+            this.service = service;
         }
 
         /// <summary>
         /// Get all workshops from the database.
         /// </summary>
         /// <returns>List of all workshops.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WorkshopDTO>>> GetWorkshops()
+        public async Task<IActionResult> Get()
         {
-            var workshops = await workshopService.GetAll().ConfigureAwait(false);
+            var workshops = await service.GetAll().ConfigureAwait(false);
+
+            if (!workshops.Any())
+            {
+                return NoContent();
+            }
 
             return Ok(workshops);
         }
@@ -41,72 +51,89 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get workshop by it's id.
         /// </summary>
-        /// <param name="id">Key in the database.</param>
-        /// <returns>Workshop entity.</returns>
+        /// <param name="id">Workshop's id.</param>
+        /// <returns>Workshop.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetWorkshopById(long id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetById(long id)
         {
-            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+            if (id < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    "The id is cannot be less than 1.");
+            }
 
-            return Ok(workshop);
+            return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
         /// Add new workshop to the database.
         /// </summary>
-        /// <param name="workshopDto">Entity to add.</param>
+        /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult> CreateWorkshop(WorkshopDTO workshopDto)
+        public async Task<IActionResult> Create(WorkshopDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var workshop = await workshopService.Create(workshopDto).ConfigureAwait(false);
+            var workshop = await service.Create(dto).ConfigureAwait(false);
 
-            return CreatedAtAction(nameof(GetWorkshopById), new
-            {
-                id = workshop.Id,
-            });
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = workshop.Id, },
+                workshop);
         }
 
         /// <summary>
         /// Update info about workshop entity.
         /// </summary>
-        /// <param name="workshopDto">Workshop to update.</param>
+        /// <param name="dto">Workshop to update.</param>
         /// <returns>Workshop.</returns>
         [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<ActionResult> Update(WorkshopDTO workshopDto)
+        public async Task<IActionResult> Update(WorkshopDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await workshopService.Update(workshopDto).ConfigureAwait(false));
+            return Ok(await service.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Delete a specific workshop entity from the database.
+        /// Delete a specific workshop from the database.
         /// </summary>
-        /// <param name="id">Workshop's key.</param>
+        /// <param name="id">Workshop's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(long id)
         {
-            if (id == 0)
+            if (id < 1)
             {
-                return BadRequest("Id cannot be 0.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    "The id cannot be less than 1.");
             }
 
-            await workshopService.Delete(id).ConfigureAwait(false);
+            await service.Delete(id).ConfigureAwait(false);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

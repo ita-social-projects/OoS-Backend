@@ -12,11 +12,11 @@ namespace OutOfSchool.Services
         }
 
         public DbSet<Parent> Parents { get; set; }
-
+        
         public DbSet<Provider> Providers { get; set; }
-
+        
         public DbSet<Child> Children { get; set; }
-
+        
         public DbSet<Workshop> Workshops { get; set; }
 
         public DbSet<Teacher> Teachers { get; set; }
@@ -24,7 +24,9 @@ namespace OutOfSchool.Services
         public DbSet<Subcategory> Subcategories { get; set; }
 
         public DbSet<Category> Categories { get; set; }
-
+        
         public DbSet<SocialGroup> SocialGroups { get; set; }
+        
+        public DbSet<Address> Addresses { get; set; }
     }
 }

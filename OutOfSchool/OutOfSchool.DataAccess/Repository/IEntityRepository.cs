@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -15,21 +15,21 @@ namespace OutOfSchool.Services.Repository
         /// <summary>
         /// Add new element.
         /// </summary>
-        /// <param name="entity">Entity.</param>
+        /// <param name="entity">Entity to create.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> Create(T entity);
 
         /// <summary>
         /// Update information about element.
         /// </summary>
-        /// <param name="entity">Entity.</param>
+        /// <param name="entity">Entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<T> Update(T entity);
 
         /// <summary>
         /// Delete element.
         /// </summary>
-        /// <param name="entity">Entity.</param>
+        /// <param name="entity">Entity to delete.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(T entity);
 
@@ -38,14 +38,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <returns>List of all elements.</returns>
         Task<IEnumerable<T>> GetAll();
-
-        /// <summary>
-        /// Get all elements with details.
-        /// </summary>
-        /// <param name="includeProperties">Name of properties which should be included.</param>
-        /// <returns>List of all elements with included propertires.</returns>
-        Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
-
+        
         /// <summary>
         /// Get element by Id.
         /// </summary>
@@ -54,11 +47,18 @@ namespace OutOfSchool.Services.Repository
         Task<T> GetById(long id);
 
         /// <summary>
-        /// Get elements by id with details.
+        /// Get all elements with details.
+        /// </summary>
+        /// <param name="includeProperties">Name of properties which should be included.</param>
+        /// <returns>List of all elements with included propertires.</returns>
+        Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
+        
+        /// <summary>
+        /// Get elements by a specific filter.
         /// </summary>
         /// <param name="predicate">Filter with key.</param>
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<IEnumerable<T>> GetAllWIthDetails(Expression<Func<T, bool>> predicate, string includeProperties = "");
+        Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "");
     }
 }

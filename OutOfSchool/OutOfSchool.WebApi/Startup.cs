@@ -10,18 +10,17 @@ using Microsoft.Extensions.Hosting;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
+using System.Globalization;
 using Serilog;
 
 namespace OutOfSchool.WebApi
 {
     public class Startup
     {
-        private readonly IWebHostEnvironment environment;
-
-        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+        public Startup(IConfiguration configuration)
         {
-            this.environment = environment;
             Configuration = configuration;
         }
 
@@ -51,6 +50,8 @@ namespace OutOfSchool.WebApi
             app.UseRequestLocalization(requestLocalization);
 
             app.UseCors("AllowAll");
+          
+            app.UseMiddleware<ExceptionMiddlewareExtension>();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
@@ -60,6 +61,8 @@ namespace OutOfSchool.WebApi
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); });
 
             app.UseHttpsRedirection();
+          
+            app.UseSerilogRequestLogging();
 
             app.UseRouting();
 
@@ -68,7 +71,7 @@ namespace OutOfSchool.WebApi
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
-
+      
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -83,8 +86,7 @@ namespace OutOfSchool.WebApi
                 });
 
             services.AddCors(confg =>
-                confg.AddPolicy(
-                    "AllowAll",
+                confg.AddPolicy("AllowAll",
                     p => p.AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader()));
@@ -92,18 +94,20 @@ namespace OutOfSchool.WebApi
             services.AddControllers();
 
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseSqlServer(Configuration.GetConnectionString("OutOfSchoolConnectionString")));
+                builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IProviderService, ProviderService>();
+            services.AddTransient<IParentService, ParentService>();
             services.AddTransient<IAddressService, AddressService>();
 
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
+            services.AddTransient<IEntityRepository<Parent>, EntityRepository<Parent>>();
 
             services.AddTransient<IProviderRepository, ProviderRepository>();
 

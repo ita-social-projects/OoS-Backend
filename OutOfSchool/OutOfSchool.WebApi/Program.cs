@@ -2,12 +2,11 @@ using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using OutOfSchool.WebApi;
 using Serilog;
 
-namespace OutOfSchool
+namespace OutOfSchool.WebApi
 {
-    public static class Program
+    public class Program
     {
         public static void Main(string[] args)
         {

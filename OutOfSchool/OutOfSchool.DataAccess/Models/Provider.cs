@@ -76,7 +76,7 @@ namespace OutOfSchool.Services.Models
             @"([\d]{9})",
             ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
-        public string DirectorPhonenumber { get; set; } = string.Empty;
+        public string DirectorPhone { get; set; } = string.Empty;
 
         public string ManagerialBody { get; set; } = string.Empty;
 
