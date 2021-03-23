@@ -98,6 +98,17 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<ChildDTO>> GetByParentId(long id)
+        {
+            Expression<Func<Child, bool>> filter = child => child.ParentId == id;
+            IEnumerable<Child> children = await this.repository.GetAllWIthDetails(filter).ConfigureAwait(false);
+            return await Task.Run(() =>
+            {
+                return children.Select(child => child.ToModel()).ToList();
+            }).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
         public async Task<ChildDTO> Update(ChildDTO dto)
         {
             logger.Information("Child updating was launched.");

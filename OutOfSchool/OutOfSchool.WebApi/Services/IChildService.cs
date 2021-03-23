@@ -30,6 +30,13 @@ namespace OutOfSchool.WebApi.Services
         Task<ChildDTO> GetById(long id);
 
         /// <summary>
+        /// Get children with some ParentId.
+        /// </summary>
+        /// <param name="id">ParentId</param>
+        /// <returns>List of children.</returns>
+        Task<IEnumerable<ChildDTO>> GetByParentId(long id);
+
+        /// <summary>
         /// Update entity.
         /// </summary>
         /// <param name="dto">Child entity to update.</param>
