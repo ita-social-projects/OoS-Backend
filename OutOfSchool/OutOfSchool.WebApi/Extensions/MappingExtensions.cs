@@ -38,6 +38,13 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Category, CategoryDTO>(category, cfg => { cfg.CreateMap<Category, CategoryDTO>(); });
         }
 
+        public static ParentDTO ToModel(this Parent parent)
+        {
+            var parentDto =
+                Mapper<Parent, ParentDTO>(parent, cfg => { cfg.CreateMap<Parent, ParentDTO>(); });
+            return parentDto;
+        }
+
         #endregion
 
         #region ToDomain
@@ -75,6 +82,13 @@ namespace OutOfSchool.WebApi.Extensions
         public static Category ToDomain(this CategoryDTO categoryDto)
         {
             return Mapper<CategoryDTO, Category>(categoryDto, cfg => { cfg.CreateMap<CategoryDTO, Category>(); });
+        }
+
+        public static Parent ToDomain(this ParentDTO parentDto)
+        {
+            var parent =
+                Mapper<ParentDTO, Parent>(parentDto, cfg => { cfg.CreateMap<ParentDTO, Parent>(); });
+            return parent;
         }
 
         #endregion

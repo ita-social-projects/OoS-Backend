@@ -36,8 +36,4 @@
     <ProjectReference Include="..\OutOfSchool.WebApi\OutOfSchool.WebApi.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>
