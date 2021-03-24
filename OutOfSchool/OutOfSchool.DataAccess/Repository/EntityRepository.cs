@@ -89,5 +89,58 @@ namespace OutOfSchool.Services.Repository
             await this.dbContext.SaveChangesAsync();
             return entity;
         }
+
+        /// <inheritdoc/>
+        public async Task<int> Count(Expression<Func<T, bool>> where = null)
+        {
+            if (where == null)
+            {
+                return await dbSet.CountAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                return await dbSet.Where(where).CountAsync().ConfigureAwait(false);
+            }
+        }
+
+        /// <inheritdoc/>
+        public IQueryable<T> Get<TOrderKey>(int skip = 0, int take = 0, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
+        {
+            IQueryable<T> query = (IQueryable<T>)dbSet;
+            if (where != null)
+            {
+                query = query.Where(where);
+            }
+
+            if (orderBy != null)
+            {
+                if (ascending)
+                {
+                    query = query.OrderBy(orderBy);
+                }
+                else
+                {
+                    query = query.OrderByDescending(orderBy);
+                }
+            }
+
+            if (skip != 0)
+            {
+                query = query.Skip(skip);
+            }
+
+            if (take != 0)
+            {
+                query = query.Take(take);
+            }
+
+            foreach (var includeProperty in includeProperties.Split(
+           new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return query;
+        }
     }
 }
