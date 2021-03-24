@@ -96,14 +96,6 @@ namespace OutOfSchool.WebApi.Services
             return await Task.Run(() => children.FirstOrDefault().ToModel()).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<ChildDTO>> GetAllByParent(long parentId)
-        {
-            var children = await repository.GetByFilter(x => x.ParentId == parentId).ConfigureAwait(false);
-
-            return children.Select(x => x.ToModel()).ToList();
-        }
-
-        /// <inheritdoc/>
         public async Task<IEnumerable<ChildDTO>> GetAllByParent(long id)
         {
             var children = await repository.GetByFilter(x => x.ParentId == id).ConfigureAwait(false);
