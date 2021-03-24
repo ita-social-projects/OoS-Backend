@@ -18,7 +18,12 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static WorkshopDTO ToModel(this Workshop workshop)
         {
-            return Mapper<Workshop, WorkshopDTO>(workshop, cfg => { cfg.CreateMap<Workshop, WorkshopDTO>(); });
+            return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
+            {
+                cfg.CreateMap<Provider, ProviderDto>();
+                
+                cfg.CreateMap<Workshop, WorkshopDTO>();
+            });
         }
 
         public static TeacherDTO ToModel(this Teacher teacher)
