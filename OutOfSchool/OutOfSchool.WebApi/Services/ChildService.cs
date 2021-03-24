@@ -110,14 +110,11 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChildDTO>> GetByParentId(long id)
+        public async Task<IEnumerable<ChildDTO>> GetChildrenByParent(long id)
         {
-            Expression<Func<Child, bool>> filter = child => child.ParentId == id;
-            IEnumerable<Child> children = await this.repository.GetByFilter(filter).ConfigureAwait(false);
-            return await Task.Run(() =>
-            {
-                return children.Select(child => child.ToModel()).ToList();
-            }).ConfigureAwait(false);
+            var children = await repository.GetByFilter(x => x.ParentId == id).ConfigureAwait(false);
+
+            return children.Select(x => x.ToModel()).ToList();
         }
 
         /// <inheritdoc/>

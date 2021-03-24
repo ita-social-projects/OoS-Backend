@@ -32,9 +32,9 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Get children with some ParentId.
         /// </summary>
-        /// <param name="id">ParentId</param>
+        /// <param name="id">ParentId.</param>
         /// <returns>List of children.</returns>
-        Task<IEnumerable<ChildDTO>> GetByParentId(long id);
+        Task<IEnumerable<ChildDTO>> GetChildrenByParent(long id);
 
         /// <summary>
         /// Update entity.
