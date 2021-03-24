@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -89,9 +92,18 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                dto.UserId = User.FindFirst("sub")?.Value;
+                var userId = User.FindFirst("sub")?.Value;
+                
+                var context = HttpContext.RequestServices.GetService<OutOfSchoolDbContext>();
 
-                var provider = await service.Create(dto).ConfigureAwait(false);
+                if (context.Providers.Any(x => x.UserId == userId))
+                {
+                    throw new Exception("User cannot create more than 1 provider.");
+                }
+
+                dto.UserId = userId;
+                
+                var organization = await service.Create(dto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                     nameof(GetById),
