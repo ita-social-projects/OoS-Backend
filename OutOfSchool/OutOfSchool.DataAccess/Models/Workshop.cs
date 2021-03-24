@@ -76,7 +76,7 @@ namespace OutOfSchool.Services.Models
         public virtual Address Address { get; set; }
 
         public virtual Category Category { get; set; }
-        
+
         public virtual List<Teacher> Teachers { get; set; }
     }
 }
