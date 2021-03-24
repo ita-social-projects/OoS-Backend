@@ -75,7 +75,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
-        
+
         /// <summary>
         /// Get child with details by id.
         /// </summary>
