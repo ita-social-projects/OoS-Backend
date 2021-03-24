@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
-            
+
             var child = await service.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(

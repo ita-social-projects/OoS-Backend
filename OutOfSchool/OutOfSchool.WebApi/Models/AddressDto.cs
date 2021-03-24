@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class AddressDTO
+    public class AddressDto
     {
         public long Id { get; set; }
 
@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Models
 
         [Required(ErrorMessage = "Building number is required")]
         [MaxLength(15)]
-        public string Building { get; set; } = string.Empty;
+        public string BuildingNumber { get; set; } = string.Empty;
 
         public double Latitude { get; set; } = default;
 

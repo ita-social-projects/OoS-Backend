@@ -72,7 +72,7 @@ namespace OutOfSchool.WebApi.Models
 
         public CategoryDTO Category { get; set; }
 
-        public virtual AddressDTO Address { get; set; }
+        public virtual AddressDto Address { get; set; }
 
         public virtual ProviderDto Provider { get; set; }
 
