@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -71,6 +75,19 @@ namespace OutOfSchool.WebApi.Controllers
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
+        
+        /// <summary>
+        /// Get workshops by provider id.
+        /// </summary>
+        /// <param name="id">Provider's id.</param>
+        /// <returns>Workshops.</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAllByProvider(long id)
+        {
+            return Ok(await service.GetAllByProvider(id).ConfigureAwait(false));
+        }
 
         /// <summary>
         /// Add new workshop to the database.
@@ -89,6 +106,17 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
+            var context = HttpContext.RequestServices.GetService<OutOfSchoolDbContext>();
+
+            var createdProvider = context.Providers.SingleOrDefaultAsync(u => u.UserId == User.FindFirst("sub").Value).Result;
+
+            if (createdProvider == null)
+            {
+                throw new Exception("Provider hasn't been created yet.");
+            }
+
+            dto.ProviderId = createdProvider.Id;
+            
             var workshop = await service.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(

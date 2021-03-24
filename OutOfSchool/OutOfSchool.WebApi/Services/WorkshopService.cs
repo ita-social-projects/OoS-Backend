@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
-            logger.Information("Teacher creating was started.");
+            logger.Information("Workshop creating was started.");
 
             var workshop = dto.ToDomain();
 
@@ -63,23 +63,24 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> GetById(long id)
         {
-            logger.Information("Process of getting Teacher by id started.");
+            logger.Information("Process of getting Workshop by id started.");
 
-            var teacher = await repository.GetById(id).ConfigureAwait(false);
+            var workshop = await repository.GetById(id).ConfigureAwait(false);
 
-            if (teacher == null)
+            if (workshop == null)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Teacher with id = {id}.");
+            logger.Information($"Successfully got a Workshop with id = {id}.");
 
-            return teacher.ToModel();
+            return workshop.ToModel();
         }
 
-        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
+        /// <inheritdoc />
+        public async Task<IEnumerable<WorkshopDTO>> GetAllByProvider(long id)
         {
             var workshops = await repository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
 
@@ -111,7 +112,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Workshop deleting was launched.");
 
-            var entity = new Workshop() { Id = id };
+            var entity = new Workshop() {Id = id};
 
             try
             {
@@ -121,7 +122,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed. There is no Teacher in the Db with such an id.");
+                logger.Error("Deleting failed. There is no Workshop in the Db with such an id.");
                 throw;
             }
         }
