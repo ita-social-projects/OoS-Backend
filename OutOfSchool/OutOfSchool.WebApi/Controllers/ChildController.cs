@@ -72,6 +72,19 @@ namespace OutOfSchool.WebApi.Controllers
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
+        
+        /// <summary>
+        /// Get children by parent id.
+        /// </summary>
+        /// <param name="id">Parent's id.</param>
+        /// <returns>Children.</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAllByParent(long id)
+        {
+            return Ok(await service.GetAllByParent(id).ConfigureAwait(false));
+        }
 
         /// <summary>
         /// Method for creating a new child.

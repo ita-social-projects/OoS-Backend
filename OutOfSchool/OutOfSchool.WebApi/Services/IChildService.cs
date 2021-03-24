@@ -30,10 +30,10 @@ namespace OutOfSchool.WebApi.Services
         Task<ChildDTO> GetById(long id);
 
         /// <summary>
-        /// Get children with some ParentId.
+        /// Get all children by parent id.
         /// </summary>
-        /// <param name="id">ParentId.</param>
-        /// <returns>List of children.</returns>
+        /// <param name="id">Parent's key.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<IEnumerable<ChildDTO>> GetAllByParent(long id);
 
         /// <summary>
