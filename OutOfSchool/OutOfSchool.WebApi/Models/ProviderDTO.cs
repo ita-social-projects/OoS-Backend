@@ -101,7 +101,7 @@ namespace OutOfSchool.WebApi.Models
         public string AttachedDocuments { get; set; } = string.Empty;
 
         [Required]
-        public long AddressId { get; set; }
+        public string AddressId { get; set; }
 
         public string UserId { get; set; } = string.Empty;
 
