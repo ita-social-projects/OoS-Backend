@@ -9,8 +9,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210324063825_InitialCreateAfterMerge")]
-    partial class InitialCreateAfterMerge
+    [Migration("20210324093010_MergeMigration")]
+    partial class MergeMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -267,15 +267,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Parents");
                 });
@@ -695,7 +692,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
