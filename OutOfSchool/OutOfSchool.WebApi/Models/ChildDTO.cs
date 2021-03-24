@@ -36,7 +36,7 @@ namespace OutOfSchool.WebApi.Models
 
         public long SocialGroupId { get; set; } = default;
 
-        public AddressDTO Address { get; set; }
+        public AddressDto Address { get; set; }
 
         public BirthCertificateDTO BirthCertificate { get; set; }
     }
