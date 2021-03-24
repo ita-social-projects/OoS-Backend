@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Serilog;
+using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -14,13 +15,21 @@ namespace OutOfSchool.WebApi.Tests.Services
 {
     public class ChildServiceTests
     {
+        private Mock<ILogger> logger;
+
+        [SetUp]
+        public void SetUp()
+        {
+            logger = new Mock<ILogger>();
+        }
+
         [Test]
         public void ChildService_GetAll_ReturnsChildrenModels()
         {
             var expected = GetTestChildDTO().ToList();
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.GetAll()).Returns(Task.FromResult(GetTestChildEntities()));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             var actual = childService.GetAll().Result.ToList();
 
@@ -38,7 +47,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.Create(It.IsAny<Child>())).Returns(Task.FromResult(CreatedChild));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             childService.Create(CreatedChildDTO);
 
@@ -50,7 +59,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.Create(It.IsAny<Child>())).Returns(Task.FromResult(CreatedChild));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             ChildDTO child = null;
 
@@ -62,7 +71,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.Create(It.IsAny<Child>())).Returns(Task.FromResult(CreatedChild));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             ChildDTO child = new ChildDTO { Id = 20, FirstName = "fn3", LastName = "ln3", Patronymic = "mn3", DateOfBirth = new DateTime(DateTime.Now.Year+1, 3, 20), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
@@ -75,7 +84,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var expected = GetTestChildDTO().ToList().First();
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.GetById(It.IsAny<long>())).Returns(Task.FromResult(GetTestChildEntities().First()));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             var actual = childService.GetById(1).Result;
 
@@ -92,7 +101,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             var actual = childService.Update(child).Result;
 
@@ -106,7 +115,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             Assert.ThrowsAsync<ArgumentNullException>(() => childService.Update(child));
         }
@@ -118,7 +127,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
         }
@@ -130,7 +139,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
         }
@@ -142,7 +151,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
         }
@@ -154,7 +163,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             var mockRepository = new Mock<IEntityRepository<Child>>();
             mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
         }
@@ -167,11 +176,11 @@ namespace OutOfSchool.WebApi.Tests.Services
             mockRepository.Setup(m => m.Delete(It.IsAny<Child>()));
             mockRepository.Setup(m => m.GetById(It.IsAny<long>())).Returns(Task.FromResult(GetTestChildEntities().First()));
 
-            IChildService childService = new ChildService(mockRepository.Object);
+            IChildService childService = new ChildService(mockRepository.Object, logger.Object);
 
             childService.Delete(1);
 
-            mockRepository.Verify(x => x.Delete(It.Is<Child>(c => c.Id == child.Id && c.FirstName == child.FirstName && c.LastName == child.LastName && c.Patronymic == child.Patronymic)), Times.Once);
+            mockRepository.Verify(x => x.Delete(It.Is<Child>(c => c.Id == child.Id)), Times.Once);
         }
 
         private IEnumerable<ChildDTO> GetTestChildDTO()

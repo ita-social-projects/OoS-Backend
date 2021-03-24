@@ -10,13 +10,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-<<<<<<< HEAD:OutOfSchool/OutOfSchool.IdentityServer/Data/Migrations/OutOfSchoolMigrations/20210317155304_RenameFields.Designer.cs
-    [Migration("20210317155304_RenameFields")]
-    partial class RenameFields
-=======
     [Migration("20210322100037_init")]
     partial class init
->>>>>>> 6b295ce (Update database):OutOfSchool/OutOfSchool.IdentityServer/Data/Migrations/OutOfSchoolMigrations/20210322100037_init.Designer.cs
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
