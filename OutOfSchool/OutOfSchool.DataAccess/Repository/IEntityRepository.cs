@@ -79,7 +79,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="where">Filter.</param>
         /// <param name="orderBy">Filter that defines by wich property we want to order by.</param>
         /// <param name="ascending">Ascending or descending ordering.</param>
-        /// <returns>Ordered, filtered list of elements</returns>
+        /// <returns>Ordered, filtered list of elements.</returns>
         IQueryable<T> Get<TOrderKey>(int skip = 0, int take = 0, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true);
     }
 }

@@ -28,11 +28,7 @@ namespace OutOfSchool.WebApi.Util
         /// <inheritdoc/>
         public async Task<int> GetAmountOfPages(int watchSize, Expression<Func<T, bool>> where = null)
         {
-            if (watchSize < 1)
-            {
-                throw new ArgumentException("Wrong limit", nameof(watchSize));
-            }
-
+            WatchSizeValidation(watchSize);
             int listOfPages = await repository.Count(where).ConfigureAwait(false);
             int amountOfPages = (int)Math.Ceiling((double)(listOfPages / watchSize));
             return amountOfPages;
@@ -41,19 +37,27 @@ namespace OutOfSchool.WebApi.Util
         /// <inheritdoc/>
         public async Task<List<T>> GetPageExpanded<TOrderKey>(int pageNumber, int watchSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
         {
-            if (watchSize < 1)
-            {
-                throw new ArgumentException("Wrong watchSize", nameof(watchSize));
-            }
-
+            WatchSizeValidation(watchSize);
             int realAmount = await GetAmountOfPages(watchSize).ConfigureAwait(false);
-            if (realAmount < pageNumber)
-            {
-                throw new ArgumentException("Wrong page number", nameof(watchSize));
-            }
-
+            PageNumberValidation(pageNumber, realAmount);
             List<T> selectedPages = repository.Get<TOrderKey>(watchSize * (pageNumber - 1), watchSize, includeProperties, where, orderBy, ascending).ToList();
             return selectedPages;
+        }
+
+        private void WatchSizeValidation(int watchSize)
+        {
+            if (watchSize < 1)
+            {
+                throw new ArgumentException("Wrong limit", nameof(watchSize));
+            }
+        }
+
+        private void PageNumberValidation(int pageNumber, int realAmount)
+        {
+            if (realAmount < pageNumber)
+            {
+                throw new ArgumentException("Wrong page number", nameof(pageNumber));
+            }
         }
     }
 }
