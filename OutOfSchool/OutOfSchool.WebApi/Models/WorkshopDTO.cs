@@ -76,6 +76,8 @@ namespace OutOfSchool.WebApi.Models
 
         public virtual ProviderDto Provider { get; set; }
 
+        public long ProviderId { get; set; }
+
         public virtual IEnumerable<TeacherDTO> Teachers { get; }
     }
 }

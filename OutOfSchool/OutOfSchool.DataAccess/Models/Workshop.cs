@@ -71,7 +71,10 @@ namespace OutOfSchool.Services.Models
         [DataType(DataType.Date)]
         public DateTime HeadBirthDate { get; set; }
 
+        [ForeignKey("ProviderId")]
         public virtual Provider Provider { get; set; }
+        
+        public long ProviderId { get; set; }
 
         public virtual Address Address { get; set; }
 
