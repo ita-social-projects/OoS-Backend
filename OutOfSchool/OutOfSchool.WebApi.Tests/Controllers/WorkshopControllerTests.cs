@@ -40,10 +40,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.GetAll()).ReturnsAsync(workshops);
 
-            // Act 
+            // Act
             var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
 
-            // Assert 
+            // Assert
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(result.StatusCode, 200);
         }
@@ -55,10 +55,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(workshops.SingleOrDefault(x => x.Id == id));
 
-            // Act 
+            // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
 
-            // Assert 
+            // Assert
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(result.StatusCode, 200);
         }
@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(workshops.SingleOrDefault(x => x.Id == id));
 
-            // Assert 
+            // Assert
             Assert.That(
                 async () => await controller.GetById(id),
                 Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
@@ -97,7 +97,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.Create(workshop)).ReturnsAsync(workshop);
 
-            // Act 
+            // Act
             var result = await controller.Create(workshop).ConfigureAwait(false) as CreatedAtActionResult;
 
             // Assert
@@ -119,7 +119,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Create(newWorkshop)).ReturnsAsync(newWorkshop);
             controller.ModelState.AddModelError("CreateWorkshop", "Invalid model state.");
 
-            // Act 
+            // Act
             var result = await controller.Create(newWorkshop).ConfigureAwait(false);
 
             // Assert
@@ -138,7 +138,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
             service.Setup(x => x.Update(changedWorkshop)).ReturnsAsync(changedWorkshop);
 
-            // Act 
+            // Act
             var result = await controller.Update(changedWorkshop).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
@@ -159,7 +159,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Update(newWorkshop)).ReturnsAsync(newWorkshop);
             controller.ModelState.AddModelError("CreateWorkshop", "Invalid model state.");
 
-            // Act 
+            // Act
             var result = await controller.Update(newWorkshop).ConfigureAwait(false);
 
             // Assert
@@ -189,7 +189,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.Delete(id));
 
-            // Assert 
+            // Assert
             Assert.That(
                 async () => await controller.Delete(id),
                 Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
@@ -208,7 +208,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.That(result, Is.Null);
         }
-
 
         private WorkshopDTO FakeWorkshop()
         {
