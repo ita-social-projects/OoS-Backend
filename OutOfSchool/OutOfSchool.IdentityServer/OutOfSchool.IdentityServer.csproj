@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
+    <ProjectReference Include="..\OutOfSchool.WebApi\OutOfSchool.WebApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +42,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\Migrations\IdentityServer\ConfigurationDb" />
+    <Folder Include="Data\Migrations\IdentityServer\PersistedGrantDb" />
     <Folder Include="Data\Migrations\OutOfSchoolMigrations\" />
   </ItemGroup>
 
