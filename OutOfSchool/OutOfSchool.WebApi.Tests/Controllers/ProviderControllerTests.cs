@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public void GetProvidersById_WhenIdIsNotValid_ThrowsArgumentOutOfRangeException(long id)
+        public void GetProvidersById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
@@ -82,7 +82,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task GetProvidersById_WhenIdIsNotValid_ReturnsNull(long id)
+        public async Task GetProvidersById_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
@@ -110,7 +110,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateProvider_WhenModelIsNotValid_ReturnsBadRequestObjectResult()
+        public async Task CreateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
             var newProvider = new ProviderDto()
@@ -151,7 +151,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task UpdateProvider_WhenModelIsNotValid_ReturnsBadRequestObjectResult()
+        public async Task UpdateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
             var newProvider = new ProviderDto()
@@ -188,7 +188,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public void DeleteProvider_WhenIdIsNotValid_ReturnsBadRequestObjectResult(long id)
+        public void DeleteProvider_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
@@ -200,7 +200,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task DeleteProvider_WhenIdIsNotValid_ReturnsNull(long id)
+        public async Task DeleteProvider_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));

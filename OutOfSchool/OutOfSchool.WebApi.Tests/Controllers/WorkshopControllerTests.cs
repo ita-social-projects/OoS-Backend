@@ -65,7 +65,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public void GetWorkshopById_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
+        public void GetWorkshopById_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(workshops.SingleOrDefault(x => x.Id == id));
@@ -78,7 +78,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task GetWorkshopById_WhenIdIsNotValid_ShouldReturnNull(long id)
+        public async Task GetWorkshopById_WhenIdIsInvalid_ShouldReturnNull(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(workshops.SingleOrDefault(x => x.Id == id));
@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateWorkshop_WhenModelIsNotValid_ShouldReturnBadRequestObjectResult()
+        public async Task CreateWorkshop_WhenModelIsInvalid_ShouldReturnBadRequestObjectResult()
         {
             // Arrange
             var newWorkshop = new WorkshopDTO()
@@ -147,7 +147,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task UpdateWorkshop_WhenModelIsNotValid_ShouldReturnBadRequestObjectResult()
+        public async Task UpdateWorkshop_WhenModelIsInvalid_ShouldReturnBadRequestObjectResult()
         {
             // Arrange
             var newWorkshop = new WorkshopDTO()
@@ -184,7 +184,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public void DeleteWorkshop_WhenIdIsNotValid_ShouldReturnBadRequestObjectResult(long id)
+        public void DeleteWorkshop_WhenIdIsInvalid_ShouldReturnBadRequestObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
@@ -197,7 +197,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task DeleteWorkshop_WhenIdIsNotValid_ShouldReturnNull(long id)
+        public async Task DeleteWorkshop_WhenIdIsInvalid_ShouldReturnNull(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));

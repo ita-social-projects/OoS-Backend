@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         [Order(4)]
         [TestCase(10)]
-        public void GetById_WhenIdIsNotValid_ThrowsArgumentOutOfRangeException(long id)
+        public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [Order(6)]
-        public void Update_WhenEntityIsNotValid_ThrowsDbUpdateConcurrencyException()
+        public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
             var changedEntity = new AddressDto()
@@ -163,7 +163,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         [Order(8)]
         [TestCase(10)]
-        public void Delete_WhenIdIsNotValid_ThrowsDbUpdateConcurrencyException(long id)
+        public void Delete_WhenIdIsInvalid_ThrowsDbUpdateConcurrencyException(long id)
         {
             // Act and Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(

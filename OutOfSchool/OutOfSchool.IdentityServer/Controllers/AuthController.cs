@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using System.Linq;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -151,22 +150,26 @@ namespace OutOfSchool.IdentityServer.Controllers
                 if (Request.Form["Provider"].Count == 1)
                 {
                     roleAssignResult = await userManager.AddToRoleAsync(user, "provider");
-                } else
+                }
+                else
                 if (Request.Form["Parent"].Count == 1)
                 {
                     roleAssignResult = await userManager.AddToRoleAsync(user, "parent");
                 }
+
                 if (roleAssignResult.Succeeded)
                 {
                     await signInManager.SignInAsync(user, false);
 
                     return Redirect(model.ReturnUrl);
                 }
+
                 var deletionResult = await userManager.DeleteAsync(user);
                 if (!deletionResult.Succeeded)
                 {
                     logger.Log(LogLevel.Warning, "User was created without role");
                 }
+
                 foreach (var error in roleAssignResult.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
@@ -174,7 +177,6 @@ namespace OutOfSchool.IdentityServer.Controllers
             }
             else
             {
-
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);

@@ -60,7 +60,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public async Task GetAddressById_WhenIdIsNotValid_ReturnsBadRequestObjectResult(long id)
+        public async Task GetAddressById_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
@@ -75,7 +75,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task GetAddressById_WhenIdIsNotValid_ReturnsNull(long id)
+        public async Task GetAddressById_WhenIdIsTooBig_ReturnsNull(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
@@ -103,7 +103,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateAddress_WhenModelIsNotValid_ReturnsBadRequestObjectResult()
+        public async Task CreateAddress_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
             var newAddress = new AddressDto()
@@ -145,7 +145,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task UpdateAddress_WhenModelIsNotValid_ReturnsBadRequestObjectResult()
+        public async Task UpdateAddress_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
             var newAddress = new AddressDto()
@@ -182,7 +182,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public async Task DeleteAddress_WhenIdIsNotValid_ReturnsBadRequestObjectResult(long id)
+        public async Task DeleteAddress_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
@@ -197,7 +197,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task DeleteAddress_WhenIdIsNotValid_ReturnsNull(long id)
+        public async Task DeleteAddress_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
