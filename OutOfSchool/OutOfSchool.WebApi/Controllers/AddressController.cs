@@ -133,7 +133,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             await addressService.Delete(id).ConfigureAwait(false);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

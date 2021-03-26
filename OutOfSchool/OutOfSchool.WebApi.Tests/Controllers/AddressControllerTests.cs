@@ -1,0 +1,289 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.WebApi.Controllers;
+using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Services;
+
+namespace OutOfSchool.WebApi.Tests.Controllers
+{
+    [TestFixture]
+    public class AddressControllerTests
+    {
+        private AddressController controller;
+        private Mock<IAddressService> service;
+
+        private IEnumerable<AddressDto> addresses;
+        private AddressDto address;
+
+        [SetUp]
+        public void Setup()
+        {
+            service = new Mock<IAddressService>();
+            controller = new AddressController(service.Object);
+
+            addresses = FakeAddresses();
+            address = FakeAddress();
+        }
+
+        [Test]
+        public async Task GetAddresses_WhenCalled_ReturnsOkResultObject()
+        {
+            // Arrange
+            service.Setup(x => x.GetAll()).ReturnsAsync(addresses);
+
+            // Act
+            var result = await controller.GetAddresses().ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 200);
+        }
+
+        [Test]
+        [TestCase(1)]
+        public async Task GetAddressById_WhenIdIsValid_ReturnsOkObjectResult(long id)
+        {
+            // Arrange
+            service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
+
+            // Act
+            var result = await controller.GetAddressById(id).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 200);
+        }
+
+        [Test]
+        [TestCase(0)]
+        public async Task GetAddressById_WhenIdIsNotValid_ReturnsBadRequestObjectResult(long id)
+        {
+            // Arrange
+            service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
+
+            // Act
+            var result = await controller.GetAddressById(id).ConfigureAwait(false) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 400);
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task GetAddressById_WhenIdIsNotValid_ReturnsNull(long id)
+        {
+            // Arrange
+            service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
+
+            // Act
+            var result = await controller.GetAddressById(id).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 200);
+        }
+
+        [Test]
+        public async Task CreateAddress_WhenModelIsValid_ReturnsCreatedAtActionResult()
+        {
+            // Arrange
+            service.Setup(x => x.Create(address)).ReturnsAsync(address);
+
+            // Act
+            var result = await controller.Create(address).ConfigureAwait(false) as CreatedAtActionResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 201);
+        }
+
+        [Test]
+        public async Task CreateAddress_WhenModelIsNotValid_ReturnsBadRequestObjectResult()
+        {
+            // Arrange
+            var newAddress = new AddressDto()
+            {
+                City = string.Empty,
+                Street = string.Empty,
+                BuildingNumber = string.Empty,
+                Region = "NewRegion",
+            };
+
+            service.Setup(x => x.Create(newAddress)).ReturnsAsync(newAddress);
+            controller.ModelState.AddModelError("CreateAddress", "Invalid model state.");
+
+            // Act
+            var result = await controller.Create(newAddress).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+        }
+
+        [Test]
+        public async Task UpdateAddress_WhenModelIsValid_ReturnsOkObjectResult()
+        {
+            // Arrange
+            var changedAddress = new AddressDto()
+            {
+                Id = 1,
+                City = "ChangedCity",
+            };
+            service.Setup(x => x.Update(changedAddress)).ReturnsAsync(changedAddress);
+
+            // Act
+            var result = await controller.Update(changedAddress).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 200);
+        }
+
+        [Test]
+        public async Task UpdateAddress_WhenModelIsNotValid_ReturnsBadRequestObjectResult()
+        {
+            // Arrange
+            var newAddress = new AddressDto()
+            {
+                Id = 1,
+                City = string.Empty,
+            };
+
+            service.Setup(x => x.Update(newAddress)).ReturnsAsync(newAddress);
+            controller.ModelState.AddModelError("CreateAddress", "Invalid model state.");
+
+            // Act
+            var result = await controller.Update(newAddress).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+        }
+
+        [Test]
+        [TestCase(1)]
+        public async Task DeleteAddress_WhenIdIsValid_ReturnsNoContentResult(long id)
+        {
+            // Arrange
+            service.Setup(x => x.Delete(id));
+
+            // Act
+            var result = await controller.Delete(id) as NoContentResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 204);
+        }
+
+        [Test]
+        [TestCase(0)]
+        public async Task DeleteAddress_WhenIdIsNotValid_ReturnsBadRequestObjectResult(long id)
+        {
+            // Arrange
+            service.Setup(x => x.Delete(id));
+
+            // Act
+            var result = await controller.Delete(id).ConfigureAwait(false) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 400);
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task DeleteAddress_WhenIdIsNotValid_ReturnsNull(long id)
+        {
+            // Arrange
+            service.Setup(x => x.Delete(id));
+
+            // Act
+            var result = await controller.Delete(id) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Null);
+        }
+
+        private AddressDto FakeAddress()
+        {
+            return new AddressDto()
+            {
+                Id = 6,
+                Region = "Region6",
+                District = "District6",
+                City = "City6",
+                Street = "Street6",
+                BuildingNumber = "BuildingNumber6",
+                Latitude = 60.45383,
+                Longitude = 65.56765,
+            };
+        }
+
+        private IEnumerable<AddressDto> FakeAddresses()
+        {
+            return new List<AddressDto>()
+            {
+               new AddressDto()
+               {
+                     Id = 1,
+                     Region = "Region1",
+                     District = "District1",
+                     City = "City1",
+                     Street = "Street1",
+                     BuildingNumber = "BuildingNumber1",
+                     Latitude = 41.45383,
+                     Longitude = 51.56765,
+               },
+               new AddressDto()
+               {
+                      Id = 2,
+                      Region = "Region2",
+                      District = "District2",
+                      City = "City2",
+                      Street = "Street2",
+                      BuildingNumber = "BuildingNumber2",
+                      Latitude = 42.45383,
+                      Longitude = 52.56765,
+               },
+               new AddressDto()
+               {
+                      Id = 3,
+                      Region = "Region3",
+                      District = "District3",
+                      City = "City3",
+                      Street = "Street3",
+                      BuildingNumber = "BuildingNumber3",
+                      Latitude = 43.45383,
+                      Longitude = 53.56765,
+               },
+               new AddressDto()
+               {
+                      Id = 4,
+                      Region = "Region4",
+                      District = "District4",
+                      City = "City4",
+                      Street = "Street4",
+                      BuildingNumber = "BuildingNumber4",
+                      Latitude = 44.45383,
+                      Longitude = 54.56765,
+               },
+               new AddressDto()
+               {
+                       Id = 5,
+                       Region = "Region5",
+                       District = "District5",
+                       City = "City5",
+                       Street = "Street5",
+                       BuildingNumber = "BuildingNumber5",
+                       Latitude = 45.45383,
+                       Longitude = 55.56765,
+               },
+            };
+        }
+    }
+}
