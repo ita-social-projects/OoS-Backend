@@ -104,7 +104,8 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public IQueryable<T> Get<TOrderKey>(int skip = 0, int take = 0, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
+        public IQueryable<T> Get<TOrderKey>(
+        int skip = 0, int take = 0, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
         {
             IQueryable<T> query = (IQueryable<T>)dbSet;
             if (where != null)

@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Util
         /// <param name="watchSize">The amount of records on the one page.</param>
         /// <param name="where">The filter that we want to apply to the recorrds list.</param>
         /// <returns>The amount of pages.</returns>
-        Task<int> GetAmountOfPages(int watchSize, Expression<Func<T, bool>> where = null);
+        Task<int> GetCountOfPages(int watchSize, Expression<Func<T, bool>> where = null);
 
         /// <summary>
         /// Get the ordered, filtered records for the page.
@@ -31,6 +31,6 @@ namespace OutOfSchool.WebApi.Util
         /// <param name="orderBy">Filter that defines by wich property we want to order by.</param>
         /// <param name="ascending">Ascending or descending ordering.</param>
         /// <returns>Ordered, filtered list of elements.</returns>
-        Task<List<T>> GetPageExpanded<TOrderKey>(int pageNumber, int watchSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true);
+        Task<List<T>> GetPage<TOrderKey>(int pageNumber, int watchSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true);
     }
 }

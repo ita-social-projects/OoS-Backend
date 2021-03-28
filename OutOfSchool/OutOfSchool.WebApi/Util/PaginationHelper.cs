@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Util
     /// <summary>
     /// Helper for pagination.
     /// </summary>
-    /// <typeparam name="T">Entity wich list we want to paginate for.</typeparam>
+    /// <typeparam name="T">Entity type to get paginated results for.</typeparam>
     public class PaginationHelper<T> : IPaginationHelper<T>
         where T : class, new()
     {
@@ -26,35 +26,35 @@ namespace OutOfSchool.WebApi.Util
         }
 
         /// <inheritdoc/>
-        public async Task<int> GetAmountOfPages(int watchSize, Expression<Func<T, bool>> where = null)
+        public async Task<int> GetCountOfPages(int pageSize, Expression<Func<T, bool>> where = null)
         {
-            WatchSizeValidation(watchSize);
+            PageSizeValidation(pageSize);
             int listOfPages = await repository.Count(where).ConfigureAwait(false);
-            int amountOfPages = (int)Math.Ceiling((double)(listOfPages / watchSize));
+            int amountOfPages = (int)Math.Ceiling((double)(listOfPages / pageSize));
             return amountOfPages;
         }
 
         /// <inheritdoc/>
-        public async Task<List<T>> GetPageExpanded<TOrderKey>(int pageNumber, int watchSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
+        public async Task<List<T>> GetPage<TOrderKey>(int pageNumber, int pageSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
         {
-            WatchSizeValidation(watchSize);
-            int realAmount = await GetAmountOfPages(watchSize).ConfigureAwait(false);
+            PageSizeValidation(pageSize);
+            int realAmount = await GetCountOfPages(pageSize).ConfigureAwait(false);
             PageNumberValidation(pageNumber, realAmount);
-            List<T> selectedPages = repository.Get<TOrderKey>(watchSize * (pageNumber - 1), watchSize, includeProperties, where, orderBy, ascending).ToList();
+            var selectedPages = repository.Get<TOrderKey>(pageSize * (pageNumber - 1), pageSize, includeProperties, where, orderBy, ascending).ToList();
             return selectedPages;
         }
 
-        private void WatchSizeValidation(int watchSize)
+        private void PageSizeValidation(int pageSize)
         {
-            if (watchSize < 1)
+            if (pageSize < 1)
             {
-                throw new ArgumentException("Wrong limit", nameof(watchSize));
+                throw new ArgumentException("Wrong limit", nameof(pageSize));
             }
         }
 
-        private void PageNumberValidation(int pageNumber, int realAmount)
+        private void PageNumberValidation(int pageNumber, int realCount)
         {
-            if (realAmount < pageNumber)
+            if (realCount < pageNumber)
             {
                 throw new ArgumentException("Wrong page number", nameof(pageNumber));
             }
