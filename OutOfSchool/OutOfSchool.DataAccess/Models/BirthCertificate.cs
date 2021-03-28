@@ -13,24 +13,24 @@ namespace OutOfSchool.Services.Models
         public long Id { get; set; }
 
         /// <summary>
-        /// Series of birth certificate.
+        /// Gets or sets series of birth certificate.
         /// </summary>
         public string SvidSer { get; set; }
 
         /// <summary>
-        /// Number of birth certificate.
+        /// Gets or sets number of birth certificate.
         /// </summary>
         public string SvidNum { get; set; }
 
         public string SvidNumMD5 { get; set; }
 
         /// <summary>
-        /// Authority that issued the birth certificate.
+        /// Gets or sets authority that issued the birth certificate.
         /// </summary>
         public string SvidWho { get; set; }
 
         /// <summary>
-        /// Date of issue of the birth certificate.
+        /// Gets or sets date of issue of the birth certificate.
         /// </summary>
         public DateTime SvidDate { get; set; }
 
