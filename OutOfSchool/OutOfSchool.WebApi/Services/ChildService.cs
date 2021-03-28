@@ -110,7 +110,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChildDTO>> GetChildrenByParent(long id)
+        public async Task<IEnumerable<ChildDTO>> GetAllByParent(long id)
         {
             var children = await repository.GetByFilter(x => x.ParentId == id).ConfigureAwait(false);
 
