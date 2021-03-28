@@ -108,7 +108,6 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-
                 var parent = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
                 logger.Information("Parent succesfully updated.");

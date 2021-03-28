@@ -27,6 +27,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="repository">Repository for the Child entity.</param>
         /// <param name="logger">Logger.</param>
+        /// <param name="localizer">Localizer.</param>
         public ChildService(IEntityRepository<Child> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;

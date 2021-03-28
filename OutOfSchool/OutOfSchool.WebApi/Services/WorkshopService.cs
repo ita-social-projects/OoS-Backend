@@ -26,6 +26,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="repository">Repository for Workshop entity.</param>
         /// <param name="logger">Logger.</param>
+        /// <param name="localizer">Localizer.</param>
         public WorkshopService(IEntityRepository<Workshop> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
@@ -68,7 +69,8 @@ namespace OutOfSchool.WebApi.Services
 
             if (teacher == null)
             {
-                throw new ArgumentOutOfRangeException(nameof(id),
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
                     localizer["The id cannot be greater than number of table entities."]);
             }
 

@@ -22,6 +22,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Initializes a new instance of the <see cref="AddressController"/> class.
         /// </summary>
         /// <param name="addressService">Service for Address model.</param>
+        /// <param name="localizer">Localizer.</param>
         public AddressController(IAddressService addressService, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;

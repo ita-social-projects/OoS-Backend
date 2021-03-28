@@ -25,6 +25,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Initializes a new instance of the <see cref="ChildController"/> class.
         /// </summary>
         /// <param name="service">Service for Child model.</param>
+        /// <param name="localizer">Localizer.</param>
         public ChildController(IChildService service, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;

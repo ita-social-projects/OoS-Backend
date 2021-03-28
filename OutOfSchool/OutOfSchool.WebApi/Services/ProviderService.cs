@@ -26,6 +26,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="repository">Repository.</param>
         /// <param name="logger">Logger.</param>
+        /// <param name="localizer">Localizer.</param>
         public ProviderService(IProviderRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
@@ -42,7 +43,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (repository.Exists(provider))
             {
-                throw new ArgumentException("There is already a provider with such a data");
+                throw new ArgumentException(localizer["There is already a provider with such a data."]);
             }
 
             var newProvider = await repository.Create(provider).ConfigureAwait(false);
@@ -73,7 +74,8 @@ namespace OutOfSchool.WebApi.Services
 
             if (provider == null)
             {
-                throw new ArgumentOutOfRangeException(nameof(id),
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
