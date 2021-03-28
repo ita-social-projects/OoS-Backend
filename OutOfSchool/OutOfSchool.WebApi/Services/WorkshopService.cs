@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -18,14 +19,16 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IEntityRepository<Workshop> repository;
         private readonly ILogger logger;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
         /// <param name="repository">Repository for Workshop entity.</param>
         /// <param name="logger">Logger.</param>
-        public WorkshopService(IEntityRepository<Workshop> repository, ILogger logger)
+        public WorkshopService(IEntityRepository<Workshop> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
+            this.localizer = localizer;
             this.repository = repository;
             this.logger = logger;
         }
@@ -66,7 +69,7 @@ namespace OutOfSchool.WebApi.Services
             if (teacher == null)
             {
                 throw new ArgumentOutOfRangeException(nameof(id),
-                    "The id cannot be greater than number of table entities.");
+                    localizer["The id cannot be greater than number of table entities."]);
             }
 
             logger.Information($"Successfully got a Teacher with id = {id}.");

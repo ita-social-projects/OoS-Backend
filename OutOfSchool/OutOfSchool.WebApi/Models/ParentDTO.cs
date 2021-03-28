@@ -28,6 +28,6 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(@"[\W\-\']*", ErrorMessage = "Last name cannot contains digits")]
         public string LastName { get; set; }
 
-        public long UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
     }
 }
