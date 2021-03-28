@@ -35,11 +35,8 @@ namespace OutOfSchool.WebApi.Services
             this.logger = logger;
         }
 
-        /// <inheritdoc/>
-        public async Task<ChildDTO> Create(ChildDTO dto)
+        private void Check(ChildDTO dto)
         {
-            logger.Information("Child creating was started.");
-
             if (dto == null)
             {
                 logger.Information("Child creating failed. Child was null.");
@@ -51,6 +48,32 @@ namespace OutOfSchool.WebApi.Services
                 logger.Information("Child creating failed. Invalid Date of birth.");
                 throw new ArgumentException("Invalid Date of birth.");
             }
+
+            if (dto.FirstName.Length == 0)
+            {
+                logger.Information("Updating failed. Empty firstname.");
+                throw new ArgumentException("Empty firstname.", nameof(dto));
+            }
+
+            if (dto.LastName.Length == 0)
+            {
+                logger.Information("Updating failed. Empty lastname.");
+                throw new ArgumentException("Empty lastname.", nameof(dto));
+            }
+
+            if (dto.Patronymic.Length == 0)
+            {
+                logger.Information("Updating failed. Empty patronymic.");
+                throw new ArgumentException("Empty patronymic.", nameof(dto));
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<ChildDTO> Create(ChildDTO dto)
+        {
+            logger.Information("Child creating was started.");
+
+            this.Check(dto);
 
             var child = dto.ToDomain();
 
@@ -121,35 +144,7 @@ namespace OutOfSchool.WebApi.Services
         public async Task<ChildDTO> Update(ChildDTO dto)
         {
             logger.Information("Child updating was launched.");
-            if (dto == null)
-            {
-                logger.Information("Updating failed. Child was null.");
-                throw new ArgumentNullException(nameof(dto), "Child was null.");
-            }
-
-            if (dto.DateOfBirth > DateTime.Now)
-            {
-                logger.Information("Updating failed. Wrong date of birth.");
-                throw new ArgumentException("Wrong date of birth.", nameof(dto));
-            }
-
-            if (dto.FirstName.Length == 0)
-            {
-                logger.Information("Updating failed. Empty firstname.");
-                throw new ArgumentException("Empty firstname.", nameof(dto));
-            }
-
-            if (dto.LastName.Length == 0)
-            {
-                logger.Information("Updating failed. Empty lastname.");
-                throw new ArgumentException("Empty lastname.", nameof(dto));
-            }
-
-            if (dto.Patronymic.Length == 0)
-            {
-                logger.Information("Updating failed. Empty patronymic.");
-                throw new ArgumentException("Empty patronymic.", nameof(dto));
-            }
+            this.Check(dto);
 
             try
             {
