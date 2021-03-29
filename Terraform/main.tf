@@ -65,7 +65,8 @@ module "auth" {
   sku_size      = module.plan.sku_size
   tags          = var.tags
   app_settings = {
-    "PROJECT" = "OutOfSchool/OutOfSchool.IdentityServer/OutOfSchool.IdentityServer.csproj"
+    "PROJECT"                = "OutOfSchool/OutOfSchool.IdentityServer/OutOfSchool.IdentityServer.csproj"
+    "ASPNETCORE_ENVIRONMENT" = "Azure"
   }
 }
 
@@ -85,6 +86,7 @@ module "webapp" {
     "AzureBlob__StorageContainerName" = module.storage.image_container_name
     "Identity__Authority"             = module.auth.service_url
     "PROJECT"                         = "OutOfSchool/OutOfSchool.WebApi/OutOfSchool.WebApi.csproj"
+    "ASPNETCORE_ENVIRONMENT"          = "Azure"
   }
 }
 
