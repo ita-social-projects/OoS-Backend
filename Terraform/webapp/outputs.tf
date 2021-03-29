@@ -15,5 +15,5 @@ output "verification_id" {
 }
 
 output "service_url" {
-  value = var.hostname != "none" ? "https://${var.hostname}" : "https://${azurerm_app_service.dev.default_site_hostname}"
+  value = var.hostname != "none" ? "http://${var.hostname}" : "https://${azurerm_app_service.dev.default_site_hostname}"
 }
