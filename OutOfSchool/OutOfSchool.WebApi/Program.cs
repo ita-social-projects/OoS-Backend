@@ -16,17 +16,22 @@ namespace OutOfSchool.WebApi
                 .AddJsonFile($"appsettings.{environment}.json")
                 .Build();
 
-            Log.Logger = new LoggerConfiguration()
+            var loggerConfigBuilder = new LoggerConfiguration()
                 .ReadFrom.Configuration(config, sectionName: "Logging")
                 .Enrich.FromLogContext()
-                .WriteTo.File(
+                .WriteTo.Debug()
+                .WriteTo.Console();
+
+            if (environment != "Azure")
+            {
+                loggerConfigBuilder.WriteTo.File(
                     path: config.GetSection("Logging:FilePath").Value,
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 2,
-                    fileSizeLimitBytes: null)
-                .WriteTo.Debug()
-                .WriteTo.Console()
-                .CreateLogger();
+                    fileSizeLimitBytes: null);
+            }
+
+            Log.Logger = loggerConfigBuilder.CreateLogger();
 
             try
             {
