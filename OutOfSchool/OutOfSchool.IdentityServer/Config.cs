@@ -58,9 +58,9 @@ namespace OutOfSchool.IdentityServer
                     RequirePkce = true,
                     RequireClientSecret = false,
 
-                    RedirectUris = { "http://localhost:4200" },
-                    PostLogoutRedirectUris = { "http://localhost:4200" },
-                    AllowedCorsOrigins = { "http://localhost:4200" },
+                    RedirectUris = { "http://localhost:4200", "http://oos.dmytrominochkin.cloud" },
+                    PostLogoutRedirectUris = { "http://localhost:4200", "http://oos.dmytrominochkin.cloud" },
+                    AllowedCorsOrigins = { "http://localhost:4200", "http://oos.dmytrominochkin.cloud" },
 
                     AllowedScopes =
                     {

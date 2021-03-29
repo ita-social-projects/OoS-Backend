@@ -79,13 +79,6 @@ namespace OutOfSchool.IdentityServer
                 .AddAspNetIdentity<User>()
                 .AddProfileService<ProfileService>();
 
-            services.AddCors(confg =>
-                confg.AddPolicy(
-                    "AllowAll",
-                    p => p.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()));
-
             services.AddControllersWithViews();
         }
 
@@ -97,8 +90,6 @@ namespace OutOfSchool.IdentityServer
             }
 
             app.UseRouting();
-
-            app.UseCors("AllowAll");
 
             app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
