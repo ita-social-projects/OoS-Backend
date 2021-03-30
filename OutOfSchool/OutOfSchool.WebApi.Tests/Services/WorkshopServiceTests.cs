@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -23,6 +24,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IEntityRepository<Workshop> repo;
         private IWorkshopService service;
         private Mock<ILogger> logger;
+        private Mock<IStringLocalizer<SharedResource>> localizer;
 
         [SetUp]
         public void SetUp()
@@ -35,7 +37,8 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             repo = new EntityRepository<Workshop>(context);
             logger = new Mock<ILogger>();
-            service = new WorkshopService(repo, logger.Object);
+            localizer = new Mock<IStringLocalizer<SharedResource>>();
+            service = new WorkshopService(repo, logger.Object, localizer.Object);
 
             SeedDatabase();
         }
