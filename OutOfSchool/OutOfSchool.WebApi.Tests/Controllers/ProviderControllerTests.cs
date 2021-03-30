@@ -20,7 +20,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private ProviderController controller;
         private Mock<IProviderService> service;
-        private Mock<IProviderRepository> repo;
         private ClaimsPrincipal user;
 
         private IEnumerable<ProviderDto> providers;
@@ -29,7 +28,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [SetUp]
         public void Setup()
         {
-            repo = new Mock<IProviderRepository>();
             service = new Mock<IProviderService>();
             controller = new ProviderController(service.Object);
             user = new ClaimsPrincipal(new ClaimsIdentity());
@@ -113,18 +111,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task CreateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
-            var newProvider = new ProviderDto()
-            {
-                Title = string.Empty,
-                Facebook = "Facebook",
-                Description = string.Empty,
-            };
-
-            service.Setup(x => x.Create(newProvider)).ReturnsAsync(newProvider);
             controller.ModelState.AddModelError("CreateProvider", "Invalid model state.");
 
             // Act
-            var result = await controller.Create(newProvider).ConfigureAwait(false);
+            var result = await controller.Create(provider).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -154,17 +144,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
-            var newProvider = new ProviderDto()
-            {
-                Id = 1,
-                Title = string.Empty,
-            };
-
-            service.Setup(x => x.Update(newProvider)).ReturnsAsync(newProvider);
-            controller.ModelState.AddModelError("CreateProvider", "Invalid model state.");
+            controller.ModelState.AddModelError("UpdateProvider", "Invalid model state.");
 
             // Act
-            var result = await controller.Update(newProvider).ConfigureAwait(false);
+            var result = await controller.Update(provider).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());

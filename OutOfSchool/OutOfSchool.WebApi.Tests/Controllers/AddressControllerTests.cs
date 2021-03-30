@@ -75,7 +75,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task GetAddressById_WhenIdIsTooBig_ReturnsNull(long id)
+        public async Task GetAddressById_WhenIdIsTooBig_ReturnsEmptyObject(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetAddressById(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Value, Is.Null);
             Assert.AreEqual(result.StatusCode, 200);
         }
 
@@ -106,19 +106,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task CreateAddress_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
-            var newAddress = new AddressDto()
-            {
-                City = string.Empty,
-                Street = string.Empty,
-                BuildingNumber = string.Empty,
-                Region = "NewRegion",
-            };
-
-            service.Setup(x => x.Create(newAddress)).ReturnsAsync(newAddress);
             controller.ModelState.AddModelError("CreateAddress", "Invalid model state.");
 
             // Act
-            var result = await controller.Create(newAddress).ConfigureAwait(false);
+            var result = await controller.Create(address).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -128,37 +119,30 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [Test]
         public async Task UpdateAddress_WhenModelIsValid_ReturnsOkObjectResult()
         {
-            // Arrange
-            var changedAddress = new AddressDto()
-            {
-                Id = 1,
-                City = "ChangedCity",
-            };
-            service.Setup(x => x.Update(changedAddress)).ReturnsAsync(changedAddress);
+           // Arrange
+           var changedAddress = new AddressDto()
+           {
+               Id = 1,
+               City = "ChangedCity",
+           };
+           service.Setup(x => x.Update(changedAddress)).ReturnsAsync(changedAddress);
 
             // Act
-            var result = await controller.Update(changedAddress).ConfigureAwait(false) as OkObjectResult;
+           var result = await controller.Update(changedAddress).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+           Assert.That(result, Is.Not.Null);
+           Assert.AreEqual(result.StatusCode, 200);
         }
 
         [Test]
         public async Task UpdateAddress_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
-            var newAddress = new AddressDto()
-            {
-                Id = 1,
-                City = string.Empty,
-            };
-
-            service.Setup(x => x.Update(newAddress)).ReturnsAsync(newAddress);
-            controller.ModelState.AddModelError("CreateAddress", "Invalid model state.");
+            controller.ModelState.AddModelError("UpdateAddress", "Invalid model state.");
 
             // Act
-            var result = await controller.Update(newAddress).ConfigureAwait(false);
+            var result = await controller.Update(address).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
