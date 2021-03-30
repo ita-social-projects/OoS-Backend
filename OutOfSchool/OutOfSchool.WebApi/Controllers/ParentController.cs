@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -22,17 +22,17 @@ namespace OutOfSchool.WebApi.Controllers
     public class ParentController : ControllerBase
     {
         private readonly IParentService service;
-        private readonly ILogger<ParentController> logger;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParentController"/> class.
         /// Initialization of ParentController.
         /// </summary>
-        /// <param name="logger">Logging instance.</param>
         /// <param name="service">Service for ParentCOntroller.</param>
-        public ParentController(ILogger<ParentController> logger, IParentService service)
+        /// <param name="localizer">Localizer.</param>
+        public ParentController(IParentService service, IStringLocalizer<SharedResource> localizer)
         {
-            this.logger = logger;
+            this.localizer = localizer;
             this.service = service;
         }
 
@@ -46,7 +46,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-                return Ok(await service.GetAll().ConfigureAwait(false));
+            var parents = await service.GetAll().ConfigureAwait(false);
+
+            if (!parents.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(parents);
         }
 
         /// <summary>
@@ -56,25 +63,23 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>Parent with define id.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(long id)
         {
-            try
+            if (id < 1)
             {
-                ParentDTO parentDTO = await service.GetById(id).ConfigureAwait(false);
-                return Ok(parentDTO);
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    localizer["The id cannot be less than 1."]);
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
         /// To create new Parent and add to the DB.
         /// </summary>
-        /// <param name="parentDTO">ParentDTO object that we want to add.</param>
+        /// <param name="dto">ParentDTO object that we want to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPost]
@@ -82,13 +87,8 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create(ParentDTO parentDTO)
+        public async Task<IActionResult> Create(ParentDTO dto)
         {
-            if (parentDTO == null)
-            {
-                return BadRequest("Entity was null.");
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -96,15 +96,15 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                parentDTO.Id = default;
-                ParentDTO parent = await service.Create(parentDTO).ConfigureAwait(false);
+                dto.Id = default;
+                dto.UserId = User.FindFirst("sub")?.Value;
+
+                var parent = await service.Create(dto).ConfigureAwait(false);
+
                 return CreatedAtAction(
-                nameof(GetById),
-                new
-                {
-                    id = parent.Id,
-                },
-                parent);
+                     nameof(GetById),
+                     new { id = parent.Id, },
+                     parent);
             }
             catch (ArgumentException ex)
             {
@@ -124,24 +124,12 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Update(ParentDTO parentDTO)
         {
-            if (parentDTO == null)
-            {
-                return BadRequest("Entity was null.");
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                return Ok(await service.Update(parentDTO).ConfigureAwait(false));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(await service.Update(parentDTO).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -156,15 +144,16 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(long id)
         {
-            try
+            if (id < 1)
             {
-                await service.Delete(id).ConfigureAwait(false);
-                return Ok();
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    localizer["The id cannot be less than 1."]);
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            await service.Delete(id).ConfigureAwait(false);
+
+            return NoContent();
         }
 
         /// <summary>

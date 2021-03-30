@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -18,13 +19,16 @@ namespace OutOfSchool.WebApi.Controllers
     public class ProviderController : ControllerBase
     {
         private readonly IProviderService service;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
         /// </summary>
         /// <param name="service">Service for Provider model.</param>
-        public ProviderController(IProviderService service)
+        /// <param name="localizer">Localizer.</param>
+        public ProviderController(IProviderService service, IStringLocalizer<SharedResource> localizer)
         {
+            this.localizer = localizer;
             this.service = service;
         }
 
@@ -62,7 +66,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
-                    "The id cannot be less than 1.");
+                    localizer["The id cannot be less than 1."]);
             }
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
@@ -137,7 +141,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
-                    "The id cannot be less than 1.");
+                    localizer["The id cannot be less than 1."]);
             }
 
             await service.Delete(id).ConfigureAwait(false);

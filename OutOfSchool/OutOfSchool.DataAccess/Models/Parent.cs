@@ -32,7 +32,8 @@ namespace OutOfSchool.Services.Models
 
         public virtual IReadOnlyCollection<Child> Children { get; set; }
 
-        public long UserId { get; set; }
+        [Required]
+        public string UserId { get; set; }
 
         public virtual User User { get; set; }
     }

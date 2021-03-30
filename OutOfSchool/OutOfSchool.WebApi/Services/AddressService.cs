@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -19,14 +20,17 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IEntityRepository<Address> repository;
         private readonly ILogger logger;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AddressService"/> class.
         /// </summary>
         /// <param name="repository">Repository.</param>
         /// <param name="logger">Logger.</param>
-        public AddressService(IEntityRepository<Address> repository, ILogger logger)
+        /// <param name="localizer">Localizer.</param>
+        public AddressService(IEntityRepository<Address> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
+            this.localizer = localizer;
             this.repository = repository;
             this.logger = logger;
         }
@@ -64,7 +68,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
-                    "The id cannot be greater than number of table entities.");
+                    localizer["The id cannot be greater than number of table entities."]);
             }
 
             logger.Information($"Successfully got an Address with id = {id}.");

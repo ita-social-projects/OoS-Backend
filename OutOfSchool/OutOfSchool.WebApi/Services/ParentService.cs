@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -15,77 +18,106 @@ namespace OutOfSchool.WebApi.Services
     public class ParentService : IParentService
     {
         private readonly IEntityRepository<Parent> repository;
+        private readonly ILogger logger;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParentService"/> class.
         /// </summary>
         /// <param name="entityRepository">Repository for some entity.</param>
-        public ParentService(IEntityRepository<Parent> entityRepository)
+        /// <param name="logger">Logger.</param>
+        /// <param name="localizer">Localizer.</param>
+        public ParentService(IEntityRepository<Parent> entityRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
+            this.localizer = localizer;
             this.repository = entityRepository;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>
-        public async Task<ParentDTO> Create(ParentDTO parent)
+        public async Task<ParentDTO> Create(ParentDTO dto)
         {
-            Parent res = await repository.Create(parent.ToDomain()).ConfigureAwait(false);
-            return res.ToModel();
+            logger.Information("Parent creating was started");
+
+            var parent = dto.ToDomain();
+
+            var newParent = await repository.Create(parent).ConfigureAwait(false);
+
+            logger.Information("Parent created successfully.");
+
+            return newParent.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            Parent parent = await repository.GetById(id).ConfigureAwait(false);
-            if (parent == null)
-            {
-                throw new ArgumentException("This id doesn't exist", nameof(id));
-            }
+            logger.Information("Parent deleting was launched.");
 
-            await repository.Delete(parent).ConfigureAwait(false);
+            var entity = new Parent() { Id = id };
+
+            try
+            {
+                await repository.Delete(entity).ConfigureAwait(false);
+
+                logger.Information("Parent succesfully deleted.");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.Error("Deleting failed.There is no parent in the Db with such an id.");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ParentDTO>> GetAll()
         {
-            IEnumerable<Parent> parents = await this.repository.GetAll().ConfigureAwait(false);
-            return parents.Select(x => x.ToModel()).ToList();
+            logger.Information("Process of getting fll Parents started.");
+
+            var parents = await this.repository.GetAll().ConfigureAwait(false);
+
+            logger.Information(!parents.Any()
+                ? "Parent table is empty."
+                : "Successfully got all records from the Parent table.");
+
+            return parents.Select(parent => parent.ToModel()).ToList();
         }
 
         /// <inheritdoc/>
         public async Task<ParentDTO> GetById(long id)
         {
-            Parent parent = await repository.GetById((int)id).ConfigureAwait(false);
+            logger.Information("Process of getting Parent by id started.");
+
+            var parent = await repository.GetById((int)id).ConfigureAwait(false);
+
             if (parent == null)
             {
-                throw new ArgumentException("Not Found", nameof(id));
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    localizer["The id cannot be greater than number of table entities."]);
             }
+
+            logger.Information($"Successfuly got a parent with id = {id}.");
 
             return parent.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<ParentDTO> Update(ParentDTO parent)
+        public async Task<ParentDTO> Update(ParentDTO dto)
         {
-            await UpdateValidation(parent).ConfigureAwait(false);
-            Parent res = await repository.Update(parent.ToDomain()).ConfigureAwait(false);
-            return res.ToModel();
-        }
+            logger.Information("Parent updating was launched.");
 
-        private static void IsNotNull(ParentDTO parent)
-        {
-            if (parent == null)
+            try
             {
-                throw new ArgumentException("Parent cannot be null.", nameof(parent));
+                var parent = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+
+                logger.Information("Parent succesfully updated.");
+
+                return parent.ToModel();
             }
-        }
-
-        private async Task UpdateValidation(ParentDTO parent)
-        {
-            IsNotNull(parent);
-            Parent tmp = await repository.GetById((int)parent.Id).ConfigureAwait(false);
-            if (tmp == null)
+            catch (DbUpdateConcurrencyException)
             {
-                throw new ArgumentException("Wrong id.", nameof(parent));
+                logger.Error("Updating failed. There is no parent in the Db with such an id.");
+                throw;
             }
         }
     }
