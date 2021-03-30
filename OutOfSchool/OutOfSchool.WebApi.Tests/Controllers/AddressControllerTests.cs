@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers;
@@ -15,6 +17,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private AddressController controller;
         private Mock<IAddressService> service;
+        private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private IEnumerable<AddressDto> addresses;
         private AddressDto address;
@@ -23,7 +26,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void Setup()
         {
             service = new Mock<IAddressService>();
-            controller = new AddressController(service.Object);
+            localizer = new Mock<IStringLocalizer<SharedResource>>();
+
+            controller = new AddressController(service.Object, localizer.Object);
 
             addresses = FakeAddresses();
             address = FakeAddress();
@@ -60,17 +65,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public async Task GetAddressById_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+        public void GetAddressById_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
 
-            // Act
-            var result = await controller.GetAddressById(id).ConfigureAwait(false) as BadRequestObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 400);
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+                async () => await controller.GetAddressById(id).ConfigureAwait(false));
         }
 
         [Test]
@@ -166,17 +168,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public async Task DeleteAddress_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+        public void DeleteAddress_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
 
-            // Act
-            var result = await controller.Delete(id).ConfigureAwait(false) as BadRequestObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 400);
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+                async () => await controller.Delete(id).ConfigureAwait(false));
         }
 
         [Test]

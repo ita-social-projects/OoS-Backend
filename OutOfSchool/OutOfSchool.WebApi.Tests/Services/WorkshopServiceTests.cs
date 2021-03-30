@@ -46,7 +46,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public async Task Create_WhenEntityIsValid_ShouldReturnCreatedEntity()
         {
-            // Arrange 
+            // Arrange
             var expected = new Workshop()
             {
                 Title = "NewTitle",

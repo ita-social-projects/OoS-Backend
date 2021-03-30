@@ -5,10 +5,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -21,6 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private ProviderController controller;
         private Mock<IProviderService> service;
         private ClaimsPrincipal user;
+        private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private IEnumerable<ProviderDto> providers;
         private ProviderDto provider;
@@ -29,7 +30,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void Setup()
         {
             service = new Mock<IProviderService>();
-            controller = new ProviderController(service.Object);
+            localizer = new Mock<IStringLocalizer<SharedResource>>();
+
+            controller = new ProviderController(service.Object, localizer.Object);
             user = new ClaimsPrincipal(new ClaimsIdentity());
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 

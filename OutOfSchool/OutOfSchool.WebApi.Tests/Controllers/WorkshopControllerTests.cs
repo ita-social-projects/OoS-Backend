@@ -31,6 +31,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             repo = new Mock<IEntityRepository<Workshop>>();
             service = new Mock<IWorkshopService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
+
             controller = new WorkshopController(service.Object, localizer.Object);
             workshops = FakeWorkshops();
             workshop = FakeWorkshop();
