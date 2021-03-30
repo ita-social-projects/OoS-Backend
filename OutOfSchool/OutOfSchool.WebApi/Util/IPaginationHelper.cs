@@ -31,6 +31,7 @@ namespace OutOfSchool.WebApi.Util
         /// <param name="orderBy">Filter that defines by wich property we want to order by.</param>
         /// <param name="ascending">Ascending or descending ordering.</param>
         /// <returns>Ordered, filtered list of elements.</returns>
-        Task<List<T>> GetPage<TOrderKey>(int pageNumber, int pageSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true);
+        Task<List<T>> GetPage<TOrderKey>(
+            int pageNumber, int pageSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true);
     }
 }

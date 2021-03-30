@@ -35,7 +35,8 @@ namespace OutOfSchool.WebApi.Util
         }
 
         /// <inheritdoc/>
-        public async Task<List<T>> GetPage<TOrderKey>(int pageNumber, int pageSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
+        public async Task<List<T>> GetPage<TOrderKey>(
+        int pageNumber, int pageSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
         {
             PageSizeValidation(pageSize);
             int realAmount = await GetCountOfPages(pageSize).ConfigureAwait(false);
