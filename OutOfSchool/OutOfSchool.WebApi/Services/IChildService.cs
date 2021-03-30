@@ -42,5 +42,12 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Child's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(long id);
+
+        /// <summary>
+        /// Get entity by it's key with details.
+        /// </summary>
+        /// <param name="id">Key in the table.</param>
+        /// <returns>Child.</returns>
+        Task<ChildDTO> GetByIdWithDetails(long id);
     }
 }

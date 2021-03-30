@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Models;
@@ -22,14 +23,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         private IEnumerable<WorkshopDTO> workshops;
         private WorkshopDTO workshop;
+        private Mock<IStringLocalizer<SharedResource>> localizer;
 
         [SetUp]
         public void Setup()
         {
             repo = new Mock<IEntityRepository<Workshop>>();
             service = new Mock<IWorkshopService>();
-            controller = new WorkshopController(service.Object);
-
+            localizer = new Mock<IStringLocalizer<SharedResource>>();
+            controller = new WorkshopController(service.Object, localizer.Object);
             workshops = FakeWorkshops();
             workshop = FakeWorkshop();
         }

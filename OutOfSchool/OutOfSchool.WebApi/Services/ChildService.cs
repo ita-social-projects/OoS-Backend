@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -19,14 +20,17 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IEntityRepository<Child> repository;
         private readonly ILogger logger;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildService"/> class.
         /// </summary>
         /// <param name="repository">Repository for the Child entity.</param>
         /// <param name="logger">Logger.</param>
-        public ChildService(IEntityRepository<Child> repository, ILogger logger)
+        /// <param name="localizer">Localizer.</param>
+        public ChildService(IEntityRepository<Child> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
+            this.localizer = localizer;
             this.repository = repository;
             this.logger = logger;
         }
@@ -68,8 +72,9 @@ namespace OutOfSchool.WebApi.Services
 
             if (child == null)
             {
-                throw new ArgumentOutOfRangeException(nameof(id),
-                    "The id cannot be greater than number of table entities.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    localizer["The id cannot be greater than number of table entities."]);
             }
 
             logger.Information($"Successfully got a Child with id = {id}.");

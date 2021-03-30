@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -15,13 +16,16 @@ namespace OutOfSchool.WebApi.Controllers
     public class AddressController : ControllerBase
     {
         private readonly IAddressService addressService;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AddressController"/> class.
         /// </summary>
         /// <param name="addressService">Service for Address model.</param>
-        public AddressController(IAddressService addressService)
+        /// <param name="localizer">Localizer.</param>
+        public AddressController(IAddressService addressService, IStringLocalizer<SharedResource> localizer)
         {
+            this.localizer = localizer;
             this.addressService = addressService;
         }
 
@@ -48,9 +52,11 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAddressById(long id)
         {
-            if (id <= 0)
+            if (id < 1)
             {
-                return BadRequest("Id cannot be 0 or less than 0.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    localizer["The id cannot be less than 1."]);
             }
 
             return Ok(await addressService.GetById(id).ConfigureAwait(false));
@@ -126,9 +132,11 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(long id)
         {
-            if (id <= 0)
+            if (id < 1)
             {
-                return BadRequest("Id cannot be 0 or less than 0.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    localizer["The id cannot be less than 1."]);
             }
 
             await addressService.Delete(id).ConfigureAwait(false);
