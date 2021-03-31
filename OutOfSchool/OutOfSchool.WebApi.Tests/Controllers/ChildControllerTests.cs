@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
@@ -20,7 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private ChildController controller;
         private Mock<IChildService> service;
         private Mock<IEntityRepository<Child>> repo;
-
+        private Mock<IStringLocalizer<SharedResource>> localizer;
         private IEnumerable<ChildDTO> children;
         private ChildDTO child;
 
@@ -29,7 +30,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             repo = new Mock<IEntityRepository<Child>>();
             service = new Mock<IChildService>();
-            controller = new ChildController(service.Object);
+            localizer = new Mock<IStringLocalizer<SharedResource>>();
+            controller = new ChildController(service.Object, localizer.Object);
 
             children = FakeChildren();
             child = FakeChild();
@@ -41,10 +43,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.GetAll()).ReturnsAsync(children);
 
-            // Act 
+            // Act
             var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
 
-            // Assert 
+            // Assert
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(result.StatusCode, 200);
         }
@@ -56,10 +58,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
 
-            // Act 
+            // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
 
-            // Assert 
+            // Assert
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(result.StatusCode, 200);
         }
@@ -71,7 +73,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
 
-            // Assert 
+            // Assert
             Assert.That(
                 async () => await controller.GetById(id),
                 Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
@@ -99,7 +101,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.Create(child)).ReturnsAsync(child);
 
-            // Act 
+            // Act
             var result = await controller.Create(child).ConfigureAwait(false) as CreatedAtActionResult;
 
             // Assert
@@ -125,7 +127,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Create(newChild)).ReturnsAsync(newChild);
             controller.ModelState.AddModelError("CreateChild", "Invalid model state.");
 
-            // Act 
+            // Act
             var result = await controller.Create(newChild).ConfigureAwait(false);
 
             // Assert
@@ -145,7 +147,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
             service.Setup(x => x.Update(changedChild)).ReturnsAsync(changedChild);
 
-            // Act 
+            // Act
             var result = await controller.Update(changedChild).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
@@ -167,7 +169,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Update(changedChild)).ReturnsAsync(changedChild);
             controller.ModelState.AddModelError("CreateWorkshop", "Invalid model state.");
 
-            // Act 
+            // Act
             var result = await controller.Update(changedChild).ConfigureAwait(false);
 
             // Assert
@@ -197,7 +199,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             service.Setup(x => x.Delete(id));
 
-            // Assert 
+            // Assert
             Assert.That(
                 async () => await controller.Delete(id),
                 Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
@@ -228,7 +230,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 DateOfBirth = new DateTime(2003, 11, 9),
                 Gender = Gender.Male,
                 ParentId = 1,
-                SocialGroupId = 2
+                SocialGroupId = 2,
             };
         }
 
