@@ -68,7 +68,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> GetById(long id)
         {
-            logger.Information("Process of getting Child by id started.");
+            logger.Information("Process of getting Child by parentId started.");
 
             var child = await repository.GetById(id).ConfigureAwait(false);
 
@@ -79,7 +79,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Child with id = {id}.");
+            logger.Information($"Successfully got a Child with parentId = {id}.");
 
             return child.ToModel();
         }
@@ -89,19 +89,17 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting child's details was launched.");
 
-            Expression<Func<Child, bool>> filter = child => child.Id == id;
-
             var children =
-                await this.repository.GetByFilter(filter, "Parent,SocialGroup").ConfigureAwait(false);
+                await this.repository.GetAllWithDetails("Parent,SocialGroup").ConfigureAwait(false);
 
             logger.Information("Child details successfully retrieved.");
 
             return await Task.Run(() => children.FirstOrDefault().ToModel()).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<ChildDTO>> GetAllByParent(long id)
+        public async Task<IEnumerable<ChildDTO>> GetAllByParent(long parentId)
         {
-            var children = await repository.GetByFilter(x => x.ParentId == id).ConfigureAwait(false);
+            var children = await repository.GetByFilter(x => x.ParentId == parentId).ConfigureAwait(false);
 
             return children.Select(x => x.ToModel()).ToList();
         }
@@ -130,7 +128,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no Child in the Db with such an id.");
+                logger.Error("Updating failed. There is no Child in the Db with such an parentId.");
                 throw;
             }
         }
@@ -150,7 +148,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed. There is no Child in the Db with such an id.");
+                logger.Error("Deleting failed. There is no Child in the Db with such an parentId.");
                 throw;
             }
         }
