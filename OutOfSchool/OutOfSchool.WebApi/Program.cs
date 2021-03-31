@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -6,12 +7,14 @@ using Serilog;
 
 namespace OutOfSchool.WebApi
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
+            
+            const string outputTemplate = "{ApplicationName} | {Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u4}] | {Message:l}{NewLine}{Exception}";
+           
             var config = new ConfigurationBuilder()
                 .AddJsonFile($"appsettings.{environment}.json")
                 .Build();
@@ -48,7 +51,7 @@ namespace OutOfSchool.WebApi
             }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
