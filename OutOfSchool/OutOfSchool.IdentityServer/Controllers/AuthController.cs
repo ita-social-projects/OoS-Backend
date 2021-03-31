@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
+using Serilog;
 
 namespace OutOfSchool.IdentityServer.Controllers
 {
@@ -18,7 +18,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly SignInManager<User> signInManager;
         private readonly UserManager<User> userManager;
         private readonly IIdentityServerInteractionService interactionService;
-        private readonly ILogger<AuthController> logger;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -31,7 +31,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IIdentityServerInteractionService interactionService,
-            ILogger<AuthController> logger)
+            ILogger logger)
         {
             this.logger = logger;
             this.signInManager = signInManager;
@@ -49,6 +49,8 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             await signInManager.SignOutAsync();
 
+            Log.Information("User logged out successfully");
+            
             var logoutRequest = await interactionService.GetLogoutContextAsync(logoutId);
 
             if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
@@ -68,6 +70,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         public async Task<IActionResult> Login(string returnUrl = "Login")
         {
             var externalProviders = await signInManager.GetExternalAuthenticationSchemesAsync();
+
             return View(new LoginViewModel
             {
                 ReturnUrl = returnUrl,
@@ -85,6 +88,8 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             if (!ModelState.IsValid)
             {
+                Log.Warning("User model state is not valid.");
+                
                 return View(new LoginViewModel
                 {
                     ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
@@ -95,15 +100,20 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             if (result.Succeeded)
             {
+                Log.Information("User logged in successfully.");
+                
                 return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
 
             if (result.IsLockedOut)
             {
+                Log.Warning("Sign in result is locked out.");
+                
                 return BadRequest();
             }
 
-            ModelState.AddModelError(string.Empty, "Login or password is wrong");
+            ModelState.AddModelError(string.Empty, "Login or password is wrong.");
+
             return View(new LoginViewModel
             {
                 ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
@@ -133,6 +143,8 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             if (!ModelState.IsValid)
             {
+                Log.Warning("User model state is not valid.");
+                
                 return View(model);
             }
 
@@ -142,32 +154,42 @@ namespace OutOfSchool.IdentityServer.Controllers
                 PhoneNumber = model.PhoneNumber,
                 CreatingTime = DateTime.Now,
             };
+            
             var result = await userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
             {
-                IdentityResult roleAssignResult = IdentityResult.Failed();
+                Log.Information("New user was successfully created.");
+                
+                var roleAssignResult = IdentityResult.Failed();
+
                 if (Request.Form["Provider"].Count == 1)
                 {
                     roleAssignResult = await userManager.AddToRoleAsync(user, "provider");
+                    
+                    Log.Information("User was added to the role of provider.");
                 }
-                else
-                if (Request.Form["Parent"].Count == 1)
+                else if (Request.Form["Parent"].Count == 1)
                 {
                     roleAssignResult = await userManager.AddToRoleAsync(user, "parent");
+                    
+                    Log.Information("User was added to the role of parent.");
                 }
 
                 if (roleAssignResult.Succeeded)
                 {
+                    Log.Information("User was assigned to selected role successfully.");
+                    
                     await signInManager.SignInAsync(user, false);
 
                     return Redirect(model.ReturnUrl);
                 }
 
                 var deletionResult = await userManager.DeleteAsync(user);
+
                 if (!deletionResult.Succeeded)
                 {
-                    logger.Log(LogLevel.Warning, "User was created without role");
+                    logger.Warning("User was created without role.");
                 }
 
                 foreach (var error in roleAssignResult.Errors)

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
@@ -9,94 +10,130 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OutOfSchool.IdentityServer;
 using OutOfSchool.Services;
+using Serilog;
 
-namespace IdentityServer
+namespace OutOfSchool.IdentityServer
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            
+            const string outputTemplate = "{ApplicationName} | {Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u4}] | {Message:l}{NewLine}{Exception}";
+         
+            var config = new ConfigurationBuilder()
+                .AddJsonFile($"appsettings.{environment}.json")
+                .Build();
 
-            using (var scope = host.Services.CreateScope())
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(config, sectionName: "Logging")
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("ApplicationName", $"{Assembly.GetCallingAssembly().GetName().Name}")
+                .WriteTo.File(
+                    path: config.GetSection("Logging:FilePath").Value,
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 2,
+                    fileSizeLimitBytes: null,
+                    outputTemplate: outputTemplate,
+                    shared: true)
+                .WriteTo.Debug()
+                .WriteTo.Console()
+                .CreateLogger();
+
+            try
             {
-                var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-
-                while (!context.Database.CanConnect())
+                Log.Information("Application has started.");
+                var host = CreateHostBuilder(args).Build();
+                
+                using (var scope = host.Services.CreateScope())
                 {
-                    Task.Delay(500).Wait();
-                    Console.WriteLine("Waiting for db connection");
-                }
+                    var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
 
-                scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
-                    .Database.Migrate();
-                var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
-                var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-                var apiSecret = configService["outofschoolapi:ApiSecret"];
-                var clientSecret = configService["m2m.client:ClientSecret"];
-
-                context.Database.Migrate();
-                identityContext.Database.Migrate();
-                var manager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-                if (!manager.Roles.Any())
-                {
-                    RolesInit(manager);
-                }
-
-                if (!context.Clients.Any())
-                {
-                    foreach (var client in Config.Clients(clientSecret))
+                    while (!context.Database.CanConnect())
                     {
-                        context.Clients.Add(client.ToEntity());
+                        Task.Delay(500).Wait();
+                        Console.WriteLine("Waiting for db connection");
                     }
 
-                    context.SaveChanges();
-                }
+                    scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
+                        .Database.Migrate();
+                    var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
+                    var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                    var apiSecret = configService["outofschoolapi:ApiSecret"];
+                    var clientSecret = configService["m2m.client:ClientSecret"];
 
-                if (!context.IdentityResources.Any())
-                {
-                    foreach (var resource in Config.IdentityResources)
+                    context.Database.Migrate();
+                    identityContext.Database.Migrate();
+                    var manager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                    if (!manager.Roles.Any())
                     {
-                        context.IdentityResources.Add(resource.ToEntity());
+                        RolesInit(manager);
                     }
 
-                    context.SaveChanges();
-                }
-
-                if (!context.ApiResources.Any())
-                {
-                    foreach (var resource in Config.ApiResources(apiSecret))
+                    if (!context.Clients.Any())
                     {
-                        context.ApiResources.Add(resource.ToEntity());
+                        foreach (var client in Config.Clients(clientSecret))
+                        {
+                            context.Clients.Add(client.ToEntity());
+                        }
+
+                        context.SaveChanges();
                     }
 
-                    context.SaveChanges();
-                }
-
-                if (!context.ApiScopes.Any())
-                {
-                    foreach (var resource in Config.ApiScopes)
+                    if (!context.IdentityResources.Any())
                     {
-                        context.ApiScopes.Add(resource.ToEntity());
+                        foreach (var resource in Config.IdentityResources)
+                        {
+                            context.IdentityResources.Add(resource.ToEntity());
+                        }
+
+                        context.SaveChanges();
                     }
 
-                    context.SaveChanges();
+                    if (!context.ApiResources.Any())
+                    {
+                        foreach (var resource in Config.ApiResources(apiSecret))
+                        {
+                            context.ApiResources.Add(resource.ToEntity());
+                        }
+
+                        context.SaveChanges();
+                    }
+
+                    if (!context.ApiScopes.Any())
+                    {
+                        foreach (var resource in Config.ApiScopes)
+                        {
+                            context.ApiScopes.Add(resource.ToEntity());
+                        }
+
+                        context.SaveChanges();
+                    }
                 }
+
+                host.Run();
             }
-
-            host.Run();
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application failed to start.");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
 
         private static void RolesInit(RoleManager<IdentityRole> manager)
         {
-            var roles = new IdentityRole[]
+            var roles = new[]
             {
                 new IdentityRole {Name = "parent"},
                 new IdentityRole {Name = "provider"},

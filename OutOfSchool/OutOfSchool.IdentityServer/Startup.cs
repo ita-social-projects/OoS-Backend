@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using Serilog;
 
 namespace OutOfSchool.IdentityServer
 {
@@ -80,6 +81,8 @@ namespace OutOfSchool.IdentityServer
                 .AddProfileService<ProfileService>();
 
             services.AddControllersWithViews();
+
+            services.AddSingleton(Log.Logger);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -100,6 +103,8 @@ namespace OutOfSchool.IdentityServer
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseSerilogRequestLogging();
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
