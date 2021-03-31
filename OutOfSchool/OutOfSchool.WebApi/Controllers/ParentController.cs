@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -57,7 +56,7 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To recieve parent with define id.
+        /// To receive parent with define id.
         /// </summary>
         /// <param name="id">Key in table.</param>
         /// <returns>Parent with define id.</returns>
@@ -71,6 +70,12 @@ namespace OutOfSchool.WebApi.Controllers
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
                     localizer["The id cannot be less than 1."]);
+                var parentDTO = await service.GetById(id).ConfigureAwait(false);
+                return Ok(parentDTO);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
@@ -88,7 +93,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create(ParentDTO dto)
-        {
+        {        
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -96,11 +101,10 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                dto.Id = default;
-                dto.UserId = User.FindFirst("sub")?.Value;
-
+                dto.UserId = User.FindFirst("sub").Value;
+                
                 var parent = await service.Create(dto).ConfigureAwait(false);
-
+                
                 return CreatedAtAction(
                      nameof(GetById),
                      new { id = parent.Id, },
@@ -115,21 +119,28 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// To update Parent entity that already exists.
         /// </summary>
-        /// <param name="parentDTO">ParentDTO object with new properties.</param>
+        /// <param name="dto">ParentDTO object with new properties.</param>
         /// <returns>Parent's key.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Update(ParentDTO parentDTO)
+        public async Task<ActionResult> Update(ParentDTO dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(parentDTO).ConfigureAwait(false));
+            try
+            {
+                return Ok(await service.Update(dto).ConfigureAwait(false));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -169,13 +180,14 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                int id = int.Parse(this.GetJwtClaimByName("sid"));
-                ParentDTO parentDTO = await service.GetById(id).ConfigureAwait(false);
-                return this.Ok(parentDTO);
+                var id = int.Parse(this.GetJwtClaimByName("sid"));
+                
+                var parentDTO = await service.GetById(id).ConfigureAwait(false);
+                return Ok(parentDTO);
             }
             catch (ArgumentException ex)
             {
-                return this.BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
     }
