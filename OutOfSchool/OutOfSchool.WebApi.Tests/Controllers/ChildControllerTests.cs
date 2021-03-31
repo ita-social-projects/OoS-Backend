@@ -70,9 +70,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [TestCase(0)]
         public void GetChildById_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
         {
-            // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
-
             // Assert
             Assert.That(
                 async () => await controller.GetById(id),
@@ -113,22 +110,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task CreateChild_WhenModelIsNotValid_ShouldReturnBadRequestObjectResult()
         {
             // Arrange
-            var newChild = new ChildDTO()
-            {
-                FirstName = string.Empty,
-                LastName = "ln1",
-                Patronymic = "mn1",
-                DateOfBirth = new DateTime(2003, 11, 9),
-                Gender = Gender.Male,
-                ParentId = 1,
-                SocialGroupId = 2,
-            };
-
-            service.Setup(x => x.Create(newChild)).ReturnsAsync(newChild);
             controller.ModelState.AddModelError("CreateChild", "Invalid model state.");
 
             // Act
-            var result = await controller.Create(newChild).ConfigureAwait(false);
+            var result = await controller.Create(child).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -159,18 +144,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateChild_WhenModelIsNotValid_ShouldReturnBadRequestObjectResult()
         {
             // Arrange
-            var changedChild = new ChildDTO()
-            {
-                Id = 1,
-                FirstName = string.Empty,
-                LastName = "ln11",
-            };
-
-            service.Setup(x => x.Update(changedChild)).ReturnsAsync(changedChild);
-            controller.ModelState.AddModelError("CreateWorkshop", "Invalid model state.");
+            controller.ModelState.AddModelError("UpdateChild", "Invalid model state.");
 
             // Act
-            var result = await controller.Update(changedChild).ConfigureAwait(false);
+            var result = await controller.Update(child).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -196,9 +173,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [TestCase(0)]
         public void DeleteChild_WhenIdIsNotValid_ShouldReturnBadRequestObjectResult(long id)
         {
-            // Arrange
-            service.Setup(x => x.Delete(id));
-
             // Assert
             Assert.That(
                 async () => await controller.Delete(id),
