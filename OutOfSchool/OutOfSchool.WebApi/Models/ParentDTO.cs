@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -11,21 +7,18 @@ namespace OutOfSchool.WebApi.Models
         public long Id { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
-        [DataType(DataType.Text)]
         [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "First name cannot contains digits")]
+        [RegularExpression(@"[\u0400-\u04FF\-\']*$", ErrorMessage = "First name cannot contains digits")]
         public string FirstName { get; set; }
 
         [Required(ErrorMessage = "Middle name is required")]
-        [DataType(DataType.Text)]
         [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "Middle name cannot contains digits")]
+        [RegularExpression(@"[\u0400-\u04FF\-\']*$", ErrorMessage = "Middle name cannot contains digits")]
         public string MiddleName { get; set; }
 
         [Required(ErrorMessage = "Last name is required")]
-        [DataType(DataType.Text)]
         [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "Last name cannot contains digits")]
+        [RegularExpression(@"[\u0400-\u04FF\-\']*$", ErrorMessage = "Last name cannot contains digits")]
         public string LastName { get; set; }
 
         public string UserId { get; set; } = string.Empty;

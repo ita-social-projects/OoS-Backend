@@ -9,17 +9,18 @@ namespace OutOfSchool.Services.Models
         public long Id { get; set; }
 
         [DataType(DataType.Text)]
-        [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "First name cannot contains digits and special symbols")]
+        [Required(ErrorMessage = "First name is required")]
+        [RegularExpression(@"[\u0400-\u04FF\-\']*$", ErrorMessage = "First name cannot contains digits")]
         public string FirstName { get; set; } = string.Empty;
 
         [DataType(DataType.Text)]
-        [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "Last name cannot contains digits and special symbols")]
+        [Required(ErrorMessage = "Last name is required")]
+        [RegularExpression(@"[\u0400-\u04FF\-\']*$", ErrorMessage = "Last name cannot contains digits")]
         public string LastName { get; set; } = string.Empty;
 
-        [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "Patronymic cannot contains digits and special symbols")]
+        [DataType(DataType.Text)]
+        [Required(ErrorMessage = "Patronymic name is required")]
+        [RegularExpression(@"[\u0400-\u04FF\-\']*$", ErrorMessage = "Patronymic cannot contains digits")]
         public string Patronymic { get; set; } = string.Empty;
 
         public DateTime DateOfBirth { get; set; }
