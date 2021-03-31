@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using OutOfSchool.Services;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -74,6 +77,20 @@ namespace OutOfSchool.WebApi.Controllers
         }
         
         /// <summary>
+        /// Get child with details by id.
+        /// </summary>
+        /// <param name="id">Child's id.</param>
+        /// <returns>Children.</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByIdWithDetails(long id)
+        {
+            return Ok(await service.GetByIdWithDetails(id).ConfigureAwait(false));
+        }
+        
+        /// <summary>
         /// Get children by parent id.
         /// </summary>
         /// <param name="id">Parent's id.</param>
@@ -102,6 +119,12 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            var context = HttpContext.RequestServices.GetService<OutOfSchoolDbContext>();
+
+            var parent = context.Parents.SingleOrDefaultAsync(u => u.UserId == User.FindFirst("sub").Value).Result;
+
+            dto.ParentId = parent.Id;
 
             var child = await service.Create(dto).ConfigureAwait(false);
 
