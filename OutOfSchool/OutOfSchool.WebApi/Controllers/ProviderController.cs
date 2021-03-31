@@ -1,10 +1,8 @@
 using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
@@ -42,14 +40,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var organizations = await service.GetAll().ConfigureAwait(false);
+            var providers = await service.GetAll().ConfigureAwait(false);
 
-            if (!organizations.Any())
+            if (!providers.Any())
             {
                 return NoContent();
             }
 
-            return Ok(organizations);
+            return Ok(providers);
         }
 
         /// <summary>
@@ -93,12 +91,12 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 dto.UserId = User.FindFirst("sub")?.Value;
 
-                var organization = await service.Create(dto).ConfigureAwait(false);
+                var provider = await service.Create(dto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                     nameof(GetById),
-                    new { id = organization.Id, },
-                    organization);
+                    new { id = provider.Id, },
+                    provider);
             }
             catch (ArgumentException ex)
             {
@@ -111,7 +109,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
-        [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -131,7 +129,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "organization,admin")]
+        [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]

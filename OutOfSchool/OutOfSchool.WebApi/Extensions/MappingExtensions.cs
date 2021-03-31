@@ -12,10 +12,8 @@ namespace OutOfSchool.WebApi.Extensions
         #region ToModel
 
         public static AddressDto ToModel(this Address address)
-        {
-            var addressDto =
-                Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
-            return addressDto;
+        {          
+            return Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
         }
 
         public static WorkshopDTO ToModel(this Workshop workshop)
@@ -57,10 +55,8 @@ namespace OutOfSchool.WebApi.Extensions
         #region ToDomain
 
         public static Address ToDomain(this AddressDto addressDto)
-        {
-            var address =
-                Mapper<AddressDto, Address>(addressDto, cfg => { cfg.CreateMap<AddressDto, Address>(); });
-            return address;
+        {                   
+            return Mapper<AddressDto, Address>(addressDto, cfg => { cfg.CreateMap<AddressDto, Address>(); });
         }
 
         public static Workshop ToDomain(this WorkshopDTO workshopDto)

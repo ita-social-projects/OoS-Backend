@@ -46,7 +46,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public async Task Create_WhenEntityIsValid_ShouldReturnCreatedEntity()
         {
-            // Arrange 
+            // Arrange
             var expected = new Workshop()
             {
                 Title = "NewTitle",
@@ -98,7 +98,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(10)]
-        public void GetById_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
+        public void GetById_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException(long id)
         {
             // Assert
             Assert.That(async () => await service.GetById(10), Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
@@ -122,7 +122,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void Update_WhenEntityIsNotValid_ShouldThrowDbUpdateConcurrencyException()
+        public void Update_WhenEntityIsInvalid_ShouldThrowDbUpdateConcurrencyException()
         {
             // Arrange
             var changedEntity = new WorkshopDTO()
@@ -155,7 +155,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(10)]
-        public void Delete_WhenIdIsNotValid_ShouldThrowDbUpdateConcurrencyException(long id)
+        public void Delete_WhenIdIsInvalid_ShouldThrowDbUpdateConcurrencyException(long id)
         {
             // Assert
             Assert.That(
