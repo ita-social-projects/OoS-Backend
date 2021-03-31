@@ -51,13 +51,13 @@ namespace OutOfSchool.Services.Repository
         /// Get all elements with details.
         /// </summary>
         /// <param name="includeProperties">Name of properties which should be included.</param>
-        /// <returns>List of all elements with included propertires.</returns>
+        /// <returns>List of all elements with included properties.</returns>
         Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
         
         /// <summary>
         /// Get elements by a specific filter.
         /// </summary>
-        /// <param name="predicate">Filter with key.</param>
+        /// <param name="predicate">Expression to search by.</param>
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "");

@@ -39,7 +39,7 @@ namespace OutOfSchool.Services.Repository
         public async Task Delete(T entity)
         {
             dbContext.Entry(entity).State = EntityState.Deleted;
-            
+
             await this.dbContext.SaveChangesAsync();
         }
 
@@ -53,26 +53,15 @@ namespace OutOfSchool.Services.Repository
         public async Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "")
         {
             IQueryable<T> query = dbSet;
-            foreach (var includeProperty in includeProperties.Split(
-                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
 
-            return await query.ToListAsync();
+            return await GetWithDetails(query, includeProperties);
         }
 
         public async Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "")
         {
-            var query = this.dbSet.Where(predicate);
-            
-            foreach (var includeProperty in includeProperties.Split(
-                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
+            IQueryable<T> query = dbSet.Where(predicate);
 
-            return await query.ToListAsync();
+            return await GetWithDetails(query, includeProperties);
         }
 
         /// <inheritdoc/>
@@ -85,7 +74,6 @@ namespace OutOfSchool.Services.Repository
         public async Task<T> Update(T entity)
         {
             dbContext.Entry(entity).State = EntityState.Modified;
-            
             await this.dbContext.SaveChangesAsync();
             return entity;
         }
@@ -142,6 +130,15 @@ namespace OutOfSchool.Services.Repository
             }
 
             return query;
+        private static async Task<IEnumerable<T>> GetWithDetails(IQueryable<T> query, string includeProperties = "")
+        {
+            foreach (var includeProperty in includeProperties.Split(
+                new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+            
+            return await query.ToListAsync();
         }
     }
 }
