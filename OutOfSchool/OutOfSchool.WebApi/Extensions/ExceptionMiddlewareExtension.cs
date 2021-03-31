@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Extensions
 {
@@ -25,8 +21,10 @@ namespace OutOfSchool.WebApi.Extensions
         }
 
         /// <summary>
-        /// 
+        /// Handles incoming HTTP requests.
         /// </summary>
+        /// <param name="context">HTTP context.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -50,14 +48,5 @@ namespace OutOfSchool.WebApi.Extensions
                 Message = "Internal Server Error. " + exception.Message,
             }));
         }
-    }
-
-    internal class ErrorDetails
-    {
-        public ErrorDetails()
-        {
-        }
-
-        public string Message { get; set; }
     }
 }
