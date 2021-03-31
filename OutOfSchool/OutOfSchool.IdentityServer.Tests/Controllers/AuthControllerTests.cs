@@ -1,25 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.IdentityServer.Controllers;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+using ILogger = Serilog.ILogger;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers
 {
@@ -29,7 +23,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         private readonly Mock<FakeUserManager> fakeUserManager;
         private readonly Mock<FakeSignInManager> fakeSignInManager;
         private readonly Mock<IIdentityServerInteractionService> fakeInteractionService;
-        private readonly Mock<ILogger<AuthController>> fakeLogger;
+        private readonly Mock<ILogger> fakeLogger;
         private AuthController authController;
 
         public AuthControllerTests()
@@ -37,7 +31,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             fakeUserManager = new Mock<FakeUserManager>();
             fakeInteractionService = new Mock<IIdentityServerInteractionService>();
             fakeSignInManager = new Mock<FakeSignInManager>();
-            fakeLogger = new Mock<ILogger<AuthController>>();
+            fakeLogger = new Mock<ILogger>();
         }
 
         [SetUp]
@@ -47,16 +41,17 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
                 fakeUserManager.Object,
                 fakeSignInManager.Object,
                 fakeInteractionService.Object, 
-                fakeLogger.Object
-                );
+                fakeLogger.Object);
         }
 
         [Test]
         public async Task Logout_WithLogoutId_ReturnsRedirectResult()
         {
             // Arrange
-            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
-            logoutRequest.PostLogoutRedirectUri = "True logout id";
+            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage())
+            {
+                PostLogoutRedirectUri = "True logout id"
+            };
             fakeSignInManager.Setup(manager => manager.SignOutAsync())
                 .Returns(Task.CompletedTask);
             fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
@@ -69,11 +64,13 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         }
 
         [Test]
-        public async Task Logout_WithoutLogoutId_ThrowsNotImplementedException()
+        public void Logout_WithoutLogoutId_ThrowsNotImplementedException()
         {
             // Arrange
-            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
-            logoutRequest.PostLogoutRedirectUri = "";
+            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage())
+            {
+                PostLogoutRedirectUri = ""
+            };
             fakeSignInManager.Setup(manager => manager.SignOutAsync())
                 .Returns(Task.CompletedTask);
             fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
@@ -135,7 +132,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         }
 
         [Test]
-        public async Task Register_WithoutReturnUrl_ReturnsViewResult()
+        public void Register_WithoutReturnUrl_ReturnsViewResult()
         {
             // Arrange 
 
@@ -149,7 +146,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         }
 
         [Test]
-        public async Task Register_WithReturnUrl_ReturnsViewResult()
+        public void Register_WithReturnUrl_ReturnsViewResult()
         {
             // Arrange
             var returnUrl = "Return url";
@@ -208,7 +205,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         }
 
         [Test]
-        public async Task ExternalLogin_ReturnsNotImplementedEx()
+        public void ExternalLogin_ReturnsNotImplementedEx()
         {
             // Arrange
             var authController = this.authController;
@@ -235,7 +232,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
                 }),
             };
 
-        public static IEnumerable<LoginViewModel> LoginViewModels
+        private static IEnumerable<LoginViewModel> LoginViewModels
         {
             get => new List<LoginViewModel>()
             {
@@ -275,7 +272,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             }
         }
 
-        public static IEnumerable<KeyValuePair<SignInResult, Type>> SignInAndActionResults
+        private static IEnumerable<KeyValuePair<SignInResult, Type>> SignInAndActionResults
         {
             get
             {
@@ -285,9 +282,6 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             }
         }
 
-        public static IEnumerable<AuthenticationScheme> EmptySchemes
-        {
-            get => new List<AuthenticationScheme>();
-        }
+        private static IEnumerable<AuthenticationScheme> EmptySchemes => new List<AuthenticationScheme>();
     }
 }
