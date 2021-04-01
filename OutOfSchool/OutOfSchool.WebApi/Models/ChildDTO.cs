@@ -38,6 +38,6 @@ namespace OutOfSchool.WebApi.Models
 
         public AddressDto Address { get; set; }
 
-        public BirthCertificateDTO BirthCertificate { get; set; }
+        public BirthCertificateDto BirthCertificate { get; set; }
     }
 }

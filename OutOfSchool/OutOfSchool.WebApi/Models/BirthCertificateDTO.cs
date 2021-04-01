@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class BirthCertificateDTO
+    public class BirthCertificateDto
     {
         public long Id { get; set; }
 

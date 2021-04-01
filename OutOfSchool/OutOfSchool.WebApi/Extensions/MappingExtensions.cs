@@ -38,9 +38,9 @@ namespace OutOfSchool.WebApi.Extensions
             return child.Mapper<Child, ChildDTO>(cfg => { cfg.CreateMap<Child, ChildDTO>(); });
         }
 
-        public static BirthCertificateDTO ToModel(this BirthCertificate birthCertificate)
+        public static BirthCertificateDto ToModel(this BirthCertificate birthCertificate)
         {
-            return Mapper<BirthCertificate, BirthCertificateDTO>(birthCertificate, cfg => { cfg.CreateMap<BirthCertificate, BirthCertificateDTO>(); });
+            return Mapper<BirthCertificate, BirthCertificateDto>(birthCertificate, cfg => { cfg.CreateMap<BirthCertificate, BirthCertificateDto>(); });
         }
 
         public static CategoryDTO ToModel(this Category category)
@@ -94,18 +94,18 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ChildDTO, Child>(childDto, cfg =>
             {
                 cfg.CreateMap<AddressDto, Address>();
-                cfg.CreateMap<BirthCertificateDTO, BirthCertificate>();
+                cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
 
                 cfg.CreateMap<ChildDTO, Child>()
                     .ForMember(dest => dest.AddressId, opt => opt.MapFrom(c => c.Address.Id));
             });
         }
 
-        public static BirthCertificate ToDomain(this BirthCertificateDTO birthCertificateDTO)
+        public static BirthCertificate ToDomain(this BirthCertificateDto birthCertificateDTO)
         {
-            return Mapper<BirthCertificateDTO, BirthCertificate>(birthCertificateDTO, cfg =>
+            return Mapper<BirthCertificateDto, BirthCertificate>(birthCertificateDTO, cfg =>
             {
-                cfg.CreateMap<BirthCertificateDTO, BirthCertificate>();
+                cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
             });
         }
 
