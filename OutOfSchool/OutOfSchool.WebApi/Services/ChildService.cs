@@ -40,6 +40,8 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Child creating was started.");
 
+            this.Check(dto);
+
             var child = dto.ToDomain();
 
             var newChild = await repository.Create(child).ConfigureAwait(false);
@@ -98,9 +100,18 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<ChildDTO>> GetAllByParent(long id)
+        {
+            var children = await repository.GetByFilter(x => x.ParentId == id).ConfigureAwait(false);
+
+            return children.Select(x => x.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
         public async Task<ChildDTO> Update(ChildDTO dto)
         {
             logger.Information("Child updating was launched.");
+            this.Check(dto);
 
             try
             {
@@ -134,6 +145,39 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.Error("Deleting failed. There is no Child in the Db with such an id.");
                 throw;
+            }
+        }
+
+        private void Check(ChildDTO dto)
+        {
+            if (dto == null)
+            {
+                logger.Information("Child creating failed. Child was null.");
+                throw new ArgumentNullException(nameof(dto), "Child was null.");
+            }
+
+            if (dto.DateOfBirth > DateTime.Now)
+            {
+                logger.Information("Child creating failed. Invalid Date of birth.");
+                throw new ArgumentException("Invalid Date of birth.");
+            }
+
+            if (dto.FirstName.Length == 0)
+            {
+                logger.Information("Updating failed. Empty firstname.");
+                throw new ArgumentException("Empty firstname.", nameof(dto));
+            }
+
+            if (dto.LastName.Length == 0)
+            {
+                logger.Information("Updating failed. Empty lastname.");
+                throw new ArgumentException("Empty lastname.", nameof(dto));
+            }
+
+            if (dto.Patronymic.Length == 0)
+            {
+                logger.Information("Updating failed. Empty patronymic.");
+                throw new ArgumentException("Empty patronymic.", nameof(dto));
             }
         }
     }

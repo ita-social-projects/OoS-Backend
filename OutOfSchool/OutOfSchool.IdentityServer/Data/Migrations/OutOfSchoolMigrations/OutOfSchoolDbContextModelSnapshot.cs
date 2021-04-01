@@ -189,6 +189,31 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Addresses");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.BirthCertificate", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("SvidDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SvidNum")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SvidNumMD5")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SvidSer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SvidWho")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BirthCertificates");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Category", b =>
                 {
                     b.Property<long>("Id")
@@ -211,31 +236,39 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("bigint")
                         .UseIdentityColumn();
 
+                    b.Property<long>("AddressId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.Property<long>("ParentId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Patronymic")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.Property<long>("SocialGroupId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
 
                     b.HasIndex("ParentId");
 
@@ -673,8 +706,25 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.BirthCertificate", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Child", "Child")
+                        .WithOne("BirthCertificate")
+                        .HasForeignKey("OutOfSchool.Services.Models.BirthCertificate", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Child");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
+                    b.HasOne("OutOfSchool.Services.Models.Address", "Address")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
                         .WithMany("Children")
                         .HasForeignKey("ParentId")
@@ -686,6 +736,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("SocialGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Address");
 
                     b.Navigation("Parent");
 
@@ -762,6 +814,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Category", b =>
                 {
                     b.Navigation("Subcategories");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
+                {
+                    b.Navigation("BirthCertificate");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>

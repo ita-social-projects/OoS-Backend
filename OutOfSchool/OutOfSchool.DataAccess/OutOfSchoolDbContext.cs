@@ -28,5 +28,7 @@ namespace OutOfSchool.Services
         public DbSet<SocialGroup> SocialGroups { get; set; }
         
         public DbSet<Address> Addresses { get; set; }
+
+        public DbSet<BirthCertificate> BirthCertificates { get; set; }
     }
 }
