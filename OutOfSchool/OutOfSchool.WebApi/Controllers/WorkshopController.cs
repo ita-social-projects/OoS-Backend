@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OutOfSchool.Services;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.ViewModels;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
