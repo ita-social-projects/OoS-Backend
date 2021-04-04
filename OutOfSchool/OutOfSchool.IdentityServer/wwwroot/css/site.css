@@ -1,4 +1,51 @@
-﻿﻿.login__wrapper{
+﻿﻿html, body { 
+  height: 100%; 
+}
+body { 
+  margin: 0;
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  background-color: #F8F8F8;
+  color: #333333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Innerspace";
+  color: #000000;
+  margin: 0;
+}
+h1 {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+h2 {
+  font-size: 1.5rem;
+  line-height: 1.6875rem;
+}
+h3 {
+  font-size: 1.125rem;
+  line-height: 1.25rem;
+}
+h4 {
+  font-size: 1rem;
+  line-height: 1.125rem;
+}
+h5 {
+  font-size: 0.8125rem;
+  line-height: 0.9375rem;
+}
+h6 {
+  font-size: 0.6875rem;
+  line-height: 0.9375rem;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.login__wrapper{
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -56,6 +103,12 @@
     color: #4158d0;
 }
 
+.registration {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
 .registration_wrapper {
     background: #FFFFFF;
     box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
@@ -66,7 +119,6 @@
     align-items: center;
     flex-direction: column;
     width: 640px;
-    margin: 48px auto;
   }
   .registration_title {
     line-height: 20px;
@@ -122,7 +174,7 @@
   }
   .registration_form {
     margin-top: 24px;
-    width: 25.625rem;
+    width: 80%;
   }
   .registration_star {
     color: red;
@@ -132,6 +184,7 @@
     list-style: none;
     padding: 0;
     margin: 0;
+    width: 100%;
   }
   .registration_item {
     display: flex;
@@ -250,6 +303,7 @@
     height: 17px;
   }
   .registration_input {
+    box-sizing: border-box;
     border: 1px solid #E3E3E3;
     border-radius: 20px;
     height: 30px;
@@ -330,4 +384,14 @@
   .registration_privacy img {
     height: 16px;
     width: auto;
-  }  
+  }
+
+  @media screen and (max-width: 750px) {
+    .registration_wrapper {
+      width: 100%;
+      padding: 3rem 0.4rem;
+    }
+    .registration_form {
+      width: 95%;
+    }
+  }
