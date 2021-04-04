@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OutOfSchool.Services;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.ViewModels;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -108,14 +108,14 @@ namespace OutOfSchool.WebApi.Controllers
 
             var context = HttpContext.RequestServices.GetService<OutOfSchoolDbContext>();
 
-            var createdProvider = context.Providers.SingleOrDefaultAsync(u => u.UserId == User.FindFirst("sub").Value).Result;
+            var userProvider = context.Providers.SingleOrDefaultAsync(u => u.UserId == User.FindFirst("sub").Value).Result;
 
-            if (createdProvider == null)
+            if (userProvider == null)
             {
                 throw new Exception("Provider hasn't been created yet.");
             }
 
-            dto.ProviderId = createdProvider.Id;
+            dto.ProviderId = userProvider.Id;
             
             var workshop = await service.Create(dto).ConfigureAwait(false);
 
@@ -166,6 +166,12 @@ namespace OutOfSchool.WebApi.Controllers
             await service.Delete(id).ConfigureAwait(false);
 
             return NoContent();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Search([FromQuery] SearchViewModel searchViewModel)
+        {
+            return Ok(await service.Search(searchViewModel).ConfigureAwait(false));
         }
     }
 }
