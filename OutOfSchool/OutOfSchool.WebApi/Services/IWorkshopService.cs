@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.Services.ViewModels;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -49,5 +51,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Workshop's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(long id);
+
+        Task<IEnumerable> Search(SearchViewModel searchModel);
     }
 }

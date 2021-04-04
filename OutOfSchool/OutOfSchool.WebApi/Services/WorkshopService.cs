@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.ViewModels;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using Serilog;
@@ -17,7 +19,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class WorkshopService : IWorkshopService
     {
-        private readonly IEntityRepository<Workshop> repository;
+        private readonly IWorkshopRepository repository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -125,6 +127,11 @@ namespace OutOfSchool.WebApi.Services
                 logger.Error("Deleting failed. There is no Workshop in the Db with such an id.");
                 throw;
             }
+        }
+
+        public async Task<IEnumerable> Search(SearchViewModel searchModel)
+        {
+            return await repository.Search(searchModel).ConfigureAwait(false);
         }
     }
 }
