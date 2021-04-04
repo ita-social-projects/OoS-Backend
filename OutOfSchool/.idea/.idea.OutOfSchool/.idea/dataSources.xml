@@ -12,16 +12,5 @@
       </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="MSSMS" uuid="b47c7021-3213-4198-9e1e-b7258b5ce182">
-      <driver-ref>sqlserver.jtds</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>net.sourceforge.jtds.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:jtds:sqlserver://./;instance=&lt;pipe name&gt;;namedPipe=true</jdbc-url>
-      <jdbc-additional-properties>
-        <property name="LOCAL_DB_INSTANCE" value="MSSQLLocalDB" />
-        <property name="LOCAL_DB_EXECUTABLE" value="C:\Program Files\Microsoft SQL Server\130\Tools\Binn\SqlLocalDB.exe" />
-      </jdbc-additional-properties>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
   </component>
 </project>
