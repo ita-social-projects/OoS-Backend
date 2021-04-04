@@ -5,12 +5,12 @@ namespace OutOfSchool.Services.Repository
 {
     public class ProviderRepository : EntityRepository<Provider>, IProviderRepository
     {
-        private readonly OutOfSchoolDbContext db;
+        private readonly OutOfSchoolDbContext context;
 
-        public ProviderRepository(OutOfSchoolDbContext dbContext)
-         : base(dbContext)
+        public ProviderRepository(OutOfSchoolDbContext context)
+         : base(context)
         {
-            db = dbContext;
+            this.context = context;
         }
 
         /// <summary>
@@ -18,6 +18,6 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="entity">Entity.</param>
         /// <returns>Bool.</returns>
-        public bool Exists(Provider entity) => db.Providers.Any(x => x.EDRPOU == entity.EDRPOU || x.INPP == entity.INPP);
+        public bool Exists(Provider entity) => context.Providers.Any(x => x.EDRPOU == entity.EDRPOU || x.INPP == entity.INPP);
     }
 }

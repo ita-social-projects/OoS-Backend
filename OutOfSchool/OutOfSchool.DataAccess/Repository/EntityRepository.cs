@@ -14,33 +14,33 @@ namespace OutOfSchool.Services.Repository
     public class EntityRepository<T> : IEntityRepository<T>
         where T : class, new()
     {
-        private OutOfSchoolDbContext dbContext;
+        private OutOfSchoolDbContext context;
         private DbSet<T> dbSet;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
         /// </summary>
-        /// <param name="dbContext">OutOfSchoolDbContext.</param>
-        public EntityRepository(OutOfSchoolDbContext dbContext)
+        /// <param name="context">OutOfSchoolDbContext.</param>
+        public EntityRepository(OutOfSchoolDbContext context)
         {
-            this.dbContext = dbContext;
-            dbSet = this.dbContext.Set<T>();
+            this.context = context;
+            dbSet = this.context.Set<T>();
         }
 
         /// <inheritdoc/>
         public async Task<T> Create(T entity)
         {
             await dbSet.AddAsync(entity);
-            await dbContext.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return await Task.FromResult(entity);
         }
 
         /// <inheritdoc/>
         public async Task Delete(T entity)
         {
-            dbContext.Entry(entity).State = EntityState.Deleted;
+            context.Entry(entity).State = EntityState.Deleted;
 
-            await this.dbContext.SaveChangesAsync();
+            await this.context.SaveChangesAsync();
         }
 
         /// <inheritdoc/>
@@ -73,8 +73,8 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<T> Update(T entity)
         {
-            dbContext.Entry(entity).State = EntityState.Modified;
-            await this.dbContext.SaveChangesAsync();
+            context.Entry(entity).State = EntityState.Modified;
+            await this.context.SaveChangesAsync();
             return entity;
         }
 
