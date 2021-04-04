@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace OutOfSchool.Services.Models
 {
@@ -13,6 +12,7 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Workshop title is required")]
         [MinLength(1)]
         [MaxLength(60)]
+        [RegularExpression(@"[\u0400-\u04FF\-\']*$")]
         public string Title { get; set; } = string.Empty;
 
         [DataType(DataType.PhoneNumber)]

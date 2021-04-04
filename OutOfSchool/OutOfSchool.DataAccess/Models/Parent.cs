@@ -14,7 +14,7 @@ namespace OutOfSchool.Services.Models
 
         [Required(ErrorMessage = "First name is required")]
         [MaxLength(40)]
-        [RegularExpression(@"[\u0400-\u04FF\-\']*$", ErrorMessage = "First name is required")]
+        [RegularExpression(@"[\u0400-\u04FF\-\']*$", ErrorMessage = "First name has to contain ")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Middle name is required")]
