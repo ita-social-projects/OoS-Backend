@@ -96,21 +96,22 @@ namespace OutOfSchool.WebApi
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddTransient<IChildService, ChildService>();
-            services.AddTransient<IWorkshopService, WorkshopService>();
-            services.AddTransient<ITeacherService, TeacherService>();
-            services.AddTransient<IProviderService, ProviderService>();
-            services.AddTransient<IParentService, ParentService>();
-            services.AddTransient<IAddressService, AddressService>();
+            services.AddScoped<IChildService, ChildService>();
+            services.AddScoped<IWorkshopService, WorkshopService>();
+            services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IProviderService, ProviderService>();
+            services.AddScoped<IParentService, ParentService>();
+            services.AddScoped<IAddressService, AddressService>();
 
-            services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
-            services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
-            services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
-            services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
-            services.AddTransient<IEntityRepository<Parent>, EntityRepository<Parent>>();
+            services.AddScoped<IEntityRepository<Address>, EntityRepository<Address>>();
+            services.AddScoped<IEntityRepository<Child>, EntityRepository<Child>>();
+            services.AddScoped<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
+            services.AddScoped<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
+            services.AddScoped<IEntityRepository<Parent>, EntityRepository<Parent>>();
 
-            services.AddTransient<IProviderRepository, ProviderRepository>();
-
+            services.AddScoped<IProviderRepository, ProviderRepository>();
+            services.AddScoped<IWorkshopRepository, WorkshopRepository>();
+            
             services.AddSingleton(Log.Logger);
 
             // Register the Swagger generator, defining 1 or more Swagger documents
