@@ -1,15 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
 {
@@ -19,50 +18,50 @@ namespace OutOfSchool.WebApi.Controllers
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class ParentController : ControllerBase
+    public class CategoryController : ControllerBase
     {
-        private readonly IParentService service;
+        private readonly ICategoryService service;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ParentController"/> class.
+        /// Initializes a new instance of the <see cref="CategoryController"/> class.
         /// Initialization of ParentController.
         /// </summary>
         /// <param name="service">Service for ParentCOntroller.</param>
         /// <param name="localizer">Localizer.</param>
-        public ParentController(IParentService service, IStringLocalizer<SharedResource> localizer)
+        public CategoryController(ICategoryService service, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.service = service;
         }
 
         /// <summary>
-        /// To get all Parents from DB.
+        /// To get all Categories from DB.
         /// </summary>
-        /// <returns>List of Parents.</returns>
+        /// <returns>List of Categories.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentDTO>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CategoryDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-            var parents = await service.GetAll().ConfigureAwait(false);
+            var categories = await service.GetAll().ConfigureAwait(false);
 
-            if (!parents.Any())
+            if (!categories.Any())
             {
                 return NoContent();
             }
 
-            return Ok(parents);
+            return Ok(categories);
         }
 
         /// <summary>
-        /// To recieve parent with define id.
+        /// To recieve category with define id.
         /// </summary>
         /// <param name="id">Key in table.</param>
-        /// <returns>Parent with define id.</returns>
+        /// <returns>Category with define id.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDTO))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(long id)
         {
@@ -77,9 +76,9 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To create new Parent and add to the DB.
+        /// To create new Category and add to the DB.
         /// </summary>
-        /// <param name="dto">ParentDTO object that we want to add.</param>
+        /// <param name="dto">CategoryDTO object that we want to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPost]
@@ -87,7 +86,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create(ParentDTO dto)
+        public async Task<IActionResult> Create(CategoryDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -97,14 +96,13 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 dto.Id = default;
-                dto.UserId = User.FindFirst("sub")?.Value;
 
-                var parent = await service.Create(dto).ConfigureAwait(false);
+                var category = await service.Create(dto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                      nameof(GetById),
-                     new { id = parent.Id, },
-                     parent);
+                     new { id = category.Id, },
+                     category);
             }
             catch (ArgumentException ex)
             {
@@ -113,27 +111,27 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To update Parent entity that already exists.
+        /// To update Category entity that already exists.
         /// </summary>
-        /// <param name="parentDTO">ParentDTO object with new properties.</param>
-        /// <returns>Parent's key.</returns>
+        /// <param name="categoryDTO">CategoryDTO object with new properties.</param>
+        /// <returns>Category's key.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Update(ParentDTO parentDTO)
+        public async Task<ActionResult> Update(CategoryDTO categoryDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(parentDTO).ConfigureAwait(false));
+            return Ok(await service.Update(categoryDTO).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Delete Parent entity from DB.
+        /// Delete Category entity from DB.
         /// </summary>
         /// <param name="id">The key in table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -154,29 +152,6 @@ namespace OutOfSchool.WebApi.Controllers
             await service.Delete(id).ConfigureAwait(false);
 
             return NoContent();
-        }
-
-        /// <summary>
-        /// To Get the Profile of authorized Parent.
-        /// </summary>
-        /// <returns>Authorized parent's profile.</returns>
-        [Authorize(Roles = "parent,admin")]
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ParentDTO>> GetProfile()
-        {
-            try
-            {
-                int id = int.Parse(User.FindFirst("sub")?.Value);
-                ParentDTO parentDTO = await service.GetById(id).ConfigureAwait(false);
-                return this.Ok(parentDTO);
-            }
-            catch (ArgumentException ex)
-            {
-                return this.BadRequest(ex.Message);
-            }
         }
     }
 }
