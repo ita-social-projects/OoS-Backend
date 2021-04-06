@@ -41,6 +41,11 @@ namespace OutOfSchool.WebApi.Services
 
             var category = dto.ToDomain();
 
+            if (repository.Get<int>(where: x => x.Title == dto.Title).Any())
+            {
+                throw new ArgumentException(localizer["There is already a category with such a data."]);
+            }
+
             var newCategory = await repository.Create(category).ConfigureAwait(false);
 
             logger.Information("Parent created successfully.");
