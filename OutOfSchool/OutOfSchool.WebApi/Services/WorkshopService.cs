@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Repository for Workshop entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public WorkshopService(IEntityRepository<Workshop> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public WorkshopService(IWorkshopRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
