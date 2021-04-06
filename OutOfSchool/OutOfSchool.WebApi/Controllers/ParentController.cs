@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -70,12 +71,6 @@ namespace OutOfSchool.WebApi.Controllers
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
                     localizer["The id cannot be less than 1."]);
-                var parentDTO = await service.GetById(id).ConfigureAwait(false);
-                return Ok(parentDTO);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
             }
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
