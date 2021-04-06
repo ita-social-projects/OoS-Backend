@@ -4,9 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
@@ -103,7 +102,7 @@ namespace OutOfSchool.WebApi.Controllers
 
                 dto.UserId = userId;
                 
-                var organization = await service.Create(dto).ConfigureAwait(false);
+                var provider = await service.Create(dto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                     nameof(GetById),
