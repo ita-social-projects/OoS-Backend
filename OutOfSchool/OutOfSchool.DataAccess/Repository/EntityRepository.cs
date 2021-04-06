@@ -14,8 +14,8 @@ namespace OutOfSchool.Services.Repository
     public class EntityRepository<T> : IEntityRepository<T>
         where T : class, new()
     {
-        private OutOfSchoolDbContext context;
-        private DbSet<T> dbSet;
+        private readonly OutOfSchoolDbContext context;
+        private readonly DbSet<T> dbSet;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
@@ -85,17 +85,21 @@ namespace OutOfSchool.Services.Repository
             {
                 return await dbSet.CountAsync().ConfigureAwait(false);
             }
-            else
-            {
-                return await dbSet.Where(where).CountAsync().ConfigureAwait(false);
-            }
+
+            return await dbSet.Where(@where).CountAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public IQueryable<T> Get<TOrderKey>(
-        int skip = 0, int take = 0, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
+            int skip = 0, 
+            int take = 0, 
+            string includeProperties = "", 
+            Expression<Func<T, bool>> where = null,
+            Expression<Func<T, TOrderKey>> orderBy = null, 
+            bool ascending = true)
         {
-            IQueryable<T> query = (IQueryable<T>)dbSet;
+            IQueryable<T> query = dbSet;
+            
             if (where != null)
             {
                 query = query.Where(where);
@@ -103,14 +107,7 @@ namespace OutOfSchool.Services.Repository
 
             if (orderBy != null)
             {
-                if (ascending)
-                {
-                    query = query.OrderBy(orderBy);
-                }
-                else
-                {
-                    query = query.OrderByDescending(orderBy);
-                }
+                query = @ascending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
             }
 
             if (skip != 0)
@@ -124,12 +121,14 @@ namespace OutOfSchool.Services.Repository
             }
 
             foreach (var includeProperty in includeProperties.Split(
-           new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
             {
                 query = query.Include(includeProperty);
             }
 
             return query;
+        }
+
         private static async Task<IEnumerable<T>> GetWithDetails(IQueryable<T> query, string includeProperties = "")
         {
             foreach (var includeProperty in includeProperties.Split(
