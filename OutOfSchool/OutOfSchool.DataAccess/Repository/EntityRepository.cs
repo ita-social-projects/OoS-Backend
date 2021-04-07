@@ -145,7 +145,7 @@ namespace OutOfSchool.Services.Repository
                 query = query.Include(includeProperty);
             }
             
-            return await query.ToListAsync();
+            return await query.AsNoTracking().ToListAsync();
         }
 
         private static async Task<IEnumerable<T>> GetWithDetails(IQueryable<T> query, string includeProperties = "")
