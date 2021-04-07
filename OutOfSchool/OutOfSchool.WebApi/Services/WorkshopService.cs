@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc />
         public async Task<IEnumerable<WorkshopDTO>> GetAllByProvider(long id)
         {
-            var workshops = await repository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
+            var workshops = await repository.GetByCondition(x => x.Provider.Id == id).ConfigureAwait(false);
 
             return workshops.Select(x => x.ToModel()).ToList();
         }

@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Tests
                 Expression<Func<Child, bool>> filter = child => child.Id == 1;
 
                 // Act
-                var child = repository.GetByFilter(filter, "SocialGroup").Result;
+                var child = repository.GetByCondition(filter, "SocialGroup").Result;
 
                 // Assert
                 Assert.AreEqual(1, child.Count());

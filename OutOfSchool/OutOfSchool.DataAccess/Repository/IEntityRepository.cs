@@ -57,17 +57,17 @@ namespace OutOfSchool.Services.Repository
         /// <summary>
         /// Get elements by a specific filter.
         /// </summary>
-        /// <param name="predicate">Expression to search by.</param>
+        /// <param name="condition">Expression to search by.</param>
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "");
+        Task<IEnumerable<T>> GetByCondition(Expression<Func<T, bool>> condition, string includeProperties = "");
 
         /// <summary>
         /// Get the amount of elements with filter or without it.
         /// </summary>
-        /// <param name="where">Filter.</param>
+        /// <param name="condition">Filter.</param>
         /// <returns>The amount of elements.</returns>
-        Task<int> Count(Expression<Func<T, bool>> where = null);
+        Task<int> Count(Expression<Func<T, bool>> condition = null);
 
         /// <summary>
         /// Get ordered, filtered list of elements.
@@ -76,10 +76,10 @@ namespace OutOfSchool.Services.Repository
         /// <param name="skip">How many records we want tp skip.</param>
         /// <param name="take">How many records we want to take.</param>
         /// <param name="includeProperties">What Properties we want to include to objects that we will receive.</param>
-        /// <param name="where">Filter.</param>
+        /// <param name="condition">Filter.</param>
         /// <param name="orderBy">Filter that defines by wich property we want to order by.</param>
         /// <param name="ascending">Ascending or descending ordering.</param>
         /// <returns>Ordered, filtered list of elements.</returns>
-        IQueryable<T> Get<TOrderKey>(int skip = 0, int take = 0, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true);
+        IQueryable<T> Get<TOrderKey>(int skip = 0, int take = 0, string includeProperties = "", Expression<Func<T, bool>> condition = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true);
     }
 }

@@ -24,6 +24,7 @@ namespace OutOfSchool.Services.Repository
         public EntityRepository(OutOfSchoolDbContext context)
         {
             this.context = context;
+            
             dbSet = this.context.Set<T>();
         }
 
@@ -31,7 +32,9 @@ namespace OutOfSchool.Services.Repository
         public async Task<T> Create(T entity)
         {
             await dbSet.AddAsync(entity);
+            
             await context.SaveChangesAsync();
+            
             return await Task.FromResult(entity);
         }
 
@@ -40,13 +43,13 @@ namespace OutOfSchool.Services.Repository
         {
             context.Entry(entity).State = EntityState.Deleted;
 
-            await this.context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<T>> GetAll()
         {
-            return await dbSet.ToListAsync();
+            return await dbSet.AsNoTracking().ToListAsync();
         }
 
         /// <inheritdoc/>
@@ -57,9 +60,9 @@ namespace OutOfSchool.Services.Repository
             return await GetWithDetails(query, includeProperties);
         }
 
-        public async Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        public async Task<IEnumerable<T>> GetByCondition(Expression<Func<T, bool>> condition, string includeProperties = "")
         {
-            IQueryable<T> query = dbSet.Where(predicate);
+            IQueryable<T> query = dbSet.Where(condition);
 
             return await GetWithDetails(query, includeProperties);
         }
@@ -67,26 +70,31 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<T> GetById(long id)
         {
-            return await dbSet.FindAsync(id).AsTask();
+            var entity = await dbSet.FindAsync(id);
+            context.Entry(entity).State = EntityState.Detached;
+
+            return entity;
         }
 
         /// <inheritdoc/>
         public async Task<T> Update(T entity)
         {
             context.Entry(entity).State = EntityState.Modified;
-            await this.context.SaveChangesAsync();
+            
+            await context.SaveChangesAsync();
+            
             return entity;
         }
 
         /// <inheritdoc/>
-        public async Task<int> Count(Expression<Func<T, bool>> where = null)
+        public async Task<int> Count(Expression<Func<T, bool>> condition = null)
         {
-            if (where == null)
+            if (condition == null)
             {
                 return await dbSet.CountAsync().ConfigureAwait(false);
             }
 
-            return await dbSet.Where(@where).CountAsync().ConfigureAwait(false);
+            return await dbSet.Where(condition).CountAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -94,15 +102,15 @@ namespace OutOfSchool.Services.Repository
             int skip = 0, 
             int take = 0, 
             string includeProperties = "", 
-            Expression<Func<T, bool>> where = null,
+            Expression<Func<T, bool>> condition = null,
             Expression<Func<T, TOrderKey>> orderBy = null, 
             bool ascending = true)
         {
             IQueryable<T> query = dbSet;
             
-            if (where != null)
+            if (condition != null)
             {
-                query = query.Where(where);
+                query = query.Where(condition);
             }
 
             if (orderBy != null)
@@ -137,7 +145,7 @@ namespace OutOfSchool.Services.Repository
                 query = query.Include(includeProperty);
             }
             
-            return await query.ToListAsync();
+            return await query.AsNoTracking().ToListAsync();
         }
     }
 }

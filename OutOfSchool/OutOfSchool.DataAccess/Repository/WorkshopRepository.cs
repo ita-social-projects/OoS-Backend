@@ -22,7 +22,7 @@ namespace OutOfSchool.Services.Repository
             
             if (!string.IsNullOrEmpty(searchModel.Title.ToLower()))
             {
-                workshops = await GetByFilter(w => w.Title.Contains(searchModel.Title.ToLower())).ConfigureAwait(false);
+                workshops = await GetByCondition(w => w.Title.Contains(searchModel.Title.ToLower())).ConfigureAwait(false);
             }
 
             return workshops;

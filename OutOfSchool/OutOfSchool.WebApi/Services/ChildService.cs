@@ -98,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<IEnumerable<ChildDTO>> GetAllByParent(long id)
         {
-            var children = await repository.GetByFilter(x => x.ParentId == id).ConfigureAwait(false);
+            var children = await repository.GetByCondition(x => x.ParentId == id).ConfigureAwait(false);
 
             return children.Select(x => x.ToModel()).ToList();
         }
