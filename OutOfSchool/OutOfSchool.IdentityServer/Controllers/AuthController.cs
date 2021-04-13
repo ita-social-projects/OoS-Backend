@@ -138,15 +138,16 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = new User()
             {
-               UserName = model.Name,
+               UserName = model.Email,
+               Name = model.Name,
                LastName = model.LastName,
                MiddleName = model.MiddleName,
                Email = model.Email,
                PhoneNumber = model.PhoneNumber,
                CreatingTime = DateTime.Now,
             };
-            var result = await userManager.CreateAsync(user, model.Password);
 
+            var result = await userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
                 IdentityResult roleAssignResult = IdentityResult.Failed();

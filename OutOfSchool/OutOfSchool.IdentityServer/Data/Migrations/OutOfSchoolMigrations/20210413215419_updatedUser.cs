@@ -63,6 +63,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
+              name: "Name",
+              table: "AspNetUsers",
+              type: "nvarchar(max)",
+              nullable: true);
+
+            migrationBuilder.AddColumn<string>(
                 name: "MiddleName",
                 table: "AspNetUsers",
                 type: "nvarchar(max)",
@@ -94,6 +100,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             migrationBuilder.DropColumn(
                 name: "LastName",
+                table: "AspNetUsers");
+
+            migrationBuilder.DropColumn(
+                name: "Name",
                 table: "AspNetUsers");
 
             migrationBuilder.DropColumn(
