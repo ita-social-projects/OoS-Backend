@@ -5,9 +5,14 @@ namespace OutOfSchool.IdentityServer.ViewModels
 {
     public class RegisterViewModel
     {
-        [Required]
-        [MinLength(5)]
-        public string Username { get; set; }
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; }
+
+        [Required(ErrorMessage = "LastName is required")]
+        public string LastName { get; set; }
+
+        [Required(ErrorMessage = "MiddleName is required")]
+        public string MiddleName { get; set; }
 
         [Required(ErrorMessage = "Password is required")]
         [RegularExpression(

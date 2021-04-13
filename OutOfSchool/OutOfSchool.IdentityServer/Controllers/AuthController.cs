@@ -138,9 +138,12 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = new User()
             {
-                UserName = model.Username,
-                PhoneNumber = model.PhoneNumber,
-                CreatingTime = DateTime.Now,
+               UserName = model.Name,
+               LastName = model.LastName,
+               MiddleName = model.MiddleName,
+               Email = model.Email,
+               PhoneNumber = model.PhoneNumber,
+               CreatingTime = DateTime.Now,
             };
             var result = await userManager.CreateAsync(user, model.Password);
 
