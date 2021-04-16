@@ -182,7 +182,12 @@ namespace OutOfSchool.IdentityServer.Controllers
             else
             {
                 foreach (var error in result.Errors)
-                {
+                {                   
+                    if (error.Code == "DuplicateUserName")
+                    {
+                        error.Description = $"Email {error.Description.Substring(10).Split('\'')[0]} is alredy taken";                     
+                    }
+
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
