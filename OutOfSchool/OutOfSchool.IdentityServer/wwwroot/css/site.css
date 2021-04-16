@@ -401,7 +401,7 @@ a {
 
 .field-validation-error {
     color: #ff0000;
-    font-family: Open Sans;
+    font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif;
     font-size: 12px;
 }
 
