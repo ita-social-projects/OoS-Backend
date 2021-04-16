@@ -24,7 +24,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Address", x => x.Id);
-                });         
+                });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
