@@ -13,9 +13,9 @@ let repeatPassword = document.getElementById('repeat_password');
 
 if (password.className.includes('input-validation-error')) {
     let elements = document.getElementsByClassName('registration_privacy');
-    for (var i = 0; i < elements.length; i++) {
-        elements[i].style.height = "65px";
-    }   
+    for (let element of elements) {
+        element.style.height = "65px";
+    } 
 }
 
 if (document.getElementsByClassName('validation-summary-errors').length > 0) {

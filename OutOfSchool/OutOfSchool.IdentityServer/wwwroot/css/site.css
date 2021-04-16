@@ -400,9 +400,9 @@ a {
 }
 
 .field-validation-error {
-  color: #ff0000;
-  font-family: Arial;
-  font-size: 12px;
+    color: #ff0000;
+    font-family: Open Sans;
+    font-size: 12px;
 }
 
 .field-validation-valid {
