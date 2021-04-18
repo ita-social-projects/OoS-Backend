@@ -135,18 +135,7 @@ namespace OutOfSchool.Services.Repository
             
             return GetWithDetails(query, includeProperties) as IQueryable<T>;
         }
-
-        private static async Task<IEnumerable<T>> GetWithDetails(IQueryable<T> query, string includeProperties = "")
-        {
-            foreach (var includeProperty in includeProperties.Split(
-                new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-            
-            return await query.AsNoTracking().ToListAsync();
-        }
-
+        
         private static async Task<IEnumerable<T>> GetWithDetails(IQueryable<T> query, string includeProperties = "")
         {
             foreach (var includeProperty in includeProperties.Split(
