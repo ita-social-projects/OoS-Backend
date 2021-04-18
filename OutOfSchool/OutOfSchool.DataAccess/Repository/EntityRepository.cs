@@ -57,20 +57,25 @@ namespace OutOfSchool.Services.Repository
         {
             IQueryable<T> query = dbSet;
 
-            return await GetWithDetails(query, includeProperties);
+            var result = await GetWithDetails(query, includeProperties);
+            
+            return result;
         }
 
         public async Task<IEnumerable<T>> GetByCondition(Expression<Func<T, bool>> condition, string includeProperties = "")
         {
             IQueryable<T> query = dbSet.Where(condition);
 
-            return await GetWithDetails(query, includeProperties);
+            var result = await GetWithDetails(query, includeProperties);
+            
+            return result;
         }
 
         /// <inheritdoc/>
         public async Task<T> GetById(long id)
         {
             var entity = await dbSet.FindAsync(id);
+            
             context.Entry(entity).State = EntityState.Detached;
 
             return entity;
@@ -127,14 +132,8 @@ namespace OutOfSchool.Services.Repository
             {
                 query = query.Take(take);
             }
-
-            foreach (var includeProperty in includeProperties.Split(
-                new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-
-            return query;
+            
+            return GetWithDetails(query, includeProperties) as IQueryable<T>;
         }
 
         private static async Task<IEnumerable<T>> GetWithDetails(IQueryable<T> query, string includeProperties = "")
