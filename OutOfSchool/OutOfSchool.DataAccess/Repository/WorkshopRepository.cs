@@ -1,8 +1,6 @@
 ﻿using System.Collections;
-using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.ViewModels;
 
 namespace OutOfSchool.Services.Repository
 {
@@ -16,13 +14,13 @@ namespace OutOfSchool.Services.Repository
             this.context = context;
         }
 
-        public async Task<IEnumerable> Search(SearchViewModel searchModel)
+        public async Task<IEnumerable> Search(string searchString)
         {
             IEnumerable workshops = null;
             
-            if (!string.IsNullOrEmpty(searchModel.Title.ToLower()))
+            if (!string.IsNullOrEmpty(searchString.ToLower()))
             {
-                workshops = await GetByCondition(w => w.Title.Contains(searchModel.Title.ToLower())).ConfigureAwait(false);
+                workshops = await GetByCondition(w => w.Title.Contains(searchString.ToLower())).ConfigureAwait(false);
             }
 
             return workshops;
