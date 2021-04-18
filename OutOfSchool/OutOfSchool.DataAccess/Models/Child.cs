@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -28,7 +29,8 @@ namespace OutOfSchool.Services.Models
         public Gender Gender { get; set; }
 
         public long AddressId { get; set; }
-
+        
+        [ForeignKey("Id")]
         public virtual Address Address { get; set; }
 
         public virtual Parent Parent { get; set; }
