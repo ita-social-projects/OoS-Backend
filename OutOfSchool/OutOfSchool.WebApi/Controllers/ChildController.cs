@@ -89,21 +89,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             return Ok(await service.GetByIdWithDetails(id).ConfigureAwait(false));
         }
-        
-        /// <summary>
-        /// Get child with details by id.
-        /// </summary>
-        /// <param name="id">Child's id.</param>
-        /// <returns>Children.</returns>
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetByIdWithDetails(long id)
-        {
-            return Ok(await service.GetByIdWithDetails(id).ConfigureAwait(false));
-        }
-        
+
         /// <summary>
         /// Get children by parent id.
         /// </summary>
@@ -144,7 +130,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = child.Id, },
+                new {id = child.Id,},
                 child);
         }
 
