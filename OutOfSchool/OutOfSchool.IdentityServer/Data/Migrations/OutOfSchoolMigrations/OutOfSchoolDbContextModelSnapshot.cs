@@ -232,9 +232,7 @@ namespace OutOfSchool.IdentityServer.Migrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .UseIdentityColumn();
+                        .HasColumnType("bigint");
 
                     b.Property<long>("AddressId")
                         .HasColumnType("bigint");
@@ -244,31 +242,26 @@ namespace OutOfSchool.IdentityServer.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("ParentId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Patronymic")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("SocialGroupId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
 
                     b.HasIndex("ParentId");
 
@@ -300,6 +293,7 @@ namespace OutOfSchool.IdentityServer.Migrations
                         .HasColumnType("nvarchar(40)");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -338,7 +332,7 @@ namespace OutOfSchool.IdentityServer.Migrations
                     b.Property<DateTime>("DirectorBirthDay")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DirectorPhonenumber")
+                    b.Property<string>("DirectorPhone")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DirectorPosition")
@@ -718,7 +712,7 @@ namespace OutOfSchool.IdentityServer.Migrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Address", "Address")
                         .WithMany()
-                        .HasForeignKey("AddressId")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -745,7 +739,9 @@ namespace OutOfSchool.IdentityServer.Migrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
