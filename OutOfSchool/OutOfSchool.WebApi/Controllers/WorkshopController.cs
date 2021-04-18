@@ -4,11 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.Services;
-using OutOfSchool.Services.ViewModels;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -169,9 +168,9 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Search([FromQuery] SearchViewModel searchViewModel)
+        public async Task<IActionResult> Search([FromQuery] string searchString)
         {
-            return Ok(await service.Search(searchViewModel).ConfigureAwait(false));
+            return Ok(await service.Search(searchString).ConfigureAwait(false));
         }
     }
 }
