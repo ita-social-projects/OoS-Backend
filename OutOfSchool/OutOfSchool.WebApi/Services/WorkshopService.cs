@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.Services.ViewModels;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using Serilog;
@@ -129,9 +128,9 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        public async Task<IEnumerable> Search(SearchViewModel searchModel)
+        public async Task<IEnumerable> Search(string searchString)
         {
-            return await repository.Search(searchModel).ConfigureAwait(false);
+            return await repository.Search(searchString).ConfigureAwait(false);
         }
     }
 }
