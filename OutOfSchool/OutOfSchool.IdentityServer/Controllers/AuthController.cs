@@ -139,7 +139,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             var user = new User()
             {
                UserName = model.Email,
-               Name = model.Name,
+               FirstName = model.FirstName,
                LastName = model.LastName,
                MiddleName = model.MiddleName,
                Email = model.Email,

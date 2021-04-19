@@ -16,6 +16,6 @@ namespace OutOfSchool.Services.Models
 
         public string MiddleName { get; set; }
 
-        public string Name { get; set; }
+        public string FirstName { get; set; }
     }
 }
