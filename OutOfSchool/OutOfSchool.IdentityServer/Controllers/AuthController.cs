@@ -138,12 +138,16 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = new User()
             {
-                UserName = model.Username,
-                PhoneNumber = model.PhoneNumber,
-                CreatingTime = DateTime.Now,
+               UserName = model.Email,
+               FirstName = model.FirstName,
+               LastName = model.LastName,
+               MiddleName = model.MiddleName,
+               Email = model.Email,
+               PhoneNumber = model.PhoneNumber,
+               CreatingTime = DateTime.Now,
             };
-            var result = await userManager.CreateAsync(user, model.Password);
 
+            var result = await userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
                 IdentityResult roleAssignResult = IdentityResult.Failed();
@@ -178,7 +182,12 @@ namespace OutOfSchool.IdentityServer.Controllers
             else
             {
                 foreach (var error in result.Errors)
-                {
+                {                   
+                    if (error.Code == "DuplicateUserName")
+                    {
+                        error.Description = $"Email {error.Description.Substring(10).Split('\'')[0]} is alredy taken";                     
+                    }
+
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
