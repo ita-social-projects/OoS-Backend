@@ -146,7 +146,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="filter">Workshop filter.</param>
         /// <param name="pageSize">Count of records on one page.</param>
         /// <returns>COunt of pages.</returns>
-        [HttpGet("{filter, pageSize}")]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -176,7 +176,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="pageNumber">Number of page.</param>
         /// <param name="pageSize">Count of records on one page.</param>
         /// <returns>The list of workshops for this page.</returns>
-        [HttpGet("{filter, pageNumber, pageSize}")]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
