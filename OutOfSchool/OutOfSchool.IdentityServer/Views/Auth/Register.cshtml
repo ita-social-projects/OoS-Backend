@@ -3,40 +3,139 @@
 @{
     Layout = "_Layout";
 }
-<form class="login__wrapper" asp-controller="Auth" asp-action="Register" method="post">
-    <input type="hidden" asp-for="ReturnUrl" />
-    <div>
-        <label class="login__label">Username</label>
-        <input class="login__input" asp-for="Username" />
-        <span asp-validation-for="Username"></span>
+<div class="registration">
+    <div class="registration_wrapper">
+        <h3 class="registration_title">ЗАРЕЄСТРУВАТИСЯ</h3>
+        <h5 class="registration_subtitle">Щоб мати змогу подавати заявки у гуртки або стати надавачем послуг</h5>
+        <div class="registration_social">
+            <button class="registration_button">
+                <img src="/icons/fb.png" alt="facebook">
+            </button>
+            <button class="registration_button">
+                <img src="/icons/google.png" alt="google">
+            </button>
+        </div>
+        <div class="registration_option">або заповніть форму</div>
+        <form onsubmit="return validateForm(this)" asp-controller="Auth" asp-action="Register" method="post" class="registration_form">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="ModelOnly"></div>
+            <ul class="registration_list">
+                <li class="registration_item">
+                    <label class="registration_label">
+                        Зареєструватися як<span class="registration_star">*</span>
+                    </label>
+                    <div class="registration_as">
+                        <div class="registration_type registration_type-active" id="btn_parent">
+                            <div class="registration_icon registration_icon-person">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5.99984 5.99984C7.47317 5.99984 8.6665 4.8065 8.6665 3.33317C8.6665 1.85984 7.47317 0.666504 5.99984 0.666504C4.5265 0.666504 3.33317 1.85984 3.33317 3.33317C3.33317 4.8065 4.5265 5.99984 5.99984 5.99984ZM5.99984 7.33317C4.21984 7.33317 0.666504 8.2265 0.666504 9.99984V11.3332H11.3332V9.99984C11.3332 8.2265 7.77984 7.33317 5.99984 7.33317Z" fill="#272425" />
+                                </svg>
+                            </div>
+                            Користувач
+                        </div>
+                        <div class="registration_type" id="btn_provider">
+                            <div class="registration_icon registration_icon-provider">
+                                <svg width="13" height="15" viewBox="0 0 13 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1.66683 6.6665V11.3332H3.66683V6.6665H1.66683ZM5.66683 6.6665V11.3332H7.66683V6.6665H5.66683ZM0.333496 14.6665H13.0002V12.6665H0.333496V14.6665ZM9.66683 6.6665V11.3332H11.6668V6.6665H9.66683ZM6.66683 0.666504L0.333496 3.99984V5.33317H13.0002V3.99984L6.66683 0.666504Z" fill="#272425" />
+                                </svg>
+                            </div>
+                            Надавач послуг
+                        </div>
+                        <div class="registration_divider"></div>
+
+                    </div>
+                </li>
+
+                <li class="registration_item">
+                    <label class="registration_label" asp-for="LastName">Прізвище<span class="registration_star">*</span></label>
+                    <input class="registration_input" type="text" asp-for="LastName" id="last_name">        
+                    <div>
+                        <span asp-validation-for="LastName"></span>
+                    </div>
+
+                </li>
+                <li class="registration_item">
+                    <label class="registration_label" asp-for="FirstName">Ім’я<span class="registration_star">*</span></label>
+                    <input class="registration_input" type="text" asp-for="FirstName" id="first_name">
+                    <div>
+                        <span asp-validation-for="FirstName"></span>
+                    </div>
+                </li>
+                <li class="registration_item">
+                    <label class="registration_label"  asp-for="MiddleName">По-батькові</label>
+                    <input class="registration_input" type="text"  asp-for="MiddleName" id="middle_name">
+                    <div>
+                        <span asp-validation-for="MiddleName"></span>
+                    </div>
+                </li>
+                <li class="registration_item">
+                    <label class="registration_label" asp-for="PhoneNumber">Телефон<span class="registration_star">*</span></label>
+                    <div class="registration_phone">
+                        <div class="registration_phone-code">+38</div>
+                        <input class="registration_input" type="text"  asp-for="PhoneNumber" id="phone_number">
+                    </div>
+                    <div>
+                        <span asp-validation-for="PhoneNumber"></span>
+                    </div>
+                </li>
+                <li class="registration_item">
+                    <label class="registration_label"  asp-for="Email">Емейл<span class="registration_star">*</span></label>
+                    <input class="registration_input" type="email" asp-for="Email" id="user_mail">
+                    <div>
+                        <span asp-validation-for="Email"></span>
+                    </div>
+                </li>
+                <li class="registration_item registration_item-password">
+                    <div>
+                        <label class="registration_label" asp-for="Password">Пароль<span class="registration_star">*</span></label>
+                        <input class="registration_input registration_input-password" type="Password" asp-for="Password" id="password">
+                        <div class="registration_privacy">
+                            <img src="/icons/ic_eye.svg" alt="eye" class="registration_eye" id="password_eye">
+                        </div>
+                    </div>                   
+                    <div>
+                        <span asp-validation-for="Password"></span>
+                    </div>
+                </li>
+                <li class="registration_item registration_item-tip">
+                    <div class="registration_tip">
+                        Пароль має містити мінімум 6 символів
+                    </div>
+                </li>
+                <li class="registration_item">
+                    <div>
+                        <label class="registration_label"  asp-for="ConfirmPassword">Повторити пароль<span class="registration_star">*</span></label>
+                        <input class="registration_input registration_input-password" type="password"  asp-for="ConfirmPassword" id="repeat_password">
+                        <div class="registration_privacy">
+                            <img src="/icons/ic_eye.svg" alt="eye" class="registration_eye" id="confirm_password_eye">
+                        </div>
+                    </div>
+                    <div>
+                        <span asp-validation-for="ConfirmPassword"></span>
+                    </div>
+                </li>
+                <li class="registration_item registration_item-maturity">
+                    <input type="checkbox"  name="maturity">
+                    <label for="maturity">Мені виповнилося 18 років</label>
+                    <div class="maturity" id="maturity">
+                       You must be over 18 to register!
+                    </div>
+                </li>
+                <li class="registration_item registration_item-accept">
+                    Реєструючись я погоджуюсь з
+                    <a href="#" class="registration_link">Правилами користування</a>
+                    та надаю згоду на обробку персональних даних
+                </li>
+
+                <li class="registration_item">
+                    <input class="registration_submit" type="submit" id="btn_register" name="Parent" value="ЗАРЕЄСТРУВАТИСЯ">
+                </li>
+            </ul>
+        </form>
+        <div class="registration_login">
+            Уже зареєстровані?
+            <a href="Login" class="registration_link">Увійти</a>
+        </div>
     </div>
-    <div>
-        <label class="login__label">Password</label>
-        <input class="login__input" asp-for="Password" />
-        <span asp-validation-for="Password"></span>
-    </div>
-    <div>
-        <label class="login__label">Confirm Password</label>
-        <input class="login__input" asp-for="ConfirmPassword" />
-        <span asp-validation-for="ConfirmPassword"></span>
-    </div>
-    <div>
-        <label class="login__label">PhoneNumber</label>
-        <input class="login__input" asp-for="PhoneNumber" />
-        <span asp-validation-for="PhoneNumber"></span>
-    </div>
-    <div>
-        <label class="login__label">Email</label>
-        <input class="login__input" asp-for="Email" />
-        <span asp-validation-for="Email"></span>
-    </div>
-   <div  asp-validation-summary="ModelOnly"></div>
-    <div>
-        <button class="login__button" type="submit" name="Provider" >Зареєструватись як надавач послуг</button>
-        <button class="login__button" type="submit" name="Parent" >Зареєструватись як parent?</button>
-    </div>
-</form>
-<div class="login__wrapper">
-    <a class="login__link" asp-controller="Auth" asp-action="Login"
-   asp-route-returnUrl="@Model.ReturnUrl">Back to Login</a>
 </div>
+<script src="~/js/site.js"></script>
