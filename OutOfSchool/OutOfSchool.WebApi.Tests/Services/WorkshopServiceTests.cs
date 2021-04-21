@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
-        private IEntityRepository<Workshop> repo;
+        private IWorkshopRepository repo;
         private IWorkshopService service;
         private Mock<ILogger> logger;
         private Mock<IStringLocalizer<SharedResource>> localizer;
@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
 
-            repo = new EntityRepository<Workshop>(context);
+            repo = new WorkshopRepository(context);
             logger = new Mock<ILogger>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             service = new WorkshopService(repo, logger.Object, localizer.Object);
