@@ -71,6 +71,20 @@ namespace OutOfSchool.Services.Models
         [DataType(DataType.Date)]
         public DateTime HeadBirthDate { get; set; }
 
+        public long ProviderId { get; set; }
+
+        public long AdressId { get; set; }
+
+        public long CategoryId { get; set; }
+
+        public long SubcategoryId { get; set; }
+
+        public long SubsubcategoryId { get; set; }
+
+        public virtual Subcategory Subcategory { get; set; }
+
+        public virtual Subsubcategory Subsubcategory { get; set; }
+
         public virtual Provider Provider { get; set; }
 
         public virtual Address Address { get; set; }

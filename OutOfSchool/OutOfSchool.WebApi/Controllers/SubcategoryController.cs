@@ -13,34 +13,34 @@ using OutOfSchool.WebApi.Services;
 namespace OutOfSchool.WebApi.Controllers
 {
     /// <summary>
-    /// Controller with CRUD operations for category entity.
+    /// Controller with CRUD operations for subcategory entity.
     /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class CategoryController : ControllerBase
+    public class SubcategoryController : ControllerBase
     {
-        private readonly ICategoryService service;
+        private readonly ISubcategoryService service;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CategoryController"/> class.
-        /// Initialization of CategoryController.
+        /// Initializes a new instance of the <see cref="SubcategoryController"/> class.
+        /// Initialization of SubcategoryController.
         /// </summary>
-        /// <param name="service">Service for CategoryCOntroller.</param>
+        /// <param name="service">Service for SubcategoryCOntroller.</param>
         /// <param name="localizer">Localizer.</param>
-        public CategoryController(ICategoryService service, IStringLocalizer<SharedResource> localizer)
+        public SubcategoryController(ISubcategoryService service, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.service = service;
         }
 
         /// <summary>
-        /// To get all Categories from DB.
+        /// To get all Subcategories from DB.
         /// </summary>
-        /// <returns>List of Categories.</returns>
+        /// <returns>List of Subcategories.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CategoryDTO>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SubcategoryDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
@@ -56,12 +56,12 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To recieve category with define id.
+        /// To recieve Subcategory with define id.
         /// </summary>
         /// <param name="id">Key in table.</param>
-        /// <returns>Category with define id.</returns>
+        /// <returns>Subcategory with define id.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDTO))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SubcategoryDTO))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(long id)
         {
@@ -76,9 +76,37 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To create new Category and add to the DB.
+        /// To get all Subcategories from DB with some CategoryId.
         /// </summary>
-        /// <param name="dto">CategoryDTO object that we want to add.</param>
+        /// <param name="id">The category Id.</param>
+        /// <returns>List of Categories.</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SubcategoryDTO>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByCategoryId(long id)
+        {
+            try
+            {
+                var categories = await service.GetByCategoryId(id).ConfigureAwait(false);
+
+                if (!categories.Any())
+                {
+                    return NoContent();
+                }
+
+                return Ok(categories);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// To create new Subcategory and add to the DB.
+        /// </summary>
+        /// <param name="dto">SubcategoryDTO object that we want to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPost]
@@ -86,7 +114,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create(CategoryDTO dto)
+        public async Task<IActionResult> Create(SubcategoryDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -111,16 +139,16 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To update Category entity that already exists.
+        /// To update Subcategory entity that already exists.
         /// </summary>
-        /// <param name="categoryDTO">CategoryDTO object with new properties.</param>
-        /// <returns>Category's key.</returns>
+        /// <param name="categoryDTO">SubcategoryDTO object with new properties.</param>
+        /// <returns>Subcategory's key.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDTO))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SubcategoryDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Update(CategoryDTO categoryDTO)
+        public async Task<ActionResult> Update(SubcategoryDTO categoryDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -131,7 +159,7 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Delete Category entity from DB.
+        /// Delete Subcategory entity from DB.
         /// </summary>
         /// <param name="id">The key in table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>

@@ -129,15 +129,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateCategory_WhenModelIsValid_ReturnsOkObjectResult()
         {
             // Arrange
-            var changedProvider = new CategoryDTO()
+            var changedCategory = new CategoryDTO()
             {
                 Id = 1,
                 Title = "ChangedTitle",
             };
-            service.Setup(x => x.Update(changedProvider)).ReturnsAsync(changedProvider);
+            service.Setup(x => x.Update(changedCategory)).ReturnsAsync(changedCategory);
 
             // Act
-            var result = await controller.Update(changedProvider).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.Update(changedCategory).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);

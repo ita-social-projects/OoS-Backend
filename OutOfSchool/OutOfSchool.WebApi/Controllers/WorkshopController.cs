@@ -139,5 +139,64 @@ namespace OutOfSchool.WebApi.Controllers
 
             return NoContent();
         }
+
+        /// <summary>
+        /// Get count of pages of filtered workshop records.
+        /// </summary>
+        /// <param name="filter">Workshop filter.</param>
+        /// <param name="pageSize">Count of records on one page.</param>
+        /// <returns>COunt of pages.</returns>
+        [HttpGet("{filter, pageSize}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetPagesCount(WorkshopFilter filter, int pageSize)
+        {
+            if (pageSize < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(pageSize),
+                    localizer["The pageSize cannot be less than 1."]);
+            }
+
+            int count = await service.GetPagesCount(filter, pageSize).ConfigureAwait(false);
+
+            if (count == 0)
+            {
+                return NoContent();
+            }
+
+            return Ok(count);
+        }
+
+        /// <summary>
+        /// Get page of filtered workshop records.
+        /// </summary>
+        /// <param name="filter">Workshop filter.</param>
+        /// <param name="pageNumber">Number of page.</param>
+        /// <param name="pageSize">Count of records on one page.</param>
+        /// <returns>The list of workshops for this page.</returns>
+        [HttpGet("{filter, pageNumber, pageSize}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetPage(WorkshopFilter filter, int pageNumber, int pageSize)
+        {
+            if ((pageSize < 1) || (pageNumber < 1))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(pageSize),
+                    localizer["The pageSize or pageNumber cannot be less than 1."]);
+            }
+
+            var workshops = await service.GetPage(filter, pageSize, pageNumber).ConfigureAwait(false);
+
+            if (!workshops.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(workshops);
+        }
     }
 }

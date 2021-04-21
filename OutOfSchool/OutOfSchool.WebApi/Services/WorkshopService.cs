@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -8,6 +9,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Util;
 using Serilog;
 
 namespace OutOfSchool.WebApi.Services
@@ -17,9 +19,10 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class WorkshopService : IWorkshopService
     {
-        private readonly IEntityRepository<Workshop> repository;
+        private readonly IWorkshopRepository repository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IPaginationHelper<Workshop> paginationHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -27,11 +30,12 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Repository for Workshop entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public WorkshopService(IEntityRepository<Workshop> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public WorkshopService(IWorkshopRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
             this.logger = logger;
+            this.paginationHelper = new PaginationHelper<Workshop>(repository);
         }
 
         /// <inheritdoc/>
@@ -124,6 +128,104 @@ namespace OutOfSchool.WebApi.Services
                 logger.Error("Deleting failed. There is no Teacher in the Db with such an id.");
                 throw;
             }
+        }
+
+        /// <inheritdoc/>
+        public async Task<int> GetPagesCount(WorkshopFilter filter, int size)
+        {
+            PaginationValidation(filter);
+            var predicate = PredicateBuild(filter);
+            return await paginationHelper.GetCountOfPages(size, predicate).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<WorkshopDTO>> GetPage(WorkshopFilter filter, int size, int pageNumber)
+        {
+            PaginationValidation(filter);
+            var predicate = PredicateBuild(filter);
+            Expression<Func<Workshop, decimal>> orderBy = null;
+            bool ascending = true;
+            if (filter.OrderByPriceAscending != null)
+            {
+                ascending = (bool)filter.OrderByPriceAscending;
+                orderBy = x => x.Price;
+            }
+
+            var page = await paginationHelper.GetPage(pageNumber, size, null, predicate, orderBy, ascending).ConfigureAwait(false);
+
+            return page.Select(x => x.ToModel()).ToList();
+        }
+
+        private void PaginationValidation (WorkshopFilter filter)
+        {
+            if (filter == null)
+            {
+                throw new ArgumentException(localizer["The filter cannot be null"]);
+            }
+        }
+
+        private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
+        {
+            var predicate = PredicateBuilder.True<Workshop>();
+            if (filter.Age != null)
+            {
+                predicate = predicate.And(x => (x.MinAge <= filter.Age) && (x.MaxAge >= filter.Age));
+            }
+
+            if (filter.DaysPerWeek != null)
+            {
+                predicate = predicate.And(x => x.DaysPerWeek == filter.DaysPerWeek);
+            }
+
+            if (filter.MinPrice != null)
+            {
+                predicate = predicate.And(x => x.Price >= filter.MinPrice);
+            }
+
+            if (filter.MaxPrice != null)
+            {
+                predicate = predicate.And(x => x.Price <= filter.MaxPrice);
+            }
+
+            if (filter.Disability != null)
+            {
+                predicate = predicate.And(x => x.WithDisabilityOptions == filter.Disability);
+            }
+
+            if (filter.Categories != null)
+            {
+                var tempPredicate = PredicateBuilder.True<Workshop>();
+                foreach (var category in filter.Categories)
+                {
+                    tempPredicate = tempPredicate.Or(x => x.Category.Title == category);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            if (filter.Subcategories != null)
+            {
+                var tempPredicate = PredicateBuilder.True<Workshop>();
+                foreach (var subcategory in filter.Subcategories)
+                {
+                    tempPredicate = tempPredicate.Or(x => x.Subcategory.Title == subcategory);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            if (filter.Subsubcategories != null)
+            {
+                var tempPredicate = PredicateBuilder.True<Workshop>();
+                foreach (var subsubcategory in filter.Subsubcategories)
+                {
+                    tempPredicate = tempPredicate.Or(x => x.Subsubcategory.Title == subsubcategory);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            return predicate;
         }
     }
 }

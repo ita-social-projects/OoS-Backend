@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newCategory = await repository.Create(category).ConfigureAwait(false);
 
-            logger.Information("Parent created successfully.");
+            logger.Information("Category created successfully.");
 
             return newCategory.ToModel();
         }
@@ -81,8 +81,8 @@ namespace OutOfSchool.WebApi.Services
             var categories = await this.repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!categories.Any()
-                ? "Parent table is empty."
-                : "Successfully got all records from the Parent table.");
+                ? "Category table is empty."
+                : "Successfully got all records from the Category table.");
 
             return categories.Select(parent => parent.ToModel()).ToList();
         }
@@ -115,13 +115,13 @@ namespace OutOfSchool.WebApi.Services
             {
                 var category = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Parent succesfully updated.");
+                logger.Information("Category succesfully updated.");
 
                 return category.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no parent in the Db with such an id.");
+                logger.Error("Updating failed. There is no category in the Db with such an id.");
                 throw;
             }
         }

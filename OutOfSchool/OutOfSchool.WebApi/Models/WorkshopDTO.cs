@@ -70,6 +70,21 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.Date)]
         public DateTime HeadBirthDate { get; set; }
 
+        public long ProviderId { get; set; }
+
+        public long AdressId { get; set; }
+
+        public long CategoryId { get; set; }
+
+        public long SubcategoryId { get; set; }
+
+        [Required(ErrorMessage = "No subsubcategory")]
+        public long SubsubcategoryId { get; set; }
+
+        public virtual SubcategoryDTO Subcategory { get; set; }
+
+        public virtual SubsubcategoryDTO Subsubcategory { get; set; }
+
         public CategoryDTO Category { get; set; }
 
         public virtual AddressDto Address { get; set; }
