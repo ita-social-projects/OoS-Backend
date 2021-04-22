@@ -49,7 +49,7 @@ namespace OutOfSchool.Services.Models
         public int DaysPerWeek { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        [Range(1, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
+        [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal Price { get; set; } = default;
 
         [Required(ErrorMessage = "Description is required")]
@@ -61,7 +61,7 @@ namespace OutOfSchool.Services.Models
         [MaxLength(200)]
         public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
-        public string Image { get; set; } = string.Empty;
+        public string Logo { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
@@ -70,6 +70,15 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Head's birthday is required")]
         [DataType(DataType.Date)]
         public DateTime HeadBirthDate { get; set; }
+
+        [Required]
+        public bool IsPerMonth { get; set; }
+
+        [Required]
+        public long ProviderId { get; set; }
+
+        [Required]
+        public long AddressId { get; set; }
 
         public virtual Provider Provider { get; set; }
 
