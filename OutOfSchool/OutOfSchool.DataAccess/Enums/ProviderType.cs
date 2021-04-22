@@ -7,5 +7,6 @@
         TOV,
         Private,
         EducationalInstitution,
+        Other,
     }
 }

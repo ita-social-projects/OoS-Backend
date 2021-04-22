@@ -18,6 +18,6 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="entity">Entity.</param>
         /// <returns>Bool.</returns>
-        public bool Exists(Provider entity) => db.Providers.Any(x => x.EDRPOU == entity.EDRPOU || x.INPP == entity.INPP);
+        public bool Exists(Provider entity) => db.Providers.Any(x => x.EdrpouIpn == entity.EdrpouIpn || x.Email == entity.Email);
     }
 }
