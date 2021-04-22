@@ -12,8 +12,7 @@ using OutOfSchool.WebApi.Services;
 namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Route("[controller]/[action]")]   
     public class ProviderController : ControllerBase
     {
         private readonly IProviderService service;
@@ -76,6 +75,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -110,6 +110,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
         [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -130,6 +131,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
