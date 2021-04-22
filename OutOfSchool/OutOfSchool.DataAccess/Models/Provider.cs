@@ -85,6 +85,8 @@ namespace OutOfSchool.Services.Models
 
         public virtual User User { get; set; }
 
-        public virtual Address Address { get; set; }
+        public virtual Address ActualAddress { get; set; }
+
+        public virtual Address LegalAddress { get; set; }
     }
 }
