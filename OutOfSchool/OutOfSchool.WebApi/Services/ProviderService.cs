@@ -18,20 +18,23 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ProviderService : IProviderService
     {
-        private readonly IProviderRepository repository;
+        private readonly IProviderRepository providerRepository;
+        private readonly IEntityRepository<Address> addressRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderService"/> class.
         /// </summary>
-        /// <param name="repository">Repository.</param>
+        /// <param name="providerRepository">Provider repository.</param>
+        /// <param name="addressRepository">Address repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ProviderService(IProviderRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ProviderService(IProviderRepository providerRepository, IEntityRepository<Address> addressRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.repository = repository;
+            this.providerRepository = providerRepository;
+            this.addressRepository = addressRepository;
             this.logger = logger;
         }
 
@@ -42,12 +45,12 @@ namespace OutOfSchool.WebApi.Services
 
             var provider = dto.ToDomain();
 
-            if (repository.Exists(provider))
+            if (providerRepository.Exists(provider))
             {
                 throw new ArgumentException(localizer["There is already a provider with such a data."]);
             }
 
-            var newProvider = await repository.Create(provider).ConfigureAwait(false);
+            var newProvider = await providerRepository.Create(provider).ConfigureAwait(false);
 
             return newProvider.ToModel();
         }
@@ -57,7 +60,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting all Providers started.");
 
-            var providers = await repository.GetAll().ConfigureAwait(false);
+            var providers = await providerRepository.GetAll().ConfigureAwait(false);
 
             logger.Information(!providers.Any()
                 ? "Provider table is empty."
@@ -71,7 +74,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting Provider by id started.");
 
-            var provider = await repository.GetById(id).ConfigureAwait(false);
+            var provider = await providerRepository.GetById(id).ConfigureAwait(false);
 
             if (provider == null)
             {
@@ -90,7 +93,7 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var provider = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var provider = await providerRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
                 logger.Information("Provider successfully updated.");
 
@@ -107,12 +110,22 @@ namespace OutOfSchool.WebApi.Services
         public async Task Delete(long id)
         {
             logger.Information("Provider deleting was launched.");
-
-            var entity = new Provider() { Id = id };
-
+        
             try
             {
-                await repository.Delete(entity).ConfigureAwait(false);
+                var entity = await providerRepository.GetById(id).ConfigureAwait(false);
+
+                await providerRepository.Delete(entity).ConfigureAwait(false);
+
+                if (entity.LegalAddressId == entity.ActualAddressId)
+                {
+                    await addressRepository.Delete(new Address { Id = entity.LegalAddressId }).ConfigureAwait(false);
+                }
+                else
+                {
+                    await addressRepository.Delete(new Address { Id = entity.LegalAddressId }).ConfigureAwait(false);
+                    await addressRepository.Delete(new Address { Id = entity.ActualAddressId }).ConfigureAwait(false);
+                }
 
                 logger.Information("Provider successfully deleted.");
             }
@@ -130,7 +143,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Provider, bool>> filter = p => p.UserId == id;
 
-            var providers = await repository.GetByFilter(filter).ConfigureAwait(false);
+            var providers = await providerRepository.GetByFilter(filter).ConfigureAwait(false);
 
             if (!providers.Any())
             {
