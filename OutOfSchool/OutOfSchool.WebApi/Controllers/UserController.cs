@@ -12,6 +12,7 @@ namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class UserController : ControllerBase
     {
         private readonly IUserService userService;
@@ -32,6 +33,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get all users from the database.
         /// </summary>
         /// <returns>List of all users.</returns>
+        [Authorize(Roles = "parent,provider,admin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -46,6 +48,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">The key in the database.</param>
         /// <returns>User element with some id.</returns>
+        [Authorize(Roles = "parent,provider,admin")]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

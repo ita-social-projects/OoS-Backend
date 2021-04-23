@@ -79,15 +79,15 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>Provider.</returns>
         [Authorize(AuthenticationSchemes = "Bearer")]
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]       
+        [ProducesResponseType(StatusCodes.Status200OK)]      
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProviderByUserId(string id)
         {
             try
             {
-                var provider = await providerService.GetByUserId(id).ConfigureAwait(false);
-                return Ok(provider);
+                return Ok(await providerService.GetByUserId(id).ConfigureAwait(false));
             }
             catch (ArgumentException)
             {
@@ -104,6 +104,7 @@ namespace OutOfSchool.WebApi.Controllers
         [Authorize(Roles = "provider,admin")]        
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
         public async Task<IActionResult> Create(ProviderDto dto)
@@ -159,6 +160,7 @@ namespace OutOfSchool.WebApi.Controllers
         [Authorize(AuthenticationSchemes = "Bearer")]
         [Authorize(Roles = "provider,admin")]       
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
@@ -180,6 +182,7 @@ namespace OutOfSchool.WebApi.Controllers
         [Authorize(AuthenticationSchemes = "Bearer")]
         [Authorize(Roles = "provider,admin")]        
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
