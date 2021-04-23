@@ -17,6 +17,11 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
         }
 
+        public static UserDto ToModel(this User user)
+        {
+            return Mapper<User, UserDto>(user, cfg => { cfg.CreateMap<User, UserDto>(); });
+        }
+
         public static WorkshopDTO ToModel(this Workshop workshop)
         {
             return Mapper<Workshop, WorkshopDTO>(workshop, cfg => { cfg.CreateMap<Workshop, WorkshopDTO>(); });
@@ -67,6 +72,11 @@ namespace OutOfSchool.WebApi.Extensions
         public static Address ToDomain(this AddressDto addressDto)
         {                   
             return Mapper<AddressDto, Address>(addressDto, cfg => { cfg.CreateMap<AddressDto, Address>(); });
+        }
+
+        public static User ToDomain(this UserDto userDto)
+        {
+            return Mapper<UserDto, User>(userDto, cfg => { cfg.CreateMap<UserDto, User>(); });
         }
 
         public static Workshop ToDomain(this WorkshopDTO workshopDto)
