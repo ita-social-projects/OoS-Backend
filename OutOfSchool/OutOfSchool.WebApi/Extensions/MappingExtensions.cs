@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
@@ -28,9 +29,13 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static ProviderDto ToModel(this Provider provider)
         {
-            return Mapper<Provider, ProviderDto>(
-                provider,
-                cfg => { cfg.CreateMap<Provider, ProviderDto>(); });
+            return Mapper<Provider, ProviderDto>(provider, cfg =>
+            {
+                cfg.CreateMap<Address, AddressDto>();
+                cfg.CreateMap<Provider, ProviderDto>()
+                 .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(c => c.ActualAddress))               
+                 .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(c => c.LegalAddress));              
+            });
         }
 
         public static ChildDTO ToModel(this Child child)
@@ -84,9 +89,11 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static Provider ToDomain(this ProviderDto providerDto)
         {
-            return Mapper<ProviderDto, Provider>(
-                providerDto,
-                cfg => { cfg.CreateMap<ProviderDto, Provider>(); });
+            return Mapper<ProviderDto, Provider>(providerDto, cfg =>
+            {
+                cfg.CreateMap<AddressDto, Address>();
+                cfg.CreateMap<ProviderDto, Provider>();               
+            });
         }
 
         public static Child ToDomain(this ChildDTO childDto)

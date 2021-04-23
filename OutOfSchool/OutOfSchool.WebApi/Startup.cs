@@ -94,7 +94,7 @@ namespace OutOfSchool.WebApi
             services.AddControllers();
 
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
