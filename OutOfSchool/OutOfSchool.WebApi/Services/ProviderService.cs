@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -120,6 +121,25 @@ namespace OutOfSchool.WebApi.Services
                 logger.Error("Deleting failed. There is no Provider in the Db with such an id.");
                 throw;
             }
+        }
+
+        /// <inheritdoc/>
+        public async Task<ProviderDto> GetByUserId(string id)
+        {
+            logger.Information("Process of getting Provider by User Id started.");
+
+            Expression<Func<Provider, bool>> filter = p => p.UserId == id;
+
+            var providers = await repository.GetByFilter(filter).ConfigureAwait(false);
+
+            if (!providers.Any())
+            {
+                throw new ArgumentException(localizer["There is no Provider in the Db with such User id"], nameof(id));                        
+            }
+
+            logger.Information($"Successfully got a Provider with User id = {id}.");
+
+            return providers.FirstOrDefault().ToModel();
         }
     }
 }

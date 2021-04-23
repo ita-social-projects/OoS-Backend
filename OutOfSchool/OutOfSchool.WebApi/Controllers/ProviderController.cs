@@ -73,6 +73,29 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
+        /// Get Provider by User Id.
+        /// </summary>
+        /// <param name="id">User id.</param>
+        /// <returns>Provider.</returns>
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]       
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProviderByUserId(string id)
+        {
+            try
+            {
+                var provider = await providerService.GetByUserId(id).ConfigureAwait(false);
+                return Ok(provider);
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }                   
+        }
+
+        /// <summary>
         /// Method for creating new Provider.
         /// </summary>
         /// <param name="dto">Entity to add.</param>
