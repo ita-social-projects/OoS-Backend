@@ -220,13 +220,13 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             {
                 new TestCaseData(new RegisterViewModel()
                 {
-                    Username = "Baron",
+                    Email = "test123@gmail.com",
                     PhoneNumber = "0502391222",
                     ReturnUrl = "Return url",
                 }),
                 new TestCaseData(new RegisterViewModel()
                 {
-                    Username = "Baron",
+                    Email = "test123@gmail.com",
                     PhoneNumber = "0502391222",
                     ReturnUrl = "Return url2",
                 }),
