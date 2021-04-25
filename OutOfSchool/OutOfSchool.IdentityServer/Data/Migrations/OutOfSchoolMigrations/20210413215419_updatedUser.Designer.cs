@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
-namespace OutOfSchool.IdentityServer.Migrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210413215419_updatedUser")]
+    partial class updatedUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -232,7 +234,9 @@ namespace OutOfSchool.IdentityServer.Migrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
                     b.Property<long>("Id")
-                        .HasColumnType("bigint");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
 
                     b.Property<long>("AddressId")
                         .HasColumnType("bigint");
@@ -241,16 +245,13 @@ namespace OutOfSchool.IdentityServer.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
-
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
@@ -258,7 +259,6 @@ namespace OutOfSchool.IdentityServer.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Patronymic")
-                        .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
@@ -266,6 +266,8 @@ namespace OutOfSchool.IdentityServer.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
 
                     b.HasIndex("ParentId");
 
@@ -515,9 +517,6 @@ namespace OutOfSchool.IdentityServer.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("LastLogin")
                         .HasColumnType("datetime2");
 
@@ -634,7 +633,7 @@ namespace OutOfSchool.IdentityServer.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<long>("ProviderId")
+                    b.Property<long?>("ProviderId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Title")
@@ -725,7 +724,7 @@ namespace OutOfSchool.IdentityServer.Migrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Address", "Address")
                         .WithMany()
-                        .HasForeignKey("Id")
+                        .HasForeignKey("AddressId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -808,9 +807,7 @@ namespace OutOfSchool.IdentityServer.Migrations
 
                     b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
                         .WithMany("Workshops")
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProviderId");
 
                     b.Navigation("Address");
 
