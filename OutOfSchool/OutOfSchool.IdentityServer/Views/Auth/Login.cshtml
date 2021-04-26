@@ -2,8 +2,17 @@
 @{
     Layout = "_Layout";
 }
-<div class="login__wrapper">
-    <h1 class="login__text">Sign In With</h1>
+<div class="registration_wrapper">
+    <h3 class="registration_title">УВІЙТИ</h3>
+<div class="registration_social">
+    <button class="registration_button">
+        <img src="/icons/fb.png" alt="facebook">
+    </button>
+    <button class="registration_button">
+        <img src="/icons/google.png" alt="google">
+    </button>
+</div>
+    <div class="registration_option">або заповніть форму</div>
 </div>
 @* <form asp-controller="Auth" asp-action="ExternalLogin" *@
 @*       asp-route-returnUrl="@Model.ReturnUrl" method="post"> *@
@@ -17,21 +26,21 @@
 @*     } *@
 @* </form> *@
 
-<form class="login__wrapper" asp-controller="Auth" asp-action="Login" method="post">
+<form class="registration_wrapper" asp-controller="Auth" asp-action="Login" method="post">
     <input type="hidden" asp-for="ReturnUrl"/>
     <div>
-        <label class="login__label">Login</label>
+        <label class="login__label">Емейл</label>
         <input class="login__input" asp-for="Username"/>
         <span asp-validation-for="Username"></span>
     </div>
     <div>
-        <label class="login__label">Password</label>
+        <label class="login__label">Пароль</label>
         <input class="login__input" asp-for="Password"/>
         <span asp-validation-for="Password"></span>
     </div>
     <div asp-validation-summary="ModelOnly"></div>
     <div>
-        <button class="login__button" type="submit">Sign In</button>
+        <button class="login__button" type="submit">УВІЙТИ</button>
     </div>
 </form>
 <div class="login__wrapper">
