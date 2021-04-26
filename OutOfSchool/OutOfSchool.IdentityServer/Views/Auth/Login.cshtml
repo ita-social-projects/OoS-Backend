@@ -29,23 +29,24 @@
 <form class="registration_wrapper" asp-controller="Auth" asp-action="Login" method="post">
     <input type="hidden" asp-for="ReturnUrl"/>
     <div>
-        <label class="login__label">Емейл</label>
-        <input class="login__input" asp-for="Username"/>
+        <label class="registration_label">Емейл</label>
+        <input class="registration_input" asp-for="Username"/>
         <span asp-validation-for="Username"></span>
     </div>
     <div>
-        <label class="login__label">Пароль</label>
-        <input class="login__input" asp-for="Password"/>
+        <label class="registration_label">Пароль</label>
+        <input class="registration_input registration_input-password" asp-for="Password"/>
         <span asp-validation-for="Password"></span>
     </div>
     <div asp-validation-summary="ModelOnly"></div>
     <div>
-        <button class="login__button" type="submit">УВІЙТИ</button>
+        <button class="registration__button" type="submit">УВІЙТИ</button>
     </div>
 </form>
-<div class="login__wrapper">
-    <a class="login__link" asp-controller="Auth" asp-action="Register"
+<div class="registration_login">
+<span>Ще не зареєстровані?</span>
+    <a class="registration_link" asp-controller="Auth" asp-action="Register"
        asp-route-returnUrl="@Model.ReturnUrl">
-        Register
+        Зареєструватися
     </a>
 </div>
