@@ -143,13 +143,9 @@ namespace OutOfSchool.WebApi.Services
         {
             PaginationValidation(filter);
             var predicate = PredicateBuild(filter);
-            Expression<Func<Workshop, decimal>> orderBy = null;
-            bool ascending = true;
-            if (filter.OrderByPriceAscending != null)
-            {
-                ascending = (bool)filter.OrderByPriceAscending;
-                orderBy = x => x.Price;
-            }
+            
+            bool ascending = (bool)filter.OrderByPriceAscending;
+            Expression<Func<Workshop, decimal>> orderBy = x => x.Price;
 
             var page = await paginationHelper.GetPage(pageNumber, size, null, predicate, orderBy, ascending).ConfigureAwait(false);
 
@@ -168,35 +164,29 @@ namespace OutOfSchool.WebApi.Services
         {
             var predicate = PredicateBuilder.True<Workshop>();
 
-            if (filter.SearchFieldText != null)
+            if (!string.IsNullOrEmpty(filter.SearchFieldText))
             {
                 predicate = predicate.And(x => x.Title.Contains(filter.SearchFieldText));
             }
 
-            if (filter.Age != null)
+            if (filter.Age != 0)
             {
                 predicate = predicate.And(x => (x.MinAge <= filter.Age) && (x.MaxAge >= filter.Age));
             }
 
-            if (filter.DaysPerWeek != null)
+            if (filter.DaysPerWeek != 0)
             {
                 predicate = predicate.And(x => x.DaysPerWeek == filter.DaysPerWeek);
             }
 
-            if (filter.MinPrice != null)
-            {
-                predicate = predicate.And(x => x.Price >= filter.MinPrice);
-            }
+            predicate = predicate.And(x => x.Price >= filter.MinPrice);
 
-            if (filter.MaxPrice != null)
+            if (filter.MaxPrice != 0)
             {
                 predicate = predicate.And(x => x.Price <= filter.MaxPrice);
             }
 
-            if (filter.Disability != null)
-            {
-                predicate = predicate.And(x => x.WithDisabilityOptions == filter.Disability);
-            }
+            predicate = predicate.And(x => x.WithDisabilityOptions == filter.Disability);
 
             if (filter.Categories != null)
             {
