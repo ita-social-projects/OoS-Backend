@@ -144,6 +144,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var changedEntity = new SubsubcategoryDTO()
             {
                 Title = "NewTitle1",
+                SubcategoryId = 1,
             };
 
             // Act and Assert

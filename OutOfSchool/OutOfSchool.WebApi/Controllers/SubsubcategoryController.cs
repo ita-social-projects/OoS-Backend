@@ -108,7 +108,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">SubsubcategoryDTO object that we want to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        [Authorize(Roles = "admin")]
         [HttpPost]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -143,7 +143,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="categoryDTO">SubsubcategoryDTO object with new properties.</param>
         /// <returns>Subsubcategory's key.</returns>
-        [Authorize(Roles = "parent,admin")]
+        [Authorize(Roles = "admin")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SubsubcategoryDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -163,7 +163,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">The key in table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

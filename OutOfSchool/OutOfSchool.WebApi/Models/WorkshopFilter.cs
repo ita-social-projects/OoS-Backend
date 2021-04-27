@@ -7,6 +7,8 @@ namespace OutOfSchool.WebApi.Models
 {
     public class WorkshopFilter
     {
+        public string SearchFieldText { get; set; } = null;
+
         public int? Age { get; set; } = null;
 
         public int? DaysPerWeek { get; set; } = null;

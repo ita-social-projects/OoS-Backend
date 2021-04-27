@@ -12,7 +12,7 @@ namespace OutOfSchool.WebApi.Extensions
         #region ToModel
 
         public static AddressDto ToModel(this Address address)
-        {          
+        {
             return Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
         }
 
@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Extensions
         #region ToDomain
 
         public static Address ToDomain(this AddressDto addressDto)
-        {                   
+        {
             return Mapper<AddressDto, Address>(addressDto, cfg => { cfg.CreateMap<AddressDto, Address>(); });
         }
 
@@ -83,7 +83,9 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<WorkshopDTO, Workshop>()
                     .ForMember(dest => dest.Address, opt => opt.Ignore())
                     .ForMember(dest => dest.Teachers, opt => opt.Ignore())
-                    .ForMember(dest => dest.Category, opt => opt.Ignore());
+                    .ForMember(dest => dest.Category, opt => opt.Ignore())
+                    .ForMember(dest => dest.Subcategory, opt => opt.Ignore())
+                    .ForMember(dest => dest.Subsubcategory, opt => opt.Ignore());
             });
         }
 

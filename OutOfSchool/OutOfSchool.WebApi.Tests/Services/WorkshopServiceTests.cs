@@ -49,13 +49,16 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var expected = new Workshop()
             {
-                Title = "NewTitle",
-                Description = "NewDescription",
+                Title = "NewTitle2",
+                Description = "NewDescription2",
                 MinAge = 4,
                 MaxAge = 10,
                 Price = 1000,
-                Head = "NewHead",
+                Head = "NewHead2",
                 HeadBirthDate = new DateTime(1980, 12, 10),
+                CategoryId = 1,
+                SubcategoryId = 1,
+                SubsubcategoryId = 1,
             };
 
             // Act
@@ -274,6 +277,13 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                 };
 
+                var categories = new List<Category>() { new Category() { Title = "Category1" }, new Category() { Title = "Category2" } };
+                var subcategories = new List<Subcategory>() { new Subcategory() { Title = "new1", CategoryId = 1 }, new Subcategory() { Title = "new2", CategoryId = 1 } };
+                var subsubcategories = new List<Subsubcategory>() { new Subsubcategory() { Title = "new1", SubcategoryId = 1 }, new Subsubcategory() { Title = "new2", SubcategoryId = 1 } };
+
+                context.Categories.AddRangeAsync(categories);
+                context.Subcategories.AddRangeAsync(subcategories);
+                context.Subsubcategories.AddRangeAsync(subsubcategories);
                 context.Workshops.AddRangeAsync(workshops);
                 context.SaveChangesAsync();
             }

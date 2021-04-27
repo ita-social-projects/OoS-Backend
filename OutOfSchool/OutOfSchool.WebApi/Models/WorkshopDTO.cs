@@ -26,13 +26,13 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "Email is required")]
         public string Email { get; set; } = string.Empty;
 
-        [MaxLength(30)] 
+        [MaxLength(30)]
         public string Website { get; set; } = string.Empty;
 
-        [MaxLength(30)] 
+        [MaxLength(30)]
         public string Facebook { get; set; } = string.Empty;
 
-        [MaxLength(30)] 
+        [MaxLength(30)]
         public string Instagram { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Children's min age is required")]
@@ -57,7 +57,7 @@ namespace OutOfSchool.WebApi.Models
 
         public bool WithDisabilityOptions { get; set; } = default;
 
-        [MaxLength(200)] 
+        [MaxLength(200)]
         public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
         public string Image { get; set; } = string.Empty;
@@ -81,16 +81,16 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "No subsubcategory")]
         public long SubsubcategoryId { get; set; }
 
-        public virtual SubcategoryDTO Subcategory { get; set; }
+        //public virtual SubcategoryDTO Subcategory { get; set; }
 
-        public virtual SubsubcategoryDTO Subsubcategory { get; set; }
+        //public virtual SubsubcategoryDTO Subsubcategory { get; set; }
 
-        public CategoryDTO Category { get; set; }
+        //public CategoryDTO Category { get; set; }
 
-        public virtual AddressDto Address { get; set; }
+        //public virtual AddressDto Address { get; set; }
 
-        public virtual ProviderDto Provider { get; set; }
+        //public virtual ProviderDto Provider { get; set; }
 
-        public virtual IEnumerable<TeacherDTO> Teachers { get; }
+        //public virtual IEnumerable<TeacherDTO> Teachers { get; }
     }
 }

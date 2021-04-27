@@ -167,6 +167,12 @@ namespace OutOfSchool.WebApi.Services
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
         {
             var predicate = PredicateBuilder.True<Workshop>();
+
+            if (filter.SearchFieldText != null)
+            {
+                predicate = predicate.And(x => x.Title.Contains(filter.SearchFieldText));
+            }
+
             if (filter.Age != null)
             {
                 predicate = predicate.And(x => (x.MinAge <= filter.Age) && (x.MaxAge >= filter.Age));
