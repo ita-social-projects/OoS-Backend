@@ -89,9 +89,9 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return Ok(await providerService.GetByUserId(id).ConfigureAwait(false));
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
-                throw;
+                return BadRequest(ex.Message);
             }                   
         }
 
@@ -115,7 +115,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             try
-            {
+            {              
                 dto.Id = default;
                 dto.LegalAddress.Id = default;
 

@@ -98,20 +98,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.AreEqual(result.StatusCode, 200);
         }
 
-        //[Test]
-        //public async Task CreateProvider_WhenModelIsValid_ReturnsCreatedAtActionResult()
-        //{
-        //    // Arrange
-        //    serviceProvider.Setup(x => x.Create(provider)).ReturnsAsync(provider);
-
-        //    // Act
-        //    var result = await controller.Create(provider).ConfigureAwait(false) as CreatedAtActionResult;
-
-        //    // Assert
-        //    Assert.That(result, Is.Not.Null);
-        //    Assert.AreEqual(result.StatusCode, 201);
-        //}
-
         [Test]
         public async Task CreateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {

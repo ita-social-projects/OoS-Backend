@@ -177,34 +177,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 async () => await service.Update(changedEntity).ConfigureAwait(false));
         }
 
-        //[Test]
-        //[Order(8)]
-        //[TestCase(1)]
-        //public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
-        //{
-        //    // Act
-        //    var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
-
-        //    context.Entry<Provider>(await repoProvider.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
-
-        //    await service.Delete(id).ConfigureAwait(false);
-
-        //    var countAfterDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
-
-        //    // Assert
-        //    Assert.That(countAfterDeleting, Is.Not.EqualTo(countBeforeDeleting));
-        //}
-
-        //[Test]
-        //[Order(9)]
-        //[TestCase(10)]
-        //public void Delete_WhenIdIsInvalid_ThrowsDbUpdateConcurrencyException(long id)
-        //{
-        //    // Act and Assert
-        //    Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-        //        async () => await service.Delete(id).ConfigureAwait(false));
-        //}
-
         private void SeedDatabase()
         {
             using var context = new OutOfSchoolDbContext(options);

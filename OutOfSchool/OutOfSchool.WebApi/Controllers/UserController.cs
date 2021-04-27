@@ -3,9 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
@@ -15,17 +12,14 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class UserController : ControllerBase
     {
-        private readonly IUserService userService;
-        private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IUserService userService;     
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
         /// </summary>
-        /// <param name="userService">Service for User model.</param>
-        /// <param name="localizer">Localizer.</param>
-        public UserController(IUserService userService, IStringLocalizer<SharedResource> localizer)
+        /// <param name="userService">Service for User model.</param>      
+        public UserController(IUserService userService)
         {
-            this.localizer = localizer;
             this.userService = userService;
         }
 
@@ -60,9 +54,9 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return Ok(await userService.GetById(id).ConfigureAwait(false));
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
-                throw;
+                return BadRequest(ex.Message);
             }                  
         }
     }

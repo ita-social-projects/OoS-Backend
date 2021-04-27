@@ -13,3 +13,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101:Prefix local calls with this", Justification = "We don't have to apply keyword this to every element.")]
 [assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1633:File should have header", Justification = "We don't have to use headers in the project")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1028:Code must not contain trailing whitespace", Justification = "New rule that requires too much work to implement")]
+[assembly: SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "The validation occur before using arguments")]
