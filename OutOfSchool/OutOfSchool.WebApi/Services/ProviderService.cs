@@ -43,14 +43,26 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Provider creating was started.");
 
-            var provider = dto.ToDomain();
-
-            if (providerRepository.Exists(provider))
+            if (providerRepository.Exists(dto.ToDomain()))
             {
                 throw new ArgumentException(localizer["There is already a provider with such a data."]);
             }
 
-            var newProvider = await providerRepository.Create(provider).ConfigureAwait(false);
+            var legalAddress = await addressRepository.Create(dto.LegalAddress.ToDomain()).ConfigureAwait(false);
+            dto.LegalAddressId = legalAddress.Id;
+
+            if (dto.ActualAddress == null || dto.ActualAddress.Equals(dto.LegalAddress))
+            {
+                dto.ActualAddressId = legalAddress.Id;
+            }          
+            else
+            {
+                dto.ActualAddress.Id = default;
+                var actualAddress = await addressRepository.Create(dto.ActualAddress.ToDomain()).ConfigureAwait(false);
+                dto.ActualAddressId = actualAddress.Id;
+            }
+         
+            var newProvider = await providerRepository.Create(dto.ToDomain()).ConfigureAwait(false);
 
             return newProvider.ToModel();
         }

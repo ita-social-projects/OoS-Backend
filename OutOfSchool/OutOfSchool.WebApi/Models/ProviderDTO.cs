@@ -79,8 +79,9 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long ActualAddressId { get; set; }
 
-        public string UserId { get; set; } 
+        public string UserId { get; set; }
 
+        [Required]
         public AddressDto LegalAddress { get; set; }
 
         public AddressDto ActualAddress { get; set; }

@@ -15,21 +15,18 @@ namespace OutOfSchool.WebApi.Controllers
    
     public class ProviderController : ControllerBase
     {
-        private readonly IProviderService providerService;
-        private readonly IAddressService addressService;
+        private readonly IProviderService providerService;    
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
         /// </summary>
-        /// <param name="providerService">Service for Provider model.</param>
-        /// <param name="addressService">Service for Address model.</param>
+        /// <param name="providerService">Service for Provider model.</param>       
         /// <param name="localizer">Localizer.</param>
-        public ProviderController(IProviderService providerService, IAddressService addressService, IStringLocalizer<SharedResource> localizer)
+        public ProviderController(IProviderService providerService, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.providerService = providerService;
-            this.addressService = addressService;
         }
 
         /// <summary>
@@ -120,21 +117,7 @@ namespace OutOfSchool.WebApi.Controllers
                 dto.LegalAddress.Id = default;
 
                 dto.UserId = User.FindFirst("sub")?.Value;
-
-                var legalAddress = await addressService.Create(dto.LegalAddress).ConfigureAwait(false);
-                dto.LegalAddressId = legalAddress.Id;
-
-                if (dto.ActualAddress == null)
-                {
-                    dto.ActualAddressId = legalAddress.Id;
-                }
-                else
-                {
-                    dto.ActualAddress.Id = default;
-                    var actualAddress = await addressService.Create(dto.ActualAddress).ConfigureAwait(false);
-                    dto.ActualAddressId = actualAddress.Id;
-                }
-
+             
                 var provider = await providerService.Create(dto).ConfigureAwait(false);
 
                 return CreatedAtAction(
@@ -145,11 +128,7 @@ namespace OutOfSchool.WebApi.Controllers
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
-            }
-            catch (NullReferenceException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            }          
         }
 
         /// <summary>

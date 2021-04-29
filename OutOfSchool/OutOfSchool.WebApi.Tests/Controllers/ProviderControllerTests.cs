@@ -20,7 +20,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private ProviderController controller;
         private Mock<IProviderService> serviceProvider;
-        private Mock<IAddressService> serviceAddress;
         private ClaimsPrincipal user;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
@@ -31,10 +30,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void Setup()
         {
             serviceProvider = new Mock<IProviderService>();
-            serviceAddress = new Mock<IAddressService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new ProviderController(serviceProvider.Object, serviceAddress.Object, localizer.Object);
+            controller = new ProviderController(serviceProvider.Object, localizer.Object);
             user = new ClaimsPrincipal(new ClaimsIdentity());
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 

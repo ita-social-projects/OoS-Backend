@@ -26,5 +26,29 @@ namespace OutOfSchool.WebApi.Models
         public double Latitude { get; set; } = default;
 
         public double Longitude { get; set; } = default;
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            
+            var address = obj as AddressDto;
+
+            if (address == null)
+            {
+                return false;
+            }
+
+            return (Region == address.Region) && (District == address.District) && (City == address.City) && (Street == address.Street) && (BuildingNumber == address.BuildingNumber);
+        }
+
+#pragma warning disable CA1307 // Specify StringComparison
+        public override int GetHashCode()
+        {
+            return Region.GetHashCode() ^ District.GetHashCode() ^ City.GetHashCode() ^ Street.GetHashCode() ^ BuildingNumber.GetHashCode();
+        }
+#pragma warning restore CA1307 // Specify StringComparison
     }
 }

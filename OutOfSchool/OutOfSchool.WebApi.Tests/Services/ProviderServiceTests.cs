@@ -48,41 +48,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(1)]
-        public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
-        {
-            // Arrange
-            var expected = new Provider()
-            {
-                FullTitle = "NewTitle",
-                ShortTitle = "NewShortTitle",
-                Description = "NewDescription",
-                EdrpouIpn = "16745678",
-                Founder = "Founder",
-                Email = "user@example.com",
-                Ownership = OwnershipType.State,
-                Type = ProviderType.FOP,
-                LegalAddressId = 67,
-                ActualAddressId = 87,
-                UserId = "de909f35-5e56-4g7r-bda8-40a5bfda96a6",
-            };
-
-            // Act
-            var result = await service.Create(expected.ToModel()).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(expected.FullTitle, result.FullTitle);
-            Assert.AreEqual(expected.ShortTitle, result.ShortTitle);
-            Assert.AreEqual(expected.Description, result.Description);
-            Assert.AreEqual(expected.EdrpouIpn, result.EdrpouIpn);
-            Assert.AreEqual(expected.Ownership, result.Ownership);
-            Assert.AreEqual(expected.Type, result.Type);
-            Assert.AreEqual(expected.LegalAddressId, result.LegalAddressId);
-            Assert.AreEqual(expected.ActualAddressId, result.ActualAddressId);
-            Assert.AreEqual(expected.UserId, result.UserId);
-        }
-
-        [Test]
         [Order(2)]
         public void Create_NotUniqueEntity_ReturnsArgumentException()
         {
