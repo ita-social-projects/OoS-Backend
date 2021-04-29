@@ -174,7 +174,7 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException("Empty lastname.", nameof(dto));
             }
 
-            if (dto.Patronymic.Length == 0)
+            if (dto.MiddleName.Length == 0)
             {
                 logger.Information("Updating failed. Empty patronymic.");
                 throw new ArgumentException("Empty patronymic.", nameof(dto));

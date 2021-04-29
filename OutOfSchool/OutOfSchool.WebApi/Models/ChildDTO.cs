@@ -24,7 +24,7 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.Text)]
         [MaxLength(40)]
         [RegularExpression(@"[\W\-\']*", ErrorMessage = "Patronymic cannot contains digits")]
-        public string Patronymic { get; set; } = string.Empty;
+        public string MiddleName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Birthday is required")]
         [DataType(DataType.Date)]
