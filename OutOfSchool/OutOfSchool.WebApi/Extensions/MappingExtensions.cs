@@ -35,7 +35,11 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static ChildDTO ToModel(this Child child)
         {
-            return child.Mapper<Child, ChildDTO>(cfg => { cfg.CreateMap<Child, ChildDTO>(); });
+            return child.Mapper<Child, ChildDTO>(cfg => 
+            { 
+                cfg.CreateMap<Child, ChildDTO>()
+                   .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.Patronymic)); 
+            });
         }
 
         public static BirthCertificateDto ToModel(this BirthCertificate birthCertificate)
@@ -97,7 +101,8 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
 
                 cfg.CreateMap<ChildDTO, Child>()
-                    .ForMember(dest => dest.AddressId, opt => opt.MapFrom(c => c.Address.Id));
+                    .ForMember(dest => dest.AddressId, opt => opt.MapFrom(c => c.Address.Id))
+                    .ForMember(dest => dest.Patronymic, opt => opt.MapFrom(src => src.MiddleName));
             });
         }
 
