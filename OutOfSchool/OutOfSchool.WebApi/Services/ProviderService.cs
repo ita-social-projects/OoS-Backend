@@ -19,7 +19,6 @@ namespace OutOfSchool.WebApi.Services
     public class ProviderService : IProviderService
     {
         private readonly IProviderRepository providerRepository;
-        private readonly IEntityRepository<Address> addressRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -27,14 +26,12 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="ProviderService"/> class.
         /// </summary>
         /// <param name="providerRepository">Provider repository.</param>
-        /// <param name="addressRepository">Address repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ProviderService(IProviderRepository providerRepository, IEntityRepository<Address> addressRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ProviderService(IProviderRepository providerRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.providerRepository = providerRepository;
-            this.addressRepository = addressRepository;
             this.logger = logger;
         }
 
