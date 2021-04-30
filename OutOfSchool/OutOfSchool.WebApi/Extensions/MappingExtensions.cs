@@ -102,9 +102,7 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ProviderDto, Provider>(providerDto, cfg =>
             {
                 cfg.CreateMap<AddressDto, Address>();
-                cfg.CreateMap<ProviderDto, Provider>()
-                .ForMember(dest => dest.ActualAddress, opt => opt.Ignore())
-                .ForMember(dest => dest.LegalAddress, opt => opt.Ignore());               
+                cfg.CreateMap<ProviderDto, Provider>();               
             });
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -19,5 +20,38 @@ namespace OutOfSchool.Services.Repository
         /// <param name="entity">Entity.</param>
         /// <returns>Bool.</returns>
         public bool Exists(Provider entity) => db.Providers.Any(x => x.EdrpouIpn == entity.EdrpouIpn || x.Email == entity.Email);
+
+        /// <summary>
+        /// Add new element.
+        /// </summary>
+        /// <param name="entity">Entity to create.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        public new async Task<Provider> Create(Provider entity)
+        {
+            var legalAddress = await db.Addresses.AddAsync(entity.LegalAddress).ConfigureAwait(false);
+            await db.SaveChangesAsync();
+
+            entity.LegalAddressId = legalAddress.Entity.Id;
+
+            if (entity.ActualAddress == null || entity.ActualAddress.Equals(entity.LegalAddress))
+            {
+                entity.ActualAddressId = legalAddress.Entity.Id;
+            }
+            else
+            {
+                entity.ActualAddress.Id = default;
+                var actualAddress = await db.Addresses.AddAsync(entity.ActualAddress).ConfigureAwait(false);
+                await db.SaveChangesAsync();
+                entity.ActualAddressId = actualAddress.Entity.Id;
+            }
+
+            entity.ActualAddress = default;
+            entity.LegalAddress = default;
+
+            await db.Providers.AddAsync(entity);
+            await db.SaveChangesAsync();
+
+            return await Task.FromResult(entity);
+        }      
     }
 }
