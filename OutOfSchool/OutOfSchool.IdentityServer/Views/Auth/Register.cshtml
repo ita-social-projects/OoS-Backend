@@ -5,25 +5,25 @@
 }
  <title>Увійти/Зареєструватися</title>
 <div class="registration">
-    <div class="registration_wrapper">
-        <h3 class="registration_title">ЗАРЕЄСТРУВАТИСЯ</h3>
-        <h5 class="registration_subtitle">Щоб мати змогу подавати заявки у гуртки або стати надавачем послуг</h5>
-        <div class="registration_social">
-            <button class="registration_button">
+    <div class="wrapper">
+        <h3 class="title">ЗАРЕЄСТРУВАТИСЯ</h3>
+        <h5 class="subtitle">Щоб мати змогу подавати заявки у гуртки або стати надавачем послуг</h5>
+        <div class="social">
+            <button class="button">
                 <img src="/icons/fb.png" alt="facebook">
             </button>
-            <button class="registration_button">
+            <button class="button">
                 <img src="/icons/google.png" alt="google">
             </button>
         </div>
-        <div class="registration_option">або заповніть форму</div>
+        <div class="option">або заповніть форму</div>
         <form onsubmit="return validateForm(this)" asp-controller="Auth" asp-action="Register" method="post" class="registration_form">
             <input type="hidden" asp-for="ReturnUrl" />
             <div asp-validation-summary="ModelOnly"></div>
-            <ul class="registration_list">
-                <li class="registration_item">
-                    <label class="registration_label">
-                        Зареєструватися як<span class="registration_star">*</span>
+            <ul class="list">
+                <li class="item">
+                    <label class="label">
+                        Зареєструватися як<span class="star">*</span>
                     </label>
                     <div class="registration_as">
                         <div class="registration_type registration_type-active" id="btn_parent">
@@ -48,48 +48,48 @@
                 </li>
 
                 <li class="registration_item">
-                    <label class="registration_label" asp-for="LastName">Прізвище<span class="registration_star">*</span></label>
-                    <input class="registration_input" type="text" asp-for="LastName" id="last_name">        
+                    <label class="label" asp-for="LastName">Прізвище<span class="star">*</span></label>
+                    <input class="input" type="text" asp-for="LastName" id="last_name">        
                     <div>
                         <span asp-validation-for="LastName"></span>
                     </div>
 
                 </li>
                 <li class="registration_item">
-                    <label class="registration_label" asp-for="FirstName">Ім’я<span class="registration_star">*</span></label>
-                    <input class="registration_input" type="text" asp-for="FirstName" id="first_name">
+                    <label class="label" asp-for="FirstName">Ім’я<span class="star">*</span></label>
+                    <input class="input" type="text" asp-for="FirstName" id="first_name">
                     <div>
                         <span asp-validation-for="FirstName"></span>
                     </div>
                 </li>
                 <li class="registration_item">
-                    <label class="registration_label"  asp-for="MiddleName">По-батькові</label>
-                    <input class="registration_input" type="text"  asp-for="MiddleName" id="middle_name">
+                    <label class="label"  asp-for="MiddleName">По-батькові</label>
+                    <input class="input" type="text"  asp-for="MiddleName" id="middle_name">
                     <div>
                         <span asp-validation-for="MiddleName"></span>
                     </div>
                 </li>
                 <li class="registration_item">
-                    <label class="registration_label" asp-for="PhoneNumber">Телефон<span class="registration_star">*</span></label>
+                    <label class="label" asp-for="PhoneNumber">Телефон<span class="star">*</span></label>
                     <div class="registration_phone">
                         <div class="registration_phone-code">+38</div>
-                        <input class="registration_input" type="text"  asp-for="PhoneNumber" id="phone_number">
+                        <input class="input" type="text"  asp-for="PhoneNumber" id="phone_number">
                     </div>
                     <div>
                         <span asp-validation-for="PhoneNumber"></span>
                     </div>
                 </li>
                 <li class="registration_item">
-                    <label class="registration_label"  asp-for="Email">Емейл<span class="registration_star">*</span></label>
-                    <input class="registration_input" type="email" asp-for="Email" id="user_mail">
+                    <label class="label"  asp-for="Email">Емейл<span class="star">*</span></label>
+                    <input class="input" type="email" asp-for="Email" id="user_mail">
                     <div>
                         <span asp-validation-for="Email"></span>
                     </div>
                 </li>
                 <li class="registration_item registration_item-password">
                     <div>
-                        <label class="registration_label" asp-for="Password">Пароль<span class="registration_star">*</span></label>
-                        <input class="registration_input registration_input-password" type="Password" asp-for="Password" id="password">
+                        <label class="label" asp-for="Password">Пароль<span class="star">*</span></label>
+                        <input class="input input-password" type="Password" asp-for="Password" id="password">
                         <div class="registration_privacy">
                             <img src="/icons/ic_eye.svg" alt="eye" class="registration_eye" id="password_eye">
                         </div>
@@ -105,8 +105,8 @@
                 </li>
                 <li class="registration_item">
                     <div>
-                        <label class="registration_label"  asp-for="ConfirmPassword">Повторити пароль<span class="registration_star">*</span></label>
-                        <input class="registration_input registration_input-password" type="password"  asp-for="ConfirmPassword" id="repeat_password">
+                        <label class="label"  asp-for="ConfirmPassword">Повторити пароль<span class="star">*</span></label>
+                        <input class="input input-password" type="password"  asp-for="ConfirmPassword" id="repeat_password">
                         <div class="registration_privacy">
                             <img src="/icons/ic_eye.svg" alt="eye" class="registration_eye" id="confirm_password_eye">
                         </div>
@@ -129,7 +129,7 @@
                 </li>
 
                 <li class="registration_item">
-                    <input class="registration_submit" type="submit" id="btn_register" name="Parent" value="ЗАРЕЄСТРУВАТИСЯ">
+                    <input class="submit" type="submit" id="btn_register" name="Parent" value="ЗАРЕЄСТРУВАТИСЯ">
                 </li>
             </ul>
         </form>

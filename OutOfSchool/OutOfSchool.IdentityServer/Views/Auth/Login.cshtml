@@ -3,17 +3,17 @@
     Layout = "_Layout";
 }
  <title>Увійти/Зареєструватися</title>
-<div class="registration_wrapper">
-    <h3 class="registration_title">УВІЙТИ</h3>
-<div class="registration_social">
-    <button class="registration_button">
+<div class="wrapper">
+    <h3 class="title">УВІЙТИ </h3>
+<div class="social">
+    <button class="button">
         <img src="/icons/fb.png" alt="facebook">
     </button>
-    <button class="registration_button">
+    <button class="button">
         <img src="/icons/google.png" alt="google">
     </button>
 </div>
-    <div class="registration_option">або заповніть форму</div>
+    <div class="option">або заповніть форму</div>
 </div>
 @* <form asp-controller="Auth" asp-action="ExternalLogin" *@
 @*       asp-route-returnUrl="@Model.ReturnUrl" method="post"> *@
@@ -27,27 +27,27 @@
 @*     } *@
 @* </form> *@
 
-<form class="registration_wrapper" asp-controller="Auth" asp-action="Login" method="post">
+<form class="wrapper" asp-controller="Auth" asp-action="Login" method="post">
     <input type="hidden" asp-for="ReturnUrl"/>
     <div>
-        <label class="registration_label">Емейл</label>
-        <input class="registration_input" asp-for="Username"/>
+        <label class="label">Емейл</label>
+        <input class="input" asp-for="Username"/>
         <span asp-validation-for="Username"></span>
     </div>
     <div>
-        <label class="registration_label">Пароль</label>
-        <input class="registration_input registration_input-password" asp-for="Password"/>
+        <label class="label">Пароль</label>
+        <input class="input input-password" asp-for="Password"/>
         <span asp-validation-for="Password"></span>
     </div>
     <div asp-validation-summary="ModelOnly"></div>
     <div>
-        <button class="registration__button" type="submit">УВІЙТИ</button>
+       <input class="submit" type="submit" value="УВІЙТИ">
     </div>
-</form>
-<div class="registration_login">
+    <div class="login">
 <span>Ще не зареєстровані?</span>
-    <a class="registration_link" asp-controller="Auth" asp-action="Register"
+    <a class="link" asp-controller="Auth" asp-action="Register"
        asp-route-returnUrl="@Model.ReturnUrl">
         Зареєструватися
     </a>
 </div>
+</form>
