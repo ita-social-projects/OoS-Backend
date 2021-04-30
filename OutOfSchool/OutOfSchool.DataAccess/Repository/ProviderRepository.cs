@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -52,6 +53,28 @@ namespace OutOfSchool.Services.Repository
             await db.SaveChangesAsync();
 
             return await Task.FromResult(entity);
-        }      
+        }
+
+        /// <summary>
+        /// Delete element.
+        /// </summary>
+        /// <param name="entity">Entity to delete.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        public new async Task Delete(Provider entity)
+        {
+            db.Entry(entity).State = EntityState.Deleted;
+
+            if (entity.LegalAddressId == entity.ActualAddressId)
+            {             
+                db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
+            }
+            else
+            {
+                db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
+                db.Entry(new Address { Id = entity.ActualAddressId }).State = EntityState.Deleted;
+            }
+
+            await db.SaveChangesAsync();
+        }
     }
 }

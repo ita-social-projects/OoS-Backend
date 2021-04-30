@@ -116,17 +116,7 @@ namespace OutOfSchool.WebApi.Services
                 var entity = await providerRepository.GetById(id).ConfigureAwait(false);
 
                 await providerRepository.Delete(entity).ConfigureAwait(false);
-
-                if (entity.LegalAddressId == entity.ActualAddressId)
-                {
-                    await addressRepository.Delete(new Address { Id = entity.LegalAddressId }).ConfigureAwait(false);
-                }
-                else
-                {
-                    await addressRepository.Delete(new Address { Id = entity.LegalAddressId }).ConfigureAwait(false);
-                    await addressRepository.Delete(new Address { Id = entity.ActualAddressId }).ConfigureAwait(false);
-                }
-
+              
                 logger.Information("Provider successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
