@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -17,20 +18,20 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ProviderService : IProviderService
     {
-        private readonly IProviderRepository repository;
+        private readonly IProviderRepository providerRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderService"/> class.
         /// </summary>
-        /// <param name="repository">Repository.</param>
+        /// <param name="providerRepository">Provider repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ProviderService(IProviderRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ProviderService(IProviderRepository providerRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.repository = repository;
+            this.providerRepository = providerRepository;
             this.logger = logger;
         }
 
@@ -39,15 +40,15 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Provider creating was started.");
 
-            var provider = dto.ToDomain();
-
-            if (repository.Exists(provider))
+            if (providerRepository.Exists(dto.ToDomain()))
             {
                 throw new ArgumentException(localizer["There is already a provider with such a data."]);
             }
 
-            var newProvider = await repository.Create(provider).ConfigureAwait(false);
+            Func<Task<Provider>> operation = async () => await providerRepository.Create(dto.ToDomain()).ConfigureAwait(false);
 
+            var newProvider = await providerRepository.RunInTransaction(operation).ConfigureAwait(false);
+               
             return newProvider.ToModel();
         }
 
@@ -56,7 +57,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting all Providers started.");
 
-            var providers = await repository.GetAll().ConfigureAwait(false);
+            var providers = await providerRepository.GetAll().ConfigureAwait(false);
 
             logger.Information(!providers.Any()
                 ? "Provider table is empty."
@@ -70,7 +71,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting Provider by id started.");
 
-            var provider = await repository.GetById(id).ConfigureAwait(false);
+            var provider = await providerRepository.GetById(id).ConfigureAwait(false);
 
             if (provider == null)
             {
@@ -89,7 +90,7 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var provider = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var provider = await providerRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
                 logger.Information("Provider successfully updated.");
 
@@ -106,13 +107,13 @@ namespace OutOfSchool.WebApi.Services
         public async Task Delete(long id)
         {
             logger.Information("Provider deleting was launched.");
-
-            var entity = new Provider() { Id = id };
-
+        
             try
             {
-                await repository.Delete(entity).ConfigureAwait(false);
+                var entity = await providerRepository.GetById(id).ConfigureAwait(false);
 
+                await providerRepository.Delete(entity).ConfigureAwait(false);
+              
                 logger.Information("Provider successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
@@ -120,6 +121,25 @@ namespace OutOfSchool.WebApi.Services
                 logger.Error("Deleting failed. There is no Provider in the Db with such an id.");
                 throw;
             }
+        }
+
+        /// <inheritdoc/>
+        public async Task<ProviderDto> GetByUserId(string id)
+        {
+            logger.Information("Process of getting Provider by User Id started.");
+
+            Expression<Func<Provider, bool>> filter = p => p.UserId == id;
+
+            var providers = await providerRepository.GetByFilter(filter).ConfigureAwait(false);
+
+            if (!providers.Any())
+            {
+                throw new ArgumentException(localizer["There is no Provider in the Db with such User id"], nameof(id));                        
+            }
+
+            logger.Information($"Successfully got a Provider with User id = {id}.");
+
+            return providers.FirstOrDefault().ToModel();
         }
     }
 }

@@ -6,6 +6,6 @@
         
         public string Title { get; set; } = string.Empty;
         
-        public Category Category { get; set; }
+        public virtual Category Category { get; set; }
     }
 }

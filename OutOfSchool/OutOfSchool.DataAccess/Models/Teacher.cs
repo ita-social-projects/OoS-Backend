@@ -35,6 +35,6 @@ namespace OutOfSchool.Services.Models
         
         public string Image { get; set; } = string.Empty;
         
-        public Workshop Workshop { get; set; }
+        public virtual Workshop Workshop { get; set; }
     }
 }

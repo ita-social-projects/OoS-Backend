@@ -8,6 +8,6 @@ namespace OutOfSchool.Services.Models
 
         public string Title { get; set; } = string.Empty;
 
-        public List<Subcategory> Subcategories { get; set; }
+        public virtual List<Subcategory> Subcategories { get; set; }
     }
 }

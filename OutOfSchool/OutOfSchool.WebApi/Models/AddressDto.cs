@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -25,6 +26,6 @@ namespace OutOfSchool.WebApi.Models
 
         public double Latitude { get; set; } = default;
 
-        public double Longitude { get; set; } = default;
+        public double Longitude { get; set; } = default;       
     }
 }

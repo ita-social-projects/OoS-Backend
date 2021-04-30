@@ -190,7 +190,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email1@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Image = "image1",
+                        Logo = "image1",
                     },
                     new Workshop()
                     {
@@ -210,7 +210,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email2@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Image = "image2",
+                        Logo = "image2",
                     },
                     new Workshop()
                     {
@@ -230,7 +230,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email3@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Image = "image3",
+                        Logo = "image3",
                     },
                     new Workshop()
                     {
@@ -250,7 +250,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email4@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Image = "image4",
+                        Logo = "image4",
                     },
                     new Workshop()
                     {
@@ -270,7 +270,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email5@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Image = "image5",
+                        Logo = "image5",
                     },
                 };
 
