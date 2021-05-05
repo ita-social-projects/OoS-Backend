@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -18,6 +19,7 @@ namespace OutOfSchool.WebApi.Services
     public class WorkshopService : IWorkshopService
     {
         private readonly IEntityRepository<Workshop> repository;
+        private readonly IEntityRepository<Rating> ratingRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -25,12 +27,18 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
         /// <param name="repository">Repository for Workshop entity.</param>
+        /// <param name="ratingRepository">Rating repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public WorkshopService(IEntityRepository<Workshop> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public WorkshopService(
+            IEntityRepository<Workshop> repository, 
+            IEntityRepository<Rating> ratingRepository,
+            ILogger logger, 
+            IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
+            this.ratingRepository = ratingRepository;
             this.logger = logger;
         }
 
@@ -57,6 +65,16 @@ namespace OutOfSchool.WebApi.Services
                 ? "Workshop table is empty."
                 : "Successfully got all records from the Workshop table.");
 
+            foreach (var workshop in workshops)
+            {
+                var workshopRatings = await ratingRepository
+                    .GetByFilter(rating => rating.EntityId == workshop.Id && rating.Type == RatingType.Workshop)
+                    .ConfigureAwait(false);
+
+                var ratingsSum = (float)workshopRatings.Sum(rating => rating.Rate);
+                workshop.Rating = (float)Math.Round(ratingsSum / workshopRatings.Count(), 2);
+            }
+
             return workshops.Select(x => x.ToModel()).ToList();
         }
 
@@ -65,18 +83,25 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting Teacher by id started.");
 
-            var teacher = await repository.GetById(id).ConfigureAwait(false);
+            var workshop = await repository.GetById(id).ConfigureAwait(false);
 
-            if (teacher == null)
+            if (workshop == null)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
+            var workshopRatings = await ratingRepository
+                    .GetByFilter(rating => rating.EntityId == workshop.Id && rating.Type == RatingType.Workshop)
+                    .ConfigureAwait(false);
+
+            var ratingsSum = (float)workshopRatings.Sum(rating => rating.Rate);
+            workshop.Rating = (float)Math.Round(ratingsSum / workshopRatings.Count(), 2);
+
             logger.Information($"Successfully got a Teacher with id = {id}.");
 
-            return teacher.ToModel();
+            return workshop.ToModel();
         }
 
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
