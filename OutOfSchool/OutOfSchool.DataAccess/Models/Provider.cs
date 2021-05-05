@@ -78,6 +78,8 @@ namespace OutOfSchool.Services.Models
         [Required]
         public long ActualAddressId { get; set; }
 
+        public float Rating { get; set; }
+
         [Required]
         public string UserId { get; set; }
 
