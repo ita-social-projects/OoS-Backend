@@ -30,5 +30,7 @@ namespace OutOfSchool.Services
         public DbSet<Address> Addresses { get; set; }
 
         public DbSet<BirthCertificate> BirthCertificates { get; set; }
+        
+        public DbSet<Rating> Ratings { get; set; }
     }
 }
