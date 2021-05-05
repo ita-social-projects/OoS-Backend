@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -19,6 +20,7 @@ namespace OutOfSchool.WebApi.Services
     public class ProviderService : IProviderService
     {
         private readonly IProviderRepository providerRepository;
+        private readonly IEntityRepository<Rating> ratingRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -26,12 +28,18 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="ProviderService"/> class.
         /// </summary>
         /// <param name="providerRepository">Provider repository.</param>
+        /// <param name="ratingRepository">Rating repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ProviderService(IProviderRepository providerRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ProviderService(
+            IProviderRepository providerRepository,
+            IEntityRepository<Rating> ratingRepository, 
+            ILogger logger, 
+            IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.providerRepository = providerRepository;
+            this.ratingRepository = ratingRepository;
             this.logger = logger;
         }
 
@@ -63,6 +71,16 @@ namespace OutOfSchool.WebApi.Services
                 ? "Provider table is empty."
                 : "Successfully got all records from the Provider table.");
 
+            foreach (var provider in providers)
+            {
+                var providerRatings = await ratingRepository
+                    .GetByFilter(rating => rating.EntityId == provider.Id && rating.Type == RatingType.Provider)
+                    .ConfigureAwait(false);
+
+                var ratingsSum = (float)providerRatings.Sum(rating => rating.Rate);
+                provider.Rating = (float)Math.Round(ratingsSum / providerRatings.Count(), 2);
+            }
+
             return providers.Select(provider => provider.ToModel()).ToList();
         }
 
@@ -79,6 +97,13 @@ namespace OutOfSchool.WebApi.Services
                     nameof(id),
                     localizer["The id cannot be greater than number of table entities."]);
             }
+
+            var providerRatings = await ratingRepository
+                    .GetByFilter(rating => rating.EntityId == provider.Id && rating.Type == RatingType.Provider)
+                    .ConfigureAwait(false);
+
+            var ratingsSum = (float)providerRatings.Sum(rating => rating.Rate);
+            provider.Rating = (float)Math.Round(ratingsSum / providerRatings.Count(), 2);
 
             logger.Information($"Successfully got a Provider with id = {id}.");
 
