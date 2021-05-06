@@ -7,7 +7,8 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        public int Rate { get; set; } = default;
+        [Range(1, 5)]
+        public int Rate { get; set; }
 
         [Required]
         public RatingType Type { get; set; }
