@@ -169,8 +169,9 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                int id = int.Parse(this.GetJwtClaimByName("sid"));
-                ParentDTO parentDTO = await service.GetById(id).ConfigureAwait(false);
+                string userId = User.FindFirst("sub")?.Value;
+                var parents = await service.GetAll().ConfigureAwait(false);
+                var parentDTO = parents.Where(x => x.UserId == userId).FirstOrDefault();
                 return this.Ok(parentDTO);
             }
             catch (ArgumentException ex)
