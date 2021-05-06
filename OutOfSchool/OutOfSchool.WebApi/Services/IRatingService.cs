@@ -1,0 +1,46 @@
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using OutOfSchool.WebApi.Models;
+
+namespace OutOfSchool.WebApi.Services
+{
+    /// <summary>
+    /// Defines interface for CRUD functionality for Rating entity.
+    /// </summary>
+    public interface IRatingService
+    {
+        /// <summary>
+        /// Add entity.
+        /// </summary>
+        /// <param name="dto">Rating entity to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<RatingDTO> Create(RatingDTO dto);
+
+        /// <summary>
+        /// Get all rating entities.
+        /// </summary>
+        /// <returns>List of all rating records.</returns>
+        Task<IEnumerable<RatingDTO>> GetAll();
+
+        /// <summary>
+        /// Get rating entity by it's key.
+        /// </summary>
+        /// <param name="id">Key in the table.</param>
+        /// <returns>Rating entity.</returns>
+        Task<RatingDTO> GetById(long id);
+
+        /// <summary>
+        /// Update rating entity.
+        /// </summary>
+        /// <param name="dto">Rating entity to update.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<RatingDTO> Update(RatingDTO dto);
+
+        /// <summary>
+        ///  Delete rating entity.
+        /// </summary>
+        /// <param name="id">Rating key.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task Delete(long id);
+    }
+}
