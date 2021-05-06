@@ -24,7 +24,15 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static WorkshopDTO ToModel(this Workshop workshop)
         {
-            return Mapper<Workshop, WorkshopDTO>(workshop, cfg => { cfg.CreateMap<Workshop, WorkshopDTO>(); });
+            return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
+            {
+                cfg.CreateMap<Workshop, WorkshopDTO>();
+                cfg.CreateMap<Address, AddressDto>();
+                cfg.CreateMap<Provider, ProviderDto>();
+                cfg.CreateMap<Category, CategoryDTO>();
+                cfg.CreateMap<Subcategory, SubcategoryDTO>();
+                cfg.CreateMap<Subsubcategory, SubsubcategoryDTO>();
+            });
         }
 
         public static TeacherDTO ToModel(this Teacher teacher)
@@ -93,12 +101,12 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
             {
+                cfg.CreateMap<WorkshopDTO, Workshop>();
+                cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
-
-                cfg.CreateMap<WorkshopDTO, Workshop>()
-                    .ForMember(dest => dest.Address, opt => opt.Ignore())
-                    .ForMember(dest => dest.Teachers, opt => opt.Ignore())
-                    .ForMember(dest => dest.Category, opt => opt.Ignore());
+                cfg.CreateMap<CategoryDTO, Category>();
+                cfg.CreateMap<SubcategoryDTO, Subcategory>();
+                cfg.CreateMap<SubsubcategoryDTO, Subsubcategory>();
             });
         }
 
