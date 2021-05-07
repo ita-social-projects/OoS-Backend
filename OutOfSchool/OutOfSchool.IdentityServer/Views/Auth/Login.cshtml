@@ -1,7 +1,14 @@
-﻿@model OutOfSchool.IdentityServer.ViewModels.LoginViewModel
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.IdentityServer
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@model OutOfSchool.IdentityServer.ViewModels.LoginViewModel
 @{
+    ViewData["Title"] = SharedLocalizer["EntranceToExtracurricularActivities"];
     Layout = "_Layout";
 }
+
 <div class="login__wrapper">
     <h1 class="login__text">Sign In With</h1>
 </div>
@@ -18,15 +25,15 @@
 @* </form> *@
 
 <form class="login__wrapper" asp-controller="Auth" asp-action="Login" method="post">
-    <input type="hidden" asp-for="ReturnUrl"/>
+    <input type="hidden" asp-for="ReturnUrl" />
     <div>
         <label class="login__label">Login</label>
-        <input class="login__input" asp-for="Username"/>
+        <input class="login__input" asp-for="Username" />
         <span asp-validation-for="Username"></span>
     </div>
     <div>
         <label class="login__label">Password</label>
-        <input class="login__input" asp-for="Password"/>
+        <input class="login__input" asp-for="Password" />
         <span asp-validation-for="Password"></span>
     </div>
     <div asp-validation-summary="ModelOnly"></div>
