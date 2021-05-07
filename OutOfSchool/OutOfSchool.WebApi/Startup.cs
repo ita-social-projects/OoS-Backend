@@ -103,6 +103,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IParentService, ParentService>();
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IRatingService, RatingService>();
 
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
