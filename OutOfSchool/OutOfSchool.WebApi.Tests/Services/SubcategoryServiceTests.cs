@@ -88,7 +88,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.GetAll().ConfigureAwait(false);
 
             // Assert
-            Assert.That(expected.ToList().Count(), Is.EqualTo(result.Count()));
+            Assert.That(expected.Count(), Is.EqualTo(result.Count()));
         }
 
         [Test]
@@ -193,7 +193,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var entities = await service.GetByCategoryId(id);
 
             // Assert
-            Assert.That(entities.ToList().Count(), Is.EqualTo(expected.Count()));
+            Assert.That(entities.Count(), Is.EqualTo(expected.Count()));
         }
 
         [Test]
@@ -208,10 +208,10 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private void SeedDatabase()
         {
-            using var context = new OutOfSchoolDbContext(options);
+            using var ctx = new OutOfSchoolDbContext(options);
             {
-                context.Database.EnsureDeleted();
-                context.Database.EnsureCreated();
+                ctx.Database.EnsureDeleted();
+                ctx.Database.EnsureCreated();
 
                 var categories = new List<Category>()
                 {
@@ -232,7 +232,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                    },
                 };
 
-                context.Categories.AddRangeAsync(categories);
+                ctx.Categories.AddRangeAsync(categories);
 
                 var subcategories = new List<Subcategory>()
                 {
@@ -256,9 +256,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                    },
                 };
 
-                context.Subcategories.AddRangeAsync(subcategories);
+                ctx.Subcategories.AddRangeAsync(subcategories);
 
-                context.SaveChangesAsync();
+                ctx.SaveChangesAsync();
             }
         }
     }
