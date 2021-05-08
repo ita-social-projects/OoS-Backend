@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -17,24 +18,32 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class RatingService : IRatingService
     {
-        private readonly IEntityRepository<Rating> repository;
+        private readonly IEntityRepository<Rating> ratingRepository;
+        private readonly IEntityRepository<Workshop> workshopRepository;
+        private readonly IProviderRepository providerRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RatingService"/> class.
         /// </summary>
-        /// <param name="repository">Repository for Rating entity.</param>
+        /// <param name="ratingRepository">Repository for Rating entity.</param>
+        /// <param name="workshopRepository">Repository for Workshop entity.</param>
+        /// <param name="providerRepository">Repository for Provider entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         public RatingService(
-            IEntityRepository<Rating> repository,
+            IEntityRepository<Rating> ratingRepository,
+            IEntityRepository<Workshop> workshopRepository,
+            IProviderRepository providerRepository,
             ILogger logger,
             IStringLocalizer<SharedResource> localizer)
         {
-            this.localizer = localizer;
-            this.repository = repository;
+            this.ratingRepository = ratingRepository;
+            this.workshopRepository = workshopRepository;
+            this.providerRepository = providerRepository;
             this.logger = logger;
+            this.localizer = localizer;
         }
 
         /// <inheritdoc/>
@@ -42,7 +51,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting all Rating started.");
 
-            var ratings = await repository.GetAll().ConfigureAwait(false);
+            var ratings = await ratingRepository.GetAll().ConfigureAwait(false);
 
             logger.Information(!ratings.Any()
                 ? "Rating table is empty."
@@ -56,13 +65,13 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting Rating by id started.");
 
-            var rating = await repository.GetById(id).ConfigureAwait(false);
+            var rating = await ratingRepository.GetById(id).ConfigureAwait(false);
 
             if (rating == null)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
-                    localizer["The id cannot be greater than number of table entities."]);
+                    localizer[$"Record with such Id={ id } don't exist in the system"]);
             }
 
             logger.Information($"Successfully got a Rating with id = {id}.");
@@ -75,21 +84,17 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Rating creating was started.");
 
-            Check(dto);
-
-            var rating = dto.ToDomain();
-
-            if (!RatingExist(rating).Result)
+            if (await CheckRatingCreation(dto).ConfigureAwait(false))
             {
-                var newRating = await repository.Create(rating).ConfigureAwait(false);
+                var rating = await ratingRepository.Create(dto.ToDomain()).ConfigureAwait(false);
 
                 logger.Information("Rating created successfully.");
 
-                return newRating.ToModel();
+                return rating.ToModel();
             }
             else
             {
-                logger.Information("Rating already exist.");
+                logger.Information("Rating already exists or entityId isn't correct.");
 
                 return null;
             }
@@ -99,45 +104,63 @@ namespace OutOfSchool.WebApi.Services
         public async Task<RatingDTO> Update(RatingDTO dto)
         {
             logger.Information("Rating updating was launched.");
-            Check(dto);
-
-            var rating = dto.ToDomain();
-            var ratingResult = RatingExistResult(rating).Result.First();
 
             try
             {
-                if (RatingExist(rating).Result
-                    && rating.EntityId == ratingResult.EntityId
-                    && rating.Parent == ratingResult.Parent
-                    && rating.Type == ratingResult.Type)
+                if (await CheckRatingUpdate(dto).ConfigureAwait(false))
                 {
-                    var updatedRating = await repository.Update(rating).ConfigureAwait(false);
+                    var rating = await ratingRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
                     logger.Information("Rate successfully updated.");
 
-                    return updatedRating.ToModel();
+                    return rating.ToModel();
                 }
                 else
                 {
-                    logger.Information("Rating not exist or can't change EntityId, Parent and Type.");
+                    logger.Information("Rating doesn't exist or couldn't change EntityId, Parent and Type.");
 
                     return null;
                 }
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no Rating in the Db with such an id.");
+                logger.Error("Updating failed. There is no Rating in the Db with such id.");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public Task Delete(long id)
+        public async Task Delete(long id)
         {
-            throw new NotImplementedException();
+            logger.Information("Rating deleting was launched.");
+
+            try
+            {
+                var rating = await ratingRepository.GetById(id).ConfigureAwait(false);
+
+                if (rating == null)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(id),
+                        localizer[$"Record with such Id={ id } don't exist in the system"]);
+                }
+
+                await ratingRepository.Delete(rating).ConfigureAwait(false);
+
+                logger.Information("Rating successfully deleted.");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.Error("Deleting failed. There is no Rating in the Db with such an id.");
+                throw;
+            }
         }
 
-        private void Check(RatingDTO dto)
+        /// <summary>
+        /// Checks that RatingDTO is not null.
+        /// </summary>
+        /// <param name="dto">Rating DTO.</param>
+        private void CheckDTO(RatingDTO dto)
         {
             if (dto == null)
             {
@@ -146,24 +169,113 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private async Task<bool> RatingExist(Rating rating)
+        /// <summary>
+        /// Checks if Rating with such parameters could be created.
+        /// </summary>
+        /// <param name="dto">Rating DTO.</param>
+        /// <returns>True if Rating with such parameters could be added to the system and false otherwise.</returns>
+        private async Task<bool> CheckRatingCreation(RatingDTO dto)
         {
-            var result = await repository
-                .GetByFilter(r => r.EntityId == rating.EntityId
-                               && r.Parent == rating.Parent
-                               && r.Type == rating.Type)
+            CheckDTO(dto);
+
+            if (await RatingExist(dto).ConfigureAwait(false))
+            {
+                logger.Information("Rating already exists");
+
+                return false;
+            }
+
+            if (!await EntityExist(dto.EntityId, dto.Type).ConfigureAwait(false))
+            {
+                logger.Information($"Record with such entityId { dto.EntityId } " +
+                    $"and Type { dto.Type } don't exist in the system.");
+
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if Rating with such parameters could be updated.
+        /// </summary>
+        /// <param name="dto">Rating DTO.</param>
+        /// <returns>True if Rating with such parameters could be updated and false otherwise.</returns>
+        private async Task<bool> CheckRatingUpdate(RatingDTO dto)
+        {
+            CheckDTO(dto);
+
+            if (!await EntityExist(dto.EntityId, dto.Type).ConfigureAwait(false))
+            {
+                logger.Information($"Record with such entityId { dto.EntityId } " +
+                    $"and Type { dto.Type } don't exist in the system.");
+
+                return false;
+            }
+
+            if (!RatingExistWithId(dto))
+            {
+                logger.Information("Rating doesn't exist");
+
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if Rating with such parameters already exists in the system.
+        /// </summary>
+        /// <param name="dto">Rating DTO.</param>
+        /// <returns>True if Rating with such parameters already exists in the system and false otherwise.</returns>
+        private async Task<bool> RatingExist(RatingDTO dto)
+        {
+            var rating = await ratingRepository
+                .GetByFilter(r => r.EntityId == dto.EntityId
+                               && r.ParentId == dto.ParentId
+                               && r.Type == dto.Type)
                 .ConfigureAwait(false);
+
+            return rating.Any();
+        }
+
+        /// <summary>
+        /// Checks if Rating with such parameters already exists in the system.
+        /// </summary>
+        /// <param name="dto">Rating DTO.</param>
+        /// <returns>True if Rating with such parameters already exists in the system and false otherwise.</returns>
+        private bool RatingExistWithId(RatingDTO dto)
+        {
+            var result = ratingRepository
+                    .GetByFilterNoTracking(r => r.EntityId == dto.EntityId
+                                             && r.ParentId == dto.ParentId
+                                             && r.Type == dto.Type
+                                             && r.Id == dto.Id);
 
             return result.Any();
         }
 
-        private async Task<IEnumerable<Rating>> RatingExistResult(Rating rating)
+        /// <summary>
+        /// Checks if Entity with such parameters already exists in the system.
+        /// </summary>
+        /// <param name="id">Entity Id.</param>
+        /// <param name="type">Entity type.</param>
+        /// <returns>True if Entity with such parameters already exists in the system and false otherwise.</returns>
+        private async Task<bool> EntityExist(long id, RatingType type)
         {
-            return await repository
-                .GetByFilter(r => r.EntityId == rating.EntityId
-                               && r.Parent == rating.Parent
-                               && r.Type == rating.Type)
-                .ConfigureAwait(false);
+            switch (type)
+            {
+                case RatingType.Provider:
+                    Provider provider = await providerRepository.GetById(id).ConfigureAwait(false);
+                    return provider != null;
+
+                case RatingType.Workshop:
+                    Workshop workshop = await workshopRepository.GetById(id).ConfigureAwait(false);
+                    return workshop != null;
+
+                default:
+                    return false;
+            }
         }
     }
 }
