@@ -2,7 +2,7 @@
 {
     public enum RatingType
     {
-        Provider,
-        Workshop,
+        Provider = 1,
+        Workshop = 2,
     }
 }
