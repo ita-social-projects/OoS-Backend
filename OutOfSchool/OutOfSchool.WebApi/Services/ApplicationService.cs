@@ -13,12 +13,21 @@ using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Services
 {
+    /// <summary>
+    /// Implements the interface with CRUD functionality for Application entity.
+    /// </summary>
     public class ApplicationService : IApplicationService
     {
         private readonly IEntityRepository<Application> repository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApplicationService"/> class.
+        /// </summary>
+        /// <param name="repository">Application repository.</param>
+        /// <param name="logger">Logger.</param>
+        /// <param name="localizer">Localizer.</param>
         public ApplicationService(IEntityRepository<Application> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.repository = repository;
@@ -26,6 +35,7 @@ namespace OutOfSchool.WebApi.Services
             this.localizer = localizer;
         }
 
+        /// <inheritdoc/>
         public async Task<ApplicationDTO> Create(ApplicationDTO applicationDTO)
         {
             logger.Information("Application creating was started.");
@@ -39,6 +49,7 @@ namespace OutOfSchool.WebApi.Services
             return newApplication.ToModel();
         }
 
+        /// <inheritdoc/>
         public async Task Delete(long id)
         {
             logger.Information("Application delete was launching.");
@@ -58,6 +69,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDTO>> GetAll()
         {
             logger.Information("Process of getting all Applications started.");
@@ -71,6 +83,7 @@ namespace OutOfSchool.WebApi.Services
             return applications.Select(a => a.ToModel()).ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDTO>> GetAllByUser(string id)
         {
             logger.Information("Process of getting Application by User Id started.");
@@ -89,6 +102,7 @@ namespace OutOfSchool.WebApi.Services
             return applications.Select(a => a.ToModel()).ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDTO>> GetAllByWorkshop(long id)
         {
             logger.Information("Process of getting Application by Workshop Id started.");
@@ -107,6 +121,7 @@ namespace OutOfSchool.WebApi.Services
             return applications.Select(a => a.ToModel()).ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<ApplicationDTO> GetById(long id)
         {
             logger.Information("Process of getting Application by id started.");
@@ -125,6 +140,7 @@ namespace OutOfSchool.WebApi.Services
             return application.ToModel();
         }
 
+        /// <inheritdoc/>
         public async Task<ApplicationDTO> Update(ApplicationDTO dto)
         {
             logger.Information("Application updating was launched.");
