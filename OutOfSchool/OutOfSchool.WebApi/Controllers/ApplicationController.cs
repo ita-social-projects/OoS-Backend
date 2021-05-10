@@ -16,9 +16,9 @@ namespace OutOfSchool.WebApi.Controllers
     public class ApplicationController : ControllerBase
     {
         private readonly IApplicationService service;
-        private readonly IStringLocalizer localizer;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
-        public ApplicationController(IApplicationService service, IStringLocalizer localizer)
+        public ApplicationController(IApplicationService service, IStringLocalizer<SharedResource> localizer)
         {
             this.service = service;
             this.localizer = localizer;

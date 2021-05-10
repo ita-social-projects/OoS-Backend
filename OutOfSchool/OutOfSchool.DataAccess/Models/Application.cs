@@ -12,13 +12,10 @@ namespace OutOfSchool.Services.Models
 
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
-        [Required]
         public long WorkshopId { get; set; }
 
-        [Required]
         public long ChildId { get; set; }
 
-        [Required]
         public string UserId { get; set; }
         
         public virtual Workshop Workshop { get; set; }
