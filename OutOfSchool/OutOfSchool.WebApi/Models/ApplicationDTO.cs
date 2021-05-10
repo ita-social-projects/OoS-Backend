@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        public ApplicationStatus Status { get; set; }
+        public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
         public long WorkshopId { get; set; }
 

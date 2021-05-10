@@ -7,23 +7,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OutOfSchool.WebApi.Controllers
 {
+    /// <summary>
+    /// Controller with CRUD operations for a Application entity.
+    /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
 
     public class ApplicationController : ControllerBase
     {
         private readonly IApplicationService service;
         private readonly IStringLocalizer<SharedResource> localizer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApplicationController"/> class.
+        /// </summary>
+        /// <param name="service">Service for Application model.</param>
+        /// <param name="localizer">Localizer.</param>
         public ApplicationController(IApplicationService service, IStringLocalizer<SharedResource> localizer)
         {
             this.service = service;
             this.localizer = localizer;
         }
 
+        /// <summary>
+        /// Get all applications from the database.
+        /// </summary>
+        /// <returns>List of all applications.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -37,7 +54,14 @@ namespace OutOfSchool.WebApi.Controllers
             return Ok(applications);
         }
 
-        [HttpGet]
+        /// <summary>
+        /// Get application by it's id.
+        /// </summary>
+        /// <param name="id">The key in the database.</param>
+        /// <returns>Application entity.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
             if (id < 0)
@@ -50,7 +74,17 @@ namespace OutOfSchool.WebApi.Controllers
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
-        [HttpGet]
+        /// <summary>
+        /// Get Applications by User Id.
+        /// </summary>
+        /// <param name="id">User id.</param>
+        /// <returns>List of applications.</returns>
+        [Authorize(Roles = "parent,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetByUserId(string id)
         {
             try
@@ -63,7 +97,17 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
-        [HttpGet]
+        /// <summary>
+        /// Get Applications by Workshop Id.
+        /// </summary>
+        /// <param name="id">Workshop id.</param>
+        /// <returns>List of applications.</returns>
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetByWorkshopId(long id)
         {
             if (id < 0)
@@ -83,10 +127,20 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Method for creating a new application.
+        /// </summary>
+        /// <param name="applicationDto">Application entity to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "parent,admin")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
         public async Task<IActionResult> Create(ApplicationDTO applicationDto)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -108,6 +162,16 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Update info about a specific application in the database.
+        /// </summary>
+        /// <param name="applicationDto">Application entity.</param>
+        /// <returns>Application's key.</returns>
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
         public async Task<IActionResult> Update(ApplicationDTO applicationDto)
         {
@@ -119,7 +183,14 @@ namespace OutOfSchool.WebApi.Controllers
             return Ok(await service.Update(applicationDto).ConfigureAwait(false));
         }
 
-        [HttpDelete]
+        /// <summary>
+        /// Delete a specific Application entity from the database.
+        /// </summary>
+        /// <param name="id">Application's key.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
             if (id < 0)
