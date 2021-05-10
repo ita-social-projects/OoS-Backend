@@ -10,8 +10,9 @@ using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Controllers
 {
-    [Route("[controller]/[action]")]
     [ApiController]
+    [Route("[controller]/[action]")]
+
     public class ApplicationController : ControllerBase
     {
         private readonly IApplicationService service;
@@ -62,6 +63,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> GetByWorkshopId(long id)
         {
             if (id < 0)
