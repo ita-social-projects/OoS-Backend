@@ -1,6 +1,12 @@
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.IdentityServer
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
 @model OutOfSchool.IdentityServer.ViewModels.RegisterViewModel
 @{
+    ViewData["Title"] = SharedLocalizer["RegistrationForExtracurricularActivities"];
     Layout = "_Layout";
 }
 <div class="registration">
@@ -48,7 +54,7 @@
 
                 <li class="registration_item">
                     <label class="registration_label" asp-for="LastName">Прізвище<span class="registration_star">*</span></label>
-                    <input class="registration_input" type="text" asp-for="LastName" id="last_name">        
+                    <input class="registration_input" type="text" asp-for="LastName" id="last_name">
                     <div>
                         <span asp-validation-for="LastName"></span>
                     </div>
@@ -62,8 +68,8 @@
                     </div>
                 </li>
                 <li class="registration_item">
-                    <label class="registration_label"  asp-for="MiddleName">По-батькові</label>
-                    <input class="registration_input" type="text"  asp-for="MiddleName" id="middle_name">
+                    <label class="registration_label" asp-for="MiddleName">По-батькові</label>
+                    <input class="registration_input" type="text" asp-for="MiddleName" id="middle_name">
                     <div>
                         <span asp-validation-for="MiddleName"></span>
                     </div>
@@ -72,14 +78,14 @@
                     <label class="registration_label" asp-for="PhoneNumber">Телефон<span class="registration_star">*</span></label>
                     <div class="registration_phone">
                         <div class="registration_phone-code">+38</div>
-                        <input class="registration_input" type="text"  asp-for="PhoneNumber" id="phone_number">
+                        <input class="registration_input" type="text" asp-for="PhoneNumber" id="phone_number">
                     </div>
                     <div>
                         <span asp-validation-for="PhoneNumber"></span>
                     </div>
                 </li>
                 <li class="registration_item">
-                    <label class="registration_label"  asp-for="Email">Емейл<span class="registration_star">*</span></label>
+                    <label class="registration_label" asp-for="Email">Емейл<span class="registration_star">*</span></label>
                     <input class="registration_input" type="email" asp-for="Email" id="user_mail">
                     <div>
                         <span asp-validation-for="Email"></span>
@@ -92,7 +98,7 @@
                         <div class="registration_privacy">
                             <img src="/icons/ic_eye.svg" alt="eye" class="registration_eye" id="password_eye">
                         </div>
-                    </div>                   
+                    </div>
                     <div>
                         <span asp-validation-for="Password"></span>
                     </div>
@@ -104,8 +110,8 @@
                 </li>
                 <li class="registration_item">
                     <div>
-                        <label class="registration_label"  asp-for="ConfirmPassword">Повторити пароль<span class="registration_star">*</span></label>
-                        <input class="registration_input registration_input-password" type="password"  asp-for="ConfirmPassword" id="repeat_password">
+                        <label class="registration_label" asp-for="ConfirmPassword">Повторити пароль<span class="registration_star">*</span></label>
+                        <input class="registration_input registration_input-password" type="password" asp-for="ConfirmPassword" id="repeat_password">
                         <div class="registration_privacy">
                             <img src="/icons/ic_eye.svg" alt="eye" class="registration_eye" id="confirm_password_eye">
                         </div>
@@ -115,10 +121,10 @@
                     </div>
                 </li>
                 <li class="registration_item registration_item-maturity">
-                    <input type="checkbox"  name="maturity">
+                    <input type="checkbox" name="maturity">
                     <label for="maturity">Мені виповнилося 18 років</label>
                     <div class="maturity" id="maturity">
-                       You must be over 18 to register!
+                        You must be over 18 to register!
                     </div>
                 </li>
                 <li class="registration_item registration_item-accept">
