@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
@@ -9,6 +10,7 @@ using OutOfSchool.WebApi.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,6 +22,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private ApplicationController controller;
         private Mock<IApplicationService> service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
+        private ClaimsPrincipal user;
+
         private IEnumerable<ApplicationDTO> applications;
 
         [SetUp]
@@ -29,11 +33,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             controller = new ApplicationController(service.Object, localizer.Object);
 
+            user = new ClaimsPrincipal(new ClaimsIdentity());
+            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
             applications = FakeApplications();
         }
 
         [Test]
-        public async Task GetApplications_WhenCalled_ReturnsOkResultObject()
+        public async Task GetApplications_WhenCalled_ShouldReturnOkResultObject()
         {
             // Arrange
             service.Setup(s => s.GetAll()).ReturnsAsync(applications);
@@ -169,6 +176,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
             Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+        }
+
+        [Test]
+        public async Task CreateApplication_WhenModelIsValid_ShouldReturnCreatedArAction()
+        {
+            // Arrange
+            service.Setup(s => s.Create(applications.First())).ReturnsAsync(applications.First());
+
+            // Act
+            var result = await controller.Create(applications.First()).ConfigureAwait(false) as CreatedAtActionResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 201);
         }
 
         [Test]
