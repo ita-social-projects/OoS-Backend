@@ -14,9 +14,9 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Add new Category to the DB.
         /// </summary>
-        /// <param name="category">CategoryDTO element.</param>
+        /// <param name="dto">CategoryDTO element.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<SubcategoryDTO> Create(SubcategoryDTO category);
+        Task<SubcategoryDTO> Create(SubcategoryDTO dto);
 
         /// <summary>
         /// Get all Category objects from DB.
@@ -41,9 +41,9 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// To Update our object in DB.
         /// </summary>
-        /// <param name="category">Category with new properties.</param>
+        /// <param name="dto">Category with new properties.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task<SubcategoryDTO> Update(SubcategoryDTO category);
+        Task<SubcategoryDTO> Update(SubcategoryDTO dto);
 
         /// <summary>
         /// To delete the object from DB.
