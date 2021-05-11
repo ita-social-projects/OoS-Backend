@@ -1,5 +1,11 @@
-﻿@model OutOfSchool.IdentityServer.ViewModels.LoginViewModel
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.IdentityServer
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@model OutOfSchool.IdentityServer.ViewModels.LoginViewModel
 @{
+    ViewData["Title"] = SharedLocalizer["EntranceToExtracurricularActivities"];
     Layout = "_Layout";
 }
  <title>Увійти/Зареєструватися</title>

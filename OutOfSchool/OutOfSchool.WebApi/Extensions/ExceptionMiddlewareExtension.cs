@@ -45,19 +45,10 @@ namespace OutOfSchool.WebApi.Extensions
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = 500;
 
-            return context.Response.WriteAsync(JsonSerializer.Serialize(new ErrorDetails()
+            return context.Response.WriteAsync(JsonSerializer.Serialize(new 
             {
                 Message = "Internal Server Error. " + exception.Message,
             }));
         }
-    }
-
-    internal class ErrorDetails
-    {
-        public ErrorDetails()
-        {
-        }
-
-        public string Message { get; set; }
-    }
+    } 
 }

@@ -94,7 +94,7 @@ namespace OutOfSchool.WebApi
             services.AddControllers();
 
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
@@ -102,7 +102,9 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IProviderService, ProviderService>();
             services.AddTransient<IParentService, ParentService>();
             services.AddTransient<IAddressService, AddressService>();
+            services.AddTransient<IUserService, UserService>();
 
+            services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();

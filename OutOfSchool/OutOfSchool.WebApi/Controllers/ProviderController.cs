@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -13,21 +12,21 @@ namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+   
     public class ProviderController : ControllerBase
     {
-        private readonly IProviderService service;
+        private readonly IProviderService providerService;    
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
         /// </summary>
-        /// <param name="service">Service for Provider model.</param>
+        /// <param name="providerService">Service for Provider model.</param>       
         /// <param name="localizer">Localizer.</param>
-        public ProviderController(IProviderService service, IStringLocalizer<SharedResource> localizer)
+        public ProviderController(IProviderService providerService, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.service = service;
+            this.providerService = providerService;
         }
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var providers = await service.GetAll().ConfigureAwait(false);
+            var providers = await providerService.GetAll().ConfigureAwait(false);
 
             if (!providers.Any())
             {
@@ -67,7 +66,30 @@ namespace OutOfSchool.WebApi.Controllers
                     localizer["The id cannot be less than 1."]);
             }
 
-            return Ok(await service.GetById(id).ConfigureAwait(false));
+            return Ok(await providerService.GetById(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get Provider by User Id.
+        /// </summary>
+        /// <param name="id">User id.</param>
+        /// <returns>Provider.</returns>
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]      
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProviderByUserId(string id)
+        {
+            try
+            {
+                return Ok(await providerService.GetByUserId(id).ConfigureAwait(false));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }                   
         }
 
         /// <summary>
@@ -75,9 +97,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = "provider,admin")]        
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
         public async Task<IActionResult> Create(ProviderDto dto)
@@ -88,10 +112,13 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             try
-            {
-                dto.UserId = User.FindFirst("sub")?.Value;
+            {              
+                dto.Id = default;
+                dto.LegalAddress.Id = default;
 
-                var provider = await service.Create(dto).ConfigureAwait(false);
+                dto.UserId = User.FindFirst("sub")?.Value;
+             
+                var provider = await providerService.Create(dto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                     nameof(GetById),
@@ -101,7 +128,7 @@ namespace OutOfSchool.WebApi.Controllers
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
-            }
+            }          
         }
 
         /// <summary>
@@ -109,8 +136,10 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
-        [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = "provider,admin")]       
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
@@ -121,7 +150,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(dto).ConfigureAwait(false));
+            return Ok(await providerService.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -129,8 +158,10 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = "provider,admin")]        
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
@@ -142,7 +173,7 @@ namespace OutOfSchool.WebApi.Controllers
                     localizer["The id cannot be less than 1."]);
             }
 
-            await service.Delete(id).ConfigureAwait(false);
+            await providerService.Delete(id).ConfigureAwait(false);
 
             return NoContent();
         }

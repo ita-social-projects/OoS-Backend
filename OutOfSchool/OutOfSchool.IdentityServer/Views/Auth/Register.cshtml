@@ -1,6 +1,12 @@
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.IdentityServer
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
 @model OutOfSchool.IdentityServer.ViewModels.RegisterViewModel
 @{
+    ViewData["Title"] = SharedLocalizer["RegistrationForExtracurricularActivities"];
     Layout = "_Layout";
 }
  <title>Увійти/Зареєструватися</title>
@@ -93,7 +99,7 @@
                         <div class="registration_privacy">
                             <img src="/icons/ic_eye.svg" alt="eye" class="registration_eye" id="password_eye">
                         </div>
-                    </div>                   
+                    </div>
                     <div>
                         <span asp-validation-for="Password"></span>
                     </div>
@@ -116,10 +122,10 @@
                     </div>
                 </li>
                 <li class="registration_item registration_item-maturity">
-                    <input type="checkbox"  name="maturity">
+                    <input type="checkbox" name="maturity">
                     <label for="maturity">Мені виповнилося 18 років</label>
                     <div class="maturity" id="maturity">
-                       You must be over 18 to register!
+                        You must be over 18 to register!
                     </div>
                 </li>
                 <li class="registration_item registration_item-accept">

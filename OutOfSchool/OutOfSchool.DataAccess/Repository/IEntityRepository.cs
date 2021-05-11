@@ -21,6 +21,13 @@ namespace OutOfSchool.Services.Repository
         Task<T> Create(T entity);
 
         /// <summary>
+        /// Runs operation in transaction.
+        /// </summary>
+        /// <param name="operation">Method that represents the operation.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<T> RunInTransaction(Func<Task<T>> operation);
+
+        /// <summary>
         /// Update information about element.
         /// </summary>
         /// <param name="entity">Entity to update.</param>

@@ -19,7 +19,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     public class ProviderControllerTests
     {
         private ProviderController controller;
-        private Mock<IProviderService> service;
+        private Mock<IProviderService> serviceProvider;
         private ClaimsPrincipal user;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
@@ -29,10 +29,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [SetUp]
         public void Setup()
         {
-            service = new Mock<IProviderService>();
+            serviceProvider = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new ProviderController(service.Object, localizer.Object);
+            controller = new ProviderController(serviceProvider.Object, localizer.Object);
             user = new ClaimsPrincipal(new ClaimsIdentity());
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProviders_WhenCalled_ReturnsOkResultObject()
         {
             // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(providers);
+            serviceProvider.Setup(x => x.GetAll()).ReturnsAsync(providers);
 
             // Act
             var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProvidersById_WhenIdIsValid_ReturnsOkObjectResult(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
+            serviceProvider.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
 
             // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void GetProvidersById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
+            serviceProvider.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -86,7 +86,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProvidersById_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
+            serviceProvider.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
 
             // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
@@ -94,20 +94,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(result.StatusCode, 200);
-        }
-
-        [Test]
-        public async Task CreateProvider_WhenModelIsValid_ReturnsCreatedAtActionResult()
-        {
-            // Arrange
-            service.Setup(x => x.Create(provider)).ReturnsAsync(provider);
-
-            // Act
-            var result = await controller.Create(provider).ConfigureAwait(false) as CreatedAtActionResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 201);
         }
 
         [Test]
@@ -131,9 +117,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var changedProvider = new ProviderDto()
             {
                 Id = 1,
-                Title = "ChangedTitle",
+                FullTitle = "ChangedTitle",
             };
-            service.Setup(x => x.Update(changedProvider)).ReturnsAsync(changedProvider);
+            serviceProvider.Setup(x => x.Update(changedProvider)).ReturnsAsync(changedProvider);
 
             // Act
             var result = await controller.Update(changedProvider).ConfigureAwait(false) as OkObjectResult;
@@ -162,7 +148,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteProvider_WhenIdIsValid_ReturnsNoContentResult(long id)
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            serviceProvider.Setup(x => x.Delete(id));
 
             // Act
             var result = await controller.Delete(id) as NoContentResult;
@@ -177,7 +163,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void DeleteProvider_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            serviceProvider.Setup(x => x.Delete(id));
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -189,7 +175,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteProvider_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            serviceProvider.Setup(x => x.Delete(id));
 
             // Act
             var result = await controller.Delete(id) as OkObjectResult;
@@ -203,30 +189,23 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             return new ProviderDto()
             {
                 Id = 6,
-                Title = "Title6",
+                FullTitle = "Title6",
                 ShortTitle = "ShortTitle6",
                 Website = "Website6",
                 Facebook = "Facebook6",
+                Email = "user6@example.com",
                 Instagram = "Instagram6",
                 Description = "Description6",
-                MFO = "193496",
-                EDRPOU = "19945998",
-                KOATUU = "0600000000",
-                INPP = "1234446690",
-                Director = "Director6",
-                DirectorPosition = "Position6",
-                AuthorityHolder = "Holder6",
-                DirectorBirthDay = new DateTime(1985, month: 10, 5),
-                DirectorPhonenumber = "1111111111",
-                ManagerialBody = "ManagerialBody6",
-                Ownership = OwnershipType.State,
-                Type = ProviderType.Social,
-                Form = "Form6",
-                Profile = ProviderProfile.Athletic,
-                Index = "Index6",
-                IsSubmitPZ1 = true,
-                AttachedDocuments = "Dcument6",
-                AddressId = 24,
+                DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                EdrpouIpn = "12345656",
+                PhoneNumber = "1111111111",
+                Founder = "Founder",
+                Ownership = OwnershipType.Private,
+                Type = ProviderType.TOV,
+                Status = false,
+                LegalAddressId = 8,
+                ActualAddressId = 34,
+                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda67a6",
             };
         }
 
@@ -237,147 +216,107 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 new ProviderDto()
                 {
                         Id = 1,
-                        Title = "Title1",
+                        FullTitle = "Title1",
                         ShortTitle = "ShortTitle1",
                         Website = "Website1",
                         Facebook = "Facebook1",
+                        Email = "user1@example.com",
                         Instagram = "Instagram1",
                         Description = "Description1",
-                        MFO = "123456",
-                        EDRPOU = "12345678",
-                        KOATUU = "0100000000",
-                        INPP = "1234567890",
-                        Director = "Director1",
-                        DirectorPosition = "Position1",
-                        AuthorityHolder = "Holder1",
                         DirectorBirthDay = new DateTime(1975, month: 10, 5),
-                        DirectorPhonenumber = "1111111111",
-                        ManagerialBody = "ManagerialBody1",
-                        Ownership = OwnershipType.Common,
-                        Type = ProviderType.FOP,
-                        Form = "Form1",
-                        Profile = ProviderProfile.Athletic,
-                        Index = "Index1",
-                        IsSubmitPZ1 = true,
-                        AttachedDocuments = "Dcument1",
-                        AddressId = 5,
+                        EdrpouIpn = "12345678",
+                        PhoneNumber = "1111111111",
+                        Founder = "Founder",
+                        Ownership = OwnershipType.Private,
+                        Type = ProviderType.TOV,
+                        Status = false,
+                        LegalAddressId = 1,
+                        ActualAddressId = 2,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
                 },
                 new ProviderDto()
                 {
                         Id = 2,
-                        Title = "Title2",
+                        FullTitle = "Title2",
                         ShortTitle = "ShortTitle2",
                         Website = "Website2",
                         Facebook = "Facebook2",
+                        Email = "user2@example.com",
                         Instagram = "Instagram2",
                         Description = "Description2",
-                        MFO = "654321",
-                        EDRPOU = "87654321",
-                        KOATUU = "0200000000",
-                        INPP = "0987654321",
-                        Director = "Director2",
-                        DirectorPosition = "Position2",
-                        AuthorityHolder = "Holder2",
-                        DirectorBirthDay = new DateTime(1982, month: 11, 23),
-                        DirectorPhonenumber = "1111111111",
-                        ManagerialBody = "ManagerialBody2",
+                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        EdrpouIpn = "12345645",
+                        PhoneNumber = "1111111111",
+                        Founder = "Founder",
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
-                        Form = "Form2",
-                        Profile = ProviderProfile.ArtisticallyAesthetic,
-                        Index = "Index2",
-                        IsSubmitPZ1 = true,
-                        AttachedDocuments = "Dcument2",
-                        AddressId = 6,
-                        UserId = "de804f35-5eb7-4b8n-bda8-70a5tyfg96a6",
+                        Status = false,
+                        LegalAddressId = 3,
+                        ActualAddressId = 4,
+                        UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
                 },
                 new ProviderDto()
                 {
                         Id = 3,
-                        Title = "Title3",
+                        FullTitle = "Title3",
                         ShortTitle = "ShortTitle3",
                         Website = "Website3",
                         Facebook = "Facebook3",
+                        Email = "user3@example.com",
                         Instagram = "Instagram3",
                         Description = "Description3",
-                        MFO = "321654",
-                        EDRPOU = "43218765",
-                        KOATUU = "0300000000",
-                        INPP = "5432109876",
-                        Director = "Director3",
-                        DirectorPosition = "Position3",
-                        AuthorityHolder = "Holder3",
-                        DirectorBirthDay = new DateTime(1978, month: 10, 13),
-                        DirectorPhonenumber = "1111111111",
-                        ManagerialBody = "ManagerialBody3",
-                        Ownership = OwnershipType.State,
-                        Type = ProviderType.EducationalInstitution,
-                        Form = "Form3",
-                        Profile = ProviderProfile.Curative,
-                        Index = "Index3",
-                        IsSubmitPZ1 = true,
-                        AttachedDocuments = "Dcument3",
-                        AddressId = 7,
-                        UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6",
+                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        EdrpouIpn = "12345000",
+                        PhoneNumber = "1111111111",
+                        Founder = "Founder",
+                        Ownership = OwnershipType.Private,
+                        Type = ProviderType.TOV,
+                        Status = false,
+                        LegalAddressId = 5,
+                        ActualAddressId = 6,
+                        UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
                 },
                 new ProviderDto()
                 {
                         Id = 4,
-                        Title = "Title4",
+                        FullTitle = "Title4",
                         ShortTitle = "ShortTitle4",
                         Website = "Website4",
                         Facebook = "Facebook4",
+                        Email = "user4@example.com",
                         Instagram = "Instagram4",
                         Description = "Description4",
-                        MFO = "165432",
-                        EDRPOU = "21874365",
-                        KOATUU = "0400000000",
-                        INPP = "5438762109",
-                        Director = "Director4",
-                        DirectorPosition = "Position4",
-                        AuthorityHolder = "Holder4",
-                        DirectorBirthDay = new DateTime(1979, month: 10, 27),
-                        DirectorPhonenumber = "1111111111",
-                        ManagerialBody = "ManagerialBody4",
-                        Ownership = OwnershipType.State,
-                        Type = ProviderType.Social,
-                        Form = "Form4",
-                        Profile = ProviderProfile.Scout,
-                        Index = "Index4",
-                        IsSubmitPZ1 = false,
-                        AttachedDocuments = "Dcument4",
-                        AddressId = 8,
-                        UserId = "de804f35-bda9-4b9n-8eb1-54a5okfg90a6",
+                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        EdrpouIpn = "10045678",
+                        PhoneNumber = "1111111111",
+                        Founder = "Founder",
+                        Ownership = OwnershipType.Private,
+                        Type = ProviderType.TOV,
+                        Status = false,
+                        LegalAddressId = 56,
+                        ActualAddressId = 23,
+                        UserId = "de909f35-5eb7-4BBa-bda8-40a5bfda96a6",
                 },
                 new ProviderDto()
                 {
                         Id = 5,
-                        Title = "Title5",
+                        FullTitle = "Title5",
                         ShortTitle = "ShortTitle5",
                         Website = "Website5",
                         Facebook = "Facebook5",
+                        Email = "user5@example.com",
                         Instagram = "Instagram5",
                         Description = "Description5",
-                        MFO = "105402",
-                        EDRPOU = "20804065",
-                        KOATUU = "0500000000",
-                        INPP = "5400700109",
-                        Director = "Director5",
-                        DirectorPosition = "Position5",
-                        AuthorityHolder = "Holder5",
-                        DirectorBirthDay = new DateTime(1985, month: 10, 21),
-                        DirectorPhonenumber = "1111111111",
-                        ManagerialBody = "ManagerialBody5",
+                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        EdrpouIpn = "12374678",
+                        PhoneNumber = "1111111111",
+                        Founder = "Founder",
                         Ownership = OwnershipType.Private,
-                        Type = ProviderType.FOP,
-                        Form = "Form5",
-                        Profile = ProviderProfile.MilitaryPatriotic,
-                        Index = "Index5",
-                        IsSubmitPZ1 = false,
-                        AttachedDocuments = "Dcument5",
-                        AddressId = 9,
-                        UserId = "de804f35-tga0-4g9n-8db1-54a5okfg80a4",
+                        Type = ProviderType.TOV,
+                        Status = false,
+                        LegalAddressId = 1,
+                        ActualAddressId = 2,
+                        UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
                 },
             };
         }
