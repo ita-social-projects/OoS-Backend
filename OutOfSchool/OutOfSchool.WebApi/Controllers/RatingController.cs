@@ -64,12 +64,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            CheckIncomingId(id);
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
@@ -89,19 +84,9 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{parentId}/{entityId}/{type}")]
         public async Task<IActionResult> GetParentRating(long parentId, long entityId, RatingType type)
         {
-            if (parentId < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(parentId),
-                    localizer["The parentId cannot be less than 1."]);
-            }
+            CheckIncomingId(parentId);
 
-            if (entityId < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(entityId),
-                    localizer["The entityId cannot be less than 1."]);
-            }
+            CheckIncomingId(entityId);
 
             var rating = await service.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
 
@@ -176,16 +161,21 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
+            CheckIncomingId(id);
+
+            await service.Delete(id).ConfigureAwait(false);
+
+            return NoContent();
+        }
+
+        private void CheckIncomingId(long id)
+        {
             if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
                     localizer["The id cannot be less than 1."]);
             }
-
-            await service.Delete(id).ConfigureAwait(false);
-
-            return NoContent();
         }
     }
 }
