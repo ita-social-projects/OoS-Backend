@@ -119,13 +119,14 @@ a {
   color: #4158d0;
 }
 
-.registration {
+.main-wrap {
   display: flex;
   justify-content: center;
   margin-top: 50px;
 }
 
 .wrapper {
+  margin: 0 auto;
   background: #ffffff;
   box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
   border-radius: 5px;
@@ -433,6 +434,9 @@ a {
     color: #ff0000;
     visibility: hidden;
 }
+.wrapper-login{
+  box-shadow:none;
+}
 
 @media screen and (max-width: 750px) {
     .registration_wrapper {
@@ -443,3 +447,4 @@ a {
     width: 95%;
   }
 }
+

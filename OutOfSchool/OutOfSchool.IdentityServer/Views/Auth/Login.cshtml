@@ -8,7 +8,8 @@
     ViewData["Title"] = SharedLocalizer["EntranceToExtracurricularActivities"];
     Layout = "_Layout";
 }
- <title>Увійти/Зареєструватися</title>
+<title>Увійти/Зареєструватися</title>
+<div class="main-wrap">
 <div class="wrapper">
     <h3 class="title">УВІЙТИ </h3>
 <div class="social">
@@ -33,7 +34,7 @@
 @*     } *@
 @* </form> *@
 
-<form class="wrapper" asp-controller="Auth" asp-action="Login" method="post">
+<form class="wrapper wrapper-login" asp-controller="Auth" asp-action="Login" method="post">
     <input type="hidden" asp-for="ReturnUrl"/>
     <div>
         <label class="label">Емейл</label>
@@ -57,4 +58,5 @@
     </a>
 </div>
 </form>
+</div>
 </div>
