@@ -23,6 +23,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Rating> ratingRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly int roundToDigits = 2;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderService"/> class.
@@ -71,17 +72,19 @@ namespace OutOfSchool.WebApi.Services
                 ? "Provider table is empty."
                 : "Successfully got all records from the Provider table.");
 
-            foreach (var provider in providers)
+            var providersDTO = providers.Select(provider => provider.ToModel()).ToList();
+
+            foreach (var provider in providersDTO)
             {
                 var providerRatings = await ratingRepository
                     .GetByFilter(rating => rating.EntityId == provider.Id && rating.Type == RatingType.Provider)
                     .ConfigureAwait(false);
 
                 var ratingsSum = (float)providerRatings.Sum(rating => rating.Rate);
-                provider.Rating = (float)Math.Round(ratingsSum / providerRatings.Count(), 2);
+                provider.Rating = (float)Math.Round(ratingsSum / providerRatings.Count(), roundToDigits);
             }
 
-            return providers.Select(provider => provider.ToModel()).ToList();
+            return providersDTO;
         }
 
         /// <inheritdoc/>
@@ -98,16 +101,18 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
+            logger.Information($"Successfully got a Provider with id = {id}.");
+
+            var providerDTO = provider.ToModel();
+
             var providerRatings = await ratingRepository
                     .GetByFilter(rating => rating.EntityId == provider.Id && rating.Type == RatingType.Provider)
                     .ConfigureAwait(false);
 
             var ratingsSum = (float)providerRatings.Sum(rating => rating.Rate);
-            provider.Rating = (float)Math.Round(ratingsSum / providerRatings.Count(), 2);
+            providerDTO.Rating = (float)Math.Round(ratingsSum / providerRatings.Count(), roundToDigits);
 
-            logger.Information($"Successfully got a Provider with id = {id}.");
-
-            return provider.ToModel();
+            return providerDTO;
         }
 
         /// <inheritdoc/>

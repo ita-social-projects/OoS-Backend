@@ -22,6 +22,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Rating> ratingRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly int roundDigits = 2;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -65,17 +66,19 @@ namespace OutOfSchool.WebApi.Services
                 ? "Workshop table is empty."
                 : "Successfully got all records from the Workshop table.");
 
-            foreach (var workshop in workshops)
+            var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
+
+            foreach (var workshop in workshopsDTO)
             {
                 var workshopRatings = await ratingRepository
                     .GetByFilter(rating => rating.EntityId == workshop.Id && rating.Type == RatingType.Workshop)
                     .ConfigureAwait(false);
 
                 var ratingsSum = (float)workshopRatings.Sum(rating => rating.Rate);
-                workshop.Rating = (float)Math.Round(ratingsSum / workshopRatings.Count(), 2);
+                workshop.Rating = (float)Math.Round(ratingsSum / workshopRatings.Count(), roundDigits);
             }
 
-            return workshops.Select(x => x.ToModel()).ToList();
+            return workshopsDTO;
         }
 
         /// <inheritdoc/>
@@ -92,16 +95,18 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
+            logger.Information($"Successfully got a Teacher with id = {id}.");
+
+            var workshopDTO = workshop.ToModel();
+
             var workshopRatings = await ratingRepository
                     .GetByFilter(rating => rating.EntityId == workshop.Id && rating.Type == RatingType.Workshop)
                     .ConfigureAwait(false);
 
             var ratingsSum = (float)workshopRatings.Sum(rating => rating.Rate);
-            workshop.Rating = (float)Math.Round(ratingsSum / workshopRatings.Count(), 2);
+            workshopDTO.Rating = (float)Math.Round(ratingsSum / workshopRatings.Count(), roundDigits);
 
-            logger.Information($"Successfully got a Teacher with id = {id}.");
-
-            return workshop.ToModel();
+            return workshopDTO;
         }
 
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
