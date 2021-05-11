@@ -108,10 +108,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting all Subcategories started.");
 
-            if (!repository.CategoryExists(id))
-            {
-                throw new ArgumentException(localizer["There is no subcategory with such id."]);
-            }
+            IdValidation(id);
 
             var categories = await this.repository.Get<int>(where: x => x.CategoryId == id).ToListAsync().ConfigureAwait(false);
 
@@ -159,6 +156,14 @@ namespace OutOfSchool.WebApi.Services
             if (repository.SameExists(dto.ToDomain()))
             {
                 throw new ArgumentException(localizer["There is already a subcategory with such a data."]);
+            }
+        }
+
+        private void IdValidation(long id)
+        {
+            if (!repository.CategoryExists(id))
+            {
+                throw new ArgumentException(localizer["There is no subcategory with such id."]);
             }
         }
     }

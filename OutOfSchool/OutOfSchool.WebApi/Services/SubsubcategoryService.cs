@@ -41,10 +41,7 @@ namespace OutOfSchool.WebApi.Services
 
             var category = dto.ToDomain();
 
-            if (repository.Get<int>(where: x => x.Title == dto.Title).Any())
-            {
-                throw new ArgumentException(localizer["There is already a subsubcategory with such a data."]);
-            }
+            ModelValidation(dto);
 
             var newCategory = await repository.Create(category).ConfigureAwait(false);
 
@@ -111,10 +108,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Process of getting all Subsubcategories started.");
 
-            if (!repository.SubcategoryExists(id))
-            {
-                throw new ArgumentException(localizer["There is no subcategory with such id."]);
-            }
+            IdValidation(id);
 
             var categories = await this.repository.Get<int>(where: x => x.SubcategoryId == id).ToListAsync().ConfigureAwait(false);
 
@@ -147,19 +141,17 @@ namespace OutOfSchool.WebApi.Services
 
         private void ModelValidation(SubsubcategoryDTO dto)
         {
-            if (dto == null)
-            {
-                throw new ArgumentException(localizer["Object cannot be null."]);
-            }
-
-            if (!repository.SubcategoryExists(dto.SubcategoryId))
-            {
-                throw new ArgumentException(localizer["There is no subcategory with such id."]);
-            }
-
-            if (repository.SameExists(dto.ToDomain()))
+            if (repository.Get<int>(where: x => x.Title == dto.Title).Any())
             {
                 throw new ArgumentException(localizer["There is already a subsubcategory with such a data."]);
+            }
+        }
+
+        private void IdValidation(long id)
+        {
+            if (!repository.SubcategoryExists(id))
+            {
+                throw new ArgumentException(localizer["There is no subcategory with such id."]);
             }
         }
     }

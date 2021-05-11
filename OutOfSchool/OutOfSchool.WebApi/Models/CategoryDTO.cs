@@ -15,7 +15,5 @@ namespace OutOfSchool.WebApi.Models
 
         [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
-
-        public virtual List<SubcategoryDTO> Subcategories { get; set; }
     }
 }

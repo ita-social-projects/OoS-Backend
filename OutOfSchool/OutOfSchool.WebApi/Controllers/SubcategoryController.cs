@@ -65,12 +65,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            IdValidation(id);
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
@@ -170,16 +165,21 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(long id)
         {
+            IdValidation(id);
+
+            await service.Delete(id).ConfigureAwait(false);
+
+            return NoContent();
+        }
+
+        private void IdValidation(long id)
+        {
             if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
                     localizer["The id cannot be less than 1."]);
             }
-
-            await service.Delete(id).ConfigureAwait(false);
-
-            return NoContent();
         }
     }
 }

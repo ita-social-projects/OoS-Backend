@@ -21,6 +21,6 @@ namespace OutOfSchool.Services.Models
         [Required]
         public long SubcategoryId { get; set; }
 
-        public Subcategory Subcategory { get; set; }
+        public virtual Subcategory Subcategory { get; set; }
     }
 }

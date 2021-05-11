@@ -21,7 +21,5 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         public long SubcategoryId { get; set; }
-
-        public virtual SubcategoryDTO Subcategory { get; set; }
     }
 }

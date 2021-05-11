@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -17,7 +18,5 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         public long CategoryId { get; set; }
-
-        public virtual CategoryDTO Category { get; set; }
     }
 }

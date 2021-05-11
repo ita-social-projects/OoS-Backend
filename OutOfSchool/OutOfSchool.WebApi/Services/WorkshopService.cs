@@ -144,7 +144,7 @@ namespace OutOfSchool.WebApi.Services
             PaginationValidation(filter);
             var predicate = PredicateBuild(filter);
 
-            bool ascending = (bool)filter.OrderByPriceAscending;
+            bool ascending = filter.OrderByPriceAscending;
             Expression<Func<Workshop, decimal>> orderBy = x => x.Price;
 
             var page = await paginationHelper.GetPage(pageNumber, size, null, predicate, orderBy, ascending).ConfigureAwait(false);

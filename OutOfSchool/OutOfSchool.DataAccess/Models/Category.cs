@@ -16,6 +16,6 @@ namespace OutOfSchool.Services.Models
         [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
 
-        public List<Subcategory> Subcategories { get; set; }
+        public virtual List<Subcategory> Subcategories { get; set; }
     }
 }

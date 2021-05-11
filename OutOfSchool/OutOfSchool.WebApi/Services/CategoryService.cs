@@ -41,10 +41,7 @@ namespace OutOfSchool.WebApi.Services
 
             var category = dto.ToDomain();
 
-            if (repository.Get<int>(where: x => x.Title == dto.Title).Any())
-            {
-                throw new ArgumentException(localizer["There is already a category with such a data."]);
-            }
+            CategoryValidation(dto);
 
             var newCategory = await repository.Create(category).ConfigureAwait(false);
 
@@ -123,6 +120,14 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.Error("Updating failed. There is no category in the Db with such an id.");
                 throw;
+            }
+        }
+
+        private void CategoryValidation(CategoryDTO dto)
+        {
+            if (repository.Get<int>(where: x => x.Title == dto.Title).Any())
+            {
+                throw new ArgumentException(localizer["There is already a category with such a data."]);
             }
         }
     }
