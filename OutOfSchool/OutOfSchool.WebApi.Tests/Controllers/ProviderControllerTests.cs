@@ -97,6 +97,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
+        public async Task CreateProvider_WhenModelIsValid_ReturnsCreatedAtActionResult()
+        {
+            // Arrange
+            serviceProvider.Setup(x => x.Create(provider)).ReturnsAsync(provider);
+
+            // Act
+            var result = await controller.Create(provider).ConfigureAwait(false) as CreatedAtActionResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 201);
+        }
+
+        [Test]
         public async Task CreateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
@@ -203,9 +217,31 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Ownership = OwnershipType.Private,
                 Type = ProviderType.TOV,
                 Status = false,
-                LegalAddressId = 8,
-                ActualAddressId = 34,
+                LegalAddressId = 11,
+                ActualAddressId = 12,
                 UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda67a6",
+                LegalAddress = new AddressDto
+                {
+                    Id = 11,
+                    Region = "Region11",
+                    District = "District11",
+                    City = "City11",
+                    Street = "Street11",
+                    BuildingNumber = "BuildingNumber11",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
+                ActualAddress = new AddressDto
+                {
+                    Id = 12,
+                    Region = "Region12",
+                    District = "District12",
+                    City = "City12",
+                    Street = "Street12",
+                    BuildingNumber = "BuildingNumber12",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
             };
         }
 
@@ -233,6 +269,28 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LegalAddressId = 1,
                         ActualAddressId = 2,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
+                        LegalAddress = new AddressDto
+                        {
+                            Id = 1,
+                            Region = "Region1",
+                            District = "District1",
+                            City = "City1",
+                            Street = "Street1",
+                            BuildingNumber = "BuildingNumber1",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new AddressDto
+                        {
+                            Id = 2,
+                            Region = "Region2",
+                            District = "District2",
+                            City = "City2",
+                            Street = "Street2",
+                            BuildingNumber = "BuildingNumber2",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                 },
                 new ProviderDto()
                 {
@@ -254,6 +312,28 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LegalAddressId = 3,
                         ActualAddressId = 4,
                         UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
+                        LegalAddress = new AddressDto
+                        {
+                            Id = 3,
+                            Region = "Region3",
+                            District = "District3",
+                            City = "City3",
+                            Street = "Street3",
+                            BuildingNumber = "BuildingNumber3",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new AddressDto
+                        {
+                            Id = 4,
+                            Region = "Region4",
+                            District = "District4",
+                            City = "City4",
+                            Street = "Street4",
+                            BuildingNumber = "BuildingNumber4",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                 },
                 new ProviderDto()
                 {
@@ -275,6 +355,28 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LegalAddressId = 5,
                         ActualAddressId = 6,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
+                        LegalAddress = new AddressDto
+                        {
+                            Id = 5,
+                            Region = "Region5",
+                            District = "District5",
+                            City = "City5",
+                            Street = "Street5",
+                            BuildingNumber = "BuildingNumber5",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new AddressDto
+                        {
+                            Id = 6,
+                            Region = "Region6",
+                            District = "District6",
+                            City = "City6",
+                            Street = "Street6",
+                            BuildingNumber = "BuildingNumber6",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                 },
                 new ProviderDto()
                 {
@@ -293,9 +395,31 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 56,
-                        ActualAddressId = 23,
+                        LegalAddressId = 7,
+                        ActualAddressId = 8,
                         UserId = "de909f35-5eb7-4BBa-bda8-40a5bfda96a6",
+                        LegalAddress = new AddressDto
+                        {
+                            Id = 7,
+                            Region = "Region7",
+                            District = "District7",
+                            City = "City7",
+                            Street = "Street7",
+                            BuildingNumber = "BuildingNumber7",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new AddressDto
+                        {
+                            Id = 8,
+                            Region = "Region8",
+                            District = "District8",
+                            City = "City8",
+                            Street = "Street8",
+                            BuildingNumber = "BuildingNumber8",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                 },
                 new ProviderDto()
                 {
@@ -314,9 +438,31 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 1,
-                        ActualAddressId = 2,
+                        LegalAddressId = 9,
+                        ActualAddressId = 10,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
+                        LegalAddress = new AddressDto
+                        {
+                            Id = 9,
+                            Region = "Region9",
+                            District = "District9",
+                            City = "City9",
+                            Street = "Street9",
+                            BuildingNumber = "BuildingNumber9",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new AddressDto
+                        {
+                            Id = 10,
+                            Region = "Region10",
+                            District = "District10",
+                            City = "City10",
+                            Street = "Street10",
+                            BuildingNumber = "BuildingNumber10",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                 },
             };
         }
