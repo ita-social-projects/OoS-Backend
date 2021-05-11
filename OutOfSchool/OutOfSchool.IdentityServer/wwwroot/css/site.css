@@ -433,10 +433,18 @@ a {
     color: #ff0000;
     visibility: hidden;
 }
+
 .wrapper-login{
   box-shadow:none;
 }
 
+.login-input{
+  width: 60%;
+  margin-bottom: 16px;
+}
+.login-submit{
+  margin-bottom: 16px
+}
 @media screen and (max-width: 750px) {
     .registration_wrapper {
     width: 100%;
