@@ -80,8 +80,6 @@ namespace OutOfSchool.Services.Models
         [Required]
         public long AddressId { get; set; }
 
-        public float Rating { get; set; }
-
         public virtual Provider Provider { get; set; }
 
         public virtual Address Address { get; set; }
