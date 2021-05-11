@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -28,6 +29,15 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <returns>Rating entity.</returns>
         Task<RatingDTO> GetById(long id);
+
+        /// <summary>
+        /// Get parent rating for the specified entity.
+        /// </summary>
+        /// <param name="parentId">Parent key.</param>
+        /// <param name="entityId">Entity key.</param>
+        /// <param name="type">Entity type.</param>
+        /// <returns>Parent rating for the specified entity.</returns>
+        Task<RatingDTO> GetParentRating(long parentId, long entityId, RatingType type);
 
         /// <summary>
         /// Update rating entity.

@@ -80,6 +80,22 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<RatingDTO> GetParentRating(long parentId, long entityId, RatingType type)
+        {
+            logger.Information("Process of getting Rating started.");
+
+            var rating = await ratingRepository
+                .GetByFilter(r => r.ParentId == parentId
+                               && r.EntityId == entityId
+                               && r.Type == type)
+                .ConfigureAwait(false);
+
+            logger.Information($"Successfully got a Rating");
+
+            return rating.FirstOrDefault().ToModel();
+        }
+
+        /// <inheritdoc/>
         public async Task<RatingDTO> Create(RatingDTO dto)
         {
             logger.Information("Rating creating was started.");

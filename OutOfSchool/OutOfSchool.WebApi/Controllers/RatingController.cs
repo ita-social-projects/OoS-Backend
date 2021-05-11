@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -71,6 +72,45 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get parent rating for the specified entity.
+        /// </summary>
+        /// <param name="parentId">Id of Parent.</param>
+        /// <param name="entityId">Id of Entity.</param>
+        /// <param name="type">Entity type.</param>
+        /// <returns>Parent rating for the specified entity.</returns>
+        [Authorize(Roles = "parent,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{parentId}/{entityId}/{type}")]
+        public async Task<IActionResult> GetParentRating(long parentId, long entityId, RatingType type)
+        {
+            if (parentId < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(parentId),
+                    localizer["The parentId cannot be less than 1."]);
+            }
+
+            if (entityId < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(entityId),
+                    localizer["The entityId cannot be less than 1."]);
+            }
+
+            var rating = await service.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
+
+            if (rating == null)
+            {
+                return NoContent();
+            }
+
+            return Ok(rating);
         }
 
         /// <summary>
