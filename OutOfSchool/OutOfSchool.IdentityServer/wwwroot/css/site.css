@@ -125,7 +125,7 @@ a {
   margin-top: 50px;
 }
 
-.registration_wrapper {
+.wrapper {
   background: #ffffff;
   box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
   border-radius: 5px;
@@ -136,33 +136,33 @@ a {
   flex-direction: column;
   width: 640px;
 }
-.registration_title {
+.title {
   line-height: 20px;
   text-align: center;
   color: #444444;
   margin: 0;
 }
-.registration_subtitle {
+.subtitle {
   line-height: 18px;
   text-align: center;
   color: #aaaaaa;
   margin: 16px 0 0 0;
 }
-.registration_social {
+.social {
   margin-top: 24px;
 }
-.registration_button {
+.button {
   border: none;
   outline: none;
   background: inherit;
   margin: 0 0.3rem;
   cursor: pointer;
 }
-.registration__button{
+.submit_button{
   color: white;
   background-color: blue;
 }
-.registration_option {
+.option {
   font-size: 0.8125rem;
   line-height: 18px;
   text-align: center;
@@ -170,7 +170,7 @@ a {
   position: relative;
   margin-top: 24px;
 }
-.registration_option:after {
+.option:after {
   content: "";
   display: block;
   position: absolute;
@@ -181,7 +181,7 @@ a {
   top: 50%;
   transform: translate(-120%, -50%);
 }
-.registration_option:before {
+.option:before {
   content: "";
   display: block;
   position: absolute;
@@ -192,15 +192,15 @@ a {
   top: 50%;
   transform: translate(120%, -50%);
 }
-.registration_form {
+.form {
   margin-top: 24px;
   width: 80%;
 }
-.registration_star {
+.star {
   color: red;
   display: inline;
 }
-.registration_list {
+.list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -249,7 +249,7 @@ a {
 .registration_item-password {
   margin-bottom: 8px;
 }
-.registration_link {
+.link {
   color: #3849f9;
   font-weight: bold;
   text-decoration: underline;
@@ -322,7 +322,7 @@ a {
   width: 13px;
   height: 17px;
 }
-.registration_input {
+.input {
   box-sizing: border-box;
   border: 1px solid #e3e3e3;
   border-radius: 20px;
