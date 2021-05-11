@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            if (id < 0)
+            if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
@@ -110,7 +110,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByWorkshopId(long id)
         {
-            if (id < 0)
+            if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
@@ -193,7 +193,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            if (id < 0)
+            if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
