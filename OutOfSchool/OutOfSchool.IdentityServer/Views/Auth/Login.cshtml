@@ -36,16 +36,22 @@
 
 <form class="wrapper wrapper-login" asp-controller="Auth" asp-action="Login" method="post">
     <input type="hidden" asp-for="ReturnUrl"/>
-    <div>
-        <label class="label">Емейл</label>
-        <input class="input" asp-for="Username"/>
-        <span asp-validation-for="Username"></span>
-    </div>
-    <div>
-        <label class="label">Пароль</label>
-        <input class="input input-password" asp-for="Password"/>
-        <span asp-validation-for="Password"></span>
-    </div>
+     <ul class="list">
+        <li class="item">
+            <div>
+            <label class="label">Емейл</label>
+            <input class="input" asp-for="Username"/>
+            <span asp-validation-for="Username"></span>
+            </div>
+         </li>
+         <li>
+            <div>
+            <label class="label">Пароль</label>
+            <input class="input input-password" asp-for="Password"/>
+            <span asp-validation-for="Password"></span>
+            </div>
+        </li>
+     </ul>
     <div asp-validation-summary="ModelOnly"></div>
     <div>
        <input class="submit" type="submit" value="УВІЙТИ">
