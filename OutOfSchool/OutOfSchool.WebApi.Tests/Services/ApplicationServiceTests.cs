@@ -1,21 +1,20 @@
-﻿using Microsoft.Extensions.Localization;
+﻿using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
+using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Serilog;
-using System.Threading.Tasks;
 using System.Linq;
-using OutOfSchool.Services;
-using Microsoft.EntityFrameworkCore;
-using OutOfSchool.WebApi.Extensions;
 using System.Linq.Expressions;
-using FluentAssertions;
-using OutOfSchool.Services.Enums;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {

@@ -1,8 +1,6 @@
 ﻿using OutOfSchool.Services.Enums;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace OutOfSchool.Services.Models
 {
@@ -19,7 +17,7 @@ namespace OutOfSchool.Services.Models
         public long ChildId { get; set; }
 
         public string UserId { get; set; }
-        
+
         public virtual Workshop Workshop { get; set; }
 
         public virtual Child Child { get; set; }

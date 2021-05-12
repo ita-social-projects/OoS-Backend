@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Services;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using OutOfSchool.WebApi.Models;
-using Microsoft.AspNetCore.Authorization;
 
 namespace OutOfSchool.WebApi.Controllers
 {

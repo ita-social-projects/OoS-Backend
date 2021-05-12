@@ -1,15 +1,15 @@
-﻿using OutOfSchool.Services.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Serilog;
-using Microsoft.Extensions.Localization;
-using OutOfSchool.WebApi.Extensions;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Services
 {
