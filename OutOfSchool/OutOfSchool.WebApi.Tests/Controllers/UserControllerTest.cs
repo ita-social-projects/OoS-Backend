@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(200, result.StatusCode);
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(200, result.StatusCode);
         }
 
         [Test]

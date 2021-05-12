@@ -107,7 +107,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 201);
+            Assert.AreEqual(201, result.StatusCode);
         }
 
         [Test]
