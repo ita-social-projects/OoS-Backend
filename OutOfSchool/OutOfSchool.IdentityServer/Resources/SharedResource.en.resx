@@ -117,10 +117,79 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="EntranceToExtracurricularActivities" xml:space="preserve">
-    <value>Entrance to extracurricular activities</value>
+  <data name="Already registered?" xml:space="preserve">
+    <value>Already registered?</value>
   </data>
-  <data name="RegistrationForExtracurricularActivities" xml:space="preserve">
-    <value>Registration for extracurricular activities</value>
+  <data name="and consent to the processing of personal data" xml:space="preserve">
+    <value>and consent to the processing of personal data</value>
+  </data>
+  <data name="By registering I agree with" xml:space="preserve">
+    <value>By registering I agree with</value>
+  </data>
+  <data name="Confirm password" xml:space="preserve">
+    <value>Confirm password</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Entrance to Extracurricular activities" xml:space="preserve">
+    <value>Entrance to Extracurricular activities</value>
+  </data>
+  <data name="First name" xml:space="preserve">
+    <value>First name</value>
+  </data>
+  <data name="I am 18 years old" xml:space="preserve">
+    <value>I am 18 years old</value>
+  </data>
+  <data name="Last name" xml:space="preserve">
+    <value>Last name</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Middle name" xml:space="preserve">
+    <value>Middle name</value>
+  </data>
+  <data name="or fill out the form" xml:space="preserve">
+    <value>or fill out the form</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Register</value>
+  </data>
+  <data name="Register as" xml:space="preserve">
+    <value>Register as</value>
+  </data>
+  <data name="Registration for Extracurricular activities" xml:space="preserve">
+    <value>Registration for Extracurricular activities</value>
+  </data>
+  <data name="Service provider" xml:space="preserve">
+    <value>Service provider</value>
+  </data>
+  <data name="Sign In" xml:space="preserve">
+    <value>Sign In</value>
+  </data>
+  <data name="Sign In With" xml:space="preserve">
+    <value>Sign In With</value>
+  </data>
+  <data name="Terms of use" xml:space="preserve">
+    <value>Terms of use</value>
+  </data>
+  <data name="The password must be at least 6 characters long" xml:space="preserve">
+    <value>The password must be at least 6 characters long</value>
+  </data>
+  <data name="To be able to apply to clubs or become a service provider" xml:space="preserve">
+    <value>To be able to apply to clubs or become a service provider</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="You must be over 18 to register!" xml:space="preserve">
+    <value>You must be over 18 to register!</value>
   </data>
 </root>
