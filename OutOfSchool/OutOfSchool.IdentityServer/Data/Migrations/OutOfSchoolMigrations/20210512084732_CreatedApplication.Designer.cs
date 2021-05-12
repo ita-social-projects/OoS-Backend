@@ -10,7 +10,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210510173147_CreatedApplication")]
+    [Migration("20210512084732_CreatedApplication")]
     partial class CreatedApplication
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
