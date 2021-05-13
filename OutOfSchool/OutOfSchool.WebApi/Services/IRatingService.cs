@@ -40,6 +40,14 @@ namespace OutOfSchool.WebApi.Services
         Task<RatingDTO> GetParentRating(long parentId, long entityId, RatingType type);
 
         /// <summary>
+        /// Get average entity rating.
+        /// </summary>
+        /// <param name="entityId">Entity key.</param>
+        /// <param name="type">Entity type.</param>
+        /// <returns>Average rating of entity.</returns>
+        Task<float> GetAverageRating(long entityId, RatingType type);
+
+        /// <summary>
         /// Update rating entity.
         /// </summary>
         /// <param name="dto">Rating entity to update.</param>

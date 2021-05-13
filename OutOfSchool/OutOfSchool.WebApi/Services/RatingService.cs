@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -23,6 +22,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IProviderRepository providerRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly int roundToDigits = 2;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RatingService"/> class.
@@ -96,6 +96,17 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<float> GetAverageRating(long entityId, RatingType type)
+        {
+            var ratings = await ratingRepository
+                    .GetByFilter(rating => rating.EntityId == entityId && rating.Type == type)
+                    .ConfigureAwait(false);
+
+            var ratingsSum = (float)ratings.Sum(rating => rating.Rate);
+            return (float)Math.Round(ratingsSum / ratings.Count(), roundToDigits);
+        }
+
+        /// <inheritdoc/>
         public async Task<RatingDTO> Create(RatingDTO dto)
         {
             logger.Information("Rating creating was started.");
@@ -121,27 +132,19 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Rating updating was launched.");
 
-            try
+            if (await CheckRatingUpdate(dto).ConfigureAwait(false))
             {
-                if (await CheckRatingUpdate(dto).ConfigureAwait(false))
-                {
-                    var rating = await ratingRepository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var rating = await ratingRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                    logger.Information("Rate successfully updated.");
+                logger.Information("Rate successfully updated.");
 
-                    return rating.ToModel();
-                }
-                else
-                {
-                    logger.Information("Rating doesn't exist or couldn't change EntityId, Parent and Type.");
-
-                    return null;
-                }
+                return rating.ToModel();
             }
-            catch (DbUpdateConcurrencyException)
+            else
             {
-                logger.Error("Updating failed. There is no Rating in the Db with such id.");
-                throw;
+                logger.Information("Rating doesn't exist or couldn't change EntityId, Parent and Type.");
+
+                return null;
             }
         }
 
@@ -150,26 +153,18 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Rating deleting was launched.");
 
-            try
+            var rating = await ratingRepository.GetById(id).ConfigureAwait(false);
+
+            if (rating == null)
             {
-                var rating = await ratingRepository.GetById(id).ConfigureAwait(false);
-
-                if (rating == null)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(id),
-                        localizer[$"Record with such Id={ id } don't exist in the system"]);
-                }
-
-                await ratingRepository.Delete(rating).ConfigureAwait(false);
-
-                logger.Information("Rating successfully deleted.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(id),
+                    localizer[$"Record with such Id={ id } don't exist in the system"]);
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                logger.Error("Deleting failed. There is no Rating in the Db with such an id.");
-                throw;
-            }
+
+            await ratingRepository.Delete(rating).ConfigureAwait(false);
+
+            logger.Information("Rating successfully deleted.");
         }
 
         /// <summary>
