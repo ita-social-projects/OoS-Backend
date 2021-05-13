@@ -20,27 +20,26 @@ namespace OutOfSchool.WebApi.Services
     public class ProviderService : IProviderService
     {
         private readonly IProviderRepository providerRepository;
-        private readonly IEntityRepository<Rating> ratingRepository;
+        private readonly IRatingService ratingService;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
-        private readonly int roundToDigits = 2;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderService"/> class.
         /// </summary>
         /// <param name="providerRepository">Provider repository.</param>
-        /// <param name="ratingRepository">Rating repository.</param>
+        /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         public ProviderService(
             IProviderRepository providerRepository,
-            IEntityRepository<Rating> ratingRepository, 
+            IRatingService ratingService, 
             ILogger logger, 
             IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.providerRepository = providerRepository;
-            this.ratingRepository = ratingRepository;
+            this.ratingService = ratingService;
             this.logger = logger;
         }
 
@@ -76,12 +75,7 @@ namespace OutOfSchool.WebApi.Services
 
             foreach (var provider in providersDTO)
             {
-                var providerRatings = await ratingRepository
-                    .GetByFilter(rating => rating.EntityId == provider.Id && rating.Type == RatingType.Provider)
-                    .ConfigureAwait(false);
-
-                var ratingsSum = (float)providerRatings.Sum(rating => rating.Rate);
-                provider.Rating = (float)Math.Round(ratingsSum / providerRatings.Count(), roundToDigits);
+                provider.Rating = await ratingService.GetAverageRating(provider.Id, RatingType.Provider).ConfigureAwait(false);
             }
 
             return providersDTO;
@@ -105,12 +99,7 @@ namespace OutOfSchool.WebApi.Services
 
             var providerDTO = provider.ToModel();
 
-            var providerRatings = await ratingRepository
-                    .GetByFilter(rating => rating.EntityId == provider.Id && rating.Type == RatingType.Provider)
-                    .ConfigureAwait(false);
-
-            var ratingsSum = (float)providerRatings.Sum(rating => rating.Rate);
-            providerDTO.Rating = (float)Math.Round(ratingsSum / providerRatings.Count(), roundToDigits);
+            providerDTO.Rating = await ratingService.GetAverageRating(providerDTO.Id, RatingType.Provider).ConfigureAwait(false);
 
             return providerDTO;
         }

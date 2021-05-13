@@ -19,27 +19,26 @@ namespace OutOfSchool.WebApi.Services
     public class WorkshopService : IWorkshopService
     {
         private readonly IEntityRepository<Workshop> repository;
-        private readonly IEntityRepository<Rating> ratingRepository;
+        private readonly IRatingService ratingService;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
-        private readonly int roundDigits = 2;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
         /// <param name="repository">Repository for Workshop entity.</param>
-        /// <param name="ratingRepository">Rating repository.</param>
+        /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         public WorkshopService(
-            IEntityRepository<Workshop> repository, 
-            IEntityRepository<Rating> ratingRepository,
+            IEntityRepository<Workshop> repository,
+            IRatingService ratingService,
             ILogger logger, 
             IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
-            this.ratingRepository = ratingRepository;
+            this.ratingService = ratingService;
             this.logger = logger;
         }
 
@@ -70,12 +69,7 @@ namespace OutOfSchool.WebApi.Services
 
             foreach (var workshop in workshopsDTO)
             {
-                var workshopRatings = await ratingRepository
-                    .GetByFilter(rating => rating.EntityId == workshop.Id && rating.Type == RatingType.Workshop)
-                    .ConfigureAwait(false);
-
-                var ratingsSum = (float)workshopRatings.Sum(rating => rating.Rate);
-                workshop.Rating = (float)Math.Round(ratingsSum / workshopRatings.Count(), roundDigits);
+                workshop.Rating = await ratingService.GetAverageRating(workshop.Id, RatingType.Workshop).ConfigureAwait(false);
             }
 
             return workshopsDTO;
@@ -99,12 +93,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopDTO = workshop.ToModel();
 
-            var workshopRatings = await ratingRepository
-                    .GetByFilter(rating => rating.EntityId == workshop.Id && rating.Type == RatingType.Workshop)
-                    .ConfigureAwait(false);
-
-            var ratingsSum = (float)workshopRatings.Sum(rating => rating.Rate);
-            workshopDTO.Rating = (float)Math.Round(ratingsSum / workshopRatings.Count(), roundDigits);
+            workshopDTO.Rating = await ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop).ConfigureAwait(false);
 
             return workshopDTO;
         }
