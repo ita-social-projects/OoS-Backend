@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Assert.AreEqual(expected[i].Id, actual[i].Id);
                 Assert.AreEqual(expected[i].FirstName, actual[i].FirstName);
                 Assert.AreEqual(expected[i].LastName, actual[i].LastName);
-                Assert.AreEqual(expected[i].Patronymic, actual[i].Patronymic);
+                Assert.AreEqual(expected[i].MiddleName, actual[i].MiddleName);
             }
         }
 
@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             IChildService childService = new ChildService(mockRepository.Object, logger.Object, localizer.Object);
 
-            ChildDTO child = new ChildDTO { Id = 20, FirstName = "fn3", LastName = "ln3", Patronymic = "mn3", DateOfBirth = new DateTime(DateTime.Now.Year + 1, 3, 20), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
+            ChildDTO child = new ChildDTO { Id = 20, FirstName = "fn3", LastName = "ln3", MiddleName = "mn3", DateOfBirth = new DateTime(DateTime.Now.Year + 1, 3, 20), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Create(child));
         }
@@ -91,13 +91,13 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.AreEqual(expected.Id, actual.Id);
             Assert.AreEqual(expected.FirstName, actual.FirstName);
             Assert.AreEqual(expected.LastName, actual.LastName);
-            Assert.AreEqual(expected.Patronymic, actual.Patronymic);
+            Assert.AreEqual(expected.MiddleName, actual.MiddleName);
         }
 
         [Test]
         public void ChildService_Update_ReturnsUpdatedChild()
         {
-            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "ln1", MiddleName = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             Child childUpdated = new Child { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             mockRepository.Setup(m => m.Update(It.IsAny<Child>())).Returns(Task.FromResult(childUpdated));
             IChildService childService = new ChildService(mockRepository.Object, logger.Object, localizer.Object);
@@ -119,7 +119,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public void ChildService_Update_ThrowsArgumentExceptionWrongDateOfBirth()
         {
-            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2023, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "ln1", MiddleName = "mn11", DateOfBirth = new DateTime(2023, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             IChildService childService = new ChildService(mockRepository.Object, logger.Object, localizer.Object);
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
@@ -155,7 +155,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public void ChildService_Delete_DeletesChild()
         {
-            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn1", LastName = "ln1", Patronymic = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn1", LastName = "ln1", MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             mockRepository.Setup(m => m.Delete(It.IsAny<Child>()));
             mockRepository.Setup(m => m.GetById(It.IsAny<long>())).Returns(Task.FromResult(GetTestChildEntities().First()));
 
