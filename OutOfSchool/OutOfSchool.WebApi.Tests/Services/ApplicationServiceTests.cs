@@ -12,6 +12,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
 using Serilog;
@@ -26,24 +27,15 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
         private OutOfSchoolDbContext context;
-        private DbContextOptions<OutOfSchoolDbContext> options;
 
         [SetUp]
         public void SetUp()
         {
-            var builder =
-                new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
-                    databaseName: "OutOfSchoolTest");
-
-            options = builder.Options;
-
-            context = new OutOfSchoolDbContext(options);
+            context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             repository = new EntityRepository<Application>(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger>();
             service = new ApplicationService(repository, logger.Object, localizer.Object);
-
-            SeedData();
         }
 
         [Test]
@@ -203,38 +195,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(
                 async () => await service.Delete(id).ConfigureAwait(false));
-        }
-
-        private void SeedData()
-        {
-            using var context = new OutOfSchoolDbContext(options);
-            {
-                context.Database.EnsureDeleted();
-                context.Database.EnsureCreated();
-
-                var applications = new List<Application>()
-                {
-                    new Application()
-                    {
-                        Id = 1,
-                        ChildId = 1,
-                        Status = ApplicationStatus.Pending,
-                        WorkshopId = 1,
-                        UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
-                    },
-                    new Application()
-                    {
-                        Id = 3,
-                        ChildId = 1,
-                        Status = ApplicationStatus.Pending,
-                        WorkshopId = 1,
-                        UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
-                    },
-                };
-
-                context.Applications.AddRangeAsync(applications);
-                context.SaveChangesAsync();
-            }
         }
     }
 }
