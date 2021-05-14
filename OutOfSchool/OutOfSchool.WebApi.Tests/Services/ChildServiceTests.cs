@@ -1,4 +1,8 @@
-﻿using Serilog;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
@@ -6,11 +10,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Localization;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -19,6 +19,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<ILogger> logger;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<IEntityRepository<Child>> mockRepository;
+        private Child createdChild = new Child { Id = 14, FirstName = "fn4", LastName = "ln4", Patronymic = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
+        private ChildDTO createdChildDTO = new ChildDTO { Id = 14, FirstName = "fn4", LastName = "ln4", Patronymic = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
         [SetUp]
         public void SetUp()
@@ -49,12 +51,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public void ChildService__Create_AddsModel()
         {
-            mockRepository.Setup(m => m.Create(It.IsAny<Child>())).Returns(Task.FromResult(CreatedChild));
+            mockRepository.Setup(m => m.Create(It.IsAny<Child>())).Returns(Task.FromResult(createdChild));
             IChildService childService = new ChildService(mockRepository.Object, logger.Object, localizer.Object);
 
-            childService.Create(CreatedChildDTO);
+            childService.Create(createdChildDTO);
 
-            mockRepository.Verify(x => x.Create(It.Is<Child>(c => c.Id == CreatedChild.Id && c.FirstName == CreatedChild.FirstName && c.LastName == CreatedChild.LastName && c.Patronymic == CreatedChild.Patronymic)), Times.Once);
+            mockRepository.Verify(x => x.Create(It.Is<Child>(c => c.Id == createdChild.Id && c.FirstName == createdChild.FirstName && c.LastName == createdChild.LastName && c.Patronymic == createdChild.Patronymic)), Times.Once);
         }
 
         [Test]
@@ -126,7 +128,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public void ChildService_Update_ThrowsArgumentExceptionEmptyFirstname()
         {
-            ChildDTO child = new ChildDTO { Id = 1, FirstName = "", LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = string.Empty, LastName = "ln1", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             IChildService childService = new ChildService(mockRepository.Object, logger.Object, localizer.Object);
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
@@ -135,7 +137,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public void ChildService_Update_ThrowsArgumentExceptionEmptyLastname()
         {
-            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "", Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = string.Empty, Patronymic = "mn11", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             IChildService childService = new ChildService(mockRepository.Object, logger.Object, localizer.Object);
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
@@ -144,7 +146,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public void ChildService_Update_ThrowsArgumentExceptionEmptyPatronymic()
         {
-            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = "", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
+            ChildDTO child = new ChildDTO { Id = 1, FirstName = "fn11", LastName = "ln1", Patronymic = string.Empty, DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 };
             IChildService childService = new ChildService(mockRepository.Object, logger.Object, localizer.Object);
 
             Assert.ThrowsAsync<ArgumentException>(() => childService.Update(child));
@@ -168,22 +170,19 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             return new List<ChildDTO>()
             {
-                new ChildDTO {Id = 1, FirstName = "fn1", LastName = "ln1", Patronymic = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 },
-                new ChildDTO { Id = 2, FirstName = "fn2", LastName = "ln2", Patronymic = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1},
-                new ChildDTO {Id = 3, FirstName = "fn3", LastName = "ln3", Patronymic = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 },
+                new ChildDTO { Id = 1, FirstName = "fn1", LastName = "ln1", Patronymic = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 },
+                new ChildDTO { Id = 2, FirstName = "fn2", LastName = "ln2", Patronymic = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1 },
+                new ChildDTO { Id = 3, FirstName = "fn3", LastName = "ln3", Patronymic = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 },
             };
         }
-
-        private Child CreatedChild = new Child {Id = 14, FirstName = "fn4", LastName = "ln4", Patronymic = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
-        private ChildDTO CreatedChildDTO = new ChildDTO {Id = 14, FirstName = "fn4", LastName = "ln4", Patronymic = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
         private IEnumerable<Child> GetTestChildEntities()
         {
             return new List<Child>()
             {
-                new Child {Id = 1, FirstName = "fn1", LastName = "ln1", Patronymic = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 },
-                new Child {Id = 2, FirstName = "fn2", LastName = "ln2", Patronymic = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1},
-                new Child {Id = 3, FirstName = "fn3", LastName = "ln3", Patronymic = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 },
+                new Child { Id = 1, FirstName = "fn1", LastName = "ln1", Patronymic = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 },
+                new Child { Id = 2, FirstName = "fn2", LastName = "ln2", Patronymic = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1 },
+                new Child { Id = 3, FirstName = "fn3", LastName = "ln3", Patronymic = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 },
             };
         }
     }
