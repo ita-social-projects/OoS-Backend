@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Controllers
 {
@@ -63,12 +63,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            ValidateId(id);
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
@@ -109,12 +104,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByWorkshopId(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            ValidateId(id);
 
             try
             {
@@ -137,7 +127,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(ApplicationDTO applicationDto)
+        public async Task<IActionResult> Create(ApplicationDto applicationDto)
         {
             if (!ModelState.IsValid)
             {
@@ -172,7 +162,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(ApplicationDTO applicationDto)
+        public async Task<IActionResult> Update(ApplicationDto applicationDto)
         {
             if (!ModelState.IsValid)
             {
@@ -192,16 +182,21 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
+            ValidateId(id);
+
+            await service.Delete(id).ConfigureAwait(false);
+
+            return NoContent();
+        }
+
+        private void ValidateId(long id)
+        {
             if (id < 1)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
                     localizer["The id cannot be less than 1."]);
             }
-
-            await service.Delete(id).ConfigureAwait(false);
-
-            return NoContent();
         }
     }
 }

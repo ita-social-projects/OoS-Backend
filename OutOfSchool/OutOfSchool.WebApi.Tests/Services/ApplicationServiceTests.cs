@@ -1,4 +1,9 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -10,11 +15,6 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -167,6 +167,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             result.Should().BeEquivalentTo(expected.ToModel());
         }
 
+        [Test]
         public void UpdateApplication_WhenIdIsNotValid_ShouldThrowDbUpdateConcurrencyException()
         {
             // Arrange

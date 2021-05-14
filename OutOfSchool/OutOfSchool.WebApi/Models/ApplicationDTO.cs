@@ -1,13 +1,10 @@
-﻿using OutOfSchool.Services.Enums;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class ApplicationDTO
+    public class ApplicationDto
     {
         public long Id { get; set; }
 

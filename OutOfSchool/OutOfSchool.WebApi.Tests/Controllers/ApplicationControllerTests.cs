@@ -1,4 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -7,11 +12,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
@@ -23,7 +23,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private ClaimsPrincipal user;
 
-        private IEnumerable<ApplicationDTO> applications;
+        private IEnumerable<ApplicationDto> applications;
 
         [SetUp]
         public void Setup()
@@ -49,21 +49,21 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(200, result.StatusCode);
         }
 
         [Test]
         public async Task GetApplications_WhenCollectionIsEmpty_ShouldReturnNoContent()
         {
             // Arrange
-            service.Setup(s => s.GetAll()).ReturnsAsync(new List<ApplicationDTO>());
+            service.Setup(s => s.GetAll()).ReturnsAsync(new List<ApplicationDto>());
 
             // Act
             var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 204);
+            Assert.AreEqual(204, result.StatusCode);
         }
 
         [Test]
@@ -78,7 +78,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(200, result.StatusCode);
         }
 
         [Test]
@@ -103,7 +103,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(200, result.StatusCode);
             Assert.That(result.Value, Is.Null);
         }
 
@@ -119,7 +119,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(200, result.StatusCode);
         }
 
         [Test]
@@ -134,7 +134,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.AreEqual(400, (result as BadRequestObjectResult).StatusCode);
         }
 
         [Test]
@@ -149,7 +149,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(200, result.StatusCode);
         }
 
         [Test]
@@ -174,7 +174,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.AreEqual(400, (result as BadRequestObjectResult).StatusCode);
         }
 
         [Test]
@@ -188,7 +188,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 201);
+            Assert.AreEqual(201, result.StatusCode);
         }
 
         [Test]
@@ -202,7 +202,21 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.AreEqual(400, (result as BadRequestObjectResult).StatusCode);
+        }
+
+        [Test]
+        public async Task CreateApplication_WhenParametersAreNotValid_ShouldReturnBadRequest()
+        {
+            // Arrange
+            service.Setup(s => s.Create(applications.First())).ThrowsAsync(new ArgumentException());
+
+            // Act
+            var result = await controller.Create(applications.First()).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+            Assert.AreEqual(400, (result as BadRequestObjectResult).StatusCode);
         }
 
         [Test]
@@ -217,7 +231,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(200, result.StatusCode);
         }
 
         [Test]
@@ -231,7 +245,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.AreEqual(400, (result as BadRequestObjectResult).StatusCode);
         }
 
         [Test]
@@ -246,7 +260,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 204);
+            Assert.AreEqual(204, result.StatusCode);
         }
 
         [Test]
@@ -273,11 +287,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.That(result, Is.Null);
         }
 
-        private IEnumerable<ApplicationDTO> FakeApplications()
+        private IEnumerable<ApplicationDto> FakeApplications()
         {
-            return new List<ApplicationDTO>()
+            return new List<ApplicationDto>()
             {
-                new ApplicationDTO()
+                new ApplicationDto()
                 {
                     Id = 1,
                     ChildId = 1,
@@ -285,7 +299,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
                     WorkshopId = 1,
                 },
-                new ApplicationDTO()
+                new ApplicationDto()
                 {
                     Id = 2,
                     ChildId = 1,

@@ -1,15 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -36,11 +36,11 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ApplicationDTO> Create(ApplicationDTO applicationDTO)
+        public async Task<ApplicationDto> Create(ApplicationDto applicationDto)
         {
             logger.Information("Application creating was started.");
 
-            var application = applicationDTO.ToDomain();
+            var application = applicationDto.ToDomain();
 
             var newApplication = await repository.Create(application).ConfigureAwait(false);
 
@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDTO>> GetAll()
+        public async Task<IEnumerable<ApplicationDto>> GetAll()
         {
             logger.Information("Process of getting all Applications started.");
 
@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDTO>> GetAllByUser(string id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByUser(string id)
         {
             logger.Information("Process of getting Application by User Id started.");
 
@@ -103,7 +103,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDTO>> GetAllByWorkshop(long id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id)
         {
             logger.Information("Process of getting Application by Workshop Id started.");
 
@@ -122,7 +122,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ApplicationDTO> GetById(long id)
+        public async Task<ApplicationDto> GetById(long id)
         {
             logger.Information("Process of getting Application by id started.");
 
@@ -141,13 +141,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ApplicationDTO> Update(ApplicationDTO dto)
+        public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
         {
             logger.Information("Application updating was launched.");
 
             try
             {
-                var application = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var application = await repository.Update(applicationDto.ToDomain()).ConfigureAwait(false);
 
                 logger.Information("Application successfully updated.");
 
