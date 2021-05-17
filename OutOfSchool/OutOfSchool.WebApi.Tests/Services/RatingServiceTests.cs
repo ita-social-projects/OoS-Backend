@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private IRatingService service;
         private OutOfSchoolDbContext context;
-        private IEntityRepository<Rating> ratingRepository;
+        private IRatingRepository ratingRepository;
         private IEntityRepository<Workshop> workshopRepository;
         private IProviderRepository providerRepository;
         private Mock<IStringLocalizer<SharedResource>> localizer;
@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
-            ratingRepository = new EntityRepository<Rating>(context);
+            ratingRepository = new RatingRepository(context);
             workshopRepository = new EntityRepository<Workshop>(context);
             providerRepository = new ProviderRepository(context);
             logger = new Mock<ILogger>();
@@ -83,6 +83,119 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 async () => await service.GetById(id).ConfigureAwait(false));
+        }
+
+        [Test]
+        [TestCase(1, 1, RatingType.Provider)]
+        [TestCase(3, 1, RatingType.Workshop)]
+        public async Task GetParentRating_WhenRatingExist_ReturnsCorrectRating(long parentId, long entityId, RatingType type)
+        {
+            // Arrange
+            var ratings = await ratingRepository
+                                    .GetByFilter(r => r.ParentId == parentId
+                                                   && r.EntityId == entityId
+                                                   && r.Type == type)
+                                    .ConfigureAwait(false);
+            var expected = ratings.FirstOrDefault().Rate;
+
+            // Act
+            var result = await service.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(expected, result.Rate);
+        }
+
+        [Test]
+        [TestCase(10, 10, RatingType.Provider)]
+        public async Task GetParentRating_WhenRatingNotExist_ReturnsNull(long parentId, long entityId, RatingType type)
+        {
+            // Act
+            var result = await service.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        [TestCase(1, RatingType.Provider)]
+        public void GetAverageRating_WhenExistRatingForEntityId_ReturnsAverageRating(long entityId, RatingType type)
+        {
+            // Arrange
+            var expected = (float)Math.Round(ratingRepository.GetAverageRating(entityId, type), 2);
+
+            // Act
+            var result = service.GetAverageRating(entityId, type);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        [TestCase(100, RatingType.Provider)]
+        public void GetAverageRating_WhenEntityNotExist_ReturnsZero(long entityId, RatingType type)
+        {
+            // Arrange
+            var expected = default(float);
+
+            // Act
+            var result = service.GetAverageRating(entityId, type);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        [TestCase(3, RatingType.Provider)]
+        public void GetAverageRating_WhenNotExistRatingForEntityId_ReturnsZero(long entityId, RatingType type)
+        {
+            // Arrange
+            var expected = default(float);
+
+            // Act
+            var result = service.GetAverageRating(entityId, type);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        [TestCase(new[] { 1L, 2L, 3L }, RatingType.Provider)]
+        public void GetAverageRatingForRange_WhenCalled_ReturnsTheSameNumberOfElements(IEnumerable<long> entities, RatingType type)
+        {
+            // Arrange
+            var expected = ratingRepository.GetAverageRatingForEntities(entities, type);
+
+            // Act
+            var result = service.GetAverageRatingForRange(entities, type);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(expected.Count, result.Count);
+        }
+
+        [Test]
+        [TestCase(new[] { 1L, 2L, 3L }, RatingType.Provider)]
+        public void GetAverageRatingForRange_WhenCalled_ReturnsAverageRatingIfExistElseZero(IEnumerable<long> entities, RatingType type)
+        {
+            // Arrange
+            var averageEntities = ratingRepository.GetAverageRatingForEntities(entities, type);
+            var expected = new Dictionary<long, float>(averageEntities.Count);
+
+            foreach (var entity in averageEntities)
+            {
+                expected.Add(entity.Key, (float)Math.Round(entity.Value, 2));
+            }
+
+            // Act
+            var result = service.GetAverageRatingForRange(entities, type);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            CollectionAssert.AreEqual(expected, result);
         }
 
         [Test]
@@ -302,6 +415,27 @@ namespace OutOfSchool.WebApi.Tests.Services
                         LegalAddressId = 3,
                         ActualAddressId = 4,
                         UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
+                    },
+                    new Provider()
+                    {
+                        Id = 3,
+                        FullTitle = "Title3",
+                        ShortTitle = "ShortTitle3",
+                        Website = "Website3",
+                        Facebook = "Facebook3",
+                        Email = "user3@example.com",
+                        Instagram = "Instagram3",
+                        Description = "Description3",
+                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        EdrpouIpn = "12345000",
+                        PhoneNumber = "1111111111",
+                        Founder = "Founder",
+                        Ownership = OwnershipType.Private,
+                        Type = ProviderType.TOV,
+                        Status = false,
+                        LegalAddressId = 5,
+                        ActualAddressId = 6,
+                        UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
                     },
                 };
 
