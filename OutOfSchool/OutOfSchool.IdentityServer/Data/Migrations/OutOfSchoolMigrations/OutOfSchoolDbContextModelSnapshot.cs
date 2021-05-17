@@ -496,6 +496,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Role")
+                       .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("LastLogin")
                         .HasColumnType("datetime2");
 
