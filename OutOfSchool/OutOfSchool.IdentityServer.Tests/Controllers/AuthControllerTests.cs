@@ -197,6 +197,22 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
                     It.IsAny<User>(), It.IsAny<bool>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
+            DefaultHttpContext httpContext = new DefaultHttpContext();
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Host = new HostString("localhost");
+            var formCol = new FormCollection(new Dictionary<string, StringValues>
+            {
+                  { "Provider", "Some value" },
+            });
+
+            httpContext.Request.ContentType = "application/x-www-form-urlencoded";
+            httpContext.Request.Form = formCol;
+
+            authController.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
             // Act
             var result = await authController.Register(viewModel);
             var errorMessageFromController = authController.ModelState.Values.FirstOrDefault()
