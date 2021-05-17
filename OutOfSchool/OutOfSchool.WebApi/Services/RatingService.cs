@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class RatingService : IRatingService
     {
-        private readonly IEntityRepository<Rating> ratingRepository;
+        private readonly IRatingRepository ratingRepository;
         private readonly IEntityRepository<Workshop> workshopRepository;
         private readonly IProviderRepository providerRepository;
         private readonly ILogger logger;
@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         public RatingService(
-            IEntityRepository<Rating> ratingRepository,
+            IRatingRepository ratingRepository,
             IEntityRepository<Workshop> workshopRepository,
             IProviderRepository providerRepository,
             ILogger logger,
@@ -96,14 +96,24 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<float> GetAverageRating(long entityId, RatingType type)
+        public float GetAverageRating(long entityId, RatingType type)
         {
-            var ratings = await ratingRepository
-                    .GetByFilter(rating => rating.EntityId == entityId && rating.Type == type)
-                    .ConfigureAwait(false);
+            return (float)Math.Round(ratingRepository.GetAverageRating(entityId, type), roundToDigits);
+        }
 
-            var ratingsSum = (float)ratings.Sum(rating => rating.Rate);
-            return (float)Math.Round(ratingsSum / ratings.Count(), roundToDigits);
+        /// <inheritdoc/>
+        public Dictionary<long, float> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type)
+        {
+            var entitiesRating = ratingRepository.GetAverageRatingForEntities(entities, type);
+
+            var formattedEntities = new Dictionary<long, float>(entitiesRating.Count);
+
+            foreach (var entity in entitiesRating)
+            {
+                formattedEntities.Add(entity.Key, (float)Math.Round(entity.Value, roundToDigits));
+            }
+
+            return formattedEntities;
         }
 
         /// <inheritdoc/>

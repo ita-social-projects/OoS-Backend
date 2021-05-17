@@ -45,7 +45,15 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityId">Entity key.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>Average rating of entity.</returns>
-        Task<float> GetAverageRating(long entityId, RatingType type);
+        float GetAverageRating(long entityId, RatingType type);
+
+        /// <summary>
+        /// Get average rating for entities range.
+        /// </summary>
+        /// <param name="entities">Entities keys.</param>
+        /// <param name="type">Entity type.</param>
+        /// <returns>Average rating of entities range.</returns>
+        Dictionary<long, float> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type);
 
         /// <summary>
         /// Update rating entity.
