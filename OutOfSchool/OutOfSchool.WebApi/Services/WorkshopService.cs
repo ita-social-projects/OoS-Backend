@@ -67,9 +67,14 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
 
-            foreach (var workshop in workshopsDTO)
+            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTO.Select(p => p.Id), RatingType.Workshop);
+
+            if (averageRatings != null)
             {
-                workshop.Rating = await ratingService.GetAverageRating(workshop.Id, RatingType.Workshop).ConfigureAwait(false);
+                foreach (var workshop in workshopsDTO)
+                {
+                    workshop.Rating = averageRatings.FirstOrDefault(r => r.Key == workshop.Id).Value;
+                }
             }
 
             return workshopsDTO;
@@ -93,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopDTO = workshop.ToModel();
 
-            workshopDTO.Rating = await ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop).ConfigureAwait(false);
+            workshopDTO.Rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
 
             return workshopDTO;
         }

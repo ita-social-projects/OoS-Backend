@@ -73,9 +73,14 @@ namespace OutOfSchool.WebApi.Services
 
             var providersDTO = providers.Select(provider => provider.ToModel()).ToList();
 
-            foreach (var provider in providersDTO)
+            var averageRatings = ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
+
+            if (averageRatings != null)
             {
-                provider.Rating = await ratingService.GetAverageRating(provider.Id, RatingType.Provider).ConfigureAwait(false);
+                foreach (var provider in providersDTO)
+                {
+                    provider.Rating = averageRatings.FirstOrDefault(r => r.Key == provider.Id).Value;
+                }
             }
 
             return providersDTO;
@@ -99,7 +104,7 @@ namespace OutOfSchool.WebApi.Services
 
             var providerDTO = provider.ToModel();
 
-            providerDTO.Rating = await ratingService.GetAverageRating(providerDTO.Id, RatingType.Provider).ConfigureAwait(false);
+            providerDTO.Rating = ratingService.GetAverageRating(providerDTO.Id, RatingType.Provider);
 
             return providerDTO;
         }
