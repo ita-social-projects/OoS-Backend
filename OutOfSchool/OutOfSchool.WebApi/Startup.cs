@@ -111,9 +111,9 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Workshop>, EntityRepository<Workshop>>();
             services.AddTransient<IEntityRepository<Parent>, EntityRepository<Parent>>();
-            services.AddTransient<IEntityRepository<Rating>, EntityRepository<Rating>>();
 
             services.AddTransient<IProviderRepository, ProviderRepository>();
+            services.AddTransient<IRatingRepository, RatingRepository>();
 
             services.AddSingleton(Log.Logger);
 
