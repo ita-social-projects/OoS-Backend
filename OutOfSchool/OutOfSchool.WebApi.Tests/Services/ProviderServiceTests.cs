@@ -263,7 +263,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         [Order(9)]
         [TestCase(10)]
-        public void Delete_WhenIdIsInvalid_ThrowsDbUpdateConcurrencyException(long id)
+        public void Delete_WhenIdIsInvalid_ThrowsArgumentNullException(long id)
         {
             // Act and Assert
             Assert.ThrowsAsync<ArgumentNullException>(
