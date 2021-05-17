@@ -136,6 +136,20 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return View(model);
             }
 
+            if (Request.Form["Provider"].Count == 1)
+            {
+                model.Role = "provider";
+            }
+            else
+            if (Request.Form["Parent"].Count == 1)
+            {
+                model.Role = "parent";
+            }
+            else
+            {
+                return View(model);
+            }
+
             var user = new User()
             {
                UserName = model.Email,
@@ -145,22 +159,16 @@ namespace OutOfSchool.IdentityServer.Controllers
                Email = model.Email,
                PhoneNumber = model.PhoneNumber,
                CreatingTime = DateTime.Now,
+               Role = model.Role,
             };
 
             var result = await userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
                 IdentityResult roleAssignResult = IdentityResult.Failed();
-                if (Request.Form["Provider"].Count == 1)
-                {
-                    roleAssignResult = await userManager.AddToRoleAsync(user, "provider");
-                }
-                else
-                if (Request.Form["Parent"].Count == 1)
-                {
-                    roleAssignResult = await userManager.AddToRoleAsync(user, "parent");
-                }
 
+                roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
+              
                 if (roleAssignResult.Succeeded)
                 {
                     await signInManager.SignInAsync(user, false);
@@ -169,6 +177,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 }
 
                 var deletionResult = await userManager.DeleteAsync(user);
+
                 if (!deletionResult.Succeeded)
                 {
                     logger.Log(LogLevel.Warning, "User was created without role");
