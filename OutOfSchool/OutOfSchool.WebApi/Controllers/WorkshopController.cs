@@ -152,13 +152,8 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPagesCount(WorkshopFilter filter, int pageSize)
         {
-            if (pageSize < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(pageSize),
-                    localizer["The pageSize cannot be less than 1."]);
-            }
-
+            PageSizeValidation(pageSize);
+            
             int count = await service.GetPagesCount(filter, pageSize).ConfigureAwait(false);
 
             if (count == 0)
@@ -182,12 +177,8 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPage(WorkshopFilter filter, int pageNumber, int pageSize)
         {
-            if ((pageSize < 1) || (pageNumber < 1))
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(pageSize),
-                    localizer["The pageSize or pageNumber cannot be less than 1."]);
-            }
+            PageSizeValidation(pageSize);
+            PageNumberValidation(pageNumber);
 
             var workshops = await service.GetPage(filter, pageSize, pageNumber).ConfigureAwait(false);
 
@@ -197,6 +188,26 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             return Ok(workshops);
+        }
+
+        private void PageSizeValidation(int pageSize)
+        {
+            if (pageSize < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(pageSize),
+                    localizer["The pageSize cannot be less than 1."]);
+            }
+        }
+
+        private void PageNumberValidation(int pageNumber)
+        {
+            if (pageNumber < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(pageNumber),
+                    localizer["The pageSize cannot be less than 1."]);
+            }
         }
     }
 }
