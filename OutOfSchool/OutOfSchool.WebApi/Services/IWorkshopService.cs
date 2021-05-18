@@ -49,5 +49,22 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Workshop's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(long id);
+
+        /// <summary>
+        /// Get count of pages of filtered workshop records.
+        /// </summary>
+        /// <param name="filter">Workshop filter.</param>
+        /// <param name="size">Count of records on one page.</param>
+        /// <returns>COunt of pages.</returns>
+        Task<int> GetPagesCount(WorkshopFilter filter, int size);
+
+        /// <summary>
+        /// Get page of filtered workshop records.
+        /// </summary>
+        /// <param name="filter">Workshop filter.</param>
+        /// <param name="size">Count of records on one page.</param>
+        /// <param name="pageNumber">Number of page.</param>
+        /// <returns>The list of workshops for this page.</returns>
+        Task<List<WorkshopDTO>> GetPage(WorkshopFilter filter, int size, int pageNumber);
     }
 }

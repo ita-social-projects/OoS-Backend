@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -6,8 +7,13 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        public string Title { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Title is required")]
+        [DataType(DataType.Text)]
+        [MaxLength(60)]
+        [MinLength(1)]
+        public string Title { get; set; }
 
-        public virtual List<SubcategoryDTO> Subcategories { get; }
+        [MaxLength(500)]
+        public string Description { get; set; } = string.Empty;
     }
 }

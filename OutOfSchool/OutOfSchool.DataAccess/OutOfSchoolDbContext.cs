@@ -23,6 +23,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Subcategory> Subcategories { get; set; }
 
+        public DbSet<Subsubcategory> Subsubcategories { get; set; }
+
         public DbSet<Category> Categories { get; set; }
         
         public DbSet<SocialGroup> SocialGroups { get; set; }

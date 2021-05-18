@@ -54,9 +54,5 @@
     </AdditionalFiles>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Util\" />
-  </ItemGroup>
-
 
 </Project>
