@@ -13,7 +13,7 @@ using Serilog;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Service with business logic for SubcategoryController.
+    /// SubcategoryService.
     /// </summary>
     public class SubcategoryService : ISubcategoryService
     {
