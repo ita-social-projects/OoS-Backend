@@ -166,7 +166,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!string.IsNullOrEmpty(filter.SearchFieldText))
             {
-                predicate = predicate.And(x => x.Title.Contains(filter.SearchFieldText));
+                predicate = predicate.And(x => x.Title.Contains(filter.SearchFieldText, StringComparison.CurrentCulture));
             }
 
             if (filter.Age != 0)
