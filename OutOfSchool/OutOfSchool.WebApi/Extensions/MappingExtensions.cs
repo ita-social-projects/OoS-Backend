@@ -24,7 +24,15 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static WorkshopDTO ToModel(this Workshop workshop)
         {
-            return Mapper<Workshop, WorkshopDTO>(workshop, cfg => { cfg.CreateMap<Workshop, WorkshopDTO>(); });
+            return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
+            {
+                cfg.CreateMap<Workshop, WorkshopDTO>();
+                cfg.CreateMap<Address, AddressDto>();
+                cfg.CreateMap<Provider, ProviderDto>();
+                cfg.CreateMap<Category, CategoryDTO>();
+                cfg.CreateMap<Subcategory, SubcategoryDTO>();
+                cfg.CreateMap<Subsubcategory, SubsubcategoryDTO>();
+            });
         }
 
         public static TeacherDTO ToModel(this Teacher teacher)
@@ -69,6 +77,16 @@ namespace OutOfSchool.WebApi.Extensions
             return parentDto;
         }
 
+        public static SubcategoryDTO ToModel(this Subcategory category)
+        {
+            return Mapper<Subcategory, SubcategoryDTO>(category, cfg => { cfg.CreateMap<Subcategory, SubcategoryDTO>(); });
+        }
+
+        public static SubsubcategoryDTO ToModel(this Subsubcategory category)
+        {
+            return Mapper<Subsubcategory, SubsubcategoryDTO>(category, cfg => { cfg.CreateMap<Subsubcategory, SubsubcategoryDTO>(); });
+        }
+
         #endregion
 
         #region ToDomain
@@ -87,12 +105,12 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
             {
+                cfg.CreateMap<WorkshopDTO, Workshop>();
+                cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
-
-                cfg.CreateMap<WorkshopDTO, Workshop>()
-                    .ForMember(dest => dest.Address, opt => opt.Ignore())
-                    .ForMember(dest => dest.Teachers, opt => opt.Ignore())
-                    .ForMember(dest => dest.Category, opt => opt.Ignore());
+                cfg.CreateMap<CategoryDTO, Category>();
+                cfg.CreateMap<SubcategoryDTO, Subcategory>();
+                cfg.CreateMap<SubsubcategoryDTO, Subsubcategory>();
             });
         }
 
@@ -141,6 +159,16 @@ namespace OutOfSchool.WebApi.Extensions
             var parent =
                 Mapper<ParentDTO, Parent>(parentDto, cfg => { cfg.CreateMap<ParentDTO, Parent>(); });
             return parent;
+        }
+
+        public static Subcategory ToDomain(this SubcategoryDTO categoryDto)
+        {
+            return Mapper<SubcategoryDTO, Subcategory>(categoryDto, cfg => { cfg.CreateMap<SubcategoryDTO, Subcategory>(); });
+        }
+
+        public static Subsubcategory ToDomain(this SubsubcategoryDTO categoryDto)
+        {
+            return Mapper<SubsubcategoryDTO, Subsubcategory>(categoryDto, cfg => { cfg.CreateMap<SubsubcategoryDTO, Subsubcategory>(); });
         }
 
         #endregion
