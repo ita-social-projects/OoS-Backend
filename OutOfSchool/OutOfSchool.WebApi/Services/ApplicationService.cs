@@ -40,6 +40,8 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Application creating was started.");
 
+            ModelCreationValidation(applicationDto);
+
             var application = applicationDto.ToDomain();
 
             var newApplication = await repository.Create(application).ConfigureAwait(false);
@@ -145,6 +147,8 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Application updating was launched.");
 
+            ModelNullValidation(applicationDto);
+
             try
             {
                 var application = await repository.Update(applicationDto.ToDomain()).ConfigureAwait(false);
@@ -157,6 +161,29 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.Error("Updating failed.There is no application in the Db with such an id.");
                 throw;
+            }
+        }
+
+        private void ModelNullValidation(ApplicationDto applicationDto)
+        {
+            if (applicationDto is null)
+            {
+                logger.Information("Operation failed. ApplicationDto was null");
+                throw new ArgumentException(localizer["Application dto wa null."], nameof(applicationDto));
+            }
+        }
+
+        private void ModelCreationValidation(ApplicationDto applicationDto)
+        {
+            ModelNullValidation(applicationDto);
+
+            Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
+                                                              && a.WorkshopId == applicationDto.WorkshopId
+                                                              && a.UserId == applicationDto.UserId;
+            if (repository.Get<int>(where: filter).Any())
+            {
+                logger.Information("Creation failed. Application with such data alredy exists.");
+                throw new ArgumentException(localizer["There is already an application with such a data."]);
             }
         }
     }
