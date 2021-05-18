@@ -95,6 +95,32 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        public void CreateApplication_WhenModelIsNull_ShouldThrowArgumentException()
+        {
+            // Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Create(null).ConfigureAwait(false));
+        }
+
+        [Test]
+        public void CreateApplication_WhenModelAlreadyExists_ShouldThrowArgumentException()
+        {
+            // Arrange
+            var expected = new Application()
+            {
+                Id = 4,
+                ChildId = 1,
+                Status = ApplicationStatus.Pending,
+                WorkshopId = 1,
+                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
+            };
+
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Create(expected.ToModel()).ConfigureAwait(false));
+        }
+
+        [Test]
         [TestCase(1)]
         public async Task GetAllByWokshop_WhenIdIsValid_ShouldReturnApplications(long id)
         {
@@ -171,6 +197,14 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act and Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(
                 async () => await service.Update(changedApplication.ToModel()).ConfigureAwait(false));
+        }
+
+        [Test]
+        public void UpdateApplication_WhenModelIsNull_ShouldThrowArgumentException()
+        {
+            // Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Update(null).ConfigureAwait(false));
         }
 
         [Test]
