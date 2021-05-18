@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -72,21 +73,33 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get parent rating for the specified entity.
         /// </summary>
+        /// <param name="entityType">Entity type (provider or workshop).</param>
         /// <param name="parentId">Id of Parent.</param>
         /// <param name="entityId">Id of Entity.</param>
-        /// <param name="type">Entity type.</param>
         /// <returns>Parent rating for the specified entity.</returns>
         [Authorize(Roles = "parent,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{parentId}/{entityId}/{type}")]
-        public async Task<IActionResult> GetParentRating(long parentId, long entityId, RatingType type)
+        [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}/parent/{parentId}")]
+        public async Task<IActionResult> GetParentRating(string entityType, long parentId, long entityId)
         {
             CheckIncomingId(parentId);
 
             CheckIncomingId(entityId);
+
+            RatingType type = default;
+
+            switch (entityType.ToLower(CultureInfo.CurrentCulture))
+            {
+                case "provider":
+                    type = RatingType.Provider;
+                    break;
+                case "workshop":
+                    type = RatingType.Workshop;
+                    break;
+            }
 
             var rating = await service.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
 
