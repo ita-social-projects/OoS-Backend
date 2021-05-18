@@ -15,20 +15,20 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Rating entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<RatingDTO> Create(RatingDTO dto);
+        Task<RatingDto> Create(RatingDto dto);
 
         /// <summary>
         /// Get all rating entities.
         /// </summary>
         /// <returns>List of all rating records.</returns>
-        Task<IEnumerable<RatingDTO>> GetAll();
+        Task<IEnumerable<RatingDto>> GetAll();
 
         /// <summary>
         /// Get rating entity by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Rating entity.</returns>
-        Task<RatingDTO> GetById(long id);
+        Task<RatingDto> GetById(long id);
 
         /// <summary>
         /// Get parent rating for the specified entity.
@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityId">Entity key.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>Parent rating for the specified entity.</returns>
-        Task<RatingDTO> GetParentRating(long parentId, long entityId, RatingType type);
+        Task<RatingDto> GetParentRating(long parentId, long entityId, RatingType type);
 
         /// <summary>
         /// Get average entity rating.
@@ -60,7 +60,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Rating entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<RatingDTO> Update(RatingDTO dto);
+        Task<RatingDto> Update(RatingDto dto);
 
         /// <summary>
         ///  Delete rating entity.

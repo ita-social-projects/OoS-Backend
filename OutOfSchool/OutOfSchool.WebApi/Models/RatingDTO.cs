@@ -3,7 +3,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class RatingDTO
+    public class RatingDto
     {
         public long Id { get; set; }
 

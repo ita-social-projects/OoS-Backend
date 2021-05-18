@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<RatingDTO>> GetAll()
+        public async Task<IEnumerable<RatingDto>> GetAll()
         {
             logger.Information("Process of getting all Rating started.");
 
@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<RatingDTO> GetById(long id)
+        public async Task<RatingDto> GetById(long id)
         {
             logger.Information("Process of getting Rating by id started.");
 
@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<RatingDTO> GetParentRating(long parentId, long entityId, RatingType type)
+        public async Task<RatingDto> GetParentRating(long parentId, long entityId, RatingType type)
         {
             logger.Information("Process of getting Rating started.");
 
@@ -117,7 +117,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<RatingDTO> Create(RatingDTO dto)
+        public async Task<RatingDto> Create(RatingDto dto)
         {
             logger.Information("Rating creating was started.");
 
@@ -138,7 +138,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<RatingDTO> Update(RatingDTO dto)
+        public async Task<RatingDto> Update(RatingDto dto)
         {
             logger.Information("Rating updating was launched.");
 
@@ -178,10 +178,10 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <summary>
-        /// Checks that RatingDTO is not null.
+        /// Checks that RatingDto is not null.
         /// </summary>
-        /// <param name="dto">Rating DTO.</param>
-        private void CheckDTO(RatingDTO dto)
+        /// <param name="dto">Rating Dto.</param>
+        private void CheckDto(RatingDto dto)
         {
             if (dto == null)
             {
@@ -193,11 +193,11 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Checks if Rating with such parameters could be created.
         /// </summary>
-        /// <param name="dto">Rating DTO.</param>
+        /// <param name="dto">Rating Dto.</param>
         /// <returns>True if Rating with such parameters could be added to the system and false otherwise.</returns>
-        private async Task<bool> CheckRatingCreation(RatingDTO dto)
+        private async Task<bool> CheckRatingCreation(RatingDto dto)
         {
-            CheckDTO(dto);
+            CheckDto(dto);
 
             if (await RatingExist(dto).ConfigureAwait(false))
             {
@@ -220,11 +220,11 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Checks if Rating with such parameters could be updated.
         /// </summary>
-        /// <param name="dto">Rating DTO.</param>
+        /// <param name="dto">Rating Dto.</param>
         /// <returns>True if Rating with such parameters could be updated and false otherwise.</returns>
-        private async Task<bool> CheckRatingUpdate(RatingDTO dto)
+        private async Task<bool> CheckRatingUpdate(RatingDto dto)
         {
-            CheckDTO(dto);
+            CheckDto(dto);
 
             if (!await EntityExist(dto.EntityId, dto.Type).ConfigureAwait(false))
             {
@@ -247,9 +247,9 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Checks if Rating with such parameters already exists in the system.
         /// </summary>
-        /// <param name="dto">Rating DTO.</param>
+        /// <param name="dto">Rating Dto.</param>
         /// <returns>True if Rating with such parameters already exists in the system and false otherwise.</returns>
-        private async Task<bool> RatingExist(RatingDTO dto)
+        private async Task<bool> RatingExist(RatingDto dto)
         {
             var rating = await ratingRepository
                 .GetByFilter(r => r.EntityId == dto.EntityId
@@ -263,9 +263,9 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Checks if Rating with such parameters already exists in the system.
         /// </summary>
-        /// <param name="dto">Rating DTO.</param>
+        /// <param name="dto">Rating Dto.</param>
         /// <returns>True if Rating with such parameters already exists in the system and false otherwise.</returns>
-        private bool RatingExistWithId(RatingDTO dto)
+        private bool RatingExistWithId(RatingDto dto)
         {
             var result = ratingRepository
                     .GetByFilterNoTracking(r => r.EntityId == dto.EntityId

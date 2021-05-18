@@ -20,8 +20,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IRatingService> service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
-        private IEnumerable<RatingDTO> ratings;
-        private RatingDTO rating;
+        private IEnumerable<RatingDto> ratings;
+        private RatingDto rating;
 
         [SetUp]
         public void Setup()
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetRatings_WhenEmptyCollection_ReturnsNoContentResult()
         {
             // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(new List<RatingDTO>());
+            service.Setup(x => x.GetAll()).ReturnsAsync(new List<RatingDto>());
 
             // Act
             var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
@@ -244,9 +244,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.That(result, Is.Null);
         }
 
-        private RatingDTO FakeRating()
+        private RatingDto FakeRating()
         {
-            return new RatingDTO()
+            return new RatingDto()
             {
                 Id = 1,
                 Rate = 5,
@@ -256,11 +256,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<RatingDTO> FakeRatings()
+        private IEnumerable<RatingDto> FakeRatings()
         {
-            return new List<RatingDTO>()
+            return new List<RatingDto>()
             {
-                new RatingDTO()
+                new RatingDto()
                 {
                 Id = 1,
                 Rate = 5,
@@ -268,7 +268,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 EntityId = 1,
                 Type = RatingType.Provider,
                 },
-                new RatingDTO()
+                new RatingDto()
                 {
                 Id = 2,
                 Rate = 4,
@@ -276,7 +276,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 EntityId = 2,
                 Type = RatingType.Provider,
                 },
-                new RatingDTO()
+                new RatingDto()
                 {
                 Id = 3,
                 Rate = 3,
@@ -284,7 +284,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 EntityId = 3,
                 Type = RatingType.Provider,
                 },
-                new RatingDTO()
+                new RatingDto()
                 {
                 Id = 4,
                 Rate = 2,

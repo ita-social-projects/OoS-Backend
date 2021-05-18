@@ -122,7 +122,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(RatingDTO dto)
+        public async Task<IActionResult> Create(RatingDto dto)
         {
             var rating = await service.Create(dto).ConfigureAwait(false);
 
@@ -149,7 +149,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(RatingDTO dto)
+        public async Task<IActionResult> Update(RatingDto dto)
         {
             var rating = await service.Update(dto).ConfigureAwait(false);
 

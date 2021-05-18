@@ -69,9 +69,9 @@ namespace OutOfSchool.WebApi.Extensions
             return parentDto;
         }
 
-        public static RatingDTO ToModel(this Rating rating)
+        public static RatingDto ToModel(this Rating rating)
         {
-            return Mapper<Rating, RatingDTO>(rating, cfg => { cfg.CreateMap<Rating, RatingDTO>(); });
+            return Mapper<Rating, RatingDto>(rating, cfg => { cfg.CreateMap<Rating, RatingDto>(); });
         }
 
         #endregion
@@ -148,9 +148,9 @@ namespace OutOfSchool.WebApi.Extensions
             return parent;
         }
 
-        public static Rating ToDomain(this RatingDTO ratingDto)
+        public static Rating ToDomain(this RatingDto ratingDto)
         {
-            return Mapper<RatingDTO, Rating>(ratingDto, cfg => { cfg.CreateMap<RatingDTO, Rating>(); });
+            return Mapper<RatingDto, Rating>(ratingDto, cfg => { cfg.CreateMap<RatingDto, Rating>(); });
         }
 
         #endregion
