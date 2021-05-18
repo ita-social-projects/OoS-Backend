@@ -110,18 +110,17 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(1, 1, 1)]
-        [TestCase(3, 1, 2)]
-        public async Task GetParentRating_WhenDataIsValid_ReturnOkResultObject(long parentId, long entityId, RatingType type)
+        [TestCase("provider", 1, 1)]
+        public async Task GetParentRating_WhenDataIsValid_ReturnOkResultObject(string entityType, long parentId, long entityId)
         {
             // Arrange
-            service.Setup(x => x.GetParentRating(parentId, entityId, type))
+            service.Setup(x => x.GetParentRating(parentId, entityId, RatingType.Provider))
                 .ReturnsAsync(ratings.SingleOrDefault(x => x.ParentId == parentId
                                                         && x.EntityId == entityId
-                                                        && x.Type == type));
+                                                        && x.Type == RatingType.Provider));
 
             // Act
-            var result = await controller.GetParentRating(parentId, entityId, type).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetParentRating(entityType, parentId, entityId).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -129,19 +128,18 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(10, 10, 1)]
-        [TestCase(5, 1, 2)]
-        [TestCase(2, 2, 2)]
-        public async Task GetParentRating_WhenDataIsNotValid_ReturnsNoContentResult(long parentId, long entityId, RatingType type)
+        [TestCase("provider", 10, 10)]
+        [TestCase("provider", 4, 2)]
+        public async Task GetParentRating_WhenDataIsNotValid_ReturnsNoContentResult(string entityType, long parentId, long entityId)
         {
             // Arrange
-            service.Setup(x => x.GetParentRating(parentId, entityId, type))
+            service.Setup(x => x.GetParentRating(parentId, entityId, RatingType.Provider))
                 .ReturnsAsync(ratings.SingleOrDefault(x => x.ParentId == parentId
                                                         && x.EntityId == entityId
-                                                        && x.Type == type));
+                                                        && x.Type == RatingType.Provider));
 
             // Act
-            var result = await controller.GetParentRating(parentId, entityId, type).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetParentRating(entityType, parentId, entityId).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
