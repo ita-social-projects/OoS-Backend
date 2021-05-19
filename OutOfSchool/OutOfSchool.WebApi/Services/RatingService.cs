@@ -49,13 +49,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<RatingDto>> GetAll()
         {
-            logger.Information("Process of getting all Rating started.");
+            logger.Information("Getting all Ratings started.");
 
             var ratings = await ratingRepository.GetAll().ConfigureAwait(false);
 
             logger.Information(!ratings.Any()
                 ? "Rating table is empty."
-                : "Successfully got all records from the Rating table.");
+                : $"All {ratings.Count()} records were successfully received from the Rating table");
 
             return ratings.Select(r => r.ToModel()).ToList();
         }
@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<RatingDto> GetById(long id)
         {
-            logger.Information("Process of getting Rating by id started.");
+            logger.Information($"Getting Rating by Id started. Looking Id = {id}.");
 
             var rating = await ratingRepository.GetById(id).ConfigureAwait(false);
 
@@ -71,10 +71,10 @@ namespace OutOfSchool.WebApi.Services
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
-                    localizer[$"Record with such Id={ id } don't exist in the system"]);
+                    localizer[$"Record with such Id = {id} don't exist in the system"]);
             }
 
-            logger.Information($"Successfully got a Rating with id = {id}.");
+            logger.Information($"Successfully got a Rating with Id = {id}.");
 
             return rating.ToModel();
         }
@@ -82,7 +82,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<RatingDto> GetParentRating(long parentId, long entityId, RatingType type)
         {
-            logger.Information("Process of getting Rating started.");
+            logger.Information($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId} and type = {type}.");
 
             var rating = await ratingRepository
                 .GetByFilter(r => r.ParentId == parentId
@@ -90,7 +90,7 @@ namespace OutOfSchool.WebApi.Services
                                && r.Type == type)
                 .ConfigureAwait(false);
 
-            logger.Information($"Successfully got a Rating");
+            logger.Information($"Successfully got a Rating for Parent with Id = {parentId}");
 
             return rating.FirstOrDefault().ToModel();
         }
@@ -125,13 +125,13 @@ namespace OutOfSchool.WebApi.Services
             {
                 var rating = await ratingRepository.Create(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Rating created successfully.");
+                logger.Information($"Rating with Id = {rating?.Id} created successfully.");
 
                 return rating.ToModel();
             }
             else
             {
-                logger.Information("Rating already exists or entityId isn't correct.");
+                logger.Information($"Rating already exists or entityId = {dto?.ParentId} isn't correct.");
 
                 return null;
             }
@@ -140,13 +140,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<RatingDto> Update(RatingDto dto)
         {
-            logger.Information("Rating updating was launched.");
+            logger.Information($"Updating Rating with Id = {dto?.Id} started.");
 
             if (await CheckRatingUpdate(dto).ConfigureAwait(false))
             {
                 var rating = await ratingRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Rate successfully updated.");
+                logger.Information($"Rating with Id = {rating?.Id} updated succesfully.");
 
                 return rating.ToModel();
             }
@@ -161,7 +161,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Rating deleting was launched.");
+            logger.Information($"Deleting Rating with Id = {id} started.");
 
             var rating = await ratingRepository.GetById(id).ConfigureAwait(false);
 
@@ -169,12 +169,12 @@ namespace OutOfSchool.WebApi.Services
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
-                    localizer[$"Record with such Id={ id } don't exist in the system"]);
+                    localizer[$"Rating with Id = {id} doesn't exist in the system"]);
             }
 
             await ratingRepository.Delete(rating).ConfigureAwait(false);
 
-            logger.Information("Rating successfully deleted.");
+            logger.Information($"Rating with Id = {id} succesfully deleted.");
         }
 
         /// <summary>
@@ -185,8 +185,8 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                logger.Information("Rating creating failed. Rating was null.");
-                throw new ArgumentNullException(nameof(dto), localizer["Rating was null."]);
+                logger.Information("Rating creating failed. Rating is null.");
+                throw new ArgumentNullException(nameof(dto), localizer["Rating is null."]);
             }
         }
 
@@ -208,7 +208,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!await EntityExists(dto.EntityId, dto.Type).ConfigureAwait(false))
             {
-                logger.Information($"Record with such entityId { dto.EntityId } " +
+                logger.Information($"Record with entityId { dto.EntityId } " +
                     $"and Type { dto.Type } don't exist in the system.");
 
                 return false;
@@ -228,7 +228,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!await EntityExists(dto.EntityId, dto.Type).ConfigureAwait(false))
             {
-                logger.Information($"Record with such entityId { dto.EntityId } " +
+                logger.Information($"Record with entityId { dto.EntityId } " +
                     $"and Type { dto.Type } don't exist in the system.");
 
                 return false;
@@ -236,7 +236,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!RatingExistsWithId(dto))
             {
-                logger.Information("Rating doesn't exist");
+                logger.Information($"Rating with Id = {dto.Id} doesn't exist.");
 
                 return false;
             }
