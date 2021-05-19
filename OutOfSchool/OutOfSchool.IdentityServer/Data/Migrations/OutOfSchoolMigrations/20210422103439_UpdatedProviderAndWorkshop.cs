@@ -164,7 +164,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 column: "ProviderId",
                 principalTable: "Providers",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Cascade);          
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -80,10 +80,8 @@ namespace OutOfSchool.Services.Models
         [Required]
         public long AddressId { get; set; }
 
-        [Required]
         public long CategoryId { get; set; }
 
-        [Required]
         public long SubcategoryId { get; set; }
 
         [Required]
