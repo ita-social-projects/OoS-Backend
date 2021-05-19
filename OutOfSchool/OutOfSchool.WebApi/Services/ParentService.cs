@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newParent = await repository.Create(parent).ConfigureAwait(false);
 
-            logger.Information("Parent created successfully.");
+            logger.Information($"Parent with Id = {newParent.Id} created successfully.");
 
             return newParent.ToModel();
         }
@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Parent deleting was launched.");
+            logger.Information($"Deleting Parent with Id = {id} started.");
 
             var entity = new Parent() { Id = id };
 
@@ -59,11 +59,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Parent succesfully deleted.");
+                logger.Information($"Parent with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed.There is no parent in the Db with such an id.");
+                logger.Error($"Deleting failed. Parent with Id - {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -71,13 +71,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ParentDTO>> GetAll()
         {
-            logger.Information("Process of getting fll Parents started.");
+            logger.Information("Getting all Parents started.");
 
             var parents = await this.repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!parents.Any()
                 ? "Parent table is empty."
-                : "Successfully got all records from the Parent table.");
+                : $"From the Parent table were successfully received all {parents.Count()} records.");
 
             return parents.Select(parent => parent.ToModel()).ToList();
         }
@@ -85,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> GetById(long id)
         {
-            logger.Information("Process of getting Parent by id started.");
+            logger.Information($"Getting Parent by Id started. Looking Id is {id}.");
 
             var parent = await repository.GetById((int)id).ConfigureAwait(false);
 
@@ -96,7 +96,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfuly got a parent with id = {id}.");
+            logger.Information($"Successfully got a Parent with Id = {id}.");
 
             return parent.ToModel();
         }
@@ -104,19 +104,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> Update(ParentDTO dto)
         {
-            logger.Information("Parent updating was launched.");
+            logger.Information($"Updating Parent with Id = {dto.Id} started.");
 
             try
             {
                 var parent = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Parent succesfully updated.");
+                logger.Information($"Parent with Id = {parent.Id} updated succesfully.");
 
                 return parent.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no parent in the Db with such an id.");
+                logger.Error($"Updating failed. Parent with Id - {dto.Id} doesn't exist in the system.");
                 throw;
             }
         }

@@ -43,19 +43,21 @@ namespace OutOfSchool.WebApi.Services
 
             var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
+            logger.Information($"Teacher with Id = {newTeacher.Id} created successfully.");
+
             return newTeacher.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<TeacherDTO>> GetAll()
         {
-            logger.Information("Process of getting all Teachers started.");
+            logger.Information("Getting all Teachers started.");
 
             var teachers = await repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!teachers.Any()
                 ? "Teacher table is empty."
-                : "Successfully got all records from the Teacher table.");
+                : $"From the Teacher table were successfully received all {teachers.Count()} records.");
 
             return teachers.Select(teacher => teacher.ToModel()).ToList();
         }
@@ -63,7 +65,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<TeacherDTO> GetById(long id)
         {
-            logger.Information("Process of getting Teacher by id started.");
+            logger.Information($"Getting Teacher by Id started. Looking Id is {id}.");
 
             var teacher = await repository.GetById(id).ConfigureAwait(false);
 
@@ -74,7 +76,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Teacher with id = {id}.");
+            logger.Information($"Successfully got a Teacher with Id = {id}.");
 
             return teacher.ToModel();
         }
@@ -82,19 +84,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<TeacherDTO> Update(TeacherDTO dto)
         {
-            logger.Information("Teacher updating was launched.");
+            logger.Information($"Updating Teacher with Id = {dto.Id} started.");
 
             try
             {
                 var teacher = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Teacher successfully updated.");
+                logger.Information($"Teacher with Id = {teacher.Id} updated succesfully.");
 
                 return teacher.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no Teacher in the Db with such an id.");
+                logger.Error($"Updating failed. Teacher with Id - {dto.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -102,7 +104,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Teacher deleting was launched.");
+            logger.Information($"Deleting Teacher with Id = {id} started.");
 
             var entity = new Teacher() { Id = id };
 
@@ -110,11 +112,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Teacher successfully deleted.");
+                logger.Information($"Teacher with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed. There is no Teacher in the Db with such an id.");
+                logger.Error($"Deleting failed. Teacher with Id - {id} doesn't exist in the system.");
                 throw;
             }
         }

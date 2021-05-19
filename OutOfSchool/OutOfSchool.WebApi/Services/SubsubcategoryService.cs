@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SubsubcategoryDTO> Create(SubsubcategoryDTO dto)
         {
-            logger.Information("Subsubategory creating was started");
+            logger.Information("Subsubategory creating was started.");
 
             var category = dto.ToDomain();
 
@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newCategory = await repository.Create(category).ConfigureAwait(false);
 
-            logger.Information("Subsubcategory created successfully.");
+            logger.Information($"Subsubcategory with Id = {newCategory.Id} created successfully.");
 
             return newCategory.ToModel();
         }
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Subsubcategoty deleting was launched.");
+            logger.Information($"Deleting Subsubcategory with Id = {id} started.");
 
             var entity = new Subsubcategory() { Id = id };
 
@@ -61,11 +61,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Subsubcategory succesfully deleted.");
+                logger.Information($"Subsubcategory with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed.There is no subsubcategory in the Db with such an id.");
+                logger.Error($"Deleting failed. Subsubcategory with such Id - {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -73,13 +73,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<SubsubcategoryDTO>> GetAll()
         {
-            logger.Information("Process of getting all Subsubcategories started.");
+            logger.Information("Getting all Subsubcategories started.");
 
             var categories = await this.repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!categories.Any()
                 ? "Subsubcategory table is empty."
-                : "Successfully got all records from the Subsubcategory table.");
+                : $"From the Subsubcategory table were successfully received all {categories.Count()} records.");
 
             return categories.Select(parent => parent.ToModel()).ToList();
         }
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SubsubcategoryDTO> GetById(long id)
         {
-            logger.Information("Process of getting Subsubcategory by id started.");
+            logger.Information($"Getting Subsubcategory by Id started. Looking Id is {id}.");
 
             var category = await repository.GetById((int)id).ConfigureAwait(false);
 
@@ -98,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfuly got a subsubcategory with id = {id}.");
+            logger.Information($"Successfully got a Subsubcategory with Id = {id}.");
 
             return category.ToModel();
         }
@@ -106,15 +106,15 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<SubsubcategoryDTO>> GetBySubcategoryId(long id)
         {
-            logger.Information("Process of getting all Subsubcategories started.");
+            logger.Information($"Getting Subsubcategory by SubcategoryId started. Looking SubcategoryId is {id}.");
 
             IdValidation(id);
 
             var categories = await this.repository.Get<int>(where: x => x.SubcategoryId == id).ToListAsync().ConfigureAwait(false);
 
             logger.Information(!categories.Any()
-                ? "Subsubcategory table is empty."
-                : "Successfully got all records from the Subsubcategory table.");
+                ? $"There aren't Subsubcategories for Subcategory with Id = {id}."
+                : $"From Subsubcategory table were successfully received {categories.Count} records.");
 
             return categories.Select(parent => parent.ToModel()).ToList();
         }
@@ -122,19 +122,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SubsubcategoryDTO> Update(SubsubcategoryDTO dto)
         {
-            logger.Information("Subsubcategory updating was launched.");
+            logger.Information($"Updating Subsubcategory with Id = {dto.Id} started.");
 
             try
             {
                 var category = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Subsubcategory succesfully updated.");
+                logger.Information($"Subsubcategory with Id = {category.Id} updated succesfully.");
 
                 return category.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no subsubcategory in the Db with such an id.");
+                logger.Error($"Updating failed. Subsubcategory with Id - {dto.Id} doesn't exist in the system.");
                 throw;
             }
         }

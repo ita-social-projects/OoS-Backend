@@ -46,13 +46,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<AddressDto>> GetAll()
         {
-            logger.Information("Process of getting all Addresses started.");
+            logger.Information("Getting all Addresses started.");
 
             var addresses = await repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!addresses.Any()
                 ? "Address table is empty."
-                : "Successfully got all records from the Address table.");
+                : $"From the Address table were successfully received all {addresses.Count()} records.");
 
             return addresses.Select(address => address.ToModel()).ToList();
         }
@@ -60,7 +60,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<AddressDto> GetById(long id)
         {
-            logger.Information("Process of getting Adress by id started.");
+            logger.Information($"Getting Address by Id started. Looking Id is {id}.");
 
             var address = await repository.GetById(id).ConfigureAwait(false);
 
@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got an Address with id = {id}.");
+            logger.Information($"Successfully got an Address with Id = {id}.");
 
             return address.ToModel();
         }
@@ -79,19 +79,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<AddressDto> Update(AddressDto dto)
         {
-            logger.Information("Address updating was launched.");
+            logger.Information($"Updating Address with Id = {dto.Id} started.");
 
             try
             {
                 var address = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Address successfully updated.");
+                logger.Information($"Address with Id = {address.Id} updated succesfully.");
 
                 return address.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no Address in the Db with such an id.");
+                logger.Error($"Updating failed. Address with Id - {dto.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -99,7 +99,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Address deleting was launched.");
+            logger.Information($"Deleting Address with Id = {id} started.");
 
             var entity = new Address { Id = id };
 
@@ -107,11 +107,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Address successfully deleted.");
+                logger.Information($"Address with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed. There is no Address in the Db with such an id.");
+                logger.Error($"Deleting failed. Address with Id - {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -120,7 +120,7 @@ namespace OutOfSchool.WebApi.Services
         {
             var newAddress = await repository.Create(address).ConfigureAwait(false);
 
-            logger.Information("Address created successfully.");
+            logger.Information($"Address with Id = {newAddress.Id} created successfully.");
 
             return newAddress.ToModel();
         }

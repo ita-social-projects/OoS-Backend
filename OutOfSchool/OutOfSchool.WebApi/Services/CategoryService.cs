@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<CategoryDTO> Create(CategoryDTO dto)
         {
-            logger.Information("Category creating was started");
+            logger.Information("Category creating was started.");
 
             var category = dto.ToDomain();
 
@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newCategory = await repository.Create(category).ConfigureAwait(false);
 
-            logger.Information("Category created successfully.");
+            logger.Information($"Сategory with Id = {newCategory.Id} created successfully.");
 
             return newCategory.ToModel();
         }
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Categoty deleting was launched.");
+            logger.Information($"Deleting Сategory with Id = {id} started.");
 
             var entity = new Category() { Id = id };
 
@@ -61,11 +61,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Category succesfully deleted.");
+                logger.Information($"Category with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed.There is no category in the Db with such an id.");
+                logger.Error($"Deleting failed.category with Id - {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -73,13 +73,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<CategoryDTO>> GetAll()
         {
-            logger.Information("Process of getting all Categories started.");
+            logger.Information("Getting all Categories started.");
 
             var categories = await this.repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!categories.Any()
                 ? "Category table is empty."
-                : "Successfully got all records from the Category table.");
+                : $"From the Category table were successfully received all {categories.Count()} records.");
 
             return categories.Select(parent => parent.ToModel()).ToList();
         }
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<CategoryDTO> GetById(long id)
         {
-            logger.Information("Process of getting Category by id started.");
+            logger.Information($"Getting Category by Id started. Looking Id is {id}.");
 
             var category = await repository.GetById((int)id).ConfigureAwait(false);
 
@@ -98,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfuly got a category with id = {id}.");
+            logger.Information($"Successfully got a category with Id = {id}.");
 
             return category.ToModel();
         }
@@ -106,19 +106,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<CategoryDTO> Update(CategoryDTO dto)
         {
-            logger.Information("Category updating was launched.");
+            logger.Information($"Updating Category with Id = {dto.Id} started.");
 
             try
             {
                 var category = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Category succesfully updated.");
+                logger.Information($"Category with Id = {category.Id} updated succesfully.");
 
                 return category.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no category in the Db with such an id.");
+                logger.Error($"Updating failed. Category with Id - {dto.Id} doesn't exist in the system.");
                 throw;
             }
         }

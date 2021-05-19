@@ -48,20 +48,22 @@ namespace OutOfSchool.WebApi.Services
             Func<Task<Provider>> operation = async () => await providerRepository.Create(dto.ToDomain()).ConfigureAwait(false);
 
             var newProvider = await providerRepository.RunInTransaction(operation).ConfigureAwait(false);
-               
+
+            logger.Information($"Provider with Id = {newProvider.Id} created successfully.");
+
             return newProvider.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ProviderDto>> GetAll()
         {
-            logger.Information("Process of getting all Providers started.");
+            logger.Information("Getting all Providers started.");
 
             var providers = await providerRepository.GetAll().ConfigureAwait(false);
 
             logger.Information(!providers.Any()
                 ? "Provider table is empty."
-                : "Successfully got all records from the Provider table.");
+                : $"From the Provider table were successfully received all {providers.Count()} records.");
 
             return providers.Select(provider => provider.ToModel()).ToList();
         }
@@ -69,7 +71,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ProviderDto> GetById(long id)
         {
-            logger.Information("Process of getting Provider by id started.");
+            logger.Information($"Getting Provider by Id started. Looking Id is {id}.");
 
             var provider = await providerRepository.GetById(id).ConfigureAwait(false);
 
@@ -80,7 +82,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Provider with id = {id}.");
+            logger.Information($"Successfully got a Provider with Id = {id}.");
 
             return provider.ToModel();
         }
@@ -88,17 +90,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ProviderDto> Update(ProviderDto dto)
         {
+            logger.Information($"Updating Provider with Id = {dto.Id} started.");
+
             try
             {
                 var provider = await providerRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Provider successfully updated.");
+                logger.Information($"Provider with Id = {provider.Id} updated succesfully.");
 
                 return provider.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no Provider in the Db with such an id.");
+                logger.Error($"Updating failed. Provider with Id - {dto.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -106,7 +110,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Provider deleting was launched.");
+            logger.Information($"Deleting Provider with Id = {id} started.");
         
             try
             {
@@ -114,11 +118,11 @@ namespace OutOfSchool.WebApi.Services
 
                 await providerRepository.Delete(entity).ConfigureAwait(false);
               
-                logger.Information("Provider successfully deleted.");
+                logger.Information($"Provider with Id = {id} succesfully deleted.");
             }
             catch (ArgumentNullException)
             {
-                logger.Error("Deleting failed. There is no Provider in the Db with such an id.");
+                logger.Error($"Deleting failed. Provider with Id - {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -126,7 +130,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ProviderDto> GetByUserId(string id)
         {
-            logger.Information("Process of getting Provider by User Id started.");
+            logger.Information($"Getting Provider by UserId started. Looking UserId is {id}.");
 
             Expression<Func<Provider, bool>> filter = p => p.UserId == id;
 
@@ -137,7 +141,7 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException(localizer["There is no Provider in the Db with such User id"], nameof(id));                        
             }
 
-            logger.Information($"Successfully got a Provider with User id = {id}.");
+            logger.Information($"Successfully got a Provider with UserId = {id}.");
 
             return providers.FirstOrDefault().ToModel();
         }
