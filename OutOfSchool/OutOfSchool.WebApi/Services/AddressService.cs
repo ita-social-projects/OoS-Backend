@@ -79,19 +79,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<AddressDto> Update(AddressDto dto)
         {
-            logger.Information($"Updating Address with Id = {dto.Id} started.");
+            logger.Information($"Updating Address with Id = {dto?.Id} started.");
 
             try
             {
                 var address = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Address with Id = {address.Id} updated succesfully.");
+                logger.Information($"Address with Id = {address?.Id} updated succesfully.");
 
                 return address.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Address with Id - {dto.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Address with Id - {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -120,7 +120,7 @@ namespace OutOfSchool.WebApi.Services
         {
             var newAddress = await repository.Create(address).ConfigureAwait(false);
 
-            logger.Information($"Address with Id = {newAddress.Id} created successfully.");
+            logger.Information($"Address with Id = {newAddress?.Id} created successfully.");
 
             return newAddress.ToModel();
         }

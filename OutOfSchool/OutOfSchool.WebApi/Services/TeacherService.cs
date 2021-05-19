@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newTeacher = await repository.Create(teacher).ConfigureAwait(false);
 
-            logger.Information($"Teacher with Id = {newTeacher.Id} created successfully.");
+            logger.Information($"Teacher with Id = {newTeacher?.Id} created successfully.");
 
             return newTeacher.ToModel();
         }
@@ -84,19 +84,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<TeacherDTO> Update(TeacherDTO dto)
         {
-            logger.Information($"Updating Teacher with Id = {dto.Id} started.");
+            logger.Information($"Updating Teacher with Id = {dto?.Id} started.");
 
             try
             {
                 var teacher = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Teacher with Id = {teacher.Id} updated succesfully.");
+                logger.Information($"Teacher with Id = {teacher?.Id} updated succesfully.");
 
                 return teacher.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Teacher with Id - {dto.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Teacher with Id - {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

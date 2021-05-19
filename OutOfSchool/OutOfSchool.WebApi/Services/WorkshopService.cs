@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
 
-            logger.Information($"Workshop with Id = {newWorkshop.Id} created successfully.");
+            logger.Information($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
             return newWorkshop.ToModel();
         }
@@ -101,19 +101,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
-            logger.Information($"Updating Workshop with Id = {dto.Id} started.");
+            logger.Information($"Updating Workshop with Id = {dto?.Id} started.");
 
             try
             {
                 var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Workshop with Id = {workshop.Id} updated succesfully.");
+                logger.Information($"Workshop with Id = {workshop?.Id} updated succesfully.");
 
                 return workshop.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. Workshop with Id - {dto.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Workshop with Id - {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

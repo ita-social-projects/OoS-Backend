@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newProvider = await providerRepository.RunInTransaction(operation).ConfigureAwait(false);
 
-            logger.Information($"Provider with Id = {newProvider.Id} created successfully.");
+            logger.Information($"Provider with Id = {newProvider?.Id} created successfully.");
 
             return newProvider.ToModel();
         }
@@ -90,19 +90,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ProviderDto> Update(ProviderDto dto)
         {
-            logger.Information($"Updating Provider with Id = {dto.Id} started.");
+            logger.Information($"Updating Provider with Id = {dto?.Id} started.");
 
             try
             {
                 var provider = await providerRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Provider with Id = {provider.Id} updated succesfully.");
+                logger.Information($"Provider with Id = {provider?.Id} updated succesfully.");
 
                 return provider.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Provider with Id - {dto.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Provider with Id - {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

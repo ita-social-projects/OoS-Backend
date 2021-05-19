@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newCategory = await repository.Create(category).ConfigureAwait(false);
 
-            logger.Information($"Subsubcategory with Id = {newCategory.Id} created successfully.");
+            logger.Information($"Subsubcategory with Id = {newCategory?.Id} created successfully.");
 
             return newCategory.ToModel();
         }
@@ -122,19 +122,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SubsubcategoryDTO> Update(SubsubcategoryDTO dto)
         {
-            logger.Information($"Updating Subsubcategory with Id = {dto.Id} started.");
+            logger.Information($"Updating Subsubcategory with Id = {dto?.Id} started.");
 
             try
             {
                 var category = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Subsubcategory with Id = {category.Id} updated succesfully.");
+                logger.Information($"Subsubcategory with Id = {category?.Id} updated succesfully.");
 
                 return category.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Subsubcategory with Id - {dto.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Subsubcategory with Id - {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

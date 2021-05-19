@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newParent = await repository.Create(parent).ConfigureAwait(false);
 
-            logger.Information($"Parent with Id = {newParent.Id} created successfully.");
+            logger.Information($"Parent with Id = {newParent?.Id} created successfully.");
 
             return newParent.ToModel();
         }
@@ -104,19 +104,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> Update(ParentDTO dto)
         {
-            logger.Information($"Updating Parent with Id = {dto.Id} started.");
+            logger.Information($"Updating Parent with Id = {dto?.Id} started.");
 
             try
             {
                 var parent = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Parent with Id = {parent.Id} updated succesfully.");
+                logger.Information($"Parent with Id = {parent?.Id} updated succesfully.");
 
                 return parent.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Parent with Id - {dto.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Parent with Id - {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

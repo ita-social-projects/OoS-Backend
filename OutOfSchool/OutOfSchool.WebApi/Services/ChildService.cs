@@ -46,7 +46,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newChild = await repository.Create(child).ConfigureAwait(false);
 
-            logger.Information($"Child with Id = {newChild.Id} created successfully.");
+            logger.Information($"Child with Id = {newChild?.Id} created successfully.");
 
             return newChild.ToModel();
         }
@@ -116,20 +116,20 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> Update(ChildDTO dto)
         {
-            logger.Information($"Updating Children with Id = {dto.Id} started.");
+            logger.Information($"Updating Children with Id = {dto?.Id} started.");
             this.Check(dto);
 
             try
             {
                 var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Children with Id = {child.Id} updated succesfully.");
+                logger.Information($"Children with Id = {child?.Id} updated succesfully.");
 
                 return child.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Children with Id - {dto.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Children with Id - {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
