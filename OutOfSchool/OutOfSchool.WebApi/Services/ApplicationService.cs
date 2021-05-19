@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ApplicationDto> Create(ApplicationDto applicationDto)
         {
-            logger.Information("Application creating was started.");
+            logger.Information("Application create started.");
 
             ModelCreationValidation(applicationDto);
 
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Application delete was launching.");
+            logger.Information("Application delete started.");
 
             var application = new Application { Id = id };
 
@@ -62,11 +62,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(application).ConfigureAwait(false);
 
-                logger.Information("Application successfully deleted.");
+                logger.Information("Application deleted successfully.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed. There is no Application in the Db with such an id.");
+                logger.Error("Deleting failed. There is no Application in the Db with such id.");
                 throw;
             }
         }
@@ -126,7 +126,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ApplicationDto> GetById(long id)
         {
-            logger.Information("Process of getting Application by id started.");
+            logger.Information("Process of getting Application by Id started.");
 
             var application = await repository.GetById(id).ConfigureAwait(false);
 
@@ -134,7 +134,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
-                    localizer["The id cannot be greater than number of table entities."]);
+                    localizer["There is no Application in the Db with such id."]);
             }
 
             logger.Information($"Successfully got an Application with id = { id}.");
@@ -145,7 +145,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
         {
-            logger.Information("Application updating was launched.");
+            logger.Information("Application updating started.");
 
             ModelNullValidation(applicationDto);
 
@@ -153,13 +153,13 @@ namespace OutOfSchool.WebApi.Services
             {
                 var application = await repository.Update(applicationDto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Application successfully updated.");
+                logger.Information("Application updated successfully.");
 
                 return application.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed.There is no application in the Db with such an id.");
+                logger.Error("Updating failed. There is no application in the Db with such id.");
                 throw;
             }
         }
@@ -169,7 +169,7 @@ namespace OutOfSchool.WebApi.Services
             if (applicationDto is null)
             {
                 logger.Information("Operation failed. ApplicationDto was null");
-                throw new ArgumentException(localizer["Application dto wa null."], nameof(applicationDto));
+                throw new ArgumentException(localizer["Application dto was null."], nameof(applicationDto));
             }
         }
 
@@ -183,7 +183,7 @@ namespace OutOfSchool.WebApi.Services
             if (repository.Get<int>(where: filter).Any())
             {
                 logger.Information("Creation failed. Application with such data alredy exists.");
-                throw new ArgumentException(localizer["There is already an application with such a data."]);
+                throw new ArgumentException(localizer["There is already an application with such data."]);
             }
         }
     }
