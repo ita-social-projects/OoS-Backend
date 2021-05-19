@@ -65,7 +65,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Subsubcategory with such Id - {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Subsubcategory with such Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -79,7 +79,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!categories.Any()
                 ? "Subsubcategory table is empty."
-                : $"From the Subsubcategory table were successfully received all {categories.Count()} records.");
+                : $"All {categories.Count()} records were successfully received from the Subsubcategory table");
 
             return categories.Select(parent => parent.ToModel()).ToList();
         }
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SubsubcategoryDTO> GetById(long id)
         {
-            logger.Information($"Getting Subsubcategory by Id started. Looking Id is {id}.");
+            logger.Information($"Getting Subsubcategory by Id started. Looking Id = {id}.");
 
             var category = await repository.GetById((int)id).ConfigureAwait(false);
 
@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<SubsubcategoryDTO>> GetBySubcategoryId(long id)
         {
-            logger.Information($"Getting Subsubcategory by SubcategoryId started. Looking SubcategoryId is {id}.");
+            logger.Information($"Getting Subsubcategory by SubcategoryId started. Looking SubcategoryId = {id}.");
 
             IdValidation(id);
 
@@ -114,7 +114,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!categories.Any()
                 ? $"There aren't Subsubcategories for Subcategory with Id = {id}."
-                : $"From Subsubcategory table were successfully received {categories.Count} records.");
+                : $"All {categories.Count} records were successfully received from the Subsubcategory table");
 
             return categories.Select(parent => parent.ToModel()).ToList();
         }
@@ -134,7 +134,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Subsubcategory with Id - {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Subsubcategory with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

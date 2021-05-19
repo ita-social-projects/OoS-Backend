@@ -52,7 +52,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!addresses.Any()
                 ? "Address table is empty."
-                : $"From the Address table were successfully received all {addresses.Count()} records.");
+                : $"All {addresses.Count()} records were successfully received from the Address table");
 
             return addresses.Select(address => address.ToModel()).ToList();
         }
@@ -60,7 +60,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<AddressDto> GetById(long id)
         {
-            logger.Information($"Getting Address by Id started. Looking Id is {id}.");
+            logger.Information($"Getting Address by Id started. Looking Id = {id}.");
 
             var address = await repository.GetById(id).ConfigureAwait(false);
 
@@ -91,7 +91,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Address with Id - {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Address with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -111,7 +111,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Address with Id - {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Address with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }

@@ -57,7 +57,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!teachers.Any()
                 ? "Teacher table is empty."
-                : $"From the Teacher table were successfully received all {teachers.Count()} records.");
+                : $"All {teachers.Count()} records were successfully received from the Teacher table");
 
             return teachers.Select(teacher => teacher.ToModel()).ToList();
         }
@@ -65,7 +65,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<TeacherDTO> GetById(long id)
         {
-            logger.Information($"Getting Teacher by Id started. Looking Id is {id}.");
+            logger.Information($"Getting Teacher by Id started. Looking Id = {id}.");
 
             var teacher = await repository.GetById(id).ConfigureAwait(false);
 
@@ -96,7 +96,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Teacher with Id - {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Teacher with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -116,7 +116,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Teacher with Id - {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Teacher with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }

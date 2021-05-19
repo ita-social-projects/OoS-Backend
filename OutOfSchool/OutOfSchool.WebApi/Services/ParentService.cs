@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Parent with Id - {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Parent with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -77,7 +77,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!parents.Any()
                 ? "Parent table is empty."
-                : $"From the Parent table were successfully received all {parents.Count()} records.");
+                : $"All {parents.Count()} records were successfully received from the Parent table");
 
             return parents.Select(parent => parent.ToModel()).ToList();
         }
@@ -85,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> GetById(long id)
         {
-            logger.Information($"Getting Parent by Id started. Looking Id is {id}.");
+            logger.Information($"Getting Parent by Id started. Looking Id = {id}.");
 
             var parent = await repository.GetById((int)id).ConfigureAwait(false);
 
@@ -116,7 +116,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Parent with Id - {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Parent with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!providers.Any()
                 ? "Provider table is empty."
-                : $"From the Provider table were successfully received all {providers.Count()} records.");
+                : $"All {providers.Count()} records were successfully received from the Provider table");
 
             return providers.Select(provider => provider.ToModel()).ToList();
         }
@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ProviderDto> GetById(long id)
         {
-            logger.Information($"Getting Provider by Id started. Looking Id is {id}.");
+            logger.Information($"Getting Provider by Id started. Looking Id = {id}.");
 
             var provider = await providerRepository.GetById(id).ConfigureAwait(false);
 
@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Provider with Id - {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Provider with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -122,7 +122,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (ArgumentNullException)
             {
-                logger.Error($"Deleting failed. Provider with Id - {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Provider with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }

@@ -65,7 +65,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed.category with Id - {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Category with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -79,7 +79,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!categories.Any()
                 ? "Category table is empty."
-                : $"From the Category table were successfully received all {categories.Count()} records.");
+                : $"All {categories.Count()} records were successfully received from the Category table.");
 
             return categories.Select(parent => parent.ToModel()).ToList();
         }
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<CategoryDTO> GetById(long id)
         {
-            logger.Information($"Getting Category by Id started. Looking Id is {id}.");
+            logger.Information($"Getting Category by Id started. Looking Id = {id}.");
 
             var category = await repository.GetById((int)id).ConfigureAwait(false);
 
@@ -118,7 +118,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Category with Id - {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Category with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

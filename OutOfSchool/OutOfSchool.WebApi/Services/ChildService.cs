@@ -60,7 +60,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!children.Any()
                 ? "Child table is empty."
-                : $"From the Child table were successfully received all {children.Count()} records.");
+                : $"All {children.Count()} records were successfully received from the Child table");
 
             return children.Select(x => x.ToModel()).ToList();
         }
@@ -68,7 +68,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> GetById(long id)
         {
-            logger.Information($"Getting Child by Id started. Looking Id is {id}.");
+            logger.Information($"Getting Child by Id started. Looking Id = {id}.");
 
             var child = await repository.GetById(id).ConfigureAwait(false);
 
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> GetByIdWithDetails(long id)
         {
-            logger.Information($"Getting Child by Id with details started. Looking CategoryId is {id}.");
+            logger.Information($"Getting Child by Id with details started. Looking CategoryId = {id}.");
 
             Expression<Func<Child, bool>> filter = child => child.Id == id;
 
@@ -102,13 +102,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChildDTO>> GetAllByParent(long id)
         {
-            logger.Information($"Getting Child's by Parent started. Looking ParentId is {id}.");
+            logger.Information($"Getting Child's by Parent started. Looking ParentId = {id}.");
 
             var children = await repository.GetByFilter(x => x.ParentId == id).ConfigureAwait(false);
 
             logger.Information(!children.Any()
                 ? $"There aren't Children for Parent with Id = {id}."
-                : $"From Children table were successfully received {children.Count()} records.");
+                : $"All {children.Count()} records were successfully received from the Children table");
 
             return children.Select(x => x.ToModel()).ToList();
         }
@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Children with Id - {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Children with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -149,7 +149,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Children with Id - {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Children with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -158,8 +158,8 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                logger.Information("Child creating failed. Child was null.");
-                throw new ArgumentNullException(nameof(dto), localizer["Child was null."]);
+                logger.Information("Child creating failed. Child is null.");
+                throw new ArgumentNullException(nameof(dto), localizer["Child is null."]);
             }
 
             if (dto.DateOfBirth > DateTime.Now)

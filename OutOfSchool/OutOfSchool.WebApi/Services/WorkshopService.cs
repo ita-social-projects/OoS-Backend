@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!workshops.Any()
                 ? "Workshop table is empty."
-                : $"From the Workshop table were successfully received all {workshops.Count()} records.");
+                : $"All {workshops.Count()} records were successfully received from the Workshop table");
 
             return workshops.Select(x => x.ToModel()).ToList();
         }
@@ -69,7 +69,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> GetById(long id)
         {
-            logger.Information($"Getting Workshop by Id started. Looking Id is {id}.");
+            logger.Information($"Getting Workshop by Id started. Looking Id = {id}.");
 
             var teacher = await repository.GetById(id).ConfigureAwait(false);
 
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
         {
-            logger.Information($"Getting Workshop by organization started. Looking ProviderId is {id}.");
+            logger.Information($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
             var workshops = await repository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
 
@@ -113,7 +113,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Workshop with Id - {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Workshop with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -133,7 +133,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Workshop with Id - {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Workshop with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }

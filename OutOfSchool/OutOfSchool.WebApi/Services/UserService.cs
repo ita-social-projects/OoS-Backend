@@ -4,7 +4,6 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -44,14 +43,14 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information(!users.Any()
                 ? "User table is empty."
-                : $"From the User table were successfully received all {users.Count()} records.");
+                : $"All {users.Count()} records were successfully received from the User table");
 
             return users.Select(user => user.ToModel()).ToList();
         }
 
         public async Task<UserDto> GetById(string id)
         {
-            logger.Information($"Getting User by Id started. Looking Id is {id}.");
+            logger.Information($"Getting User by Id started. Looking Id = {id}.");
 
             Expression<Func<User, bool>> filter = p => p.Id == id;
 
