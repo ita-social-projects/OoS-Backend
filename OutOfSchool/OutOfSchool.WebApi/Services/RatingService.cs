@@ -181,7 +181,7 @@ namespace OutOfSchool.WebApi.Services
         /// Checks that RatingDto is not null.
         /// </summary>
         /// <param name="dto">Rating Dto.</param>
-        private void CheckDto(RatingDto dto)
+        private void ValidateDto(RatingDto dto)
         {
             if (dto == null)
             {
@@ -197,16 +197,16 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>True if Rating with such parameters could be added to the system and false otherwise.</returns>
         private async Task<bool> CheckRatingCreation(RatingDto dto)
         {
-            CheckDto(dto);
+            ValidateDto(dto);
 
-            if (await RatingExist(dto).ConfigureAwait(false))
+            if (await RatingExists(dto).ConfigureAwait(false))
             {
                 logger.Information("Rating already exists");
 
                 return false;
             }
 
-            if (!await EntityExist(dto.EntityId, dto.Type).ConfigureAwait(false))
+            if (!await EntityExists(dto.EntityId, dto.Type).ConfigureAwait(false))
             {
                 logger.Information($"Record with such entityId { dto.EntityId } " +
                     $"and Type { dto.Type } don't exist in the system.");
@@ -224,9 +224,9 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>True if Rating with such parameters could be updated and false otherwise.</returns>
         private async Task<bool> CheckRatingUpdate(RatingDto dto)
         {
-            CheckDto(dto);
+            ValidateDto(dto);
 
-            if (!await EntityExist(dto.EntityId, dto.Type).ConfigureAwait(false))
+            if (!await EntityExists(dto.EntityId, dto.Type).ConfigureAwait(false))
             {
                 logger.Information($"Record with such entityId { dto.EntityId } " +
                     $"and Type { dto.Type } don't exist in the system.");
@@ -234,7 +234,7 @@ namespace OutOfSchool.WebApi.Services
                 return false;
             }
 
-            if (!RatingExistWithId(dto))
+            if (!RatingExistsWithId(dto))
             {
                 logger.Information("Rating doesn't exist");
 
@@ -249,7 +249,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Rating Dto.</param>
         /// <returns>True if Rating with such parameters already exists in the system and false otherwise.</returns>
-        private async Task<bool> RatingExist(RatingDto dto)
+        private async Task<bool> RatingExists(RatingDto dto)
         {
             var rating = await ratingRepository
                 .GetByFilter(r => r.EntityId == dto.EntityId
@@ -265,7 +265,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Rating Dto.</param>
         /// <returns>True if Rating with such parameters already exists in the system and false otherwise.</returns>
-        private bool RatingExistWithId(RatingDto dto)
+        private bool RatingExistsWithId(RatingDto dto)
         {
             var result = ratingRepository
                     .GetByFilterNoTracking(r => r.EntityId == dto.EntityId
@@ -282,7 +282,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Entity Id.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>True if Entity with such parameters already exists in the system and false otherwise.</returns>
-        private async Task<bool> EntityExist(long id, RatingType type)
+        private async Task<bool> EntityExists(long id, RatingType type)
         {
             switch (type)
             {

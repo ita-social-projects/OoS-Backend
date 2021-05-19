@@ -82,7 +82,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [Test]
         [TestCase(0)]
         [TestCase(-50)]
-        public void GetRatingById_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+        public void GetRatingById_WhenIdIsInvalid_ReturnsArgumentOutOfRangeException(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(ratings.SingleOrDefault(x => x.Id == id));
@@ -220,7 +220,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [Test]
         [TestCase(0)]
         [TestCase(-50)]
-        public void DeleteRating_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+        public void DeleteRating_WhenIdIsInvalid_ReturnsArgumentOutOfRangeException(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
