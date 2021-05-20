@@ -53,14 +53,6 @@ a {
   text-decoration: none;
   color: inherit;
 }
-/* 
-.login__wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0;
-  padding: 10px;
-} */
 .login__text,
 .login__label,
 .login__link {
