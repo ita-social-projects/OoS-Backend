@@ -77,6 +77,11 @@ namespace OutOfSchool.WebApi.Extensions
             return parentDto;
         }
 
+        public static ApplicationDto ToModel(this Application application)
+        {
+            return Mapper<Application, ApplicationDto>(application, cfg => { cfg.CreateMap<Application, ApplicationDto>(); });
+        }
+
         public static SubcategoryDTO ToModel(this Subcategory category)
         {
             return Mapper<Subcategory, SubcategoryDTO>(category, cfg => { cfg.CreateMap<Subcategory, SubcategoryDTO>(); });
@@ -159,6 +164,11 @@ namespace OutOfSchool.WebApi.Extensions
             var parent =
                 Mapper<ParentDTO, Parent>(parentDto, cfg => { cfg.CreateMap<ParentDTO, Parent>(); });
             return parent;
+        }
+
+        public static Application ToDomain(this ApplicationDto applicationDTO)
+        {
+            return Mapper<ApplicationDto, Application>(applicationDTO, cfg => { cfg.CreateMap<ApplicationDto, Application>(); });
         }
 
         public static Subcategory ToDomain(this SubcategoryDTO categoryDto)
