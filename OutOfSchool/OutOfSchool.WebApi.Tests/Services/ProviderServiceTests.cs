@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
@@ -32,7 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             var builder =
                 new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
-                    databaseName: "OutOfSchoolTestDB");
+                    databaseName: "OutOfSchoolTestDB").ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
 
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
@@ -46,21 +47,124 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        [Order(1)]
+        public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
+        {
+            // Arrange
+            var expected = new Provider()
+            {
+                FullTitle = "Title",
+                ShortTitle = "ShortTitle",
+                Website = "Website",
+                Facebook = "Facebook",
+                Email = "user68@example.com",
+                Instagram = "Instagram1",
+                Description = "Description1",
+                DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                EdrpouIpn = "55545128",
+                PhoneNumber = "1111111111",
+                Founder = "Founder",
+                Ownership = OwnershipType.Private,
+                Type = ProviderType.TOV,
+                Status = false,
+                LegalAddressId = 11,
+                ActualAddressId = 12,
+                UserId = "de909f35-5eb7-Vb7AA-bda8-40a5bfda96a6",
+                LegalAddress = new Address
+                {
+                    Id = 11,
+                    Region = "Region11",
+                    District = "District11",
+                    City = "City11",
+                    Street = "Street11",
+                    BuildingNumber = "BuildingNumber11",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
+                ActualAddress = new Address
+                {
+                    Id = 12,
+                    Region = "Region12",
+                    District = "District12",
+                    City = "City12",
+                    Street = "Street12",
+                    BuildingNumber = "BuildingNumber12",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
+            };
+
+            // Act
+            var result = await service.Create(expected.ToModel()).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected.FullTitle, result.FullTitle);
+            Assert.AreEqual(expected.ShortTitle, result.ShortTitle);
+            Assert.AreEqual(expected.Website, result.Website);
+            Assert.AreEqual(expected.Facebook, result.Facebook);
+            Assert.AreEqual(expected.Email, result.Email);
+            Assert.AreEqual(expected.Instagram, result.Instagram);
+            Assert.AreEqual(expected.Description, result.Description);
+            Assert.AreEqual(expected.DirectorBirthDay, result.DirectorBirthDay);
+            Assert.AreEqual(expected.EdrpouIpn, result.EdrpouIpn);
+            Assert.AreEqual(expected.PhoneNumber, result.PhoneNumber);
+            Assert.AreEqual(expected.Founder, result.Founder);
+            Assert.AreEqual(expected.Ownership, result.Ownership);
+            Assert.AreEqual(expected.Type, result.Type);
+            Assert.AreEqual(expected.Status, result.Status);
+            Assert.AreEqual(expected.LegalAddressId, result.LegalAddressId);
+            Assert.AreEqual(expected.ActualAddressId, result.ActualAddressId);
+            Assert.AreEqual(expected.UserId, result.UserId);
+            Assert.AreEqual(expected.LegalAddress.City, result.LegalAddress.City);
+            Assert.AreEqual(expected.LegalAddress.BuildingNumber, result.LegalAddress.BuildingNumber);
+            Assert.AreEqual(expected.LegalAddress.Street, result.LegalAddress.Street);
+            Assert.AreEqual(expected.ActualAddress.City, result.ActualAddress.City);
+            Assert.AreEqual(expected.ActualAddress.BuildingNumber, result.ActualAddress.BuildingNumber);
+            Assert.AreEqual(expected.ActualAddress.Street, result.ActualAddress.Street);
+        }
+
+        [Test]
         [Order(2)]
         public void Create_NotUniqueEntity_ReturnsArgumentException()
         {
             // Arrange
             var expected = new Provider()
             {
-                FullTitle = "NewTitle",
-                ShortTitle = "NewShortTitle",
-                Description = "NewDescription",
+                FullTitle = "Title1",
+                ShortTitle = "ShortTitle1",
+                Website = "Website1",
+                Facebook = "Facebook1",
+                Email = "user1@example.com",
+                Instagram = "Instagram1",
+                Description = "Description1",
+                DirectorBirthDay = new DateTime(1975, month: 10, 5),
                 EdrpouIpn = "12345678",
+                PhoneNumber = "1111111111",
+                Founder = "Founder",
                 Ownership = OwnershipType.Private,
-                Type = ProviderType.FOP,
-                LegalAddressId = 5,
-                ActualAddressId = 6,
-                UserId = "de989f35-5e56-8k7r-bva8-40a5bfdcd6a6",
+                Type = ProviderType.TOV,
+                Status = false,
+                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
+                LegalAddress = new Address
+                {
+                    Region = "Region",
+                    District = "District",
+                    City = "City",
+                    Street = "Street",
+                    BuildingNumber = "BuildingNumber",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
+                ActualAddress = new Address
+                {
+                    Region = "Region",
+                    District = "District",
+                    City = "City",
+                    Street = "Street",
+                    BuildingNumber = "BuildingNumber",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
             };
 
             // Act and Assert
@@ -140,6 +244,32 @@ namespace OutOfSchool.WebApi.Tests.Services
                 async () => await service.Update(changedEntity).ConfigureAwait(false));
         }
 
+        [Test]
+        [Order(8)]
+        [TestCase(1)]
+        public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
+        {
+            // Act
+            var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
+
+            await service.Delete(id).ConfigureAwait(false);
+
+            var countAfterDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
+
+            // Assert
+            Assert.That(countAfterDeleting, Is.Not.EqualTo(countBeforeDeleting));
+        }
+
+        [Test]
+        [Order(9)]
+        [TestCase(10)]
+        public void Delete_WhenIdIsInvalid_ThrowsDbUpdateConcurrencyException(long id)
+        {
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentNullException>(
+                async () => await service.Delete(id).ConfigureAwait(false));
+        }
+
         private void SeedDatabase()
         {
             using var context = new OutOfSchoolDbContext(options);
@@ -169,6 +299,28 @@ namespace OutOfSchool.WebApi.Tests.Services
                         LegalAddressId = 1,
                         ActualAddressId = 2,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
+                        LegalAddress = new Address
+                        {
+                            Id = 1,
+                            Region = "Region1",
+                            District = "District1",
+                            City = "City1",
+                            Street = "Street1",
+                            BuildingNumber = "BuildingNumber1",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new Address
+                        {
+                            Id = 2,
+                            Region = "Region2",
+                            District = "District2",
+                            City = "City2",
+                            Street = "Street2",
+                            BuildingNumber = "BuildingNumber2",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                     },
                     new Provider()
                     {
@@ -190,6 +342,28 @@ namespace OutOfSchool.WebApi.Tests.Services
                         LegalAddressId = 3,
                         ActualAddressId = 4,
                         UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
+                        LegalAddress = new Address
+                        {
+                            Id = 3,
+                            Region = "Region3",
+                            District = "District3",
+                            City = "City3",
+                            Street = "Street3",
+                            BuildingNumber = "BuildingNumber3",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new Address
+                        {
+                            Id = 4,
+                            Region = "Region4",
+                            District = "District4",
+                            City = "City4",
+                            Street = "Street4",
+                            BuildingNumber = "BuildingNumber4",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                     },
                     new Provider()
                     {
@@ -211,6 +385,28 @@ namespace OutOfSchool.WebApi.Tests.Services
                         LegalAddressId = 5,
                         ActualAddressId = 6,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
+                        LegalAddress = new Address
+                        {
+                            Id = 5,
+                            Region = "Region5",
+                            District = "District5",
+                            City = "City5",
+                            Street = "Street5",
+                            BuildingNumber = "BuildingNumber5",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new Address
+                        {
+                            Id = 6,
+                            Region = "Region6",
+                            District = "District6",
+                            City = "City6",
+                            Street = "Street6",
+                            BuildingNumber = "BuildingNumber6",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                     },
                     new Provider()
                     {
@@ -229,9 +425,31 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 56,
-                        ActualAddressId = 23,
+                        LegalAddressId = 7,
+                        ActualAddressId = 8,
                         UserId = "de909f35-5eb7-4BBa-bda8-40a5bfda96a6",
+                        LegalAddress = new Address
+                        {
+                            Id = 7,
+                            Region = "Region7",
+                            District = "District7",
+                            City = "City7",
+                            Street = "Street7",
+                            BuildingNumber = "BuildingNumber7",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new Address
+                        {
+                            Id = 8,
+                            Region = "Region8",
+                            District = "District8",
+                            City = "City8",
+                            Street = "Street8",
+                            BuildingNumber = "BuildingNumber8",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                     },
                     new Provider()
                     {
@@ -250,9 +468,31 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 1,
-                        ActualAddressId = 2,
+                        LegalAddressId = 9,
+                        ActualAddressId = 10,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
+                        LegalAddress = new Address
+                        {
+                            Id = 9,
+                            Region = "Region9",
+                            District = "District9",
+                            City = "City9",
+                            Street = "Street9",
+                            BuildingNumber = "BuildingNumber9",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        ActualAddress = new Address
+                        {
+                            Id = 10,
+                            Region = "Region10",
+                            District = "District10",
+                            City = "City10",
+                            Street = "Street10",
+                            BuildingNumber = "BuildingNumber10",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
                     },
                 };
 

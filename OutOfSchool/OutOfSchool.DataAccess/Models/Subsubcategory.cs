@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Subcategory
+    public class Subsubcategory
     {
         public long Id { get; set; }
 
@@ -17,10 +19,8 @@ namespace OutOfSchool.Services.Models
         public string Description { get; set; } = string.Empty;
 
         [Required]
-        public long CategoryId { get; set; }
+        public long SubcategoryId { get; set; }
 
-        public virtual Category Category { get; set; }
-
-        public virtual List<Subsubcategory> Subsubcategories { get; set; }
+        public virtual Subcategory Subcategory { get; set; }
     }
 }

@@ -116,7 +116,7 @@ namespace OutOfSchool.WebApi.Services
               
                 logger.Information("Provider successfully deleted.");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (ArgumentNullException)
             {
                 logger.Error("Deleting failed. There is no Provider in the Db with such an id.");
                 throw;

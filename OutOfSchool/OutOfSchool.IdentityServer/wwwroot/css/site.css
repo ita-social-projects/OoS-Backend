@@ -1,4 +1,4 @@
-﻿﻿html,
+﻿﻿﻿﻿html,
 body {
   height: 100%;
 }
@@ -10,7 +10,6 @@ body {
   background-color: #f8f8f8;
   color: #333333;
 }
-
 
 h1,
 h2,
@@ -54,14 +53,14 @@ a {
   text-decoration: none;
   color: inherit;
 }
-
+/* 
 .login__wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0;
   padding: 10px;
-}
+} */
 .login__text,
 .login__label,
 .login__link {
@@ -118,13 +117,13 @@ a {
   color: #4158d0;
 }
 
-.main-wrap {
+.wrapper {
   display: flex;
   justify-content: center;
   margin-top: 50px;
 }
 
-.wrapper {
+.icon_wrapper {
   background: #ffffff;
   box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
   border-radius: 5px;
@@ -135,31 +134,27 @@ a {
   flex-direction: column;
   width: 640px;
 }
-.title {
+.icon_title {
   line-height: 20px;
   text-align: center;
   color: #444444;
   margin: 0;
 }
-.subtitle {
+.icon_subtitle {
   line-height: 18px;
   text-align: center;
   color: #aaaaaa;
   margin: 16px 0 0 0;
 }
-.social {
+.icon_social {
   margin-top: 24px;
 }
-.button {
+.icon_button {
   border: none;
   outline: none;
   background: inherit;
   margin: 0 0.3rem;
   cursor: pointer;
-}
-.submit{
-  color: white;
-  background-color: blue;
 }
 .option {
   font-size: 0.8125rem;
@@ -191,15 +186,15 @@ a {
   top: 50%;
   transform: translate(120%, -50%);
 }
-.form {
+.registration_form {
   margin-top: 24px;
   width: 80%;
 }
-.star {
+.registration_star {
   color: red;
   display: inline;
 }
-.list {
+.registration_list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -248,7 +243,7 @@ a {
 .registration_item-password {
   margin-bottom: 8px;
 }
-.registration_link {
+.link {
   color: #3849f9;
   font-weight: bold;
   text-decoration: underline;
@@ -321,7 +316,7 @@ a {
   width: 13px;
   height: 17px;
 }
-.input {
+.registration_input {
   box-sizing: border-box;
   border: 1px solid #e3e3e3;
   border-radius: 20px;
@@ -433,17 +428,6 @@ a {
     visibility: hidden;
 }
 
-.wrapper-login{
-  box-shadow:none;
-}
-
-.login-input{
-  width: 60%;
-  margin-bottom: 16px;
-}
-.login-submit{
-  margin-bottom: 16px
-}
 @media screen and (max-width: 750px) {
     .registration_wrapper {
     width: 100%;
@@ -453,4 +437,3 @@ a {
     width: 95%;
   }
 }
-

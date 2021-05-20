@@ -45,9 +45,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             return new List<ParentDTO>
             {
-                    new ParentDTO() { Id = 0, FirstName = "Testone", MiddleName = "Testone", LastName = "Testone", UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6"},
-                    new ParentDTO() { Id = 1, FirstName = "Testtwo", MiddleName = "Testtwo", LastName = "Testtwo", UserId = "de804f35-5eb7-4b8n-bda8-70a5tyfg96a6"},
-                    new ParentDTO() { Id = 2, FirstName = "Testthree", MiddleName = "Testthree", LastName = "Testthree", UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6"},
+                    new ParentDTO() { Id = 0, FirstName = "Testone", MiddleName = "Testone", LastName = "Testone", UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" },
+                    new ParentDTO() { Id = 1, FirstName = "Testtwo", MiddleName = "Testtwo", LastName = "Testtwo", UserId = "de804f35-5eb7-4b8n-bda8-70a5tyfg96a6" },
+                    new ParentDTO() { Id = 2, FirstName = "Testthree", MiddleName = "Testthree", LastName = "Testthree", UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" },
             };
         }
 
