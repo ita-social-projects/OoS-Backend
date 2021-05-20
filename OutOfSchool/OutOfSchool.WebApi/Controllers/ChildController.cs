@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -63,12 +62,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            this.IdValidation(id);
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
@@ -129,12 +123,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            this.IdValidation(id);
 
             await service.Delete(id).ConfigureAwait(false);
 
