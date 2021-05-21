@@ -41,11 +41,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
-            logger.Information("Teacher creating was started.");
+            logger.Information("Workshop creating was started.");
 
             var workshop = dto.ToDomain();
 
             var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
+
+            logger.Information($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
             return newWorkshop.ToModel();
         }
@@ -53,13 +55,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopDTO>> GetAll()
         {
-            logger.Information("Process of getting all Workshops started.");
+            logger.Information("Getting all Workshops started.");
 
             var workshops = await repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!workshops.Any()
                 ? "Workshop table is empty."
-                : "Successfully got all records from the Workshop table.");
+                : $"All {workshops.Count()} records were successfully received from the Workshop table");
 
             return workshops.Select(x => x.ToModel()).ToList();
         }
@@ -67,7 +69,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> GetById(long id)
         {
-            logger.Information("Process of getting Teacher by id started.");
+            logger.Information($"Getting Workshop by Id started. Looking Id = {id}.");
 
             var teacher = await repository.GetById(id).ConfigureAwait(false);
 
@@ -78,14 +80,20 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Teacher with id = {id}.");
+            logger.Information($"Successfully got a Workshop with Id = {id}.");
 
             return teacher.ToModel();
         }
 
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
         {
+            logger.Information($"Getting Workshop by organization started. Looking ProviderId = {id}.");
+
             var workshops = await repository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
+
+            logger.Information(!workshops.Any()
+                ? $"There aren't Workshops for Provider with Id = {id}."
+                : $"From Workshop table were successfully received {workshops.Count()} records.");
 
             return workshops.Select(x => x.ToModel()).ToList();
         }
@@ -93,19 +101,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
-            logger.Information("Workshop updating was launched.");
+            logger.Information($"Updating Workshop with Id = {dto?.Id} started.");
 
             try
             {
                 var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Workshop successfully updated.");
+                logger.Information($"Workshop with Id = {workshop?.Id} updated succesfully.");
 
                 return workshop.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no Workshop in the Db with such an id.");
+                logger.Error($"Updating failed. Workshop with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -113,7 +121,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Workshop deleting was launched.");
+            logger.Information($"Deleting Workshop with Id = {id} started.");
 
             var entity = new Workshop() { Id = id };
 
@@ -121,11 +129,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Workshop successfully deleted.");
+                logger.Information($"Workshop with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed. There is no Teacher in the Db with such an id.");
+                logger.Error($"Deleting failed. Workshop with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }

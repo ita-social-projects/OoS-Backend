@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -52,12 +52,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAddressById(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            this.ValidateId(id, localizer);
 
             return Ok(await addressService.GetById(id).ConfigureAwait(false));
         }
@@ -132,12 +127,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            this.ValidateId(id, localizer);
 
             await addressService.Delete(id).ConfigureAwait(false);
 

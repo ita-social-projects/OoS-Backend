@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Extensions
 {
@@ -18,6 +14,8 @@ namespace OutOfSchool.WebApi.Extensions
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionMiddlewareExtension"/> class.
         /// </summary>
+        /// <param name="next">Next delegate.</param>
+        /// <param name="logger">Logger.</param>
         public ExceptionMiddlewareExtension(RequestDelegate next, ILogger<ExceptionMiddlewareExtension> logger)
         {
             this.next = next;
@@ -25,8 +23,10 @@ namespace OutOfSchool.WebApi.Extensions
         }
 
         /// <summary>
-        /// 
+        /// Exception Handler.
         /// </summary>
+        /// <param name="context">HttpContext.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Extensions
             }
             catch (Exception ex)
             {
-                logger.LogError("Something went wrong:", ex.Message);
+                logger.LogError($"Something went wrong: {ex.Message}");
                 await HandleExceptionAsync(context, ex).ConfigureAwait(false);
             }
         }
