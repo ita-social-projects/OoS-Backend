@@ -52,7 +52,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAddressById(long id)
         {
-            this.IdValidation(id);
+            this.ValidateId(id, localizer);
 
             return Ok(await addressService.GetById(id).ConfigureAwait(false));
         }
@@ -127,7 +127,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(long id)
         {
-            this.IdValidation(id);
+            this.ValidateId(id, localizer);
 
             await addressService.Delete(id).ConfigureAwait(false);
 

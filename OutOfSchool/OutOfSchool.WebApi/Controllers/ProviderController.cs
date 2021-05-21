@@ -60,7 +60,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            this.IdValidation(id);
+            this.ValidateId(id, localizer);
 
             return Ok(await providerService.GetById(id).ConfigureAwait(false));
         }
@@ -162,7 +162,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            this.IdValidation(id);
+            this.ValidateId(id, localizer);
 
             await providerService.Delete(id).ConfigureAwait(false);
 

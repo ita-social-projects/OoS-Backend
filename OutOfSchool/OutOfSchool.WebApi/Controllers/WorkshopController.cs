@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(long id)
         {
-            this.IdValidation(id);
+            this.ValidateId(id, localizer);
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
@@ -124,7 +124,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            this.IdValidation(id);
+            this.ValidateId(id, localizer);
 
             await service.Delete(id).ConfigureAwait(false);
 
