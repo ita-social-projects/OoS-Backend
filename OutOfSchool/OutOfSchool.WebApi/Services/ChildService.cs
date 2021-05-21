@@ -46,7 +46,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newChild = await repository.Create(child).ConfigureAwait(false);
 
-            logger.Information("Child created successfully.");
+            logger.Information($"Child with Id = {newChild?.Id} created successfully.");
 
             return newChild.ToModel();
         }
@@ -54,13 +54,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChildDTO>> GetAll()
         {
-            logger.Information("Process of getting all Children started.");
+            logger.Information("Getting all Children started.");
 
             var children = await repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!children.Any()
                 ? "Child table is empty."
-                : "Successfully got all records from the Child table.");
+                : $"All {children.Count()} records were successfully received from the Child table");
 
             return children.Select(x => x.ToModel()).ToList();
         }
@@ -68,7 +68,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> GetById(long id)
         {
-            logger.Information("Process of getting Child by id started.");
+            logger.Information($"Getting Child by Id started. Looking Id = {id}.");
 
             var child = await repository.GetById(id).ConfigureAwait(false);
 
@@ -79,7 +79,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Child with id = {id}.");
+            logger.Information($"Successfully got a Child with Id = {id}.");
 
             return child.ToModel();
         }
@@ -87,14 +87,14 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> GetByIdWithDetails(long id)
         {
-            logger.Information("Process of getting child's details was launched.");
+            logger.Information($"Getting Child by Id with details started. Looking CategoryId = {id}.");
 
             Expression<Func<Child, bool>> filter = child => child.Id == id;
 
             var children =
                 await this.repository.GetByFilter(filter, "Parent,SocialGroup").ConfigureAwait(false);
 
-            logger.Information("Child details successfully retrieved.");
+            logger.Information($"Successfully got Child details with Id = {id}.");
 
             return await Task.Run(() => children.FirstOrDefault().ToModel()).ConfigureAwait(false);
         }
@@ -102,7 +102,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChildDTO>> GetAllByParent(long id)
         {
+            logger.Information($"Getting Child's by Parent started. Looking ParentId = {id}.");
+
             var children = await repository.GetByFilter(x => x.ParentId == id).ConfigureAwait(false);
+
+            logger.Information(!children.Any()
+                ? $"There aren't Children for Parent with Id = {id}."
+                : $"All {children.Count()} records were successfully received from the Children table");
 
             return children.Select(x => x.ToModel()).ToList();
         }
@@ -110,20 +116,20 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDTO> Update(ChildDTO dto)
         {
-            logger.Information("Child updating was launched.");
+            logger.Information($"Updating Children with Id = {dto?.Id} started.");
             this.Check(dto);
 
             try
             {
                 var child = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information("Child successfully updated.");
+                logger.Information($"Children with Id = {child?.Id} updated succesfully.");
 
                 return child.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Updating failed. There is no Child in the Db with such an id.");
+                logger.Error($"Updating failed. Children with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -131,7 +137,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information("Child deleting was launched.");
+            logger.Information($"Deleting Children with Id = {id} started.");
 
             var entity = new Child { Id = id };
 
@@ -139,11 +145,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information("Child successfully deleted.");
+                logger.Information($"Children with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error("Deleting failed. There is no Child in the Db with such an id.");
+                logger.Error($"Deleting failed. Children with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -152,32 +158,32 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                logger.Information("Child creating failed. Child was null.");
-                throw new ArgumentNullException(nameof(dto), "Child was null.");
+                logger.Information("Child creating failed. Child is null.");
+                throw new ArgumentNullException(nameof(dto), localizer["Child is null."]);
             }
 
             if (dto.DateOfBirth > DateTime.Now)
             {
-                logger.Information("Child creating failed. Invalid Date of birth.");
-                throw new ArgumentException("Invalid Date of birth.");
+                logger.Information($"Child creating failed. Invalid Date of birth - {dto.DateOfBirth}.");
+                throw new ArgumentException(localizer["Invalid Date of birth."]);
             }
 
             if (dto.FirstName.Length == 0)
             {
                 logger.Information("Updating failed. Empty firstname.");
-                throw new ArgumentException("Empty firstname.", nameof(dto));
+                throw new ArgumentException(localizer["Empty firstname."], nameof(dto));
             }
 
             if (dto.LastName.Length == 0)
             {
                 logger.Information("Updating failed. Empty lastname.");
-                throw new ArgumentException("Empty lastname.", nameof(dto));
+                throw new ArgumentException(localizer["Empty lastname."], nameof(dto));
             }
 
             if (dto.MiddleName.Length == 0)
             {
                 logger.Information("Updating failed. Empty patronymic.");
-                throw new ArgumentException("Empty patronymic.", nameof(dto));
+                throw new ArgumentException(localizer["Empty patronymic."], nameof(dto));
             }
         }
     }

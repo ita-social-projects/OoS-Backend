@@ -66,12 +66,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            this.ValidateId(id, localizer);
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
@@ -144,12 +139,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(long id)
         {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
+            this.ValidateId(id, localizer);
 
             await service.Delete(id).ConfigureAwait(false);
 
@@ -169,8 +159,9 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                int id = int.Parse(this.GetJwtClaimByName("sid"));
-                ParentDTO parentDTO = await service.GetById(id).ConfigureAwait(false);
+                string userId = User.FindFirst("sub")?.Value;
+                var parents = await service.GetAll().ConfigureAwait(false);
+                var parentDTO = parents.FirstOrDefault(x => x.UserId == userId);
                 return this.Ok(parentDTO);
             }
             catch (ArgumentException ex)

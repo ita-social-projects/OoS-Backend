@@ -4,7 +4,6 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -38,20 +37,20 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<IEnumerable<UserDto>> GetAll()
         {
-            logger.Information("Process of getting all Users started.");
+            logger.Information("Getting all Users started.");
 
             var users = await repository.GetAll().ConfigureAwait(false);
 
             logger.Information(!users.Any()
                 ? "User table is empty."
-                : "Successfully got all records from the User table.");
+                : $"All {users.Count()} records were successfully received from the User table");
 
             return users.Select(user => user.ToModel()).ToList();
         }
 
         public async Task<UserDto> GetById(string id)
         {
-            logger.Information("Process of getting User by id started.");
+            logger.Information($"Getting User by Id started. Looking Id = {id}.");
 
             Expression<Func<User, bool>> filter = p => p.Id == id;
 
@@ -62,7 +61,7 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
             }
 
-            logger.Information($"Successfully got an User with id = {id}.");
+            logger.Information($"Successfully got an User with Id = {id}.");
 
             return users.FirstOrDefault().ToModel();
         }

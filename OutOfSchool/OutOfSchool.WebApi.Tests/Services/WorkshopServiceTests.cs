@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
-        private IEntityRepository<Workshop> repo;
+        private IWorkshopRepository repo;
         private IWorkshopService service;
         private Mock<IRatingService> ratingService;
         private Mock<ILogger> logger;
@@ -36,7 +36,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
 
-            repo = new EntityRepository<Workshop>(context);
+            repo = new WorkshopRepository(context);
             ratingService = new Mock<IRatingService>();
             logger = new Mock<ILogger>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
@@ -51,13 +51,16 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var expected = new Workshop()
             {
-                Title = "NewTitle",
-                Description = "NewDescription",
+                Title = "NewTitle2",
+                Description = "NewDescription2",
                 MinAge = 4,
                 MaxAge = 10,
                 Price = 1000,
-                Head = "NewHead",
+                Head = "NewHead2",
                 HeadBirthDate = new DateTime(1980, 12, 10),
+                CategoryId = 1,
+                SubcategoryId = 1,
+                SubsubcategoryId = 1,
             };
 
             // Act
@@ -192,7 +195,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email1@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Logo = "image1",
                     },
                     new Workshop()
                     {
@@ -212,7 +214,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email2@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Logo = "image2",
                     },
                     new Workshop()
                     {
@@ -232,7 +233,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email3@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Logo = "image3",
                     },
                     new Workshop()
                     {
@@ -252,7 +252,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email4@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Logo = "image4",
                     },
                     new Workshop()
                     {
@@ -272,10 +271,16 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email5@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
-                        Logo = "image5",
                     },
                 };
 
+                var categories = new List<Category>() { new Category() { Title = "Category1" }, new Category() { Title = "Category2" } };
+                var subcategories = new List<Subcategory>() { new Subcategory() { Title = "new1", CategoryId = 1 }, new Subcategory() { Title = "new2", CategoryId = 1 } };
+                var subsubcategories = new List<Subsubcategory>() { new Subsubcategory() { Title = "new1", SubcategoryId = 1 }, new Subsubcategory() { Title = "new2", SubcategoryId = 1 } };
+
+                context.Categories.AddRangeAsync(categories);
+                context.Subcategories.AddRangeAsync(subcategories);
+                context.Subsubcategories.AddRangeAsync(subsubcategories);
                 context.Workshops.AddRangeAsync(workshops);
                 context.SaveChangesAsync();
             }

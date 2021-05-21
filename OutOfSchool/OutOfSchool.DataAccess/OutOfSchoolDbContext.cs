@@ -23,6 +23,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Subcategory> Subcategories { get; set; }
 
+        public DbSet<Subsubcategory> Subsubcategories { get; set; }
+
         public DbSet<Category> Categories { get; set; }
         
         public DbSet<SocialGroup> SocialGroups { get; set; }
@@ -30,6 +32,8 @@ namespace OutOfSchool.Services
         public DbSet<Address> Addresses { get; set; }
 
         public DbSet<BirthCertificate> BirthCertificates { get; set; }
+
+        public DbSet<Application> Applications { get; set; }
         
         public DbSet<Rating> Ratings { get; set; }
     }
