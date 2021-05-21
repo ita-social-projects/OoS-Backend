@@ -32,6 +32,7 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<Category, CategoryDTO>();
                 cfg.CreateMap<Subcategory, SubcategoryDTO>();
                 cfg.CreateMap<Subsubcategory, SubsubcategoryDTO>();
+                cfg.CreateMap<Teacher, TeacherDTO>();
             });
         }
 
@@ -116,6 +117,7 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<CategoryDTO, Category>();
                 cfg.CreateMap<SubcategoryDTO, Subcategory>();
                 cfg.CreateMap<SubsubcategoryDTO, Subsubcategory>();
+                cfg.CreateMap<TeacherDTO, Teacher>();
             });
         }
 
