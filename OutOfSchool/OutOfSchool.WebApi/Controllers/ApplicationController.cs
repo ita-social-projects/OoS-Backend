@@ -139,6 +139,8 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 applicationDto.UserId = User.FindFirst("sub")?.Value;
 
+                applicationDto.CreationTime = DateTime.Now;
+
                 var application = await service.Create(applicationDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
