@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -65,7 +65,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            ValidateId(id);
+            this.ValidateId(id, localizer);
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
@@ -85,9 +85,9 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}/parent/{parentId}")]
         public async Task<IActionResult> GetParentRating(string entityType, long parentId, long entityId)
         {
-            ValidateId(parentId);
+            this.ValidateId(parentId, localizer);
 
-            ValidateId(entityId);
+            this.ValidateId(entityId, localizer);
 
             RatingType type = default;
 
@@ -174,21 +174,11 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            ValidateId(id);
+            this.ValidateId(id, localizer);
 
             await service.Delete(id).ConfigureAwait(false);
 
             return NoContent();
-        }
-
-        private void ValidateId(long id)
-        {
-            if (id < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be less than 1."]);
-            }
         }
     }
 }
