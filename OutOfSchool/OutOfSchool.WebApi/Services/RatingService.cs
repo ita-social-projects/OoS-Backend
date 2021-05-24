@@ -131,7 +131,7 @@ namespace OutOfSchool.WebApi.Services
             }
             else
             {
-                logger.Information($"Rating already exists or entityId = {dto?.ParentId} isn't correct.");
+                logger.Information($"Rating already exists or entityId = {dto?.EntityId} isn't correct.");
 
                 return null;
             }
