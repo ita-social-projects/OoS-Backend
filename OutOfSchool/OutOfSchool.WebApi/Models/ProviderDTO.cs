@@ -79,6 +79,8 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long ActualAddressId { get; set; }
 
+        public float Rating { get; set; }
+
         public string UserId { get; set; }
 
         [Required]

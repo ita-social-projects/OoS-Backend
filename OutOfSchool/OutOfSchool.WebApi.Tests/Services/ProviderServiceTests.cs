@@ -25,6 +25,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private OutOfSchoolDbContext context;
         private IProviderRepository repoProvider;
         private IProviderService service;
+        private Mock<IRatingService> ratingService;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
 
@@ -39,9 +40,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             context = new OutOfSchoolDbContext(options);
 
             repoProvider = new ProviderRepository(context);
+            ratingService = new Mock<IRatingService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger>();
-            service = new ProviderService(repoProvider, logger.Object, localizer.Object);
+            service = new ProviderService(repoProvider, ratingService.Object, logger.Object, localizer.Object);
 
             SeedDatabase();
         }

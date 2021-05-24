@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -19,6 +20,7 @@ namespace OutOfSchool.WebApi.Services
     public class ProviderService : IProviderService
     {
         private readonly IProviderRepository providerRepository;
+        private readonly IRatingService ratingService;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -26,12 +28,18 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="ProviderService"/> class.
         /// </summary>
         /// <param name="providerRepository">Provider repository.</param>
+        /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ProviderService(IProviderRepository providerRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ProviderService(
+            IProviderRepository providerRepository,
+            IRatingService ratingService, 
+            ILogger logger, 
+            IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.providerRepository = providerRepository;
+            this.ratingService = ratingService;
             this.logger = logger;
         }
 
@@ -65,7 +73,19 @@ namespace OutOfSchool.WebApi.Services
                 ? "Provider table is empty."
                 : $"All {providers.Count()} records were successfully received from the Provider table");
 
-            return providers.Select(provider => provider.ToModel()).ToList();
+            var providersDTO = providers.Select(provider => provider.ToModel()).ToList();
+
+            var averageRatings = ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
+
+            if (averageRatings != null)
+            {
+                foreach (var provider in providersDTO)
+                {
+                    provider.Rating = averageRatings.FirstOrDefault(r => r.Key == provider.Id).Value;
+                }
+            }
+
+            return providersDTO;
         }
 
         /// <inheritdoc/>
@@ -84,7 +104,11 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information($"Successfully got a Provider with Id = {id}.");
 
-            return provider.ToModel();
+            var providerDTO = provider.ToModel();
+
+            providerDTO.Rating = ratingService.GetAverageRating(providerDTO.Id, RatingType.Provider);
+
+            return providerDTO;
         }
 
         /// <inheritdoc/>

@@ -34,5 +34,7 @@ namespace OutOfSchool.Services
         public DbSet<BirthCertificate> BirthCertificates { get; set; }
 
         public DbSet<Application> Applications { get; set; }
+        
+        public DbSet<Rating> Ratings { get; set; }
     }
 }

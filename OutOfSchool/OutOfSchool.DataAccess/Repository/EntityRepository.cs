@@ -96,6 +96,20 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
+        public IQueryable<T> GetByFilterNoTracking(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        {
+            var query = this.dbSet.Where(predicate);
+
+            foreach (var includeProperty in includeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return query.AsNoTracking();
+        }
+
+        /// <inheritdoc/>
         public async Task<T> GetById(long id)
         {
             return await dbSet.FindAsync(id).AsTask();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
@@ -64,6 +65,23 @@ namespace OutOfSchool.WebApi.Tests
         }
 
         [Test]
+        public void GetByFilterNoTracking_FilterWithIdAndIncludedProperty_ReturnSingleEntity()
+        {
+            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            {
+                var repository = new EntityRepository<Child>(context);
+                Expression<Func<Child, bool>> filter = child => child.Id == 1;
+
+                // Act
+                var child = repository.GetByFilterNoTracking(filter, "SocialGroup");
+
+                // Assert
+                Assert.AreEqual(1, child.Count());
+                Assert.AreEqual("sg2", child.Where(a => a.Id == 1).Select(a => a.SocialGroup.Name).FirstOrDefault());
+            }
+        }
+
+        [Test]
         public void Create_NewEntity_AddNewEntityToDatabase()
         {
             using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
@@ -81,7 +99,7 @@ namespace OutOfSchool.WebApi.Tests
         }
 
         [Test]
-        public void Delete_DeleteEntity_DeleteFromDatabase()
+        public async Task Delete_DeleteEntity_DeleteFromDatabaseAsync()
         {
             using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
             {
@@ -89,7 +107,7 @@ namespace OutOfSchool.WebApi.Tests
                 SocialGroup socialGroup = new SocialGroup { Id = 1, Name = "sg1" };
 
                 // Act
-                repository.Delete(socialGroup);
+                await repository.Delete(socialGroup);
                 var socialGroups = repository.GetAll();
 
                 // Assert

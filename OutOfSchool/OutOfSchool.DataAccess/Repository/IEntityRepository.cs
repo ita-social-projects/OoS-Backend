@@ -70,6 +70,14 @@ namespace OutOfSchool.Services.Repository
         Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "");
 
         /// <summary>
+        /// Get elements by a specific filter with no tracking.
+        /// </summary>
+        /// <param name="predicate">Filter with key.</param>
+        /// <param name="includeProperties">Name of properties which should be included.</param>
+        /// <returns>Elements that don't track and that satisfy filter criteria.</returns>
+        IQueryable<T> GetByFilterNoTracking(Expression<Func<T, bool>> predicate, string includeProperties = "");
+
+        /// <summary>
         /// Get the amount of elements with filter or without it.
         /// </summary>
         /// <param name="where">Filter.</param>

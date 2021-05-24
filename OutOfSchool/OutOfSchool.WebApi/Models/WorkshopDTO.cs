@@ -73,6 +73,8 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public bool IsPerMonth { get; set; }
 
+        public float Rating { get; set; }
+
         [Required]
         public long ProviderId { get; set; }
 

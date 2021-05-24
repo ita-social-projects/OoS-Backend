@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -20,6 +21,7 @@ namespace OutOfSchool.WebApi.Services
     public class WorkshopService : IWorkshopService
     {
         private readonly IWorkshopRepository repository;
+        private readonly IRatingService ratingService;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IPaginationHelper<Workshop> paginationHelper;
@@ -28,12 +30,18 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
         /// <param name="repository">Repository for Workshop entity.</param>
+        /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public WorkshopService(IWorkshopRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public WorkshopService(
+            IWorkshopRepository repository,
+            IRatingService ratingService,
+            ILogger logger, 
+            IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
+            this.ratingService = ratingService;
             this.logger = logger;
             this.paginationHelper = new PaginationHelper<Workshop>(repository);
         }
@@ -63,7 +71,19 @@ namespace OutOfSchool.WebApi.Services
                 ? "Workshop table is empty."
                 : $"All {workshops.Count()} records were successfully received from the Workshop table");
 
-            return workshops.Select(x => x.ToModel()).ToList();
+            var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
+
+            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTO.Select(p => p.Id), RatingType.Workshop);
+
+            if (averageRatings != null)
+            {
+                foreach (var workshop in workshopsDTO)
+                {
+                    workshop.Rating = averageRatings.FirstOrDefault(r => r.Key == workshop.Id).Value;
+                }
+            }
+
+            return workshopsDTO;
         }
 
         /// <inheritdoc/>
@@ -71,9 +91,9 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Getting Workshop by Id started. Looking Id = {id}.");
 
-            var teacher = await repository.GetById(id).ConfigureAwait(false);
+            var workshop = await repository.GetById(id).ConfigureAwait(false);
 
-            if (teacher == null)
+            if (workshop == null)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
@@ -82,7 +102,11 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information($"Successfully got a Workshop with Id = {id}.");
 
-            return teacher.ToModel();
+            var workshopDTO = workshop.ToModel();
+
+            workshopDTO.Rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
+
+            return workshopDTO;
         }
 
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
