@@ -16,6 +16,8 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<ApplicationDto> Create(ApplicationDto applicationDto);
 
+        Task<IEnumerable<ApplicationDto>> Create(IEnumerable<ApplicationDto> applicationDtos);
+
         /// <summary>
         /// Get all entities.
         /// </summary>
