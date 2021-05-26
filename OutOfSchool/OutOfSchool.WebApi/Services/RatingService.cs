@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     public class RatingService : IRatingService
     {
         private readonly IRatingRepository ratingRepository;
-        private readonly IEntityRepository<Workshop> workshopRepository;
+        private readonly IWorkshopRepository workshopRepository;
         private readonly IProviderRepository providerRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="localizer">Localizer.</param>
         public RatingService(
             IRatingRepository ratingRepository,
-            IEntityRepository<Workshop> workshopRepository,
+            IWorkshopRepository workshopRepository,
             IProviderRepository providerRepository,
             ILogger logger,
             IStringLocalizer<SharedResource> localizer)

@@ -11,7 +11,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using ILogger = Serilog.ILogger;
 
@@ -23,7 +22,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IRatingService service;
         private OutOfSchoolDbContext context;
         private IRatingRepository ratingRepository;
-        private IEntityRepository<Workshop> workshopRepository;
+        private IWorkshopRepository workshopRepository;
         private IProviderRepository providerRepository;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
@@ -40,7 +39,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             context = new OutOfSchoolDbContext(options);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             ratingRepository = new RatingRepository(context);
-            workshopRepository = new EntityRepository<Workshop>(context);
+            workshopRepository = new WorkshopRepository(context);
             providerRepository = new ProviderRepository(context);
             logger = new Mock<ILogger>();
             service = new RatingService(ratingRepository, workshopRepository, providerRepository, logger.Object, localizer.Object);
