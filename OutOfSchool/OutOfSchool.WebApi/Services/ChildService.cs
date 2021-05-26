@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ChildService : IChildService
     {
-        private readonly IEntityRepository<Child> repository;
+        private readonly IChildRepository repository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -28,7 +28,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Repository for the Child entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ChildService(IEntityRepository<Child> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ChildService(IChildRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
@@ -40,11 +40,11 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Child creating was started.");
 
-            this.Check(dto);
+            Check(dto);
 
-            var child = dto.ToDomain();
+            Func<Task<Child>> operation = async () => await repository.Create(dto.ToDomain()).ConfigureAwait(false);
 
-            var newChild = await repository.Create(child).ConfigureAwait(false);
+            var newChild = await repository.RunInTransaction(operation).ConfigureAwait(false);
 
             logger.Information($"Child with Id = {newChild?.Id} created successfully.");
 
@@ -117,7 +117,8 @@ namespace OutOfSchool.WebApi.Services
         public async Task<ChildDTO> Update(ChildDTO dto)
         {
             logger.Information($"Updating Children with Id = {dto?.Id} started.");
-            this.Check(dto);
+
+            Check(dto);
 
             try
             {
