@@ -11,19 +11,19 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "First name is required")]
         [DataType(DataType.Text)]
         [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "First name cannot contains digits")]
+        [RegularExpression(@"[\w\-\']*", ErrorMessage = "First name cannot contains digits")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Last name is required")]
         [DataType(DataType.Text)]
         [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "Last name cannot contains digits")]
+        [RegularExpression(@"[\w\-\']*", ErrorMessage = "Last name cannot contains digits")]
         public string LastName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Patronymic is required")]
         [DataType(DataType.Text)]
         [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "Patronymic cannot contains digits")]
+        [RegularExpression(@"[\w\-\']*", ErrorMessage = "Patronymic cannot contains digits")]
         public string MiddleName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Birthday is required")]
