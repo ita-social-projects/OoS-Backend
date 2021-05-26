@@ -103,6 +103,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
             services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<IChatMessageService, ChatMessageService>();
+            services.AddTransient<IChatRoomService, ChatRoomService>();
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IParentService, ParentService>();
             services.AddTransient<IProviderService, ProviderService>();
@@ -119,6 +121,9 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
             services.AddTransient<IEntityRepository<Category>, EntityRepository<Category>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
+            services.AddTransient<IEntityRepository<ChatMessage>, EntityRepository<ChatMessage>>();
+            services.AddTransient<IEntityRepository<ChatRoom>, EntityRepository<ChatRoom>>();
+            services.AddTransient<IEntityRepository<ChatRoomUser>, EntityRepository<ChatRoomUser>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
