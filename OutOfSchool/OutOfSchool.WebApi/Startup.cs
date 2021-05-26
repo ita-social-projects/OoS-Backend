@@ -111,7 +111,6 @@ namespace OutOfSchool.WebApi
 
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
-            services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Parent>, EntityRepository<Parent>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
@@ -122,6 +121,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();
             services.AddTransient<ISubsubcategoryRepository, SubsubcategoryRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
+            services.AddTransient<IChildRepository, ChildRepository>();
 
             services.AddSingleton(Log.Logger);
 
