@@ -38,9 +38,28 @@ namespace OutOfSchool.Services
 
         public DbSet<Rating> Ratings { get; set; }
 
+        public DbSet<ChatRoom> ChatRooms { get; set; }
+
+        public DbSet<ChatRoomUser> ChatRoomUsers { get; set; }
+
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<ChatRoom>()
+            .HasMany(r => r.Users)
+            .WithMany(u => u.ChatRooms)
+            .UsingEntity<ChatRoomUser>(
+                j => j
+                    .HasOne(cru => cru.User)
+                    .WithMany(u => u.ChatRoomUsers)
+                    .HasForeignKey(cru => cru.UserId),
+                j => j
+                    .HasOne(cru => cru.ChatRoom)
+                    .WithMany(r => r.ChatRoomUsers)
+                    .HasForeignKey(cru => cru.ChatRoomId));
 
             builder.Seed();
         }
