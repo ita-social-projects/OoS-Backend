@@ -19,7 +19,7 @@ namespace OutOfSchool.WebApi.Tests
         {
             using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
             {
-                var repository = new EntityRepository<Child>(context);
+                var repository = new ChildRepository(context);
 
                 // Act
                 var child = repository.GetById(1).Result;
@@ -36,7 +36,7 @@ namespace OutOfSchool.WebApi.Tests
         {
             using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
             {
-                var repository = new EntityRepository<Child>(context);
+                var repository = new ChildRepository(context);
                 Expression<Func<Child, bool>> filter = child => child.Id == 1;
 
                 // Act
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Tests
         {
             using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
             {
-                var repository = new EntityRepository<Child>(context);
+                var repository = new ChildRepository(context);
 
                 // Act
                 var children = repository.GetAllWithDetails("Parent").Result;
@@ -69,7 +69,7 @@ namespace OutOfSchool.WebApi.Tests
         {
             using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
             {
-                var repository = new EntityRepository<Child>(context);
+                var repository = new ChildRepository(context);
                 Expression<Func<Child, bool>> filter = child => child.Id == 1;
 
                 // Act
@@ -86,7 +86,7 @@ namespace OutOfSchool.WebApi.Tests
         {
             using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
             {
-                var repository = new EntityRepository<Child>(context);
+                var repository = new ChildRepository(context);
                 Child child = new Child { FirstName = "fn4", LastName = "ln4", Patronymic = "mn4", DateOfBirth = new DateTime(2006, 4, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
                 // Act

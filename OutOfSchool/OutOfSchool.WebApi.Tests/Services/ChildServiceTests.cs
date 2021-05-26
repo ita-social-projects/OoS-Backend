@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private Mock<ILogger> logger;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<IEntityRepository<Child>> mockRepository;
+        private Mock<IChildRepository> mockRepository;
         private Child createdChild = new Child { Id = 14, FirstName = "fn4", LastName = "ln4", Patronymic = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
         private ChildDTO createdChildDTO = new ChildDTO { Id = 14, FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             logger = new Mock<ILogger>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
-            mockRepository = new Mock<IEntityRepository<Child>>();
+            mockRepository = new Mock<IChildRepository>();
         }
 
         [Test]
