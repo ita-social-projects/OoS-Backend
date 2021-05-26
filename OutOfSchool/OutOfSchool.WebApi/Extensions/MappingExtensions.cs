@@ -62,6 +62,21 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Rating, RatingDto>(rating, cfg => { cfg.CreateMap<Rating, RatingDto>(); });
         }
 
+        public static ChatMessageDTO ToModel(this ChatMessage chatMessage)
+        {
+            return Mapper<ChatMessage, ChatMessageDTO>(chatMessage, cfg => { cfg.CreateMap<ChatMessage, ChatMessageDTO>(); });
+        }
+
+        public static ChatRoomDTO ToModel(this ChatRoom chatRoom)
+        {
+            return Mapper<ChatRoom, ChatRoomDTO>(chatRoom, cfg =>
+            {
+                cfg.CreateMap<ChatRoom, ChatRoomDTO>();
+                cfg.CreateMap<ChatMessage, ChatMessageDTO>();
+                cfg.CreateMap<User, UserDto>();
+            });
+        }
+
         public static ShortUserDto ToModel(this User user)
         {
             return Mapper<User, ShortUserDto>(user, cfg =>
@@ -188,6 +203,21 @@ namespace OutOfSchool.WebApi.Extensions
         public static Teacher ToDomain(this TeacherDTO teacherDto)
         {
             return Mapper<TeacherDTO, Teacher>(teacherDto, cfg => { cfg.CreateMap<TeacherDTO, Teacher>(); });
+        }
+
+        public static ChatMessage ToDomain(this ChatMessageDTO chatMessageDTO)
+        {
+            return Mapper<ChatMessageDTO, ChatMessage>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageDTO, ChatMessage>(); });
+        }
+
+        public static ChatRoom ToDomain(this ChatRoomDTO chatRoomDTO)
+        {
+            return Mapper<ChatRoomDTO, ChatRoom>(chatRoomDTO, cfg =>
+            {
+                cfg.CreateMap<ChatRoomDTO, ChatRoom>();
+                cfg.CreateMap<ChatMessageDTO, ChatMessage>();
+                cfg.CreateMap<UserDto, User>();
+            });
         }
 
         public static User ToDomain(this ShortUserDto shortUserDto, User user)
