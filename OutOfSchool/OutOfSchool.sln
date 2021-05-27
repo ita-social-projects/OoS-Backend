@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi.Tests", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.IdentityServer", "OutOfSchool.IdentityServer\OutOfSchool.IdentityServer.csproj", "{B59E4559-57B7-4AD9-BA1E-3ED48D340357}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.EmailService", "OutOfSchool.EmailService\OutOfSchool.EmailService.csproj", "{D6D093DF-302B-4783-8B58-D6784F5C2F25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{B59E4559-57B7-4AD9-BA1E-3ED48D340357}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B59E4559-57B7-4AD9-BA1E-3ED48D340357}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B59E4559-57B7-4AD9-BA1E-3ED48D340357}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6D093DF-302B-4783-8B58-D6784F5C2F25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6D093DF-302B-4783-8B58-D6784F5C2F25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6D093DF-302B-4783-8B58-D6784F5C2F25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6D093DF-302B-4783-8B58-D6784F5C2F25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
