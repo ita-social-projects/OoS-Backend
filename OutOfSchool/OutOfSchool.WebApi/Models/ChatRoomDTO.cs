@@ -10,6 +10,8 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long WorkshopId { get; set; }
 
+        public int NotReadMessagesCount { get; set; }
+
         public ICollection<ChatMessageDTO> ChatMessages { get; set; }
 
         public ICollection<UserDto> Users { get; set; }

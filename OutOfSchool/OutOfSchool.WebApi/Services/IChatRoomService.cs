@@ -17,14 +17,16 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="user2Id">Id of another User.</param>
         /// <param name="workshopId">Id of Workshop.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDTO"/> that was created.</returns>
+        /// <exception cref="ArgumentException">If chat is forbidden between users.</exception>
+        /// <exception cref="InvalidOperationException">If one of the entities was not found.</exception>
         Task<ChatRoomDTO> CreateOrReturnExisting(string user1Id, string user2Id, long workshopId);
 
         /// <summary>
-        /// Get ChatRoom by it's key, including ChatMessages.
+        /// Get ChatRoom by it's key, including Users and Messages.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDTO"/> that was found, or null.</returns>
-        Task<ChatRoomDTO> GetByIdIncludeChatMessages(long id);
+        Task<ChatRoomDTO> GetById(long id);
 
         /// <summary>
         /// Get ChatRooms, Not including ChatMessages for some User.
@@ -49,5 +51,16 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopId">Id of Workshop.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDTO"/> that was found, or null.</returns>
         Task<ChatRoomDTO> GetUniqueChatRoomBetweenUsersWithinWorkshop(string user1Id, string user2Id, long workshopId);
+
+        /// <summary>
+        /// Validate if users can chat between each other.
+        /// </summary>
+        /// <param name="user1Id">Id of one User.</param>
+        /// <param name="user2Id">Id of another User.</param>
+        /// <param name="workshopId">Id of Workshop.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains <see cref="bool"/> representing if chat can be created.</returns>
+        /// <exception cref="ArgumentException">If chat is forbidden between users.</exception>
+        /// <exception cref="InvalidOperationException">If one of the entities was not found.</exception>
+        Task<bool> ValidateUsers(string user1Id, string user2Id, long workshopId);
     }
 }

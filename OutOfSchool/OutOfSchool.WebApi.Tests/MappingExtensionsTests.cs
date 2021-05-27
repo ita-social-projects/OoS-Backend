@@ -46,7 +46,7 @@ namespace OutOfSchool.WebApi.Tests
         }
 
         [Test]
-        public void Mapping_ChatMessageToModelDTO_IsCorrect()
+        public void Mapping_ChatMessageToModel_IsCorrect()
         {
             // Arrange
             ChatMessage chatMessage = new ChatMessage()
@@ -137,7 +137,7 @@ namespace OutOfSchool.WebApi.Tests
         }
 
         [Test]
-        public void Mapping_ChatRoomToModelDTO_IsCorrect()
+        public void Mapping_ChatRoomToModel_IsCorrect()
         {
             // Arrange
             var user1 = new User() { Id = "test" };
@@ -197,6 +197,63 @@ namespace OutOfSchool.WebApi.Tests
             {
                 Assert.AreEqual(chatMessage1.Text, el.Text);
             }
+        }
+
+        [Test]
+        public void Mapping_ChatRoomToModelWithoutCHatMessages_IsCorrect()
+        {
+            // Arrange
+            var user1 = new User() { Id = "test" };
+            var user2 = new User() { Id = "test2" };
+
+            var chatMessage1 = new ChatMessage()
+            {
+                Id = 1,
+                UserId = "test",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = true,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                User = Mock.Of<User>(),
+                ChatRoom = Mock.Of<ChatRoom>(),
+            };
+            var chatMessage2 = new ChatMessage()
+            {
+                Id = 2,
+                UserId = "test2",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = false,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
+                User = Mock.Of<User>(),
+                ChatRoom = Mock.Of<ChatRoom>(),
+            };
+            var chatRoom = new ChatRoom()
+            {
+                Id = 1,
+                WorkshopId = 1,
+                Workshop = Mock.Of<Workshop>(),
+                ChatMessages = new List<ChatMessage>(),
+                Users = new List<User>(),
+                ChatRoomUsers = new List<ChatRoomUser>(),
+            };
+            chatRoom.ChatMessages.Add(chatMessage1);
+            chatRoom.ChatMessages.Add(chatMessage2);
+            chatRoom.Users.Add(user1);
+            chatRoom.Users.Add(user2);
+
+            // Act
+            var result = chatRoom.ToModelWithoutChatMessages();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ChatRoomDTO>(result);
+            Assert.IsNull(result.ChatMessages);
+            Assert.IsNotNull(result.Users);
+            Assert.IsInstanceOf<ICollection<UserDto>>(result.Users);
+            Assert.AreEqual(chatRoom.Id, result.Id);
+            Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
+            Assert.AreEqual(chatRoom.Users.Count, result.Users.Count);
         }
     }
 }

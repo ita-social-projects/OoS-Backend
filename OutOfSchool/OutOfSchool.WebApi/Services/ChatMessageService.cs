@@ -14,8 +14,8 @@ namespace OutOfSchool.WebApi.Services
 {
     public class ChatMessageService : IChatMessageService
     {
-        private IEntityRepository<ChatMessage> repository;
-        private ILogger logger;
+        private readonly IEntityRepository<ChatMessage> repository;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatMessageService"/> class.
@@ -104,14 +104,15 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ChatMessageDTO>> GetAllNotReadByUserInChatRoom(long chatRoomId, string userId)
         {
             logger.Information($"Process of getting all ChatMessages that are not read with ChatRoomId:{chatRoomId} and UserId:{userId} was started.");
 
             try
             {
-                var query = repository.Get<long>(where: x => x.ChatRoomId == chatRoomId && x.UserId == userId && !x.IsRead, orderBy: x => x.Id);
-                var chatMessages = await query.ToListAsync().ConfigureAwait(false);
+                var query = repository.Get<long>(where: x => x.ChatRoomId == chatRoomId && x.UserId != userId && !x.IsRead, orderBy: x => x.Id);
+                var chatMessages = await query.AsNoTracking().ToListAsync().ConfigureAwait(false);
 
                 logger.Information(!chatMessages.Any()
                 ? $"There are no ChatMessages that are not read in the system with ChatRoomId:{chatRoomId} and UserId:{userId}."
@@ -133,17 +134,17 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var chatMessage = await repository.GetById(id).ConfigureAwait(false);
+                var chatMessages = await repository.GetByFilterNoTracking(x => x.Id == id).ToListAsync().ConfigureAwait(false);
 
-                if (chatMessage is null)
+                if (chatMessages.Count < 1)
                 {
                     logger.Information($"ChatMessage id:{id} was not found.");
                     return null;
                 }
                 else
                 {
-                    logger.Information($"ChatMessage id:{chatMessage.Id} was successfully found.");
-                    return chatMessage.ToModel();
+                    logger.Information($"ChatMessage id:{chatMessages.First().Id} was successfully found.");
+                    return chatMessages.First().ToModel();
                 }
             }
             catch (Exception ex)

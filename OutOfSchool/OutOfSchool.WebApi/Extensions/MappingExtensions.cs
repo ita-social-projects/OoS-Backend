@@ -67,6 +67,16 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ChatMessage, ChatMessageDTO>(chatMessage, cfg => { cfg.CreateMap<ChatMessage, ChatMessageDTO>(); });
         }
 
+        public static ChatRoomDTO ToModelWithoutChatMessages(this ChatRoom chatRoom)
+        {
+            return Mapper<ChatRoom, ChatRoomDTO>(chatRoom, cfg =>
+            {
+                cfg.CreateMap<ChatRoom, ChatRoomDTO>()
+                .ForMember(cr => cr.ChatMessages, m => m.Ignore());
+                cfg.CreateMap<User, UserDto>();
+            });
+        }
+
         public static ChatRoomDTO ToModel(this ChatRoom chatRoom)
         {
             return Mapper<ChatRoom, ChatRoomDTO>(chatRoom, cfg =>

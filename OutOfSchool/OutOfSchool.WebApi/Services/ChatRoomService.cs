@@ -17,20 +17,27 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ChatRoomService : IChatRoomService
     {
-        private IEntityRepository<ChatRoom> roomRepository;
-        private IEntityRepository<ChatRoomUser> roomUserRepository;
-        private ILogger logger;
+        private readonly IEntityRepository<ChatRoom> roomRepository;
+        private readonly IEntityRepository<User> userRepository;
+        private readonly IWorkshopRepository workshopRepository;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatRoomService"/> class.
         /// </summary>
         /// <param name="chatRoomRepository">Repository for the ChatRoom entity.</param>
-        /// <param name="chatRoomUserRepository">Repository for the ChatRoomUser entity.</param>
+        /// <param name="userRepository">Repository for the User entity.</param>
+        /// <param name="workshopRepository">Repository for the Workshop entity.</param>
         /// <param name="logger">Logger.</param>
-        public ChatRoomService(IEntityRepository<ChatRoom> chatRoomRepository, IEntityRepository<ChatRoomUser> chatRoomUserRepository, ILogger logger)
+        public ChatRoomService(
+            IEntityRepository<ChatRoom> chatRoomRepository,
+            IEntityRepository<User> userRepository,
+            IWorkshopRepository workshopRepository,
+            ILogger logger)
         {
             this.roomRepository = chatRoomRepository;
-            this.roomUserRepository = chatRoomUserRepository;
+            this.userRepository = userRepository;
+            this.workshopRepository = workshopRepository;
             this.logger = logger;
         }
 
@@ -67,7 +74,7 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var query = roomRepository.Get<long>(includeProperties: "ChatMessages, ChatRoomUsers", where: x => x.Id == id);
+                var query = roomRepository.Get<long>(includeProperties: "ChatMessages,ChatRoomUsers", where: x => x.Id == id);
                 var chatRooms = await query.ToListAsync().ConfigureAwait(false);
                 var chatRoom = chatRooms.Count == 1 ? chatRooms.First() : null;
 
@@ -90,13 +97,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDTO> GetByIdIncludeChatMessages(long id)
+        public async Task<ChatRoomDTO> GetById(long id)
         {
-            logger.Information($"Process of getting ChatRoom with its ChatMessages by Id:{id} was started.");
+            logger.Information($"Process of getting ChatRoom by Id:{id} was started.");
 
             try
             {
-                var query = roomRepository.Get<long>(includeProperties: "ChatMessages, Users", where: x => x.Id == id);
+                var query = roomRepository.GetByFilterNoTracking(x => x.Id == id, includeProperties: "Users,ChatMessages");
                 var chatRooms = await query.ToListAsync().ConfigureAwait(false);
                 var chatRoom = chatRooms.Count == 1 ? chatRooms.First() : null;
 
@@ -113,7 +120,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (Exception ex)
             {
-                logger.Error($"Getting ChatRoom with id:{id} including ChatMessages failed. Exception: {ex.Message}");
+                logger.Error($"Getting ChatRoom with id:{id} failed. Exception: {ex.Message}");
                 throw;
             }
         }
@@ -125,17 +132,14 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var chatRooms = await roomUserRepository
-                    .Get<string>(includeProperties: "ChatRoom", where: x => x.UserId == userId)
-                    .Select(x => x.ChatRoom)
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+                var query = roomRepository.GetByFilterNoTracking(x => x.Users.Any(u => u.Id == userId), includeProperties: "Users");
+                var chatRooms = await query.AsNoTracking().ToListAsync().ConfigureAwait(false);
 
                 logger.Information(!chatRooms.Any()
                 ? $"There is no ChatRoom in the system with userId:{userId}."
                 : $"Successfully got all {chatRooms.Count} records with userId:{userId}.");
 
-                return chatRooms.Select(item => item.ToModel()).ToList();
+                return chatRooms.Select(x => x.ToModelWithoutChatMessages());
             }
             catch (Exception ex)
             {
@@ -178,11 +182,71 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
+        /// <inheritdoc/>
+        public async Task<bool> ValidateUsers(string user1Id, string user2Id, long workshopId)
+        {
+            logger.Information($"Validation of ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
+            var flag = false;
+            try
+            {
+                var users1 = await userRepository.GetByFilter(u => u.Id == user1Id).ConfigureAwait(false);
+                var users2 = await userRepository.GetByFilter(u => u.Id == user2Id).ConfigureAwait(false);
+                var workshops = await workshopRepository.GetByFilter(w => w.Id == workshopId).ConfigureAwait(false);
+
+                var user1 = users1.First();
+                var user2 = users2.First();
+                var workshop = workshops.First();
+
+                // Forbid chats between users with the same role. But parent still can write admin.
+                if (string.Equals(user1.Role, user2.Role, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException($"Chat is forbidden between {user1.Role} and {user2.Role}.");
+                }
+
+                // Forbid chats when workshop is not managed by one of the users.
+                if (string.Equals(user1.Role, "provider", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.Equals(workshop.Provider.UserId, user1.Id, StringComparison.Ordinal))
+                    {
+                        throw new ArgumentException($"Workshop is not managed by {user1.Role}:{user1.Id}. Chat is forbidden.");
+                    }
+                }
+                else if (string.Equals(user2.Role, "provider", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.Equals(workshop.Provider.UserId, user2.Id, StringComparison.Ordinal))
+                    {
+                        throw new ArgumentException($"Workshop is not managed by {user2.Role}:{user2.Id}. Chat is forbidden.");
+                    }
+                }
+
+                // Forbid chats between parent and admin.
+                if ((string.Equals(user1.Role, "parent", StringComparison.OrdinalIgnoreCase) && string.Equals(user2.Role, "admin", StringComparison.OrdinalIgnoreCase))
+                    || (string.Equals(user2.Role, "parent", StringComparison.OrdinalIgnoreCase) && string.Equals(user1.Role, "admin", StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new ArgumentException($"Chat is forbidden between {user1.Role} and {user2.Role}.");
+                }
+
+                flag = true;
+
+                return flag;
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.Error($"One of the entities was not found. {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"Validation of users failed. Exception: {ex.Message}");
+                throw;
+            }
+        }
+
         /// <summary>
         /// Create new ChatRoom without checking if it exists.
         /// </summary>
-        /// <param name="user1Id">Id of User who is a participant of the workshop.</param>
-        /// <param name="user2Id">Id of User who is owner(manager) of the workshop.</param>
+        /// <param name="user1Id">Id of one User.</param>
+        /// <param name="user2Id">Id of another User.</param>
         /// <param name="workshopId">Id of Workshop.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDTO"/> that was created.</returns>
         private async Task<ChatRoomDTO> Create(string user1Id, string user2Id, long workshopId)

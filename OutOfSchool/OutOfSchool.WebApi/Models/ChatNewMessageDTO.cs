@@ -12,5 +12,7 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         public string ReceiverUserId { get; set; }
+
+        public long ChatRoomId { get; set; }
     }
 }
