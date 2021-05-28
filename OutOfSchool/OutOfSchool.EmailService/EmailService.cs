@@ -14,10 +14,6 @@ namespace OutOfSchool.EmailService
         {
             _emailConfiguration = emailConfiguration;
         }
-        public List<EmailMessage> ReceiveEmail(int maxCount = 10)
-        {
-            throw new NotImplementedException();
-        }
         public void Send (EmailMessage emailMessage)
         {
             var message = new MimeMessage();
