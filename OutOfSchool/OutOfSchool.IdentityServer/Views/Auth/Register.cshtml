@@ -78,7 +78,7 @@
                     <label class="registration_label" asp-for="PhoneNumber">@SharedLocalizer["Phone"]<span class="registration_star">*</span></label>
                     <div class="registration_phone">
                         <div class="registration_phone-code">+38</div>
-                        <input class="registration_input" type="text" asp-for="PhoneNumber" id="phone_number">
+                        <input class="registration_input" maxlength="10" type="text" asp-for="PhoneNumber" id="phone_number">
                     </div>
                     <div>
                         <span asp-validation-for="PhoneNumber"></span>
