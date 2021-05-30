@@ -4,6 +4,7 @@ using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.IdentityServer.Enums;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
 
@@ -136,14 +137,14 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return View(model);
             }
 
-            if (Request.Form["Provider"].Count == 1)
+            if (Request.Form[Role.Provider.ToString()].Count == 1)
             {
-                model.Role = "provider";
+                model.Role = Role.Provider.ToString().ToLower();
             }
             else
-            if (Request.Form["Parent"].Count == 1)
+            if (Request.Form[Role.Parent.ToString()].Count == 1)
             {
-                model.Role = "parent";
+                model.Role = Role.Parent.ToString().ToLower();
             }
             else
             {
