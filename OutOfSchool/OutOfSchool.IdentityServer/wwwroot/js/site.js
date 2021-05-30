@@ -19,10 +19,17 @@ if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
 }
 
 if (password.className.includes('input-validation-error')) {
-    let elements = document.getElementsByClassName('registration_privacy');
+    let elements = document.getElementsByClassName('registration_privacy_password');
     for (let element of elements) {
         element.style.height = "65px";
     } 
+}
+
+if (repeatPassword.className.includes('input-validation-error')) {
+    let elements = document.getElementsByClassName('registration_privacy_confirm_password');
+    for (let element of elements) {
+        element.style.height = "65px";
+    }
 }
 
 if (document.getElementsByClassName('validation-summary-errors').length > 0) {

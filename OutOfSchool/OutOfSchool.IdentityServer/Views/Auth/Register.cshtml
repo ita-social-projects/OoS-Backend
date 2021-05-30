@@ -95,7 +95,7 @@
                     <div>
                         <label class="registration_label" asp-for="Password">@SharedLocalizer["Password"]<span class="registration_star">*</span></label>
                         <input class="registration_input registration_input-password" type="Password" asp-for="Password" id="password">
-                        <div class="registration_privacy">
+                        <div class="registration_privacy_password">
                             <img src="/icons/ic_eye.svg" alt="eye" class="registration_eye" id="password_eye">
                         </div>
                     </div>
@@ -112,7 +112,7 @@
                     <div>
                         <label class="registration_label" asp-for="ConfirmPassword">@SharedLocalizer["Confirm password"]<span class="registration_star">*</span></label>
                         <input class="registration_input registration_input-password" type="password" asp-for="ConfirmPassword" id="repeat_password">
-                        <div class="registration_privacy">
+                        <div class="registration_privacy_confirm_password">
                             <img src="/icons/ic_eye.svg" alt="eye" class="registration_eye" id="confirm_password_eye">
                         </div>
                     </div>
