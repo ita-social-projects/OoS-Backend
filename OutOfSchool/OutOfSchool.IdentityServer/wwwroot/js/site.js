@@ -11,6 +11,13 @@ let check_confirmPasswordEye = false;
 let password = document.getElementById('password');
 let repeatPassword = document.getElementById('repeat_password');
 
+if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
+    btn_provider.className = "registration_type";
+    btn_parent.className = "registration_type";
+    btn_register.setAttribute("name", sessionStorage.getItem("Role"));
+    document.getElementById(sessionStorage.getItem("Button")).className = "registration_type registration_type-active";
+}
+
 if (password.className.includes('input-validation-error')) {
     let elements = document.getElementsByClassName('registration_privacy');
     for (let element of elements) {
@@ -25,13 +32,17 @@ if (document.getElementsByClassName('validation-summary-errors').length > 0) {
 btn_parent.addEventListener('click', function () {
     btn_parent.className = "registration_type registration_type-active";
     btn_provider.className = "registration_type";
-    btn_register.setAttribute("name", "Parent"); 
+    btn_register.setAttribute("name", "Parent");
+    sessionStorage.setItem("Role", "Parent");
+    sessionStorage.setItem("Button", "btn_parent");
 })
 
 btn_provider.addEventListener('click', function () {
     btn_provider.className = "registration_type registration_type-active";
     btn_parent.className = "registration_type";
-    btn_register.setAttribute("name", "Provider"); 
+    btn_register.setAttribute("name", "Provider");
+    sessionStorage.setItem("Role", "Provider");
+    sessionStorage.setItem("Button", "btn_provider");
 })
 
 passwordEye.addEventListener('click', function () {
