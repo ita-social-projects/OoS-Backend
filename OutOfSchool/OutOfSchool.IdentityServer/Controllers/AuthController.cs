@@ -161,6 +161,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                PhoneNumber = model.PhoneNumber,
                CreatingTime = DateTime.Now,
                Role = model.Role,
+               IsRegistered = false,
             };
 
             var result = await userManager.CreateAsync(user, model.Password);
