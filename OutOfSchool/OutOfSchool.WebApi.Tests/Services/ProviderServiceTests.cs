@@ -127,6 +127,59 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [Order(2)]
+        public void Create_WhenUserIdExists_ReturnsArgumentException()
+        {
+            // Arrange
+            var expected = new Provider()
+            {
+                FullTitle = "Title",
+                ShortTitle = "ShortTitle",
+                Website = "Website",
+                Facebook = "Facebook",
+                Email = "user167@example.com",
+                Instagram = "Instagram1",
+                Description = "Description1",
+                DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                EdrpouIpn = "55545000",
+                PhoneNumber = "1111111111",
+                Founder = "Founder",
+                Ownership = OwnershipType.Private,
+                Type = ProviderType.TOV,
+                Status = false,
+                LegalAddressId = 166,
+                ActualAddressId = 125,
+                UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
+                LegalAddress = new Address
+                {
+                    Id = 166,
+                    Region = "Region166",
+                    District = "District166",
+                    City = "City166",
+                    Street = "Street166",
+                    BuildingNumber = "BuildingNumber166",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
+                ActualAddress = new Address
+                {
+                    Id = 125,
+                    Region = "Region125",
+                    District = "District125",
+                    City = "City125",
+                    Street = "Street125",
+                    BuildingNumber = "BuildingNumber125",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
+            };
+
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Create(expected.ToModel()).ConfigureAwait(false));
+        }
+
+        [Test]
+        [Order(3)]
         public void Create_NotUniqueEntity_ReturnsArgumentException()
         {
             // Arrange
@@ -175,7 +228,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(3)]
+        [Order(4)]
         public async Task GetAll_WhenCalled_ReturnsAllEntities()
         {
             // Arrange
@@ -189,7 +242,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(4)]
+        [Order(5)]
         [TestCase(1)]
         public async Task GetById_WhenIdIsValid_ReturnsEntity(long id)
         {
@@ -204,7 +257,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(5)]
+        [Order(6)]
         [TestCase(10)]
         public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
@@ -214,7 +267,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(6)]
+        [Order(7)]
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
@@ -232,7 +285,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(7)]
+        [Order(8)]
         public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
@@ -247,7 +300,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(8)]
+        [Order(9)]
         [TestCase(1)]
         public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
         {
@@ -263,7 +316,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(9)]
+        [Order(10)]
         [TestCase(10)]
         public void Delete_WhenIdIsInvalid_ThrowsArgumentNullException(long id)
         {
