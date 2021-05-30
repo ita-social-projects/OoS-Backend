@@ -53,6 +53,11 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException(localizer["There is already a provider with such a data."]);
             }
 
+            if (providerRepository.ExistsUserId(dto.UserId))
+            {
+                throw new ArgumentException(localizer["You can not create more than one account."]);
+            }
+
             Func<Task<Provider>> operation = async () => await providerRepository.Create(dto.ToDomain()).ConfigureAwait(false);
 
             var newProvider = await providerRepository.RunInTransaction(operation).ConfigureAwait(false);

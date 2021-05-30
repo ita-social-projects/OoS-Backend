@@ -137,4 +137,8 @@
     <value>There is already a provider with such a data</value>
     <comment>ProviderService</comment>
   </data>
+  <data name="You can not create more than one account." xml:space="preserve">
+    <value>You can not create more than one account.</value>
+    <comment>ProviderService</comment>
+  </data>
 </root>
