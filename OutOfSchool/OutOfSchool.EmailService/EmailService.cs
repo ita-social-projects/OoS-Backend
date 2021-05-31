@@ -35,7 +35,7 @@ namespace OutOfSchool.EmailService
             };
             return message;
         }
-        public void Send(MimeMessage mimeMessage)
+        private void Send(MimeMessage mimeMessage)
         {
             using(var emailClient = new SmtpClient())
             {
@@ -46,7 +46,7 @@ namespace OutOfSchool.EmailService
                 emailClient.Disconnect(true);
             }
         }
-        public async Task SendAsync(MimeMessage mimeMessage)
+        private async Task SendAsync(MimeMessage mimeMessage)
         {
             using (var emailClient = new SmtpClient())
             {
