@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -119,6 +120,25 @@ namespace OutOfSchool.WebApi.Services
                 logger.Error($"Updating failed. Parent with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
+        }
+
+        /// <inheritdoc/>
+        public async Task<ParentDTO> GetByUserId(string id)
+        {
+            logger.Information($"Getting Parent by UserId started. Looking UserId is {id}.");
+
+            Expression<Func<Parent, bool>> filter = p => p.UserId == id;
+
+            var parents = await repository.GetByFilter(filter).ConfigureAwait(false);
+
+            if (!parents.Any())
+            {
+                throw new ArgumentException(localizer["There is no Parent in the Db with such User id"], nameof(id));
+            }
+
+            logger.Information($"Successfully got a Parent with UserId = {id}.");
+
+            return parents.FirstOrDefault().ToModel();
         }
     }
 }

@@ -72,6 +72,29 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
+        /// Get Parent by User Id.
+        /// </summary>
+        /// <param name="id">User id.</param>
+        /// <returns>Provider.</returns>
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = "parent,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetParentByUserId(string id)
+        {
+            try
+            {
+                return Ok(await service.GetByUserId(id).ConfigureAwait(false));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// To create new Parent and add to the DB.
         /// </summary>
         /// <param name="dto">ParentDTO object that we want to add.</param>
