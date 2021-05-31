@@ -19,6 +19,6 @@ namespace OutOfSchool.WebApi.Models
         [Range(1, long.MaxValue, ErrorMessage = "Child id should be grater than 0")]
         public long ChildId { get; set; }
 
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
     }
 }
