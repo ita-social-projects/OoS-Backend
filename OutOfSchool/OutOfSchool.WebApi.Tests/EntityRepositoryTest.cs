@@ -82,19 +82,23 @@ namespace OutOfSchool.WebApi.Tests
         }
 
         [Test]
-        public void Create_NewEntity_AddNewEntityToDatabase()
+        public async Task Create_NewEntity_AddNewEntityToDatabaseAsync()
         {
             using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
             {
                 var repository = new ChildRepository(context);
-                Child child = new Child { FirstName = "fn4", LastName = "ln4", Patronymic = "mn4", DateOfBirth = new DateTime(2006, 4, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
+                Child child = new Child
+                {
+                    FirstName = "fn4", LastName = "ln4", Patronymic = "mn4", DateOfBirth = new DateTime(2006, 4, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1,
+                    Address = new Address { Region = "NewRegion", District = "NewDistrict", City = "NewCity", Street = "NewStreet", BuildingNumber = "NewBuildingNumber", Latitude = 60.45383, Longitude = 70.56765 },
+                };
 
                 // Act
-                var child1 = repository.Create(child).Result;
-                var children = repository.GetAll();
+                await repository.Create(child);
+                var children = await repository.GetAll();
 
                 // Assert
-                Assert.AreEqual(4, children.Result.Count());
+                Assert.AreEqual(4, children.Count());
             }
         }
 
