@@ -57,7 +57,7 @@ namespace OutOfSchool.WebApi.Services
 
             MultipleModelCreationValidation(applicationDtos);
 
-            var applications = applicationDtos.Select(a => a.ToDomain());
+            var applications = applicationDtos.Select(a => a.ToDomain()).ToList();
 
             var newApplications = await repository.Create(applications).ConfigureAwait(false);
 
