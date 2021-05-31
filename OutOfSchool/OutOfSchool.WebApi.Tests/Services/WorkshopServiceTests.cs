@@ -58,8 +58,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Price = 1000,
                 Head = "NewHead2",
                 HeadBirthDate = new DateTime(1980, 12, 10),
-                CategoryId = 1,
-                SubcategoryId = 1,
                 SubsubcategoryId = 1,
             };
 
