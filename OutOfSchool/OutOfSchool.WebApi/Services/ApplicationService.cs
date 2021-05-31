@@ -51,6 +51,7 @@ namespace OutOfSchool.WebApi.Services
             return newApplication.ToModel();
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> Create(IEnumerable<ApplicationDto> applicationDtos)
         {
             logger.Information("Multiple applications creating started.");
