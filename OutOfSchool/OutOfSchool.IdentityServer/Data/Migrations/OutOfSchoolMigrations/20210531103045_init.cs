@@ -630,6 +630,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 name: "IX_Workshops_SubsubcategoryId",
                 table: "Workshops",
                 column: "SubsubcategoryId");
+
+            migrationBuilder.AddColumn<bool>(
+               name: "IsRegistered",
+               table: "AspNetUsers",
+               type: "bit",
+               nullable: false,
+               defaultValue: false);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -693,6 +700,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             migrationBuilder.DropTable(
                 name: "Categories");
+            migrationBuilder.DropColumn(
+                name: "IsRegistered",
+                table: "AspNetUsers");
         }
     }
 }
