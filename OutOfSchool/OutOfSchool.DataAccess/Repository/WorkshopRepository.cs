@@ -24,8 +24,6 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         public new async Task<Workshop> Create(Workshop entity)
         {
-            entity.SubcategoryId = db.Subsubcategories.Where(x => x.Id == entity.SubsubcategoryId).First().SubcategoryId;
-            entity.CategoryId = db.Subcategories.Where(x => x.Id == entity.SubcategoryId).First().CategoryId;
             await db.Workshops.AddAsync(entity);
             await db.SaveChangesAsync();
             return await Task.FromResult(entity);

@@ -82,19 +82,9 @@ namespace OutOfSchool.WebApi.Models
         public long AddressId { get; set; }
 
         [Required]
-        public long CategoryId { get; set; }
-
-        [Required]
-        public long SubcategoryId { get; set; }
-
-        [Required]
         public long SubsubcategoryId { get; set; }
 
         public AddressDto Address { get; set; }
-
-        public CategoryDTO Category { get; set; }
-
-        public SubcategoryDTO Subcategory { get; set; }
 
         public SubsubcategoryDTO Subsubcategory { get; set; }
 

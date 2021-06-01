@@ -10,8 +10,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210521144601_Rating")]
-    partial class Rating
+    [Migration("20210531103045_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -660,9 +660,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("AddressId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("CategoryId")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("DaysPerWeek")
                         .HasColumnType("int");
 
@@ -717,9 +714,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("ProviderId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("SubcategoryId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("SubsubcategoryId")
                         .HasColumnType("bigint");
 
@@ -738,11 +732,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("AddressId");
 
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("ProviderId");
-
-                    b.HasIndex("SubcategoryId");
 
                     b.HasIndex("SubsubcategoryId");
 
@@ -951,21 +941,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OutOfSchool.Services.Models.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
                         .WithMany("Workshops")
                         .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Subcategory", "Subcategory")
-                        .WithMany()
-                        .HasForeignKey("SubcategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -977,11 +955,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Navigation("Address");
 
-                    b.Navigation("Category");
-
                     b.Navigation("Provider");
-
-                    b.Navigation("Subcategory");
 
                     b.Navigation("Subsubcategory");
                 });
