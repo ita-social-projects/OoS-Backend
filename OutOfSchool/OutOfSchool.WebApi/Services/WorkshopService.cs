@@ -225,7 +225,7 @@ namespace OutOfSchool.WebApi.Services
                 var tempPredicate = PredicateBuilder.True<Workshop>();
                 foreach (var category in filter.Categories)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Category.Title == category);
+                    tempPredicate = tempPredicate.Or(x => x.Subsubcategory.Subcategory.Category.Title == category);
                 }
 
                 predicate = predicate.And(tempPredicate);
@@ -236,7 +236,7 @@ namespace OutOfSchool.WebApi.Services
                 var tempPredicate = PredicateBuilder.True<Workshop>();
                 foreach (var subcategory in filter.Subcategories)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Subcategory.Title == subcategory);
+                    tempPredicate = tempPredicate.Or(x => x.Subsubcategory.Subcategory.Title == subcategory);
                 }
 
                 predicate = predicate.And(tempPredicate);

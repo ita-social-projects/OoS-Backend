@@ -3,28 +3,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
-  public partial class createTables : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-               name: "Addresses",
-               columns: table => new
-               {
-                   Id = table.Column<long>(type: "bigint", nullable: false)
-                       .Annotation("SqlServer:Identity", "1, 1"),
-                   Region = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                   District = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                   City = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
-                   Street = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                   BuildingNumber = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
-                   Latitude = table.Column<double>(type: "float", nullable: false),
-                   Longitude = table.Column<double>(type: "float", nullable: false),
-               },
-               constraints: table =>
-               {
-                   table.PrimaryKey("PK_Addresses", x => x.Id);
-               });
+                name: "Addresses",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Region = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    District = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    City = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
+                    Street = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    BuildingNumber = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
+                    Latitude = table.Column<double>(type: "float", nullable: false),
+                    Longitude = table.Column<double>(type: "float", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Addresses", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
@@ -33,7 +33,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -47,6 +47,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatingTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LastLogin = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MiddleName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -60,7 +64,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -73,7 +77,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -86,7 +91,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -101,7 +106,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -122,7 +127,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -142,7 +147,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -160,7 +165,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -186,7 +191,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -208,18 +213,17 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     FirstName = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     MiddleName = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
-                    UserId = table.Column<long>(type: "bigint", nullable: false),
-                    UserId1 = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Parents", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Parents_AspNetUsers_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_Parents_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -228,41 +232,40 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
+                    FullTitle = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
                     ShortTitle = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
                     Website = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Facebook = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Instagram = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    MFO = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    EDRPOU = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    KOATUU = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    INPP = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EdrpouIpn = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Director = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    DirectorPosition = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    AuthorityHolder = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
                     DirectorBirthDay = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DirectorPhone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ManagerialBody = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Founder = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Ownership = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
-                    Form = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Profile = table.Column<int>(type: "int", nullable: false),
-                    Index = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    IsSubmitPZ1 = table.Column<bool>(type: "bit", nullable: false),
-                    AttachedDocuments = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AddressId = table.Column<long>(type: "bigint", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false),
+                    LegalAddressId = table.Column<long>(type: "bigint", nullable: false),
+                    ActualAddressId = table.Column<long>(type: "bigint", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Providers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Providers_Addresses_AddressId",
-                        column: x => x.AddressId,
+                        name: "FK_Providers_Addresses_ActualAddressId",
+                        column: x => x.ActualAddressId,
                         principalTable: "Addresses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Providers_Addresses_LegalAddressId",
+                        column: x => x.LegalAddressId,
+                        principalTable: "Addresses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_Providers_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -277,8 +280,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CategoryId = table.Column<long>(type: "bigint", nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CategoryId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -288,7 +292,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         column: x => x.CategoryId,
                         principalTable: "Categories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -297,22 +301,22 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
-                    Patronymic = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
+                    Patronymic = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
                     AddressId = table.Column<long>(type: "bigint", nullable: false),
                     ParentId = table.Column<long>(type: "bigint", nullable: false),
-                    SocialGroupId = table.Column<long>(type: "bigint", nullable: false),
+                    SocialGroupId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Children", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Children_Address_AddressId",
+                        name: "FK_Children_Addresses_AddressId",
                         column: x => x.AddressId,
-                        principalTable: "Address",
+                        principalTable: "Addresses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -325,6 +329,71 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         name: "FK_Children_SocialGroups_SocialGroupId",
                         column: x => x.SocialGroupId,
                         principalTable: "SocialGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Ratings",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Rate = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    EntityId = table.Column<long>(type: "bigint", nullable: false),
+                    ParentId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ratings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Ratings_Parents_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Parents",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Subsubcategories",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    SubcategoryId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Subsubcategories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Subsubcategories_Subcategories_SubcategoryId",
+                        column: x => x.SubcategoryId,
+                        principalTable: "Subcategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BirthCertificates",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false),
+                    SvidSer = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SvidNum = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SvidNumMD5 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SvidWho = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SvidDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BirthCertificates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BirthCertificates_Children_Id",
+                        column: x => x.Id,
+                        principalTable: "Children",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -348,12 +417,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     WithDisabilityOptions = table.Column<bool>(type: "bit", nullable: false),
                     DisabilityOptionsDesc = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Logo = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Head = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     HeadBirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ProviderId = table.Column<long>(type: "bigint", nullable: true),
-                    AddressId = table.Column<long>(type: "bigint", nullable: true),
-                    CategoryId = table.Column<long>(type: "bigint", nullable: true),
+                    IsPerMonth = table.Column<bool>(type: "bit", nullable: false),
+                    ProviderId = table.Column<long>(type: "bigint", nullable: false),
+                    AddressId = table.Column<long>(type: "bigint", nullable: false),
+                    SubsubcategoryId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -363,41 +433,53 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         column: x => x.AddressId,
                         principalTable: "Addresses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Workshops_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Workshops_Providers_ProviderId",
                         column: x => x.ProviderId,
                         principalTable: "Providers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.NoAction);
+                    table.ForeignKey(
+                        name: "FK_Workshops_Subsubcategories_SubsubcategoryId",
+                        column: x => x.SubsubcategoryId,
+                        principalTable: "Subsubcategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "BirthCertificates",
+                name: "Applications",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false),
-                    SvidSer = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SvidNum = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SvidNumMD5 = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SvidWho = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SvidDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    WorkshopId = table.Column<long>(type: "bigint", nullable: false),
+                    ChildId = table.Column<long>(type: "bigint", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BirthCertificates", x => x.Id);
+                    table.PrimaryKey("PK_Applications", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BirthCertificates_Children_Id",
-                        column: x => x.Id,
+                        name: "FK_Applications_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Applications_Children_ChildId",
+                        column: x => x.ChildId,
                         principalTable: "Children",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Applications_Workshops_WorkshopId",
+                        column: x => x.WorkshopId,
+                        principalTable: "Workshops",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -412,7 +494,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     BirthDay = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    WorkshopId = table.Column<long>(type: "bigint", nullable: true),
+                    WorkshopId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -424,6 +506,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Applications_ChildId",
+                table: "Applications",
+                column: "ChildId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Applications_UserId",
+                table: "Applications",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Applications_WorkshopId",
+                table: "Applications",
+                column: "WorkshopId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -480,14 +577,19 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 column: "SocialGroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Parents_UserId1",
+                name: "IX_Parents_UserId",
                 table: "Parents",
-                column: "UserId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Providers_AddressId",
+                name: "IX_Providers_ActualAddressId",
                 table: "Providers",
-                column: "AddressId");
+                column: "ActualAddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Providers_LegalAddressId",
+                table: "Providers",
+                column: "LegalAddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Providers_UserId",
@@ -495,9 +597,19 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Ratings_ParentId",
+                table: "Ratings",
+                column: "ParentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Subcategories_CategoryId",
                 table: "Subcategories",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Subsubcategories_SubcategoryId",
+                table: "Subsubcategories",
+                column: "SubcategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Teachers_WorkshopId",
@@ -510,20 +622,30 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 column: "AddressId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Workshops_CategoryId",
-                table: "Workshops",
-                column: "CategoryId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Workshops_ProviderId",
                 table: "Workshops",
-                column: "ProviderId");     
-    }
+                column: "ProviderId");
 
-        protected override void Down(MigrationBuilder migrationBuilder)       
-     {
+            migrationBuilder.CreateIndex(
+                name: "IX_Workshops_SubsubcategoryId",
+                table: "Workshops",
+                column: "SubsubcategoryId");
+
+            migrationBuilder.AddColumn<bool>(
+               name: "IsRegistered",
+               table: "AspNetUsers",
+               type: "bit",
+               nullable: false,
+               defaultValue: false);
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.DropTable(
-               name: "AspNetRoleClaims");
+                name: "Applications");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoleClaims");
 
             migrationBuilder.DropTable(
                 name: "AspNetUserClaims");
@@ -541,7 +663,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 name: "BirthCertificates");
 
             migrationBuilder.DropTable(
-                name: "Subcategories");
+                name: "Ratings");
 
             migrationBuilder.DropTable(
                 name: "Teachers");
@@ -562,16 +684,25 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 name: "SocialGroups");
 
             migrationBuilder.DropTable(
-                name: "Categories");
+                name: "Providers");
 
             migrationBuilder.DropTable(
-                name: "Providers");
+                name: "Subsubcategories");
 
             migrationBuilder.DropTable(
                 name: "Addresses");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Subcategories");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
+            migrationBuilder.DropColumn(
+                name: "IsRegistered",
+                table: "AspNetUsers");
         }
     }
 }
