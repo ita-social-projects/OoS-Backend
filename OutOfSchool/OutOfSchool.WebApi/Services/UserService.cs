@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -64,6 +65,25 @@ namespace OutOfSchool.WebApi.Services
             logger.Information($"Successfully got an User with Id = {id}.");
 
             return users.FirstOrDefault().ToModel();
+        }
+
+        public async Task<UserDto> Update(UserDto dto)
+        {
+            logger.Information($"Updating User with Id = {dto?.Id} started.");
+            
+            try
+            {
+                var user = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+
+                logger.Information($"User with Id = {user?.Id} updated succesfully.");
+
+                return user.ToModel();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.Error($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
+                throw;
+            }
         }
     }
 }

@@ -23,6 +23,13 @@ namespace OutOfSchool.Services.Repository
         public bool Exists(Provider entity) => db.Providers.Any(x => x.EdrpouIpn == entity.EdrpouIpn || x.Email == entity.Email);
 
         /// <summary>
+        /// Checks if the user is trying to create second account.
+        /// </summary>
+        /// <param name="id">User id.</param>
+        /// <returns>Bool.</returns>
+        public bool ExistsUserId(string id) => db.Providers.Any(x => x.UserId == id);
+
+        /// <summary>
         /// Add new element.
         /// </summary>
         /// <param name="entity">Entity to create.</param>

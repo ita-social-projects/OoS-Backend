@@ -381,20 +381,22 @@ a {
   color: #ffffff;
   cursor: pointer;
 }
-.registration_privacy {
-  border: none;
-  outline: none;
-  background: inherit;
-  position: absolute;
-  bottom: 0;
-  right: 8px;
-  width: 30px;
-  height: 30px;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+.registration_privacy_password,
+.registration_privacy_confirm_password {
+    border: none;
+    outline: none;
+    background: inherit;
+    position: absolute;
+    bottom: 0;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
-.registration_privacy img {
+.registration_privacy_password img,
+.registration_privacy_confirm_password img {
   height: 16px;
   width: auto;
 }

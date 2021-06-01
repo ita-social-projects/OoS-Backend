@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
-
+     
         /// <summary>
         /// To create new Parent and add to the DB.
         /// </summary>

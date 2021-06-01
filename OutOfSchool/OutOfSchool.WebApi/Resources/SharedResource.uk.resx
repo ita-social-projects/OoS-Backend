@@ -132,4 +132,7 @@
   <data name="There is already a provider with such a data." xml:space="preserve">
     <value>Вже існує провайдер із подібною інформацією.</value>
   </data>
+  <data name="You can not create more than one account." xml:space="preserve">
+    <value>Ви не можете створити більше одного облікового запису.</value>
+  </data>
 </root>

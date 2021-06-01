@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <returns>Parent object.</returns>
         Task<ParentDTO> GetById(long id);
-
+        
         /// <summary>
         /// To Update our object in DB.
         /// </summary>

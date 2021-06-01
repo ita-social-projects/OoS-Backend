@@ -18,8 +18,8 @@ namespace OutOfSchool.Services.Models
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(
-            @"([\d]{9})",
-            ErrorMessage = "Phone number format is incorrect. Example: 380 50-123-45-67")]
+            @"([\d]{10})",
+            ErrorMessage = "Phone number format is incorrect. Example: 0501234567")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
         public string Phone { get; set; } = string.Empty;
 
@@ -37,11 +37,11 @@ namespace OutOfSchool.Services.Models
         public string Instagram { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Children's min age is required")]
-        [Range(0, 16, ErrorMessage = "Min age should be a number from 0 to 16")]
+        [Range(0, 18, ErrorMessage = "Min age should be a number from 0 to 18")]
         public int MinAge { get; set; }
 
         [Required(ErrorMessage = "Children's max age is required")]
-        [Range(0, 16, ErrorMessage = "Max age should be a number from 0 to 16")]
+        [Range(0, 18, ErrorMessage = "Max age should be a number from 0 to 18")]
         public int MaxAge { get; set; }
 
         [Required(ErrorMessage = "Specify how many times per week lessons will be held")]
