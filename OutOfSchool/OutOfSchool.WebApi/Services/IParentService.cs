@@ -30,14 +30,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <returns>Parent object.</returns>
         Task<ParentDTO> GetById(long id);
-
-        /// <summary>
-        /// Get entity by User id.
-        /// </summary>
-        /// <param name="id">Key of the User entity in the table.</param>               
-        /// <returns>Parent.</returns>
-        Task<ParentDTO> GetByUserId(string id);
-
+        
         /// <summary>
         /// To Update our object in DB.
         /// </summary>

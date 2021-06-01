@@ -70,30 +70,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
-
-        /// <summary>
-        /// Get Parent by User Id.
-        /// </summary>
-        /// <param name="id">User id.</param>
-        /// <returns>Provider.</returns>
-        [Authorize(AuthenticationSchemes = "Bearer")]
-        [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetParentByUserId(string id)
-        {
-            try
-            {
-                return Ok(await service.GetByUserId(id).ConfigureAwait(false));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
+     
         /// <summary>
         /// To create new Parent and add to the DB.
         /// </summary>
