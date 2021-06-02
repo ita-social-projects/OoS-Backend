@@ -129,7 +129,8 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpPost]
+        [HttpPost("multiple")]
+        [Obsolete("This method is obsolete. Call another Create instead", false)]
         public async Task<IActionResult> Create([FromBody]ApplicationApiModel applicationApiModel)
         {
             if (!ModelState.IsValid)
@@ -149,6 +150,43 @@ namespace OutOfSchool.WebApi.Controllers
                      nameof(GetById),
                      new { id = ids, },
                      newApplications);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Method for creating a new application.
+        /// </summary>
+        /// <param name="applicationDto">Application entity to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "parent,admin")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost]
+        public async Task<IActionResult> Create(ApplicationDto applicationDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                applicationDto.UserId = User.FindFirst("sub")?.Value;
+
+                applicationDto.CreationTime = DateTime.Now;
+
+                var application = await service.Create(applicationDto).ConfigureAwait(false);
+
+                return CreatedAtAction(
+                     nameof(GetById),
+                     new { id = application.Id, },
+                     application);
             }
             catch (ArgumentException ex)
             {
