@@ -100,7 +100,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
 
             if (result.Succeeded)
-            {                
+            {
                 return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
 
@@ -213,6 +213,48 @@ namespace OutOfSchool.IdentityServer.Controllers
         public Task<IActionResult> ExternalLogin(string provider, string returnUrl)
         {
             throw new NotImplementedException();
+        }
+                
+        [HttpGet]
+        public IActionResult ChangeEmail(string returnUrl = "Login")
+        {
+            return View(new ChangeEmailViewModel
+            {
+                ReturnUrl = returnUrl,
+            });
+        }
+                
+        [HttpPost]
+        public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(new ChangeEmailViewModel());
+            }
+
+            var emailMessage = new EmailMessage
+            {
+                FromAddresses = new List<EmailAddress>()
+                {
+                    new EmailAddress()
+                    {
+                        Name = "Oos-Backend",
+                        Address = "OoS.Backend.Test.Server@gmail.com",
+                    },
+                },
+                ToAddresses = new List<EmailAddress>()
+                {
+                    new EmailAddress()
+                    {
+                        Name = "",
+                        Address = "",
+                    },
+                },
+                Content = "Test",
+                Subject = "Test",
+            };
+            await emailSender.SendAsync(emailMessage);
+            return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);            
         }
     }
 }

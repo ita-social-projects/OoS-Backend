@@ -84,7 +84,17 @@ namespace OutOfSchool.IdentityServer
                 })
                 .AddAspNetIdentity<User>()
                 .AddProfileService<ProfileService>();
-            
+
+            SmtpConfiguration smtpConfiguration = new SmtpConfiguration()
+            {
+                SmtpServer = config["SmtpConfiguration:Server"],
+                SmtpPort = int.Parse(config["SmtpConfiguration:Port"]),
+                SmtpUsername = config["SmtpConfiguration:Username"],
+                SmtpPassword = config["SmtpConfiguration:Password"],
+            };
+            services.AddSingleton(smtpConfiguration);
+            services.AddScoped<IEmailSender, EmailSender>();
+
             services.AddControllersWithViews()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
         }
