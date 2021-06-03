@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Tests
         public void Mapping_ChatMessageDtoToDomain_IsCorrect()
         {
             // Arrange
-            ChatMessageDTO chatMessageDTO = new ChatMessageDTO()
+            ChatMessageDto chatMessageDTO = new ChatMessageDto()
             {
                 Id = 1,
                 UserId = "test",
@@ -66,7 +66,7 @@ namespace OutOfSchool.WebApi.Tests
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ChatMessageDTO>(result);
+            Assert.IsInstanceOf<ChatMessageDto>(result);
             Assert.IsNotNull(result.Text);
             Assert.AreEqual(chatMessage.Id, result.Id);
             Assert.AreEqual(chatMessage.UserId, result.UserId);
@@ -83,7 +83,7 @@ namespace OutOfSchool.WebApi.Tests
             var user1 = new UserDto() { Id = "test" };
             var user2 = new UserDto() { Id = "test2" };
 
-            var chatMessage1 = new ChatMessageDTO()
+            var chatMessage1 = new ChatMessageDto()
             {
                 Id = 1,
                 UserId = "test",
@@ -92,7 +92,7 @@ namespace OutOfSchool.WebApi.Tests
                 IsRead = true,
                 CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
             };
-            var chatMessage2 = new ChatMessageDTO()
+            var chatMessage2 = new ChatMessageDto()
             {
                 Id = 2,
                 UserId = "test2",
@@ -102,11 +102,11 @@ namespace OutOfSchool.WebApi.Tests
                 CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
             };
 
-            var chatRoomDto = new ChatRoomDTO()
+            var chatRoomDto = new ChatRoomDto()
             {
                 Id = 1,
                 WorkshopId = 1,
-                ChatMessages = new List<ChatMessageDTO>(),
+                ChatMessages = new List<ChatMessageDto>(),
                 Users = new List<UserDto>(),
             };
             chatRoomDto.ChatMessages.Add(chatMessage1);
@@ -184,9 +184,9 @@ namespace OutOfSchool.WebApi.Tests
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ChatRoomDTO>(result);
+            Assert.IsInstanceOf<ChatRoomDto>(result);
             Assert.IsNotNull(result.ChatMessages);
-            Assert.IsInstanceOf<ICollection<ChatMessageDTO>>(result.ChatMessages);
+            Assert.IsInstanceOf<ICollection<ChatMessageDto>>(result.ChatMessages);
             Assert.IsNotNull(result.Users);
             Assert.IsInstanceOf<ICollection<UserDto>>(result.Users);
             Assert.AreEqual(chatRoom.Id, result.Id);
@@ -247,7 +247,7 @@ namespace OutOfSchool.WebApi.Tests
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ChatRoomDTO>(result);
+            Assert.IsInstanceOf<ChatRoomDto>(result);
             Assert.IsNull(result.ChatMessages);
             Assert.IsNotNull(result.Users);
             Assert.IsInstanceOf<ICollection<UserDto>>(result.Users);

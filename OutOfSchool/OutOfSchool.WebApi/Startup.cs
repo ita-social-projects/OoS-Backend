@@ -96,9 +96,6 @@ namespace OutOfSchool.WebApi
                     options.RequireHttpsMetadata = false;
                 });
 
-            // TODO Edit CORS policy (hard-code) in Startup
-            // if chat is from our origin, than change WithOrigins() to AllowAnyOrigin(), delete AllowCredentials()
-            // else: implement extract Origin from appsettings.json
             services.AddCors(confg =>
                 confg.AddPolicy(
                     "AllowAll",

@@ -64,25 +64,15 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static ChatMessageDTO ToModel(this ChatMessage chatMessage)
         {
-            return Mapper<ChatMessage, ChatMessageDTO>(chatMessage, cfg => { cfg.CreateMap<ChatMessage, ChatMessageDTO>(); });
+            return Mapper<ChatMessage, ChatMessageDto>(chatMessage, cfg => { cfg.CreateMap<ChatMessage, ChatMessageDto>(); });
         }
 
-        public static ChatRoomDTO ToModelWithoutChatMessages(this ChatRoom chatRoom)
+        public static ChatRoomDto ToModel(this ChatRoom chatRoom)
         {
-            return Mapper<ChatRoom, ChatRoomDTO>(chatRoom, cfg =>
+            return Mapper<ChatRoom, ChatRoomDto>(chatRoom, cfg =>
             {
-                cfg.CreateMap<ChatRoom, ChatRoomDTO>()
-                .ForMember(cr => cr.ChatMessages, m => m.Ignore());
-                cfg.CreateMap<User, UserDto>();
-            });
-        }
-
-        public static ChatRoomDTO ToModel(this ChatRoom chatRoom)
-        {
-            return Mapper<ChatRoom, ChatRoomDTO>(chatRoom, cfg =>
-            {
-                cfg.CreateMap<ChatRoom, ChatRoomDTO>();
-                cfg.CreateMap<ChatMessage, ChatMessageDTO>();
+                cfg.CreateMap<ChatRoom, ChatRoomDto>();
+                cfg.CreateMap<ChatMessage, ChatMessageDto>();
                 cfg.CreateMap<User, UserDto>();
             });
         }
@@ -215,17 +205,17 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<TeacherDTO, Teacher>(teacherDto, cfg => { cfg.CreateMap<TeacherDTO, Teacher>(); });
         }
 
-        public static ChatMessage ToDomain(this ChatMessageDTO chatMessageDTO)
+        public static ChatMessage ToDomain(this ChatMessageDto chatMessageDTO)
         {
-            return Mapper<ChatMessageDTO, ChatMessage>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageDTO, ChatMessage>(); });
+            return Mapper<ChatMessageDto, ChatMessage>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageDto, ChatMessage>(); });
         }
 
-        public static ChatRoom ToDomain(this ChatRoomDTO chatRoomDTO)
+        public static ChatRoom ToDomain(this ChatRoomDto chatRoomDTO)
         {
-            return Mapper<ChatRoomDTO, ChatRoom>(chatRoomDTO, cfg =>
+            return Mapper<ChatRoomDto, ChatRoom>(chatRoomDTO, cfg =>
             {
-                cfg.CreateMap<ChatRoomDTO, ChatRoom>();
-                cfg.CreateMap<ChatMessageDTO, ChatMessage>();
+                cfg.CreateMap<ChatRoomDto, ChatRoom>();
+                cfg.CreateMap<ChatMessageDto, ChatMessage>();
                 cfg.CreateMap<UserDto, User>();
             });
         }

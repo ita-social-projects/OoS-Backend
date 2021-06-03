@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageDTO> Create(ChatMessageDTO chatMessageDto)
+        public async Task<ChatMessageDto> Create(ChatMessageDto chatMessageDto)
         {
             var strBuilder = new StringBuilder();
             strBuilder.AppendLine("ChatMessage creating was started. ChatMessageDTO:");
@@ -47,9 +47,9 @@ namespace OutOfSchool.WebApi.Services
                 logger.Information($"ChatMessage id:{chatMessage.Id} was saved to DB.");
                 return chatMessage.ToModel();
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException exception)
             {
-                logger.Error($"ChatMessage was not created. Exception: {ex.Message}");
+                logger.Error($"ChatMessage was not created. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -74,15 +74,15 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.Information($"ChatMessage id:{id} was successfully deleted.");
             }
-            catch (DbUpdateConcurrencyException ex)
+            catch (DbUpdateConcurrencyException exception)
             {
-                logger.Error($"Deleting ChatMessage id:{id} failed. Exception: {ex.Message}");
+                logger.Error($"Deleting ChatMessage id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatMessageDTO>> GetAllByChatRoomId(long chatRoomId)
+        public async Task<IEnumerable<ChatMessageDto>> GetAllByChatRoomId(long chatRoomId)
         {
             logger.Information($"Process of getting all ChatMessages with ChatRoomId:{chatRoomId} was started.");
 
@@ -97,15 +97,15 @@ namespace OutOfSchool.WebApi.Services
 
                 return chatMessages.Select(item => item.ToModel()).ToList();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.Error($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {ex.Message}");
+                logger.Error($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatMessageDTO>> GetAllNotReadByUserInChatRoom(long chatRoomId, string userId)
+        public async Task<IEnumerable<ChatMessageDto>> GetAllNotReadByUserInChatRoom(long chatRoomId, string userId)
         {
             logger.Information($"Process of getting all ChatMessages that are not read with ChatRoomId:{chatRoomId} and UserId:{userId} was started.");
 
@@ -120,15 +120,15 @@ namespace OutOfSchool.WebApi.Services
 
                 return chatMessages.Select(item => item.ToModel()).ToList();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.Error($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {ex.Message}");
+                logger.Error($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageDTO> GetById(long id)
+        public async Task<ChatMessageDto> GetById(long id)
         {
             logger.Information($"ChatMessage getting was started. ChatMessage id:{id}");
 
@@ -147,15 +147,15 @@ namespace OutOfSchool.WebApi.Services
                     return chatMessages.First().ToModel();
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.Error($"Getting ChatMessage with id:{id} failed. Exception: {ex.Message}");
+                logger.Error($"Getting ChatMessage with id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageDTO> Update(ChatMessageDTO chatMessageDto)
+        public async Task<ChatMessageDto> Update(ChatMessageDto chatMessageDto)
         {
             var strBuilder = new StringBuilder();
             strBuilder.AppendLine("ChatMessage Updating was started. ChatMessageDTO:");
@@ -175,15 +175,15 @@ namespace OutOfSchool.WebApi.Services
 
                 return chatMessage.ToModel();
             }
-            catch (DbUpdateConcurrencyException ex)
+            catch (DbUpdateConcurrencyException exception)
             {
-                logger.Error($"Updating ChatMessage with id:{chatMessageDto.Id} failed. Exception: {ex.Message}");
+                logger.Error($"Updating ChatMessage with id:{chatMessageDto.Id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatMessageDTO>> UpdateIsRead(IEnumerable<ChatMessageDTO> chatMessages)
+        public async Task<IEnumerable<ChatMessageDto>> UpdateIsRead(IEnumerable<ChatMessageDto> chatMessages)
         {
             logger.Information($"Process of updating ({chatMessages.Count()}) ChatMessages that are not read was started.");
 
@@ -194,11 +194,11 @@ namespace OutOfSchool.WebApi.Services
                     item.IsRead = true;
                     try
                     {
-                        var result = await repository.Update(item.ToDomain()).ConfigureAwait(false);
+                        await repository.Update(item.ToDomain()).ConfigureAwait(false);
                     }
-                    catch (DbUpdateConcurrencyException ex)
+                    catch (DbUpdateConcurrencyException exception)
                     {
-                        logger.Error($"Updating ChatMessage with id:{item.Id} failed. Exception: {ex.Message}");
+                        logger.Error($"Updating ChatMessage with id:{item.Id} failed. Exception: {exception.Message}");
                         throw;
                     }
                 }

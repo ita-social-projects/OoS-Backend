@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class ChatNewMessageDTO
+    public class ChatNewMessageDto
     {
         [Required]
         [JsonProperty("WorkshopId")]

@@ -19,10 +19,6 @@ namespace OutOfSchool.WebApi.Middlewares
 
             // web sockets cannot pass headers so we must take the access token from query param and
             // add it to the header before authentication middleware runs
-
-            // TODO Edit Origin comparation (hard-code) in TokenFromQueryStringMiddleware
-            // if chat is from our origin and another origin is blocked then delete origin's comparation
-            // else: implement extract allowed Origins from appsettings.json
             if (request.Path.StartsWithSegments("/chathub", StringComparison.OrdinalIgnoreCase) &&
                 request.Query.TryGetValue("access_token", out var accessToken) &&
                 (string.Equals(request.Headers["Origin"], "http://localhost:4200", StringComparison.OrdinalIgnoreCase) ||

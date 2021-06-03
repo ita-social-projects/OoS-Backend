@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Localization;
 using Newtonsoft.Json;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -16,10 +17,6 @@ namespace OutOfSchool.WebApi.Hubs
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ChatHub : Hub
     {
-        // TODO: change static collection with a persistent storage system such as MongoDB, RavenDB, SQL Server, etc.
-        // References:
-        // https://www.tugberkugurlu.com/archive/mapping-asp-net-signalr-connections-to-real-application-users
-        // https://github.com/davidfowl/MessengR/blob/master/MessengR/Hubs/Chat.cs
         // This collection tracks users with their connections.
         private static readonly ConcurrentDictionary<string, HubUser> Users
             = new ConcurrentDictionary<string, HubUser>(StringComparer.InvariantCultureIgnoreCase);
@@ -28,6 +25,12 @@ namespace OutOfSchool.WebApi.Hubs
         private readonly IChatMessageService messageService;
         private readonly IChatRoomService roomService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChatHub"/> class.
+        /// </summary>
+        /// <param name="chatMessageService">Service for ChatMessage model.</param>
+        /// <param name="chatRoomService">Service for ChatRoom model.</param>
+        /// <param name="logger">Logger.</param>
         public ChatHub(ILogger logger, IChatMessageService chatMessageService, IChatRoomService chatRoomService)
         {
             this.logger = logger;
@@ -52,42 +55,42 @@ namespace OutOfSchool.WebApi.Hubs
             await base.OnConnectedAsync().ConfigureAwait(false);
         }
 
-        public override async Task OnDisconnectedAsync(Exception ex)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             var userId = Context.User.FindFirst("sub")?.Value;
             logger.Information($"UserId: {userId} connection:{Context.ConnectionId} disconnected.");
 
             this.RemoveUsersConnectionIdTracking(userId);
-            
-            await base.OnDisconnectedAsync(ex);
+
+            await base.OnDisconnectedAsync(exception).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Creates <see cref="ChatMessageDTO"/>, saves to DataBase and sends message to Others in Group.
+        /// Creates <see cref="ChatMessageDto"/>, saves to DataBase and sends message to Others in Group.
         /// </summary>
         /// <param name="chatNewMessage">Entity (string format) that contains text of message, receiver and workshop info.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         public async Task SendMessageToOthersInGroup(string chatNewMessage)
         {
-            ChatNewMessageDTO chatNewMessageDtoObject = null;
+            ChatNewMessageDto chatNewMessageDto = null;
             try
             {
-                chatNewMessageDtoObject = JsonConvert.DeserializeObject<ChatNewMessageDTO>(chatNewMessage);
+                chatNewMessageDto = JsonConvert.DeserializeObject<ChatNewMessageDto>(chatNewMessage);
             }
-            catch (JsonException ex)
+            catch (JsonException exception)
             {
-                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", ex.Message).ConfigureAwait(false);
+                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", exception.Message).ConfigureAwait(false);
                 throw;
             }
 
             var senderUserId = Context.User.FindFirst("sub")?.Value;
-            logger.Information($"{nameof(SendMessageToOthersInGroup)}.Invoked UserId: {senderUserId}");
+            logger.Information($"{nameof(SendMessageToOthersInGroup)}.Invoked.");
 
-            var chatMessageDto = new ChatMessageDTO()
+            var chatMessageDto = new ChatMessageDto()
             {
                 UserId = senderUserId,
                 ChatRoomId = 0,
-                Text = chatNewMessageDtoObject.Text,
+                Text = chatNewMessageDto.Text,
                 CreatedTime = DateTime.Now,
                 IsRead = false,
             };
@@ -97,16 +100,17 @@ namespace OutOfSchool.WebApi.Hubs
             // Validate chat between users and get chatRoom.
             try
             {
-                if (await this.ValidateChatRoomId(chatNewMessageDtoObject.ChatRoomId, senderUserId).ConfigureAwait(false))
+                if (chatNewMessageDto.ChatRoomId > 0 &&
+                    (await this.RoomExistAndSenderIsItsParticipant(chatNewMessageDto.ChatRoomId, senderUserId).ConfigureAwait(false)))
                 {
-                    chatMessageDto.ChatRoomId = chatNewMessageDtoObject.ChatRoomId;
+                    chatMessageDto.ChatRoomId = chatNewMessageDto.ChatRoomId;
                 }
                 else
                 {
-                    await roomService.ValidateUsers(senderUserId, chatNewMessageDtoObject.ReceiverUserId, chatNewMessageDtoObject.WorkshopId).ConfigureAwait(false);
+                    await roomService.ValidateUsers(senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId).ConfigureAwait(false);
 
                     var chatRoomDto = await roomService.CreateOrReturnExisting(
-                    senderUserId, chatNewMessageDtoObject.ReceiverUserId, chatNewMessageDtoObject.WorkshopId)
+                    senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId)
                     .ConfigureAwait(false);
 
                     chatMessageDto.ChatRoomId = chatRoomDto.Id;
@@ -114,9 +118,9 @@ namespace OutOfSchool.WebApi.Hubs
                     roomIsNew = true;
                 }
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException exception)
             {
-                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", ex.Message).ConfigureAwait(false);
+                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", exception.Message).ConfigureAwait(false);
                 throw;
             }
 
@@ -129,7 +133,7 @@ namespace OutOfSchool.WebApi.Hubs
                 await AddConnectionsToGroup(senderUserId, createdMessageDto.ChatRoomId).ConfigureAwait(false);
 
                 // Add Receiver's connections to the Group if he is online.
-                await AddConnectionsToGroup(chatNewMessageDtoObject.ReceiverUserId, createdMessageDto.ChatRoomId).ConfigureAwait(false);
+                await AddConnectionsToGroup(chatNewMessageDto.ReceiverUserId, createdMessageDto.ChatRoomId).ConfigureAwait(false);
             }
 
             // Send chatMessage.
@@ -184,27 +188,17 @@ namespace OutOfSchool.WebApi.Hubs
             }
         }
 
-        private async Task<bool> ValidateChatRoomId(long chatRoomId, string senderId)
+        private async Task<bool> RoomExistAndSenderIsItsParticipant(long chatRoomId, string senderId)
         {
-            if (chatRoomId < 0)
+            var usersRooms = await roomService.GetByUserId(senderId).ConfigureAwait(false);
+            if (usersRooms.Any() && usersRooms.Any(r => r.Id == chatRoomId))
             {
-                throw new ArgumentException($"Wrong ChatRoom id:{chatRoomId}.");
+                return true;
             }
-
-            if (chatRoomId > 0)
+            else
             {
-                var existingChatRoom = await roomService.GetById(chatRoomId).ConfigureAwait(false);
-                if (!(existingChatRoom is null) && existingChatRoom.Users.Any(u => u.Id == senderId))
-                {
-                    return true;
-                }
-                else
-                {
-                    throw new ArgumentException($"You are not a participant in ChatRoom with id:{chatRoomId}.");
-                }
+                return false;
             }
-
-            return false;
         }
 
         private class HubUser

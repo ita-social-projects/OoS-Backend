@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class ChatMessageDTO
+    public class ChatMessageDto
     {
         public long Id { get; set; }
 

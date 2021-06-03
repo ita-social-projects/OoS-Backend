@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateMessage(ChatNewMessageDTO chatNewMessageDto)
+        public async Task<IActionResult> CreateMessage(ChatNewMessageDto chatNewMessageDto)
         {
             if (!ModelState.IsValid)
             {
@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             var senderUserId = User.FindFirst("sub")?.Value;
 
-            var chatMessageDto = new ChatMessageDTO()
+            var chatMessageDto = new ChatMessageDto()
             {
                 UserId = senderUserId,
                 ChatRoomId = 0,
@@ -97,13 +97,13 @@ namespace OutOfSchool.WebApi.Controllers
                      new { id = createdMessageDto.Id },
                      createdMessageDto);
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException exception)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(exception.Message);
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException exception)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(exception.Message);
             }
         }
 
@@ -191,7 +191,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             var chatRooms = await roomService.GetByUserId(userId).ConfigureAwait(false);
 
-            var newChatRooms = new List<ChatRoomDTO>();
+            var newChatRooms = new List<ChatRoomDto>();
 
             foreach (var room in chatRooms)
             {
@@ -255,13 +255,18 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMessage(ChatMessageDTO chatMessageDto)
+        public async Task<IActionResult> UpdateMessage(ChatMessageDto chatMessageDto)
         {
             var userId = User.FindFirst("sub")?.Value;
 
             var oldChatMessage = await messageService.GetById(chatMessageDto.Id).ConfigureAwait(false);
 
-            if ((oldChatMessage is null) || (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal)))
+            if (oldChatMessage is null)
+            {
+                return NotFound();
+            }
+
+            if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
             {
                 ModelState.AddModelError("AnotherUser", "Forbidden to change messages of another users.");
             }
@@ -323,9 +328,9 @@ namespace OutOfSchool.WebApi.Controllers
 
                 return NoContent();
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (ArgumentOutOfRangeException exception)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(exception.Message);
             }
         }
 
@@ -369,9 +374,9 @@ namespace OutOfSchool.WebApi.Controllers
 
                 return NoContent();
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (ArgumentOutOfRangeException exception)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(exception.Message);
             }
         }
     }

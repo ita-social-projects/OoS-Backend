@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDTO> CreateOrReturnExisting(string user1Id, string user2Id, long workshopId)
+        public async Task<ChatRoomDto> CreateOrReturnExisting(string user1Id, string user2Id, long workshopId)
         {
             logger.Information($"Checking a ChatRoom with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
@@ -60,9 +60,9 @@ namespace OutOfSchool.WebApi.Services
                     return await Create(user1Id, user2Id, workshopId).ConfigureAwait(false);
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.Error($"CreateOrReturnExisting ChatRoom faild: {ex.Message}");
+                logger.Error($"CreateOrReturnExisting ChatRoom faild: {exception.Message}");
                 throw;
             }
         }
@@ -89,15 +89,15 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.Information($"ChatRoom id:{id} was successfully deleted.");
             }
-            catch (DbUpdateConcurrencyException ex)
+            catch (DbUpdateConcurrencyException exception)
             {
-                logger.Error($"Deleting ChatRoom id:{id} failed. Exception: {ex.Message}");
+                logger.Error($"Deleting ChatRoom id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDTO> GetById(long id)
+        public async Task<ChatRoomDto> GetById(long id)
         {
             logger.Information($"Process of getting ChatRoom by Id:{id} was started.");
 
@@ -118,15 +118,15 @@ namespace OutOfSchool.WebApi.Services
                     return chatRoom.ToModel();
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.Error($"Getting ChatRoom with id:{id} failed. Exception: {ex.Message}");
+                logger.Error($"Getting ChatRoom with id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatRoomDTO>> GetByUserId(string userId)
+        public async Task<IEnumerable<ChatRoomDto>> GetByUserId(string userId)
         {
             logger.Information($"Process of getting all ChatRooms with userId:{userId} was started.");
 
@@ -141,15 +141,15 @@ namespace OutOfSchool.WebApi.Services
 
                 return chatRooms.Select(x => x.ToModelWithoutChatMessages());
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.Error($"Getting all ChatMessages with userId:{userId} failed. Exception: {ex.Message}");
+                logger.Error($"Getting all ChatMessages with userId:{userId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDTO> GetUniqueChatRoomBetweenUsersWithinWorkshop(string user1Id, string user2Id, long workshopId)
+        public async Task<ChatRoomDto> GetUniqueChatRoomBetweenUsersWithinWorkshop(string user1Id, string user2Id, long workshopId)
         {
             logger.Information($"Process of getting unique ChatRoom with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
@@ -167,17 +167,17 @@ namespace OutOfSchool.WebApi.Services
 
                 if (chatRooms.Count > 1)
                 {
-                    var exmessage = "Logic error! More then 1(one) record was found when expected to exist only one.";
-                    throw new Exception(exmessage);
+                    var exmessage = $"Logic error! {chatRooms.Count} record was found when expected to exist only one.";
+                    throw new InvalidOperationException(exmessage);
                 }
 
                 var chatRoom = chatRooms.Count == 1 ? chatRooms.First() : null;
 
                 return chatRoom.ToModel();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.Error($"Getting all ChatMessages with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} failed. Exception: {ex.Message}");
+                logger.Error($"Getting all ChatMessages with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -204,19 +204,15 @@ namespace OutOfSchool.WebApi.Services
                 }
 
                 // Forbid chats when workshop is not managed by one of the users.
-                if (string.Equals(user1.Role, "provider", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(user1.Role, "provider", StringComparison.OrdinalIgnoreCase) &&
+                    (!string.Equals(workshop.Provider.UserId, user1.Id, StringComparison.Ordinal)))
                 {
-                    if (!string.Equals(workshop.Provider.UserId, user1.Id, StringComparison.Ordinal))
-                    {
-                        throw new ArgumentException($"Workshop is not managed by {user1.Role}. Chat is forbidden.");
-                    }
+                    throw new ArgumentException($"Workshop is not managed by {user1.Role}. Chat is forbidden.");
                 }
-                else if (string.Equals(user2.Role, "provider", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(user2.Role, "provider", StringComparison.OrdinalIgnoreCase) &&
+                    (!string.Equals(workshop.Provider.UserId, user2.Id, StringComparison.Ordinal)))
                 {
-                    if (!string.Equals(workshop.Provider.UserId, user2.Id, StringComparison.Ordinal))
-                    {
-                        throw new ArgumentException($"Workshop is not managed by {user2.Role}. Chat is forbidden.");
-                    }
+                    throw new ArgumentException($"Workshop is not managed by {user2.Role}. Chat is forbidden.");
                 }
 
                 // Forbid chats between parent and admin.
@@ -230,14 +226,14 @@ namespace OutOfSchool.WebApi.Services
 
                 return flag;
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException exception)
             {
-                logger.Error($"One of the entities was not found. {ex.Message}");
+                logger.Error($"One of the entities was not found. {exception.Message}");
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.Error($"Validation of users failed. Exception: {ex.Message}");
+                logger.Error($"Validation of users failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -248,8 +244,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="user1Id">Id of one User.</param>
         /// <param name="user2Id">Id of another User.</param>
         /// <param name="workshopId">Id of Workshop.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDTO"/> that was created.</returns>
-        private async Task<ChatRoomDTO> Create(string user1Id, string user2Id, long workshopId)
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDto"/> that was created.</returns>
+        private async Task<ChatRoomDto> Create(string user1Id, string user2Id, long workshopId)
         {
             logger.Information($"ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
@@ -274,9 +270,9 @@ namespace OutOfSchool.WebApi.Services
 
                 return chatRoom.ToModel();
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException exception)
             {
-                logger.Error($"ChatRoom was not created. Exception: {ex.Message}");
+                logger.Error($"ChatRoom was not created. Exception: {exception.Message}");
                 throw;
             }
         }
