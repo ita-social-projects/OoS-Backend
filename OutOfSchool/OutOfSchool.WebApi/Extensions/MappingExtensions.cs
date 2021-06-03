@@ -88,6 +88,11 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Application, ApplicationDto>(application, cfg => { cfg.CreateMap<Application, ApplicationDto>(); });
         }
 
+        public static SocialGroupDto ToModel(this SocialGroup group)
+        {
+            return Mapper<SocialGroup, SocialGroupDto>(group, cfg => { cfg.CreateMap<SocialGroup, SocialGroupDto>(); });
+        }
+
         public static SubcategoryDTO ToModel(this Subcategory category)
         {
             return Mapper<Subcategory, SubcategoryDTO>(category, cfg => { cfg.CreateMap<Subcategory, SubcategoryDTO>(); });
@@ -176,6 +181,11 @@ namespace OutOfSchool.WebApi.Extensions
         public static Rating ToDomain(this RatingDto ratingDto)
         {
             return Mapper<RatingDto, Rating>(ratingDto, cfg => { cfg.CreateMap<RatingDto, Rating>(); });
+        }
+
+        public static SocialGroup ToDomain(this SocialGroupDto groupDto)
+        {
+            return Mapper<SocialGroupDto, SocialGroup>(groupDto, cfg => { cfg.CreateMap<SocialGroupDto, SocialGroup>(); });
         }
 
         public static Application ToDomain(this ApplicationDto applicationDTO)
