@@ -1,9 +1,9 @@
 ﻿namespace OutOfSchool.EmailService
 {
-    public class EmailConfiguration : IEmailConfiguration
+    public class SmtpConfiguration
     {
-        public string SmtpServer { get; }
-        public int SmtpPort { get; }
+        public string SmtpServer { get; set; }
+        public int SmtpPort { get; set; }
         public string SmtpUsername { get; set; }
         public string SmtpPassword { get; set; }
     }

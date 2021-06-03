@@ -2,9 +2,8 @@
 
 namespace OutOfSchool.EmailService
 {
-    public interface IEmailService
+    public interface IEmailSender
     {
-        void Send(EmailMessage emailMessage);
         Task SendAsync(EmailMessage emailMessage);
     }
 }

@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
+    <ProjectReference Include="..\OutOfSchool.EmailService\OutOfSchool.EmailService.csproj" />
   </ItemGroup>
 
   <ItemGroup>
