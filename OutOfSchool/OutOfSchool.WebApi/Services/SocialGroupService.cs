@@ -106,16 +106,16 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Deleting SocialGroup with Id = {id} started.");
 
-            var rating = await repository.GetById(id).ConfigureAwait(false);
+            var socialGroup = await repository.GetById(id).ConfigureAwait(false);
 
-            if (rating == null)
+            if (socialGroup == null)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(id),
                     localizer[$"SocialGroup with Id = {id} doesn't exist in the system"]);
             }
 
-            await repository.Delete(rating).ConfigureAwait(false);
+            await repository.Delete(socialGroup).ConfigureAwait(false);
 
             logger.Information($"SocialGroup with Id = {id} succesfully deleted.");
         }
