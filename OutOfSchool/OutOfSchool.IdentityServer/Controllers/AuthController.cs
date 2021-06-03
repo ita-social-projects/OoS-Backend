@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.EmailService;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
 
@@ -19,6 +21,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> userManager;
         private readonly IIdentityServerInteractionService interactionService;
         private readonly ILogger<AuthController> logger;
+        private readonly IEmailSender emailSender;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -27,16 +30,19 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="signInManager"> ASP.Net Core Identity Sign in Manager.</param>
         /// <param name="interactionService"> Identity Server 4 interaction service.</param>
         /// <param name="logger"> ILogger class.</param>
+        /// <param name="emailSender"> IEmailSender class.</param>
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IIdentityServerInteractionService interactionService,
-            ILogger<AuthController> logger)
+            ILogger<AuthController> logger,
+            IEmailSender emailSender)
         {
             this.logger = logger;
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.interactionService = interactionService;
+            this.emailSender = emailSender;
         }
 
         /// <summary>
@@ -94,7 +100,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
 
             if (result.Succeeded)
-            {
+            {                
                 return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
 

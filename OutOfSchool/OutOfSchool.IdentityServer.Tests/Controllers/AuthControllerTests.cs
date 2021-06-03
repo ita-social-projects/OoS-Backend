@@ -20,6 +20,7 @@ using OutOfSchool.IdentityServer.Controllers;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+using OutOfSchool.EmailService;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers
 {
@@ -30,6 +31,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         private readonly Mock<FakeSignInManager> fakeSignInManager;
         private readonly Mock<IIdentityServerInteractionService> fakeInteractionService;
         private readonly Mock<ILogger<AuthController>> fakeLogger;
+        private readonly Mock<IEmailSender> fakeEmailSender;
         private AuthController authController;
 
         public AuthControllerTests()
@@ -38,6 +40,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             fakeInteractionService = new Mock<IIdentityServerInteractionService>();
             fakeSignInManager = new Mock<FakeSignInManager>();
             fakeLogger = new Mock<ILogger<AuthController>>();
+            fakeEmailSender = new Mock<IEmailSender>();
         }
 
         [SetUp]
@@ -47,7 +50,8 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
                 fakeUserManager.Object,
                 fakeSignInManager.Object,
                 fakeInteractionService.Object, 
-                fakeLogger.Object
+                fakeLogger.Object,
+                fakeEmailSender.Object
                 );
         }
 

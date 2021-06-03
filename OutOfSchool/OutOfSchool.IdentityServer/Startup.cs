@@ -84,7 +84,7 @@ namespace OutOfSchool.IdentityServer
                 })
                 .AddAspNetIdentity<User>()
                 .AddProfileService<ProfileService>();
-
+            
             services.AddControllersWithViews()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
         }
