@@ -14,6 +14,8 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Hubs;
+using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
 using Serilog;
 
@@ -68,10 +70,17 @@ namespace OutOfSchool.WebApi
 
             app.UseRouting();
 
+            // Enable extracting token from QueryString for Hub-connection authorization
+            app.UseMiddleware<TokenFromQueryStringMiddleware>();
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/chathub");
+            });
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -87,12 +96,16 @@ namespace OutOfSchool.WebApi
                     options.RequireHttpsMetadata = false;
                 });
 
+            // TODO Edit CORS policy (hard-code) in Startup
+            // if chat is from our origin, than change WithOrigins() to AllowAnyOrigin(), delete AllowCredentials()
+            // else: implement extract Origin from appsettings.json
             services.AddCors(confg =>
                 confg.AddPolicy(
                     "AllowAll",
-                    p => p.AllowAnyOrigin()
+                    p => p.WithOrigins("http://localhost:4200", "http://oos.dmytrominochkin.cloud:80")
                         .AllowAnyMethod()
-                        .AllowAnyHeader()));
+                        .AllowAnyHeader()
+                        .AllowCredentials()));
 
             services.AddControllers();
 
@@ -148,6 +161,8 @@ namespace OutOfSchool.WebApi
             });
 
             services.AddAutoMapper(typeof(Startup));
+
+            services.AddSignalR();
         }
     }
 }

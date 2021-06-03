@@ -208,14 +208,14 @@ namespace OutOfSchool.WebApi.Services
                 {
                     if (!string.Equals(workshop.Provider.UserId, user1.Id, StringComparison.Ordinal))
                     {
-                        throw new ArgumentException($"Workshop is not managed by {user1.Role}:{user1.Id}. Chat is forbidden.");
+                        throw new ArgumentException($"Workshop is not managed by {user1.Role}. Chat is forbidden.");
                     }
                 }
                 else if (string.Equals(user2.Role, "provider", StringComparison.OrdinalIgnoreCase))
                 {
                     if (!string.Equals(workshop.Provider.UserId, user2.Id, StringComparison.Ordinal))
                     {
-                        throw new ArgumentException($"Workshop is not managed by {user2.Role}:{user2.Id}. Chat is forbidden.");
+                        throw new ArgumentException($"Workshop is not managed by {user2.Role}. Chat is forbidden.");
                     }
                 }
 
