@@ -99,7 +99,7 @@ namespace OutOfSchool.WebApi
             services.AddCors(confg =>
                 confg.AddPolicy(
                     "AllowAll",
-                    p => p.WithOrigins("http://localhost:4200", "http://oos.dmytrominochkin.cloud:80")
+                    p => p.WithOrigins(Configuration["AllowedCorsOrigins"].Split(','))
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials()));

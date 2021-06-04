@@ -102,17 +102,21 @@ namespace OutOfSchool.WebApi.Tests
                 CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
             };
 
+            var listOfUsers = new List<UserDto>();
+            listOfUsers.Add(user1);
+            listOfUsers.Add(user2);
+
+            var listOfMessages = new List<ChatMessageDto>();
+            listOfMessages.Add(chatMessage1);
+            listOfMessages.Add(chatMessage2);
+
             var chatRoomDto = new ChatRoomDto()
             {
                 Id = 1,
                 WorkshopId = 1,
                 ChatMessages = new List<ChatMessageDto>(),
-                Users = new List<UserDto>(),
+                Users = listOfUsers,
             };
-            chatRoomDto.ChatMessages.Add(chatMessage1);
-            chatRoomDto.ChatMessages.Add(chatMessage2);
-            chatRoomDto.Users.Add(user1);
-            chatRoomDto.Users.Add(user2);
 
             // Act
             var result = chatRoomDto.ToDomain();
@@ -128,8 +132,6 @@ namespace OutOfSchool.WebApi.Tests
             Assert.IsNull(result.ChatRoomUsers);
             Assert.AreEqual(chatRoomDto.Id, result.Id);
             Assert.AreEqual(chatRoomDto.WorkshopId, result.WorkshopId);
-            Assert.AreEqual(chatRoomDto.ChatMessages.Count, result.ChatMessages.Count);
-            Assert.AreEqual(chatRoomDto.Users.Count, result.Users.Count);
             foreach (var el in result.ChatMessages)
             {
                 Assert.AreEqual(chatMessage1.Text, el.Text);
@@ -165,19 +167,24 @@ namespace OutOfSchool.WebApi.Tests
                 User = Mock.Of<User>(),
                 ChatRoom = Mock.Of<ChatRoom>(),
             };
+
+            var listOfUsers = new List<User>();
+            listOfUsers.Add(user1);
+            listOfUsers.Add(user2);
+
+            var listOfMessages = new List<ChatMessage>();
+            listOfMessages.Add(chatMessage1);
+            listOfMessages.Add(chatMessage2);
+
             var chatRoom = new ChatRoom()
             {
                 Id = 1,
                 WorkshopId = 1,
                 Workshop = Mock.Of<Workshop>(),
-                ChatMessages = new List<ChatMessage>(),
-                Users = new List<User>(),
+                ChatMessages = listOfMessages,
+                Users = listOfUsers,
                 ChatRoomUsers = new List<ChatRoomUser>(),
             };
-            chatRoom.ChatMessages.Add(chatMessage1);
-            chatRoom.ChatMessages.Add(chatMessage2);
-            chatRoom.Users.Add(user1);
-            chatRoom.Users.Add(user2);
 
             // Act
             var result = chatRoom.ToModel();
@@ -186,13 +193,11 @@ namespace OutOfSchool.WebApi.Tests
             Assert.IsNotNull(result);
             Assert.IsInstanceOf<ChatRoomDto>(result);
             Assert.IsNotNull(result.ChatMessages);
-            Assert.IsInstanceOf<ICollection<ChatMessageDto>>(result.ChatMessages);
+            Assert.IsInstanceOf<IEnumerable<ChatMessageDto>>(result.ChatMessages);
             Assert.IsNotNull(result.Users);
-            Assert.IsInstanceOf<ICollection<UserDto>>(result.Users);
+            Assert.IsInstanceOf<IEnumerable<UserDto>>(result.Users);
             Assert.AreEqual(chatRoom.Id, result.Id);
             Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
-            Assert.AreEqual(chatRoom.ChatMessages.Count, result.ChatMessages.Count);
-            Assert.AreEqual(chatRoom.Users.Count, result.Users.Count);
             foreach (var el in result.ChatMessages)
             {
                 Assert.AreEqual(chatMessage1.Text, el.Text);
@@ -228,19 +233,24 @@ namespace OutOfSchool.WebApi.Tests
                 User = Mock.Of<User>(),
                 ChatRoom = Mock.Of<ChatRoom>(),
             };
+
+            var listOfUsers = new List<User>();
+            listOfUsers.Add(user1);
+            listOfUsers.Add(user2);
+
+            var listOfMessages = new List<ChatMessage>();
+            listOfMessages.Add(chatMessage1);
+            listOfMessages.Add(chatMessage2);
+
             var chatRoom = new ChatRoom()
             {
                 Id = 1,
                 WorkshopId = 1,
                 Workshop = Mock.Of<Workshop>(),
-                ChatMessages = new List<ChatMessage>(),
-                Users = new List<User>(),
+                ChatMessages = listOfMessages,
+                Users = listOfUsers,
                 ChatRoomUsers = new List<ChatRoomUser>(),
             };
-            chatRoom.ChatMessages.Add(chatMessage1);
-            chatRoom.ChatMessages.Add(chatMessage2);
-            chatRoom.Users.Add(user1);
-            chatRoom.Users.Add(user2);
 
             // Act
             var result = chatRoom.ToModelWithoutChatMessages();
@@ -250,10 +260,9 @@ namespace OutOfSchool.WebApi.Tests
             Assert.IsInstanceOf<ChatRoomDto>(result);
             Assert.IsNull(result.ChatMessages);
             Assert.IsNotNull(result.Users);
-            Assert.IsInstanceOf<ICollection<UserDto>>(result.Users);
+            Assert.IsInstanceOf<IEnumerable<UserDto>>(result.Users);
             Assert.AreEqual(chatRoom.Id, result.Id);
             Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
-            Assert.AreEqual(chatRoom.Users.Count, result.Users.Count);
         }
     }
 }

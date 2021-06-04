@@ -12,8 +12,8 @@ namespace OutOfSchool.WebApi.Models
 
         public int NotReadMessagesCount { get; set; }
 
-        public ICollection<ChatMessageDto> ChatMessages { get; set; }
+        public IEnumerable<ChatMessageDto> ChatMessages { get; set; }
 
-        public ICollection<UserDto> Users { get; set; }
+        public IEnumerable<UserDto> Users { get; set; }
     }
 }

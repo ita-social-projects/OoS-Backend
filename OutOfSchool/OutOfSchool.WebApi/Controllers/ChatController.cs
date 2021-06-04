@@ -42,6 +42,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="chatNewMessageDto">Entity that contains text of message, receiver and workshop info.</param>
         /// <returns>ChatMessage.</returns>
+        [Obsolete("This method is for testing purposes.")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -360,7 +361,7 @@ namespace OutOfSchool.WebApi.Controllers
                     return NotFound($"There is no chat room with id:{id}.");
                 }
 
-                if (room.ChatMessages.Count > 0)
+                if (room.ChatMessages.Any())
                 {
                     return BadRequest("Forbidden to delete a chat room with chat messages.");
                 }

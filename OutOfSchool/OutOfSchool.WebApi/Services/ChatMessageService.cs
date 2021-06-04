@@ -31,15 +31,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChatMessageDto> Create(ChatMessageDto chatMessageDto)
         {
-            var strBuilder = new StringBuilder();
-            strBuilder.AppendLine("ChatMessage creating was started. ChatMessageDTO:");
-            strBuilder.AppendLine($"chatMessageDto.Id: {chatMessageDto.Id}");
-            strBuilder.AppendLine($"chatMessageDto.UserId: {chatMessageDto.UserId}");
-            strBuilder.AppendLine($"chatMessageDto.ChatRoomId: {chatMessageDto.ChatRoomId}");
-            strBuilder.AppendLine($"chatMessageDto.Text: {chatMessageDto.Text}");
-            strBuilder.AppendLine($"chatMessageDto.CreatedTime: {chatMessageDto.CreatedTime}");
-            strBuilder.AppendLine($"chatMessageDto.Read: {chatMessageDto.IsRead}");
-            logger.Information(strBuilder.ToString());
+            logger.Information("ChatMessage creating was started.");
 
             try
             {
@@ -157,15 +149,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChatMessageDto> Update(ChatMessageDto chatMessageDto)
         {
-            var strBuilder = new StringBuilder();
-            strBuilder.AppendLine("ChatMessage Updating was started. ChatMessageDTO:");
-            strBuilder.AppendLine($"chatMessageDto.Id: {chatMessageDto.Id}");
-            strBuilder.AppendLine($"chatMessageDto.UserId: {chatMessageDto.UserId}");
-            strBuilder.AppendLine($"chatMessageDto.ChatRoomId: {chatMessageDto.ChatRoomId}");
-            strBuilder.AppendLine($"chatMessageDto.Text: {chatMessageDto.Text}");
-            strBuilder.AppendLine($"chatMessageDto.CreatedTime: {chatMessageDto.CreatedTime}");
-            strBuilder.AppendLine($"chatMessageDto.Read: {chatMessageDto.IsRead}");
-            logger.Information(strBuilder.ToString());
+            logger.Information($"ChatMessage updating was started. ChatMessage id:{chatMessageDto.Id}");
 
             try
             {

@@ -12,9 +12,9 @@ namespace OutOfSchool.Services.Models
 
         public virtual Workshop Workshop { get; set; }
 
-        public virtual ICollection<ChatMessage> ChatMessages { get; set; }
+        public virtual IEnumerable<ChatMessage> ChatMessages { get; set; }
 
-        public virtual ICollection<User> Users { get; set; }
+        public virtual IEnumerable<User> Users { get; set; }
 
         public virtual List<ChatRoomUser> ChatRoomUsers { get; set; }
     }
