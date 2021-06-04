@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
+    /// <summary>
+    /// Updated Application migration.
+    /// </summary>
     public partial class UpdatedApplication : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
