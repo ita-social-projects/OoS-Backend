@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.WebApi.ApiModels;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -120,6 +122,44 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Method for creating a new application.
         /// </summary>
+        /// <param name="applicationApiModel">Application api model with data to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Authorize(Roles = "parent,admin")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost("multiple")]
+        [Obsolete("This method is obsolete. Call another Create instead", false)]
+        public async Task<IActionResult> Create([FromBody]ApplicationApiModel applicationApiModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var applications = CreateMultiple(applicationApiModel);
+
+                var newApplications = await service.Create(applications).ConfigureAwait(false);
+
+                var ids = newApplications.Select(a => a.Id);
+
+                return CreatedAtAction(
+                     nameof(GetById),
+                     new { id = ids, },
+                     newApplications);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Method for creating a new application.
+        /// </summary>
         /// <param name="applicationDto">Application entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
@@ -138,6 +178,8 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 applicationDto.UserId = User.FindFirst("sub")?.Value;
+
+                applicationDto.CreationTime = DateTime.Now;
 
                 var application = await service.Create(applicationDto).ConfigureAwait(false);
 
@@ -188,6 +230,19 @@ namespace OutOfSchool.WebApi.Controllers
             await service.Delete(id).ConfigureAwait(false);
 
             return NoContent();
+        }
+
+        private IEnumerable<ApplicationDto> CreateMultiple(ApplicationApiModel applicationApiModel)
+        {
+            var applications = applicationApiModel.Children.Select(child => new ApplicationDto
+            {
+                ChildId = child.Id,
+                CreationTime = DateTime.Now,
+                UserId = User.FindFirst("sub")?.Value,
+                WorkshopId = applicationApiModel.WorkshopId,
+            });
+
+            return applications.ToList();
         }
     }
 }

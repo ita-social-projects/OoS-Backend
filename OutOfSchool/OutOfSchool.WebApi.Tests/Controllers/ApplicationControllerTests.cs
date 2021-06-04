@@ -9,6 +9,7 @@ using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.ApiModels;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -24,6 +25,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private ClaimsPrincipal user;
 
         private IEnumerable<ApplicationDto> applications;
+        private IEnumerable<ChildDTO> children;
 
         [SetUp]
         public void Setup()
@@ -36,6 +38,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
             applications = FakeApplications();
+            children = FakeChildren();
         }
 
         [Test]
@@ -178,13 +181,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateApplication_WhenModelIsValid_ShouldReturnCreatedArAction()
+        public async Task CreateApplication_WhenModelIsValid_ShouldReturnCreatedAtAction()
         {
             // Arrange
-            service.Setup(s => s.Create(applications.First())).ReturnsAsync(applications.First());
+            var applicationApiModel = new ApplicationApiModel()
+            {
+                WorkshopId = 1,
+                Children = children,
+            };
+
+            service.Setup(s => s.Create(It.IsAny<IEnumerable<ApplicationDto>>())).ReturnsAsync(applications);
 
             // Act
-            var result = await controller.Create(applications.First()).ConfigureAwait(false) as CreatedAtActionResult;
+            var result = await controller.Create(applicationApiModel)
+                                         .ConfigureAwait(false) as CreatedAtActionResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -195,10 +205,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task CreateApplication_WhenModelIsNotValid_ShoulReturnBadRequest()
         {
             // Arrange
+            var applicationApiModel = new ApplicationApiModel()
+            {
+                WorkshopId = 1,
+                Children = children,
+            };
+
             controller.ModelState.AddModelError("CreateApplication", "Invalid model state.");
 
             // Act
-            var result = await controller.Create(applications.First()).ConfigureAwait(false);
+            var result = await controller.Create(applicationApiModel).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -209,10 +225,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task CreateApplication_WhenParametersAreNotValid_ShouldReturnBadRequest()
         {
             // Arrange
-            service.Setup(s => s.Create(applications.First())).ThrowsAsync(new ArgumentException());
+            var applicationApiModel = new ApplicationApiModel()
+            {
+                WorkshopId = 1,
+                Children = children,
+            };
+
+            service.Setup(s => s.Create(It.IsAny<IEnumerable<ApplicationDto>>())).ThrowsAsync(new ArgumentException());
 
             // Act
-            var result = await controller.Create(applications.First()).ConfigureAwait(false);
+            var result = await controller.Create(applicationApiModel).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -302,10 +324,39 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 new ApplicationDto()
                 {
                     Id = 2,
-                    ChildId = 1,
+                    ChildId = 2,
                     Status = ApplicationStatus.Pending,
                     UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
                     WorkshopId = 1,
+                },
+            };
+        }
+
+        private IEnumerable<ChildDTO> FakeChildren()
+        {
+            return new List<ChildDTO>()
+            {
+                new ChildDTO()
+                {
+                    Id = 1,
+                    FirstName = "fn1",
+                    LastName = "ln1",
+                    MiddleName = "mn1",
+                    DateOfBirth = new DateTime(2003, 11, 9),
+                    Gender = Gender.Male,
+                    ParentId = 1,
+                    SocialGroupId = 2,
+                },
+                new ChildDTO()
+                {
+                    Id = 2,
+                    FirstName = "fn2",
+                    LastName = "ln2",
+                    MiddleName = "mn2",
+                    DateOfBirth = new DateTime(2004, 11, 8),
+                    Gender = Gender.Female,
+                    ParentId = 2,
+                    SocialGroupId = 1,
                 },
             };
         }

@@ -121,6 +121,7 @@ namespace OutOfSchool.WebApi
 
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
+            services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();
             services.AddTransient<ISubsubcategoryRepository, SubsubcategoryRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
