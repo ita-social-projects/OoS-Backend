@@ -1,4 +1,9 @@
-﻿@model OutOfSchool.IdentityServer.ViewModels.ChangeEmailViewModel
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.IdentityServer
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@model OutOfSchool.IdentityServer.ViewModels.ChangeEmailViewModel
 
 @{
     ViewData["Title"] = "ChangeEmail";
@@ -38,7 +43,3 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

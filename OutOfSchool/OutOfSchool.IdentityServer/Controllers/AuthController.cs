@@ -232,6 +232,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return View(new ChangeEmailViewModel());
             }
 
+            //var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
             var emailMessage = new EmailMessage
             {
                 FromAddresses = new List<EmailAddress>()
@@ -246,15 +247,15 @@ namespace OutOfSchool.IdentityServer.Controllers
                 {
                     new EmailAddress()
                     {
-                        Name = "",
-                        Address = "",
+                        Name = "Sergey",
+                        Address = "novitckij.s@gmail.com",
                     },
                 },
                 Content = "Test",
                 Subject = "Test",
             };
             await emailSender.SendAsync(emailMessage);
-            return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);            
+            return View(model);
         }
     }
 }
