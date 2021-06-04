@@ -8,10 +8,10 @@ namespace OutOfSchool.Services.Extensions
         /// <summary>
         /// Add initial data for Social Group.
         /// </summary>
-        /// <param name="modelBuilder">Model Builder.</param>
-        public static void Seed(this ModelBuilder modelBuilder)
+        /// <param name="builder">Model Builder.</param>
+        public static void Seed(this ModelBuilder builder)
         {
-            modelBuilder.Entity<SocialGroup>().HasData(
+            builder.Entity<SocialGroup>().HasData(
                 new SocialGroup
                 {
                     Id = 1,
