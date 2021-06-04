@@ -12,6 +12,7 @@ namespace OutOfSchool.Tests
         {
             var options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .UseLazyLoadingProxies()
                 .Options;
             using (var context = new OutOfSchoolDbContext(options))
             {
@@ -33,8 +34,23 @@ namespace OutOfSchool.Tests
             context.Children.Add(new Child { Id = 2, FirstName = "fn2", LastName = "ln2", Patronymic = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1 });
             context.Children.Add(new Child { Id = 3, FirstName = "fn3", LastName = "ln3", Patronymic = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 });
 
+            context.Categories.Add(new Category { Id = 1, Title = "c1" });
+            context.Categories.Add(new Category { Id = 2, Title = "c2" });
+
+            context.Subcategories.Add(new Subcategory { Id = 1, Title = "sc1", CategoryId = 1 });
+            context.Subcategories.Add(new Subcategory { Id = 2, Title = "sc2", CategoryId = 2 });
+
+            context.Subsubcategories.Add(new Subsubcategory { Id = 1, Title = "ssc1", SubcategoryId = 1 });
+            context.Subsubcategories.Add(new Subsubcategory { Id = 2, Title = "ssc2", SubcategoryId = 1 });
+            context.Subsubcategories.Add(new Subsubcategory { Id = 3, Title = "ssc3", SubcategoryId = 2 });
+
+            context.Workshops.Add(new Workshop { Id = 1, Title = "w1", SubsubcategoryId = 1 });
+            context.Workshops.Add(new Workshop { Id = 2, Title = "w2", SubsubcategoryId = 2 });
+            context.Workshops.Add(new Workshop { Id = 3, Title = "w3", SubsubcategoryId = 3 });
+
             context.Applications.Add(new Application() { Id = 1, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6" });
             context.Applications.Add(new Application() { Id = 3, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6" });
+            context.Applications.Add(new Application() { Id = 10, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 3, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6" });
 
             context.SaveChanges();
         }
