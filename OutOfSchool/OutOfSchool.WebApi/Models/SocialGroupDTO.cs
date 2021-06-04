@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class SocialGroupDTO
+    public class SocialGroupDto
     {
         public long Id { get; set; }
 

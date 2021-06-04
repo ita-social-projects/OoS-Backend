@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services
@@ -36,5 +37,12 @@ namespace OutOfSchool.Services
         public DbSet<Application> Applications { get; set; }
         
         public DbSet<Rating> Ratings { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Seed();
+        }
     }
 }
