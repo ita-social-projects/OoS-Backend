@@ -40,6 +40,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get()
         {
             var teachers = await service.GetAll().ConfigureAwait(false);
@@ -61,6 +62,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(long id)
         {
             this.ValidateId(id, localizer);

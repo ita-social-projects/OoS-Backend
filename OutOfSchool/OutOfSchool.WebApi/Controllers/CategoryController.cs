@@ -44,6 +44,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CategoryDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [AllowAnonymous]
         public async Task<IActionResult> Get()
         {
             var categories = await service.GetAll().ConfigureAwait(false);
@@ -64,6 +65,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDTO))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(long id)
         {
             this.ValidateId(id, localizer);

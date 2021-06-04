@@ -41,6 +41,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get()
         {
             var workshops = await service.GetAll().ConfigureAwait(false);
@@ -61,6 +62,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(long id)
         {
             this.ValidateId(id, localizer);
@@ -141,6 +143,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [AllowAnonymous]
         public async Task<IActionResult> GetPagesCount(WorkshopFilter filter, int pageSize)
         {
             PageSizeValidation(pageSize);
@@ -166,6 +169,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [AllowAnonymous]
         public async Task<IActionResult> GetPage(WorkshopFilter filter, int pageNumber, int pageSize)
         {
             PageSizeValidation(pageSize);
