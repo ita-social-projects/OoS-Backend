@@ -14,6 +14,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;
 using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using Serilog;
 
@@ -23,19 +24,23 @@ namespace OutOfSchool.WebApi.Tests.Services
     public class ApplicationServiceTests
     {
         private IApplicationService service;
-        private IEntityRepository<Application> repository;
+        private IApplicationRepository repository;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
         private OutOfSchoolDbContext context;
+
+        private IEnumerable<ApplicationDto> applications;
 
         [SetUp]
         public void SetUp()
         {
             context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
-            repository = new EntityRepository<Application>(context);
+            repository = new ApplicationRepository(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger>();
             service = new ApplicationService(repository, logger.Object, localizer.Object);
+
+            applications = FakeApplications();
         }
 
         [Test]
@@ -78,7 +83,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task CreateApplication_WhenCalled_ShouldReturnApplication()
         {
             // Arrange
-            var expected = new Application()
+            var expected = new ApplicationDto()
             {
                 Id = 2,
                 ChildId = 2,
@@ -88,25 +93,28 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
 
             // Act
-            var result = await service.Create(expected.ToModel()).ConfigureAwait(false);
+            var result = await service.Create(expected).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(expected.ToModel());
+            result.Should().BeEquivalentTo(expected);
         }
 
         [Test]
         public void CreateApplication_WhenModelIsNull_ShouldThrowArgumentException()
         {
-            // Assert
+            // Arrange
+            ApplicationDto application = null;
+
+            // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Create(null).ConfigureAwait(false));
+                async () => await service.Create(application).ConfigureAwait(false));
         }
 
         [Test]
         public void CreateApplication_WhenModelAlreadyExists_ShouldThrowArgumentException()
         {
             // Arrange
-            var expected = new Application()
+            var expected = new ApplicationDto()
             {
                 Id = 4,
                 ChildId = 1,
@@ -117,7 +125,64 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Create(expected.ToModel()).ConfigureAwait(false));
+                async () => await service.Create(expected).ConfigureAwait(false));
+        }
+
+        [Test]
+        public async Task CreateMultipleApplications_WhenModelIsValid_ShouldReturnApplication()
+        {
+            // Act
+            var result = await service.Create(applications).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeEquivalentTo(applications);
+        }
+
+        [Test]
+        public void CreateMultipleApplications_WhenCollectionIsEmpty_ShouldThrowArgumentException()
+        {
+            // Arrange
+            IEnumerable<ApplicationDto> applications = new List<ApplicationDto>();
+
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Create(applications).ConfigureAwait(false));
+        }
+
+        [Test]
+        public void CreateMultipleApplications_WhenModelIsNull_ShouldThrowArgumentException()
+        {
+            // Arrange
+            ApplicationDto application = null;
+            IEnumerable<ApplicationDto> applications = new List<ApplicationDto>()
+            {
+                application,
+            };
+
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Create(applications).ConfigureAwait(false));
+        }
+
+        [Test]
+        public void CreateMultipleApplications_WhenModelAlreadyExists_ShouldThrowArgumentException()
+        {
+            // Arrange
+            IEnumerable<ApplicationDto> applications = new List<ApplicationDto>()
+            {
+                new ApplicationDto
+                {
+                    Id = 4,
+                    ChildId = 1,
+                    Status = ApplicationStatus.Pending,
+                    WorkshopId = 1,
+                    UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
+                },
+            };
+
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Create(applications).ConfigureAwait(false));
         }
 
         [Test]
@@ -172,17 +237,17 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task UpdateApplication_WhenIdIsValid_ShouldReturnApplication()
         {
             // Arrange
-            var expected = new Application()
+            var expected = new ApplicationDto()
             {
                 Id = 1,
                 Status = ApplicationStatus.Approved,
             };
 
             // Act
-            var result = await service.Update(expected.ToModel()).ConfigureAwait(false);
+            var result = await service.Update(expected).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(expected.ToModel());
+            result.Should().BeEquivalentTo(expected);
         }
 
         [Test]
@@ -229,6 +294,29 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(
                 async () => await service.Delete(id).ConfigureAwait(false));
+        }
+
+        private IEnumerable<ApplicationDto> FakeApplications()
+        {
+            return new List<ApplicationDto>()
+            {
+                new ApplicationDto()
+                {
+                    Id = 5,
+                    ChildId = 3,
+                    Status = ApplicationStatus.Pending,
+                    UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
+                    WorkshopId = 2,
+                },
+                new ApplicationDto()
+                {
+                    Id = 6,
+                    ChildId = 3,
+                    Status = ApplicationStatus.Pending,
+                    UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
+                    WorkshopId = 2,
+                },
+            };
         }
     }
 }

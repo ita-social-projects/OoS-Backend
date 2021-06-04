@@ -17,6 +17,13 @@ namespace OutOfSchool.WebApi.Services
         Task<ApplicationDto> Create(ApplicationDto applicationDto);
 
         /// <summary>
+        /// Add collection of entities.
+        /// </summary>
+        /// <param name="applicationDtos">Collection of Application entities to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<IEnumerable<ApplicationDto>> Create(IEnumerable<ApplicationDto> applicationDtos);
+
+        /// <summary>
         /// Get all entities.
         /// </summary>
         /// <returns>List of all applications.</returns>

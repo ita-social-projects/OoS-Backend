@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ApplicationService : IApplicationService
     {
-        private readonly IEntityRepository<Application> repository;
+        private readonly IApplicationRepository repository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -28,7 +28,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Application repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ApplicationService(IEntityRepository<Application> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ApplicationService(IApplicationRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.repository = repository;
             this.logger = logger;
@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ApplicationDto> Create(ApplicationDto applicationDto)
         {
-            logger.Information("Application creating was started.");
+            logger.Information("Application creating started.");
 
             ModelCreationValidation(applicationDto);
 
@@ -49,6 +49,22 @@ namespace OutOfSchool.WebApi.Services
             logger.Information($"Application with Id = {newApplication?.Id} created successfully.");
 
             return newApplication.ToModel();
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ApplicationDto>> Create(IEnumerable<ApplicationDto> applicationDtos)
+        {
+            logger.Information("Multiple applications creating started.");
+
+            MultipleModelCreationValidation(applicationDtos);
+
+            var applications = applicationDtos.Select(a => a.ToDomain()).ToList();
+
+            var newApplications = await repository.Create(applications).ConfigureAwait(false);
+
+            logger.Information("Applications created successfully.");
+
+            return newApplications.Select(a => a.ToModel());
         }
 
         /// <inheritdoc/>
@@ -184,6 +200,20 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.Information("Creation failed. Application with such data alredy exists.");
                 throw new ArgumentException(localizer["There is already an application with such data."]);
+            }
+        }
+
+        private void MultipleModelCreationValidation(IEnumerable<ApplicationDto> applicationDtos)
+        {
+            if (!applicationDtos.Any())
+            {
+                logger.Information("Operation failed. There is no application to create.");
+                throw new ArgumentException(localizer["There is no application to create."]);
+            }
+
+            foreach (var application in applicationDtos)
+            {
+                ModelCreationValidation(application);
             }
         }
     }
