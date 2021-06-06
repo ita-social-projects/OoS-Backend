@@ -28,5 +28,7 @@ namespace OutOfSchool.WebApi.Models
         public string Description { get; set; } = string.Empty;
 
         public string Image { get; set; } = string.Empty;
+
+        public long WorkshopId { get; set; }
     }
 }

@@ -34,7 +34,10 @@ namespace OutOfSchool.Services.Models
         public string Description { get; set; } = string.Empty;
         
         public string Image { get; set; } = string.Empty;
-        
+
+        [Required]
+        public long WorkshopId { get; set; }
+
         public virtual Workshop Workshop { get; set; }
     }
 }
