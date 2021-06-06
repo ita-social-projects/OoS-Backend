@@ -16,7 +16,6 @@ namespace OutOfSchool.WebApi.Controllers
     /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class WorkshopController : ControllerBase
     {
         private readonly IWorkshopService service;
@@ -74,6 +73,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -84,6 +84,9 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            dto.Id = default;
+            dto.Address.Id = default;
 
             var workshop = await service.Create(dto).ConfigureAwait(false);
 
@@ -99,6 +102,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Workshop to update.</param>
         /// <returns>Workshop.</returns>
         [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -117,8 +121,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// Delete a specific workshop from the database.
         /// </summary>
         /// <param name="id">Workshop's id.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>       
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
