@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
@@ -13,15 +14,19 @@ namespace OutOfSchool.WebApi.Controllers
     public class StatisticController : ControllerBase
     {
         private readonly IStatisticService service;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
-        public StatisticController(IStatisticService service)
+        public StatisticController(IStatisticService service, IStringLocalizer<SharedResource> localizer)
         {
             this.service = service;
+            this.localizer = localizer;
         }
 
         [HttpGet("{number}")]
         public async Task<IActionResult> GetCategories(int number)
         {
+            ValidateNumberOfEntries(number);
+
             var popularCategories = await service.GetPopularCategories(number).ConfigureAwait(false);
 
             if (!popularCategories.Any())
@@ -35,6 +40,8 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{number}")]
         public async Task<IActionResult> GetWorkshops(int number)
         {
+            ValidateNumberOfEntries(number);
+
             var popularWorkshops = await service.GetPopularWorkshops(number).ConfigureAwait(false);
 
             if (!popularWorkshops.Any())
@@ -43,6 +50,14 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             return Ok(popularWorkshops);
+        }
+
+        private void ValidateNumberOfEntries(int number)
+        {
+            if (number < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(number), localizer["The number of entries cannot be less than 1."]);
+            }
         }
     }
 }
