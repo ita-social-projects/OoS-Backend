@@ -10,5 +10,7 @@ namespace OutOfSchool.WebApi.Models
         public CategoryDTO Category { get; set; }
 
         public int WorkshopsCount { get; set; }
+
+        public int ApplicationsCount { get; set; }
     }
 }
