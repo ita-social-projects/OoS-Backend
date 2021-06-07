@@ -84,10 +84,9 @@ namespace OutOfSchool.WebApi.Services
             var applicationGroups = workshops.Select(async w => new
             {
                 Workshop = w,
-                ApplicationsCount = await applicationRepository.GetCountByWorkshop(w.Id)
-                                                                                                .ConfigureAwait(false),
+                ApplicationsCount = await applicationRepository.GetCountByWorkshop(w.Id).ConfigureAwait(false),
             })
-                                             .Select(t => t.Result);
+            .Select(t => t.Result);
 
             var sortedWorkshops = applicationGroups.OrderByDescending(q => q.ApplicationsCount)
                                                    .Select(g => g.Workshop)
@@ -109,7 +108,5 @@ namespace OutOfSchool.WebApi.Services
                 yield return result;
             }
         }
-
-
     }
 }
