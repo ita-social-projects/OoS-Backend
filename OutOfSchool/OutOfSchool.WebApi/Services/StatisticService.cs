@@ -9,11 +9,19 @@ using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
 {
-    public class StatisticService
+    /// <summary>
+    /// Implements the operations to get popular workshops and categories.
+    /// </summary>
+    public class StatisticService : IStatisticService
     {
         private readonly IApplicationRepository applicationRepository;
         private readonly IEntityRepository<Workshop> workshopRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StatisticService"/> class.
+        /// </summary>
+        /// <param name="applicationRepository">Application repository.</param>
+        /// <param name="workshopRepository">Workshop repository.</param>
         public StatisticService(
             IApplicationRepository applicationRepository, 
             IEntityRepository<Workshop> workshopRepository)
@@ -22,6 +30,7 @@ namespace OutOfSchool.WebApi.Services
             this.workshopRepository = workshopRepository;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int number)
         {
             var workshops = await workshopRepository.GetAll().ConfigureAwait(false);
@@ -56,6 +65,7 @@ namespace OutOfSchool.WebApi.Services
             return categories.OrderByDescending(c => c.ApplicationsCount).Take(number);
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int number)
         {
             var applications = await applicationRepository.GetAll().ConfigureAwait(false);
