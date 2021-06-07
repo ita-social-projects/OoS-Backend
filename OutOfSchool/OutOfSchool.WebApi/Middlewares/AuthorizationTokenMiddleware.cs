@@ -4,16 +4,16 @@ using Microsoft.AspNetCore.Http;
 
 namespace OutOfSchool.WebApi.Middlewares
 {
-    public class TokenFromQueryStringMiddleware
+    public class AuthorizationTokenMiddleware
     {
         private readonly RequestDelegate next;
 
-        public TokenFromQueryStringMiddleware(RequestDelegate next)
+        public AuthorizationTokenMiddleware(RequestDelegate next)
         {
             this.next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task InvokeAsync(HttpContext httpContext)
         {
             var request = httpContext.Request;
 

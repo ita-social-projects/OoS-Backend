@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi
             app.UseRouting();
 
             // Enable extracting token from QueryString for Hub-connection authorization
-            app.UseMiddleware<TokenFromQueryStringMiddleware>();
+            app.UseMiddleware<AuthorizationTokenMiddleware>();
 
             app.UseAuthentication();
             app.UseAuthorization();
