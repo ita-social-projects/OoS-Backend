@@ -168,6 +168,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="pageNumber">Number of page.</param>
         /// <param name="pageSize">Count of records on one page.</param>
         /// <returns>The list of workshops for this page.</returns>
+        [AllowAnonymous]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
