@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -16,23 +15,29 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StatisticService"/> class.
         /// </summary>
         /// <param name="applicationRepository">Application repository.</param>
         /// <param name="workshopRepository">Workshop repository.</param>
+        /// <param name="logger">Logger.</param>
         public StatisticService(
-            IApplicationRepository applicationRepository, 
-            IWorkshopRepository workshopRepository)
+            IApplicationRepository applicationRepository,
+            IWorkshopRepository workshopRepository,
+            ILogger logger)
         {
             this.applicationRepository = applicationRepository;
             this.workshopRepository = workshopRepository;
+            this.logger = logger;
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int number)
         {
+            logger.Information("Getting popular categories started.");
+
             var workshops = await workshopRepository.GetAll().ConfigureAwait(false);
 
             var workshopGroups = workshops.GroupBy(w => w.Subsubcategory.Subcategory.Category)
@@ -62,29 +67,37 @@ namespace OutOfSchool.WebApi.Services
                 categories.Add(category);
             }
 
-            return categories.OrderByDescending(c => c.ApplicationsCount).Take(number);
+            var popularCategories = categories.OrderByDescending(c => c.ApplicationsCount).Take(number);
+
+            logger.Information($"All {popularCategories.Count()} records were successfully received");
+
+            return popularCategories;
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int number)
         {
-            var applications = await applicationRepository.GetAll().ConfigureAwait(false);
+            logger.Information("Getting popular categories started.");
 
             var workshops = await workshopRepository.GetAll().ConfigureAwait(false);
 
-            var applicationGroups = workshops.Select(async w => new 
-                                             {
-                                                 Workshop = w,
-                                                 ApplicationsCount = await applicationRepository.GetCountByWorkshop(w.Id)
+            var applicationGroups = workshops.Select(async w => new
+            {
+                Workshop = w,
+                ApplicationsCount = await applicationRepository.GetCountByWorkshop(w.Id)
                                                                                                 .ConfigureAwait(false),
-                                             })
+            })
                                              .Select(t => t.Result);
 
             var sortedWorkshops = applicationGroups.OrderByDescending(q => q.ApplicationsCount)
                                                    .Select(g => g.Workshop)
                                                    .ToList();
 
-            return sortedWorkshops.Take(number).Select(w => w.ToModel());
+            var popularWorkshops = sortedWorkshops.Take(number).Select(w => w.ToModel());
+
+            logger.Information($"All {popularWorkshops.Count()} records were successfully received");
+
+            return popularWorkshops;
         }
 
         private async IAsyncEnumerable<int> GetApplicationsCountAsync(IEnumerable<WorkshopDTO> workshops)
@@ -96,5 +109,7 @@ namespace OutOfSchool.WebApi.Services
                 yield return result;
             }
         }
+
+
     }
 }

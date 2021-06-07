@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -10,6 +6,9 @@ using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
