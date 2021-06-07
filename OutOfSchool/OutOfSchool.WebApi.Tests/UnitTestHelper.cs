@@ -38,9 +38,10 @@ namespace OutOfSchool.Tests
 
             context.Categories.Add(new Category { Id = 1, Title = "c1" });
             context.Categories.Add(new Category { Id = 2, Title = "c2" });
+            context.Categories.Add(new Category { Id = 3, Title = "c3" });
 
             context.Subcategories.Add(new Subcategory { Id = 1, Title = "sc1", CategoryId = 1 });
-            context.Subcategories.Add(new Subcategory { Id = 2, Title = "sc2", CategoryId = 2 });
+            context.Subcategories.Add(new Subcategory { Id = 2, Title = "sc2", CategoryId = 3 });
 
             context.Subsubcategories.Add(new Subsubcategory { Id = 1, Title = "ssc1", SubcategoryId = 1 });
             context.Subsubcategories.Add(new Subsubcategory { Id = 2, Title = "ssc2", SubcategoryId = 1 });
