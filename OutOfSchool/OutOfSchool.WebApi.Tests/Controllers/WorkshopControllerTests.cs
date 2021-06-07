@@ -233,6 +233,42 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 MaxAge = 10,
                 MinAge = 4,
                 Logo = "image6",
+                ProviderId = 1,
+                CategoryId = 1,
+                SubcategoryId = 1,
+                AddressId = 55,
+                Address = new AddressDto
+                {
+                    Id = 55,
+                    Region = "Region55",
+                    District = "District55",
+                    City = "City55",
+                    Street = "Street55",
+                    BuildingNumber = "BuildingNumber55",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
+                Teachers = new List<TeacherDTO>
+                {
+                    new TeacherDTO
+                    {
+                        Id = 1,
+                        FirstName = "Alex",
+                        LastName = "Brown",
+                        MiddleName = "SomeMiddleName",
+                        Description = "Description",
+                        Image = "Image",
+                    },
+                    new TeacherDTO
+                    {
+                        Id = 2,
+                        FirstName = "John",
+                        LastName = "Snow",
+                        MiddleName = "SomeMiddleName",
+                        Description = "Description",
+                        Image = "Image",
+                    },
+                },
             };
         }
 

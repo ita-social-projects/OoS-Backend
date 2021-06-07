@@ -46,6 +46,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        [Order(1)]
         public async Task Create_WhenEntityIsValid_ShouldReturnCreatedEntity()
         {
             // Arrange
@@ -73,6 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        [Order(2)]
         public async Task GetAll_WhenCalled_ShouldReturnAllEntities()
         {
             // Arrange
@@ -87,6 +89,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(1)]
+        [Order(3)]
         public async Task GetById_WhenIdIsValid_ShouldReturnEntity(long id)
         {
             // Arrange
@@ -101,6 +104,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(10)]
+        [Order(4)]
         public void GetById_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException(long id)
         {
             // Assert
@@ -108,6 +112,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        [Order(5)]
         public async Task Update_WhenEntityIsValid_ShouldUpdateExistedEntity()
         {
             // Arrange
@@ -125,6 +130,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        [Order(6)]
         public void Update_WhenEntityIsInvalid_ShouldThrowDbUpdateConcurrencyException()
         {
             // Arrange
@@ -140,13 +146,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(1)]
+        [TestCase(3)]
+        [Order(7)]
         public async Task Delete_WhenIdIsValid_ShouldDeleteEntity(long id)
         {
             // Act
             var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
-
-            context.Entry<Workshop>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
 
             await service.Delete(id).ConfigureAwait(false);
 
@@ -158,12 +163,13 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(10)]
-        public void Delete_WhenIdIsInvalid_ShouldThrowDbUpdateConcurrencyException(long id)
+        [Order(8)]
+        public void Delete_WhenIdIsInvalid_ShouldThrowArgumentNullExceptionException(long id)
         {
             // Assert
             Assert.That(
                 async () => await service.Delete(id).ConfigureAwait(false),
-                Throws.Exception.TypeOf<DbUpdateConcurrencyException>());
+                Throws.Exception.TypeOf<ArgumentNullException>());
         }
 
         private void SeedDatabase()
@@ -193,6 +199,44 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email1@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
+                        Logo = "image1",
+                        ProviderId = 1,
+                        CategoryId = 1,
+                        SubsubcategoryId = 1,
+                        SubcategoryId = 1,
+                        AddressId = 55,
+                        Address = new Address
+                        {
+                            Id = 55,
+                            Region = "Region55",
+                            District = "District55",
+                            City = "City55",
+                            Street = "Street55",
+                            BuildingNumber = "BuildingNumber55",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        Teachers = new List<Teacher>
+                        {
+                            new Teacher
+                            {
+                                Id = 1,
+                                FirstName = "Alex",
+                                LastName = "Brown",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                            new Teacher
+                            {
+                                Id = 2,
+                                FirstName = "John",
+                                LastName = "Snow",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                        },
                     },
                     new Workshop()
                     {
@@ -212,6 +256,43 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email2@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
+                        Logo = "image2",
+                        ProviderId = 1,
+                        CategoryId = 1,
+                        SubcategoryId = 1,
+                        AddressId = 10,
+                        Address = new Address
+                        {
+                            Id = 10,
+                            Region = "Region10",
+                            District = "District10",
+                            City = "City10",
+                            Street = "Street10",
+                            BuildingNumber = "BuildingNumber10",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        Teachers = new List<Teacher>
+                        {
+                            new Teacher
+                            {
+                                Id = 4,
+                                FirstName = "Alex",
+                                LastName = "Brown",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                            new Teacher
+                            {
+                                Id = 5,
+                                FirstName = "John",
+                                LastName = "Snow",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                        },
                     },
                     new Workshop()
                     {
@@ -231,6 +312,43 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email3@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
+                        Logo = "image3",
+                        ProviderId = 1,
+                        CategoryId = 1,
+                        SubcategoryId = 1,
+                        AddressId = 11,
+                        Address = new Address
+                        {
+                            Id = 11,
+                            Region = "Region11",
+                            District = "District11",
+                            City = "City11",
+                            Street = "Street11",
+                            BuildingNumber = "BuildingNumber11",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        Teachers = new List<Teacher>
+                        {
+                            new Teacher
+                            {
+                                Id = 6,
+                                FirstName = "Alex",
+                                LastName = "Brown",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                            new Teacher
+                            {
+                                Id = 7,
+                                FirstName = "John",
+                                LastName = "Snow",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                        },
                     },
                     new Workshop()
                     {
@@ -250,6 +368,43 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email4@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
+                        Logo = "image4",
+                        ProviderId = 1,
+                        CategoryId = 1,
+                        SubcategoryId = 1,
+                        AddressId = 15,
+                        Address = new Address
+                        {
+                            Id = 15,
+                            Region = "Region15",
+                            District = "District15",
+                            City = "City15",
+                            Street = "Street15",
+                            BuildingNumber = "BuildingNumber15",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        Teachers = new List<Teacher>
+                        {
+                            new Teacher
+                            {
+                                Id = 8,
+                                FirstName = "Alex",
+                                LastName = "Brown",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                            new Teacher
+                            {
+                                Id = 9,
+                                FirstName = "John",
+                                LastName = "Snow",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                        },
                     },
                     new Workshop()
                     {
@@ -261,7 +416,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         WithDisabilityOptions = true,
                         DaysPerWeek = 5,
                         Head = "Head5",
-                        HeadBirthDate = new DateTime(1980, month: 12, 12),
+                        HeadBirthDate = new DateTime(1980, month: 12, 28),
                         DisabilityOptionsDesc = "Desc5",
                         Website = "website5",
                         Instagram = "insta5",
@@ -269,6 +424,43 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "email5@gmail.com",
                         MaxAge = 10,
                         MinAge = 4,
+                        Logo = "image5",
+                        ProviderId = 1,
+                        CategoryId = 1,
+                        SubcategoryId = 1,
+                        AddressId = 17,
+                        Address = new Address
+                        {
+                            Id = 17,
+                            Region = "Region17",
+                            District = "District17",
+                            City = "City17",
+                            Street = "Street17",
+                            BuildingNumber = "BuildingNumber17",
+                            Latitude = 0,
+                            Longitude = 0,
+                        },
+                        Teachers = new List<Teacher>
+                        {
+                            new Teacher
+                            {
+                                Id = 10,
+                                FirstName = "Alex",
+                                LastName = "Brown",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                            new Teacher
+                            {
+                                Id = 11,
+                                FirstName = "John",
+                                LastName = "Snow",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                            },
+                        },
                     },
                 };
 

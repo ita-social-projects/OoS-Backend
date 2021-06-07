@@ -37,11 +37,14 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         public new async Task Delete(Workshop entity)
         {
-            foreach (var teacher in entity.Teachers)
+            if (entity.Teachers.Count > 0)
             {
-                db.Entry(teacher).State = EntityState.Deleted;
+                foreach (var teacher in entity.Teachers)
+                {
+                    db.Entry(teacher).State = EntityState.Deleted;
+                }
             }
-
+           
             db.Entry(entity).State = EntityState.Deleted;
             db.Entry(new Address { Id = entity.AddressId }).State = EntityState.Deleted;
 
