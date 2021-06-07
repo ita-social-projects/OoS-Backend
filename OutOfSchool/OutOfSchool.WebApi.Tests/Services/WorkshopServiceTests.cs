@@ -52,14 +52,55 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var expected = new Workshop()
             {
-                Title = "NewTitle2",
-                Description = "NewDescription2",
-                MinAge = 4,
-                MaxAge = 10,
+                Title = "Title",
+                Phone = "1111111111",
+                Description = "Desc",
                 Price = 1000,
-                Head = "NewHead2",
-                HeadBirthDate = new DateTime(1980, 12, 10),
+                WithDisabilityOptions = true,
+                DaysPerWeek = 1,
+                Head = "Head",
+                HeadBirthDate = new DateTime(1980, month: 12, 28),
+                DisabilityOptionsDesc = "Desc",
+                Website = "website",
+                Instagram = "insta",
+                Facebook = "facebook",
+                Email = "email1@gmail.com",
+                MaxAge = 10,
+                MinAge = 4,
+                Logo = "image",
+                ProviderId = 1,
+                CategoryId = 1,
                 SubsubcategoryId = 1,
+                SubcategoryId = 1,
+                Address = new Address
+                {
+                    Region = "Region",
+                    District = "District",
+                    City = "City",
+                    Street = "Street",
+                    BuildingNumber = "BuildingNumber",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
+                Teachers = new List<Teacher>
+                {
+                    new Teacher
+                    {
+                        FirstName = "Alex",
+                        LastName = "Brown",
+                        MiddleName = "SomeMiddleName",
+                        Description = "Description",
+                        Image = "Image",
+                    },
+                    new Teacher
+                    {
+                        FirstName = "John",
+                        LastName = "Snow",
+                        MiddleName = "SomeMiddleName",
+                        Description = "Description",
+                        Image = "Image",
+                    },
+                },
             };
 
             // Act
@@ -164,12 +205,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         [TestCase(10)]
         [Order(8)]
-        public void Delete_WhenIdIsInvalid_ShouldThrowArgumentNullExceptionException(long id)
+        public void Delete_WhenIdIsInvalid_ShouldThrowNullReferenceException(long id)
         {
             // Assert
             Assert.That(
                 async () => await service.Delete(id).ConfigureAwait(false),
-                Throws.Exception.TypeOf<ArgumentNullException>());
+                Throws.Exception.TypeOf<NullReferenceException>());
         }
 
         private void SeedDatabase()
