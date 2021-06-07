@@ -214,48 +214,5 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             throw new NotImplementedException();
         }
-                
-        [HttpGet]
-        public IActionResult ChangeEmail(string returnUrl = "Login")
-        {
-            return View(new ChangeEmailViewModel
-            {
-                ReturnUrl = returnUrl,
-            });
-        }
-                
-        [HttpPost]
-        public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(new ChangeEmailViewModel());
-            }
-
-            //var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var emailMessage = new EmailMessage
-            {
-                FromAddresses = new List<EmailAddress>()
-                {
-                    new EmailAddress()
-                    {
-                        Name = "Oos-Backend",
-                        Address = "OoS.Backend.Test.Server@gmail.com",
-                    },
-                },
-                ToAddresses = new List<EmailAddress>()
-                {
-                    new EmailAddress()
-                    {
-                        Name = "Sergey",
-                        Address = "novitckij.s@gmail.com",
-                    },
-                },
-                Content = "Test",
-                Subject = "Test",
-            };
-            await emailSender.SendAsync(emailMessage);
-            return View(model);
-        }
     }
 }

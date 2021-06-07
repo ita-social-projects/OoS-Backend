@@ -93,7 +93,7 @@ namespace OutOfSchool.IdentityServer
                 SmtpPassword = config["SmtpConfiguration:Password"],
             };
             services.AddSingleton(smtpConfiguration);
-            services.AddScoped<IEmailSender, EmailSender>();
+            services.AddSingleton<IEmailSender, EmailSender>();
 
             services.AddControllersWithViews()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
