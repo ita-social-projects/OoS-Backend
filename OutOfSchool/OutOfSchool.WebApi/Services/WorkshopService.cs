@@ -147,7 +147,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Deleting Workshop with Id = {id} started.");
 
-            var entity = new Workshop() { Id = id };
+            var entity = await repository.GetById(id).ConfigureAwait(false);
 
             try
             {

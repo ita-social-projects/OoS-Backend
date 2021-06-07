@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -18,15 +19,36 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <summary>
-        /// Update information about element.
+        /// Add new element.
         /// </summary>
-        /// <param name="entity">Entity to update.</param>
+        /// <param name="entity">Entity to create.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         public new async Task<Workshop> Create(Workshop entity)
         {
             await db.Workshops.AddAsync(entity);
             await db.SaveChangesAsync();
             return await Task.FromResult(entity);
+        }
+
+        /// <summary>
+        /// Delete element.
+        /// </summary>
+        /// <param name="entity">Entity to delete.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        public new async Task Delete(Workshop entity)
+        {
+            if (entity.Teachers?.Count > 0)
+            {
+                foreach (var teacher in entity.Teachers)
+                {
+                    db.Entry(teacher).State = EntityState.Deleted;
+                }
+            }
+           
+            db.Entry(entity).State = EntityState.Deleted;
+            db.Entry(new Address { Id = entity.AddressId }).State = EntityState.Deleted;
+
+            await db.SaveChangesAsync();
         }
 
         /// <summary>

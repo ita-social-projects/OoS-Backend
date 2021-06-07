@@ -37,6 +37,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get all workshops from the database.
         /// </summary>
         /// <returns>List of all workshops.</returns>
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -58,6 +59,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Workshop's id.</param>
         /// <returns>Workshop.</returns>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -84,6 +86,9 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            dto.Id = default;
+            dto.Address.Id = default;
 
             var workshop = await service.Create(dto).ConfigureAwait(false);
 
@@ -117,8 +122,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// Delete a specific workshop from the database.
         /// </summary>
         /// <param name="id">Workshop's id.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>       
+        [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
@@ -137,6 +142,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="filter">Workshop filter.</param>
         /// <param name="pageSize">Count of records on one page.</param>
         /// <returns>COunt of pages.</returns>
+        [AllowAnonymous]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -162,6 +168,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="pageNumber">Number of page.</param>
         /// <param name="pageSize">Count of records on one page.</param>
         /// <returns>The list of workshops for this page.</returns>
+        [AllowAnonymous]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

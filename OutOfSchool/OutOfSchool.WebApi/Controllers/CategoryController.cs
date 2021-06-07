@@ -40,6 +40,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// To get all Categories from DB.
         /// </summary>
         /// <returns>List of Categories.</returns>
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CategoryDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -61,6 +62,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Key in table.</param>
         /// <returns>Category with define id.</returns>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDTO))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

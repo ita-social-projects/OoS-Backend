@@ -262,7 +262,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         column: x => x.ActualAddressId,
                         principalTable: "Addresses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_Providers_Addresses_LegalAddressId",
                         column: x => x.LegalAddressId,
@@ -426,6 +426,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     IsPerMonth = table.Column<bool>(type: "bit", nullable: false),
                     ProviderId = table.Column<long>(type: "bigint", nullable: false),
                     AddressId = table.Column<long>(type: "bigint", nullable: false),
+                    CategoryId = table.Column<long>(type: "bigint", nullable: false),
+                    SubcategoryId = table.Column<long>(type: "bigint", nullable: false),
                     SubsubcategoryId = table.Column<long>(type: "bigint", nullable: false),
                 },
                 constraints: table =>
@@ -436,7 +438,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         column: x => x.AddressId,
                         principalTable: "Addresses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_Workshops_Providers_ProviderId",
                         column: x => x.ProviderId,
@@ -448,7 +450,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         column: x => x.SubsubcategoryId,
                         principalTable: "Subsubcategories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -507,7 +509,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         column: x => x.WorkshopId,
                         principalTable: "Workshops",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateIndex(
