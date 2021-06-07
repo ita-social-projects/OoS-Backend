@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(10)]
+        [TestCase(100)]
         public void GetApplicationById_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
         {
             // Assert
@@ -288,7 +288,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(10)]
+        [TestCase(100)]
         public void DeleteApplication_WhenIdIsNotValid_ShouldThrowDbUpdateConcurrencyException(long id)
         {
             // Assert

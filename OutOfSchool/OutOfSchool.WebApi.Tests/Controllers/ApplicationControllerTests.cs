@@ -166,7 +166,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase("10")]
+        [TestCase(10)]
         public async Task GetApplicationByWorkshopId_WhenIdIsNotValid_ShouldReturnBadRequest(long id)
         {
             // Arrange
