@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -204,20 +205,20 @@ namespace OutOfSchool.WebApi.Services
                 }
 
                 // Forbid chats when workshop is not managed by one of the users.
-                if (string.Equals(user1.Role, "provider", StringComparison.OrdinalIgnoreCase) &&
+                if (string.Equals(user1.Role, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase) &&
                     (!string.Equals(workshop.Provider.UserId, user1.Id, StringComparison.Ordinal)))
                 {
                     throw new ArgumentException($"Workshop is not managed by {user1.Role}. Chat is forbidden.");
                 }
-                else if (string.Equals(user2.Role, "provider", StringComparison.OrdinalIgnoreCase) &&
+                else if (string.Equals(user2.Role, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase) &&
                     (!string.Equals(workshop.Provider.UserId, user2.Id, StringComparison.Ordinal)))
                 {
                     throw new ArgumentException($"Workshop is not managed by {user2.Role}. Chat is forbidden.");
                 }
 
                 // Forbid chats between parent and admin.
-                if ((string.Equals(user1.Role, "parent", StringComparison.OrdinalIgnoreCase) && string.Equals(user2.Role, "admin", StringComparison.OrdinalIgnoreCase))
-                    || (string.Equals(user2.Role, "parent", StringComparison.OrdinalIgnoreCase) && string.Equals(user1.Role, "admin", StringComparison.OrdinalIgnoreCase)))
+                if ((string.Equals(user1.Role, Role.Parent.ToString(), StringComparison.OrdinalIgnoreCase) && string.Equals(user2.Role, Role.Admin.ToString(), StringComparison.OrdinalIgnoreCase))
+                    || (string.Equals(user2.Role, Role.Parent.ToString(), StringComparison.OrdinalIgnoreCase) && string.Equals(user1.Role, Role.Admin.ToString(), StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new ArgumentException($"Chat is forbidden between {user1.Role} and {user2.Role}.");
                 }
