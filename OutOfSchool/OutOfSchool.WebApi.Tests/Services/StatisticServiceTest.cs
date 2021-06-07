@@ -1,4 +1,7 @@
-﻿using FluentAssertions;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Repository;
@@ -6,8 +9,7 @@ using OutOfSchool.Tests;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using System.Linq;
-using System.Threading.Tasks;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -18,6 +20,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IApplicationRepository applicationRepository;
         private IWorkshopRepository workshopRepository;
         private OutOfSchoolDbContext context;
+        private Mock<ILogger> logger;
 
         [SetUp]
         public void SetUp()
@@ -25,7 +28,8 @@ namespace OutOfSchool.WebApi.Tests.Services
             context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             applicationRepository = new ApplicationRepository(context);
             workshopRepository = new WorkshopRepository(context);
-            service = new StatisticService(applicationRepository, workshopRepository);
+            logger = new Mock<ILogger>();
+            service = new StatisticService(applicationRepository, workshopRepository, logger.Object);
         }
 
         [Test]
