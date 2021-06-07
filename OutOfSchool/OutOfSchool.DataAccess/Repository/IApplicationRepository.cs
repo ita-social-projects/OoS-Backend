@@ -9,5 +9,7 @@ namespace OutOfSchool.Services.Repository
     public interface IApplicationRepository : IEntityRepository<Application>
     {
         Task<IEnumerable<Application>> Create(IEnumerable<Application> applications);
+
+        Task<int> GetCountByWorkshop(long workshopId);
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
@@ -54,6 +56,13 @@ namespace OutOfSchool.Services.Repository
 
             await this.db.SaveChangesAsync();
             return entity;
+        }
+
+        public Task<int> GetCountByWorkshop(long workshopId)
+        {
+            var applications = dbSet.Where(a => a.WorkshopId == workshopId);
+
+            return applications.CountAsync();
         }
     }
 }
