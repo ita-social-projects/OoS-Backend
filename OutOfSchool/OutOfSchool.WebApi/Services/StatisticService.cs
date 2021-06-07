@@ -11,55 +11,80 @@ namespace OutOfSchool.WebApi.Services
 {
     public class StatisticService
     {
-        private readonly IEntityRepository<Application> applicationRepository;
+        private readonly IApplicationRepository applicationRepository;
         private readonly IEntityRepository<Workshop> workshopRepository;
 
         public StatisticService(
-            IEntityRepository<Application> applicationRepository, 
+            IApplicationRepository applicationRepository, 
             IEntityRepository<Workshop> workshopRepository)
         {
             this.applicationRepository = applicationRepository;
             this.workshopRepository = workshopRepository;
         }
 
-        public async Task<IEnumerable<CategoryDTO>> GetPopularCategories(int number)
+        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int number)
         {
             var workshops = await workshopRepository.GetAll().ConfigureAwait(false);
 
-            var workshopsByCategory = workshops.GroupBy(w => w.Subsubcategory.Subcategory.Category)
-                                                     .Select(g => new
-                                                     {
-                                                         Category = g.Key,
-                                                         WorkshopsCount = g.Count(), 
-                                                     });
+            var workshopGroups = workshops.GroupBy(w => w.Subsubcategory.Subcategory.Category)
+                                          .Select(g => new
+                                          {
+                                              Category = g.Key,
+                                              WorkshopsCount = g.Count(),
+                                              ApplicationsCounts = GetApplicationsCountAsync(g.Select(g => g.ToModel())),
+                                          });
 
-            return workshopsByCategory.Select(g => g.Category).Select(c => c.ToModel());
+            List<CategoryStatistic> categories = new List<CategoryStatistic>();
+
+            foreach (var group in workshopGroups)
+            {
+                var category = new CategoryStatistic
+                {
+                    Category = group.Category.ToModel(),
+                    WorkshopsCount = group.WorkshopsCount,
+                    ApplicationsCount = 0,
+                };
+
+                await foreach (var count in group.ApplicationsCounts)
+                {
+                    category.ApplicationsCount += count;
+                }
+
+                categories.Add(category);
+            }
+
+            return categories.OrderByDescending(c => c.ApplicationsCount).Take(number);
         }
 
         public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int number)
         {
             var applications = await applicationRepository.GetAll().ConfigureAwait(false);
 
-            var applicationGroups = applications.GroupBy(a => a.Workshop)
-                                                .Select(g => new 
-                                                {
-                                                    Workshop = g.Key,
-                                                    ApplicationsCount = g.Count(),
-                                                });
+            var workshops = await workshopRepository.GetAll().ConfigureAwait(false);
+
+            var applicationGroups = workshops.Select(async w => new 
+                                             {
+                                                 Workshop = w,
+                                                 ApplicationsCount = await applicationRepository.GetCountByWorkshop(w.Id)
+                                                                                                .ConfigureAwait(false),
+                                             })
+                                             .Select(t => t.Result);
 
             var sortedWorkshops = applicationGroups.OrderByDescending(q => q.ApplicationsCount)
-                                                .Select(g => g.Workshop)
-                                                .ToList();
+                                                   .Select(g => g.Workshop)
+                                                   .ToList();
 
             return sortedWorkshops.Take(number).Select(w => w.ToModel());
         }
 
-        private async Task<int> GetApplicationsCountByWorkshop(WorkshopDTO workshop)
+        private async IAsyncEnumerable<int> GetApplicationsCountAsync(IEnumerable<WorkshopDTO> workshops)
         {
-            var applications = await applicationRepository.GetByFilter(a => a.WorkshopId == workshop.Id)
-                                                          .ConfigureAwait(false);
+            foreach (var workshop in workshops)
+            {
+                var result = await applicationRepository.GetCountByWorkshop(workshop.Id).ConfigureAwait(false);
 
-            return applications.Count();
+                yield return result;
+            }
         }
     }
 }
