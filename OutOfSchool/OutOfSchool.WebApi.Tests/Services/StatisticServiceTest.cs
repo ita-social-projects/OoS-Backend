@@ -1,16 +1,17 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using FluentAssertions;
 using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;
 using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -18,7 +19,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     public class StatisticServiceTest
     {
         private StatisticService service;
-        private IEntityRepository<Application> applicationRepository;
+        private IApplicationRepository applicationRepository;
         private IEntityRepository<Workshop> workshopRepository;
         private OutOfSchoolDbContext context;
 
@@ -26,7 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void SetUp()
         {
             context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
-            applicationRepository = new EntityRepository<Application>(context);
+            applicationRepository = new ApplicationRepository(context);
             workshopRepository = new EntityRepository<Workshop>(context);
             service = new StatisticService(applicationRepository, workshopRepository);
         }
@@ -49,14 +50,21 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetPopularCategories_ShouldReturnCategories()
         {
             // Arrange
-            var expected = context.Categories;
+            var categories = context.Categories;
+
+            var expected = new CategoryStatistic
+            {
+                Category = categories.First().ToModel(),
+                WorkshopsCount = 2,
+                ApplicationsCount = 2,
+            };
 
             // Act
             var result = await service.GetPopularCategories(2).ConfigureAwait(false);
 
             // Assert
             result.Should().HaveCount(2);
-            result.Should().ContainEquivalentOf(expected.First().ToModel());
+            result.Should().ContainEquivalentOf(expected);
         }
     }
 }
