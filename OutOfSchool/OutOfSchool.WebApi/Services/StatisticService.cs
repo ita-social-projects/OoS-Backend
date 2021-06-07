@@ -15,7 +15,7 @@ namespace OutOfSchool.WebApi.Services
     public class StatisticService : IStatisticService
     {
         private readonly IApplicationRepository applicationRepository;
-        private readonly IEntityRepository<Workshop> workshopRepository;
+        private readonly IWorkshopRepository workshopRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StatisticService"/> class.
@@ -24,7 +24,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopRepository">Workshop repository.</param>
         public StatisticService(
             IApplicationRepository applicationRepository, 
-            IEntityRepository<Workshop> workshopRepository)
+            IWorkshopRepository workshopRepository)
         {
             this.applicationRepository = applicationRepository;
             this.workshopRepository = workshopRepository;

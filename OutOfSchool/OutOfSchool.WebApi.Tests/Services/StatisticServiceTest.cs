@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private StatisticService service;
         private IApplicationRepository applicationRepository;
-        private IEntityRepository<Workshop> workshopRepository;
+        private IWorkshopRepository workshopRepository;
         private OutOfSchoolDbContext context;
 
         [SetUp]
@@ -28,7 +28,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             applicationRepository = new ApplicationRepository(context);
-            workshopRepository = new EntityRepository<Workshop>(context);
+            workshopRepository = new WorkshopRepository(context);
             service = new StatisticService(applicationRepository, workshopRepository);
         }
 
