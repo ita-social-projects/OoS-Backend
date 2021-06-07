@@ -16,6 +16,7 @@ namespace OutOfSchool.WebApi.Controllers
     /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class WorkshopController : ControllerBase
     {
         private readonly IWorkshopService service;
@@ -36,6 +37,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get all workshops from the database.
         /// </summary>
         /// <returns>List of all workshops.</returns>
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -57,6 +59,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Workshop's id.</param>
         /// <returns>Workshop.</returns>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -73,7 +76,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -102,7 +104,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Workshop to update.</param>
         /// <returns>Workshop.</returns>
         [Authorize(Roles = "provider,admin")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -122,7 +123,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Workshop's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>       
-        [Authorize(AuthenticationSchemes = "Bearer")]
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -142,6 +142,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="filter">Workshop filter.</param>
         /// <param name="pageSize">Count of records on one page.</param>
         /// <returns>COunt of pages.</returns>
+        [AllowAnonymous]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
