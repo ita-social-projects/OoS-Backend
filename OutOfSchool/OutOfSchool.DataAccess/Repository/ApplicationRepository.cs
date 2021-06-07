@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,13 @@ namespace OutOfSchool.Services.Repository
             await dbSet.AddRangeAsync(applications);
             await db.SaveChangesAsync();
             return await Task.FromResult(applications);
+        }
+
+        public Task<int> GetCountByWorkshop(long workshopId)
+        {
+            var applications = dbSet.Where(a => a.WorkshopId == workshopId);
+
+            return applications.CountAsync();
         }
     }
 }
