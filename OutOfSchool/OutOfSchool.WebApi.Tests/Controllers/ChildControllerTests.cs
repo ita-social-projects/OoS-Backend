@@ -22,8 +22,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IChildService> service;
         private Mock<IEntityRepository<Child>> repo;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private IEnumerable<ChildDTO> children;
-        private ChildDTO child;
+        private IEnumerable<ChildDto> children;
+        private ChildDto child;
 
         [SetUp]
         public void Setup()
@@ -124,7 +124,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateChild_WhenModelIsValid_ShouldReturnOkObjectResult()
         {
             // Arrange
-            var changedChild = new ChildDTO()
+            var changedChild = new ChildDto()
             {
                 Id = 1,
                 FirstName = "fn11",
@@ -193,9 +193,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.That(result, Is.Null);
         }
 
-        private ChildDTO FakeChild()
+        private ChildDto FakeChild()
         {
-            return new ChildDTO()
+            return new ChildDto()
             {
                 Id = 1,
                 FirstName = "fn1",
@@ -208,11 +208,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<ChildDTO> FakeChildren()
+        private IEnumerable<ChildDto> FakeChildren()
         {
-            return new List<ChildDTO>()
+            return new List<ChildDto>()
             {
-                new ChildDTO()
+                new ChildDto()
                 {
                     Id = 1,
                     FirstName = "fn1",
@@ -223,7 +223,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     ParentId = 1,
                     SocialGroupId = 2,
                 },
-                new ChildDTO()
+                new ChildDto()
                 {
                     Id = 2,
                     FirstName = "fn2",
@@ -234,7 +234,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     ParentId = 2,
                     SocialGroupId = 1,
                 },
-                new ChildDTO()
+                new ChildDto()
                 {
                     Id = 3,
                     FirstName = "fn3",

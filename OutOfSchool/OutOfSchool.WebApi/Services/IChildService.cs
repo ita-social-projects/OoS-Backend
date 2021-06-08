@@ -14,34 +14,34 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Child to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ChildDTO> Create(ChildDTO dto);
+        Task<ChildDto> Create(ChildDto dto);
 
         /// <summary>
         /// Get all children from the database.
         /// </summary>
         /// <returns>List of all children.</returns>
-        Task<IEnumerable<ChildDTO>> GetAll();
+        Task<IEnumerable<ChildDto>> GetAll();
 
         /// <summary>
         /// Get entity by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Child.</returns>
-        Task<ChildDTO> GetById(long id);
+        Task<ChildDto> GetById(long id);
 
         /// <summary>
         /// Get children with some ParentId.
         /// </summary>
         /// <param name="id">ParentId.</param>
         /// <returns>List of children.</returns>
-        Task<IEnumerable<ChildDTO>> GetAllByParent(long id);
+        Task<IEnumerable<ChildDto>> GetAllByParent(long id);
 
         /// <summary>
         /// Update entity.
         /// </summary>
         /// <param name="dto">Child entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ChildDTO> Update(ChildDTO dto);
+        Task<ChildDto> Update(ChildDto dto);
 
         /// <summary>
         /// Delete entity.
@@ -55,6 +55,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Child.</returns>
-        Task<ChildDTO> GetByIdWithDetails(long id);
+        Task<ChildDto> GetByIdWithDetails(long id);
     }
 }
