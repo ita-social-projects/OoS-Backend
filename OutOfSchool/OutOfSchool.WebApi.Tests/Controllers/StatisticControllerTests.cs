@@ -1,4 +1,7 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -6,9 +9,6 @@ using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(2)]
+        [TestCase(5)]
         public async Task GetWorkshops_WhenNumberIsValid_ShouldReturnOkResultObject(int number)
         {
             // Arrange
@@ -55,11 +55,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Act and Assert
             controller.Invoking(c => c.GetWorkshops(number))
                       .Should().ThrowAsync<ArgumentOutOfRangeException>()
-                      .WithMessage("The number of entries cannot be less than 1.");
+                      .WithMessage("The number of entries must be in range from 3 to 10.");
         }
 
         [Test]
-        [TestCase(2)]
+        [TestCase(5)]
         public async Task GetWorkshops_WhenCollectionIsEmpty_ShouldReturnNoContent(int number)
         {
             // Arrange
@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(2)]
+        [TestCase(5)]
         public async Task GetCategories_WhenNumberIsValid_ShouldReturnOkResultObject(int number)
         {
             // Arrange
@@ -95,11 +95,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Act and Assert
             controller.Invoking(c => c.GetCategories(number))
                       .Should().ThrowAsync<ArgumentOutOfRangeException>()
-                      .WithMessage("The number of entries cannot be less than 1.");
+                      .WithMessage("The number of entries must be in range from 3 to 10.");
         }
 
         [Test]
-        [TestCase(2)]
+        [TestCase(5)]
         public async Task GetCategories_WhenCollectionIsEmpty_ShouldReturnNoContent(int number)
         {
             // Arrange
