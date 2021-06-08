@@ -9,7 +9,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.WebApi.Tests
+namespace OutOfSchool.WebApi.Extensions.Tests
 {
     [TestFixture]
     public class MappingExtensionsTests
@@ -116,6 +116,7 @@ namespace OutOfSchool.WebApi.Tests
                 WorkshopId = 1,
                 ChatMessages = new List<ChatMessageDto>(),
                 Users = listOfUsers,
+                NotReadMessagesCount = 4,
             };
 
             // Act
@@ -198,6 +199,7 @@ namespace OutOfSchool.WebApi.Tests
             Assert.IsInstanceOf<IEnumerable<UserDto>>(result.Users);
             Assert.AreEqual(chatRoom.Id, result.Id);
             Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
+            Assert.Zero(result.NotReadMessagesCount);
             foreach (var el in result.ChatMessages)
             {
                 Assert.AreEqual(chatMessage1.Text, el.Text);
@@ -263,6 +265,7 @@ namespace OutOfSchool.WebApi.Tests
             Assert.IsInstanceOf<IEnumerable<UserDto>>(result.Users);
             Assert.AreEqual(chatRoom.Id, result.Id);
             Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
+            Assert.Zero(result.NotReadMessagesCount);
         }
     }
 }

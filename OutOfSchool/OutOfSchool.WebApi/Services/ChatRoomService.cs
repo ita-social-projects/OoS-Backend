@@ -58,7 +58,7 @@ namespace OutOfSchool.WebApi.Services
                 }
                 else
                 {
-                    return await Create(user1Id, user2Id, workshopId).ConfigureAwait(false);
+                    return await this.Create(user1Id, user2Id, workshopId).ConfigureAwait(false);
                 }
             }
             catch (Exception exception)
@@ -232,7 +232,7 @@ namespace OutOfSchool.WebApi.Services
                 logger.Error($"One of the entities was not found. {exception.Message}");
                 throw;
             }
-            catch (Exception exception)
+            catch (ArgumentException exception)
             {
                 logger.Error($"Validation of users failed. Exception: {exception.Message}");
                 throw;

@@ -37,6 +37,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="chatMessageDto">The ChatMessage to update.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatMessageDto"/> that was updated.</returns>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task<ChatMessageDto> Update(ChatMessageDto chatMessageDto);
 
         /// <summary>
@@ -44,6 +45,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="chatMessages">A List of ChatMessages that need to be updated.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements that were updated.</returns>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task<IEnumerable<ChatMessageDto>> UpdateIsRead(IEnumerable<ChatMessageDto> chatMessages);
 
         /// <summary>
@@ -60,6 +62,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">ChatMessage's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         /// <exception cref="ArgumentOutOfRangeException">If entity with id was not found in system.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task Delete(long id);
     }
 }

@@ -9,7 +9,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;
 
-namespace OutOfSchool.WebApi.Tests
+namespace OutOfSchool.WebApi.Repository.Tests
 {
     [TestFixture]
     public class EntityRepositoryTest

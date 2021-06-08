@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -41,6 +42,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">ChatRoom's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         /// <exception cref="ArgumentOutOfRangeException">If entity with id was not found in system.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task Delete(long id);
 
         /// <summary>

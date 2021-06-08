@@ -127,7 +127,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (message is null)
             {
-                return NotFound();
+                return NotFound($"There is no message with id:{id}.");
             }
             else
             {
@@ -138,7 +138,7 @@ namespace OutOfSchool.WebApi.Controllers
                 }
                 else
                 {
-                    return Unauthorized();
+                    return Unauthorized("Forbidden to read messages of another users.");
                 }
             }
         }
@@ -163,7 +163,7 @@ namespace OutOfSchool.WebApi.Controllers
             var chatRoom = await roomService.GetById(id).ConfigureAwait(false);
             if (chatRoom is null)
             {
-                return NotFound();
+                return NotFound($"There is no chat room with id:{id}.");
             }
             else
             {
@@ -173,7 +173,7 @@ namespace OutOfSchool.WebApi.Controllers
                 }
                 else
                 {
-                    return Unauthorized();
+                    return Unauthorized("Forbidden to read a chat room of another users.");
                 }
             }
         }
@@ -264,7 +264,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (oldChatMessage is null)
             {
-                return NotFound();
+                return NotFound($"There is no chat message with id:{chatMessageDto.Id}.");
             }
 
             if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
@@ -291,7 +291,9 @@ namespace OutOfSchool.WebApi.Controllers
 
             oldChatMessage.Text = chatMessageDto.Text;
 
-            return Ok(await messageService.Update(oldChatMessage).ConfigureAwait(false));
+            var updatedMessage = await messageService.Update(oldChatMessage).ConfigureAwait(false);
+
+            return Ok(updatedMessage);
         }
 
         /// <summary>
@@ -317,7 +319,7 @@ namespace OutOfSchool.WebApi.Controllers
 
                 if (oldChatMessage is null)
                 {
-                    return NotFound();
+                    return NotFound($"There is no chat message with id:{id}.");
                 }
 
                 if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
