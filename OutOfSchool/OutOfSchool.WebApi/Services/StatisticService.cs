@@ -85,10 +85,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 Workshop = w,
                 ApplicationsCount = await applicationRepository.GetCountByWorkshop(w.Id).ConfigureAwait(false),
-            })
-            .Select(t => t.Result);
+            });
 
-            var sortedWorkshops = applicationGroups.OrderByDescending(q => q.ApplicationsCount)
+            var workshopGroups = await Task.WhenAll(applicationGroups).ConfigureAwait(false);
+
+            var sortedWorkshops = workshopGroups.OrderByDescending(q => q.ApplicationsCount)
                                                    .Select(g => g.Workshop)
                                                    .ToList();
 
