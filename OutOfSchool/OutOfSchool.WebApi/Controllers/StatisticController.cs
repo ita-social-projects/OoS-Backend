@@ -83,9 +83,11 @@ namespace OutOfSchool.WebApi.Controllers
 
         private void ValidateNumberOfEntries(int number)
         {
-            if (number < 1)
+            if (number < 3 || number > 10)
             {
-                throw new ArgumentOutOfRangeException(nameof(number), localizer["The number of entries cannot be less than 1."]);
+                throw new ArgumentOutOfRangeException(
+                    nameof(number), 
+                    localizer["The number of entries must be in range from 3 to 10."]);
             }
         }
     }
