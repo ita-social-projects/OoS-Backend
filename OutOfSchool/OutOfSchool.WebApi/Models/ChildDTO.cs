@@ -20,7 +20,6 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "Last name cannot contains digits")]
         public string LastName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Patronymic is required")]
         [DataType(DataType.Text)]
         [MaxLength(40)]
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "Middle name cannot contains digits")]
@@ -30,8 +29,10 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; } = default;
 
+        [Required(ErrorMessage = "Gender is required")]
         public Gender Gender { get; set; } = default;
 
+        [Required(ErrorMessage = "Parent Id is required")]
         public long ParentId { get; set; } = default;
 
         public long SocialGroupId { get; set; } = default;

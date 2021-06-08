@@ -8,16 +8,19 @@ namespace OutOfSchool.Services.Models
     {
         public long Id { get; set; }
 
+        [Required(ErrorMessage = "First name is required")]
         [DataType(DataType.Text)]
         [MaxLength(40)]
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "First name cannot contains digits and special symbols")]
         public string FirstName { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Last name is required")]
         [DataType(DataType.Text)]
         [MaxLength(40)]
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "Last name cannot contains digits and special symbols")]
         public string LastName { get; set; } = string.Empty;
 
+        [DataType(DataType.Text)]
         [MaxLength(40)]
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "Middle name cannot contains digits and special symbols")]
         public string MiddleName { get; set; } = string.Empty;
