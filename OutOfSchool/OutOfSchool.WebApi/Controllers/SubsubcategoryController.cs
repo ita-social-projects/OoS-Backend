@@ -40,6 +40,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// To get all Subsubcategories from DB.
         /// </summary>
         /// <returns>List of Subsubcategories.</returns>
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SubsubcategoryDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -61,6 +62,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Key in table.</param>
         /// <returns>Subsubcategory with define id.</returns>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SubsubcategoryDTO))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -76,6 +78,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Subcategory ID.</param>
         /// <returns>Subcategory entity.</returns>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SubsubcategoryDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
