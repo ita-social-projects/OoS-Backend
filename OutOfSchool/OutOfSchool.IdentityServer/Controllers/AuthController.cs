@@ -21,28 +21,24 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> userManager;
         private readonly IIdentityServerInteractionService interactionService;
         private readonly ILogger<AuthController> logger;
-        private readonly IEmailSender emailSender;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
         /// </summary>
         /// <param name="userManager"> ASP.Net Core Identity User Manager.</param>
         /// <param name="signInManager"> ASP.Net Core Identity Sign in Manager.</param>
         /// <param name="interactionService"> Identity Server 4 interaction service.</param>
-        /// <param name="logger"> ILogger class.</param>
-        /// <param name="emailSender"> IEmailSender class.</param>
+        /// <param name="logger"> ILogger class.</param>        
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IIdentityServerInteractionService interactionService,
-            ILogger<AuthController> logger,
-            IEmailSender emailSender)
+            ILogger<AuthController> logger)
         {
             this.logger = logger;
             this.signInManager = signInManager;
             this.userManager = userManager;
-            this.interactionService = interactionService;
-            this.emailSender = emailSender;
+            this.interactionService = interactionService;            
         }
 
         /// <summary>

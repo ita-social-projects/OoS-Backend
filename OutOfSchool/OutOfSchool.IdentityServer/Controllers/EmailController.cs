@@ -1,33 +1,41 @@
 ﻿using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.EmailService;
 using OutOfSchool.IdentityServer.ViewModels;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.IdentityServer.Controllers
 {
     public class EmailController : Controller
     {
         private readonly ILogger<EmailController> logger;
-        private readonly IEmailSender emailSender;
+        private readonly UserManager<User> userManager;
+        private readonly IEmailSender emailSender;        
 
         public EmailController(
             ILogger<EmailController> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            UserManager<User> userManager)
         {
             this.logger = logger;
             this.emailSender = emailSender;
+            this.userManager = userManager;
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult Change()
         {
             return View();
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Change(ChangeEmailViewModel model)
         {
             if (!ModelState.IsValid)
@@ -35,7 +43,9 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return View(new ChangeEmailViewModel());
             }
 
-            var callBackUrl = Url.Action(nameof(ConfirmChange), "Email", new { code = "777" }, Request.Scheme);
+            var user = await userManager.FindByEmailAsync(User.Identity.Name);
+            var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
+            var callBackUrl = Url.Action(nameof(ConfirmChange), "Email", new { token, email = model.CurrentEmail, newEmail = model.Email }, Request.Scheme);
 
             var emailMessage = new EmailMessage
             {
@@ -51,12 +61,12 @@ namespace OutOfSchool.IdentityServer.Controllers
                 {
                     new EmailAddress()
                     {
-                        Name = model.Email,
-                        Address = model.Email,
+                        Name = model.CurrentEmail,
+                        Address = model.CurrentEmail,
                     },
                 },
                 Content = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.",
-                Subject = "Test",
+                Subject = "Confirm email.",
             };
             await emailSender.SendAsync(emailMessage);
         
@@ -64,9 +74,23 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ConfirmChange(string code)
+        public async Task<IActionResult> ConfirmChange(string token, string email, string newEmail)
         {
-            return View();
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return View("Error");
+            }
+
+            var result = await userManager.ChangeEmailAsync(user, newEmail, token);
+            if (result.Succeeded)
+            {
+                return View();
+            }
+            else
+            {
+                return View("Error");
+            }            
         }
     }
 }
