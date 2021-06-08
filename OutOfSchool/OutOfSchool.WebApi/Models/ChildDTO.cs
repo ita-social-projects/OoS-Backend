@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "Parent Id is required")]
         public long ParentId { get; set; } = default;
 
-        public long SocialGroupId { get; set; } = default;
+        public long? SocialGroupId { get; set; } = default;
 
         public BirthCertificateDto BirthCertificate { get; set; }
     }
