@@ -41,6 +41,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
+        public async Task GetProfile_WhenCalled_ReturnsOkResultObject()
+        {
+            // Arrange
+            serviceProvider.Setup(x => x.GetAll()).ReturnsAsync(providers);
+
+            // Act
+            var result = await controller.GetProfile().ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 200);
+        }
+
+        [Test]
         public async Task GetProviders_WhenCalled_ReturnsOkResultObject()
         {
             // Arrange
