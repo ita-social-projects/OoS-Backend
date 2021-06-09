@@ -385,7 +385,7 @@ INSERT INTO [dbo].[Providers]
            ,'Засновник Провайдера 1'
            ,3 --private
            ,3 --TOV
-           ,1
+           ,1 --Status
            ,1 --LegalAddressId
            ,2 --ActualAddressId
            ,'47802b21-2fb5-435e-9057-75c43d002cef') --User Id (test4)
@@ -404,7 +404,7 @@ INSERT INTO [dbo].[Providers]
            ,'Засновник Провайдера 2'
            ,1 --State
            ,5 --EducationalInstitution
-           ,1
+           ,1 --Status
            ,3 --LegalAddressId
            ,4 --ActualAddressId
            ,'5bff5f95-1848-4c87-9846-a567aeb407ea')
