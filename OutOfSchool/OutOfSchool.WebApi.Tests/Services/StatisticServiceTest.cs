@@ -4,6 +4,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;
 using OutOfSchool.WebApi.Extensions;
@@ -19,6 +20,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private StatisticService service;
         private IApplicationRepository applicationRepository;
         private IWorkshopRepository workshopRepository;
+        private IEntityRepository<Category> categoryRepository;
         private OutOfSchoolDbContext context;
         private Mock<ILogger> logger;
 
@@ -28,8 +30,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             applicationRepository = new ApplicationRepository(context);
             workshopRepository = new WorkshopRepository(context);
+            categoryRepository = new EntityRepository<Category>(context);
+
             logger = new Mock<ILogger>();
-            service = new StatisticService(applicationRepository, workshopRepository, logger.Object);
+            service = new StatisticService(applicationRepository, workshopRepository, categoryRepository, logger.Object);
         }
 
         [Test]

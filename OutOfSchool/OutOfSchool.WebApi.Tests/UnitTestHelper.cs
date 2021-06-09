@@ -47,9 +47,9 @@ namespace OutOfSchool.Tests
             context.Subsubcategories.Add(new Subsubcategory { Id = 2, Title = "ssc2", SubcategoryId = 1 });
             context.Subsubcategories.Add(new Subsubcategory { Id = 3, Title = "ssc3", SubcategoryId = 2 });
 
-            context.Workshops.Add(new Workshop { Id = 1, Title = "w1", SubsubcategoryId = 1 });
-            context.Workshops.Add(new Workshop { Id = 2, Title = "w2", SubsubcategoryId = 2 });
-            context.Workshops.Add(new Workshop { Id = 3, Title = "w3", SubsubcategoryId = 3 });
+            context.Workshops.Add(new Workshop { Id = 1, Title = "w1", CategoryId = 1 });
+            context.Workshops.Add(new Workshop { Id = 2, Title = "w2", CategoryId = 1 });
+            context.Workshops.Add(new Workshop { Id = 3, Title = "w3", CategoryId = 3 });
 
             context.Applications.Add(new Application() { Id = 1, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6" });
             context.Applications.Add(new Application() { Id = 3, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6" });
