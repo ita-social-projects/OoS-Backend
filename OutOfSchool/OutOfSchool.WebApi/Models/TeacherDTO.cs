@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -23,6 +24,10 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(30)]
         [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Middle name cannot contains digits")]
         public string MiddleName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Date of birth is required")]
+        [DataType(DataType.Date)]
+        public DateTime DateOfBirth { get; set; }
 
         [MaxLength(300)] 
         public string Description { get; set; } = string.Empty;

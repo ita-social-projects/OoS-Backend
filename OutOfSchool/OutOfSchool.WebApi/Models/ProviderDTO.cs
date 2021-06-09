@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Models
         public string Director { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
-        public DateTime DirectorBirthDay { get; set; } = default;
+        public DateTime DirectorDateOfBirth { get; set; } = default;
 
         [DataType(DataType.PhoneNumber)]
         [RegularExpression(

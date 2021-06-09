@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "Middle name cannot contains digits")]
         public string MiddleName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Birthday is required")]
+        [Required(ErrorMessage = "Date of birth is required")]
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; } = default;
 

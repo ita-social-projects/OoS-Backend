@@ -25,9 +25,9 @@ namespace OutOfSchool.Services.Models
         [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Middle name cannot contains digits")]
         public string MiddleName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Birthday is required")]
+        [Required(ErrorMessage = "Date of birth is required")]
         [DataType(DataType.Date)]
-        public DateTime BirthDay { get; set; }
+        public DateTime DateOfBirth { get; set; }
         
         [Required(ErrorMessage = "Description is required")]
         [MaxLength(300)]
