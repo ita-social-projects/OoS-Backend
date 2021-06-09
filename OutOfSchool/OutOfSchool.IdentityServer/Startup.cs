@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.EmailSender;
 
 namespace OutOfSchool.IdentityServer
 {
@@ -83,6 +84,8 @@ namespace OutOfSchool.IdentityServer
                 })
                 .AddAspNetIdentity<User>()
                 .AddProfileService<ProfileService>();
+
+            services.AddEmailSender();
 
             services.AddControllersWithViews()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
