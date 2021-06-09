@@ -114,12 +114,12 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
-            services.AddTransient<IEntityRepository<Parent>, EntityRepository<Parent>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
             services.AddTransient<IEntityRepository<Category>, EntityRepository<Category>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
 
             services.AddTransient<IProviderRepository, ProviderRepository>();
+            services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();

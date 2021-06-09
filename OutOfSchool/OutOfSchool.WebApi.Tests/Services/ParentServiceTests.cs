@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
-        private IEntityRepository<Parent> repo;
+        private IParentRepository repo;
         private IParentService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
@@ -32,12 +32,13 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             var builder =
                 new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
-                    databaseName: "OutOfSchoolTest");
+                    databaseName: "OutOfSchoolTest")
+                .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
 
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
-            repo = new EntityRepository<Parent>(context);
+            repo = new ParentRepository(context);
             logger = new Mock<ILogger>();
             service = new ParentService(repo, logger.Object, localizer.Object);
 
@@ -48,7 +49,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
-            var expected = new Parent() { Id = 4, FirstName = "John", MiddleName = "Johnovich", LastName = "Johnson", UserId = "de909f35-5e56-4g7r-bda8-40a5bfda96a6" };
+            var expected = new Parent() { FirstName = "John", MiddleName = "Johnovich", LastName = "Johnson", UserId = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c" };
 
             // Act
             var result = await service.Create(expected.ToModel()).ConfigureAwait(false);
@@ -152,14 +153,40 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                var parents = new List<Parent>
+                var parents = new List<Parent>()
                 {
-                    new Parent() { Id = 0, FirstName = "Testone", MiddleName = "Testone", LastName = "Testone", UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" },
-                    new Parent() { Id = 1, FirstName = "Testtwo", MiddleName = "Testtwo", LastName = "Testtwo", UserId = "de804f35-5eb7-4b8n-bda8-70a5tyfg96a6" },
-                    new Parent() { Id = 2, FirstName = "Testthree", MiddleName = "Testthree", LastName = "Testthree", UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" },
+                    new Parent() { Id = 1, FirstName = "Testone", MiddleName = "Testone", LastName = "Testone", UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" },
+                    new Parent() { Id = 2, FirstName = "Testtwo", MiddleName = "Testtwo", LastName = "Testtwo", UserId = "de804f35-5eb7-4b8n-bda8-70a5tyfg96a6" },
+                    new Parent() { Id = 3, FirstName = "Testthree", MiddleName = "Testthree", LastName = "Testthree", UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" },
+                };
+
+                var user = new User()
+                {
+                    Id = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c",
+                    CreatingTime = default,
+                    LastLogin = default,
+                    MiddleName = "MiddleName",
+                    FirstName = "FirstName",
+                    LastName = "LastName",
+                    UserName = "user@gmail.com",
+                    NormalizedUserName = "USER@GMAIL.COM",
+                    Email = "user@gmail.com",
+                    NormalizedEmail = "USER@GMAIL.COM",
+                    EmailConfirmed = false,
+                    PasswordHash = "AQAAAAECcQAAAAEPXMPMbzuDZIKJUN4pBhRWMtf35Q3RN4QOll7UfnTdmfXHEcgswabznBezJmeTMvEw==",
+                    SecurityStamp = "   CCCJIYDFRG236HXFKGYS7H6QT2DE2LFF",
+                    ConcurrencyStamp = "cb54f60f-6282-4416-874c-d1edce844d07",
+                    PhoneNumber = "0965679725",
+                    Role = "provider",
+                    PhoneNumberConfirmed = false,
+                    TwoFactorEnabled = false,
+                    LockoutEnabled = true,
+                    AccessFailedCount = 0,
+                    IsRegistered = false,
                 };
 
                 context.Parents.AddRangeAsync(parents);
+                context.Users.AddAsync(user);
                 context.SaveChangesAsync();
             }
         }

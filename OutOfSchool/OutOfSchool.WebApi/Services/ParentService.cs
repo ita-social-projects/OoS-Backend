@@ -18,20 +18,20 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ParentService : IParentService
     {
-        private readonly IEntityRepository<Parent> repository;
+        private readonly IParentRepository repository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParentService"/> class.
         /// </summary>
-        /// <param name="entityRepository">Repository for some entity.</param>
+        /// <param name="repository">Repository for some entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ParentService(IEntityRepository<Parent> entityRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ParentService(IParentRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.repository = entityRepository;
+            this.repository = repository;
             this.logger = logger;
         }
 
@@ -40,10 +40,10 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Parent creating was started");
 
-            var parent = dto.ToDomain();
+            Func<Task<Parent>> operation = async () => await repository.Create(dto.ToDomain()).ConfigureAwait(false);
 
-            var newParent = await repository.Create(parent).ConfigureAwait(false);
-
+            var newParent = await repository.RunInTransaction(operation).ConfigureAwait(false);
+        
             logger.Information($"Parent with Id = {newParent?.Id} created successfully.");
 
             return newParent.ToModel();
