@@ -15,6 +15,6 @@ namespace OutOfSchool.WebApi.ApiModels
         public long WorkshopId { get; set; }
 
         [Required]
-        public IEnumerable<ChildDTO> Children { get; set; }
+        public IEnumerable<ChildDto> Children { get; set; }
     }
 }

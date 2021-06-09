@@ -77,7 +77,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(ChildDTO dto)
+        public async Task<IActionResult> Create(ChildDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(ChildDTO dto)
+        public async Task<IActionResult> Update(ChildDto dto)
         {
             if (!ModelState.IsValid)
             {

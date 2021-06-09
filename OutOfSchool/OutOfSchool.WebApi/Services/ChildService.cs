@@ -36,7 +36,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDTO> Create(ChildDTO dto)
+        public async Task<ChildDto> Create(ChildDto dto)
         {
             logger.Information("Child creating was started.");
 
@@ -52,7 +52,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChildDTO>> GetAll()
+        public async Task<IEnumerable<ChildDto>> GetAll()
         {
             logger.Information("Getting all Children started.");
 
@@ -66,7 +66,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDTO> GetById(long id)
+        public async Task<ChildDto> GetById(long id)
         {
             logger.Information($"Getting Child by Id started. Looking Id = {id}.");
 
@@ -85,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDTO> GetByIdWithDetails(long id)
+        public async Task<ChildDto> GetByIdWithDetails(long id)
         {
             logger.Information($"Getting Child by Id with details started. Looking CategoryId = {id}.");
 
@@ -100,7 +100,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChildDTO>> GetAllByParent(long id)
+        public async Task<IEnumerable<ChildDto>> GetAllByParent(long id)
         {
             logger.Information($"Getting Child's by Parent started. Looking ParentId = {id}.");
 
@@ -114,7 +114,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDTO> Update(ChildDTO dto)
+        public async Task<ChildDto> Update(ChildDto dto)
         {
             logger.Information($"Updating Children with Id = {dto?.Id} started.");
             this.Check(dto);
@@ -154,7 +154,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private void Check(ChildDTO dto)
+        private void Check(ChildDto dto)
         {
             if (dto == null)
             {

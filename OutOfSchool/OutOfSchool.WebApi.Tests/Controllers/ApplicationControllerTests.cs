@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private ClaimsPrincipal user;
 
         private IEnumerable<ApplicationDto> applications;
-        private IEnumerable<ChildDTO> children;
+        private IEnumerable<ChildDto> children;
 
         [SetUp]
         public void Setup()
@@ -332,11 +332,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<ChildDTO> FakeChildren()
+        private IEnumerable<ChildDto> FakeChildren()
         {
-            return new List<ChildDTO>()
+            return new List<ChildDto>()
             {
-                new ChildDTO()
+                new ChildDto()
                 {
                     Id = 1,
                     FirstName = "fn1",
@@ -347,7 +347,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     ParentId = 1,
                     SocialGroupId = 2,
                 },
-                new ChildDTO()
+                new ChildDto()
                 {
                     Id = 2,
                     FirstName = "fn2",
