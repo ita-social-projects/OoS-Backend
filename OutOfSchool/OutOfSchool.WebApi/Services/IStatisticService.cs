@@ -12,15 +12,15 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Get popular categories.
         /// </summary>
-        /// <param name="number">Number of entries.</param>
+        /// <param name="limit">Number of entries.</param>
         /// <returns>List of popular categories.</returns>
-        Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int number);
+        Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit);
 
         /// <summary>
         /// Get popular workshops.
         /// </summary>
-        /// <param name="number">Number of entries.</param>
+        /// <param name="limit">Number of entries.</param>
         /// <returns>List of popular workshops.</returns>
-        Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int number);
+        Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit);
     }
 }

@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Services
             this.logger = logger;
         }
 
-        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int number)
+        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
         {
             logger.Information("Getting popular categories started.");
 
@@ -76,7 +76,7 @@ namespace OutOfSchool.WebApi.Services
                 categoriesStatistics.Add(category);
             }
 
-            var popularCategories = categoriesStatistics.OrderByDescending(c => c.ApplicationsCount).Take(number);
+            var popularCategories = categoriesStatistics.OrderByDescending(c => c.ApplicationsCount).Take(limit);
 
             logger.Information($"All {popularCategories.Count()} records were successfully received");
 
@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int number)
+        public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit)
         {
             logger.Information("Getting popular categories started.");
 
@@ -100,7 +100,7 @@ namespace OutOfSchool.WebApi.Services
                                                    .Select(g => g.Workshop)
                                                    .ToList();
 
-            var popularWorkshops = sortedWorkshops.Take(number).Select(w => w.ToModel());
+            var popularWorkshops = sortedWorkshops.Take(limit).Select(w => w.ToModel());
 
             logger.Information($"All {popularWorkshops.Count()} records were successfully received");
 
