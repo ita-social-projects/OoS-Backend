@@ -21,17 +21,14 @@ namespace OutOfSchool.WebApi.Controllers
     public class StatisticController : ControllerBase
     {
         private readonly IStatisticService service;
-        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StatisticController"/> class.
         /// </summary>
         /// <param name="service">Service to get statistic.</param>
-        /// <param name="localizer">Localizer.</param>
-        public StatisticController(IStatisticService service, IStringLocalizer<SharedResource> localizer)
+        public StatisticController(IStatisticService service)
         {
             this.service = service;
-            this.localizer = localizer;
         }
 
         /// <summary>
@@ -46,9 +43,9 @@ namespace OutOfSchool.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetCategories(int limit)
         {
-            ValidateNumberOfEntries(limit);
+            var newLimit = ValidateNumberOfEntries(limit);
 
-            var popularCategories = await service.GetPopularCategories(limit).ConfigureAwait(false);
+            var popularCategories = await service.GetPopularCategories(newLimit).ConfigureAwait(false);
 
             if (!popularCategories.Any())
             {
@@ -70,9 +67,9 @@ namespace OutOfSchool.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetWorkshops(int limit)
         {
-            ValidateNumberOfEntries(limit);
+            int newLimit = ValidateNumberOfEntries(limit);
 
-            var popularWorkshops = await service.GetPopularWorkshops(limit).ConfigureAwait(false);
+            var popularWorkshops = await service.GetPopularWorkshops(newLimit).ConfigureAwait(false);
 
             if (!popularWorkshops.Any())
             {
@@ -82,14 +79,9 @@ namespace OutOfSchool.WebApi.Controllers
             return Ok(popularWorkshops);
         }
 
-        private void ValidateNumberOfEntries(int limit)
+        private static int ValidateNumberOfEntries(int limit)
         {
-            if (limit < 3 || limit > 10)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(limit), 
-                    localizer["The number of entries must be in range from 3 to 10."]);
-            }
+            return limit < 3 ? 3 : (limit > 10 ? 10 : limit);
         }
     }
 }

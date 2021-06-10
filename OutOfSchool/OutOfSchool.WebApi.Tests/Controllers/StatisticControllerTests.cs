@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers;
@@ -17,7 +15,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private StatisticController controller;
         private Mock<IStatisticService> service;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private IEnumerable<CategoryStatistic> categories;
         private IEnumerable<WorkshopDTO> workshops;
@@ -26,8 +23,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void SetUp()
         {
             service = new Mock<IStatisticService>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
-            controller = new StatisticController(service.Object, localizer.Object);
+            controller = new StatisticController(service.Object);
 
             categories = FakeCategoryStatistics();
             workshops = FakeWorkshops();
@@ -35,13 +31,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(5)]
-        public async Task GetWorkshops_WhenNumberIsValid_ShouldReturnOkResultObject(int number)
+        [TestCase(2)]
+        [TestCase(12)]
+        public async Task GetWorkshops_WhenLimitIsValid_ShouldReturnOkResultObject(int limit)
         {
             // Arrange
-            service.Setup(s => s.GetPopularWorkshops(number)).ReturnsAsync(workshops);
+            service.Setup(s => s.GetPopularWorkshops(It.IsInRange(3, 10, Range.Inclusive))).ReturnsAsync(workshops);
 
             // Act
-            var result = await controller.GetWorkshops(number).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetWorkshops(limit).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -49,24 +47,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(0)]
-        public void GetWorkshops_WhenNumberIsNotValid_ShouldThrowArgumentOutOfRangeException(int number)
-        {
-            // Act and Assert
-            controller.Invoking(c => c.GetWorkshops(number))
-                      .Should().ThrowAsync<ArgumentOutOfRangeException>()
-                      .WithMessage("The number of entries must be in range from 3 to 10.");
-        }
-
-        [Test]
         [TestCase(5)]
-        public async Task GetWorkshops_WhenCollectionIsEmpty_ShouldReturnNoContent(int number)
+        public async Task GetWorkshops_WhenCollectionIsEmpty_ShouldReturnNoContent(int limit)
         {
             // Arrange
-            service.Setup(s => s.GetPopularWorkshops(number)).ReturnsAsync(new List<WorkshopDTO>());
+            service.Setup(s => s.GetPopularWorkshops(limit)).ReturnsAsync(new List<WorkshopDTO>());
 
             // Act
-            var result = await controller.GetWorkshops(number).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetWorkshops(limit).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -75,13 +63,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(5)]
-        public async Task GetCategories_WhenNumberIsValid_ShouldReturnOkResultObject(int number)
+        [TestCase(2)]
+        [TestCase(12)]
+        public async Task GetCategories_WhenLimitIsValid_ShouldReturnOkResultObject(int limit)
         {
             // Arrange
-            service.Setup(s => s.GetPopularCategories(number)).ReturnsAsync(categories);
+            service.Setup(s => s.GetPopularCategories(It.IsInRange(3, 10, Range.Inclusive))).ReturnsAsync(categories);
 
             // Act
-            var result = await controller.GetCategories(number).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetCategories(limit).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -89,24 +79,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(0)]
-        public void GetCategories_WhenNumberIsNotValid_ShouldThrowArgumentOutOfRangeException(int number)
-        {
-            // Act and Assert
-            controller.Invoking(c => c.GetCategories(number))
-                      .Should().ThrowAsync<ArgumentOutOfRangeException>()
-                      .WithMessage("The number of entries must be in range from 3 to 10.");
-        }
-
-        [Test]
         [TestCase(5)]
-        public async Task GetCategories_WhenCollectionIsEmpty_ShouldReturnNoContent(int number)
+        public async Task GetCategories_WhenCollectionIsEmpty_ShouldReturnNoContent(int limit)
         {
             // Arrange
-            service.Setup(s => s.GetPopularCategories(number)).ReturnsAsync(new List<CategoryStatistic>());
+            service.Setup(s => s.GetPopularCategories(limit)).ReturnsAsync(new List<CategoryStatistic>());
 
             // Act
-            var result = await controller.GetCategories(number).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetCategories(limit).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             result.Should().NotBeNull();
