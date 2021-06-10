@@ -96,32 +96,35 @@ namespace OutOfSchool.WebApi
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddTransient<IChildService, ChildService>();
-            services.AddTransient<IWorkshopService, WorkshopService>();
-            services.AddTransient<ITeacherService, TeacherService>();
-            services.AddTransient<IProviderService, ProviderService>();
-            services.AddTransient<IParentService, ParentService>();
+            // entities services
             services.AddTransient<IAddressService, AddressService>();
-            services.AddTransient<IUserService, UserService>();
-            services.AddTransient<IRatingService, RatingService>();
             services.AddTransient<IApplicationService, ApplicationService>();
             services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<IChildService, ChildService>();
+            services.AddTransient<IParentService, ParentService>();
+            services.AddTransient<IProviderService, ProviderService>();
+            services.AddTransient<IRatingService, RatingService>();
+            services.AddTransient<ISocialGroupService, SocialGroupService>();
             services.AddTransient<ISubcategoryService, SubcategoryService>();
             services.AddTransient<ISubsubcategoryService, SubsubcategoryService>();
-            services.AddTransient<ISocialGroupService, SocialGroupService>();
+            services.AddTransient<ITeacherService, TeacherService>();
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IWorkshopService, WorkshopService>();
 
-            services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
+            // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
-            services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
-            services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
             services.AddTransient<IEntityRepository<Category>, EntityRepository<Category>>();
+            services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
+            services.AddTransient<IEntityRepository<Parent>, EntityRepository<Parent>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
+            services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
+            services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
 
+            services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
-            services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();
             services.AddTransient<ISubsubcategoryRepository, SubsubcategoryRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
