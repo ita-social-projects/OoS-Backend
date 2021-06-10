@@ -18,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi.Tests", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.IdentityServer", "OutOfSchool.IdentityServer\OutOfSchool.IdentityServer.csproj", "{B59E4559-57B7-4AD9-BA1E-3ED48D340357}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.EmailSender", "EmailSender\OutOfSchool.EmailSender.csproj", "{85D50989-9BE6-47C9-8573-E7DF0FCC22A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.EmailSender", "OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj", "{85D50989-9BE6-47C9-8573-E7DF0FCC22A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
