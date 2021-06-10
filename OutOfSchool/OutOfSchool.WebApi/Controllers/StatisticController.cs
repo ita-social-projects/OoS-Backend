@@ -37,18 +37,18 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get popular categories.
         /// </summary>
-        /// <param name="number">The number of entries.</param>
+        /// <param name="limit">The number of entries.</param>
         /// <returns>List of popular categories.</returns>
-        [HttpGet("{number}")]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CategoryStatistic>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [AllowAnonymous]
-        public async Task<IActionResult> GetCategories(int number)
+        public async Task<IActionResult> GetCategories(int limit)
         {
-            ValidateNumberOfEntries(number);
+            ValidateNumberOfEntries(limit);
 
-            var popularCategories = await service.GetPopularCategories(number).ConfigureAwait(false);
+            var popularCategories = await service.GetPopularCategories(limit).ConfigureAwait(false);
 
             if (!popularCategories.Any())
             {
@@ -61,18 +61,18 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get popular workshops.
         /// </summary>
-        /// <param name="number">The number of entries.</param>
+        /// <param name="limit">The number of entries.</param>
         /// <returns>List of popular workshops.</returns>
-        [HttpGet("{number}")]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [AllowAnonymous]
-        public async Task<IActionResult> GetWorkshops(int number)
+        public async Task<IActionResult> GetWorkshops(int limit)
         {
-            ValidateNumberOfEntries(number);
+            ValidateNumberOfEntries(limit);
 
-            var popularWorkshops = await service.GetPopularWorkshops(number).ConfigureAwait(false);
+            var popularWorkshops = await service.GetPopularWorkshops(limit).ConfigureAwait(false);
 
             if (!popularWorkshops.Any())
             {
@@ -82,12 +82,12 @@ namespace OutOfSchool.WebApi.Controllers
             return Ok(popularWorkshops);
         }
 
-        private void ValidateNumberOfEntries(int number)
+        private void ValidateNumberOfEntries(int limit)
         {
-            if (number < 3 || number > 10)
+            if (limit < 3 || limit > 10)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(number), 
+                    nameof(limit), 
                     localizer["The number of entries must be in range from 3 to 10."]);
             }
         }
