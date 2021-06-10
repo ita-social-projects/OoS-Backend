@@ -9,19 +9,19 @@
     ViewData["Title"] = SharedLocalizer["Registration for Extracurricular activities"];
     Layout = "_Layout";
 }
-<div class="registration">
-    <div class="registration_wrapper">
-        <h3 class="registration_title">@SharedLocalizer["Register"].Value.ToUpper()</h3>
-        <h5 class="registration_subtitle">@SharedLocalizer["To be able to apply to clubs or become a service provider"]</h5>
-        <div class="registration_social">
-            <button class="registration_button">
+<div class="wrapper">
+    <div class="icon_wrapper">
+        <h3 class="icon_title">@SharedLocalizer["Register"].Value.ToUpper()</h3>
+        <h5 class="icon_subtitle">@SharedLocalizer["To be able to apply to clubs or become a service provider"]</h5>
+        <div class="icon_social">
+            <button class="icon_button">
                 <img src="/icons/fb.png" alt="facebook">
             </button>
-            <button class="registration_button">
+            <button class="button">
                 <img src="/icons/google.png" alt="google">
             </button>
         </div>
-        <div class="registration_option">@SharedLocalizer["or fill out the form"]</div>
+        <div class="option">@SharedLocalizer["or fill out the form"]</div>
         <form onsubmit="return validateForm(this)" asp-controller="Auth" asp-action="Register" method="post" class="registration_form">
             <input type="hidden" asp-for="ReturnUrl" />
             <div asp-validation-summary="ModelOnly"></div>
@@ -129,7 +129,7 @@
                 </li>
                 <li class="registration_item registration_item-accept">
                     @SharedLocalizer["By registering I agree with"]
-                    <a href="#" class="registration_link">@SharedLocalizer["Terms of use"]</a>
+                    <a href="#" class="link">@SharedLocalizer["Terms of use"]</a>
                     @SharedLocalizer["and consent to the processing of personal data"]
                 </li>
 
@@ -140,7 +140,7 @@
         </form>
         <div class="registration_login">
             @SharedLocalizer["Already registered?"]
-            <a href="Login" class="registration_link">@SharedLocalizer["Sign In"]</a>
+            <a href="Login" class="link">@SharedLocalizer["Sign In"]</a>
         </div>
     </div>
 </div>
