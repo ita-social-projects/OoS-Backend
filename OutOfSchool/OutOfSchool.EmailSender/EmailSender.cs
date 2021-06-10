@@ -5,7 +5,7 @@ using MimeKit.Text;
 
 namespace OutOfSchool.EmailSender
 {
-    public class EmailSender : IEmailSender
+    internal class EmailSender : IEmailSender
     {
         private readonly SmtpConfiguration _smtpConfiguration;
 

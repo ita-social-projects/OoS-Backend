@@ -18,8 +18,8 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> userManager;
         private readonly IEmailSender emailSender;
 
-        public EmailController(
-            ILogger<EmailController> logger,
+        public AccountController(
+            ILogger<AccountController> logger,
             IEmailSender emailSender,
             UserManager<User> userManager)
         {
@@ -48,28 +48,22 @@ namespace OutOfSchool.IdentityServer.Controllers
             var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
             var callBackUrl = Url.Action(nameof(ConfirmChange), "Email", new { token, email = model.CurrentEmail, newEmail = model.Email }, Request.Scheme);
 
-            var emailMessage = new EmailMessage
+            var message = new Message()
             {
-                FromAddresses = new List<EmailAddress>()
-            {
-                new EmailAddress()
+                From = new EmailAddress()
                 {
                     Name = "Oos-Backend",
                     Address = "OoS.Backend.Test.Server@gmail.com",
                 },
-            },
-                ToAddresses = new List<EmailAddress>()
-            {
-                new EmailAddress()
+                To = new EmailAddress()
                 {
                     Name = model.CurrentEmail,
                     Address = model.CurrentEmail,
                 },
-            },
                 Content = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.",
                 Subject = "Confirm email.",
             };
-            await emailSender.SendAsync(emailMessage);
+            await emailSender.SendAsync(message);
 
             return View(model);
         }
