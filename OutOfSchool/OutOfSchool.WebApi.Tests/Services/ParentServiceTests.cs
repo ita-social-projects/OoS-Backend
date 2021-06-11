@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -22,7 +23,8 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
-        private IParentRepository repo;
+        private IParentRepository repoParent;
+        private IEntityRepository<User> repoUser;
         private IParentService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
@@ -38,9 +40,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
-            repo = new ParentRepository(context);
+            repoParent = new ParentRepository(context);
+            repoUser = new EntityRepository<User>(context);
             logger = new Mock<ILogger>();
-            service = new ParentService(repo, logger.Object, localizer.Object);
+            service = new ParentService(repoParent, repoUser, logger.Object, localizer.Object);
 
             SeedDatabase();
         }
@@ -49,22 +52,20 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
-            var expected = new Parent() { FirstName = "John", MiddleName = "Johnovich", LastName = "Johnson", UserId = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c" };
+            var expected = new Parent() { UserId = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c" };
 
             // Act
             var result = await service.Create(expected.ToModel()).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.FirstName, result.FirstName);
-            Assert.AreEqual(expected.MiddleName, result.MiddleName);
-            Assert.AreEqual(expected.LastName, result.LastName);
+            Assert.AreEqual(expected.UserId, result.UserId);
         }
 
         [Test]
         public async Task GetAll_WhenCalled_ReturnsAllEntities()
         {
             // Arrange
-            var expected = await repo.GetAll();
+            var expected = await repoParent.GetAll();
 
             // Act
             var result = await service.GetAll().ConfigureAwait(false);
@@ -78,7 +79,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetById_WhenIdIsValid_ReturnsEntity(long id)
         {
             // Arrange
-            var expected = await repo.GetById(id);
+            var expected = await repoParent.GetById(id);
 
             // Act
             var result = await service.GetById(id).ConfigureAwait(false);
@@ -100,24 +101,26 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
-            var changedEntity = new ParentDTO() { Id = 1, FirstName = "Changed" };
+            var changedEntity = new ShortUserDto()
+            {
+                Id = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c",
+                PhoneNumber = "1160327456",
+                LastName = "LastName",
+                MiddleName = "MiddleName",
+                FirstName = "FirstName",
+            };
+            Expression<Func<User, bool>> filter = p => p.Id == changedEntity.Id;
+
+            var users = repoUser.GetByFilterNoTracking(filter);
 
             // Act
-            var result = await service.Update(changedEntity).ConfigureAwait(false);
+            var result = await repoUser.Update(changedEntity.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
 
             // Assert
             Assert.That(changedEntity.FirstName, Is.EqualTo(result.FirstName));
-        }
-
-        [Test]
-        public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
-        {
-            // Arrange
-            var changedEntity = new ParentDTO() { FirstName = "Changed" };
-
-            // Act and Assert
-            Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-                async () => await service.Update(changedEntity).ConfigureAwait(false));
+            Assert.That(changedEntity.LastName, Is.EqualTo(result.LastName));
+            Assert.That(changedEntity.MiddleName, Is.EqualTo(result.MiddleName));
+            Assert.That(changedEntity.PhoneNumber, Is.EqualTo(result.PhoneNumber));
         }
 
         [Test]
@@ -127,7 +130,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act
             var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
 
-            context.Entry<Parent>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
+            context.Entry<Parent>(await repoParent.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
 
             await service.Delete(id).ConfigureAwait(false);
 
@@ -155,9 +158,9 @@ namespace OutOfSchool.WebApi.Tests.Services
 
                 var parents = new List<Parent>()
                 {
-                    new Parent() { Id = 1, FirstName = "Testone", MiddleName = "Testone", LastName = "Testone", UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" },
-                    new Parent() { Id = 2, FirstName = "Testtwo", MiddleName = "Testtwo", LastName = "Testtwo", UserId = "de804f35-5eb7-4b8n-bda8-70a5tyfg96a6" },
-                    new Parent() { Id = 3, FirstName = "Testthree", MiddleName = "Testthree", LastName = "Testthree", UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" },
+                    new Parent() { Id = 1,  UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" },
+                    new Parent() { Id = 2,  UserId = "de804f35-5eb7-4b8n-bda8-70a5tyfg96a6" },
+                    new Parent() { Id = 3,  UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" },
                 };
 
                 var user = new User()
