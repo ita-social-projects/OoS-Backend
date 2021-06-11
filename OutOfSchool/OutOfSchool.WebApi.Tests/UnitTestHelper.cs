@@ -26,9 +26,9 @@ namespace OutOfSchool.Tests
             context.SocialGroups.Add(new SocialGroup { Id = 1, });
             context.SocialGroups.Add(new SocialGroup { Id = 2, });
             context.SocialGroups.Add(new SocialGroup { Id = 3, });
-            context.Parents.Add(new Parent { Id = 1, FirstName = "fn1", LastName = "ln1" });
-            context.Parents.Add(new Parent { Id = 2, FirstName = "fn2", LastName = "ln2" });
-            context.Parents.Add(new Parent { Id = 3, FirstName = "fn3", LastName = "ln3" });
+            context.Parents.Add(new Parent { Id = 1, });
+            context.Parents.Add(new Parent { Id = 2, });
+            context.Parents.Add(new Parent { Id = 3, });
             context.Children.Add(new Child { Id = 1, FirstName = "fn1", LastName = "ln1", MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 });
             context.Children.Add(new Child { Id = 2, FirstName = "fn2", LastName = "ln2", MiddleName = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1 });
             context.Children.Add(new Child { Id = 3, FirstName = "fn3", LastName = "ln3", MiddleName = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 });
