@@ -75,7 +75,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 Expression<Func<User, bool>> filter = p => p.Id == dto.Id;
 
-                var users = await repository.GetByFilter(filter).ConfigureAwait(false);
+                var users = repository.GetByFilterNoTracking(filter);
 
                 var updatedUser = await repository.Update(dto.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
 

@@ -92,7 +92,7 @@ namespace OutOfSchool.Services.Repository
                 query = query.Include(includeProperty);
             }
 
-            return await query.AsNoTracking().ToListAsync();
+            return await query.ToListAsync();
         }
 
         /// <inheritdoc/>

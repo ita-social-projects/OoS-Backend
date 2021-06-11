@@ -30,13 +30,13 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <returns>Parent object.</returns>
         Task<ParentDTO> GetById(long id);
-        
+
         /// <summary>
         /// To Update our object in DB.
         /// </summary>
-        /// <param name="parent">Parent with new properties.</param>
+        /// <param name="user">User with new properties.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task<ParentDTO> Update(ParentDTO parent);
+        Task<ShortUserDto> Update(ShortUserDto user);
 
         /// <summary>
         /// To delete the object from DB.
