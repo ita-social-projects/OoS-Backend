@@ -148,6 +148,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
