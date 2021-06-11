@@ -23,9 +23,9 @@ namespace OutOfSchool.Tests
 
         public static void SeedData(OutOfSchoolDbContext context)
         {
-            context.SocialGroups.Add(new SocialGroup { Id = 1, });
-            context.SocialGroups.Add(new SocialGroup { Id = 2, });
-            context.SocialGroups.Add(new SocialGroup { Id = 3, });
+            context.SocialGroups.Add(new SocialGroup { Id = 1, Name = "sg1" });
+            context.SocialGroups.Add(new SocialGroup { Id = 2, Name = "sg2" });
+            context.SocialGroups.Add(new SocialGroup { Id = 3, Name = "sg3" });
             context.Parents.Add(new Parent { Id = 1, });
             context.Parents.Add(new Parent { Id = 2, });
             context.Parents.Add(new Parent { Id = 3, });
