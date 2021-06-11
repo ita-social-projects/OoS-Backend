@@ -73,7 +73,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(UserDto dto)
+        public async Task<IActionResult> Update(ShortUserDto dto)
         {
             if (!ModelState.IsValid)
             {

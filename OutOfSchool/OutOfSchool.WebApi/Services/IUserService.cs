@@ -10,20 +10,20 @@ namespace OutOfSchool.WebApi.Services
         /// Get all entities.
         /// </summary>
         /// <returns>List of all Users.</returns>
-        Task<IEnumerable<UserDto>> GetAll();
+        Task<IEnumerable<ShortUserDto>> GetAll();
 
         /// <summary>
         /// Get entity by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>User.</returns>
-        Task<UserDto> GetById(string id);
+        Task<ShortUserDto> GetById(string id);
 
         /// <summary>
         /// Update entity.
         /// </summary>
         /// <param name="dto">User entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<UserDto> Update(UserDto dto);
+        Task<ShortUserDto> Update(ShortUserDto dto);
     }
 }
