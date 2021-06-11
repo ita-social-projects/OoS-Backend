@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -19,18 +20,21 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class WorkshopController : ControllerBase
     {
-        private readonly IWorkshopService service;
+        private readonly IWorkshopService workshopService;
+        private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
         /// </summary>
-        /// <param name="service">Service for Workshop model.</param>
+        /// <param name="workshopService">Service for Workshop model.</param>
+        /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
-        public WorkshopController(IWorkshopService service, IStringLocalizer<SharedResource> localizer)
+        public WorkshopController(IWorkshopService workshopService, IProviderService providerService, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.service = service;
+            this.workshopService = workshopService;
+            this.providerService = providerService;
         }
 
         /// <summary>
@@ -38,13 +42,13 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of all workshops.</returns>
         [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var workshops = await service.GetAll().ConfigureAwait(false);
+            var workshops = await workshopService.GetAll().ConfigureAwait(false);
 
             if (!workshops.Any())
             {
@@ -61,13 +65,13 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>Workshop.</returns>
         [AllowAnonymous]
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(long id)
         {
             this.ValidateId(id, localizer);
 
-            return Ok(await service.GetById(id).ConfigureAwait(false));
+            return Ok(await workshopService.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -76,7 +80,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
@@ -87,10 +91,23 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
+            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            if (!userHasRights)
+            {
+                return Unauthorized("Forbidden to create workshops for another providers.");
+            }
+
             dto.Id = default;
             dto.Address.Id = default;
+            if (dto.Teachers.Any())
+            {
+                foreach (var teacher in dto.Teachers)
+                {
+                    teacher.Id = default;
+                }
+            }
 
-            var workshop = await service.Create(dto).ConfigureAwait(false);
+            var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -104,7 +121,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Workshop to update.</param>
         /// <returns>Workshop.</returns>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
@@ -115,7 +132,13 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(dto).ConfigureAwait(false));
+            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            if (!userHasRights)
+            {
+                return Unauthorized("Forbidden to update workshops for another providers.");
+            }
+
+            return Ok(await workshopService.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -131,7 +154,20 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            await service.Delete(id).ConfigureAwait(false);
+            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+
+            if (workshop is null)
+            {
+                return BadRequest($"There is no workshop with id:{id}");
+            }
+
+            var userHasRights = await this.IsUserProvidersOwner(workshop.ProviderId).ConfigureAwait(false);
+            if (!userHasRights)
+            {
+                return Unauthorized("Forbidden to delete workshops of another providers.");
+            }
+
+            await workshopService.Delete(id).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -141,17 +177,17 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="filter">Workshop filter.</param>
         /// <param name="pageSize">Count of records on one page.</param>
-        /// <returns>COunt of pages.</returns>
+        /// <returns>Count of pages.</returns>
         [AllowAnonymous]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPagesCount(WorkshopFilter filter, int pageSize)
         {
             PageSizeValidation(pageSize);
-
-            int count = await service.GetPagesCount(filter, pageSize).ConfigureAwait(false);
+            
+            int count = await workshopService.GetPagesCount(filter, pageSize).ConfigureAwait(false);
 
             if (count == 0)
             {
@@ -170,7 +206,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>The list of workshops for this page.</returns>
         [AllowAnonymous]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPage(WorkshopFilter filter, int pageNumber, int pageSize)
@@ -178,7 +214,7 @@ namespace OutOfSchool.WebApi.Controllers
             PageSizeValidation(pageSize);
             PageNumberValidation(pageNumber);
 
-            var workshops = await service.GetPage(filter, pageSize, pageNumber).ConfigureAwait(false);
+            var workshops = await workshopService.GetPage(filter, pageSize, pageNumber).ConfigureAwait(false);
 
             if (!workshops.Any())
             {
@@ -206,6 +242,24 @@ namespace OutOfSchool.WebApi.Controllers
                     nameof(pageNumber),
                     localizer["The pageSize cannot be less than 1."]);
             }
+        }
+
+        private async Task<bool> IsUserProvidersOwner(long providerId)
+        {
+            // Provider can create/update/delete a workshop only with it's own ProviderId.
+            // Admin can create a work without checks.
+            if (User.IsInRole("provider"))
+            {
+                var userId = User.FindFirst("sub")?.Value;
+                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+
+                if (providerId != provider.Id)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
