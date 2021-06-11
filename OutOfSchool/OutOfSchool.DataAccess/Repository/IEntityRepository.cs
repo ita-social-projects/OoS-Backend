@@ -51,7 +51,7 @@ namespace OutOfSchool.Services.Repository
         /// Get element by Id.
         /// </summary>
         /// <param name="id">Key in database.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation. The task result contains an entity that was found, or null.</returns>
         Task<T> GetById(long id);
 
         /// <summary>

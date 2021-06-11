@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -103,17 +101,17 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task GetWorkshopById_WhenIdIsInvalid_ShouldReturnNull(long id)
+        public async Task GetWorkshopById_WhenThereIsNoWorkshopWithId_ShouldReturnNoContent(long id)
         {
             // Arrange
             workshopServiceMoq.Setup(x => x.GetById(id)).ReturnsAsync(workshops.SingleOrDefault(x => x.Id == id));
 
             // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetById(id).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(204, result.StatusCode);
         }
         #endregion
 

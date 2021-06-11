@@ -66,12 +66,19 @@ namespace OutOfSchool.WebApi.Controllers
         [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> GetById(long id)
         {
             this.ValidateId(id, localizer);
 
-            return Ok(await workshopService.GetById(id).ConfigureAwait(false));
+            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+
+            if (workshop is null)
+            {
+                return NoContent();
+            }
+
+            return Ok(workshop);
         }
 
         /// <summary>
