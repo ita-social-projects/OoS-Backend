@@ -12,10 +12,12 @@ namespace OutOfSchool.Services.Models
         [DataType(DataType.DateTime)]
         public DateTime LastLogin { get; set; }
 
+        [Required(ErrorMessage = "LastName is required")]
         public string LastName { get; set; }
 
         public string MiddleName { get; set; }
 
+        [Required(ErrorMessage = "FirstName is required")]
         public string FirstName { get; set; }
 
         public string Role { get; set; }

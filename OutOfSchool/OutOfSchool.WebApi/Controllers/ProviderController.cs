@@ -68,25 +68,22 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Get Provider by User Id.
+        /// To Get the Profile of authorized Provider.
         /// </summary>
-        /// <param name="id">User id.</param>
-        /// <returns>Provider.</returns>
+        /// <returns>Authorized provider's profile.</returns>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]      
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProviderByUserId(string id)
+        public async Task<IActionResult> GetProfile()
         {
-            try
-            {
-                return Ok(await providerService.GetByUserId(id).ConfigureAwait(false));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }                   
+            string userId = User.FindFirst("sub")?.Value;
+
+            var providers = await providerService.GetAll().ConfigureAwait(false);
+
+            var providerDTO = providers.FirstOrDefault(x => x.UserId == userId);
+
+            return Ok(providerDTO);
         }
 
         /// <summary>

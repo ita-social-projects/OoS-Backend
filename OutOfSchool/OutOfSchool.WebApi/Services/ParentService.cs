@@ -18,20 +18,23 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ParentService : IParentService
     {
-        private readonly IEntityRepository<Parent> repository;
+        private readonly IParentRepository repositoryParent;
+        private readonly IEntityRepository<User> repositoryUser;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParentService"/> class.
         /// </summary>
-        /// <param name="entityRepository">Repository for some entity.</param>
+        /// <param name="repositoryParent">Repository for parent entity.</param>
+        /// <param name="repositoryUser">Repository for user entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ParentService(IEntityRepository<Parent> entityRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ParentService(IParentRepository repositoryParent, IEntityRepository<User> repositoryUser, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.repository = entityRepository;
+            this.repositoryParent = repositoryParent;
+            this.repositoryUser = repositoryUser;
             this.logger = logger;
         }
 
@@ -40,10 +43,10 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Parent creating was started");
 
-            var parent = dto.ToDomain();
+            Func<Task<Parent>> operation = async () => await repositoryParent.Create(dto.ToDomain()).ConfigureAwait(false);
 
-            var newParent = await repository.Create(parent).ConfigureAwait(false);
-
+            var newParent = await repositoryParent.RunInTransaction(operation).ConfigureAwait(false);
+        
             logger.Information($"Parent with Id = {newParent?.Id} created successfully.");
 
             return newParent.ToModel();
@@ -58,7 +61,7 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                await repository.Delete(entity).ConfigureAwait(false);
+                await repositoryParent.Delete(entity).ConfigureAwait(false);
 
                 logger.Information($"Parent with Id = {id} succesfully deleted.");
             }
@@ -74,7 +77,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Getting all Parents started.");
 
-            var parents = await this.repository.GetAll().ConfigureAwait(false);
+            var parents = await this.repositoryParent.GetAll().ConfigureAwait(false);
 
             logger.Information(!parents.Any()
                 ? "Parent table is empty."
@@ -88,7 +91,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Getting Parent by Id started. Looking Id = {id}.");
 
-            var parent = await repository.GetById((int)id).ConfigureAwait(false);
+            var parent = await repositoryParent.GetById((int)id).ConfigureAwait(false);
 
             if (parent == null)
             {
@@ -103,21 +106,25 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ParentDTO> Update(ParentDTO dto)
+        public async Task<ShortUserDto> Update(ShortUserDto dto)
         {
-            logger.Information($"Updating Parent with Id = {dto?.Id} started.");
+            logger.Information($"Updating Parent with User Id = {dto?.Id} started.");
 
             try
             {
-                var parent = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                Expression<Func<User, bool>> filter = p => p.Id == dto.Id;
+                
+                var users = repositoryUser.GetByFilterNoTracking(filter);
 
-                logger.Information($"Parent with Id = {parent?.Id} updated succesfully.");
+                var updatedUser = await repositoryUser.Update(dto.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
 
-                return parent.ToModel();
+                logger.Information($"User with Id = {updatedUser?.Id} updated succesfully.");
+
+                return updatedUser.ToModel();             
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Parent with Id = {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }     

@@ -17,9 +17,21 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
         }
 
-        public static UserDto ToModel(this User user)
+        public static ShortUserDto ToModel(this User user)
         {
-            return Mapper<User, UserDto>(user, cfg => { cfg.CreateMap<User, UserDto>(); });
+            return Mapper<User, ShortUserDto>(user, cfg =>
+            {
+                cfg.CreateMap<User, ShortUserDto>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
+                    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                    .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                    .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName))
+                    .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => src.IsRegistered))
+                    .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
+                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                    .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+                    .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
+            });
         }
 
         public static WorkshopDTO ToModel(this Workshop workshop)
@@ -112,9 +124,33 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<AddressDto, Address>(addressDto, cfg => { cfg.CreateMap<AddressDto, Address>(); });
         }
 
-        public static User ToDomain(this UserDto userDto)
+        public static User ToDomain(this ShortUserDto shortUserDto, User user)
         {
-            return Mapper<UserDto, User>(userDto, cfg => { cfg.CreateMap<UserDto, User>(); });
+            return Mapper<ShortUserDto, User>(shortUserDto, cfg =>
+            {
+                cfg.CreateMap<ShortUserDto, User>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
+                    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                    .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                    .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.MiddleName))
+                    .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                    .ForMember(dest => dest.IsRegistered, opt => opt.MapFrom(src => user.IsRegistered))
+                    .ForMember(dest => dest.Role, opt => opt.MapFrom(src => user.Role))
+                    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => user.Email))
+                    .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => user.UserName))
+                    .ForMember(dest => dest.LastLogin, opt => opt.MapFrom(src => user.LastLogin))
+                    .ForMember(dest => dest.NormalizedEmail, opt => opt.MapFrom(src => user.NormalizedEmail))
+                    .ForMember(dest => dest.NormalizedUserName, opt => opt.MapFrom(src => user.NormalizedUserName))
+                    .ForMember(dest => dest.EmailConfirmed, opt => opt.MapFrom(src => user.EmailConfirmed))
+                    .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => user.PasswordHash))
+                    .ForMember(dest => dest.SecurityStamp, opt => opt.MapFrom(src => user.SecurityStamp))
+                    .ForMember(dest => dest.ConcurrencyStamp, opt => opt.MapFrom(src => user.ConcurrencyStamp))
+                    .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.MapFrom(src => user.PhoneNumberConfirmed))
+                    .ForMember(dest => dest.TwoFactorEnabled, opt => opt.MapFrom(src => user.TwoFactorEnabled))
+                    .ForMember(dest => dest.LockoutEnabled, opt => opt.MapFrom(src => user.LockoutEnabled))
+                    .ForMember(dest => dest.LockoutEnd, opt => opt.MapFrom(src => user.LockoutEnd))
+                    .ForMember(dest => dest.AccessFailedCount, opt => opt.MapFrom(src => user.AccessFailedCount));
+            });
         }
 
         public static Workshop ToDomain(this WorkshopDTO workshopDto)

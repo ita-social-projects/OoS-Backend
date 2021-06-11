@@ -36,7 +36,7 @@ namespace OutOfSchool.WebApi.Services
             this.logger = logger;
         }
 
-        public async Task<IEnumerable<UserDto>> GetAll()
+        public async Task<IEnumerable<ShortUserDto>> GetAll()
         {
             logger.Information("Getting all Users started.");
 
@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Services
             return users.Select(user => user.ToModel()).ToList();
         }
 
-        public async Task<UserDto> GetById(string id)
+        public async Task<ShortUserDto> GetById(string id)
         {
             logger.Information($"Getting User by Id started. Looking Id = {id}.");
 
@@ -67,17 +67,21 @@ namespace OutOfSchool.WebApi.Services
             return users.FirstOrDefault().ToModel();
         }
 
-        public async Task<UserDto> Update(UserDto dto)
+        public async Task<ShortUserDto> Update(ShortUserDto dto)
         {
             logger.Information($"Updating User with Id = {dto?.Id} started.");
             
             try
             {
-                var user = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                Expression<Func<User, bool>> filter = p => p.Id == dto.Id;
 
-                logger.Information($"User with Id = {user?.Id} updated succesfully.");
+                var users = repository.GetByFilterNoTracking(filter);
 
-                return user.ToModel();
+                var updatedUser = await repository.Update(dto.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
+
+                logger.Information($"User with Id = {updatedUser?.Id} updated succesfully.");
+
+                return updatedUser.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {

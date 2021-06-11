@@ -71,6 +71,9 @@ namespace OutOfSchool.WebApi.Models
         public DateTime HeadDateOfBirth { get; set; }
 
         [Required]
+        public string ProviderTitle { get; set; } = string.Empty;
+
+        [Required]
         public bool IsPerMonth { get; set; }
 
         public float Rating { get; set; }

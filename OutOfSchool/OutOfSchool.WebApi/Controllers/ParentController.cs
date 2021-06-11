@@ -70,11 +70,11 @@ namespace OutOfSchool.WebApi.Controllers
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
-     
+
         /// <summary>
         /// To create new Parent and add to the DB.
         /// </summary>
-        /// <param name="dto">ParentDTO object that we want to add.</param>
+        /// <param name="userId">Id of the User.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPost]
@@ -82,17 +82,15 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create(ParentDTO dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
+        public async Task<IActionResult> Create(string userId)
+        {   
             try
             {
-                dto.Id = default;
-                dto.UserId = User.FindFirst("sub")?.Value;
+                var dto = new ParentDTO
+                {
+                    Id = default,
+                    UserId = User.FindFirst("sub")?.Value,
+                };
 
                 var parent = await service.Create(dto).ConfigureAwait(false);
 
@@ -110,21 +108,21 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// To update Parent entity that already exists.
         /// </summary>
-        /// <param name="parentDTO">ParentDTO object with new properties.</param>
+        /// <param name="shortUserDto">ShortUserDto object with new properties.</param>
         /// <returns>Parent's key.</returns>
         [Authorize(Roles = "parent,admin")]
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Update(ParentDTO parentDTO)
+        public async Task<ActionResult> Update(ShortUserDto shortUserDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(parentDTO).ConfigureAwait(false));
+            return Ok(await service.Update(shortUserDto).ConfigureAwait(false));
         }
 
         /// <summary>

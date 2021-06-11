@@ -154,25 +154,6 @@ namespace OutOfSchool.WebApi.Services
                 logger.Error($"Deleting failed. Provider with Id = {id} doesn't exist in the system.");
                 throw;
             }
-        }
-
-        /// <inheritdoc/>
-        public async Task<ProviderDto> GetByUserId(string id)
-        {
-            logger.Information($"Getting Provider by UserId started. Looking UserId is {id}.");
-
-            Expression<Func<Provider, bool>> filter = p => p.UserId == id;
-
-            var providers = await providerRepository.GetByFilter(filter).ConfigureAwait(false);
-
-            if (!providers.Any())
-            {
-                throw new ArgumentException(localizer["There is no Provider in the Db with such User id"], nameof(id));                        
-            }
-
-            logger.Information($"Successfully got a Provider with UserId = {id}.");
-
-            return providers.FirstOrDefault().ToModel();
-        }
+        }    
     }
 }

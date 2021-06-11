@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -45,15 +43,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             return new List<ParentDTO>
             {
-                    new ParentDTO() { Id = 0, FirstName = "Testone", MiddleName = "Testone", LastName = "Testone", UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" },
-                    new ParentDTO() { Id = 1, FirstName = "Testtwo", MiddleName = "Testtwo", LastName = "Testtwo", UserId = "de804f35-5eb7-4b8n-bda8-70a5tyfg96a6" },
-                    new ParentDTO() { Id = 2, FirstName = "Testthree", MiddleName = "Testthree", LastName = "Testthree", UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" },
+                    new ParentDTO() { Id = 0, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" },
+                    new ParentDTO() { Id = 1, UserId = "de804f35-5eb7-4b8n-bda8-70a5tyfg96a6" },
+                    new ParentDTO() { Id = 2, UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" },
             };
         }
 
         public ParentDTO FakeParent()
         {
-            return new ParentDTO() { Id = 0, FirstName = "Testone", MiddleName = "Testone", LastName = "Testone", UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" };
+            return new ParentDTO() { Id = 0, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" };
         }
 
         [Test]
@@ -113,41 +111,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateParent_WhenModelIsValid_ReturnsCreatedAtActionResult()
-        {
-            // Arrange
-            service.Setup(x => x.Create(parent)).ReturnsAsync(parent);
-
-            // Act
-            var result = await controller.Create(parent).ConfigureAwait(false) as CreatedAtActionResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 201);
-        }
-
-        [Test]
-        public async Task CreatePrarent_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-        {
-            // Arrange
-            controller.ModelState.AddModelError("CreateParent", "Invalid model state.");
-
-            // Act
-            var result = await controller.Create(parent).ConfigureAwait(false);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-        }
-
-        [Test]
         public async Task UpdateParent_WhenModelIsValid_ReturnsOkObjectResult()
         {
             // Arrange
-            var changedParent = new ParentDTO()
+            var changedParent = new ShortUserDto()
             {
-                Id = 1,
-                FirstName = "ChangedName",
+                Id = "38776161-734b-4aec-96eb-4a1f87a2e5f3",
+                PhoneNumber = "1160327456",
+                LastName = "LastName",
+                MiddleName = "MiddleName",
+                FirstName = "FirstName",
             };
             service.Setup(x => x.Update(changedParent)).ReturnsAsync(changedParent);
 
@@ -166,7 +139,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             controller.ModelState.AddModelError("UpdateParent", "Invalid model state.");
 
             // Act
-            var result = await controller.Update(parent).ConfigureAwait(false);
+            var result = await controller.Update(new ShortUserDto()).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());

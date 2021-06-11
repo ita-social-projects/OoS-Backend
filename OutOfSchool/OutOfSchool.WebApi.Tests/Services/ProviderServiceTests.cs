@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = false,
                 LegalAddressId = 11,
                 ActualAddressId = 12,
-                UserId = "de909f35-5eb7-Vb7AA-bda8-40a5bfda96a6",
+                UserId = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c",
                 LegalAddress = new Address
                 {
                     Id = 11,
@@ -551,7 +551,33 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                 };
 
+                var user = new User()
+                {
+                    Id = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c",
+                    CreatingTime = default,
+                    LastLogin = default,
+                    MiddleName = "MiddleName",
+                    FirstName = "FirstName",
+                    LastName = "LastName",
+                    UserName = "user@gmail.com",
+                    NormalizedUserName = "USER@GMAIL.COM",
+                    Email = "user@gmail.com",
+                    NormalizedEmail = "USER@GMAIL.COM",
+                    EmailConfirmed = false,
+                    PasswordHash = "AQAAAAECcQAAAAEPXMPMbzuDZIKJUN4pBhRWMtf35Q3RN4QOll7UfnTdmfXHEcgswabznBezJmeTMvEw==",
+                    SecurityStamp = "   CCCJIYDFRG236HXFKGYS7H6QT2DE2LFF",
+                    ConcurrencyStamp = "cb54f60f-6282-4416-874c-d1edce844d07",
+                    PhoneNumber = "0965679725",
+                    Role = "provider",
+                    PhoneNumberConfirmed = false,
+                    TwoFactorEnabled = false,
+                    LockoutEnabled = true,
+                    AccessFailedCount = 0,
+                    IsRegistered = false,
+                };
+
                 context.Providers.AddRangeAsync(providers);
+                context.Users.AddAsync(user);
                 context.SaveChangesAsync();
             }
         }
