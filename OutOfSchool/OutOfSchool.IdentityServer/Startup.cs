@@ -10,9 +10,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OutOfSchool.EmailSender;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
-using OutOfSchool.EmailSender;
 
 namespace OutOfSchool.IdentityServer
 {

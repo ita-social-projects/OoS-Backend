@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text.Encodings.Web;
+﻿using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +12,6 @@ namespace OutOfSchool.IdentityServer.Controllers
 {
     public class AccountController : Controller
     {
-        
         private readonly ILogger<AccountController> logger;
         private readonly UserManager<User> userManager;
         private readonly IEmailSender emailSender;
@@ -30,14 +28,14 @@ namespace OutOfSchool.IdentityServer.Controllers
 
         [HttpGet]
         [Authorize]
-        public IActionResult Change()
+        public IActionResult ChangeEmail()
         {
-            return View();
+            return View("Email/Change");
         }
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Change(ChangeEmailViewModel model)
+        public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -46,7 +44,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = await userManager.FindByEmailAsync(User.Identity.Name);
             var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
-            var callBackUrl = Url.Action(nameof(ConfirmChange), "Email", new { token, email = model.CurrentEmail, newEmail = model.Email }, Request.Scheme);
+            var callBackUrl = Url.Action(nameof(ConfirmEmailChange), "Email", new { token, email = model.CurrentEmail, newEmail = model.Email }, Request.Scheme);
 
             var message = new Message()
             {
@@ -57,8 +55,8 @@ namespace OutOfSchool.IdentityServer.Controllers
                 },
                 To = new EmailAddress()
                 {
-                    Name = model.CurrentEmail,
-                    Address = model.CurrentEmail,
+                    Name = model.Email,
+                    Address = model.Email,
                 },
                 Content = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.",
                 Subject = "Confirm email.",
@@ -69,7 +67,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ConfirmChange(string token, string email, string newEmail)
+        public async Task<IActionResult> ConfirmEmailChange(string token, string email, string newEmail)
         {
             var user = await userManager.FindByEmailAsync(email);
             if (user == null)
@@ -80,7 +78,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             var result = await userManager.ChangeEmailAsync(user, newEmail, token);
             if (result.Succeeded)
             {
-                return View();
+                return View("Email/ConfirmEmailChange");
             }
             else
             {

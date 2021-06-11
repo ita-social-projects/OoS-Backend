@@ -1,10 +1,10 @@
 ﻿namespace OutOfSchool.EmailSender
 {
-    internal class SmtpConfiguration
+    public class SmtpConfiguration
     {
-        internal string Server { get; set; }
-        internal int Port { get; set; }
-        internal string Username { get; set; }
-        internal string Password { get; set; }
+        public string Server { get; set; }
+        public int Port { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
     }
 }

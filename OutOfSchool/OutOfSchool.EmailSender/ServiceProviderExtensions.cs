@@ -8,10 +8,10 @@ namespace OutOfSchool.EmailSender
         {
             SmtpConfiguration smtpConfiguration = new SmtpConfiguration()
             {
-                Server = "",
-                Port = 0,
-                Username = "",
-                Password = "",
+                Server = "smtp.gmail.com",
+                Port = 465,
+                Username = "OoS.Backend.Test.Server@gmail.com",
+                Password = "00$.@Server2021",
             };
             services.AddSingleton(smtpConfiguration);
             services.AddSingleton<IEmailSender, EmailSender>();
