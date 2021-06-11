@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210609131631_ChildUpdate")]
+    partial class ChildUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -362,7 +364,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("DirectorDateOfBirth")
+                    b.Property<DateTime>("DirectorBirthDay")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EdrpouIpn")
@@ -556,7 +558,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("bigint")
                         .UseIdentityColumn();
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateTime>("BirthDay")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -582,7 +584,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<long>("WorkshopId")
+                    b.Property<long?>("WorkshopId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -688,9 +690,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("AddressId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("CategoryId")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("DaysPerWeek")
                         .HasColumnType("int");
 
@@ -716,7 +715,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("HeadDateOfBirth")
+                    b.Property<DateTime>("HeadBirthDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Instagram")
@@ -743,9 +742,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("ProviderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("SubcategoryId")
                         .HasColumnType("bigint");
 
                     b.Property<long>("SubsubcategoryId")
@@ -952,9 +948,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
                         .WithMany("Teachers")
-                        .HasForeignKey("WorkshopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("WorkshopId");
 
                     b.Navigation("Workshop");
                 });

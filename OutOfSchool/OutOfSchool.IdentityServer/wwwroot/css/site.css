@@ -1,4 +1,4 @@
-﻿﻿html,
+﻿﻿﻿﻿html,
 body {
   height: 100%;
 }
@@ -52,14 +52,6 @@ h6 {
 a {
   text-decoration: none;
   color: inherit;
-}
-
-.login__wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0;
-  padding: 10px;
 }
 .login__text,
 .login__label,
@@ -117,13 +109,13 @@ a {
   color: #4158d0;
 }
 
-.registration {
+.wrapper {
   display: flex;
   justify-content: center;
   margin-top: 50px;
 }
 
-.registration_wrapper {
+.icon_wrapper {
   background: #ffffff;
   box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
   border-radius: 5px;
@@ -134,29 +126,29 @@ a {
   flex-direction: column;
   width: 640px;
 }
-.registration_title {
+.icon_title {
   line-height: 20px;
   text-align: center;
   color: #444444;
   margin: 0;
 }
-.registration_subtitle {
+.icon_subtitle {
   line-height: 18px;
   text-align: center;
   color: #aaaaaa;
   margin: 16px 0 0 0;
 }
-.registration_social {
+.icon_social {
   margin-top: 24px;
 }
-.registration_button {
+.icon_button {
   border: none;
   outline: none;
   background: inherit;
   margin: 0 0.3rem;
   cursor: pointer;
 }
-.registration_option {
+.option {
   font-size: 0.8125rem;
   line-height: 18px;
   text-align: center;
@@ -164,7 +156,7 @@ a {
   position: relative;
   margin-top: 24px;
 }
-.registration_option:after {
+.option:after {
   content: "";
   display: block;
   position: absolute;
@@ -175,7 +167,7 @@ a {
   top: 50%;
   transform: translate(-120%, -50%);
 }
-.registration_option:before {
+.option:before {
   content: "";
   display: block;
   position: absolute;
@@ -243,7 +235,7 @@ a {
 .registration_item-password {
   margin-bottom: 8px;
 }
-.registration_link {
+.link {
   color: #3849f9;
   font-weight: bold;
   text-decoration: underline;

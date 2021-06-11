@@ -64,12 +64,12 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static ChildDTO ToModel(this Child child)
+        public static ChildDto ToModel(this Child child)
         {
-            return child.Mapper<Child, ChildDTO>(cfg => 
-            { 
-                cfg.CreateMap<Child, ChildDTO>()
-                   .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(src => src.Patronymic)); 
+            return child.Mapper<Child, ChildDto>(cfg => 
+            {
+                cfg.CreateMap<BirthCertificate, BirthCertificateDto>();
+                cfg.CreateMap<Child, ChildDto>();
             });
         }
 
@@ -181,16 +181,12 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static Child ToDomain(this ChildDTO childDto)
+        public static Child ToDomain(this ChildDto childDto)
         {
-            return Mapper<ChildDTO, Child>(childDto, cfg =>
+            return Mapper<ChildDto, Child>(childDto, cfg =>
             {
-                cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
-
-                cfg.CreateMap<ChildDTO, Child>()
-                    .ForMember(dest => dest.AddressId, opt => opt.MapFrom(c => c.Address.Id))
-                    .ForMember(dest => dest.Patronymic, opt => opt.MapFrom(src => src.MiddleName));
+                cfg.CreateMap<ChildDto, Child>();
             });
         }
 

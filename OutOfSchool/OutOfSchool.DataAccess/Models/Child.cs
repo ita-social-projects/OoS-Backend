@@ -8,27 +8,26 @@ namespace OutOfSchool.Services.Models
     {
         public long Id { get; set; }
 
+        [Required(ErrorMessage = "First name is required")]
         [DataType(DataType.Text)]
         [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "First name cannot contains digits and special symbols")]
+        [RegularExpression(@"[\w\-\']*", ErrorMessage = "First name cannot contains digits and special symbols")]
         public string FirstName { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Last name is required")]
         [DataType(DataType.Text)]
         [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "Last name cannot contains digits and special symbols")]
+        [RegularExpression(@"[\w\-\']*", ErrorMessage = "Last name cannot contains digits and special symbols")]
         public string LastName { get; set; } = string.Empty;
 
+        [DataType(DataType.Text)]
         [MaxLength(40)]
-        [RegularExpression(@"[\W\-\']*", ErrorMessage = "Patronymic cannot contains digits and special symbols")]
-        public string Patronymic { get; set; } = string.Empty;
+        [RegularExpression(@"[\w\-\']*", ErrorMessage = "Middle name cannot contains digits and special symbols")]
+        public string MiddleName { get; set; } = string.Empty;
 
         public DateTime DateOfBirth { get; set; }
 
         public Gender Gender { get; set; }
-
-        public long AddressId { get; set; }
-
-        public virtual Address Address { get; set; }
 
         public virtual Parent Parent { get; set; }
 
@@ -36,7 +35,7 @@ namespace OutOfSchool.Services.Models
 
         public long ParentId { get; set; }
 
-        public long SocialGroupId { get; set; }
+        public long? SocialGroupId { get; set; }
 
         public virtual BirthCertificate BirthCertificate { get; set; }
     }

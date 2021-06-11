@@ -67,9 +67,9 @@ namespace OutOfSchool.Services.Models
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
         public string Head { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Head's birthday is required")]
+        [Required(ErrorMessage = "Head's date of birth is required")]
         [DataType(DataType.Date)]
-        public DateTime HeadBirthDate { get; set; }
+        public DateTime HeadDateOfBirth { get; set; }
 
         [Required]
         public string ProviderTitle { get; set; } = string.Empty;

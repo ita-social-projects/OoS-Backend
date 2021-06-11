@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Tests
                 // Assert
                 Assert.AreEqual("fn1", child.FirstName);
                 Assert.AreEqual("ln1", child.LastName);
-                Assert.AreEqual("mn1", child.Patronymic);
+                Assert.AreEqual("mn1", child.MiddleName);
             }
         }
 
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Tests
             using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
             {
                 var repository = new EntityRepository<Child>(context);
-                Child child = new Child { FirstName = "fn4", LastName = "ln4", Patronymic = "mn4", DateOfBirth = new DateTime(2006, 4, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
+                Child child = new Child { FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 4, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
                 // Act
                 var child1 = repository.Create(child).Result;

@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Email = "user68@example.com",
                 Instagram = "Instagram1",
                 Description = "Description1",
-                DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
                 EdrpouIpn = "55545128",
                 PhoneNumber = "1111111111",
                 Founder = "Founder",
@@ -107,7 +107,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.AreEqual(expected.Email, result.Email);
             Assert.AreEqual(expected.Instagram, result.Instagram);
             Assert.AreEqual(expected.Description, result.Description);
-            Assert.AreEqual(expected.DirectorBirthDay, result.DirectorBirthDay);
+            Assert.AreEqual(expected.DirectorDateOfBirth, result.DirectorDateOfBirth);
             Assert.AreEqual(expected.EdrpouIpn, result.EdrpouIpn);
             Assert.AreEqual(expected.PhoneNumber, result.PhoneNumber);
             Assert.AreEqual(expected.Founder, result.Founder);
@@ -139,7 +139,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Email = "user167@example.com",
                 Instagram = "Instagram1",
                 Description = "Description1",
-                DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
                 EdrpouIpn = "55545000",
                 PhoneNumber = "1111111111",
                 Founder = "Founder",
@@ -192,7 +192,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Email = "user1@example.com",
                 Instagram = "Instagram1",
                 Description = "Description1",
-                DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
                 EdrpouIpn = "12345678",
                 PhoneNumber = "1111111111",
                 Founder = "Founder",
@@ -344,7 +344,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "user1@example.com",
                         Instagram = "Instagram1",
                         Description = "Description1",
-                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
                         EdrpouIpn = "12345678",
                         PhoneNumber = "1111111111",
                         Founder = "Founder",
@@ -387,7 +387,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "user2@example.com",
                         Instagram = "Instagram2",
                         Description = "Description2",
-                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
                         EdrpouIpn = "12345645",
                         PhoneNumber = "1111111111",
                         Founder = "Founder",
@@ -430,7 +430,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "user3@example.com",
                         Instagram = "Instagram3",
                         Description = "Description3",
-                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
                         EdrpouIpn = "12345000",
                         PhoneNumber = "1111111111",
                         Founder = "Founder",
@@ -473,7 +473,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "user4@example.com",
                         Instagram = "Instagram4",
                         Description = "Description4",
-                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
                         EdrpouIpn = "10045678",
                         PhoneNumber = "1111111111",
                         Founder = "Founder",
@@ -516,7 +516,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Email = "user5@example.com",
                         Instagram = "Instagram5",
                         Description = "Description5",
-                        DirectorBirthDay = new DateTime(1975, month: 10, 5),
+                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
                         EdrpouIpn = "12374678",
                         PhoneNumber = "1111111111",
                         Founder = "Founder",
