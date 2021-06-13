@@ -96,5 +96,7 @@ namespace OutOfSchool.Services.Models
         public virtual Subsubcategory Subsubcategory { get; set; }
 
         public virtual List<Teacher> Teachers { get; set; }
+
+        public virtual List<Application> Applications { get; set; }
     }
 }
