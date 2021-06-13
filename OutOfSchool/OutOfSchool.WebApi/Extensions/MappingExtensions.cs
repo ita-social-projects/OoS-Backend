@@ -36,6 +36,16 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static WorkshopDTO ToModelSimple(this Workshop workshop)
+        {
+            return Mapper<Workshop, WorkshopDTO>(workshop, cfg => 
+            {
+                cfg.CreateMap<Workshop, WorkshopDTO>()
+                   .ForMember(w => w.Address, m => m.Ignore())
+                   .ForMember(w => w.Teachers, m => m.Ignore());
+            });
+        }
+
         public static TeacherDTO ToModel(this Teacher teacher)
         {
             return Mapper<Teacher, TeacherDTO>(teacher, cfg => { cfg.CreateMap<Teacher, TeacherDTO>(); });
