@@ -110,9 +110,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (workshop == null)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be greater than number of table entities."]);
+                return null;
             }
 
             logger.Information($"Successfully got a Workshop with Id = {id}.");
@@ -142,8 +140,13 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Updating Workshop with Id = {dto?.Id} started.");
 
-            var workshop = await workshopRepository.GetByFilterNoTracking(x => x.Id == dto.Id, "Address,Teachers").FirstAsync().ConfigureAwait(false);
-            
+            var workshop = workshopRepository.GetByFilterNoTracking(x => x.Id == dto.Id, "Address,Teachers").FirstOrDefault();
+
+            if (workshop is null)
+            {
+                throw new ArgumentException($"The workshop with id:{dto.Id} was not found.");
+            }
+
             try
             {
                 // In case if CategoryId and SubcategoryId does not match SubsubcategoryId
@@ -159,37 +162,10 @@ namespace OutOfSchool.WebApi.Services
                     teacher.WorkshopId = workshop.Id;
                 }
 
-                // Sort new teachers and old teachers
-                var oldTeachers = new List<TeacherDTO>();
-                var newTeachers = new List<TeacherDTO>();
-                foreach (var teacherDto in dto.Teachers)
-                {
-                    if (workshop.Teachers.Any(x => x.Id == teacherDto.Id))
-                    {
-                        oldTeachers.Add(teacherDto);
-                    }
-                    else
-                    {
-                        // In case if TeacherId was set wrong, when someone is trying to hack the system.
-                        teacherDto.Id = default;
-                        newTeachers.Add(teacherDto);
-                    }
-                }
-
-                // Sort teachers for update and delete
-                var updateTeachers = new List<TeacherDTO>();
-                var deleteTeachers = new List<TeacherDTO>();
-                foreach (var teacher in workshop.Teachers)
-                {
-                    if (oldTeachers.Any(x => x.Id == teacher.Id))
-                    {
-                        updateTeachers.Add(oldTeachers.Where(x => x.Id == teacher.Id).First());
-                    }
-                    else
-                    {
-                        deleteTeachers.Add(teacher.ToModel());
-                    }
-                }
+                List<TeacherDTO> teachersToCreate;
+                List<TeacherDTO> teachersToUpdate;
+                List<TeacherDTO> teachersToDelete;
+                this.CompareTwoListsOfTeachers(dto.Teachers, workshop.Teachers, out teachersToCreate, out teachersToUpdate, out teachersToDelete);
 
                 // When updating entity Workshop with the existing list
                 // EF Core adds created and updated entities to the list so
@@ -199,9 +175,9 @@ namespace OutOfSchool.WebApi.Services
 
                 Func<Task<Workshop>> updateWorkshop = async () =>
                 {
-                    foreach (var teacherDto in newTeachers) { await teacherRepository.Create(teacherDto.ToDomain()).ConfigureAwait(false); }
-                    foreach (var teacherDto in updateTeachers) { await teacherRepository.Update(teacherDto.ToDomain()).ConfigureAwait(false); }
-                    foreach (var teacherDto in deleteTeachers) { await teacherRepository.Delete(teacherDto.ToDomain()).ConfigureAwait(false); }
+                    foreach (var teacherDto in teachersToCreate) { await teacherRepository.Create(teacherDto.ToDomain()).ConfigureAwait(false); }
+                    foreach (var teacherDto in teachersToUpdate) { await teacherRepository.Update(teacherDto.ToDomain()).ConfigureAwait(false); }
+                    foreach (var teacherDto in teachersToDelete) { await teacherRepository.Delete(teacherDto.ToDomain()).ConfigureAwait(false); }
 
                     await addressRepository.Update(dto.Address.ToDomain()).ConfigureAwait(false);
                     return await workshopRepository.Update(dto.ToDomain()).ConfigureAwait(false);
@@ -229,7 +205,13 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                await workshopRepository.Delete(entity).ConfigureAwait(false);
+                Func<Task<Workshop>> deleteWorkshop = async () =>
+                {
+                    await workshopRepository.Delete(entity).ConfigureAwait(false);
+                    return new Workshop() { Id = default };
+                };
+
+                await workshopRepository.RunInTransaction(deleteWorkshop).ConfigureAwait(false);
 
                 logger.Information($"Workshop with Id = {id} succesfully deleted.");
             }
@@ -344,6 +326,46 @@ namespace OutOfSchool.WebApi.Services
 
             dto.SubcategoryId = sscategory.SubcategoryId;
             dto.CategoryId = sscategory.Subcategory.CategoryId;
+        }
+
+        private void CompareTwoListsOfTeachers(
+            IEnumerable<TeacherDTO> source, 
+            IEnumerable<Teacher> destination,
+            out List<TeacherDTO> teachersToCreate,
+            out List<TeacherDTO> teachersToUpdate,
+            out List<TeacherDTO> teachersToDelete)
+        {
+            // Sort new teachers and old teachers
+            var oldTeachers = new List<TeacherDTO>();
+            teachersToCreate = new List<TeacherDTO>();
+            foreach (var teacherDto in source)
+            {
+                if (destination.Any(x => x.Id == teacherDto.Id))
+                {
+                    oldTeachers.Add(teacherDto);
+                }
+                else
+                {
+                    // In case if TeacherId was set wrong, when someone is trying to hack the system.
+                    teacherDto.Id = default;
+                    teachersToCreate.Add(teacherDto);
+                }
+            }
+
+            // Sort teachers for update and delete
+            teachersToUpdate = new List<TeacherDTO>();
+            teachersToDelete = new List<TeacherDTO>();
+            foreach (var teacher in destination)
+            {
+                if (oldTeachers.Any(x => x.Id == teacher.Id))
+                {
+                    teachersToUpdate.Add(oldTeachers.Where(x => x.Id == teacher.Id).First());
+                }
+                else
+                {
+                    teachersToDelete.Add(teacher.ToModel());
+                }
+            }
         }
     }
 }

@@ -8,8 +8,6 @@ namespace OutOfSchool.Services.Repository
 {
     public interface IWorkshopRepository : IEntityRepository<Workshop>
     {
-        new Task<Workshop> Create(Workshop entity);
-
         bool SubsubcategoryExists(long id);
     }
 }
