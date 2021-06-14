@@ -41,110 +41,7 @@ namespace OutOfSchool.WebApi.Services
             this.logger = logger;
         }
 
-        // TOO MANY SQL QUERIES
-        //public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
-        //{
-        //    logger.Information("Getting popular categories started.");
-
-        //    var categories = await categoryRepository.GetAll().ConfigureAwait(false);
-
-        //    var workshopsByCategories = categories.Select(c => new
-        //    {
-        //        Category = c,
-        //        Workshops = GetWorkshopsByCategory(c.ToModel()),
-        //    });
-
-        //    List<CategoryStatistic> categoriesStatistics = new List<CategoryStatistic>();
-
-        //    foreach (var group in workshopsByCategories)
-        //    {
-        //        var workshops = await group.Workshops.ToListAsync().ConfigureAwait(false);
-
-        //        var category = new CategoryStatistic
-        //        {
-        //            Category = group.Category.ToModel(),
-        //            WorkshopsCount = workshops.Count,
-        //            ApplicationsCount = 0,
-        //        };
-
-        //        var applicationsCounts = GetApplicationsCountAsync(workshops.Select(w => w.ToModel()));
-
-        //        await foreach (var count in applicationsCounts)
-        //        {
-        //            category.ApplicationsCount += count;
-        //        }
-
-        //        categoriesStatistics.Add(category);
-        //    }
-
-        //    var popularCategories = categoriesStatistics.OrderByDescending(c => c.ApplicationsCount).Take(limit);
-
-        //    logger.Information($"All {popularCategories.Count()} records were successfully received");
-
-        //    return popularCategories;
-        //}
-
-        // NOT TRANSLATED
-        //public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
-        //{
-        //    var categories = categoryRepository.Get<int>();
-
-        //    var categoriesWithWorkshops = categories.Select(c => new
-        //    {
-        //        Category = c,
-        //        Workshops = GetWorkshopsByCategoryId(c.Id).ToList(),
-        //    });
-
-        //    var categoriesWithCount = categoriesWithWorkshops.Select(c => new
-        //    {
-        //        Category = c.Category,
-        //        WorkshopsCount = c.Workshops.Count,
-        //        ApplicationsCount = GetApplicationsCount(c.Workshops),
-        //    });
-
-        //    var popularCategories = await categoriesWithCount.OrderByDescending(c => c.ApplicationsCount)
-        //                                                     .Take(limit)
-        //                                                     .ToListAsync().ConfigureAwait(false);
-
-        //    var categoryStatistics = popularCategories.Select(c => new CategoryStatistic
-        //    {
-        //        Category = c.Category.ToModel(),
-        //        ApplicationsCount = c.ApplicationsCount,
-        //        WorkshopsCount = c.WorkshopsCount,
-        //    });
-
-        //    return categoryStatistics;
-        //}
-
-        // NOT WORKING
-        //public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
-        //{
-        //    var workshops = workshopRepository.Get<int>();
-
-        //    var categoriesWithWorkshops = workshops.GroupBy(w => w.CategoryId)
-        //                                           .Select(w => new
-        //                                           {
-        //                                               Category = w.Key,
-        //                                               WorkshopsCount = w.Count(),
-        //                                               ApplicationsCount = ,
-        //                                           });
-
-        //    var popularCategories = await categoriesWithWorkshops.OrderByDescending(c => c.ApplicationsCount)
-        //                                                         .Take(limit)
-        //                                                         .ToListAsync().ConfigureAwait(false);
-
-        //    var categories = categoryRepository.Get<int>();
-
-        //    var categoryStatistics = popularCategories.Select(c => new CategoryStatistic
-        //    {
-        //        Category = categories.FirstOrDefault(ca => ca.Id == c.Category).ToModel(),
-        //        WorkshopsCount = c.WorkshopsCount,
-        //        ApplicationsCount = c.ApplicationsCount,
-        //    });
-
-        //    return categoryStatistics;
-        //}
-
+        /// <inheritdoc/>
         public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
         {
             logger.Information("Getting popular categories started.");
@@ -204,54 +101,6 @@ namespace OutOfSchool.WebApi.Services
             return statistics;
         }
 
-        // TOO MANY SQL QUERIES
-        /// <inheritdoc/>
-        //public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit)
-        //{
-        //    logger.Information("Getting popular workshops started.");
-
-        //    var workshops = await workshopRepository.GetAll().ConfigureAwait(false);
-
-        //    var applicationGroups = workshops.Select(async w => new
-        //    {
-        //        Workshop = w,
-        //        ApplicationsCount = await applicationRepository.GetCountByWorkshop(w.Id).ConfigureAwait(false),
-        //    }).Select(t => t.Result);
-
-        //    var sortedWorkshops = applicationGroups.OrderByDescending(q => q.ApplicationsCount)
-        //                                           .Select(g => g.Workshop)
-        //                                           .ToList();
-
-        //    var popularWorkshops = sortedWorkshops.Take(limit).Select(w => w.ToModel());
-
-        //    logger.Information($"All {popularWorkshops.Count()} records were successfully received");
-
-        //    return popularWorkshops;
-        //}
-
-        // NOT RETURN WORKSHOPS WITHOUT APPLICATIONS
-        //public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit)
-        //{
-        //    var applications = applicationRepository.Get<int>();
-
-        //    var applicationGroups = applications.GroupBy(a => a.WorkshopId)
-        //                                        .Select(a => new
-        //                                        {
-        //                                            Workshop = a.Key,
-        //                                            ApplicationsCount = a.Count(),
-        //                                        });
-
-        //    var popularWorkshops = applicationGroups.OrderByDescending(a => a.ApplicationsCount)
-        //                                            .Select(a => a.Workshop)
-        //                                            .Take(limit);
-
-        //    Expression<Func<Workshop, bool>> filter = w => popularWorkshops.Contains(w.Id);
-
-        //    var workshops = await workshopRepository.Get<int>(where: filter).ToListAsync().ConfigureAwait(false);
-
-        //    return workshops.Select(w => w.ToModel());
-        //}
-
         /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit)
         {
@@ -276,30 +125,5 @@ namespace OutOfSchool.WebApi.Services
 
             return workshopDtos;
         }
-
-        // NOT TRANSLATED
-        //public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit)
-        //{
-        //    var workshops = workshopRepository.Get<int>().ToList();
-        //    var applications = applicationRepository.Get<int>().ToList();
-
-        //    var workshopsWithApplications = workshops.GroupJoin(
-        //        applications,
-        //        w => w.Id,
-        //        ap => ap.WorkshopId,
-        //        (w, aps) => new 
-        //        {
-        //            Workshop = w,
-        //            ApplicationsCount = aps.Count(),
-        //        });
-
-        //    var popularWorkshops = workshopsWithApplications.OrderByDescending(w => w.ApplicationsCount)
-        //                                                    .Select(w => w.Workshop)
-        //                                                    .Take(limit);
-
-        //    var workshopDtos = popularWorkshops.Select(w => w.ToModel());
-
-        //    return workshopDtos;
-        //}
     }
 }
