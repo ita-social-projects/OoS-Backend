@@ -1,7 +1,9 @@
 ﻿namespace OutOfSchool.EmailSender
 {
-    public class SmtpConfiguration
+    public class SmtpOptions
     {
+        public const string Smtp = "Smtp";
+
         public string Server { get; set; }
         public int Port { get; set; }
         public string Username { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
 using MimeKit;
 using MimeKit.Text;
 
@@ -7,11 +8,17 @@ namespace OutOfSchool.EmailSender
 {
     public class EmailSender : IEmailSender
     {
-        private readonly SmtpConfiguration _smtpConfiguration;
+        private readonly string _server;
+        private readonly int _port;
+        private readonly string _username;
+        private readonly string _password;
 
-        public EmailSender(SmtpConfiguration smtpConfiguration)
+        public EmailSender(IOptions<SmtpOptions> options)
         {
-            _smtpConfiguration = smtpConfiguration;
+            _server = options.Value.Server;
+            _port = options.Value.Port;
+            _username = options.Value.Username;
+            _password = options.Value.Password;
         }
 
         public async Task SendAsync(Message message)
@@ -37,9 +44,9 @@ namespace OutOfSchool.EmailSender
         {
             using (var emailClient = new SmtpClient())
             {
-                await emailClient.ConnectAsync(_smtpConfiguration.Server, _smtpConfiguration.Port, true);
+                await emailClient.ConnectAsync(_server, _port, true);
                 emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-                await emailClient.AuthenticateAsync(_smtpConfiguration.Username, _smtpConfiguration.Password);
+                await emailClient.AuthenticateAsync(_username, _password);
                 await emailClient.SendAsync(mimeMessage);
                 await emailClient.DisconnectAsync(true);
             }

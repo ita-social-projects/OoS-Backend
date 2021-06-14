@@ -1,20 +1,21 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace OutOfSchool.EmailSender
 {
     public static class ServiceProviderExtensions
     {
-        public static void AddEmailSender(this IServiceCollection services)
+        public static IServiceCollection AddEmailSender(
+            this IServiceCollection services,
+            Action<SmtpOptions> options)
         {
-            SmtpConfiguration smtpConfiguration = new SmtpConfiguration()
-            {
-                Server = "smtp.gmail.com",
-                Port = 465,
-                Username = "OoS.Backend.Test.Server@gmail.com",
-                Password = "00$.@Server2021",
-            };
-            services.AddSingleton(smtpConfiguration);
             services.AddSingleton<IEmailSender, EmailSender>();
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options), @"Please provide options for EmailSender");
+            }
+            services.Configure(options);
+            return services;
         }
     }
 }

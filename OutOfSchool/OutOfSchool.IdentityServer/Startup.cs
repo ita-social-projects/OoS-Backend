@@ -85,7 +85,15 @@ namespace OutOfSchool.IdentityServer
                 .AddAspNetIdentity<User>()
                 .AddProfileService<ProfileService>();
 
-            services.AddEmailSender();
+            var smtpOptions = new SmtpOptions();
+            config.GetSection(SmtpOptions.Smtp).Bind(smtpOptions);
+            services.AddEmailSender(options =>
+            {
+                options.Server = smtpOptions.Server;
+                options.Port = smtpOptions.Port;
+                options.Username = smtpOptions.Username;
+                options.Password = smtpOptions.Password;
+            });
 
             services.AddControllersWithViews()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);

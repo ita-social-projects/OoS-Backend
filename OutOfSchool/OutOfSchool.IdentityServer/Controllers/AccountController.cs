@@ -63,7 +63,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             };
             await emailSender.SendAsync(message);
 
-            return View(model);
+            return View("Email/Change");
         }
 
         [HttpGet]
@@ -78,7 +78,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             var result = await userManager.ChangeEmailAsync(user, newEmail, token);
             if (result.Succeeded)
             {
-                return View("Email/ConfirmEmailChange");
+                return View("Email/ConfirmChange");
             }
             else
             {
