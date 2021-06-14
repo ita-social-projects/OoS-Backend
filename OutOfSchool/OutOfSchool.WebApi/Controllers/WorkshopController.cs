@@ -89,6 +89,8 @@ namespace OutOfSchool.WebApi.Controllers
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
         public async Task<IActionResult> Create(WorkshopDTO dto)
@@ -101,7 +103,7 @@ namespace OutOfSchool.WebApi.Controllers
             var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
-                return Unauthorized("Forbidden to create workshops for another providers.");
+                return Forbid("Forbidden to create workshops for another providers.");
             }
 
             dto.Id = default;
@@ -130,6 +132,8 @@ namespace OutOfSchool.WebApi.Controllers
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
         public async Task<IActionResult> Update(WorkshopDTO dto)
@@ -142,7 +146,7 @@ namespace OutOfSchool.WebApi.Controllers
             var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
-                return Unauthorized("Forbidden to update workshops for another providers.");
+                return Forbid("Forbidden to update workshops for another providers.");
             }
 
             return Ok(await workshopService.Update(dto).ConfigureAwait(false));
@@ -155,8 +159,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
@@ -167,13 +171,13 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (workshop is null)
             {
-                return BadRequest($"There is no workshop with id:{id}");
+                return NoContent();
             }
 
             var userHasRights = await this.IsUserProvidersOwner(workshop.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
-                return Unauthorized("Forbidden to delete workshops of another providers.");
+                return Forbid("Forbidden to delete workshops of another providers.");
             }
 
             await workshopService.Delete(id).ConfigureAwait(false);

@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         #region GetWorkshops
         [Test]
-        public async Task GetWorkshops_WhenCalled_ShouldReturnOkResultObject()
+        public async Task GetWorkshops_WhenThereAreWOrkshops_ShouldReturnOkResultObject()
         {
             // Arrange
             workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(workshops);
@@ -67,6 +67,21 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(200, result.StatusCode);
+        }
+
+        [Test]
+        public async Task GetWorkshops_WhenThereIsNoTAnyWorkshop_ShouldReturnNoConterntResult()
+        {
+            // Arrange
+            var emptyList = new List<WorkshopDTO>();
+            workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(emptyList);
+
+            // Act
+            var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(204, result.StatusCode);
         }
         #endregion
 
@@ -127,6 +142,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Create(workshop).ConfigureAwait(false) as CreatedAtActionResult;
 
             // Assert
+            workshopServiceMoq.Verify(x => x.Create(workshop), Times.Once);
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(201, result.StatusCode);
         }
@@ -142,23 +158,25 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Create(workshop).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
+            workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(400, result.StatusCode);
         }
 
         [Test]
-        public async Task CreateWorkshop_WhenIdProviderHasNoRights_ShouldReturnUnauthorizedObjectResult()
+        public async Task CreateWorkshop_WhenProviderHasNoRights_ShouldReturnForbidResult()
         {
             // Arrange
             var notAuthorProvider = new ProviderDto() { Id = 2, UserId = userId };
             providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorProvider);
 
             // Act
-            var result = await controller.Create(workshop) as UnauthorizedObjectResult;
+            var result = await controller.Create(workshop);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(401, result.StatusCode);
+            workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ForbidResult>(result);
         }
         #endregion
 
@@ -189,23 +207,25 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Update(workshop).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
+            workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopDTO>()), Times.Never);
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(400, result.StatusCode);
         }
 
         [Test]
-        public async Task UpdateWorkshop_WhenIdProviderHasNoRights_ShouldReturnUnauthorizedObjectResult()
+        public async Task UpdateWorkshop_WhenIdProviderHasNoRights_ShouldReturnForbidResult()
         {
             // Arrange
             var notAuthorProvider = new ProviderDto() { Id = 2, UserId = userId };
             providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorProvider);
 
             // Act
-            var result = await controller.Update(workshop).ConfigureAwait(false) as UnauthorizedObjectResult;
+            var result = await controller.Update(workshop).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(401, result.StatusCode);
+            workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopDTO>()), Times.Never);
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ForbidResult>(result);
         }
         #endregion
 
@@ -223,6 +243,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Delete(id) as NoContentResult;
 
             // Assert
+            workshopServiceMoq.Verify(x => x.Delete(It.IsAny<long>()), Times.Once);
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(204, result.StatusCode);
         }
@@ -235,11 +256,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.That(
                 async () => await controller.Delete(id),
                 Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
+            workshopServiceMoq.Verify(x => x.Delete(It.IsAny<long>()), Times.Never);
         }
 
         [Test]
         [TestCase(10)]
-        public async Task DeleteWorkshop_WhenThereIsNoWorkshopWithId_ShouldReturnBadRequestObjectResult(long id)
+        public async Task DeleteWorkshop_WhenThereIsNoWorkshopWithId_ShouldNoContentResult(long id)
         {
             // Arrange
             workshopServiceMoq.Setup(x => x.GetById(id)).ReturnsAsync(() => null);
@@ -247,16 +269,17 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             workshopServiceMoq.Setup(x => x.Delete(id)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await controller.Delete(id) as BadRequestObjectResult;
+            var result = await controller.Delete(id) as NoContentResult;
 
             // Assert
+            workshopServiceMoq.Verify(x => x.Delete(It.IsAny<long>()), Times.Never);
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(400, result.StatusCode);
+            Assert.AreEqual(204, result.StatusCode);
         }
 
         [Test]
         [TestCase(1)]
-        public async Task DeleteWorkshop_WhenIdProviderHasNoRights_ShouldReturnUnauthorizedObjectResult(long id)
+        public async Task DeleteWorkshop_WhenIdProviderHasNoRights_ShouldReturnForbidResult(long id)
         {
             // Arrange
             workshopServiceMoq.Setup(x => x.GetById(id)).ReturnsAsync(workshop);
@@ -264,11 +287,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorProvider);
 
             // Act
-            var result = await controller.Delete(id) as UnauthorizedObjectResult;
+            var result = await controller.Delete(id);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(401, result.StatusCode);
+            workshopServiceMoq.Verify(x => x.Delete(It.IsAny<long>()), Times.Never);
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ForbidResult>(result);
         }
         #endregion
 
