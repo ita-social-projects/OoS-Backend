@@ -41,8 +41,8 @@ namespace OutOfSchool.WebApi.Services
             this.logger = logger;
         }
 
-        /// <inheritdoc/>
-        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
+        // Returns categories with 3 SQL queries, but doesn`t return categories without applications
+        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategoriesV2(int limit)
         {
             logger.Information("Getting popular categories started.");
 
@@ -101,6 +101,43 @@ namespace OutOfSchool.WebApi.Services
             return statistics;
         }
 
+        // Return Categories with 2 SQL queries per category
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
+        {
+            var categories = await categoryRepository.GetAll().ConfigureAwait(false);
+
+            var categoriesWithWorkshops = categories.Select(c => new
+            {
+                Category = c,
+                Workshops = GetWorkshopsByCategoryId(c.Id),
+            });
+
+            List<CategoryStatistic> statistics = new List<CategoryStatistic>();
+
+            foreach (var category in categoriesWithWorkshops)
+            {
+                var applicationsCount = await category.Workshops.Select(w => w.Applications.Count)
+                                                                .ToListAsync()
+                                                                .ConfigureAwait(false);
+
+                var statistic = new CategoryStatistic
+                {
+                    Category = category.Category.ToModel(),
+                    WorkshopsCount = await category.Workshops.CountAsync().ConfigureAwait(false),
+                    ApplicationsCount = applicationsCount.Sum(),
+                };
+
+                statistics.Add(statistic);
+            }
+
+            var popularCategories = statistics.OrderByDescending(s => s.ApplicationsCount)
+                                              .Take(limit);
+
+            return popularCategories;
+        }
+
         /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit)
         {
@@ -124,6 +161,15 @@ namespace OutOfSchool.WebApi.Services
             logger.Information($"All {workshopDtos.Count} records were successfully received");
 
             return workshopDtos;
+        }
+
+        private IQueryable<Workshop> GetWorkshopsByCategoryId(long id)
+        {
+            Expression<Func<Workshop, bool>> filter = w => w.CategoryId == id;
+
+            var workshops = workshopRepository.Get<int>(where: filter);
+
+            return workshops;
         }
     }
 }
