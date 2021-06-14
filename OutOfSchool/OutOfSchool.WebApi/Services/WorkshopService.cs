@@ -359,7 +359,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 if (oldTeachers.Any(x => x.Id == teacher.Id))
                 {
-                    teachersToUpdate.Add(oldTeachers.Where(x => x.Id == teacher.Id).First());
+                    teachersToUpdate.Add(oldTeachers.First(x => x.Id == teacher.Id));
                 }
                 else
                 {

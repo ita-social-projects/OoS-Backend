@@ -269,9 +269,9 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             Assert.AreEqual(changedFirstEntity.Teachers.Count, result.Teachers.Count());
             Assert.AreEqual(dbContext.Teachers.Where(x => x.WorkshopId == 1).Count(), result.Teachers.Count());
-            Assert.AreEqual(dbContext.Teachers.Where(x => x.Id == 1).Count(), 0);
-            Assert.AreEqual(dbContext.Teachers.Where(x => x.Id == 2).First().MiddleName, "Targaryen");
-            Assert.AreEqual(dbContext.Teachers.Where(x => x.Id == 11).First().FirstName, "Daenerys");
+            Assert.AreEqual(0, dbContext.Teachers.Where(x => x.Id == 1).Count());
+            Assert.AreEqual("Targaryen", dbContext.Teachers.Where(x => x.Id == 2).First().MiddleName);
+            Assert.AreEqual("Daenerys", dbContext.Teachers.Where(x => x.Id == 11).First().FirstName);
 
             Assert.AreEqual(changedFirstEntity.Address.Latitude, result.Address.Latitude);
             Assert.AreEqual(10, dbContext.Addresses.Where(x => x.Id == 55).First().Latitude);

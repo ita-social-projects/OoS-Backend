@@ -52,7 +52,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Workshop's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        /// /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.v</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task Delete(long id);
 
         /// <summary>
