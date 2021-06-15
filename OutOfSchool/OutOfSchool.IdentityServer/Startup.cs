@@ -103,7 +103,7 @@ namespace OutOfSchool.IdentityServer
 
             var requestLocalization = new RequestLocalizationOptions
             {
-                DefaultRequestCulture = new RequestCulture("en"),
+                DefaultRequestCulture = new RequestCulture("uk"),
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures,
             };
