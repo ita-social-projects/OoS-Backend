@@ -58,8 +58,20 @@ namespace OutOfSchool.WebApi.Services
                 }
                 else
                 {
+                    await this.ValidateUsers(user1Id, user2Id, workshopId).ConfigureAwait(false);
+
                     return await this.Create(user1Id, user2Id, workshopId).ConfigureAwait(false);
                 }
+            }
+            catch (ArgumentException exception)
+            {
+                logger.Error($"CreateOrReturnExisting ChatRoom faild validation: {exception.Message}");
+                throw;
+            }
+            catch (InvalidOperationException exception)
+            {
+                logger.Error($"CreateOrReturnExisting ChatRoom faild: {exception.Message}");
+                throw;
             }
             catch (Exception exception)
             {

@@ -14,10 +14,16 @@ namespace OutOfSchool.WebApi.Tests.Middlewares
         private Mock<HttpContext> httpContextMoq;
         private HttpContext context;
 
+        private Mock<RequestDelegate> requestDelegate;
+
         [SetUp]
         public void SetUp()
         {
             httpContextMoq = new Mock<HttpContext>();
+            context = httpContextMoq.Object;
+
+            requestDelegate = new Mock<RequestDelegate>();
+            requestDelegate.Setup(x => x.Invoke(It.IsAny<HttpContext>())).Returns(Task.CompletedTask);
         }
 
         [Test]
@@ -41,16 +47,13 @@ namespace OutOfSchool.WebApi.Tests.Middlewares
             httpContextMoq.Setup(x => x.Request.Query)
                 .Returns(new QueryCollection(query));
 
-            context = httpContextMoq.Object;
-
-            var requestDelegate = new RequestDelegate((innerContext) => Task.FromResult(0));
-
             // Act
-            var middleware = new AuthorizationTokenMiddleware(requestDelegate);
+            var middleware = new AuthorizationTokenMiddleware(requestDelegate.Object);
             await middleware.InvokeAsync(context);
 
             // Assert
             Assert.IsFalse(context.Request.Headers.ContainsKey("Authorization"));
+            requestDelegate.Verify(x => x.Invoke(context), Times.Once);
         }
 
         [Test]
@@ -74,16 +77,13 @@ namespace OutOfSchool.WebApi.Tests.Middlewares
             httpContextMoq.Setup(x => x.Request.Query)
                 .Returns(new QueryCollection(query));
 
-            context = httpContextMoq.Object;
-
-            var requestDelegate = new RequestDelegate((innerContext) => Task.FromResult(0));
-
             // Act
-            var middleware = new AuthorizationTokenMiddleware(requestDelegate);
+            var middleware = new AuthorizationTokenMiddleware(requestDelegate.Object);
             await middleware.InvokeAsync(context);
 
             // Assert
             Assert.IsFalse(context.Request.Headers.ContainsKey("Authorization"));
+            requestDelegate.Verify(x => x.Invoke(context), Times.Once);
         }
 
         [Test]
@@ -106,12 +106,8 @@ namespace OutOfSchool.WebApi.Tests.Middlewares
             httpContextMoq.Setup(x => x.Request.Query)
                 .Returns(new QueryCollection(query));
 
-            context = httpContextMoq.Object;
-
-            var requestDelegate = new RequestDelegate((innerContext) => Task.FromResult(0));
-
             // Act
-            var middleware = new AuthorizationTokenMiddleware(requestDelegate);
+            var middleware = new AuthorizationTokenMiddleware(requestDelegate.Object);
             await middleware.InvokeAsync(context);
 
             // Assert
@@ -119,6 +115,7 @@ namespace OutOfSchool.WebApi.Tests.Middlewares
             StringValues value;
             context.Request.Headers.TryGetValue("Authorization", out value);
             Assert.AreEqual($"Bearer {tokenValue}", value.ToString());
+            requestDelegate.Verify(x => x.Invoke(context), Times.Once);
         }
     }
 }

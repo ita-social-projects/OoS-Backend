@@ -44,9 +44,10 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>ChatMessage.</returns>
         [Obsolete("This method is for testing purposes.")]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChatMessageDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateMessage(ChatNewMessageDto chatNewMessageDto)
         {
@@ -68,8 +69,6 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                await roomService.ValidateUsers(senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId).ConfigureAwait(false);
-
                 if (chatNewMessageDto.ChatRoomId > 0)
                 {
                     var existingChatRoom = await roomService.GetById(chatNewMessageDto.ChatRoomId).ConfigureAwait(false);
@@ -79,7 +78,7 @@ namespace OutOfSchool.WebApi.Controllers
                     }
                     else
                     {
-                        return BadRequest($"You are not a participant in ChatRoom with id:{chatNewMessageDto.ChatRoomId}.");
+                        return Forbid($"Forbidden to write messages to a chat room you are not participating in.");
                     }
                 }
                 else
@@ -100,11 +99,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
             catch (ArgumentException exception)
             {
-                return BadRequest(exception.Message);
-            }
-            catch (InvalidOperationException exception)
-            {
-                return BadRequest(exception.Message);
+                return Forbid(exception.Message);
             }
         }
 
@@ -114,10 +109,10 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">ChatMessage's Id.</param>
         /// <returns>ChatMessage that was found.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatMessageDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMessageById(long id)
         {
@@ -127,7 +122,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (message is null)
             {
-                return NotFound($"There is no message with id:{id}.");
+                return NoContent();
             }
             else
             {
@@ -138,7 +133,7 @@ namespace OutOfSchool.WebApi.Controllers
                 }
                 else
                 {
-                    return Unauthorized("Forbidden to read messages of another users.");
+                    return Forbid("Forbidden to get messages of another users.");
                 }
             }
         }
@@ -149,10 +144,10 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">ChatRoom's Id.</param>
         /// <returns>ChatRoom that was found with its chat messages.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetRoomById(long id)
         {
@@ -163,7 +158,7 @@ namespace OutOfSchool.WebApi.Controllers
             var chatRoom = await roomService.GetById(id).ConfigureAwait(false);
             if (chatRoom is null)
             {
-                return NotFound($"There is no chat room with id:{id}.");
+                return NoContent();
             }
             else
             {
@@ -173,7 +168,7 @@ namespace OutOfSchool.WebApi.Controllers
                 }
                 else
                 {
-                    return Unauthorized("Forbidden to read a chat room of another users.");
+                    return Forbid("Forbidden to read a chat room of another users.");
                 }
             }
         }
@@ -181,9 +176,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get a list of ChatRooms for current user.
         /// </summary>
-        /// <returns>List of ChatRooms without messages.</returns>
+        /// <returns>List of ChatRooms, messages are not loaded.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatRoomDto>))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetUsersRooms()
@@ -210,10 +205,10 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="chatRoomId">ChatRoom's Id.</param>
         /// <returns>List of successfully updated items.</returns>
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatMessageDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateMessagesStatus(long chatRoomId)
         {
@@ -225,7 +220,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (room is null)
             {
-                return NotFound($"There is no chat room with id:{chatRoomId}.");
+                return NoContent();
             }
 
             if (!room.Users.Any(x => x.Id == userId))
@@ -242,7 +237,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
             else
             {
-                return NotFound();
+                return Ok(chatMessages);
             }
         }
 
@@ -252,41 +247,45 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="chatMessageDto">Entity that will be updated.</param>
         /// <returns>Successfully updated item.</returns>
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatMessageDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateMessage(ChatMessageDto chatMessageDto)
         {
+            this.ValidateId(chatMessageDto.Id, localizer);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var userId = User.FindFirst("sub")?.Value;
 
             var oldChatMessage = await messageService.GetById(chatMessageDto.Id).ConfigureAwait(false);
 
             if (oldChatMessage is null)
             {
-                return NotFound($"There is no chat message with id:{chatMessageDto.Id}.");
+                return NoContent();
             }
 
             if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
             {
-                ModelState.AddModelError("AnotherUser", "Forbidden to change messages of another users.");
+                return Forbid("Forbidden to change messages of another users.");
             }
 
             if (oldChatMessage.ChatRoomId != chatMessageDto.ChatRoomId)
             {
-                ModelState.AddModelError("AnotherChatRoom", "Forbidden to change chat room.");
+                return Forbid("Forbidden to change chat room.");
             }
 
             var whenMessageBecomesOld = new TimeSpan(0, 10, 0);
 
             if (oldChatMessage.CreatedTime.CompareTo(DateTime.Now.Subtract(whenMessageBecomesOld)) < 0)
             {
-                ModelState.AddModelError("OldMessage", "Forbidden to change old messages.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
+                return Forbid("Forbidden to change old messages.");
             }
 
             oldChatMessage.Text = chatMessageDto.Text;
@@ -303,9 +302,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>Status code.</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteMessage(long id)
         {
@@ -313,28 +311,21 @@ namespace OutOfSchool.WebApi.Controllers
 
             var userId = User.FindFirst("sub")?.Value;
 
-            try
+            var oldChatMessage = await messageService.GetById(id).ConfigureAwait(false);
+
+            if (oldChatMessage is null)
             {
-                var oldChatMessage = await messageService.GetById(id).ConfigureAwait(false);
-
-                if (oldChatMessage is null)
-                {
-                    return NotFound($"There is no chat message with id:{id}.");
-                }
-
-                if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
-                {
-                    return Unauthorized("Forbidden to delete messages of another users.");
-                }
-
-                await messageService.Delete(id).ConfigureAwait(false);
-
                 return NoContent();
             }
-            catch (ArgumentOutOfRangeException exception)
+
+            if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
             {
-                return BadRequest(exception.Message);
+                return Forbid("Forbidden to delete messages of another users.");
             }
+
+            await messageService.Delete(id).ConfigureAwait(false);
+
+            return NoContent();
         }
 
         /// <summary>
@@ -344,9 +335,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>Status code.</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteRoom(long id)
         {
@@ -354,33 +344,26 @@ namespace OutOfSchool.WebApi.Controllers
 
             var userId = User.FindFirst("sub")?.Value;
 
-            try
+            var room = await roomService.GetById(id).ConfigureAwait(false);
+
+            if (room is null)
             {
-                var room = await roomService.GetById(id).ConfigureAwait(false);
-
-                if (room is null)
-                {
-                    return NotFound($"There is no chat room with id:{id}.");
-                }
-
-                if (room.ChatMessages.Any())
-                {
-                    return BadRequest("Forbidden to delete a chat room with chat messages.");
-                }
-
-                if (!room.Users.Any(x => x.Id == userId))
-                {
-                    return BadRequest("Forbidden to delete a chat room of another users.");
-                }
-
-                await roomService.Delete(id).ConfigureAwait(false);
-
                 return NoContent();
             }
-            catch (ArgumentOutOfRangeException exception)
+
+            if (room.ChatMessages.Any())
             {
-                return BadRequest(exception.Message);
+                return Forbid("Forbidden to delete a chat room with chat messages.");
             }
+
+            if (!room.Users.Any(x => x.Id == userId))
+            {
+                return Forbid("Forbidden to delete a chat room of another users.");
+            }
+
+            await roomService.Delete(id).ConfigureAwait(false);
+
+            return NoContent();
         }
     }
 }
