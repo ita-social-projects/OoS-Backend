@@ -19,6 +19,7 @@ namespace OutOfSchool.WebApi.Services
     public class ApplicationService : IApplicationService
     {
         private readonly IApplicationRepository repository;
+        private readonly IWorkshopRepository workshopRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -28,9 +29,15 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Application repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ApplicationService(IApplicationRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        /// <param name="workshopRepository">Workshop repository.</param>
+        public ApplicationService(
+            IApplicationRepository repository, 
+            ILogger logger, 
+            IStringLocalizer<SharedResource> localizer,
+            IWorkshopRepository workshopRepository)
         {
             this.repository = repository;
+            this.workshopRepository = workshopRepository;
             this.logger = logger;
             this.localizer = localizer;
         }
@@ -123,7 +130,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id)
         {
-            logger.Information("Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
+            logger.Information($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
 
             Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
 
@@ -131,10 +138,33 @@ namespace OutOfSchool.WebApi.Services
 
             if (!applications.Any())
             {
-                throw new ArgumentException(localizer["There is no Application in the Db with such User id"], nameof(id));
+                throw new ArgumentException(localizer["There is no Application in the Db with such Workshop id"], nameof(id));
             }
 
             logger.Information($"Successfully got Applications with Workshop Id = {id}.");
+
+            return applications.Select(a => a.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id)
+        {
+            logger.Information($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
+
+            Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
+
+            var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
+
+            Expression<Func<Application, bool>> applicationFilter = w => workshops.Contains(w.WorkshopId);
+
+            var applications = await repository.GetByFilter(applicationFilter).ConfigureAwait(false);
+
+            if (!applications.Any())
+            {
+                throw new ArgumentException(localizer["There is no Application in the Db with such Provider id"], nameof(id));
+            }
+
+            logger.Information($"Successfully got Applications with Provider Id = {id}.");
 
             return applications.Select(a => a.ToModel()).ToList();
         }

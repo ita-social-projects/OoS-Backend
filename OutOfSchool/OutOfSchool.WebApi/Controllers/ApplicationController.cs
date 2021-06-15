@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Controllers
     /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    //[Authorize(AuthenticationSchemes = "Bearer")]
 
     public class ApplicationController : ControllerBase
     {
@@ -115,6 +115,32 @@ namespace OutOfSchool.WebApi.Controllers
             }
             catch (ArgumentException ex)
             {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Get Applications by Provider Id.
+        /// </summary>
+        /// <param name="id">Provider id.</param>
+        /// <returns>List of applications.</returns>
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetByProviderId(long id)
+        {
+            this.ValidateId(id, localizer);
+
+            try
+            {
+                return Ok(await service.GetAllByProvider(id).ConfigureAwait(false));
+            }
+            catch (ArgumentException ex)
+            {
+
                 return BadRequest(ex.Message);
             }
         }
