@@ -537,6 +537,52 @@ INSERT INTO [dbo].[Workshops]
 		   ,2 --departmentId
            ,4) --classId
 
+		   ,('Гра на барабані'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,5 --minAge
+           ,100 --maxAge
+           ,2 --days per week
+           ,500 --price
+           ,'Уроки гри на ударних інструментах'
+           ,1 --WithDisabilityOptions
+           ,'Немає конкретних обмежень' -- disability description
+           ,'Logo'
+           ,'Гуляйборода Катерина Василівна'
+           ,'1977-09-22'
+           ,0 --IsPerMonth
+           ,1 --ProviderId
+           ,7 --AddressId
+		   ,1 --categoryId
+		   ,2 --subcategoryId
+           ,3) --SubsubcategoryId
+
+		   ,('Уроки гри на флейті'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,5 --minAge
+           ,100 --maxAge
+           ,2 --days per week
+           ,0 --price
+           ,'Уроки гри на флейті'
+           ,1 --WithDisabilityOptions
+           ,'Немає конкретних обмежень' -- disability description
+           ,'Logo'
+           ,'Гуляйборода Катерина Василівна'
+           ,'1977-09-22'
+           ,0 --IsPerMonth
+           ,1 --ProviderId
+           ,8 --AddressId
+		   ,1 --categoryId
+		   ,2 --subcategoryId
+           ,4) --SubsubcategoryId
+
 		   ,('Айкідо'
            ,'1234567890' --Phone
            ,'provider2@test.com'
