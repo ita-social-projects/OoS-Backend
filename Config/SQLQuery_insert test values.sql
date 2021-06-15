@@ -655,36 +655,36 @@ INSERT INTO [dbo].[Applications]
            ,1 --<WorkshopId, bigint,>
            ,1 --<ChildId, bigint,>
            ,'16575ce5-38e3-4ae7-b991-4508ed488369' --<UserId, nvarchar(450),> 1
-           ,'2021-06-06') --<CreationTime>
+           ,'2021-06-06 12:20:20') --<CreationTime>
 
 		   ,(1 --<Status, int,>
            ,1 --<WorkshopId, bigint,>
            ,2 --<ChildId, bigint,>
            ,'7604a851-66db-4236-9271-1f037ffe3a81' --<UserId, nvarchar(450),> 2
-           ,'2021-06-04') --<CreationTime>
+           ,'2021-06-04 15:34:20') --<CreationTime>
 
 		   ,(0 --<Status, int,>
            ,1 --<WorkshopId, bigint,>
            ,3 --<ChildId, bigint,>
            ,'7604a851-66db-4236-9271-1f037ffe3a81' --<UserId, nvarchar(450),> 2
-           ,'2021-06-04') --<CreationTime>
+           ,'2021-06-05 08:23:20') --<CreationTime>
 
 --workshop2
 		   ,(0 --<Status, int,>
            ,2 --<WorkshopId, bigint,>
            ,1 --<ChildId, bigint,>
            ,'16575ce5-38e3-4ae7-b991-4508ed488369' --<UserId, nvarchar(450),> 1
-           ,'2021-06-15') --<CreationTime>
+           ,'2021-06-15 17:20:00') --<CreationTime>
 
 		   ,(0 --<Status, int,>
            ,2 --<WorkshopId, bigint,>
            ,2 --<ChildId, bigint,>
            ,'7604a851-66db-4236-9271-1f037ffe3a81' --<UserId, nvarchar(450),> 2
-           ,'2021-06-15') --<CreationTime>
+           ,'2021-06-15 17:26:10') --<CreationTime>
 
 		   ,(0 --<Status, int,>
            ,2 --<WorkshopId, bigint,>
            ,3 --<ChildId, bigint,>
            ,'7604a851-66db-4236-9271-1f037ffe3a81' --<UserId, nvarchar(450),> 2
-           ,'2021-06-15') --<CreationTime>
+           ,'2021-06-15 18:00:45') --<CreationTime>
 GO
