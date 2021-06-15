@@ -308,6 +308,9 @@ namespace OutOfSchool.WebApi.Tests.Services
             var countAddressesBeforeDeleting = (await addressRepository.GetAll().ConfigureAwait(false)).Count();
             var countTeachersBeforeDeleting = (await teacherRepository.GetAll().ConfigureAwait(false)).Count();
 
+            var appRepository = new EntityRepository<Application>(dbContext);
+            var countAppsBeforeDeleting = (await appRepository.GetAll().ConfigureAwait(false)).Count();
+
             // Act
             await workshopService.Delete(id).ConfigureAwait(false);
 
@@ -315,10 +318,13 @@ namespace OutOfSchool.WebApi.Tests.Services
             var countAddressesAfterDeleting = (await addressRepository.GetAll().ConfigureAwait(false)).Count();
             var countTeachersAfterDeleting = (await teacherRepository.GetAll().ConfigureAwait(false)).Count();
 
+            var countAppsAfterDeleting = (await appRepository.GetAll().ConfigureAwait(false)).Count();
+
             // Assert
             Assert.AreEqual(countWorkshopsBeforeDeleting - 1, countWorkshopsAfterDeleting);
             Assert.AreEqual(countAddressesBeforeDeleting - 1, countAddressesAfterDeleting);
             Assert.AreEqual(countTeachersBeforeDeleting - 2, countTeachersAfterDeleting);
+            Assert.AreEqual(countAppsBeforeDeleting - 2, countAppsAfterDeleting);
         }
 
         [Test]
@@ -725,6 +731,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                         },
                     },
                 };
+
+                var apps = new List<Application>() { new Application() { Id = 1, WorkshopId = 1 }, new Application() { Id = 2, WorkshopId = 1 }, new Application() { Id = 3, WorkshopId = 2 }, new Application() { Id = 4, WorkshopId = 2 } };
+                context.Applications.AddRangeAsync(apps);
 
                 var categories = new List<Category>() { new Category() { Title = "Category1" }, new Category() { Title = "Category2" } };
                 context.Categories.AddRangeAsync(categories);

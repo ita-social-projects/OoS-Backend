@@ -103,7 +103,7 @@ namespace OutOfSchool.WebApi.Controllers
             var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
-                return Forbid("Forbidden to create workshops for another providers.");
+                return StatusCode(403, "Forbidden to create workshops for another providers.");
             }
 
             dto.Id = default;
@@ -146,7 +146,7 @@ namespace OutOfSchool.WebApi.Controllers
             var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
-                return Forbid("Forbidden to update workshops for another providers.");
+                return StatusCode(403, "Forbidden to update workshops for another providers.");
             }
 
             return Ok(await workshopService.Update(dto).ConfigureAwait(false));
@@ -177,7 +177,7 @@ namespace OutOfSchool.WebApi.Controllers
             var userHasRights = await this.IsUserProvidersOwner(workshop.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
-                return Forbid("Forbidden to delete workshops of another providers.");
+                return StatusCode(403, "Forbidden to delete workshops of another providers.");
             }
 
             await workshopService.Delete(id).ConfigureAwait(false);
@@ -199,7 +199,7 @@ namespace OutOfSchool.WebApi.Controllers
         public async Task<IActionResult> GetPagesCount(WorkshopFilter filter, int pageSize)
         {
             PageSizeValidation(pageSize);
-            
+
             int count = await workshopService.GetPagesCount(filter, pageSize).ConfigureAwait(false);
 
             if (count == 0)

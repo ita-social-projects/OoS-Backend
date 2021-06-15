@@ -25,6 +25,14 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         public new async Task Delete(Workshop entity)
         {
+            if (entity.Applications?.Count > 0)
+            {
+                foreach (var app in entity.Applications)
+                {
+                    db.Entry(app).State = EntityState.Deleted;
+                }
+            }
+
             if (entity.Teachers?.Count > 0)
             {
                 foreach (var teacher in entity.Teachers)
