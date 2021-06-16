@@ -13,6 +13,8 @@
 --USE [OosBackend]
 --GO
 
+ALTER DATABASE DB_NAME COLLATE Ukrainian_100_CI_AS;
+
 --==================== USERS ================================
 INSERT INTO [dbo].[AspNetUsers]
            ([Id]
