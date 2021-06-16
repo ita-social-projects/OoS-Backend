@@ -169,6 +169,7 @@ namespace OutOfSchool.WebApi.Services
             return applications.Select(a => a.ToModel()).ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status)
         {
             logger.Information($"Getting Applications by Status started. Looking Status = {status}.");

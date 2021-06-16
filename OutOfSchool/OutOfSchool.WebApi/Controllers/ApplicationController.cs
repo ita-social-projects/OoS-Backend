@@ -144,6 +144,16 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Get Applications by Status.
+        /// </summary>
+        /// <param name="status">Application status.</param>
+        /// <returns>List of applications.</returns>
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> GetByStatus(int status)
         {
