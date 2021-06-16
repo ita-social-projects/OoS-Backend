@@ -18,11 +18,7 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        /// <summary>
-        /// Delete element.
-        /// </summary>
-        /// <param name="entity">Entity to delete.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        /// <inheritdoc/>
         public new async Task Delete(Workshop entity)
         {
             if (entity.Applications?.Count > 0)
@@ -47,11 +43,7 @@ namespace OutOfSchool.Services.Repository
             await db.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Checks entity subcategoryId existens.
-        /// </summary>
-        /// <param name="id">Subcategory id.</param>
-        /// <returns>Bool.</returns>
+        /// <inheritdoc/>
         public bool SubsubcategoryExists(long id) => db.Subsubcategories.Any(x => x.Id == id);
     }
 }

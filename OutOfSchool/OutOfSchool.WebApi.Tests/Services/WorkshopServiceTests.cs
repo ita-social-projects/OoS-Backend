@@ -124,7 +124,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void Create_WhenSubsubcategoryIdSetWrong_ShouldThrowArgumentException()
+        public void Create_WhenSubsubcategoryIdSetWrong_ShouldThrowArgumentOutOfRangeException()
         {
             // Arrange
             sscategoryRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
@@ -132,7 +132,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             newWorkshop.Title = "newWorkshopTitle3";
 
             // Act and Assert
-            Assert.ThrowsAsync<ArgumentException>(
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 async () => await workshopService.Create(newWorkshop.ToModel()).ConfigureAwait(false));
         }
         #endregion
@@ -279,7 +279,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void Update_WhenIdIsInvalid_ShouldThrowArgumentException()
+        public void Update_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException()
         {
             // Arrange
             sscategoryRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
@@ -293,7 +293,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act and Assert
             Assert.That(
                 async () => await workshopService.Update(changedEntity).ConfigureAwait(false),
-                Throws.Exception.TypeOf<ArgumentException>());
+                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
         }
 
         #endregion

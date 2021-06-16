@@ -16,6 +16,9 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Workshop to add.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="WorkshopDTO"/> that was created.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If the Subsubctegory was not found.</exception>
+        /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task<WorkshopDTO> Create(WorkshopDTO dto);
 
         /// <summary>
@@ -28,7 +31,8 @@ namespace OutOfSchool.WebApi.Services
         /// Get entity by it's key.
         /// </summary>
         /// <param name="id">Workshop's key.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="WorkshopDTO"/> that was found, or null.</returns>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="WorkshopDTO"/> that was found, or null.</returns>
         Task<WorkshopDTO> GetById(long id);
 
         /// <summary>
@@ -43,7 +47,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Workshop entity to update.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="WorkshopDTO"/> that was updated.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">If entity was not found.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the workshop was not found. Or if the Subsubctegory was not found.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task<WorkshopDTO> Update(WorkshopDTO dto);
 
@@ -52,6 +56,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Workshop's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">If the workshop was not found in the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task Delete(long id);
 
@@ -69,7 +74,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="filter">Workshop filter.</param>
         /// <param name="size">Count of records on one page.</param>
         /// <param name="pageNumber">Number of page.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains List of <see cref="WorkshopDTO"/> for this page.</returns>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation. The task result contains List of <see cref="WorkshopDTO"/> for this page.</returns>
         Task<List<WorkshopDTO>> GetPage(WorkshopFilter filter, int size, int pageNumber);
     }
 }

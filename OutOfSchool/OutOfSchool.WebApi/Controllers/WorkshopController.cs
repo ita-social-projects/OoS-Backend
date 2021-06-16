@@ -40,7 +40,10 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get all workshops from the database.
         /// </summary>
-        /// <returns>List of all workshops.</returns>
+        /// <returns>List of all workshops, or no content.</returns>
+        /// <response code="200">The entity was found by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures.</response>
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -62,11 +65,15 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get workshop by it's id.
         /// </summary>
         /// <param name="id">Workshop's id.</param>
-        /// <returns>Workshop.</returns>
+        /// <returns><see cref="WorkshopDTO"/>, or no content.</returns>
+        /// <response code="200">The entity was found by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures. For example: Id was less than one.</response>
         [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(long id)
         {
             this.ValidateId(id, localizer);
@@ -85,7 +92,12 @@ namespace OutOfSchool.WebApi.Controllers
         /// Add new workshop to the database.
         /// </summary>
         /// <param name="dto">Entity to add.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <returns>Created <see cref="WorkshopDTO"/>.</returns>
+        /// <response code="201">Entity was created and returned with Id.</response>
+        /// <response code="400">If the model is invalid, some properties are not set etc.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="403">If the user has no rights use this method, or sets some properties that are forbidden to change.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -128,7 +140,12 @@ namespace OutOfSchool.WebApi.Controllers
         /// Update info about workshop entity.
         /// </summary>
         /// <param name="dto">Workshop to update.</param>
-        /// <returns>Workshop.</returns>
+        /// <returns>Updated <see cref="WorkshopDTO"/>.</returns>
+        /// <response code="200">Entity was updated and returned.</response>
+        /// <response code="400">If the model is invalid, some properties are not set etc.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -156,7 +173,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// Delete a specific workshop from the database.
         /// </summary>
         /// <param name="id">Workshop's id.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <returns>StatusCode representing the task completion.</returns>
+        /// <response code="204">If the entity was successfully deleted, or if the entity was not found by given Id.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="403">If the user has no rights to use this method, or deletes not own workshop.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

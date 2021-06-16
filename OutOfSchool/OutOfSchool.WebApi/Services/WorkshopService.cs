@@ -144,7 +144,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (workshop is null)
             {
-                throw new ArgumentException($"The workshop with id:{dto.Id} was not found.");
+                throw new ArgumentOutOfRangeException($"The workshop with id:{dto.Id} was not found.");
             }
 
             try
@@ -316,12 +316,18 @@ namespace OutOfSchool.WebApi.Services
             return predicate;
         }
 
+        /// <summary>
+        /// Set properties of the given WorkshopDTO with certain data: categoryId and SubctegoryId are set with data according to found Subsubcategory entity.
+        /// </summary>
+        /// <param name="dto">WorkshopDTO to fill.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        /// <exception cref="ArgumentException">If Subsubctegory was not found.</exception>
         private async Task FillCategoriesFields(WorkshopDTO dto)
         {
             var sscategory = await subsubcategoryRepository.GetById(dto.SubsubcategoryId).ConfigureAwait(false);
             if (sscategory is null)
             {
-                throw new ArgumentException($"There is no Subsubcategory with id:{dto.SubsubcategoryId}");
+                throw new ArgumentOutOfRangeException($"There is no Subsubcategory with id:{dto.SubsubcategoryId}");
             }
 
             dto.SubcategoryId = sscategory.SubcategoryId;
