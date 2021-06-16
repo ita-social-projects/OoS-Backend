@@ -8,6 +8,7 @@ namespace OutOfSchool.Services.Models
     {
         public long Id { get; set; }
 
+        [Range(0, 2, ErrorMessage = "Status should be from 0 to 2")]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
         [Required]
