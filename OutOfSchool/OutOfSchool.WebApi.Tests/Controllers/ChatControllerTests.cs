@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateMessage_WhenUsersValidationFails_ReturnsForbidResult()
+        public async Task CreateMessage_WhenUsersValidationFails_Returns403ObjectResult()
         {
             // Arrange
             var newMessage = new ChatNewMessageDto()
@@ -94,14 +94,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .Throws<ArgumentException>();
 
             // Act
-            var result = await controller.CreateMessage(newMessage).ConfigureAwait(false);
+            var result = await controller.CreateMessage(newMessage).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(It.IsAny<long>()), Times.Never);
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Once);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
@@ -127,7 +127,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateMessage_WhenChatRoomIdIsSetButRoomWasNotFound_ReturnsForbidResult()
+        public async Task CreateMessage_WhenChatRoomIdIsSetButRoomWasNotFound_Returns403ObjectResult()
         {
             // Arrange
             var newMessage = new ChatNewMessageDto()
@@ -141,18 +141,18 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(() => null);
 
             // Act
-            var result = await controller.CreateMessage(newMessage).ConfigureAwait(false);
+            var result = await controller.CreateMessage(newMessage).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(1), Times.Once);
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
-        public async Task CreateMessage_WhenChatRoomIdIsSetButUserIsNotItsMember_ReturnsForbidResult()
+        public async Task CreateMessage_WhenChatRoomIdIsSetButUserIsNotItsMember_Returns403ObjectResult()
         {
             // Arrange
             var newMessage = new ChatNewMessageDto()
@@ -170,14 +170,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(chatRoom);
 
             // Act
-            var result = await controller.CreateMessage(newMessage).ConfigureAwait(false);
+            var result = await controller.CreateMessage(newMessage).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(1), Times.Once);
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
@@ -305,7 +305,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task GetMessageById_WhenUserIsNotItsOwner_ReturnsForbidResult(long id)
+        public async Task GetMessageById_WhenUserIsNotItsOwner_Returns403ObjectResult(long id)
         {
             // Arrange
             messageServiceMoq.Setup(x => x.GetById(id))
@@ -315,11 +315,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 });
 
             // Act
-            var result = await controller.GetMessageById(id).ConfigureAwait(false);
+            var result = await controller.GetMessageById(id).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
@@ -371,7 +371,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task GetRoomById_WhenUserIsNotItsOwner_ReturnsForbidResult(long id)
+        public async Task GetRoomById_WhenUserIsNotItsOwner_Returns403ObjectResult(long id)
         {
             // Arrange
             roomServiceMoq.Setup(x => x.GetById(id))
@@ -382,11 +382,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 });
 
             // Act
-            var result = await controller.GetRoomById(id).ConfigureAwait(false);
+            var result = await controller.GetRoomById(id).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
@@ -638,7 +638,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task UpdateMessage_WhenUserIsNotItsOwner_ReturnsForbidResult(long id)
+        public async Task UpdateMessage_WhenUserIsNotItsOwner_Returns403ObjectResult(long id)
         {
             // Arrange
             var message = new ChatMessageDto() { Id = id };
@@ -650,18 +650,18 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 });
 
             // Act
-            var result = await controller.UpdateMessage(message).ConfigureAwait(false);
+            var result = await controller.UpdateMessage(message).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Update(message), Times.Never);
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
         [TestCase(1)]
-        public async Task UpdateMessage_WhenChatRoomIsChanging_ReturnsForbidResult(long id)
+        public async Task UpdateMessage_WhenChatRoomIsChanging_Returns403ObjectResult(long id)
         {
             // Arrange
             var message = new ChatMessageDto()
@@ -678,18 +678,18 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 });
 
             // Act
-            var result = await controller.UpdateMessage(message).ConfigureAwait(false);
+            var result = await controller.UpdateMessage(message).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Update(message), Times.Never);
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
         [TestCase(1)]
-        public async Task UpdateMessage_WhenMessageIsTooOldToBeDeleted_ReturnsForbidResult(long id)
+        public async Task UpdateMessage_WhenMessageIsTooOldToBeDeleted_Returns403ObjectResult(long id)
         {
             // Arrange
             var message = new ChatMessageDto()
@@ -707,13 +707,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 });
 
             // Act
-            var result = await controller.UpdateMessage(message).ConfigureAwait(false);
+            var result = await controller.UpdateMessage(message).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Update(message), Times.Never);
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
@@ -806,7 +806,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task DeleteMessage_WhenUserIsNotItsOwner_ReturnsForbidResult(long id)
+        public async Task DeleteMessage_WhenUserIsNotItsOwner_Returns403ObjectResult(long id)
         {
             // Arrange
             messageServiceMoq.Setup(x => x.GetById(id))
@@ -816,13 +816,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 });
 
             // Act
-            var result = await controller.DeleteMessage(id).ConfigureAwait(false);
+            var result = await controller.DeleteMessage(id).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Delete(id), Times.Never);
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
@@ -921,7 +921,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task DeleteRoom_WhenChatRoomHasMessages_ReturnsReturnsForbidResult(long id)
+        public async Task DeleteRoom_WhenChatRoomHasMessages_Returns403ObjectResult(long id)
         {
             // Arrange
             roomServiceMoq.Setup(x => x.GetById(id))
@@ -931,18 +931,18 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 });
 
             // Act
-            var result = await controller.DeleteRoom(id).ConfigureAwait(false);
+            var result = await controller.DeleteRoom(id).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(id), Times.Once);
             roomServiceMoq.Verify(x => x.Delete(id), Times.Never);
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
         [TestCase(1)]
-        public async Task DeleteRoom_WhenRoomUsersDoesNotContainCurrentUser_ReturnsReturnsForbidResult(long id)
+        public async Task DeleteRoom_WhenRoomUsersDoesNotContainCurrentUser_Returns403ObjectResult(long id)
         {
             // Arrange
             roomServiceMoq.Setup(x => x.GetById(id))
@@ -953,13 +953,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 });
 
             // Act
-            var result = await controller.DeleteRoom(id).ConfigureAwait(false);
+            var result = await controller.DeleteRoom(id).ConfigureAwait(false) as ObjectResult;
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(id), Times.Once);
             roomServiceMoq.Verify(x => x.Delete(id), Times.Never);
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ForbidResult>(result);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         [Test]
@@ -986,7 +986,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task DeleteRoom_WhenRoomWasDeletedBeforeMethodCallsDelete_ThrowsArgumentOutOfRangeException(long id)
+        public void DeleteRoom_WhenRoomWasDeletedBeforeMethodCallsDelete_ThrowsArgumentOutOfRangeException(long id)
         {
             // Arrange
             roomServiceMoq.Setup(x => x.GetById(id))

@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Create new ChatMessage.
         /// </summary>
         /// <param name="chatNewMessageDto">Entity that contains text of message, receiver and workshop info.</param>
-        /// <returns>ChatMessage.</returns>
+        /// <returns>Created <see cref="ChatMessageDto"/></returns>
         [Obsolete("This method is for testing purposes.")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChatMessageDto))]
@@ -78,7 +78,7 @@ namespace OutOfSchool.WebApi.Controllers
                     }
                     else
                     {
-                        return Forbid($"Forbidden to write messages to a chat room you are not participating in.");
+                        return StatusCode(403, "Forbidden to write messages to a chat room you are not participating in.");
                     }
                 }
                 else
@@ -99,7 +99,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
             catch (ArgumentException exception)
             {
-                return Forbid(exception.Message);
+                return StatusCode(403, exception.Message);
             }
         }
 
@@ -133,7 +133,7 @@ namespace OutOfSchool.WebApi.Controllers
                 }
                 else
                 {
-                    return Forbid("Forbidden to get messages of another users.");
+                    return StatusCode(403, "Forbidden to get messages of another users.");
                 }
             }
         }
@@ -168,7 +168,7 @@ namespace OutOfSchool.WebApi.Controllers
                 }
                 else
                 {
-                    return Forbid("Forbidden to read a chat room of another users.");
+                    return StatusCode(403, "Forbidden to read a chat room of another users.");
                 }
             }
         }
@@ -273,19 +273,19 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
             {
-                return Forbid("Forbidden to change messages of another users.");
+                return StatusCode(403, "Forbidden to change messages of another users.");
             }
 
             if (oldChatMessage.ChatRoomId != chatMessageDto.ChatRoomId)
             {
-                return Forbid("Forbidden to change chat room.");
+                return StatusCode(403, "Forbidden to change chat room.");
             }
 
             var whenMessageBecomesOld = new TimeSpan(0, 10, 0);
 
             if (oldChatMessage.CreatedTime.CompareTo(DateTime.Now.Subtract(whenMessageBecomesOld)) < 0)
             {
-                return Forbid("Forbidden to change old messages.");
+                return StatusCode(403, "Forbidden to change old messages.");
             }
 
             oldChatMessage.Text = chatMessageDto.Text;
@@ -320,7 +320,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
             {
-                return Forbid("Forbidden to delete messages of another users.");
+                return StatusCode(403, "Forbidden to delete messages of another users.");
             }
 
             await messageService.Delete(id).ConfigureAwait(false);
@@ -353,12 +353,12 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (room.ChatMessages.Any())
             {
-                return Forbid("Forbidden to delete a chat room with chat messages.");
+                return StatusCode(403, "Forbidden to delete a chat room with chat messages.");
             }
 
             if (!room.Users.Any(x => x.Id == userId))
             {
-                return Forbid("Forbidden to delete a chat room of another users.");
+                return StatusCode(403, "Forbidden to delete a chat room of another users.");
             }
 
             await roomService.Delete(id).ConfigureAwait(false);
