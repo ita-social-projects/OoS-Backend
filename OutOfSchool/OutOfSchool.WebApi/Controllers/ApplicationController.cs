@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Controllers
     /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
-    //[Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
 
     public class ApplicationController : ControllerBase
     {
@@ -140,7 +140,21 @@ namespace OutOfSchool.WebApi.Controllers
             }
             catch (ArgumentException ex)
             {
+                return BadRequest(ex.Message);
+            }
+        }
 
+        [HttpGet]
+        public async Task<IActionResult> GetByStatus(int status)
+        {
+            ValidateStatus(status);
+
+            try
+            {
+                return Ok(await service.GetAllByStatus(status).ConfigureAwait(false));
+            }
+            catch (ArgumentException ex)
+            {
                 return BadRequest(ex.Message);
             }
         }
@@ -273,6 +287,11 @@ namespace OutOfSchool.WebApi.Controllers
             });
 
             return applications.ToList();
+        }
+
+        private void ValidateStatus(int status)
+        {
+
         }
     }
 }

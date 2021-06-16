@@ -50,6 +50,8 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>List of applications.</returns>
         Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id);
 
+        Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status);
+
         /// <summary>
         /// Get applications by user id.
         /// </summary>

@@ -155,7 +155,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
 
-            Expression<Func<Application, bool>> applicationFilter = w => workshops.Contains(w.WorkshopId);
+            Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
 
             var applications = await repository.GetByFilter(applicationFilter).ConfigureAwait(false);
 
@@ -165,6 +165,24 @@ namespace OutOfSchool.WebApi.Services
             }
 
             logger.Information($"Successfully got Applications with Provider Id = {id}.");
+
+            return applications.Select(a => a.ToModel()).ToList();
+        }
+
+        public async Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status)
+        {
+            logger.Information($"Getting Applications by Status started. Looking Status = {status}.");
+
+            Expression<Func<Application, bool>> filter = a => (int)a.Status == status;
+
+            var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
+
+            if (!applications.Any())
+            {
+                throw new ArgumentException(localizer["There is no Application in the Db with such status"], nameof(status));
+            }
+
+            logger.Information($"Successfully got Applications with Status = {status}.");
 
             return applications.Select(a => a.ToModel()).ToList();
         }
