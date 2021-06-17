@@ -72,7 +72,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            this.ValidateId(id, localizer);
+            try
+            {
+                this.ValidateId(id, localizer);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             var application = await service.GetById(id).ConfigureAwait(false);
 
@@ -126,7 +133,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByWorkshopId(long id)
         {
-            this.ValidateId(id, localizer);
+            try
+            {
+                this.ValidateId(id, localizer);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             var applications = await service.GetAllByWorkshop(id).ConfigureAwait(false);
 
@@ -154,7 +168,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByProviderId(long id)
         {
-            this.ValidateId(id, localizer);
+            try
+            {
+                this.ValidateId(id, localizer);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             var applications = await service.GetAllByProvider(id).ConfigureAwait(false);
 
@@ -182,7 +203,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetByStatus(int status)
         {
-            ValidateStatus(status);
+            try
+            {
+                ValidateStatus(status);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             var applications = await service.GetAllByStatus(status).ConfigureAwait(false);
 
@@ -325,10 +353,10 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            this.ValidateId(id, localizer);
-
             try
             {
+                this.ValidateId(id, localizer);
+
                 await service.Delete(id).ConfigureAwait(false);
                 return NoContent();
             }
@@ -353,7 +381,10 @@ namespace OutOfSchool.WebApi.Controllers
 
         private void ValidateStatus(int status)
         {
-
+            if (status < 0 || status > 2)
+            {
+                throw new ArgumentOutOfRangeException(nameof(status), localizer["Status should be from 0 to 2"]);
+            }
         }
     }
 }

@@ -267,7 +267,5 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException(localizer[$"Application with Id = {id} doesn't exist in the system."]);
             }
         }
-
-        //private bool ApplicationExists(long id) => repository.Get<int>(where: a => a.Id == id).Any();
     }
 }
