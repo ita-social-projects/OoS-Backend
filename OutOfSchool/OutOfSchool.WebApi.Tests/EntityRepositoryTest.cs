@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Tests
         [Test]
         public void GetById_Id_ReturnEntity()
         {
-            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             {
                 var repository = new EntityRepository<Child>(context);
 
@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Tests
         [Test]
         public void GetAllWIthDetails_FilterWithIdAndIncludedProperty_ReturnSingleEntity()
         {
-            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             {
                 var repository = new EntityRepository<Child>(context);
                 Expression<Func<Child, bool>> filter = child => child.Id == 1;
@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Tests
         [Test]
         public void GetAllWithDetails_IncludeProperty_ReturnListOfElementsWithIncludedProperty()
         {
-            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             {
                 var repository = new EntityRepository<Child>(context);
 
@@ -67,7 +67,7 @@ namespace OutOfSchool.WebApi.Tests
         [Test]
         public void GetByFilterNoTracking_FilterWithIdAndIncludedProperty_ReturnSingleEntity()
         {
-            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             {
                 var repository = new EntityRepository<Child>(context);
                 Expression<Func<Child, bool>> filter = child => child.Id == 1;
@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Tests
         [Test]
         public void Create_NewEntity_AddNewEntityToDatabase()
         {
-            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             {
                 var repository = new EntityRepository<Child>(context);
                 Child child = new Child { FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 4, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
@@ -95,13 +95,14 @@ namespace OutOfSchool.WebApi.Tests
 
                 // Assert
                 Assert.AreEqual(4, children.Result.Count());
+                Assert.AreEqual(child.LastName, child1.LastName);
             }
         }
 
         [Test]
         public async Task Delete_DeleteEntity_DeleteFromDatabaseAsync()
         {
-            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             {
                 var repository = new EntityRepository<SocialGroup>(context);
                 SocialGroup socialGroup = new SocialGroup { Id = 1, Name = "sg1" };
@@ -118,7 +119,7 @@ namespace OutOfSchool.WebApi.Tests
         [Test]
         public void GetAll_ReturnAllValues()
         {
-            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             {
                 var repository = new EntityRepository<SocialGroup>(context);
 
@@ -133,7 +134,7 @@ namespace OutOfSchool.WebApi.Tests
         [Test]
         public void Update_UpatedInfo_UpdateEntityInDatabase()
         {
-            using (var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions()))
+            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             {
                 var repository = new EntityRepository<SocialGroup>(context);
 

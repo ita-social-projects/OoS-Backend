@@ -43,9 +43,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContextMoq.Setup(x => x.User.IsInRole("provider"))
                 .Returns(true);
 
-            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object);
-            controller.ControllerContext = new ControllerContext();
-            controller.ControllerContext.HttpContext = httpContextMoq.Object;
+            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object)
+            {
+                ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
+            };
 
             workshops = FakeWorkshops();
             workshop = FakeWorkshop();

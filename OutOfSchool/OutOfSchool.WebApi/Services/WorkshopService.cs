@@ -162,10 +162,12 @@ namespace OutOfSchool.WebApi.Services
                     teacher.WorkshopId = workshop.Id;
                 }
 
-                List<TeacherDTO> teachersToCreate;
-                List<TeacherDTO> teachersToUpdate;
-                List<TeacherDTO> teachersToDelete;
-                this.CompareTwoListsOfTeachers(dto.Teachers, workshop.Teachers, out teachersToCreate, out teachersToUpdate, out teachersToDelete);
+                this.CompareTwoListsOfTeachers(
+                    dto.Teachers, 
+                    workshop.Teachers, 
+                    out List<TeacherDTO> teachersToCreate, 
+                    out List<TeacherDTO> teachersToUpdate, 
+                    out List<TeacherDTO> teachersToDelete);
 
                 // When updating entity Workshop with the existing list
                 // EF Core adds created and updated entities to the list so
@@ -175,9 +177,20 @@ namespace OutOfSchool.WebApi.Services
 
                 Func<Task<Workshop>> updateWorkshop = async () =>
                 {
-                    foreach (var teacherDto in teachersToCreate) { await teacherRepository.Create(teacherDto.ToDomain()).ConfigureAwait(false); }
-                    foreach (var teacherDto in teachersToUpdate) { await teacherRepository.Update(teacherDto.ToDomain()).ConfigureAwait(false); }
-                    foreach (var teacherDto in teachersToDelete) { await teacherRepository.Delete(teacherDto.ToDomain()).ConfigureAwait(false); }
+                    foreach (var teacherDto in teachersToCreate) 
+                    { 
+                        await teacherRepository.Create(teacherDto.ToDomain()).ConfigureAwait(false); 
+                    }
+
+                    foreach (var teacherDto in teachersToUpdate) 
+                    {
+                        await teacherRepository.Update(teacherDto.ToDomain()).ConfigureAwait(false); 
+                    }
+
+                    foreach (var teacherDto in teachersToDelete) 
+                    { 
+                        await teacherRepository.Delete(teacherDto.ToDomain()).ConfigureAwait(false); 
+                    }
 
                     await addressRepository.Update(dto.Address.ToDomain()).ConfigureAwait(false);
                     return await workshopRepository.Update(dto.ToDomain()).ConfigureAwait(false);

@@ -16,11 +16,12 @@ namespace OutOfSchool.WebApi.Tests.Services
 {
     public class ChildServiceTests
     {
+        private readonly Child createdChild = new Child { Id = 14, FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
+        private readonly ChildDto createdChildDTO = new ChildDto { Id = 14, FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
+
         private Mock<ILogger> logger;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<IEntityRepository<Child>> mockRepository;
-        private Child createdChild = new Child { Id = 14, FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
-        private ChildDto createdChildDTO = new ChildDto { Id = 14, FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
         [SetUp]
         public void SetUp()

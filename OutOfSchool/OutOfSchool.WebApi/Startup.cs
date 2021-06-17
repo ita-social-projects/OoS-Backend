@@ -134,7 +134,7 @@ namespace OutOfSchool.WebApi
             services.AddSingleton(Log.Logger);
 
             // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen( c =>
+            services.AddSwaggerGen(c =>
             {
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

@@ -1,8 +1,9 @@
-﻿namespace OutOfSchool.IdentityServer.Enums
+﻿namespace OutOfSchool.Services.Enums
 {
     public enum Role
     {
         Provider,
         Parent,
+        Admin,
     }
 }
