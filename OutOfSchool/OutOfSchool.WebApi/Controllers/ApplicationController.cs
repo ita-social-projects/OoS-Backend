@@ -19,7 +19,6 @@ namespace OutOfSchool.WebApi.Controllers
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-
     public class ApplicationController : ControllerBase
     {
         private readonly IApplicationService service;
@@ -40,7 +39,10 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get all applications from the database.
         /// </summary>
         /// <returns>List of all applications.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        /// <response code="200">All entities were found.</response>
+        /// <response code="204">No entity was found.</response>
+        /// <response code="500">If any server error occures.</response>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
@@ -60,8 +62,12 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get application by it's id.
         /// </summary>
         /// <param name="id">The key in the database.</param>
-        /// <returns>Application entity.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        /// <returns><see cref="ApplicationDto"/>.</returns>
+        /// <response code="200">The entity was found by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures.</response>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApplicationDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
@@ -83,8 +89,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">User id.</param>
         /// <returns>List of applications.</returns>
+        /// <response code="200">Entities were found by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -106,8 +115,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Workshop id.</param>
         /// <returns>List of applications.</returns>
+        /// <response code="200">Entities were found by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -131,8 +143,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Provider id.</param>
         /// <returns>List of applications.</returns>
+        /// <response code="200">Entities were found by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -156,8 +171,11 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="status">Application status.</param>
         /// <returns>List of applications.</returns>
+        /// <response code="200">Entities were found by given status.</response>
+        /// <response code="204">No entity with given status was found.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -219,6 +237,10 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="applicationDto">Application entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <response code="201">Entity was created and returned with Id.</response>
+        /// <response code="400">If the model is invalid, some properties are not set etc.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "parent,admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -259,9 +281,13 @@ namespace OutOfSchool.WebApi.Controllers
         /// Update info about a specific application in the database.
         /// </summary>
         /// <param name="applicationDto">Application entity.</param>
-        /// <returns>Application's key.</returns>
+        /// <returns><see cref="ApplicationDto"/>.</returns>
+        /// <response code="200">Entity was updated and returned.</response>
+        /// <response code="400">If the model is invalid, some properties are not set etc.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -289,7 +315,12 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Application's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <response code="204">If the entity was successfully deleted.</response>
+        /// <responce code="400">If entity with given Id does not exist.</responce>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="500">If any server error occures.</response>
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
