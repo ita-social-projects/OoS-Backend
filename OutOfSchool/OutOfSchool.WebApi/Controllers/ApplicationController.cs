@@ -68,7 +68,14 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            return Ok(await service.GetById(id).ConfigureAwait(false));
+            var application = await service.GetById(id).ConfigureAwait(false);
+
+            if (application is null)
+            {
+                return NoContent();
+            }
+
+            return Ok(application);
         }
 
         /// <summary>
@@ -84,14 +91,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByUserId(string id)
         {
-            try
+            var applications = await service.GetAllByUser(id).ConfigureAwait(false);
+
+            if (!applications.Any())
             {
-                return Ok(await service.GetAllByUser(id).ConfigureAwait(false));
+                return NoContent();
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            return Ok(applications);
         }
 
         /// <summary>
@@ -109,14 +116,14 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            try
+            var applications = await service.GetAllByWorkshop(id).ConfigureAwait(false);
+
+            if (!applications.Any())
             {
-                return Ok(await service.GetAllByWorkshop(id).ConfigureAwait(false));
+                return NoContent();
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            return Ok(applications);
         }
 
         /// <summary>
@@ -134,14 +141,14 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            try
+            var applications = await service.GetAllByProvider(id).ConfigureAwait(false);
+
+            if (!applications.Any())
             {
-                return Ok(await service.GetAllByProvider(id).ConfigureAwait(false));
+                return NoContent();
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            return Ok(applications);
         }
 
         /// <summary>
@@ -159,14 +166,14 @@ namespace OutOfSchool.WebApi.Controllers
         {
             ValidateStatus(status);
 
-            try
+            var applications = await service.GetAllByStatus(status).ConfigureAwait(false);
+
+            if (!applications.Any())
             {
-                return Ok(await service.GetAllByStatus(status).ConfigureAwait(false));
+                return NoContent();
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            return Ok(applications);
         }
 
         /// <summary>
@@ -266,7 +273,15 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(applicationDto).ConfigureAwait(false));
+            try
+            {
+                var application = await service.Update(applicationDto).ConfigureAwait(false);
+                return Ok(application);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -281,9 +296,15 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            await service.Delete(id).ConfigureAwait(false);
-
-            return NoContent();
+            try
+            {
+                await service.Delete(id).ConfigureAwait(false);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         private IEnumerable<ApplicationDto> CreateMultiple(ApplicationApiModel applicationApiModel)

@@ -79,6 +79,8 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Deleting Application with Id = {id} started.");
 
+            CheckApplicationExists(id);
+
             var application = new Application { Id = id };
 
             try
@@ -87,9 +89,9 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.Information($"Application with Id = {id} succesfully deleted.");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                logger.Error($"Deleting failed. Application with Id = {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Exception: {ex.Message}.");
                 throw;
             }
         }
@@ -117,12 +119,9 @@ namespace OutOfSchool.WebApi.Services
 
             var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
 
-            if (!applications.Any())
-            {
-                throw new ArgumentException(localizer["There is no Application in the Db with such User id"], nameof(id));
-            }
-
-            logger.Information($"Successfully got Applications with User Id = {id}.");
+            logger.Information(!applications.Any()
+                ? $"There is no applications in the Db with User Id = {id}."
+                : $"Successfully got Applications with User Id = {id}.");
 
             return applications.Select(a => a.ToModel()).ToList();
         }
@@ -136,12 +135,9 @@ namespace OutOfSchool.WebApi.Services
 
             var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
 
-            if (!applications.Any())
-            {
-                throw new ArgumentException(localizer["There is no Application in the Db with such Workshop id"], nameof(id));
-            }
-
-            logger.Information($"Successfully got Applications with Workshop Id = {id}.");
+            logger.Information(!applications.Any()
+                ? $"There is no applications in the Db with Workshop Id = {id}."
+                : $"Successfully got Applications with Workshop Id = {id}.");
 
             return applications.Select(a => a.ToModel()).ToList();
         }
@@ -159,12 +155,9 @@ namespace OutOfSchool.WebApi.Services
 
             var applications = await repository.GetByFilter(applicationFilter).ConfigureAwait(false);
 
-            if (!applications.Any())
-            {
-                throw new ArgumentException(localizer["There is no Application in the Db with such Provider id"], nameof(id));
-            }
-
-            logger.Information($"Successfully got Applications with Provider Id = {id}.");
+            logger.Information(!applications.Any()
+                ? $"There is no applications in the Db with Provider Id = {id}."
+                : $"Successfully got Applications with Provider Id = {id}.");
 
             return applications.Select(a => a.ToModel()).ToList();
         }
@@ -178,12 +171,9 @@ namespace OutOfSchool.WebApi.Services
 
             var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
 
-            if (!applications.Any())
-            {
-                throw new ArgumentException(localizer["There is no Application in the Db with such status"], nameof(status));
-            }
-
-            logger.Information($"Successfully got Applications with Status = {status}.");
+            logger.Information(!applications.Any()
+                ? $"There is no applications in the Db with Status = {status}."
+                : $"Successfully got Applications with Status = {status}.");
 
             return applications.Select(a => a.ToModel()).ToList();
         }
@@ -197,9 +187,8 @@ namespace OutOfSchool.WebApi.Services
 
             if (application is null)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["There is no Application in the Db with such id."]);
+                logger.Information($"There is no application in the Db with Id = {id}.");
+                return null;
             }
 
             logger.Information($"Successfully got an Application with Id = {id}.");
@@ -214,6 +203,8 @@ namespace OutOfSchool.WebApi.Services
 
             ModelNullValidation(applicationDto);
 
+            CheckApplicationExists(applicationDto.Id);
+
             try
             {
                 var application = await repository.Update(applicationDto.ToDomain()).ConfigureAwait(false);
@@ -222,9 +213,9 @@ namespace OutOfSchool.WebApi.Services
 
                 return application.ToModel();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                logger.Error($"Updating failed. Application with Id = {applicationDto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Exception = {ex.Message}.");
                 throw;
             }
         }
@@ -265,5 +256,18 @@ namespace OutOfSchool.WebApi.Services
                 ModelCreationValidation(application);
             }
         }
+
+        private void CheckApplicationExists(long id)
+        {
+            var applications = repository.Get<int>(where: a => a.Id == id);
+
+            if (!applications.Any())
+            {
+                logger.Information($"Operation failed. Application with Id = {id} doesn't exist in the system.");
+                throw new ArgumentException(localizer[$"Application with Id = {id} doesn't exist in the system."]);
+            }
+        }
+
+        //private bool ApplicationExists(long id) => repository.Get<int>(where: a => a.Id == id).Any();
     }
 }
