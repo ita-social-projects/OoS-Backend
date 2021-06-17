@@ -12,18 +12,21 @@ namespace OutOfSchool.IdentityServer.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly ILogger<AccountController> logger;
+        private readonly SignInManager<User> signInManager;
         private readonly UserManager<User> userManager;
         private readonly IEmailSender emailSender;
+        private readonly ILogger<AccountController> logger;
 
         public AccountController(
-            ILogger<AccountController> logger,
+            SignInManager<User> signInManager,
+            UserManager<User> userManager,
             IEmailSender emailSender,
-            UserManager<User> userManager)
+            ILogger<AccountController> logger)
         {
-            this.logger = logger;
-            this.emailSender = emailSender;
+            this.signInManager = signInManager;
             this.userManager = userManager;
+            this.emailSender = emailSender;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -44,7 +47,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = await userManager.FindByEmailAsync(User.Identity.Name);
             var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
-            var callBackUrl = Url.Action(nameof(ConfirmEmailChange), "Email", new { token, email = model.CurrentEmail, newEmail = model.Email }, Request.Scheme);
+            var callBackUrl = Url.Action(nameof(ConfirmEmailChange), "Account", new { userId = user.Id, email = model.Email, token }, Request.Scheme);
 
             var message = new Message()
             {
@@ -67,23 +70,33 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ConfirmEmailChange(string token, string email, string newEmail)
+        public async Task<IActionResult> ConfirmEmailChange(string userId, string email, string token)
         {
-            var user = await userManager.FindByEmailAsync(email);
-            if (user == null)
+            if (userId == null || email == null || token == null)
             {
                 return View("Error");
             }
 
-            var result = await userManager.ChangeEmailAsync(user, newEmail, token);
-            if (result.Succeeded)
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
             {
-                return View("Email/ConfirmChange");
+                return NotFound($"Unable to load user with ID: '{userId}'.");
             }
-            else
+
+            var result = await userManager.ChangeEmailAsync(user, email, token);
+            if (!result.Succeeded)
             {
                 return View("Error");
             }
+
+            var setUserNameResult = await userManager.SetUserNameAsync(user, email);
+            if (!setUserNameResult.Succeeded)
+            {
+                return View("Error");
+            }
+
+            await signInManager.RefreshSignInAsync(user);
+            return View("Email/ConfirmChange");
         }
     }
 }
