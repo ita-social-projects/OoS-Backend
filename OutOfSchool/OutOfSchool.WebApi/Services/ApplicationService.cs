@@ -111,17 +111,17 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByUser(string id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByParent(long id)
         {
-            logger.Information($"Getting Applications by User Id started. Looking User Id = {id}.");
+            logger.Information($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
 
-            Expression<Func<Application, bool>> filter = a => a.UserId == id;
+            Expression<Func<Application, bool>> filter = a => a.ParentId == id;
 
             var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
 
             logger.Information(!applications.Any()
-                ? $"There is no applications in the Db with User Id = {id}."
-                : $"Successfully got Applications with User Id = {id}.");
+                ? $"There is no applications in the Db with Parent Id = {id}."
+                : $"Successfully got Applications with Parent Id = {id}.");
 
             return applications.Select(a => a.ToModel()).ToList();
         }
@@ -235,7 +235,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
                                                               && a.WorkshopId == applicationDto.WorkshopId
-                                                              && a.UserId == applicationDto.UserId;
+                                                              && a.ParentId == applicationDto.ParentId;
             if (repository.Get<int>(where: filter).Any())
             {
                 logger.Information("Creation failed. Application with such data alredy exists.");

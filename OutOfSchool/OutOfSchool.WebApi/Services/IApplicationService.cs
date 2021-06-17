@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByUser(string id);
+        Task<IEnumerable<ApplicationDto>> GetAllByParent(long id);
 
         /// <summary>
         /// Update entity.

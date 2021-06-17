@@ -105,9 +105,9 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByUserId(string id)
+        public async Task<IActionResult> GetByParentId(long id)
         {
-            var applications = await service.GetAllByUser(id).ConfigureAwait(false);
+            var applications = await service.GetAllByParent(id).ConfigureAwait(false);
 
             if (!applications.Any())
             {
@@ -286,8 +286,6 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 applicationDto.Id = default;
 
-                applicationDto.UserId = User.FindFirst("sub")?.Value;
-
                 applicationDto.CreationTime = DateTime.Now;
 
                 applicationDto.Status = 0;
@@ -372,7 +370,6 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 ChildId = child.Id,
                 CreationTime = DateTime.Now,
-                UserId = User.FindFirst("sub")?.Value,
                 WorkshopId = applicationApiModel.WorkshopId,
             });
 

@@ -218,7 +218,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var expected = await repository.GetByFilter(filter);
 
             // Act
-            var result = await service.GetAllByUser(id).ConfigureAwait(false);
+            var result = await service.GetAllByParent(id).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
@@ -230,7 +230,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.GetAllByUser(id).ConfigureAwait(false));
+                async () => await service.GetAllByParent(id).ConfigureAwait(false));
         }
 
         [Test]

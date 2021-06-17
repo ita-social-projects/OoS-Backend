@@ -115,7 +115,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetApplicationsByUserId_WhenIdIsValid_ShouldReturnOkObjectResult(string id)
         {
             // Arrange
-            service.Setup(s => s.GetAllByUser(id)).ReturnsAsync(applications.Where(a => a.UserId.Equals(id)));
+            service.Setup(s => s.GetAllByParent(id)).ReturnsAsync(applications.Where(a => a.UserId.Equals(id)));
 
             // Act
             var result = await controller.GetByUserId(id).ConfigureAwait(false) as OkObjectResult;
@@ -130,7 +130,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetAppicationsByUserId_WhenIdIsNotValid_ShouldReturnBadRequest(string id)
         {
             // Arrange
-            service.Setup(s => s.GetAllByUser(id)).ThrowsAsync(new ArgumentException());
+            service.Setup(s => s.GetAllByParent(id)).ThrowsAsync(new ArgumentException());
 
             // Act
             var result = await controller.GetByUserId(id).ConfigureAwait(false);
