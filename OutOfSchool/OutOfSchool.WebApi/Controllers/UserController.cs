@@ -13,12 +13,12 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class UserController : ControllerBase
     {
-        private readonly IUserService userService;     
+        private readonly IUserService userService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
         /// </summary>
-        /// <param name="userService">Service for User model.</param>      
+        /// <param name="userService">Service for User model.</param>
         public UserController(IUserService userService)
         {
             this.userService = userService;
@@ -58,7 +58,7 @@ namespace OutOfSchool.WebApi.Controllers
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
-            }                  
+            }
         }
 
         /// <summary>

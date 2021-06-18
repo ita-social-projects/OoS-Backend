@@ -5,6 +5,10 @@
     <UserSecretsId>23768b69-757e-4a20-894f-dcf7181971ca</UserSecretsId>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\StyleCopAnalyzersDefault.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
     <PackageReference Include="IdentityModel" Version="5.0.0" />

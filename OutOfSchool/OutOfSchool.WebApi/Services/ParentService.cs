@@ -46,7 +46,7 @@ namespace OutOfSchool.WebApi.Services
             Func<Task<Parent>> operation = async () => await repositoryParent.Create(dto.ToDomain()).ConfigureAwait(false);
 
             var newParent = await repositoryParent.RunInTransaction(operation).ConfigureAwait(false);
-        
+
             logger.Information($"Parent with Id = {newParent?.Id} created successfully.");
 
             return newParent.ToModel();
@@ -113,20 +113,20 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 Expression<Func<User, bool>> filter = p => p.Id == dto.Id;
-                
+
                 var users = repositoryUser.GetByFilterNoTracking(filter);
 
                 var updatedUser = await repositoryUser.Update(dto.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
 
                 logger.Information($"User with Id = {updatedUser?.Id} updated succesfully.");
 
-                return updatedUser.ToModel();             
+                return updatedUser.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
                 logger.Error($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
-        }     
+        }
     }
 }

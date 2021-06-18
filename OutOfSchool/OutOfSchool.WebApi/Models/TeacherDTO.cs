@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; }
 
-        [MaxLength(300)] 
+        [MaxLength(300)]
         public string Description { get; set; } = string.Empty;
 
         public string Image { get; set; } = string.Empty;

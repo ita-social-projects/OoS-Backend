@@ -44,7 +44,7 @@ namespace OutOfSchool.Services.Repository
                     db.Entry(teacher).State = EntityState.Deleted;
                 }
             }
-           
+
             db.Entry(entity).State = EntityState.Deleted;
             db.Entry(new Address { Id = entity.AddressId }).State = EntityState.Deleted;
 

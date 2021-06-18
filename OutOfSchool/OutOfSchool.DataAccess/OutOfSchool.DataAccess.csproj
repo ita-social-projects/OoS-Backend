@@ -5,7 +5,7 @@
         <RootNamespace>OutOfSchool.Services</RootNamespace>
     </PropertyGroup>
   <PropertyGroup>
-    <CodeAnalysisRuleSet>$(ProjectDir)\StyleCopRules\YourStyleCopFile.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\StyleCopAnalyzersDefault.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   

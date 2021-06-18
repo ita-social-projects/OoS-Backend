@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Services
             Expression<Func<User, bool>> filter = p => p.Id == id;
 
             var users = await repository.GetByFilter(filter).ConfigureAwait(false);
-         
+
             if (!users.Any())
             {
                 throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Services
         public async Task<ShortUserDto> Update(ShortUserDto dto)
         {
             logger.Information($"Updating User with Id = {dto?.Id} started.");
-            
+
             try
             {
                 Expression<Func<User, bool>> filter = p => p.Id == dto.Id;

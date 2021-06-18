@@ -36,7 +36,7 @@ namespace OutOfSchool.WebApi.Services
         public WorkshopService(
             IWorkshopRepository repository,
             IRatingService ratingService,
-            ILogger logger, 
+            ILogger logger,
             IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;

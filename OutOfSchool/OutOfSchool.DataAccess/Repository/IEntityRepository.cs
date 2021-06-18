@@ -46,7 +46,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <returns>List of all elements.</returns>
         Task<IEnumerable<T>> GetAll();
-        
+
         /// <summary>
         /// Get element by Id.
         /// </summary>
@@ -60,7 +60,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>List of all elements with included propertires.</returns>
         Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
-        
+
         /// <summary>
         /// Get elements by a specific filter.
         /// </summary>
