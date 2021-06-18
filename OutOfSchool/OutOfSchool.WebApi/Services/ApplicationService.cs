@@ -101,7 +101,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Getting all Applications started.");
 
-            var applications = await repository.GetAll().ConfigureAwait(false);
+            var applications = await repository.GetAllWithDetails("Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? "Application table is empty."
@@ -117,7 +117,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.ParentId == id;
 
-            var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
+            var applications = await repository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Parent Id = {id}."
@@ -133,7 +133,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
 
-            var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
+            var applications = await repository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Workshop Id = {id}."
@@ -153,7 +153,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
 
-            var applications = await repository.GetByFilter(applicationFilter).ConfigureAwait(false);
+            var applications = await repository.GetByFilter(applicationFilter, "Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Provider Id = {id}."
@@ -169,7 +169,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => (int)a.Status == status;
 
-            var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
+            var applications = await repository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Status = {status}."
@@ -183,7 +183,10 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Getting Application by Id started. Looking Id = {id}.");
 
-            var application = await repository.GetById(id).ConfigureAwait(false);
+            Expression<Func<Application, bool>> filter = a => a.Id == id;
+
+            var application = await repository.Get<int>(where: filter, includeProperties: "Workshop,Child,Parent")
+                                              .FirstOrDefaultAsync().ConfigureAwait(false);
 
             if (application is null)
             {
