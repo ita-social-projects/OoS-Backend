@@ -93,6 +93,46 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
+        [TestCase(1)]
+        public async Task GetByParentId_WhenIdIsValid_ShouldReturnOkResultObject(long id)
+        {
+            // Arrange
+            service.Setup(x => x.GetAllByParent(id)).ReturnsAsync(children.Where(p => p.ParentId == id));
+
+            // Act
+            var result = await controller.GetByParentId(id).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(200, result.StatusCode);
+        }
+
+        [Test]
+        [TestCase(0)]
+        public void GetByParentId_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
+        {
+            // Assert
+            Assert.That(
+                async () => await controller.GetByParentId(id),
+                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task GetByParentId_WhenIdIsNotValid_ShouldReturnNull(long id)
+        {
+            // Arrange
+            service.Setup(x => x.GetAllByParent(id)).ReturnsAsync(children.Where(p => p.ParentId == id));
+
+            // Act
+            var result = await controller.GetByParentId(id).ConfigureAwait(false) as NoContentResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(204, result.StatusCode);
+        }
+
+        [Test]
         public async Task CreateChild_WhenModelIsValid_ShouldReturnCreatedAtActionResult()
         {
             // Arrange
