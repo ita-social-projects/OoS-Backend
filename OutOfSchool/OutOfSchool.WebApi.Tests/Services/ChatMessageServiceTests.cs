@@ -113,8 +113,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(99, "user1")]
-        [TestCase(1, "user99")]
-        public async Task GetAllNotReadByUserInChatRoom_WhenCalledWithUnexistedIds_ShouldReturnEmptyList(long id, string userId)
+        public async Task GetAllNotReadByUserInChatRoom_WhenCalledWithUnexistedChatId_ShouldReturnEmptyList(long id, string userId)
         {
             // Act
             var result = await messageService.GetAllNotReadByUserInChatRoom(id, userId).ConfigureAwait(false);
