@@ -98,5 +98,56 @@ namespace OutOfSchool.IdentityServer.Controllers
             await signInManager.RefreshSignInAsync(user);
             return View("Email/ConfirmChange");
         }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ConfirmEmail()
+        {
+            var user = await userManager.FindByEmailAsync(User.Identity.Name);
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            var callBackUrl = Url.Action(nameof(ConfirmationEmail), "Account", new { userId = user.Id, token }, Request.Scheme);
+
+            var message = new Message()
+            {
+                From = new EmailAddress()
+                {
+                    Name = "Oos-Backend",
+                    Address = "OoS.Backend.Test.Server@gmail.com",
+                },
+                To = new EmailAddress()
+                {
+                    Name = user.Email,
+                    Address = user.Email,
+                },
+                Content = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.",
+                Subject = "Confirm email.",
+            };
+            await emailSender.SendAsync(message);
+                        
+            return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmationEmail(string userId, string token)
+        {
+            if (userId == null || token == null)
+            {
+                return View("Error");
+            }
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID: '{userId}'.");
+            }
+
+            var result = await userManager.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+            {
+                return View("Error");
+            }
+
+            return Ok();
+        }
     }
 }
