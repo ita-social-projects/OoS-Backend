@@ -62,8 +62,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="user2Id">Id of another User.</param>
         /// <param name="workshopId">Id of Workshop.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains <see cref="bool"/> representing if chat can be created.</returns>
-        /// <exception cref="ArgumentException">If chat is forbidden between users.</exception>
         /// <exception cref="InvalidOperationException">If one of the entities was not found.</exception>
-        Task<bool> ValidateUsers(string user1Id, string user2Id, long workshopId);
+        Task<bool> UsersCanChatBetweenEachOther(string user1Id, string user2Id, long workshopId);
     }
 }

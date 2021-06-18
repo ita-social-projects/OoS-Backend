@@ -90,6 +90,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Text = "new text",
                 WorkshopId = 1,
             };
+            roomServiceMoq.Setup(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()))
+                .ReturnsAsync(false);
             roomServiceMoq.Setup(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1))
                 .Throws<ArgumentException>();
 
@@ -98,7 +100,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(It.IsAny<long>()), Times.Never);
-            roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Once);
+            roomServiceMoq.Verify(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()), Times.Once);
+            roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
             Assert.AreEqual(403, result.StatusCode);
@@ -115,14 +118,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Text = "new text",
                 WorkshopId = 1,
             };
-            roomServiceMoq.Setup(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1))
+            roomServiceMoq.Setup(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()))
                 .Throws<InvalidOperationException>();
 
             // Act and Assert
             Assert.ThrowsAsync<InvalidOperationException>(async () => await controller.CreateMessage(newMessage).ConfigureAwait(false));
 
             roomServiceMoq.Verify(x => x.GetById(It.IsAny<long>()), Times.Never);
-            roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Once);
+            roomServiceMoq.Verify(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()), Times.Once);
+            roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
         }
 
@@ -145,6 +149,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(1), Times.Once);
+            roomServiceMoq.Verify(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()), Times.Never);
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
@@ -174,6 +179,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(1), Times.Once);
+            roomServiceMoq.Verify(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()), Times.Never);
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
@@ -218,6 +224,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(1), Times.Once);
+            roomServiceMoq.Verify(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()), Times.Never);
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Once);
             Assert.AreEqual(201, result.StatusCode);
@@ -229,7 +236,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateMessage_WhenChatRoomIdIsNotSet_ReturnsCreatedAtActionResultWithCreatedObject()
+        public async Task CreateMessage_WhenChatRoomIdIsNotSetChatCanBeCreted_ReturnsCreatedAtActionResultWithCreatedObject()
         {
             // Arrange
             var newMessage = new ChatNewMessageDto()
@@ -258,6 +265,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 CreatedTime = DateTime.Now,
                 IsRead = false,
             };
+            roomServiceMoq.Setup(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()))
+                .ReturnsAsync(true);
             messageServiceMoq.Setup(x => x.Create(It.IsAny<ChatMessageDto>()))
                 .ReturnsAsync(message);
 
@@ -266,6 +275,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(It.IsAny<long>()), Times.Never);
+            roomServiceMoq.Verify(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()), Times.Once);
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Once);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Once);
             Assert.AreEqual(201, result.StatusCode);

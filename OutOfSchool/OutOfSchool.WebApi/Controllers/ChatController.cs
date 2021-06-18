@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Create new ChatMessage.
         /// </summary>
         /// <param name="chatNewMessageDto">Entity that contains text of message, receiver and workshop info.</param>
-        /// <returns>Created <see cref="ChatMessageDto"/></returns>
+        /// <returns>Created <see cref="ChatMessageDto"/>.</returns>
         [Obsolete("This method is for testing purposes.")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChatMessageDto))]
@@ -67,40 +67,39 @@ namespace OutOfSchool.WebApi.Controllers
                 IsRead = false,
             };
 
-            try
+            if (chatNewMessageDto.ChatRoomId > 0)
             {
-                if (chatNewMessageDto.ChatRoomId > 0)
+                var existingChatRoom = await roomService.GetById(chatNewMessageDto.ChatRoomId).ConfigureAwait(false);
+                if (!(existingChatRoom is null) && existingChatRoom.Users.Any(u => u.Id == senderUserId))
                 {
-                    var existingChatRoom = await roomService.GetById(chatNewMessageDto.ChatRoomId).ConfigureAwait(false);
-                    if (!(existingChatRoom is null) && existingChatRoom.Users.Any(u => u.Id == senderUserId))
-                    {
-                        chatMessageDto.ChatRoomId = existingChatRoom.Id;
-                    }
-                    else
-                    {
-                        return StatusCode(403, "Forbidden to write messages to a chat room you are not participating in.");
-                    }
+                    chatMessageDto.ChatRoomId = existingChatRoom.Id;
                 }
                 else
                 {
-                    var chatRoomDto = await roomService.CreateOrReturnExisting(
-                    senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId)
-                    .ConfigureAwait(false);
-
-                    chatMessageDto.ChatRoomId = chatRoomDto.Id;
+                    return StatusCode(403, "Forbidden to write messages to a chat room you are not participating in.");
+                }
+            }
+            else
+            {
+                var chatIsPossible = await roomService.UsersCanChatBetweenEachOther(senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId).ConfigureAwait(false);
+                if (!chatIsPossible)
+                {
+                    return StatusCode(403, "Chat is forbidden between these users.");
                 }
 
-                var createdMessageDto = await messageService.Create(chatMessageDto).ConfigureAwait(false);
+                var chatRoomDto = await roomService.CreateOrReturnExisting(
+                senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId)
+                .ConfigureAwait(false);
 
-                return CreatedAtAction(
-                     nameof(GetMessageById),
-                     new { id = createdMessageDto.Id },
-                     createdMessageDto);
+                chatMessageDto.ChatRoomId = chatRoomDto.Id;
             }
-            catch (ArgumentException exception)
-            {
-                return StatusCode(403, exception.Message);
-            }
+
+            var createdMessageDto = await messageService.Create(chatMessageDto).ConfigureAwait(false);
+
+            return CreatedAtAction(
+                 nameof(GetMessageById),
+                 new { id = createdMessageDto.Id },
+                 createdMessageDto);
         }
 
         /// <summary>

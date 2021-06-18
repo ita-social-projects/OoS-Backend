@@ -107,7 +107,11 @@ namespace OutOfSchool.WebApi.Hubs
                 }
                 else
                 {
-                    await roomService.ValidateUsers(senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId).ConfigureAwait(false);
+                    var chatIsPossible = await roomService.UsersCanChatBetweenEachOther(senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId).ConfigureAwait(false);
+                    if (!chatIsPossible)
+                    {
+                        await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", "Chat is forbidden between these users.").ConfigureAwait(false);
+                    }
 
                     var chatRoomDto = await roomService.CreateOrReturnExisting(
                     senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId)
@@ -158,8 +162,7 @@ namespace OutOfSchool.WebApi.Hubs
 
         private void RemoveUsersConnectionIdTracking(string userId)
         {
-            HubUser user;
-            Users.TryGetValue(userId, out user);
+            Users.TryGetValue(userId, out HubUser user);
 
             if (user != null)
             {
@@ -169,8 +172,7 @@ namespace OutOfSchool.WebApi.Hubs
 
                     if (!user.ConnectionIds.Any())
                     {
-                        HubUser removedUser;
-                        Users.TryRemove(userId, out removedUser);
+                        Users.TryRemove(userId, out HubUser removedUser);
                     }
                 }
             }
@@ -178,8 +180,7 @@ namespace OutOfSchool.WebApi.Hubs
 
         private async Task AddConnectionsToGroup(string userId, long chatRoomId)
         {
-            HubUser user;
-            if (Users.TryGetValue(userId, out user))
+            if (Users.TryGetValue(userId, out HubUser user))
             {
                 foreach (var connection in user.ConnectionIds)
                 {

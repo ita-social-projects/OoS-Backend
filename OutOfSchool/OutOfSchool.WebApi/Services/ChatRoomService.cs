@@ -58,8 +58,6 @@ namespace OutOfSchool.WebApi.Services
                 }
                 else
                 {
-                    await this.ValidateUsers(user1Id, user2Id, workshopId).ConfigureAwait(false);
-
                     return await this.Create(user1Id, user2Id, workshopId).ConfigureAwait(false);
                 }
             }
@@ -196,10 +194,10 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<bool> ValidateUsers(string user1Id, string user2Id, long workshopId)
+        public async Task<bool> UsersCanChatBetweenEachOther(string user1Id, string user2Id, long workshopId)
         {
             logger.Information($"Validation of ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
-            var flag = false;
+            
             try
             {
                 var users1 = await userRepository.GetByFilter(u => u.Id == user1Id).ConfigureAwait(false);
@@ -213,40 +211,33 @@ namespace OutOfSchool.WebApi.Services
                 // Forbid chats between users with the same role. But parent still can write admin.
                 if (string.Equals(user1.Role, user2.Role, StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new ArgumentException($"Chat is forbidden between {user1.Role} and {user2.Role}.");
+                    return false;
                 }
 
                 // Forbid chats when workshop is not managed by one of the users.
                 if (string.Equals(user1.Role, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase) &&
                     (!string.Equals(workshop.Provider.UserId, user1.Id, StringComparison.Ordinal)))
                 {
-                    throw new ArgumentException($"Workshop is not managed by {user1.Role}. Chat is forbidden.");
+                    return false;
                 }
                 else if (string.Equals(user2.Role, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase) &&
                     (!string.Equals(workshop.Provider.UserId, user2.Id, StringComparison.Ordinal)))
                 {
-                    throw new ArgumentException($"Workshop is not managed by {user2.Role}. Chat is forbidden.");
+                    return false;
                 }
 
                 // Forbid chats between parent and admin.
                 if ((string.Equals(user1.Role, Role.Parent.ToString(), StringComparison.OrdinalIgnoreCase) && string.Equals(user2.Role, Role.Admin.ToString(), StringComparison.OrdinalIgnoreCase))
                     || (string.Equals(user2.Role, Role.Parent.ToString(), StringComparison.OrdinalIgnoreCase) && string.Equals(user1.Role, Role.Admin.ToString(), StringComparison.OrdinalIgnoreCase)))
                 {
-                    throw new ArgumentException($"Chat is forbidden between {user1.Role} and {user2.Role}.");
+                    return false;
                 }
 
-                flag = true;
-
-                return flag;
+                return true;
             }
             catch (InvalidOperationException exception)
             {
                 logger.Error($"One of the entities was not found. {exception.Message}");
-                throw;
-            }
-            catch (ArgumentException exception)
-            {
-                logger.Error($"Validation of users failed. Exception: {exception.Message}");
                 throw;
             }
         }
