@@ -10,7 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4354D271-F117-47CD-BFDD-9785F584D833}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		StyleCopAnalyzersDefault.ruleset = StyleCopAnalyzersDefault.ruleset
+		StyleCopAnalyzersRules.ruleset = StyleCopAnalyzersRules.ruleset
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.IdentityServer.Tests", "OutOfSchool.IdentityServer.Tests\OutOfSchool.IdentityServer.Tests.csproj", "{5C959505-9BD1-4829-80CC-5C6392E364EA}"
