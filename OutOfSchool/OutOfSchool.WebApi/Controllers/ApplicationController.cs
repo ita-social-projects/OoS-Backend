@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -178,6 +179,52 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             var applications = await service.GetAllByProvider(id).ConfigureAwait(false);
+
+            if (!applications.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(applications);
+        }
+
+        /// <summary>
+        /// Get Applications by Provider or Workshop Id.
+        /// </summary>
+        /// <param name="property">Property to find by (workshop or provider).</param>
+        /// <param name="id">Provider or Workshop id.</param>
+        /// <returns>List of applications.</returns>
+        /// <response code="200">Entities were found by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures.</response>
+        [Authorize(Roles = "provider,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{property:regex(^provider$|^workshop$)}/{id}")]
+        public async Task<IActionResult> GetByPropertyId(string property, long id)
+        {
+            try
+            {
+                this.ValidateId(id, localizer);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            IEnumerable<ApplicationDto> applications = default;
+
+            switch (property.ToLower(CultureInfo.CurrentCulture))
+            {
+                case "workshop":
+                    applications = await service.GetAllByWorkshop(id).ConfigureAwait(false);
+                    break;
+                case "provider":
+                    applications = await service.GetAllByProvider(id).ConfigureAwait(false);
+                    break;
+            }
 
             if (!applications.Any())
             {
