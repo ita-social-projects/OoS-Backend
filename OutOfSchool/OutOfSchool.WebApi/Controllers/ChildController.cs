@@ -36,6 +36,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get all children from the database.
         /// </summary>
         /// <returns>List of all children.</returns>
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -65,6 +66,29 @@ namespace OutOfSchool.WebApi.Controllers
             this.ValidateId(id, localizer);
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get all children from the database by parent id.
+        /// </summary>
+        /// <param name="id">Id of Parent.</param>
+        /// <returns>List of all children.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetByParentId(long id)
+        {
+            this.ValidateId(id, localizer);
+
+            var children = await service.GetAllByParent(id).ConfigureAwait(false);
+
+            if (!children.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(children);
         }
 
         /// <summary>
