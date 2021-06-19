@@ -48,9 +48,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContextMoq.Setup(x => x.User.FindFirst("sub"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
 
-            controller = new ChatController(messageServiceMoq.Object, roomServiceMoq.Object, localizerMoq.Object);
-            controller.ControllerContext = new ControllerContext();
-            controller.ControllerContext.HttpContext = httpContextMoq.Object;
+            controller = new ChatController(messageServiceMoq.Object, roomServiceMoq.Object, localizerMoq.Object)
+            {
+                ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
+            };
         }
 
 #pragma warning disable SA1124 // Do not use regions

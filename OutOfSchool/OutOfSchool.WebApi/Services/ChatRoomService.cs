@@ -61,11 +61,6 @@ namespace OutOfSchool.WebApi.Services
                     return await this.Create(user1Id, user2Id, workshopId).ConfigureAwait(false);
                 }
             }
-            catch (ArgumentException exception)
-            {
-                logger.Error($"CreateOrReturnExisting ChatRoom faild validation: {exception.Message}");
-                throw;
-            }
             catch (InvalidOperationException exception)
             {
                 logger.Error($"CreateOrReturnExisting ChatRoom faild: {exception.Message}");
@@ -87,15 +82,15 @@ namespace OutOfSchool.WebApi.Services
             {
                 var query = roomRepository.Get<long>(includeProperties: "ChatMessages,ChatRoomUsers", where: x => x.Id == id);
                 var chatRooms = await query.ToListAsync().ConfigureAwait(false);
-                var chatRoom = chatRooms.Count == 1 ? chatRooms.First() : null;
+                var chatRoom = chatRooms.FirstOrDefault();
 
-                if (!(chatRoom is null))
+                if (chatRoom is null)
                 {
-                    await roomRepository.Delete(chatRoom).ConfigureAwait(false);
+                    throw new ArgumentOutOfRangeException(nameof(id), $"ChatRoom with id:{id} was not found in the system.");
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException(nameof(id), $"ChatRoom with id:{id} was not found in the system.");
+                    await roomRepository.Delete(chatRoom).ConfigureAwait(false);
                 }
 
                 logger.Information($"ChatRoom id:{id} was successfully deleted.");
@@ -182,7 +177,7 @@ namespace OutOfSchool.WebApi.Services
                     throw new InvalidOperationException(exmessage);
                 }
 
-                var chatRoom = chatRooms.Count == 1 ? chatRooms.First() : null;
+                var chatRoom = chatRooms.FirstOrDefault();
 
                 return chatRoom.ToModel();
             }
@@ -202,7 +197,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var users1 = await userRepository.GetByFilter(u => u.Id == user1Id).ConfigureAwait(false);
                 var users2 = await userRepository.GetByFilter(u => u.Id == user2Id).ConfigureAwait(false);
-                var workshops = await workshopRepository.GetByFilter(w => w.Id == workshopId).ConfigureAwait(false);
+                var workshops = await workshopRepository.GetByFilter(w => w.Id == workshopId, "Provider").ConfigureAwait(false);
 
                 var user1 = users1.First();
                 var user2 = users2.First();
@@ -249,6 +244,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="user2Id">Id of another User.</param>
         /// <param name="workshopId">Id of Workshop.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDto"/> that was created.</returns>
+        /// <exception cref="DbUpdateException">If an error is encountered while saving to database.</exception>
         private async Task<ChatRoomDto> Create(string user1Id, string user2Id, long workshopId)
         {
             logger.Information($"ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
@@ -278,6 +274,40 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.Error($"ChatRoom was not created. Exception: {exception.Message}");
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Checking if users and workshop exist.
+        /// </summary>
+        /// <param name="user1Id">Id of one User.</param>
+        /// <param name="user2Id">Id of another User.</param>
+        /// <param name="workshopId">Id of Workshop.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains true if all entities exist, otherwise false.</returns>
+        /// <exception cref="InvalidOperationException">If one of the entities was not found.</exception>
+        private async Task<bool> EntitiesExist(string user1Id, string user2Id, long workshopId)
+        {
+            logger.Information($"Check if exists: {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
+
+            try
+            {
+                var user1 = (await userRepository.GetByFilter(x => x.Id == user1Id).ConfigureAwait(false)).First();
+                var user2 = (await userRepository.GetByFilter(x => x.Id == user2Id).ConfigureAwait(false)).First();
+                var workshop = (await workshopRepository.GetByFilter(x => x.Id == workshopId).ConfigureAwait(false)).First();
+
+                if ((user1 is null) || (user2 is null) || (workshop is null))
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            catch (InvalidOperationException exception)
+            {
+                logger.Error($"Some entity was not found. Exception: {exception.Message}");
+                return false;
             }
         }
     }

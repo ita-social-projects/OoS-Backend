@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             var builder =
                 new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-                .UseInMemoryDatabase(databaseName: "OutOfSchoolWorkshopTestDB")
+                .UseInMemoryDatabase(databaseName: "OutOfSchoolChatMessageTestDB")
                 .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning));
 
             options = builder.Options;
@@ -49,6 +49,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             SeedDatabase();
         }
 
+#pragma warning disable SA1124 // Do not use regions
         #region Create
         [Test]
         public async Task Create_WhenEntityIsValid_ShouldCreateEntity()
@@ -288,6 +289,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
         }
         #endregion
+
+#pragma warning restore SA1124 // Do not use regions
 
         private void SeedDatabase()
         {
