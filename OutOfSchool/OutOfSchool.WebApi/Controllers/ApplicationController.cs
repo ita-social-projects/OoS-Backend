@@ -22,7 +22,9 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ApplicationController : ControllerBase
     {
-        private readonly IApplicationService service;
+        private readonly IApplicationService applicationService;
+        private readonly IParentService parentService;
+        private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -30,10 +32,16 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="service">Service for Application model.</param>
         /// <param name="localizer">Localizer.</param>
-        public ApplicationController(IApplicationService service, IStringLocalizer<SharedResource> localizer)
+        public ApplicationController(
+            IApplicationService service, 
+            IStringLocalizer<SharedResource> localizer,
+            IProviderService providerService, 
+            IParentService parentService)
         {
-            this.service = service;
+            this.applicationService = service;
             this.localizer = localizer;
+            this.providerService = providerService;
+            this.parentService = parentService;
         }
 
         /// <summary>
@@ -49,7 +57,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var applications = await service.GetAll().ConfigureAwait(false);
+            var applications = await applicationService.GetAll().ConfigureAwait(false);
 
             if (!applications.Any())
             {
@@ -82,7 +90,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ex.Message);
             }
 
-            var application = await service.GetById(id).ConfigureAwait(false);
+            var application = await applicationService.GetById(id).ConfigureAwait(false);
 
             if (application is null)
             {
@@ -108,7 +116,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByParentId(long id)
         {
-            var applications = await service.GetAllByParent(id).ConfigureAwait(false);
+            var userHasRights = await CheckUserRights(id).ConfigureAwait(false);
+
+            if (!userHasRights)
+            {
+                return BadRequest(localizer["Unable to get applications for another parent."]);
+            }
+
+            var applications = await applicationService.GetAllByParent(id).ConfigureAwait(false);
 
             if (!applications.Any())
             {
@@ -144,15 +159,22 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ex.Message);
             }
 
+            var userHasRights = await CheckUserRights(id).ConfigureAwait(false);
+
+            if (!userHasRights)
+            {
+                return BadRequest(localizer["Unable to get applications for anither provider"]);
+            }
+
             IEnumerable<ApplicationDto> applications = default;
 
             switch (property.ToLower(CultureInfo.CurrentCulture))
             {
                 case "workshop":
-                    applications = await service.GetAllByWorkshop(id).ConfigureAwait(false);
+                    applications = await applicationService.GetAllByWorkshop(id).ConfigureAwait(false);
                     break;
                 case "provider":
-                    applications = await service.GetAllByProvider(id).ConfigureAwait(false);
+                    applications = await applicationService.GetAllByProvider(id).ConfigureAwait(false);
                     break;
             }
 
@@ -189,7 +211,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ex.Message);
             }
 
-            var applications = await service.GetAllByStatus(status).ConfigureAwait(false);
+            var applications = await applicationService.GetAllByStatus(status).ConfigureAwait(false);
 
             if (!applications.Any())
             {
@@ -222,7 +244,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 var applications = CreateMultiple(applicationApiModel);
 
-                var newApplications = await service.Create(applications).ConfigureAwait(false);
+                var newApplications = await applicationService.Create(applications).ConfigureAwait(false);
 
                 var ids = newApplications.Select(a => a.Id);
 
@@ -259,6 +281,13 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
+            var userHasRights = await CheckUserRights(applicationDto.ParentId).ConfigureAwait(false);
+
+            if (!userHasRights)
+            {
+                return BadRequest(localizer["Unable to create application for another parent"]);
+            }
+
             try
             {
                 applicationDto.Id = default;
@@ -267,7 +296,7 @@ namespace OutOfSchool.WebApi.Controllers
 
                 applicationDto.Status = 0;
 
-                var application = await service.Create(applicationDto).ConfigureAwait(false);
+                var application = await applicationService.Create(applicationDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                      nameof(GetById),
@@ -304,7 +333,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                var application = await service.Update(applicationDto).ConfigureAwait(false);
+                var application = await applicationService.Update(applicationDto).ConfigureAwait(false);
                 return Ok(application);
             }
             catch (ArgumentException ex)
@@ -322,6 +351,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <responce code="400">If entity with given Id does not exist.</responce>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -332,7 +362,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 this.ValidateId(id, localizer);
 
-                await service.Delete(id).ConfigureAwait(false);
+                await applicationService.Delete(id).ConfigureAwait(false);
                 return NoContent();
             }
             catch (ArgumentException ex)
@@ -359,6 +389,26 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 throw new ArgumentOutOfRangeException(nameof(status), localizer["Status should be from 0 to 2"]);
             }
+        }
+
+        private async Task<bool> CheckUserRights(long id)
+        {
+            var userId = User.FindFirst("sub")?.Value;
+
+            if (User.IsInRole("parent"))
+            {
+                var parent = await parentService.GetByUserId(userId).ConfigureAwait(false);
+
+                return parent.Id == id;
+            }
+            else if (User.IsInRole("provider"))
+            {
+                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+
+                return provider.Id == id;
+            }
+
+            return true;
         }
     }
 }

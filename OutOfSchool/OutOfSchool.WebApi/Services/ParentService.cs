@@ -106,6 +106,25 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<ParentDTO> GetByUserId(string id)
+        {
+            logger.Information($"Getting Parent by UserId started. Looking UserId is {id}.");
+
+            Expression<Func<Parent, bool>> filter = p => p.UserId == id;
+
+            var parents = await repositoryParent.GetByFilter(filter).ConfigureAwait(false);
+
+            if (!parents.Any())
+            {
+                throw new ArgumentException(localizer["There is no Parent in the Db with such User id"], nameof(id));
+            }
+
+            logger.Information($"Successfully got a Parent with UserId = {id}.");
+
+            return parents.FirstOrDefault().ToModel();
+        }
+
+        /// <inheritdoc/>
         public async Task<ShortUserDto> Update(ShortUserDto dto)
         {
             logger.Information($"Updating Parent with User Id = {dto?.Id} started.");
