@@ -212,21 +212,23 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
+        public async Task<ApplicationDto> Update(ShortApplicationDTO applicationDto)
         {
             logger.Information($"Updating Application with Id = {applicationDto?.Id} started.");
-
-            ModelNullValidation(applicationDto);
 
             CheckApplicationExists(applicationDto.Id);
 
             try
             {
-                var application = await repository.Update(applicationDto.ToDomain()).ConfigureAwait(false);
+                var application = await repository.GetById(applicationDto.Id).ConfigureAwait(false);
+
+                application.Status = applicationDto.Status;
+
+                var updatedApplication = await repository.Update(application).ConfigureAwait(false);
 
                 logger.Information($"Application with Id = {applicationDto?.Id} updated succesfully.");
 
-                return application.ToModel();
+                return updatedApplication.ToModel();
             }
             catch (DbUpdateConcurrencyException ex)
             {

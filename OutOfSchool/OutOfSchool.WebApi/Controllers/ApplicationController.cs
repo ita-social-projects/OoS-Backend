@@ -32,6 +32,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="service">Service for Application model.</param>
         /// <param name="localizer">Localizer.</param>
+        /// <param name="providerService">Service for Provider model.</param>
+        /// <param name="parentService">Service for Parent model.</param>
         public ApplicationController(
             IApplicationService service, 
             IStringLocalizer<SharedResource> localizer,
@@ -116,7 +118,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByParentId(long id)
         {
-            var userHasRights = await CheckUserRights(id).ConfigureAwait(false);
+            var userHasRights = await CheckUserRights(parentId: id).ConfigureAwait(false);
 
             if (!userHasRights)
             {
@@ -159,7 +161,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ex.Message);
             }
 
-            var userHasRights = await CheckUserRights(id).ConfigureAwait(false);
+            var userHasRights = await CheckUserRights(providerId: id).ConfigureAwait(false);
 
             if (!userHasRights)
             {
@@ -281,11 +283,11 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userHasRights = await CheckUserRights(applicationDto.ParentId).ConfigureAwait(false);
+            var userHasRights = await CheckUserRights(parentId: applicationDto.ParentId).ConfigureAwait(false);
 
             if (!userHasRights)
             {
-                return BadRequest(localizer["Unable to create application for another parent"]);
+                return BadRequest(localizer["Unable to create application for another parent."]);
             }
 
             try
@@ -318,23 +320,35 @@ namespace OutOfSchool.WebApi.Controllers
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize(Roles = "provider,admin")]
+        [Authorize(Roles = "parent,provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(ApplicationDto applicationDto)
+        public async Task<IActionResult> Update(ShortApplicationDTO applicationDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            var application = await applicationService.GetById(applicationDto.Id).ConfigureAwait(false);
+
+            var userHasRights = await CheckUserRights(
+                parentId: application.ParentId, 
+                providerId: application.Workshop.ProviderId)
+                .ConfigureAwait(false);
+
+            if (!userHasRights)
+            {
+                return BadRequest(localizer["Unable to update application for another user."]);
+            }
+
             try
             {
-                var application = await applicationService.Update(applicationDto).ConfigureAwait(false);
-                return Ok(application);
+                var updatedApplication = await applicationService.Update(applicationDto).ConfigureAwait(false);
+                return Ok(updatedApplication);
             }
             catch (ArgumentException ex)
             {
@@ -391,7 +405,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
-        private async Task<bool> CheckUserRights(long id)
+        private async Task<bool> CheckUserRights(long? parentId = null, long? providerId = null)
         {
             var userId = User.FindFirst("sub")?.Value;
 
@@ -399,13 +413,13 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 var parent = await parentService.GetByUserId(userId).ConfigureAwait(false);
 
-                return parent.Id == id;
+                return parent.Id == parentId;
             }
             else if (User.IsInRole("provider"))
             {
                 var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
 
-                return provider.Id == id;
+                return provider.Id == providerId;
             }
 
             return true;
