@@ -20,6 +20,7 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IApplicationRepository repository;
         private readonly IWorkshopRepository workshopRepository;
+        private readonly IEntityRepository<Child> childRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -30,16 +31,19 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="workshopRepository">Workshop repository.</param>
+        /// <param name="childRepository">Child repository.</param>
         public ApplicationService(
             IApplicationRepository repository, 
             ILogger logger, 
             IStringLocalizer<SharedResource> localizer,
-            IWorkshopRepository workshopRepository)
+            IWorkshopRepository workshopRepository,
+            IEntityRepository<Child> childRepository)
         {
             this.repository = repository;
             this.workshopRepository = workshopRepository;
             this.logger = logger;
             this.localizer = localizer;
+            this.childRepository = childRepository;
         }
 
         /// <inheritdoc/>
@@ -48,6 +52,14 @@ namespace OutOfSchool.WebApi.Services
             logger.Information("Application creating started.");
 
             ModelCreationValidation(applicationDto);
+
+            var isChildParent = await CheckChildParent(applicationDto.ParentId, applicationDto.ChildId).ConfigureAwait(false);
+
+            if (!isChildParent)
+            {
+                logger.Information("Operation failed. Unable to create application for another parent`s child.");
+                throw new ArgumentException(localizer["Unable to create application for another parent`s child."]);
+            }
 
             var application = applicationDto.ToDomain();
 
@@ -269,6 +281,15 @@ namespace OutOfSchool.WebApi.Services
                 logger.Information($"Operation failed. Application with Id = {id} doesn't exist in the system.");
                 throw new ArgumentException(localizer[$"Application with Id = {id} doesn't exist in the system."]);
             }
+        }
+
+        private async Task<bool> CheckChildParent(long parentId, long childId)
+        {
+            Expression<Func<Child, bool>> filter = c => c.ParentId == parentId;
+
+            var children = childRepository.Get<int>(where: filter).Select(c => c.Id);
+
+            return await children.ContainsAsync(childId).ConfigureAwait(false);
         }
     }
 }
