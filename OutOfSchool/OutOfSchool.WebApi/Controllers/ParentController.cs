@@ -83,7 +83,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create(string userId)
-        {   
+        {
             try
             {
                 var dto = new ParentDTO

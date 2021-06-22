@@ -8,7 +8,7 @@ namespace OutOfSchool.Services.Models
         public long Id { get; set; }
 
         [Range(1, 5)]
-        public int Rate { get; set; } 
+        public int Rate { get; set; }
 
         [Required]
         [Range(1, 2, ErrorMessage = "The type field should be 1 or 2")]

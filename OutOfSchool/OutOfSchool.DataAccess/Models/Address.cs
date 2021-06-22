@@ -14,7 +14,7 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "City is required")]
         [DataType(DataType.Text)]
         [MaxLength(15)]
-        public string City { get; set; } = string.Empty; 
+        public string City { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Street is required")]
         [MaxLength(30)]

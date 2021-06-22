@@ -11,7 +11,7 @@ namespace OutOfSchool.Services.Models
         }
 
         public long Id { get; set; }
-    
+
         public virtual IReadOnlyCollection<Child> Children { get; set; }
 
         [Required]

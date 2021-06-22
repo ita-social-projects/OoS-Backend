@@ -16,13 +16,13 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ProviderController : ControllerBase
     {
-        private readonly IProviderService providerService;    
+        private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
         /// </summary>
-        /// <param name="providerService">Service for Provider model.</param>       
+        /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
         public ProviderController(IProviderService providerService, IStringLocalizer<SharedResource> localizer)
         {
@@ -91,7 +91,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]        
+        [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -105,12 +105,12 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             try
-            {              
+            {
                 dto.Id = default;
                 dto.LegalAddress.Id = default;
 
                 dto.UserId = User.FindFirst("sub")?.Value;
-             
+
                 var provider = await providerService.Create(dto).ConfigureAwait(false);
 
                 return CreatedAtAction(
@@ -121,7 +121,7 @@ namespace OutOfSchool.WebApi.Controllers
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
-            }          
+            }
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="dto">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
-        [Authorize(Roles = "provider,admin")]       
+        [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -150,7 +150,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]        
+        [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

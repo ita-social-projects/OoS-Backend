@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Extensions
         #region ToModel
 
         public static AddressDto ToModel(this Address address)
-        {          
+        {
             return Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
         }
 
@@ -59,14 +59,14 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>()
-                 .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(c => c.ActualAddress))               
-                 .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(c => c.LegalAddress));              
+                 .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(c => c.ActualAddress))
+                 .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(c => c.LegalAddress));
             });
         }
 
         public static ChildDto ToModel(this Child child)
         {
-            return child.Mapper<Child, ChildDto>(cfg => 
+            return child.Mapper<Child, ChildDto>(cfg =>
             {
                 cfg.CreateMap<BirthCertificate, BirthCertificateDto>();
                 cfg.CreateMap<Child, ChildDto>();
@@ -120,7 +120,7 @@ namespace OutOfSchool.WebApi.Extensions
         #region ToDomain
 
         public static Address ToDomain(this AddressDto addressDto)
-        {                   
+        {
             return Mapper<AddressDto, Address>(addressDto, cfg => { cfg.CreateMap<AddressDto, Address>(); });
         }
 
@@ -177,7 +177,7 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ProviderDto, Provider>(providerDto, cfg =>
             {
                 cfg.CreateMap<AddressDto, Address>();
-                cfg.CreateMap<ProviderDto, Provider>();               
+                cfg.CreateMap<ProviderDto, Provider>();
             });
         }
 

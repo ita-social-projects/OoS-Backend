@@ -41,13 +41,13 @@ namespace OutOfSchool.Services.Models
         [MaxLength(500)]
         [Required(ErrorMessage = "Description is required")]
         public string Description { get; set; }
-        
+
         [Required(ErrorMessage = "EDRPOU/IPN code is required")]
         [RegularExpression(
             @"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU/IPN code must contain 8 or 10 digits")]
         public string EdrpouIpn { get; set; }
-     
+
         [MaxLength(50)]
         public string Director { get; set; } = string.Empty;
 

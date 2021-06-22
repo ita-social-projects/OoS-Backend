@@ -77,7 +77,7 @@ namespace OutOfSchool.Services.Repository
             db.Entry(entity).State = EntityState.Deleted;
 
             if (entity.LegalAddressId == entity.ActualAddressId)
-            {             
+            {
                 db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
             }
             else

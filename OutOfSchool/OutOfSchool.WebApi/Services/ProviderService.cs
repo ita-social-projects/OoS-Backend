@@ -33,8 +33,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="localizer">Localizer.</param>
         public ProviderService(
             IProviderRepository providerRepository,
-            IRatingService ratingService, 
-            ILogger logger, 
+            IRatingService ratingService,
+            ILogger logger,
             IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
@@ -140,13 +140,13 @@ namespace OutOfSchool.WebApi.Services
         public async Task Delete(long id)
         {
             logger.Information($"Deleting Provider with Id = {id} started.");
-        
+
             try
             {
                 var entity = await providerRepository.GetById(id).ConfigureAwait(false);
 
                 await providerRepository.Delete(entity).ConfigureAwait(false);
-              
+
                 logger.Information($"Provider with Id = {id} succesfully deleted.");
             }
             catch (ArgumentNullException)
@@ -154,6 +154,6 @@ namespace OutOfSchool.WebApi.Services
                 logger.Error($"Deleting failed. Provider with Id = {id} doesn't exist in the system.");
                 throw;
             }
-        }    
+        }
     }
 }

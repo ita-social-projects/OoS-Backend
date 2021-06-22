@@ -30,7 +30,7 @@ namespace OutOfSchool.Services.Repository
 
         /// <inheritdoc/>
         public async Task<T> Create(T entity)
-        {           
+        {
             await dbSet.AddAsync(entity);
             await dbContext.SaveChangesAsync();
             return await Task.FromResult(entity);
@@ -43,13 +43,13 @@ namespace OutOfSchool.Services.Repository
             {
                 try
                 {
-                    var result = await operation();                    
-                    await transaction.CommitAsync();                 
+                    var result = await operation();
+                    await transaction.CommitAsync();
                     return result;
                 }
                 catch (Exception)
                 {
-                    await transaction.RollbackAsync();                      
+                    await transaction.RollbackAsync();
                     throw;
                 }
             }
@@ -57,9 +57,9 @@ namespace OutOfSchool.Services.Repository
 
         /// <inheritdoc/>
         public async Task Delete(T entity)
-        {          
+        {
             dbContext.Entry(entity).State = EntityState.Deleted;
-            
+
             await this.dbContext.SaveChangesAsync();
         }
 
@@ -85,7 +85,7 @@ namespace OutOfSchool.Services.Repository
         public async Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "")
         {
             var query = this.dbSet.Where(predicate);
-            
+
             foreach (var includeProperty in includeProperties.Split(
                 new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -119,7 +119,7 @@ namespace OutOfSchool.Services.Repository
         public async Task<T> Update(T entity)
         {
             dbContext.Entry(entity).State = EntityState.Modified;
-            
+
             await this.dbContext.SaveChangesAsync();
             return entity;
         }

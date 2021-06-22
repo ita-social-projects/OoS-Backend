@@ -122,7 +122,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Delete a specific workshop from the database.
         /// </summary>
         /// <param name="id">Workshop's id.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>       
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -150,7 +150,7 @@ namespace OutOfSchool.WebApi.Controllers
         public async Task<IActionResult> GetPagesCount(WorkshopFilter filter, int pageSize)
         {
             PageSizeValidation(pageSize);
-            
+
             int count = await service.GetPagesCount(filter, pageSize).ConfigureAwait(false);
 
             if (count == 0)
