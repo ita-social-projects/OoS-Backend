@@ -21,10 +21,30 @@ namespace OutOfSchool.EmailSender
             _password = options.Value.Password;
         }
 
-        public async Task SendAsync(Message message)
+        public Task SendAsync(Message message)
         {
             var mimeMessage = CreateMimeMessage(message);
-            await SendAsync(mimeMessage);
+            return SendAsync(mimeMessage);
+        }
+
+        public Task SendAsync(string email, string subject, string htmlMessage)
+        {
+            var message = new Message()
+            {
+                From = new EmailAddress()
+                {
+                    Name = "Oos-Backend",
+                    Address = "OoS.Backend.Test.Server@gmail.com",
+                },
+                To = new EmailAddress()
+                {
+                    Name = email,
+                    Address = email,
+                },
+                Content = htmlMessage,
+                Subject = subject,
+            };
+            return SendAsync(message);
         }
 
         private MimeMessage CreateMimeMessage(Message message)

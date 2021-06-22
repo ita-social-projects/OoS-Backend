@@ -31,9 +31,9 @@ namespace OutOfSchool.IdentityServer.Controllers
 
         [HttpGet]
         [Authorize]
-        public IActionResult ChangeEmail()
+        public IActionResult ChangeEmail(string returnUrl = "Login")
         {
-            return View("Email/Change");
+            return View("Email/Change", new ChangeEmailViewModel() { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
@@ -49,22 +49,10 @@ namespace OutOfSchool.IdentityServer.Controllers
             var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
             var callBackUrl = Url.Action(nameof(ConfirmEmailChange), "Account", new { userId = user.Id, email = model.Email, token }, Request.Scheme);
 
-            var message = new Message()
-            {
-                From = new EmailAddress()
-                {
-                    Name = "Oos-Backend",
-                    Address = "OoS.Backend.Test.Server@gmail.com",
-                },
-                To = new EmailAddress()
-                {
-                    Name = model.Email,
-                    Address = model.Email,
-                },
-                Content = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.",
-                Subject = "Confirm email.",
-            };
-            await emailSender.SendAsync(message);
+            var email = model.Email;
+            var subject = "Confirm email.";
+            var htmlMessage = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
+            await emailSender.SendAsync(email, subject, htmlMessage);
 
             return View("Email/Change");
         }
@@ -105,30 +93,18 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             var user = await userManager.FindByEmailAsync(User.Identity.Name);
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var callBackUrl = Url.Action(nameof(ConfirmationEmail), "Account", new { userId = user.Id, token }, Request.Scheme);
+            var callBackUrl = Url.Action(nameof(EmailConfirmation), "Account", new { userId = user.Id, token }, Request.Scheme);
 
-            var message = new Message()
-            {
-                From = new EmailAddress()
-                {
-                    Name = "Oos-Backend",
-                    Address = "OoS.Backend.Test.Server@gmail.com",
-                },
-                To = new EmailAddress()
-                {
-                    Name = user.Email,
-                    Address = user.Email,
-                },
-                Content = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.",
-                Subject = "Confirm email.",
-            };
-            await emailSender.SendAsync(message);
-                        
+            var email = user.Email;
+            var subject = "Confirm email.";
+            var htmlMessage = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
+            await emailSender.SendAsync(email, subject, htmlMessage);
+
             return Ok();
         }
 
         [HttpGet]
-        public async Task<IActionResult> ConfirmationEmail(string userId, string token)
+        public async Task<IActionResult> EmailConfirmation(string userId, string token)
         {
             if (userId == null || token == null)
             {
@@ -149,5 +125,33 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             return Ok();
         }
+
+        //[HttpGet]
+        //[Authorize]
+        //public async Task<IActionResult> ForgotPassword()
+        //{
+        //    var user = await userManager.GetUserAsync(User);
+        //    var token = await userManager.GeneratePasswordResetTokenAsync(user);
+        //    var callBackUrl = Url.Action(nameof(ConfirmationEmail), "Account", new { userId = user.Id, token }, Request.Scheme);
+
+        //    var message = new Message()
+        //    {
+        //        From = new EmailAddress()
+        //        {
+        //            Name = "Oos-Backend",
+        //            Address = "OoS.Backend.Test.Server@gmail.com",
+        //        },
+        //        To = new EmailAddress()
+        //        {
+        //            Name = user.Email,
+        //            Address = user.Email,
+        //        },
+        //        Content = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.",
+        //        Subject = "Confirm email.",
+        //    };
+        //    await emailSender.SendAsync(message);
+
+        //    return Ok();
+        //}
     }
 }
