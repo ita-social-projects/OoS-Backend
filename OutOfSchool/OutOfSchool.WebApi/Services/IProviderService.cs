@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Get entity by User id.
         /// </summary>
-        /// <param name="id">Key of the User entity in the table.</param>               
+        /// <param name="id">Key of the User entity in the table.</param>
         /// <returns>Provider.</returns>
         Task<ProviderDto> GetByUserId(string id);
 

@@ -163,10 +163,10 @@ namespace OutOfSchool.WebApi.Services
                 }
 
                 this.CompareTwoListsOfTeachers(
-                    dto.Teachers, 
-                    workshop.Teachers, 
-                    out List<TeacherDTO> teachersToCreate, 
-                    out List<TeacherDTO> teachersToUpdate, 
+                    dto.Teachers,
+                    workshop.Teachers,
+                    out List<TeacherDTO> teachersToCreate,
+                    out List<TeacherDTO> teachersToUpdate,
                     out List<TeacherDTO> teachersToDelete);
 
                 // When updating entity Workshop with the existing list
@@ -177,19 +177,19 @@ namespace OutOfSchool.WebApi.Services
 
                 Func<Task<Workshop>> updateWorkshop = async () =>
                 {
-                    foreach (var teacherDto in teachersToCreate) 
-                    { 
-                        await teacherRepository.Create(teacherDto.ToDomain()).ConfigureAwait(false); 
-                    }
-
-                    foreach (var teacherDto in teachersToUpdate) 
+                    foreach (var teacherDto in teachersToCreate)
                     {
-                        await teacherRepository.Update(teacherDto.ToDomain()).ConfigureAwait(false); 
+                        await teacherRepository.Create(teacherDto.ToDomain()).ConfigureAwait(false);
                     }
 
-                    foreach (var teacherDto in teachersToDelete) 
-                    { 
-                        await teacherRepository.Delete(teacherDto.ToDomain()).ConfigureAwait(false); 
+                    foreach (var teacherDto in teachersToUpdate)
+                    {
+                        await teacherRepository.Update(teacherDto.ToDomain()).ConfigureAwait(false);
+                    }
+
+                    foreach (var teacherDto in teachersToDelete)
+                    {
+                        await teacherRepository.Delete(teacherDto.ToDomain()).ConfigureAwait(false);
                     }
 
                     await addressRepository.Update(dto.Address.ToDomain()).ConfigureAwait(false);
@@ -348,7 +348,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         private void CompareTwoListsOfTeachers(
-            IEnumerable<TeacherDTO> source, 
+            IEnumerable<TeacherDTO> source,
             IEnumerable<Teacher> destination,
             out List<TeacherDTO> teachersToCreate,
             out List<TeacherDTO> teachersToUpdate,

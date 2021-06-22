@@ -53,8 +53,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             provider = FakeProvider();
         }
 
-#pragma warning disable SA1124 // Do not use regions
-
         #region GetWorkshops
         [Test]
         public async Task GetWorkshops_WhenThereAreWOrkshops_ShouldReturnOkResultObject()
@@ -296,8 +294,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.AreEqual(403, result.StatusCode);
         }
         #endregion
-
-#pragma warning restore SA1124 // Do not use regions
 
         private WorkshopDTO FakeWorkshop()
         {

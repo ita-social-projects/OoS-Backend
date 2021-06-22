@@ -68,7 +68,6 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             SeedDatabase();
         }
-#pragma warning disable SA1124 // Do not use regions
 
         #region Create
         [Test]
@@ -337,7 +336,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Throws.Exception.TypeOf<NullReferenceException>());
         }
         #endregion
-#pragma warning restore SA1124 // Do not use regions
 
         private void SeedDatabase()
         {

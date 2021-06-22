@@ -8,8 +8,6 @@ namespace OutOfSchool.WebApi.Extensions
 {
     public static class MappingExtensions
     {
-#pragma warning disable SA1124 // Do not use regions
-
         #region ToModel
 
         public static AddressDto ToModel(this Address address)
@@ -247,5 +245,4 @@ namespace OutOfSchool.WebApi.Extensions
             return destination;
         }
     }
-#pragma warning restore SA1124 // Do not use regions
 }
