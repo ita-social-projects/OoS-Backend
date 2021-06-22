@@ -718,7 +718,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task UpdateMessage_WhenMessageIsTooOldToBeDeleted_Returns403ObjectResult(long id)
+        public async Task UpdateMessage_WhenMessageIsTooOldToBeUpdated_Returns403ObjectResult(long id)
         {
             // Arrange
             var message = new ChatMessageDto()
@@ -842,6 +842,31 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new ChatMessageDto()
                 {
                     UserId = "NotCurrentUserId",
+                    CreatedTime = DateTime.Now,
+                });
+
+            // Act
+            var result = await controller.DeleteMessage(id).ConfigureAwait(false) as ObjectResult;
+
+            // Assert
+            messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
+            messageServiceMoq.Verify(x => x.Delete(id), Times.Never);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(403, result.StatusCode);
+        }
+
+        [Test]
+        [TestCase(1)]
+        public async Task DeleteMessage_WhenMessageIsTooOldToBeDeleted_Returns403ObjectResult(long id)
+        {
+            // Arrange
+            messageServiceMoq.Setup(x => x.GetById(id))
+                .ReturnsAsync(new ChatMessageDto()
+                {
+                    Id = id,
+                    UserId = userId,
+                    ChatRoomId = 1,
+                    CreatedTime = DateTime.Now.Subtract(new TimeSpan(1, 0, 0)),
                 });
 
             // Act
@@ -863,6 +888,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new ChatMessageDto()
                 {
                     UserId = userId,
+                    CreatedTime = DateTime.Now,
                 });
 
             messageServiceMoq.Setup(x => x.Delete(id))
@@ -884,6 +910,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new ChatMessageDto()
                 {
                     UserId = userId,
+                    CreatedTime = DateTime.Now,
                 });
 
             messageServiceMoq.Setup(x => x.Delete(id))
@@ -905,6 +932,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new ChatMessageDto()
                 {
                     UserId = userId,
+                    CreatedTime = DateTime.Now,
                 });
 
             messageServiceMoq.Setup(x => x.Delete(id))

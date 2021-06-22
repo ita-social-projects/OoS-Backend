@@ -322,6 +322,13 @@ namespace OutOfSchool.WebApi.Controllers
                 return StatusCode(403, "Forbidden to delete messages of another users.");
             }
 
+            var whenMessageBecomesOld = new TimeSpan(0, 10, 0);
+
+            if (oldChatMessage.CreatedTime.CompareTo(DateTime.Now.Subtract(whenMessageBecomesOld)) < 0)
+            {
+                return StatusCode(403, "Forbidden to delete old messages.");
+            }
+
             await messageService.Delete(id).ConfigureAwait(false);
 
             return NoContent();
