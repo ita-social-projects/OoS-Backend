@@ -66,7 +66,7 @@ namespace OutOfSchool.WebApi.Hubs
         }
 
         /// <summary>
-        /// Creates <see cref="ChatMessageDto"/>, saves to DataBase and sends message to Others in Group.
+        /// Creates a <see cref="ChatMessageDto"/>, saves it to DataBase and sends message to Others in Group.
         /// </summary>
         /// <param name="chatNewMessage">Entity (string format) that contains text of message, receiver and workshop info.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -77,7 +77,7 @@ namespace OutOfSchool.WebApi.Hubs
             {
                 chatNewMessageDto = JsonConvert.DeserializeObject<ChatNewMessageDto>(chatNewMessage);
             }
-            catch (JsonException exception)
+            catch (JsonReaderException exception)
             {
                 await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", exception.Message).ConfigureAwait(false);
                 throw;
@@ -98,34 +98,29 @@ namespace OutOfSchool.WebApi.Hubs
             bool roomIsNew = false;
 
             // Validate chat between users and get chatRoom.
-            try
+            if (chatNewMessageDto.ChatRoomId > 0 &&
+                (await this.RoomExistAndSenderIsItsParticipant(chatNewMessageDto.ChatRoomId, senderUserId).ConfigureAwait(false)))
             {
-                if (chatNewMessageDto.ChatRoomId > 0 &&
-                    (await this.RoomExistAndSenderIsItsParticipant(chatNewMessageDto.ChatRoomId, senderUserId).ConfigureAwait(false)))
+                chatMessageDto.ChatRoomId = chatNewMessageDto.ChatRoomId;
+            }
+            else
+            {
+                var chatIsPossible = await roomService.UsersCanChatBetweenEachOther(senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId).ConfigureAwait(false);
+                if (!chatIsPossible)
                 {
-                    chatMessageDto.ChatRoomId = chatNewMessageDto.ChatRoomId;
+                    await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", "Chat is forbidden between these users.").ConfigureAwait(false);
+                    return;
                 }
                 else
                 {
-                    var chatIsPossible = await roomService.UsersCanChatBetweenEachOther(senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId).ConfigureAwait(false);
-                    if (!chatIsPossible)
-                    {
-                        await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", "Chat is forbidden between these users.").ConfigureAwait(false);
-                    }
-
                     var chatRoomDto = await roomService.CreateOrReturnExisting(
-                    senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId)
-                    .ConfigureAwait(false);
+                                        senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId)
+                                        .ConfigureAwait(false);
 
                     chatMessageDto.ChatRoomId = chatRoomDto.Id;
 
                     roomIsNew = true;
                 }
-            }
-            catch (ArgumentException exception)
-            {
-                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", exception.Message).ConfigureAwait(false);
-                throw;
             }
 
             // Save chatMessage in the system.
@@ -192,13 +187,14 @@ namespace OutOfSchool.WebApi.Hubs
         private async Task<bool> RoomExistAndSenderIsItsParticipant(long chatRoomId, string senderId)
         {
             var usersRooms = await roomService.GetByUserId(senderId).ConfigureAwait(false);
-            if (usersRooms.Any() && usersRooms.Any(r => r.Id == chatRoomId))
+            var room = usersRooms.Where(room => room.Id == chatRoomId).FirstOrDefault();
+            if (room is null)
             {
-                return true;
+                return false;
             }
             else
             {
-                return false;
+                return true;
             }
         }
 

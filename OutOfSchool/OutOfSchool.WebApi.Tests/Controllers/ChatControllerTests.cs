@@ -615,6 +615,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         #region UpdateMessage
         [Test]
+        [TestCase(1)]
+        public async Task UpdateMessage_WhenModelIsInvalid_ReturnsBadRequestObjectResult(long id)
+        {
+            // Arrange
+            var message = new ChatMessageDto() { Id = id };
+            controller.ModelState.AddModelError("test", "test");
+
+            // Act
+            var result = await controller.UpdateMessage(message).ConfigureAwait(false) as BadRequestObjectResult;
+
+            // Assert
+            messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(400, result.StatusCode);
+            Assert.IsNotNull(result.Value);
+        }
+
+        [Test]
         [TestCase(0)]
         public void UpdateMessage_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {

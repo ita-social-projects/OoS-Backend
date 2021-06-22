@@ -267,7 +267,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Id = 1,
                         Title = "Title1",
                         ProviderId = 1,
-
                     },
                     new Workshop()
                     {
@@ -302,14 +301,14 @@ namespace OutOfSchool.WebApi.Tests.Services
 
                 var roomUsers = new List<ChatRoomUser>()
                 {
-                    new ChatRoomUser() {Id = 1, ChatRoomId = 1, UserId = users.ToArray()[0].Id },
-                    new ChatRoomUser() {Id = 2, ChatRoomId = 1, UserId = users.ToArray()[2].Id },
-                    new ChatRoomUser() {Id = 3, ChatRoomId = 2, UserId = users.ToArray()[0].Id },
-                    new ChatRoomUser() {Id = 4, ChatRoomId = 2, UserId = users.ToArray()[3].Id },
-                    new ChatRoomUser() {Id = 5, ChatRoomId = 3, UserId = users.ToArray()[0].Id },
-                    new ChatRoomUser() {Id = 6, ChatRoomId = 3, UserId = users.ToArray()[3].Id },
-                    new ChatRoomUser() {Id = 7, ChatRoomId = 4, UserId = users.ToArray()[1].Id },
-                    new ChatRoomUser() {Id = 8, ChatRoomId = 4, UserId = users.ToArray()[2].Id },
+                    new ChatRoomUser() { Id = 1, ChatRoomId = 1, UserId = users.ToArray()[0].Id },
+                    new ChatRoomUser() { Id = 2, ChatRoomId = 1, UserId = users.ToArray()[2].Id },
+                    new ChatRoomUser() { Id = 3, ChatRoomId = 2, UserId = users.ToArray()[0].Id },
+                    new ChatRoomUser() { Id = 4, ChatRoomId = 2, UserId = users.ToArray()[3].Id },
+                    new ChatRoomUser() { Id = 5, ChatRoomId = 3, UserId = users.ToArray()[0].Id },
+                    new ChatRoomUser() { Id = 6, ChatRoomId = 3, UserId = users.ToArray()[3].Id },
+                    new ChatRoomUser() { Id = 7, ChatRoomId = 4, UserId = users.ToArray()[1].Id },
+                    new ChatRoomUser() { Id = 8, ChatRoomId = 4, UserId = users.ToArray()[2].Id },
                 };
                 context.ChatRoomUsers.AddRangeAsync(roomUsers);
 

@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         Task<ChatRoomDto> GetById(long id);
 
         /// <summary>
-        /// Get ChatRooms, Not including ChatMessages for some User.
+        /// Get ChatRooms for some User, Not including ChatMessages.
         /// </summary>
         /// <param name="userId">User's identifier.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatRoomDTO}"/> that contains elements from the input sequence.</returns>

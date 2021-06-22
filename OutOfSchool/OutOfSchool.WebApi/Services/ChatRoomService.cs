@@ -276,39 +276,5 @@ namespace OutOfSchool.WebApi.Services
                 throw;
             }
         }
-
-        /// <summary>
-        /// Checking if users and workshop exist.
-        /// </summary>
-        /// <param name="user1Id">Id of one User.</param>
-        /// <param name="user2Id">Id of another User.</param>
-        /// <param name="workshopId">Id of Workshop.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains true if all entities exist, otherwise false.</returns>
-        /// <exception cref="InvalidOperationException">If one of the entities was not found.</exception>
-        private async Task<bool> EntitiesExist(string user1Id, string user2Id, long workshopId)
-        {
-            logger.Information($"Check if exists: {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
-
-            try
-            {
-                var user1 = (await userRepository.GetByFilter(x => x.Id == user1Id).ConfigureAwait(false)).First();
-                var user2 = (await userRepository.GetByFilter(x => x.Id == user2Id).ConfigureAwait(false)).First();
-                var workshop = (await workshopRepository.GetByFilter(x => x.Id == workshopId).ConfigureAwait(false)).First();
-
-                if ((user1 is null) || (user2 is null) || (workshop is null))
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-            catch (InvalidOperationException exception)
-            {
-                logger.Error($"Some entity was not found. Exception: {exception.Message}");
-                return false;
-            }
-        }
     }
 }
