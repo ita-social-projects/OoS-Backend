@@ -25,6 +25,7 @@ namespace OutOfSchool.WebApi.Controllers
         private readonly IApplicationService applicationService;
         private readonly IParentService parentService;
         private readonly IProviderService providerService;
+        private readonly IWorkshopService workshopService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -34,16 +35,19 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="localizer">Localizer.</param>
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="parentService">Service for Parent model.</param>
+        /// <param name="workshopService">Service for Workshop model.</param>
         public ApplicationController(
             IApplicationService service, 
             IStringLocalizer<SharedResource> localizer,
             IProviderService providerService, 
-            IParentService parentService)
+            IParentService parentService,
+            IWorkshopService workshopService)
         {
             this.applicationService = service;
             this.localizer = localizer;
             this.providerService = providerService;
             this.parentService = parentService;
+            this.workshopService = workshopService;
         }
 
         /// <summary>
@@ -94,6 +98,16 @@ namespace OutOfSchool.WebApi.Controllers
 
             var application = await applicationService.GetById(id).ConfigureAwait(false);
 
+            var userHasRights = await CheckUserRights(
+                parentId: application?.ParentId,
+                providerId: application?.Workshop.ProviderId)
+                .ConfigureAwait(false);
+
+            if (!userHasRights)
+            {
+                return BadRequest(localizer["Unable to get application for another user."]);
+            }
+
             if (application is null)
             {
                 return NoContent();
@@ -118,6 +132,15 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByParentId(long id)
         {
+            try
+            {
+                this.ValidateId(id, localizer);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
             var userHasRights = await CheckUserRights(parentId: id).ConfigureAwait(false);
 
             if (!userHasRights)
@@ -161,23 +184,31 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ex.Message);
             }
 
-            var userHasRights = await CheckUserRights(providerId: id).ConfigureAwait(false);
-
-            if (!userHasRights)
-            {
-                return BadRequest(localizer["Unable to get applications for anither provider"]);
-            }
-
             IEnumerable<ApplicationDto> applications = default;
 
-            switch (property.ToLower(CultureInfo.CurrentCulture))
+            if (property.Equals("provider", StringComparison.CurrentCultureIgnoreCase))
             {
-                case "workshop":
-                    applications = await applicationService.GetAllByWorkshop(id).ConfigureAwait(false);
-                    break;
-                case "provider":
-                    applications = await applicationService.GetAllByProvider(id).ConfigureAwait(false);
-                    break;
+                var userHasRights = await CheckUserRights(providerId: id).ConfigureAwait(false);
+
+                if (!userHasRights)
+                {
+                    return BadRequest(localizer["Unable to get applications for another provider"]);
+                }
+
+                applications = await applicationService.GetAllByProvider(id).ConfigureAwait(false);
+            }
+            else if (property.Equals("workshop", StringComparison.CurrentCultureIgnoreCase))
+            {
+                var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+
+                var userHasRights = await CheckUserRights(providerId: workshop?.ProviderId).ConfigureAwait(false);
+
+                if (!userHasRights)
+                {
+                    return BadRequest(localizer["Unable to get applications for another provider"]);
+                }
+
+                applications = await applicationService.GetAllByWorkshop(id).ConfigureAwait(false);
             }
 
             if (!applications.Any())
@@ -320,7 +351,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize(Roles = "parent,provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -336,8 +366,8 @@ namespace OutOfSchool.WebApi.Controllers
             var application = await applicationService.GetById(applicationDto.Id).ConfigureAwait(false);
 
             var userHasRights = await CheckUserRights(
-                parentId: application.ParentId, 
-                providerId: application.Workshop.ProviderId)
+                parentId: application?.ParentId, 
+                providerId: application?.Workshop.ProviderId)
                 .ConfigureAwait(false);
 
             if (!userHasRights)

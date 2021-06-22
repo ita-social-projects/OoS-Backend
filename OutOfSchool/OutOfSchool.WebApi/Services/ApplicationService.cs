@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ApplicationService : IApplicationService
     {
-        private readonly IApplicationRepository repository;
+        private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IEntityRepository<Child> childRepository;
         private readonly ILogger logger;
@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopRepository workshopRepository,
             IEntityRepository<Child> childRepository)
         {
-            this.repository = repository;
+            this.applicationRepository = repository;
             this.workshopRepository = workshopRepository;
             this.logger = logger;
             this.localizer = localizer;
@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Services
 
             var application = applicationDto.ToDomain();
 
-            var newApplication = await repository.Create(application).ConfigureAwait(false);
+            var newApplication = await applicationRepository.Create(application).ConfigureAwait(false);
 
             logger.Information($"Application with Id = {newApplication?.Id} created successfully.");
 
@@ -79,7 +79,7 @@ namespace OutOfSchool.WebApi.Services
 
             var applications = applicationDtos.Select(a => a.ToDomain()).ToList();
 
-            var newApplications = await repository.Create(applications).ConfigureAwait(false);
+            var newApplications = await applicationRepository.Create(applications).ConfigureAwait(false);
 
             logger.Information("Applications created successfully.");
 
@@ -97,7 +97,7 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                await repository.Delete(application).ConfigureAwait(false);
+                await applicationRepository.Delete(application).ConfigureAwait(false);
 
                 logger.Information($"Application with Id = {id} succesfully deleted.");
             }
@@ -113,7 +113,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Getting all Applications started.");
 
-            var applications = await repository.GetAllWithDetails("Workshop,Child,Parent").ConfigureAwait(false);
+            var applications = await applicationRepository.GetAllWithDetails("Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? "Application table is empty."
@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.ParentId == id;
 
-            var applications = await repository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Parent Id = {id}."
@@ -145,7 +145,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
 
-            var applications = await repository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Workshop Id = {id}."
@@ -165,7 +165,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
 
-            var applications = await repository.GetByFilter(applicationFilter, "Workshop,Child,Parent").ConfigureAwait(false);
+            var applications = await applicationRepository.GetByFilter(applicationFilter, "Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Provider Id = {id}."
@@ -181,7 +181,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => (int)a.Status == status;
 
-            var applications = await repository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Status = {status}."
@@ -197,7 +197,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.Id == id;
 
-            var application = await repository.Get<int>(where: filter, includeProperties: "Workshop,Child,Parent")
+            var application = await applicationRepository.Get<int>(where: filter, includeProperties: "Workshop,Child,Parent")
                                               .FirstOrDefaultAsync().ConfigureAwait(false);
 
             if (application is null)
@@ -220,11 +220,11 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var application = await repository.GetById(applicationDto.Id).ConfigureAwait(false);
+                var application = await applicationRepository.GetById(applicationDto.Id).ConfigureAwait(false);
 
                 application.Status = applicationDto.Status;
 
-                var updatedApplication = await repository.Update(application).ConfigureAwait(false);
+                var updatedApplication = await applicationRepository.Update(application).ConfigureAwait(false);
 
                 logger.Information($"Application with Id = {applicationDto?.Id} updated succesfully.");
 
@@ -253,7 +253,7 @@ namespace OutOfSchool.WebApi.Services
             Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
                                                               && a.WorkshopId == applicationDto.WorkshopId
                                                               && a.ParentId == applicationDto.ParentId;
-            if (repository.Get<int>(where: filter).Any())
+            if (applicationRepository.Get<int>(where: filter).Any())
             {
                 logger.Information("Creation failed. Application with such data alredy exists.");
                 throw new ArgumentException(localizer["There is already an application with such data."]);
@@ -276,7 +276,7 @@ namespace OutOfSchool.WebApi.Services
 
         private void CheckApplicationExists(long id)
         {
-            var applications = repository.Get<int>(where: a => a.Id == id);
+            var applications = applicationRepository.Get<int>(where: a => a.Id == id);
 
             if (!applications.Any())
             {
