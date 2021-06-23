@@ -37,5 +37,14 @@ namespace OutOfSchool.Services.Repository
             await db.SaveChangesAsync();
             return await Task.FromResult(applications);
         }
+
+        public new async Task<Application> Create(Application entity)
+        {
+            Application toCreate = dbSet.CreateProxy();
+            db.Entry(toCreate).CurrentValues.SetValues(entity);
+            await dbSet.AddAsync(toCreate);
+            await db.SaveChangesAsync();
+            return await Task.FromResult(toCreate);
+        }
     }
 }
