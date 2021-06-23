@@ -109,6 +109,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISubcategoryService, SubcategoryService>();
             services.AddTransient<ISubsubcategoryService, SubsubcategoryService>();
             services.AddTransient<ISocialGroupService, SocialGroupService>();
+            services.AddTransient<ICityService, CityService>();
 
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -117,6 +118,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
             services.AddTransient<IEntityRepository<Category>, EntityRepository<Category>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
+            services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
 
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IParentRepository, ParentRepository>();
