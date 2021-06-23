@@ -115,6 +115,11 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Subsubcategory, SubsubcategoryDTO>(category, cfg => { cfg.CreateMap<Subsubcategory, SubsubcategoryDTO>(); });
         }
 
+        public static CityDto ToModel(this City city)
+        {
+            return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
+        }
+
         #endregion
 
         #region ToDomain
@@ -233,6 +238,11 @@ namespace OutOfSchool.WebApi.Extensions
         public static Subsubcategory ToDomain(this SubsubcategoryDTO categoryDto)
         {
             return Mapper<SubsubcategoryDTO, Subsubcategory>(categoryDto, cfg => { cfg.CreateMap<SubsubcategoryDTO, Subsubcategory>(); });
+        }
+
+        public static City ToDomain(this CityDto cityDto)
+        {
+            return Mapper<CityDto, City>(cityDto, cfg => { cfg.CreateMap<CityDto, City>(); });
         }
 
         #endregion
