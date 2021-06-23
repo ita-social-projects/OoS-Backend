@@ -48,18 +48,38 @@ namespace OutOfSchool.Services
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<ChatMessage>()
+                .HasOne(m => m.ChatRoom)
+                .WithMany(r => r.ChatMessages)
+                .HasForeignKey(r => r.ChatRoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ChatMessage>()
+                .HasOne(m => m.User)
+                .WithMany(u => u.ChatMessages)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.Entity<ChatRoom>()
-            .HasMany(r => r.Users)
-            .WithMany(u => u.ChatRooms)
-            .UsingEntity<ChatRoomUser>(
+                .HasMany(r => r.Users)
+                .WithMany(u => u.ChatRooms)
+                .UsingEntity<ChatRoomUser>(
                 j => j
                     .HasOne(cru => cru.User)
                     .WithMany(u => u.ChatRoomUsers)
-                    .HasForeignKey(cru => cru.UserId),
+                    .HasForeignKey(cru => cru.UserId)
+                    .OnDelete(DeleteBehavior.Cascade),
                 j => j
                     .HasOne(cru => cru.ChatRoom)
                     .WithMany(r => r.ChatRoomUsers)
-                    .HasForeignKey(cru => cru.ChatRoomId));
+                    .HasForeignKey(cru => cru.ChatRoomId)
+                    .OnDelete(DeleteBehavior.Cascade));
+
+            builder.Entity<ChatRoom>()
+                .HasOne(r => r.Workshop)
+                .WithMany(w => w.ChatRooms)
+                .HasForeignKey(r => r.WorkshopId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Seed();
         }

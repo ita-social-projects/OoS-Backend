@@ -192,7 +192,7 @@ namespace OutOfSchool.WebApi.Services
         public async Task<bool> UsersCanChatBetweenEachOther(string user1Id, string user2Id, long workshopId)
         {
             logger.Information($"Validation of ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
-            
+
             try
             {
                 var users1 = await userRepository.GetByFilter(u => u.Id == user1Id).ConfigureAwait(false);

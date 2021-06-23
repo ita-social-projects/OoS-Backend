@@ -15,7 +15,9 @@ namespace OutOfSchool.WebApi.Services
         /// Create new ChatMessage.
         /// </summary>
         /// <param name="chatMessageDto">ChatMessage to create.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatMessageDto"/> that was created.</returns>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="ChatMessageDto"/> that was created.</returns>
+        /// <exception cref="ArgumentNullException">If the parameter <see cref="ChatMessageDto"/> was not set to instance.</exception>
         Task<ChatMessageDto> Create(ChatMessageDto chatMessageDto);
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="chatMessageDto">The ChatMessage to update.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatMessageDto"/> that was updated.</returns>
+        /// <exception cref="ArgumentNullException">If the parameter <see cref="ChatMessageDto"/> was not set to instance.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task<ChatMessageDto> Update(ChatMessageDto chatMessageDto);
 
@@ -45,6 +48,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="chatMessages">A List of ChatMessages that need to be updated.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements that were updated.</returns>
+        /// <exception cref="ArgumentNullException">If the parameter <see cref="IEnumerable{ChatMessageDTO}"/> was not set to instance.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task<IEnumerable<ChatMessageDto>> UpdateIsRead(IEnumerable<ChatMessageDto> chatMessages);
 

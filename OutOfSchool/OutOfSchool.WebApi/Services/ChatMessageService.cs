@@ -31,6 +31,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChatMessageDto> Create(ChatMessageDto chatMessageDto)
         {
+            if (chatMessageDto is null)
+            {
+                throw new ArgumentNullException($"{nameof(chatMessageDto)}");
+            }
+
             logger.Information("ChatMessage creating was started.");
 
             try
@@ -149,6 +154,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChatMessageDto> Update(ChatMessageDto chatMessageDto)
         {
+            if (chatMessageDto is null)
+            {
+                throw new ArgumentNullException($"{nameof(chatMessageDto)}");
+            }
+
             logger.Information($"ChatMessage updating was started. ChatMessage id:{chatMessageDto.Id}");
 
             try
@@ -169,6 +179,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChatMessageDto>> UpdateIsRead(IEnumerable<ChatMessageDto> chatMessages)
         {
+            if (chatMessages is null)
+            {
+                throw new ArgumentNullException($"{nameof(chatMessages)}");
+            }
+
             logger.Information($"Process of updating ({chatMessages.Count()}) ChatMessages that are not read was started.");
 
             if (chatMessages.Any())
@@ -189,7 +204,7 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.Information($"ChatMessages({chatMessages.Count()}) were successfully updated.");
             }
-            
+
             return chatMessages;
         }
     }
