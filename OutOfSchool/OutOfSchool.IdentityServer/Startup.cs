@@ -93,6 +93,9 @@ namespace OutOfSchool.IdentityServer
                 options.Port = smtpOptions.Port;
                 options.Username = smtpOptions.Username;
                 options.Password = smtpOptions.Password;
+                options.EmailAddressFrom = smtpOptions.EmailAddressFrom;
+                options.EmailNameFrom = smtpOptions.EmailNameFrom;
+                options.Enabled = smtpOptions.Enabled;
             });
 
             services.AddControllersWithViews()

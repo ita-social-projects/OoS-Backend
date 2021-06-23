@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -12,6 +13,9 @@ namespace OutOfSchool.EmailSender
         private readonly int _port;
         private readonly string _username;
         private readonly string _password;
+        private readonly string _emailAddressFrom;
+        private readonly string _emailNameFrom;
+        private readonly bool _enabled;
 
         public EmailSender(IOptions<SmtpOptions> options)
         {
@@ -19,6 +23,10 @@ namespace OutOfSchool.EmailSender
             _port = options.Value.Port;
             _username = options.Value.Username;
             _password = options.Value.Password;
+            _emailAddressFrom = options.Value.EmailAddressFrom;
+            _emailNameFrom = options.Value.EmailNameFrom;
+            _enabled = options.Value.Enabled;
+
         }
 
         public Task SendAsync(Message message)
@@ -33,8 +41,8 @@ namespace OutOfSchool.EmailSender
             {
                 From = new EmailAddress()
                 {
-                    Name = "Oos-Backend",
-                    Address = "OoS.Backend.Test.Server@gmail.com",
+                    Name = _emailNameFrom,
+                    Address = _emailAddressFrom,
                 },
                 To = new EmailAddress()
                 {
@@ -62,6 +70,9 @@ namespace OutOfSchool.EmailSender
 
         private async Task SendAsync(MimeMessage mimeMessage)
         {
+            if (!_enabled)
+                return;
+                
             using (var emailClient = new SmtpClient())
             {
                 await emailClient.ConnectAsync(_server, _port, true);
