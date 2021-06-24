@@ -10,11 +10,10 @@ namespace OutOfSchool.Services.Models
 
         public string District { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "City Name is required")]
         public string Name { get; set; } = string.Empty;
 
-        public double Latitude { get; set; } = default;
+        public double? Latitude { get; set; } = default;
 
-        public double Longitude { get; set; } = default;
+        public double? Longitude { get; set; } = default;
     }
 }
