@@ -72,40 +72,6 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To create new Parent and add to the DB.
-        /// </summary>
-        /// <param name="userId">Id of the User.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
-        [HttpPost]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create(string userId)
-        {
-            try
-            {
-                var dto = new ParentDTO
-                {
-                    Id = default,
-                    UserId = User.FindFirst("sub")?.Value,
-                };
-
-                var parent = await service.Create(dto).ConfigureAwait(false);
-
-                return CreatedAtAction(
-                     nameof(GetById),
-                     new { id = parent.Id, },
-                     parent);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        /// <summary>
         /// To update Parent entity that already exists.
         /// </summary>
         /// <param name="shortUserDto">ShortUserDto object with new properties.</param>
