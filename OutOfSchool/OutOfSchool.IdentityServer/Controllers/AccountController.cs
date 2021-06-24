@@ -126,32 +126,69 @@ namespace OutOfSchool.IdentityServer.Controllers
             return Ok();
         }
 
-        //[HttpGet]
-        //[Authorize]
-        //public async Task<IActionResult> ForgotPassword()
-        //{
-        //    var user = await userManager.GetUserAsync(User);
-        //    var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        //    var callBackUrl = Url.Action(nameof(ConfirmationEmail), "Account", new { userId = user.Id, token }, Request.Scheme);
+        [HttpGet]
+        public IActionResult ForgotPassword(string returnUrl = "Login")
+        {
+            return View("Password/Forgot", new ForgotPasswordViewModel() { ReturnUrl = returnUrl });
+        }
 
-        //    var message = new Message()
-        //    {
-        //        From = new EmailAddress()
-        //        {
-        //            Name = "Oos-Backend",
-        //            Address = "OoS.Backend.Test.Server@gmail.com",
-        //        },
-        //        To = new EmailAddress()
-        //        {
-        //            Name = user.Email,
-        //            Address = user.Email,
-        //        },
-        //        Content = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.",
-        //        Subject = "Confirm email.",
-        //    };
-        //    await emailSender.SendAsync(message);
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(new ForgotPasswordViewModel());
+            }
 
-        //    return Ok();
-        //}
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null || !(await userManager.IsEmailConfirmedAsync(user)))
+            {
+                return View("Password/ForgotPasswordConfirmation");
+            }
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var callBackUrl = Url.Action("ResetPassword", "Account", new { area = "Identity", token }, Request.Scheme);
+
+            var email = model.Email;
+            var subject = "Reset Password";
+            var htmlMessage = $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
+            await emailSender.SendAsync(email, subject, htmlMessage);
+
+            return View("Password/ForgotPasswordConfirmation");
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string token = null)
+        {
+            if (token == null)
+            {
+                return BadRequest("A token must be supplied for password reset.");
+            }
+
+            return View("Password/Reset", new ResetPasswordViewModel() { Token = token });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Error");
+            }
+
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return View("Password/ResetPasswordConfirmation");
+            }
+
+            var result = await userManager.ResetPasswordAsync(user, model.Token, model.Password);
+            if (result.Succeeded)
+            {
+                return View("Password/ResetPasswordConfirmation");
+            }
+
+            return Ok();
+        }
     }
 }
