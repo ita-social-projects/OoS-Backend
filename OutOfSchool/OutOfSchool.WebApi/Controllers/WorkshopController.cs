@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -19,32 +20,38 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class WorkshopController : ControllerBase
     {
-        private readonly IWorkshopService service;
+        private readonly IWorkshopService workshopService;
+        private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
         /// </summary>
-        /// <param name="service">Service for Workshop model.</param>
+        /// <param name="workshopService">Service for Workshop model.</param>
+        /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
-        public WorkshopController(IWorkshopService service, IStringLocalizer<SharedResource> localizer)
+        public WorkshopController(IWorkshopService workshopService, IProviderService providerService, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.service = service;
+            this.workshopService = workshopService;
+            this.providerService = providerService;
         }
 
         /// <summary>
         /// Get all workshops from the database.
         /// </summary>
-        /// <returns>List of all workshops.</returns>
+        /// <returns>List of all workshops, or no content.</returns>
+        /// <response code="200">The entity was found by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures.</response>
         [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var workshops = await service.GetAll().ConfigureAwait(false);
+            var workshops = await workshopService.GetAll().ConfigureAwait(false);
 
             if (!workshops.Any())
             {
@@ -58,26 +65,44 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get workshop by it's id.
         /// </summary>
         /// <param name="id">Workshop's id.</param>
-        /// <returns>Workshop.</returns>
+        /// <returns><see cref="WorkshopDTO"/>, or no content.</returns>
+        /// <response code="200">The entity was found by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures. For example: Id was less than one.</response>
         [AllowAnonymous]
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(long id)
         {
             this.ValidateId(id, localizer);
 
-            return Ok(await service.GetById(id).ConfigureAwait(false));
+            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+
+            if (workshop is null)
+            {
+                return NoContent();
+            }
+
+            return Ok(workshop);
         }
 
         /// <summary>
         /// Add new workshop to the database.
         /// </summary>
         /// <param name="dto">Entity to add.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <returns>Created <see cref="WorkshopDTO"/>.</returns>
+        /// <response code="201">Entity was created and returned with Id.</response>
+        /// <response code="400">If the model is invalid, some properties are not set etc.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="403">If the user has no rights use this method, or sets some properties that are forbidden to change.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
         public async Task<IActionResult> Create(WorkshopDTO dto)
@@ -87,10 +112,23 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
+            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            if (!userHasRights)
+            {
+                return StatusCode(403, "Forbidden to create workshops for another providers.");
+            }
+
             dto.Id = default;
             dto.Address.Id = default;
+            if (dto.Teachers.Any())
+            {
+                foreach (var teacher in dto.Teachers)
+                {
+                    teacher.Id = default;
+                }
+            }
 
-            var workshop = await service.Create(dto).ConfigureAwait(false);
+            var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -102,10 +140,17 @@ namespace OutOfSchool.WebApi.Controllers
         /// Update info about workshop entity.
         /// </summary>
         /// <param name="dto">Workshop to update.</param>
-        /// <returns>Workshop.</returns>
+        /// <returns>Updated <see cref="WorkshopDTO"/>.</returns>
+        /// <response code="200">Entity was updated and returned.</response>
+        /// <response code="400">If the model is invalid, some properties are not set etc.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
         public async Task<IActionResult> Update(WorkshopDTO dto)
@@ -115,23 +160,48 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(dto).ConfigureAwait(false));
+            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            if (!userHasRights)
+            {
+                return StatusCode(403, "Forbidden to update workshops for another providers.");
+            }
+
+            return Ok(await workshopService.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
         /// Delete a specific workshop from the database.
         /// </summary>
         /// <param name="id">Workshop's id.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <returns>StatusCode representing the task completion.</returns>
+        /// <response code="204">If the entity was successfully deleted, or if the entity was not found by given Id.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="403">If the user has no rights to use this method, or deletes not own workshop.</response>
+        /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
             this.ValidateId(id, localizer);
 
-            await service.Delete(id).ConfigureAwait(false);
+            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+
+            if (workshop is null)
+            {
+                return NoContent();
+            }
+
+            var userHasRights = await this.IsUserProvidersOwner(workshop.ProviderId).ConfigureAwait(false);
+            if (!userHasRights)
+            {
+                return StatusCode(403, "Forbidden to delete workshops of another providers.");
+            }
+
+            await workshopService.Delete(id).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -141,17 +211,17 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="filter">Workshop filter.</param>
         /// <param name="pageSize">Count of records on one page.</param>
-        /// <returns>COunt of pages.</returns>
+        /// <returns>Count of pages.</returns>
         [AllowAnonymous]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPagesCount(WorkshopFilter filter, int pageSize)
         {
             PageSizeValidation(pageSize);
 
-            int count = await service.GetPagesCount(filter, pageSize).ConfigureAwait(false);
+            int count = await workshopService.GetPagesCount(filter, pageSize).ConfigureAwait(false);
 
             if (count == 0)
             {
@@ -170,7 +240,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <returns>The list of workshops for this page.</returns>
         [AllowAnonymous]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPage(WorkshopFilter filter, int pageNumber, int pageSize)
@@ -178,7 +248,7 @@ namespace OutOfSchool.WebApi.Controllers
             PageSizeValidation(pageSize);
             PageNumberValidation(pageNumber);
 
-            var workshops = await service.GetPage(filter, pageSize, pageNumber).ConfigureAwait(false);
+            var workshops = await workshopService.GetPage(filter, pageSize, pageNumber).ConfigureAwait(false);
 
             if (!workshops.Any())
             {
@@ -206,6 +276,24 @@ namespace OutOfSchool.WebApi.Controllers
                     nameof(pageNumber),
                     localizer["The pageSize cannot be less than 1."]);
             }
+        }
+
+        private async Task<bool> IsUserProvidersOwner(long providerId)
+        {
+            // Provider can create/update/delete a workshop only with it's own ProviderId.
+            // Admin can create a work without checks.
+            if (User.IsInRole("provider"))
+            {
+                var userId = User.FindFirst("sub")?.Value;
+                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+
+                if (providerId != provider.Id)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

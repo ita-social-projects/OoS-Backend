@@ -55,8 +55,11 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         public async Task Logout_WithLogoutId_ReturnsRedirectResult()
         {
             // Arrange
-            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
-            logoutRequest.PostLogoutRedirectUri = "True logout id";
+            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage())
+            { 
+                PostLogoutRedirectUri = "True logout id",
+            };
+            
             fakeSignInManager.Setup(manager => manager.SignOutAsync())
                 .Returns(Task.CompletedTask);
             fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
@@ -69,11 +72,13 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         }
 
         [Test]
-        public async Task Logout_WithoutLogoutId_ThrowsNotImplementedException()
+        public void Logout_WithoutLogoutId_ThrowsNotImplementedException()
         {
             // Arrange
-            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
-            logoutRequest.PostLogoutRedirectUri = "";
+            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage())
+            {
+                PostLogoutRedirectUri = "",
+            };
             fakeSignInManager.Setup(manager => manager.SignOutAsync())
                 .Returns(Task.CompletedTask);
             fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
@@ -89,8 +94,6 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         public async Task Login_WithAndWithoutReturnUrl_ReturnsViewResult(string returnUrl)
         {
             // Arrange
-            var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage());
-            logoutRequest.PostLogoutRedirectUri = "";
 
             // Act
             IActionResult viewResult;
@@ -135,7 +138,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         }
 
         [Test]
-        public async Task Register_WithoutReturnUrl_ReturnsViewResult()
+        public void Register_WithoutReturnUrl_ReturnsViewResult()
         {
             // Arrange 
 
@@ -149,7 +152,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         }
 
         [Test]
-        public async Task Register_WithReturnUrl_ReturnsViewResult()
+        public void Register_WithReturnUrl_ReturnsViewResult()
         {
             // Arrange
             var returnUrl = "Return url";
@@ -224,7 +227,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         }
 
         [Test]
-        public async Task ExternalLogin_ReturnsNotImplementedEx()
+        public void ExternalLogin_ReturnsNotImplementedEx()
         {
             // Arrange
             var authController = this.authController;

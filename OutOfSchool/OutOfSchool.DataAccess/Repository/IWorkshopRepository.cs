@@ -8,8 +8,11 @@ namespace OutOfSchool.Services.Repository
 {
     public interface IWorkshopRepository : IEntityRepository<Workshop>
     {
-        new Task<Workshop> Create(Workshop entity);
-
+        /// <summary>
+        /// Checks entity subcategoryId existence.
+        /// </summary>
+        /// <param name="id">Subcategory id.</param>
+        /// <returns>True if Subsubcaategory exists, otherwise false.</returns>
         bool SubsubcategoryExists(long id);
     }
 }

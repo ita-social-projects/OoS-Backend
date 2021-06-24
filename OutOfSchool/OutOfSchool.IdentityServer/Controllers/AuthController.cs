@@ -4,8 +4,8 @@ using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OutOfSchool.IdentityServer.Enums;
 using OutOfSchool.IdentityServer.ViewModels;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.IdentityServer.Controllers

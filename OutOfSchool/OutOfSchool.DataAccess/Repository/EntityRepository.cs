@@ -15,8 +15,8 @@ namespace OutOfSchool.Services.Repository
     public class EntityRepository<T> : IEntityRepository<T>
         where T : class, new()
     {
-        private OutOfSchoolDbContext dbContext;
-        private DbSet<T> dbSet;
+        private readonly OutOfSchoolDbContext dbContext;
+        private readonly DbSet<T> dbSet;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
@@ -39,19 +39,18 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<T> RunInTransaction(Func<Task<T>> operation)
         {
-            using (IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync())
+            using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
+
+            try
             {
-                try
-                {
-                    var result = await operation();
-                    await transaction.CommitAsync();
-                    return result;
-                }
-                catch (Exception)
-                {
-                    await transaction.RollbackAsync();
-                    throw;
-                }
+                var result = await operation();
+                await transaction.CommitAsync();
+                return result;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
             }
         }
 

@@ -18,25 +18,17 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        /// <summary>
-        /// Add new element.
-        /// </summary>
-        /// <param name="entity">Entity to create.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        public new async Task<Workshop> Create(Workshop entity)
-        {
-            await db.Workshops.AddAsync(entity);
-            await db.SaveChangesAsync();
-            return await Task.FromResult(entity);
-        }
-
-        /// <summary>
-        /// Delete element.
-        /// </summary>
-        /// <param name="entity">Entity to delete.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        /// <inheritdoc/>
         public new async Task Delete(Workshop entity)
         {
+            if (entity.Applications?.Count > 0)
+            {
+                foreach (var app in entity.Applications)
+                {
+                    db.Entry(app).State = EntityState.Deleted;
+                }
+            }
+
             if (entity.Teachers?.Count > 0)
             {
                 foreach (var teacher in entity.Teachers)
@@ -46,16 +38,12 @@ namespace OutOfSchool.Services.Repository
             }
 
             db.Entry(entity).State = EntityState.Deleted;
-            db.Entry(new Address { Id = entity.AddressId }).State = EntityState.Deleted;
+            db.Entry(entity.Address).State = EntityState.Deleted;
 
             await db.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Checks entity subcategoryId existens.
-        /// </summary>
-        /// <param name="id">Subcategory id.</param>
-        /// <returns>Bool.</returns>
+        /// <inheritdoc/>
         public bool SubsubcategoryExists(long id) => db.Subsubcategories.Any(x => x.Id == id);
     }
 }
