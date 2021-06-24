@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.IdentityServer.Controllers
 {
@@ -20,6 +21,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> userManager;
         private readonly IIdentityServerInteractionService interactionService;
         private readonly ILogger<AuthController> logger;
+        private readonly IParentRepository parentRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -27,14 +29,17 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="userManager"> ASP.Net Core Identity User Manager.</param>
         /// <param name="signInManager"> ASP.Net Core Identity Sign in Manager.</param>
         /// <param name="interactionService"> Identity Server 4 interaction service.</param>
+        /// <param name="parentRepository">Repository for Parent model.</param>
         /// <param name="logger"> ILogger class.</param>
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IIdentityServerInteractionService interactionService,
-            ILogger<AuthController> logger)
+            ILogger<AuthController> logger,
+            IParentRepository parentRepository)
         {
             this.logger = logger;
+            this.parentRepository = parentRepository;
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.interactionService = interactionService;
@@ -170,10 +175,20 @@ namespace OutOfSchool.IdentityServer.Controllers
                 IdentityResult roleAssignResult = IdentityResult.Failed();
 
                 roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
-              
+
                 if (roleAssignResult.Succeeded)
                 {
                     await signInManager.SignInAsync(user, false);
+
+                    if (user.Role == Role.Parent.ToString().ToLower())
+                    {
+                        var parent = new Parent()
+                        {
+                            UserId = user.Id,
+                        };
+
+                        await parentRepository.Create(parent);
+                    }
 
                     return Redirect(model.ReturnUrl);
                 }
@@ -193,10 +208,10 @@ namespace OutOfSchool.IdentityServer.Controllers
             else
             {
                 foreach (var error in result.Errors)
-                {                   
+                {
                     if (error.Code == "DuplicateUserName")
                     {
-                        error.Description = $"Email {error.Description.Substring(10).Split('\'')[0]} is alredy taken";                     
+                        error.Description = $"Email {error.Description.Substring(10).Split('\'')[0]} is alredy taken";
                     }
 
                     ModelState.AddModelError(string.Empty, error.Description);
