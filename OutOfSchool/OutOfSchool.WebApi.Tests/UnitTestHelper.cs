@@ -33,8 +33,8 @@ namespace OutOfSchool.Tests
             context.Children.Add(new Child { Id = 2, FirstName = "fn2", LastName = "ln2", MiddleName = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1 });
             context.Children.Add(new Child { Id = 3, FirstName = "fn3", LastName = "ln3", MiddleName = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 });
 
-            context.Applications.Add(new Application() { Id = 1, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6" });
-            context.Applications.Add(new Application() { Id = 3, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6" });
+            context.Applications.Add(new Application() { Id = 1, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1 });
+            context.Applications.Add(new Application() { Id = 3, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1 });
 
             context.SaveChanges();
         }

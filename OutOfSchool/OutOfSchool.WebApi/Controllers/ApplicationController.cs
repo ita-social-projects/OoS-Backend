@@ -31,19 +31,19 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationController"/> class.
         /// </summary>
-        /// <param name="service">Service for Application model.</param>
+        /// <param name="applicationService">Service for Application model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="parentService">Service for Parent model.</param>
         /// <param name="workshopService">Service for Workshop model.</param>
         public ApplicationController(
-            IApplicationService service, 
+            IApplicationService applicationService, 
             IStringLocalizer<SharedResource> localizer,
             IProviderService providerService, 
             IParentService parentService,
             IWorkshopService workshopService)
         {
-            this.applicationService = service;
+            this.applicationService = applicationService;
             this.localizer = localizer;
             this.providerService = providerService;
             this.parentService = parentService;
@@ -98,19 +98,19 @@ namespace OutOfSchool.WebApi.Controllers
 
             var application = await applicationService.GetById(id).ConfigureAwait(false);
 
+            if (application is null)
+            {
+                return NoContent();
+            }
+
             var userHasRights = await CheckUserRights(
-                parentId: application?.ParentId,
-                providerId: application?.Workshop.ProviderId)
+                parentId: application.ParentId,
+                providerId: application.Workshop.ProviderId)
                 .ConfigureAwait(false);
 
             if (!userHasRights)
             {
                 return BadRequest(localizer["Unable to get application for another user."]);
-            }
-
-            if (application is null)
-            {
-                return NoContent();
             }
 
             return Ok(application);
