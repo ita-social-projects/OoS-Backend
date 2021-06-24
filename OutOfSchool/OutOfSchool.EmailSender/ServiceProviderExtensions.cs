@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace OutOfSchool.EmailSender
 {
@@ -7,14 +8,24 @@ namespace OutOfSchool.EmailSender
     {
         public static IServiceCollection AddEmailSender(
             this IServiceCollection services,
-            Action<SmtpOptions> options)
+            Action<OptionsBuilder<EmailOptions>> emailOptions,
+            Action<OptionsBuilder<SmtpOptions>> smtpOptions)
         {
             services.AddSingleton<IEmailSender, EmailSender>();
-            if (options == null)
+            if (emailOptions == null)
             {
-                throw new ArgumentNullException(nameof(options), @"Please provide options for EmailSender");
+                throw new ArgumentNullException(nameof(emailOptions), @"Please provide emailOptions for EmailSender");
             }
-            services.Configure(options);
+
+            if (smtpOptions == null)
+            {
+                throw new ArgumentNullException(nameof(smtpOptions), @"Please provide smtpOptions for EmailSender");
+            }
+
+            var emailOptionsBuilder = services.AddOptions<EmailOptions>();
+            var smtpOptionsBuilder = services.AddOptions<SmtpOptions>();
+            emailOptions(emailOptionsBuilder);
+            smtpOptions(smtpOptionsBuilder);
             return services;
         }
     }

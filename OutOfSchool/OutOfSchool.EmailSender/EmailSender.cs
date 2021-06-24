@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -9,24 +8,13 @@ namespace OutOfSchool.EmailSender
 {
     public class EmailSender : IEmailSender
     {
-        private readonly string _server;
-        private readonly int _port;
-        private readonly string _username;
-        private readonly string _password;
-        private readonly string _emailAddressFrom;
-        private readonly string _emailNameFrom;
-        private readonly bool _enabled;
+        IOptions<EmailOptions> _emailOptions;
+        IOptions<SmtpOptions> _smtpOptions;
 
-        public EmailSender(IOptions<SmtpOptions> options)
+        public EmailSender(IOptions<EmailOptions> emailOptions, IOptions<SmtpOptions> smtpOptions)
         {
-            _server = options.Value.Server;
-            _port = options.Value.Port;
-            _username = options.Value.Username;
-            _password = options.Value.Password;
-            _emailAddressFrom = options.Value.EmailAddressFrom;
-            _emailNameFrom = options.Value.EmailNameFrom;
-            _enabled = options.Value.Enabled;
-
+            _emailOptions = emailOptions;
+            _smtpOptions = smtpOptions;
         }
 
         public Task SendAsync(Message message)
@@ -41,8 +29,8 @@ namespace OutOfSchool.EmailSender
             {
                 From = new EmailAddress()
                 {
-                    Name = _emailNameFrom,
-                    Address = _emailAddressFrom,
+                    Name = _emailOptions.Value.NameFrom,
+                    Address = _emailOptions.Value.AddressFrom,
                 },
                 To = new EmailAddress()
                 {
@@ -70,14 +58,14 @@ namespace OutOfSchool.EmailSender
 
         private async Task SendAsync(MimeMessage mimeMessage)
         {
-            if (!_enabled)
+            if (!_emailOptions.Value.Enabled)
                 return;
                 
             using (var emailClient = new SmtpClient())
             {
-                await emailClient.ConnectAsync(_server, _port, true);
+                await emailClient.ConnectAsync(_smtpOptions.Value.Server, _smtpOptions.Value.Port, true);
                 emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-                await emailClient.AuthenticateAsync(_username, _password);
+                await emailClient.AuthenticateAsync(_smtpOptions.Value.Username, _smtpOptions.Value.Password);
                 await emailClient.SendAsync(mimeMessage);
                 await emailClient.DisconnectAsync(true);
             }
