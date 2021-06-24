@@ -81,7 +81,9 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            var children = await service.GetAllByParent(id).ConfigureAwait(false);
+            string userId = User.FindFirst("sub")?.Value;
+
+            var children = await service.GetAllByParent(id, userId).ConfigureAwait(false);
 
             if (!children.Any())
             {
