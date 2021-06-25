@@ -136,7 +136,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 .ReturnsAsync(workshops);
 
             // Act
-            var result = await workshopService.GetWorkshopsByOrganization(id).ConfigureAwait(false);
+            var result = await workshopService.GetWorkshopsByProviderId(id).ConfigureAwait(false);
 
             // Assert
             Assert.Multiple(() =>
@@ -156,7 +156,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 .ReturnsAsync(emptyList);
 
             // Act
-            var result = await workshopService.GetWorkshopsByOrganization(id).ConfigureAwait(false);
+            var result = await workshopService.GetWorkshopsByProviderId(id).ConfigureAwait(false);
 
             // Assert
             Assert.Multiple(() =>

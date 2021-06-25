@@ -55,7 +55,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         #region GetWorkshops
         [Test]
-        public async Task GetWorkshops_WhenThereAreWOrkshops_ShouldReturnOkResultObject()
+        public async Task GetWorkshops_WhenThereAreWorkshops_ShouldReturnOkResultObject()
         {
             // Arrange
             workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(workshops);
@@ -69,7 +69,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetWorkshops_WhenThereIsNoTAnyWorkshop_ShouldReturnNoConterntResult()
+        public async Task GetWorkshops_WhenThereIsNoAnyWorkshop_ShouldReturnNoConterntResult()
         {
             // Arrange
             var emptyList = new List<WorkshopDTO>();
@@ -122,6 +122,53 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as NoContentResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(204, result.StatusCode);
+        }
+        #endregion
+
+        #region GetByProviderId
+        [Test]
+        [TestCase(0)]
+        public void GetByProviderId_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException(long id)
+        {
+            // Arrange
+            workshopServiceMoq.Setup(x => x.GetWorkshopsByProviderId(id)).ReturnsAsync(workshops.Where(x => x.ProviderId == id));
+
+            // Assert
+            Assert.That(
+                async () => await controller.GetByProviderId(id),
+                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        [TestCase(1)]
+        public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject(long id)
+        {
+            // Arrange
+            workshopServiceMoq.Setup(x => x.GetWorkshopsByProviderId(id)).ReturnsAsync(workshops.Where(x => x.ProviderId == id));
+
+            // Act
+            var result = await controller.GetByProviderId(id).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(2, (result.Value as IEnumerable<WorkshopDTO>).Count());
+        }
+
+        [Test]
+        [TestCase(3)]
+        public async Task GetWorkshops_WhenThereIsNoAnyWorkshop_ShouldReturnNoConterntResult(long id)
+        {
+            // Arrange
+            var emptyList = new List<WorkshopDTO>();
+            workshopServiceMoq.Setup(x => x.GetWorkshopsByProviderId(id)).ReturnsAsync(emptyList);
+
+            // Act
+            var result = await controller.GetByProviderId(id).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -375,6 +422,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     DaysPerWeek = 1,
                     Head = "Head1",
                     HeadDateOfBirth = new DateTime(1980, month: 12, 28),
+                    ProviderId = 1,
                     ProviderTitle = "ProviderTitle",
                     DisabilityOptionsDesc = "Desc1",
                     Website = "website1",
@@ -396,6 +444,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     DaysPerWeek = 2,
                     Head = "Head2",
                     HeadDateOfBirth = new DateTime(1980, month: 12, 28),
+                    ProviderId = 1,
+                    ProviderTitle = "ProviderTitle",
                     DisabilityOptionsDesc = "Desc2",
                     Website = "website2",
                     Instagram = "insta2",
@@ -416,7 +466,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     DaysPerWeek = 3,
                     Head = "Head3",
                     HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-                    ProviderTitle = "ProviderTitle",
+                    ProviderId = 2,
+                    ProviderTitle = "ProviderTitleNew",
                     DisabilityOptionsDesc = "Desc3",
                     Website = "website3",
                     Instagram = "insta3",
@@ -437,7 +488,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     DaysPerWeek = 4,
                     Head = "Head4",
                     HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-                    ProviderTitle = "ProviderTitle",
+                    ProviderId = 2,
+                    ProviderTitle = "ProviderTitleNew",
                     DisabilityOptionsDesc = "Desc4",
                     Website = "website4",
                     Instagram = "insta4",
@@ -458,7 +510,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     DaysPerWeek = 5,
                     Head = "Head5",
                     HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-                    ProviderTitle = "ProviderTitle",
+                    ProviderId = 2,
+                    ProviderTitle = "ProviderTitleNew",
                     DisabilityOptionsDesc = "Desc5",
                     Website = "website5",
                     Instagram = "insta5",
