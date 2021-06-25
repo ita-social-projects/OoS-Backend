@@ -20,6 +20,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class ChildControllerTests
     {
+        private const int OkStatusCode = 200;
+        private const int NoContentStatusCode = 204;
+        private const int CreateStatusCode = 201;
+        private const int BadRequestStatusCode = 400;
         private ChildController controller;
         private Mock<IChildService> service;
         private Mock<IEntityRepository<Child>> repo;
@@ -52,8 +56,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -67,8 +71,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -92,8 +96,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
             Assert.AreEqual(result.Value, null);
         }
 
@@ -108,8 +112,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetByParentId(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -133,8 +137,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetByParentId(id).ConfigureAwait(false) as NoContentResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -147,8 +151,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Create(child).ConfigureAwait(false) as CreatedAtActionResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 201);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(CreateStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -162,7 +166,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
         }
 
         [Test]
@@ -181,8 +185,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Update(changedChild).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -196,7 +200,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
         }
 
         [Test]
@@ -210,8 +214,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Delete(id) as NoContentResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 204);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
         }
 
         [Test]
