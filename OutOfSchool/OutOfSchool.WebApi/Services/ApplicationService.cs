@@ -197,8 +197,11 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.Id == id;
 
-            var application = await applicationRepository.Get<int>(where: filter, includeProperties: "Workshop,Child,Parent")
-                                              .FirstOrDefaultAsync().ConfigureAwait(false);
+            //var application = await applicationRepository.Get<int>(where: filter, includeProperties: "Workshop,Child,Parent")
+            //                                  .FirstOrDefaultAsync().ConfigureAwait(false);
+
+            var application = await applicationRepository.GetByFilterNoTracking(filter, "Workshop,Child,Parent")
+                                                         .FirstOrDefaultAsync().ConfigureAwait(false);
 
             if (application is null)
             {
@@ -212,19 +215,43 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ApplicationDto> Update(ShortApplicationDTO applicationDto)
+        //public async Task<ApplicationDto> Update(ShortApplicationDTO applicationDto)
+        //{
+        //    logger.Information($"Updating Application with Id = {applicationDto?.Id} started.");
+
+        //    CheckApplicationExists(applicationDto.Id);
+
+        //    try
+        //    {
+        //        var application = await applicationRepository.GetById(applicationDto.Id).ConfigureAwait(false);
+
+        //        application.Status = applicationDto.Status;
+
+        //        var updatedApplication = await applicationRepository.Update(application).ConfigureAwait(false);
+
+        //        logger.Information($"Application with Id = {applicationDto?.Id} updated succesfully.");
+
+        //        return updatedApplication.ToModel();
+        //    }
+        //    catch (DbUpdateConcurrencyException ex)
+        //    {
+        //        logger.Error($"Updating failed. Exception = {ex.Message}.");
+        //        throw;
+        //    }
+        //}
+
+        public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
         {
             logger.Information($"Updating Application with Id = {applicationDto?.Id} started.");
+
+            ModelNullValidation(applicationDto);
 
             CheckApplicationExists(applicationDto.Id);
 
             try
             {
-                var application = await applicationRepository.GetById(applicationDto.Id).ConfigureAwait(false);
-
-                application.Status = applicationDto.Status;
-
-                var updatedApplication = await applicationRepository.Update(application).ConfigureAwait(false);
+                var updatedApplication = await applicationRepository.Update(applicationDto.ToDomain())
+                    .ConfigureAwait(false);
 
                 logger.Information($"Application with Id = {applicationDto?.Id} updated succesfully.");
 

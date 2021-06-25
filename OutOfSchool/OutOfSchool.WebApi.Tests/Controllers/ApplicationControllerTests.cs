@@ -507,7 +507,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
 
-            applicationService.Setup(s => s.Update(shortApplication)).ReturnsAsync(applications.First());
+            applicationService.Setup(s => s.Update(applications.First())).ReturnsAsync(applications.First());
             applicationService.Setup(s => s.GetById(shortApplication.Id)).ReturnsAsync(applications.First());
 
             // Act
@@ -558,7 +558,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherProvider);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherParent);
 
-            applicationService.Setup(s => s.Update(shortApplication)).ReturnsAsync(applications.First());
+            applicationService.Setup(s => s.Update(applications.First())).ReturnsAsync(applications.First());
             applicationService.Setup(s => s.GetById(shortApplication.Id)).ReturnsAsync(applications.First());
 
             // Act

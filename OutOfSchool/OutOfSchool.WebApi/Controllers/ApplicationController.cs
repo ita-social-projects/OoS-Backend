@@ -103,17 +103,19 @@ namespace OutOfSchool.WebApi.Controllers
                 return NoContent();
             }
 
-            var userHasRights = await CheckUserRights(
-                parentId: application.ParentId,
-                providerId: application.Workshop.ProviderId)
-                .ConfigureAwait(false);
-
-            if (!userHasRights)
+            try
             {
-                return BadRequest(localizer["Unable to get application for another user."]);
-            }
+                await CheckUserRights(
+                    parentId: application.ParentId,
+                    providerId: application.Workshop.ProviderId)
+                    .ConfigureAwait(false);
 
-            return Ok(application);
+                return Ok(application);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -135,17 +137,12 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 this.ValidateId(id, localizer);
+
+                await CheckUserRights(parentId: id).ConfigureAwait(false);
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
-            }
-
-            var userHasRights = await CheckUserRights(parentId: id).ConfigureAwait(false);
-
-            if (!userHasRights)
-            {
-                return BadRequest(localizer["Unable to get applications for another parent."]);
             }
 
             var applications = await applicationService.GetAllByParent(id).ConfigureAwait(false);
@@ -175,40 +172,24 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{property:regex(^provider$|^workshop$)}/{id}")]
         public async Task<IActionResult> GetByPropertyId(string property, long id)
         {
+            IEnumerable<ApplicationDto> applications = default;
+
             try
             {
                 this.ValidateId(id, localizer);
+
+                if (property.Equals("provider", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    applications = await GetByProviderId(id).ConfigureAwait(false);
+                }
+                else if (property.Equals("workshop", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    applications = await GetByWorkshopId(id).ConfigureAwait(false);
+                }
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
-            }
-
-            IEnumerable<ApplicationDto> applications = default;
-
-            if (property.Equals("provider", StringComparison.CurrentCultureIgnoreCase))
-            {
-                var userHasRights = await CheckUserRights(providerId: id).ConfigureAwait(false);
-
-                if (!userHasRights)
-                {
-                    return BadRequest(localizer["Unable to get applications for another provider"]);
-                }
-
-                applications = await applicationService.GetAllByProvider(id).ConfigureAwait(false);
-            }
-            else if (property.Equals("workshop", StringComparison.CurrentCultureIgnoreCase))
-            {
-                var workshop = await workshopService.GetById(id).ConfigureAwait(false);
-
-                var userHasRights = await CheckUserRights(providerId: workshop?.ProviderId).ConfigureAwait(false);
-
-                if (!userHasRights)
-                {
-                    return BadRequest(localizer["Unable to get applications for another provider"]);
-                }
-
-                applications = await applicationService.GetAllByWorkshop(id).ConfigureAwait(false);
             }
 
             if (!applications.Any())
@@ -314,15 +295,10 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userHasRights = await CheckUserRights(parentId: applicationDto.ParentId).ConfigureAwait(false);
-
-            if (!userHasRights)
-            {
-                return BadRequest(localizer["Unable to create application for another parent."]);
-            }
-
             try
             {
+                await CheckUserRights(parentId: applicationDto.ParentId).ConfigureAwait(false);
+
                 applicationDto.Id = default;
 
                 applicationDto.CreationTime = DateTime.Now;
@@ -365,19 +341,20 @@ namespace OutOfSchool.WebApi.Controllers
 
             var application = await applicationService.GetById(applicationDto.Id).ConfigureAwait(false);
 
-            var userHasRights = await CheckUserRights(
-                parentId: application?.ParentId, 
-                providerId: application?.Workshop.ProviderId)
-                .ConfigureAwait(false);
-
-            if (!userHasRights)
+            if (application is null)
             {
-                return BadRequest(localizer["Unable to update application for another user."]);
+                return BadRequest(localizer[$"There is no application with Id = {applicationDto.Id}."]);
             }
+
+            application.Status = applicationDto.Status;
 
             try
             {
-                var updatedApplication = await applicationService.Update(applicationDto).ConfigureAwait(false);
+                await CheckUserRights(
+                    parentId: application.ParentId,
+                    providerId: application.Workshop.ProviderId).ConfigureAwait(false);
+
+                var updatedApplication = await applicationService.Update(application).ConfigureAwait(false);
                 return Ok(updatedApplication);
             }
             catch (ArgumentException ex)
@@ -435,24 +412,54 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
-        private async Task<bool> CheckUserRights(long? parentId = null, long? providerId = null)
+        private async Task<IEnumerable<ApplicationDto>> GetByWorkshopId(long id)
+        {
+            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+
+            if (workshop is null)
+            {
+                throw new ArgumentException(localizer[$"There is no workshop with Id = {id}"]);
+            }
+
+            await CheckUserRights(providerId: workshop.ProviderId).ConfigureAwait(false);
+
+            var applications = await applicationService.GetAllByWorkshop(id).ConfigureAwait(false);
+
+            return applications;
+        }
+
+        private async Task<IEnumerable<ApplicationDto>> GetByProviderId (long id)
+        {
+            await CheckUserRights(providerId: id).ConfigureAwait(false);
+
+            var applications = await applicationService.GetAllByProvider(id).ConfigureAwait(false);
+
+            return applications;
+        }
+
+        private async Task CheckUserRights(long? parentId = null, long? providerId = null)
         {
             var userId = User.FindFirst("sub")?.Value;
+
+            bool userHasRights = true;
 
             if (User.IsInRole("parent"))
             {
                 var parent = await parentService.GetByUserId(userId).ConfigureAwait(false);
 
-                return parent.Id == parentId;
+                userHasRights = parent.Id == parentId;
             }
             else if (User.IsInRole("provider"))
             {
                 var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
 
-                return provider.Id == providerId;
+                userHasRights = provider.Id == providerId;
             }
 
-            return true;
+            if (!userHasRights)
+            {
+                throw new ArgumentException(localizer["User has no rights to perform operation"]);
+            }
         }
     }
 }

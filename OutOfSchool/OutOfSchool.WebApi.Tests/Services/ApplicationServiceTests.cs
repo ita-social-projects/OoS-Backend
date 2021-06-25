@@ -311,14 +311,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 ParentId = 1,
             };
 
-            var shortApplication = new ShortApplicationDTO
-            {
-                Id = 1,
-                Status = ApplicationStatus.Approved,
-            };
-
             // Act
-            var result = await service.Update(shortApplication).ConfigureAwait(false);
+            var result = await service.Update(expected).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(expected, options =>
@@ -331,7 +325,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void UpdateApplication_WhenThereIsNoApplicationWithId_ShouldTrowArgumentException()
         {
             // Arrange
-            var shortApplication = new ShortApplicationDTO
+            var application = new ApplicationDto
             {
                 Id = 10,
                 Status = ApplicationStatus.Approved,
@@ -339,7 +333,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Update(shortApplication).ConfigureAwait(false));
+                async () => await service.Update(application).ConfigureAwait(false));
         }
 
         [Test]
