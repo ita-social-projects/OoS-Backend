@@ -33,8 +33,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopRepository">Workshop repository.</param>
         /// <param name="childRepository">Child repository.</param>
         public ApplicationService(
-            IApplicationRepository repository, 
-            ILogger logger, 
+            IApplicationRepository repository,
+            ILogger logger,
             IStringLocalizer<SharedResource> localizer,
             IWorkshopRepository workshopRepository,
             IEntityRepository<Child> childRepository)
@@ -197,9 +197,6 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.Id == id;
 
-            //var application = await applicationRepository.Get<int>(where: filter, includeProperties: "Workshop,Child,Parent")
-            //                                  .FirstOrDefaultAsync().ConfigureAwait(false);
-
             var application = await applicationRepository.GetByFilterNoTracking(filter, "Workshop,Child,Parent")
                                                          .FirstOrDefaultAsync().ConfigureAwait(false);
 
@@ -213,32 +210,6 @@ namespace OutOfSchool.WebApi.Services
 
             return application.ToModel();
         }
-
-        /// <inheritdoc/>
-        //public async Task<ApplicationDto> Update(ShortApplicationDTO applicationDto)
-        //{
-        //    logger.Information($"Updating Application with Id = {applicationDto?.Id} started.");
-
-        //    CheckApplicationExists(applicationDto.Id);
-
-        //    try
-        //    {
-        //        var application = await applicationRepository.GetById(applicationDto.Id).ConfigureAwait(false);
-
-        //        application.Status = applicationDto.Status;
-
-        //        var updatedApplication = await applicationRepository.Update(application).ConfigureAwait(false);
-
-        //        logger.Information($"Application with Id = {applicationDto?.Id} updated succesfully.");
-
-        //        return updatedApplication.ToModel();
-        //    }
-        //    catch (DbUpdateConcurrencyException ex)
-        //    {
-        //        logger.Error($"Updating failed. Exception = {ex.Message}.");
-        //        throw;
-        //    }
-        //}
 
         public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
         {

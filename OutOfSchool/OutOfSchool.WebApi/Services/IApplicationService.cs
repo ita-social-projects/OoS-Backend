@@ -69,8 +69,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="applicationDto">Application entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        //Task<ApplicationDto> Update(ShortApplicationDTO applicationDto);
-
         Task<ApplicationDto> Update(ApplicationDto applicationDto);
 
         /// <summary>

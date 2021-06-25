@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -37,9 +36,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="parentService">Service for Parent model.</param>
         /// <param name="workshopService">Service for Workshop model.</param>
         public ApplicationController(
-            IApplicationService applicationService, 
+            IApplicationService applicationService,
             IStringLocalizer<SharedResource> localizer,
-            IProviderService providerService, 
+            IProviderService providerService,
             IParentService parentService,
             IWorkshopService workshopService)
         {
@@ -247,7 +246,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("multiple")]
         [Obsolete("This method is obsolete. Call another Create instead", false)]
-        public async Task<IActionResult> Create([FromBody]ApplicationApiModel applicationApiModel)
+        public async Task<IActionResult> Create([FromBody] ApplicationApiModel applicationApiModel)
         {
             if (!ModelState.IsValid)
             {
@@ -428,7 +427,7 @@ namespace OutOfSchool.WebApi.Controllers
             return applications;
         }
 
-        private async Task<IEnumerable<ApplicationDto>> GetByProviderId (long id)
+        private async Task<IEnumerable<ApplicationDto>> GetByProviderId(long id)
         {
             await CheckUserRights(providerId: id).ConfigureAwait(false);
 
