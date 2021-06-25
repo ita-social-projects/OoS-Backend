@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -32,6 +34,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service = new Mock<IChildService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             controller = new ChildController(service.Object, localizer.Object);
+            var user = new ClaimsPrincipal(new ClaimsIdentity(
+                new Claim[] { new Claim("sub", "3341c870-5ef4-462b-8c86-b4e8bd4e6d41") }, "sub"));
+            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
             children = FakeChildren();
             child = FakeChild();
@@ -93,11 +98,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task GetByParentId_WhenIdIsValid_ShouldReturnOkResultObject(long id)
+        [TestCase(1, "3341c870-5ef4-462b-8c86-b4e8bd4e6d41")]
+        public async Task GetByParentId_WhenIdIsValid_ShouldReturnOkResultObject(long id, string userId)
         {
             // Arrange
-            service.Setup(x => x.GetAllByParent(id)).ReturnsAsync(children.Where(p => p.ParentId == id));
+            service.Setup(x => x.GetAllByParent(id, userId)).ReturnsAsync(children.Where(p => p.ParentId == id && p.Parent.UserId == userId));
 
             // Act
             var result = await controller.GetByParentId(id).ConfigureAwait(false) as OkObjectResult;
@@ -118,11 +123,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(10)]
-        public async Task GetByParentId_WhenIdIsNotValid_ShouldReturnNull(long id)
+        [TestCase(10, "aab42f43-f5d6-48ed-95aa-0b4f7b77e541")]
+        public async Task GetByParentId_WhenIdIsNotValid_ShouldReturnNull(long id, string userId)
         {
             // Arrange
-            service.Setup(x => x.GetAllByParent(id)).ReturnsAsync(children.Where(p => p.ParentId == id));
+            service.Setup(x => x.GetAllByParent(id, userId)).ReturnsAsync(children.Where(p => p.ParentId == id && p.Parent.UserId == userId));
 
             // Act
             var result = await controller.GetByParentId(id).ConfigureAwait(false) as NoContentResult;
@@ -250,6 +255,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         private IEnumerable<ChildDto> FakeChildren()
         {
+            var parent1 = new ParentDTO() { Id = 1, UserId = "3341c870-5ef4-462b-8c86-b4e8bd4e6d41" };
+            var parent2 = new ParentDTO() { Id = 2, UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" };
+
             return new List<ChildDto>()
             {
                 new ChildDto()
@@ -262,6 +270,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Gender = Gender.Male,
                     ParentId = 1,
                     SocialGroupId = 2,
+                    Parent = parent1,
                 },
                 new ChildDto()
                 {
@@ -273,6 +282,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Gender = Gender.Female,
                     ParentId = 2,
                     SocialGroupId = 1,
+                    Parent = parent2,
                 },
                 new ChildDto()
                 {
@@ -284,6 +294,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Gender = Gender.Male,
                     ParentId = 1,
                     SocialGroupId = 1,
+                    Parent = parent1,
                 },
             };
         }
