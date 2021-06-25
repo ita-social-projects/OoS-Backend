@@ -80,6 +80,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Update(ShortUserDto shortUserDto)
         {
@@ -100,10 +101,25 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(long id)
         {
             this.ValidateId(id, localizer);
+
+            var parent = await service.GetById(id).ConfigureAwait(false);
+
+            if (parent is null)
+            {
+                return NoContent();
+            }
+
+            var userHasRights = await IsUserParentProfileOwner(parent.Id).ConfigureAwait(false);
+
+            if (!userHasRights)
+            {
+                return StatusCode(403, "Forbidden to delete another parent account.");
+            }
 
             await service.Delete(id).ConfigureAwait(false);
 
@@ -132,6 +148,24 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return this.BadRequest(ex.Message);
             }
+        }
+
+        private async Task<bool> IsUserParentProfileOwner(long parentId)
+        {
+            // Parent can create/update/delete his/her account only if parent is the owner.
+            // Admin can manipulate data without checks.
+            if (User.IsInRole("parent"))
+            {
+                var userId = User.FindFirst("sub")?.Value;
+                var parent = await service.GetByUserId(userId).ConfigureAwait(false);
+
+                if (parentId != parent.Id)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
