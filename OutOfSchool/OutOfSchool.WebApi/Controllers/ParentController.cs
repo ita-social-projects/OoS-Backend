@@ -89,6 +89,13 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
+            string userId = User.FindFirst("sub")?.Value;
+
+            if (userId != shortUserDto.Id)
+            {
+                return StatusCode(403, "Forbidden to update another user.");
+            }
+
             return Ok(await service.Update(shortUserDto).ConfigureAwait(false));
         }
 

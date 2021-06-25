@@ -28,7 +28,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get all users from the database.
         /// </summary>
         /// <returns>List of all users.</returns>
-        [Authorize(Roles = "parent,provider,admin")]
+        [Authorize(Roles = "admin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -53,6 +53,13 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
+                string userId = User.FindFirst("sub")?.Value;
+
+                if (userId != id)
+                {
+                    return StatusCode(403, "Forbidden to get another user.");
+                }
+
                 return Ok(await userService.GetById(id).ConfigureAwait(false));
             }
             catch (ArgumentException ex)
@@ -71,6 +78,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
         public async Task<IActionResult> Update(ShortUserDto dto)
@@ -78,6 +86,13 @@ namespace OutOfSchool.WebApi.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            string userId = User.FindFirst("sub")?.Value;
+
+            if (userId != dto.Id)
+            {
+                return StatusCode(403, "Forbidden to update another user.");
             }
 
             return Ok(await userService.Update(dto).ConfigureAwait(false));
