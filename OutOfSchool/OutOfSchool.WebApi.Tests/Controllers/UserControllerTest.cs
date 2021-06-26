@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -16,7 +18,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private UserController controller;
         private Mock<IUserService> serviceUser;
-
+        private ClaimsPrincipal claimsPrincipal;
         private IEnumerable<ShortUserDto> users;
         private ShortUserDto user;
 
@@ -25,6 +27,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             serviceUser = new Mock<IUserService>();
             controller = new UserController(serviceUser.Object);
+
+            var claims = new List<Claim>()
+            {
+                new Claim("sub", "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c"),
+            };
+
+            claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = claimsPrincipal };
 
             users = FakeUsers();
             user = FakeUser();
@@ -61,16 +72,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase("Invalid Id")]
-        public async Task GetUserById_WhenIdIsInvalid_ReturnsNull(string id)
+        public async Task GetUserById_WhenIdIsInvalid_ReturnsForbidden(string id)
         {
             // Arrange
             serviceUser.Setup(x => x.GetById(id)).ReturnsAsync(users.SingleOrDefault(x => x.Id == id));
 
             // Act
-            var result = await controller.GetUserById(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetUserById(id).ConfigureAwait(false) as ObjectResult;
 
             // Assert
-            Assert.That(result.Value, Is.Null);
+            Assert.AreEqual(403, result.StatusCode);
         }
 
         private ShortUserDto FakeUser()

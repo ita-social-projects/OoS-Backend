@@ -32,8 +32,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
             controller = new ParentController(service.Object, localizer.Object);
-            user = new ClaimsPrincipal(new ClaimsIdentity());
-            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+            var claims = new List<Claim>()
+            {
+                new Claim("sub", "38776161-734b-4aec-96eb-4a1f87a2e5f3"),
+            };
+
+            user = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+
+            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user};
 
             parents = FakeParents();
             parent = FakeParent();
