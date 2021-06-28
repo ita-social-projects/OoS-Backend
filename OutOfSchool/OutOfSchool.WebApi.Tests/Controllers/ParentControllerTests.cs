@@ -19,7 +19,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private ParentController controller;
         private Mock<IParentService> service;
-        private ClaimsPrincipal user;
+        private Mock<HttpContext> httpContextMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private IEnumerable<ParentDTO> parents;
@@ -31,16 +31,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service = new Mock<IParentService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new ParentController(service.Object, localizer.Object);
+            httpContextMoq = new Mock<HttpContext>();
+            httpContextMoq.Setup(x => x.User.FindFirst("sub"))
+                .Returns(new Claim(ClaimTypes.NameIdentifier, "38776161-734b-4aec-96eb-4a1f87a2e5f3"));
+            httpContextMoq.Setup(x => x.User.IsInRole("parent"))
+                .Returns(true);
 
-            var claims = new List<Claim>()
+            controller = new ParentController(service.Object, localizer.Object)
             {
-                new Claim("sub", "38776161-734b-4aec-96eb-4a1f87a2e5f3"),
+                ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
             };
-
-            user = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
-
-            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user};
 
             parents = FakeParents();
             parent = FakeParent();
@@ -58,9 +58,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         public ParentDTO FakeParent()
         {
-            return new ParentDTO() { Id = 0, UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6" };
+            return new ParentDTO() { Id = 4, UserId = "de909f35-5eb7-4b7a-bda8-ccc0a5bfda96a6" };
         }
 
+        #region GetParents
         [Test]
         public async Task GetParents_WhenCalled_ReturnsOkResultObject()
         {
@@ -76,8 +77,25 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
+        public async Task GetParents_WhenThereIsNoTAnyParents_ShouldReturnNoConterntResult()
+        {
+            // Arrange
+            var emptyList = new List<ParentDTO>();
+            service.Setup(x => x.GetAll()).ReturnsAsync(emptyList);
+
+            // Act
+            var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(204, result.StatusCode);
+        }
+        #endregion
+
+        #region GetParentById
+        [Test]
         [TestCase(1)]
-        public async Task GetParentsById_WhenIdIsValid_ReturnsOkObjectResult(long id)
+        public async Task GetParentById_WhenIdIsValid_ReturnsOkObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(parents.SingleOrDefault(x => x.Id == id));
@@ -104,7 +122,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task GetParentsById_WhenIdIsInvalid_ReturnsNull(long id)
+        public async Task GetParentById_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(parents.SingleOrDefault(x => x.Id == id));
@@ -116,7 +134,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(result.StatusCode, 200);
         }
+        #endregion
 
+        #region UpdateParent
         [Test]
         public async Task UpdateParent_WhenModelIsValid_ReturnsOkObjectResult()
         {
@@ -152,6 +172,25 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
             Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
         }
+
+        [Test]
+        public async Task UpdateParent_WhenIdUserHasNoRights_ShouldReturn403ObjectResult()
+        {
+            // Arrange
+            var notAuthorParent = new ParentDTO() { Id = 7, UserId = "Forbidden Id" };
+            service.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorParent);
+
+            // Act
+            var result = await controller.Update(new ShortUserDto()).ConfigureAwait(false) as ObjectResult;
+
+            // Assert
+            service.Verify(x => x.Update(It.IsAny<ShortUserDto>()), Times.Never);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(403, result.StatusCode);
+        }
+        #endregion
+
+        #region DeleteParent
 
         [Test]
         [TestCase(1)]
@@ -193,5 +232,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.That(result, Is.Null);
         }
+
+        [Test]
+        [TestCase(2)]
+        public async Task DeleteParent_WhenParentHasNoRights_ShouldReturn403ObjectResult(long id)
+        {
+            // Arrange
+            service.Setup(x => x.GetById(id)).ReturnsAsync(parent);
+            var notAuthorParent = new ParentDTO() { Id = 10, UserId = "Forbidden Id" };
+            service.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorParent);
+
+            // Act
+            var result = await controller.Delete(id) as ObjectResult;
+
+            // Assert
+            service.Verify(x => x.Delete(It.IsAny<long>()), Times.Never);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(403, result.StatusCode);
+        }
+        #endregion
     }
 }
