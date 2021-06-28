@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -35,7 +36,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetUsers()
         {
-            return Ok(await userService.GetAll().ConfigureAwait(false));
+            var users = await userService.GetAll().ConfigureAwait(false);
+
+            if (!users.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(users);
         }
 
         /// <summary>
@@ -51,21 +59,21 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetUserById(string id)
         {
-            try
-            {
-                string userId = User.FindFirst("sub")?.Value;
+            string userId = User.FindFirst("sub")?.Value;
 
-                if (userId != id)
-                {
-                    return StatusCode(403, "Forbidden to get another user.");
-                }
-
-                return Ok(await userService.GetById(id).ConfigureAwait(false));
-            }
-            catch (ArgumentException ex)
+            if (userId != id)
             {
-                return BadRequest(ex.Message);
+                 return StatusCode(403, "Forbidden to get another user.");
             }
+
+            var user = await userService.GetById(id).ConfigureAwait(false);
+
+            if (user is null)
+            {
+                return NoContent();
+            }
+
+            return Ok(user);
         }
 
         /// <summary>
