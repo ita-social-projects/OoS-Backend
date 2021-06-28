@@ -89,6 +89,33 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
+        /// Get workshop by Provider's Id.
+        /// </summary>
+        /// <param name="id">Provider's id.</param>
+        /// <returns><see cref="IEnumerable{WorkshopDTO}"/>, or no content.</returns>
+        /// <response code="200">The list of found entities by given Id.</response>
+        /// <response code="204">No entity with given Id was found.</response>
+        /// <response code="500">If any server error occures. For example: Id was less than one.</response>
+        [AllowAnonymous]
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByProviderId(long id)
+        {
+            this.ValidateId(id, localizer);
+
+            var workshops = await workshopService.GetWorkshopsByProviderId(id).ConfigureAwait(false);
+
+            if (!workshops.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(workshops);
+        }
+
+        /// <summary>
         /// Add new workshop to the database.
         /// </summary>
         /// <param name="dto">Entity to add.</param>

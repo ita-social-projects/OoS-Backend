@@ -122,7 +122,8 @@ namespace OutOfSchool.WebApi.Services
             return workshopDTO;
         }
 
-        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
+        /// <inheritdoc/>
+        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByProviderId(long id)
         {
             logger.Information($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
