@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
-            if (name.Length < MinimumNameLength)
+            if (name?.Length < MinimumNameLength)
             {
                 return BadRequest();
             }
