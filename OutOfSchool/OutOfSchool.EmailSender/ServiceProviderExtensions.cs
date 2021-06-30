@@ -14,12 +14,12 @@ namespace OutOfSchool.EmailSender
             services.AddSingleton<IEmailSender, EmailSender>();
             if (emailOptions == null)
             {
-                throw new ArgumentNullException(nameof(emailOptions), @"Please provide emailOptions for EmailSender");
+                throw new ArgumentNullException(nameof(emailOptions));
             }
 
             if (smtpOptions == null)
             {
-                throw new ArgumentNullException(nameof(smtpOptions), @"Please provide smtpOptions for EmailSender");
+                throw new ArgumentNullException(nameof(smtpOptions));
             }
 
             var emailOptionsBuilder = services.AddOptions<EmailOptions>();
