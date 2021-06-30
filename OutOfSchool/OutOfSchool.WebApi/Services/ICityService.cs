@@ -23,6 +23,13 @@ namespace OutOfSchool.WebApi.Services
         Task<CityDto> GetById(long id);
 
         /// <summary>
+        /// Get all entities by name.
+        /// </summary>
+        /// <param name="name">City name.</param>
+        /// <returns>List of Cities that starts on name.</returns>
+        Task<IEnumerable<CityDto>> GetByCityName(string name);
+
+        /// <summary>
         /// Add entity.
         /// </summary>
         /// <param name="dto">City entity to add.</param>

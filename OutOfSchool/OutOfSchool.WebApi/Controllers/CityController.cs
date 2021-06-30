@@ -16,6 +16,7 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class CityController : ControllerBase
     {
+        private const int MinimumNameLength = 3;
         private readonly ICityService service;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -64,6 +65,34 @@ namespace OutOfSchool.WebApi.Controllers
             this.ValidateId(id, localizer);
 
             return Ok(await service.GetById(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get all Cities from the database that starts on the name.
+        /// </summary>
+        /// <param name="name">City name.</param>
+        /// <returns>List of Cities that starts on name.</returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CityDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{name}")]
+        public async Task<IActionResult> GetByName(string name)
+        {
+            if (name.Length < MinimumNameLength)
+            {
+                return BadRequest();
+            }
+
+            var cities = await service.GetByCityName(name).ConfigureAwait(false);
+
+            if (!cities.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(cities);
         }
 
         /// <summary>

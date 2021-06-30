@@ -68,6 +68,20 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<CityDto>> GetByCityName(string name)
+        {
+            logger.Information("Getting all Cities by name started.");
+
+            var cities = await repository.GetByFilter(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
+
+            logger.Information(!cities.Any()
+                ? "City table is empty."
+                : $"All {cities.Count()} records were successfully received from the City table");
+
+            return cities.Select(city => city.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
         public async Task<CityDto> Create(CityDto dto)
         {
             logger.Information("City creating was started.");
