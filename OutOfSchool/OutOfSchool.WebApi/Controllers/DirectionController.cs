@@ -17,6 +17,7 @@ namespace OutOfSchool.WebApi.Controllers
     /// Controller with CRUD operations for Direction entity.
     /// </summary>
     [ApiController]
+    [ApiExplorerSettings(GroupName = "Direction")]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class DirectionController : ControllerBase
