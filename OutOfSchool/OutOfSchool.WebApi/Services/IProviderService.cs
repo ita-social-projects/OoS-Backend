@@ -32,6 +32,13 @@ namespace OutOfSchool.WebApi.Services
         Task<ProviderDto> GetById(long id);
 
         /// <summary>
+        /// Get entity by User id.
+        /// </summary>
+        /// <param name="id">Key of the User entity in the table.</param>
+        /// <returns>Provider.</returns>
+        Task<ProviderDto> GetByUserId(string id);
+
+        /// <summary>
         /// Update entity.
         /// </summary>
         /// <param name="dto">Provider entity to add.</param>

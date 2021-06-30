@@ -100,11 +100,11 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChildDto>> GetAllByParent(long id)
+        public async Task<IEnumerable<ChildDto>> GetAllByParent(long id, string userId)
         {
             logger.Information($"Getting Child's by Parent started. Looking ParentId = {id}.");
 
-            var children = await repository.GetByFilter(x => x.ParentId == id).ConfigureAwait(false);
+            var children = await repository.GetByFilter(x => x.ParentId == id && x.Parent.UserId == userId).ConfigureAwait(false);
 
             logger.Information(!children.Any()
                 ? $"There aren't Children for Parent with Id = {id}."

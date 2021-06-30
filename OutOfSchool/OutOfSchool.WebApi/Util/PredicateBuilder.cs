@@ -116,9 +116,7 @@ namespace OutOfSchool.WebApi.Util
 
             protected override Expression VisitParameter(ParameterExpression node)
             {
-                ParameterExpression replacement;
-
-                if (map.TryGetValue(node, out replacement))
+                if (map.TryGetValue(node, out ParameterExpression replacement))
                 {
                     node = replacement;
                 }

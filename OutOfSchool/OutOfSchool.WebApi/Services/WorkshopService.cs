@@ -20,7 +20,10 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class WorkshopService : IWorkshopService
     {
-        private readonly IWorkshopRepository repository;
+        private readonly IWorkshopRepository workshopRepository;
+        private readonly ISubsubcategoryRepository subsubcategoryRepository;
+        private readonly IEntityRepository<Teacher> teacherRepository;
+        private readonly IEntityRepository<Address> addressRepository;
         private readonly IRatingService ratingService;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
@@ -29,21 +32,30 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
-        /// <param name="repository">Repository for Workshop entity.</param>
+        /// <param name="workshopRepository">Repository for Workshop entity.</param>
+        /// <param name="subsubcategoryRepository">Repository for Subsubcategory entity.</param>
+        /// <param name="teacherRepository">Repository for Teacher.</param>
+        /// <param name="addressRepository">Repository for Address.</param>
         /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         public WorkshopService(
-            IWorkshopRepository repository,
+            IWorkshopRepository workshopRepository,
+            ISubsubcategoryRepository subsubcategoryRepository,
+            IEntityRepository<Teacher> teacherRepository,
+            IEntityRepository<Address> addressRepository,
             IRatingService ratingService,
             ILogger logger,
             IStringLocalizer<SharedResource> localizer)
         {
-            this.localizer = localizer;
-            this.repository = repository;
+            this.workshopRepository = workshopRepository;
+            this.subsubcategoryRepository = subsubcategoryRepository;
+            this.teacherRepository = teacherRepository;
+            this.addressRepository = addressRepository;
             this.ratingService = ratingService;
             this.logger = logger;
-            this.paginationHelper = new PaginationHelper<Workshop>(repository);
+            this.localizer = localizer;
+            this.paginationHelper = new PaginationHelper<Workshop>(workshopRepository);
         }
 
         /// <inheritdoc/>
@@ -51,9 +63,12 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Workshop creating was started.");
 
-            var workshop = dto.ToDomain();
+            // In case if CategoryId and SubcategoryId does not match SubsubcategoryId
+            await this.FillCategoriesFields(dto).ConfigureAwait(false);
 
-            var newWorkshop = await repository.Create(workshop).ConfigureAwait(false);
+            Func<Task<Workshop>> operation = async () => await workshopRepository.Create(dto.ToDomain()).ConfigureAwait(false);
+
+            var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
             logger.Information($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
@@ -65,7 +80,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Getting all Workshops started.");
 
-            var workshops = await repository.GetAll().ConfigureAwait(false);
+            var workshops = await workshopRepository.GetAll().ConfigureAwait(false);
 
             logger.Information(!workshops.Any()
                 ? "Workshop table is empty."
@@ -91,13 +106,11 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Getting Workshop by Id started. Looking Id = {id}.");
 
-            var workshop = await repository.GetById(id).ConfigureAwait(false);
+            var workshop = await workshopRepository.GetById(id).ConfigureAwait(false);
 
             if (workshop == null)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be greater than number of table entities."]);
+                return null;
             }
 
             logger.Information($"Successfully got a Workshop with Id = {id}.");
@@ -109,11 +122,12 @@ namespace OutOfSchool.WebApi.Services
             return workshopDTO;
         }
 
-        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByOrganization(long id)
+        /// <inheritdoc/>
+        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByProviderId(long id)
         {
             logger.Information($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
-            var workshops = await repository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
+            var workshops = await workshopRepository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
 
             logger.Information(!workshops.Any()
                 ? $"There aren't Workshops for Provider with Id = {id}."
@@ -127,17 +141,71 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Updating Workshop with Id = {dto?.Id} started.");
 
+            var workshop = workshopRepository.GetByFilterNoTracking(x => x.Id == dto.Id, "Address,Teachers").FirstOrDefault();
+
+            if (workshop is null)
+            {
+                throw new ArgumentOutOfRangeException($"The workshop with id:{dto.Id} was not found.");
+            }
+
             try
             {
-                var workshop = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                // In case if CategoryId and SubcategoryId does not match SubsubcategoryId
+                await this.FillCategoriesFields(dto).ConfigureAwait(false);
+
+                // In case if AddressId was changed. AddresId is one and unique for workshop.
+                dto.AddressId = workshop.AddressId;
+                dto.Address.Id = workshop.AddressId;
+
+                // In case if WorkshopId of teachers was changed.
+                foreach (var teacher in dto.Teachers)
+                {
+                    teacher.WorkshopId = workshop.Id;
+                }
+
+                this.CompareTwoListsOfTeachers(
+                    dto.Teachers,
+                    workshop.Teachers,
+                    out List<TeacherDTO> teachersToCreate,
+                    out List<TeacherDTO> teachersToUpdate,
+                    out List<TeacherDTO> teachersToDelete);
+
+                // When updating entity Workshop with the existing list
+                // EF Core adds created and updated entities to the list so
+                // when we return updated entity duplication happens.
+                // This is only for returning entity. Database will be updated correctly.
+                dto.Teachers = null;
+
+                Func<Task<Workshop>> updateWorkshop = async () =>
+                {
+                    foreach (var teacherDto in teachersToCreate)
+                    {
+                        await teacherRepository.Create(teacherDto.ToDomain()).ConfigureAwait(false);
+                    }
+
+                    foreach (var teacherDto in teachersToUpdate)
+                    {
+                        await teacherRepository.Update(teacherDto.ToDomain()).ConfigureAwait(false);
+                    }
+
+                    foreach (var teacherDto in teachersToDelete)
+                    {
+                        await teacherRepository.Delete(teacherDto.ToDomain()).ConfigureAwait(false);
+                    }
+
+                    await addressRepository.Update(dto.Address.ToDomain()).ConfigureAwait(false);
+                    return await workshopRepository.Update(dto.ToDomain()).ConfigureAwait(false);
+                };
+
+                var newWorkshop = await workshopRepository.RunInTransaction(updateWorkshop).ConfigureAwait(false);
 
                 logger.Information($"Workshop with Id = {workshop?.Id} updated succesfully.");
 
-                return workshop.ToModel();
+                return newWorkshop.ToModel();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException exception)
             {
-                logger.Error($"Updating failed. Workshop with Id = {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -147,11 +215,17 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Deleting Workshop with Id = {id} started.");
 
-            var entity = await repository.GetById(id).ConfigureAwait(false);
+            var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
 
             try
             {
-                await repository.Delete(entity).ConfigureAwait(false);
+                Func<Task<Workshop>> deleteWorkshop = async () =>
+                {
+                    await workshopRepository.Delete(entity).ConfigureAwait(false);
+                    return new Workshop() { Id = default };
+                };
+
+                await workshopRepository.RunInTransaction(deleteWorkshop).ConfigureAwait(false);
 
                 logger.Information($"Workshop with Id = {id} succesfully deleted.");
             }
@@ -254,6 +328,64 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return predicate;
+        }
+
+        /// <summary>
+        /// Set properties of the given WorkshopDTO with certain data: categoryId and SubctegoryId are set with data according to found Subsubcategory entity.
+        /// </summary>
+        /// <param name="dto">WorkshopDTO to fill.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        /// <exception cref="ArgumentException">If Subsubctegory was not found.</exception>
+        private async Task FillCategoriesFields(WorkshopDTO dto)
+        {
+            var sscategory = await subsubcategoryRepository.GetById(dto.SubsubcategoryId).ConfigureAwait(false);
+            if (sscategory is null)
+            {
+                throw new ArgumentOutOfRangeException($"There is no Subsubcategory with id:{dto.SubsubcategoryId}");
+            }
+
+            dto.SubcategoryId = sscategory.SubcategoryId;
+            dto.CategoryId = sscategory.Subcategory.CategoryId;
+        }
+
+        private void CompareTwoListsOfTeachers(
+            IEnumerable<TeacherDTO> source,
+            IEnumerable<Teacher> destination,
+            out List<TeacherDTO> teachersToCreate,
+            out List<TeacherDTO> teachersToUpdate,
+            out List<TeacherDTO> teachersToDelete)
+        {
+            // Sort new teachers and old teachers
+            var oldTeachers = new List<TeacherDTO>();
+            teachersToCreate = new List<TeacherDTO>();
+            foreach (var teacherDto in source)
+            {
+                if (destination.Any(x => x.Id == teacherDto.Id))
+                {
+                    oldTeachers.Add(teacherDto);
+                }
+                else
+                {
+                    // In case if TeacherId was set wrong, when someone is trying to hack the system.
+                    teacherDto.Id = default;
+                    teachersToCreate.Add(teacherDto);
+                }
+            }
+
+            // Sort teachers for update and delete
+            teachersToUpdate = new List<TeacherDTO>();
+            teachersToDelete = new List<TeacherDTO>();
+            foreach (var teacher in destination)
+            {
+                if (oldTeachers.Any(x => x.Id == teacher.Id))
+                {
+                    teachersToUpdate.Add(oldTeachers.First(x => x.Id == teacher.Id));
+                }
+                else
+                {
+                    teachersToDelete.Add(teacher.ToModel());
+                }
+            }
         }
     }
 }

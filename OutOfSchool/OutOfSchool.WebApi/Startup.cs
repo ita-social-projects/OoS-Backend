@@ -1,4 +1,7 @@
+using System;
 using System.Globalization;
+using System.IO;
+using System.Reflection;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -96,34 +99,37 @@ namespace OutOfSchool.WebApi
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddTransient<IChildService, ChildService>();
-            services.AddTransient<IWorkshopService, WorkshopService>();
-            services.AddTransient<ITeacherService, TeacherService>();
-            services.AddTransient<IProviderService, ProviderService>();
-            services.AddTransient<IParentService, ParentService>();
+            // entities services
             services.AddTransient<IAddressService, AddressService>();
-            services.AddTransient<IUserService, UserService>();
-            services.AddTransient<IRatingService, RatingService>();
             services.AddTransient<IApplicationService, ApplicationService>();
             services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<IChildService, ChildService>();
+            services.AddTransient<IParentService, ParentService>();
+            services.AddTransient<IProviderService, ProviderService>();
+            services.AddTransient<IRatingService, RatingService>();
+            services.AddTransient<ISocialGroupService, SocialGroupService>();
             services.AddTransient<ISubcategoryService, SubcategoryService>();
             services.AddTransient<ISubsubcategoryService, SubsubcategoryService>();
+            services.AddTransient<ITeacherService, TeacherService>();
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<ISocialGroupService, SocialGroupService>();
             services.AddTransient<ICityService, CityService>();
 
-            services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
+            // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
-            services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
-            services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
             services.AddTransient<IEntityRepository<Category>, EntityRepository<Category>>();
+            services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
+            services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
+            services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
 
+            services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
-            services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();
             services.AddTransient<ISubsubcategoryRepository, SubsubcategoryRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
@@ -131,7 +137,13 @@ namespace OutOfSchool.WebApi
             services.AddSingleton(Log.Logger);
 
             // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                // Set the comments path for the Swagger JSON and UI.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
 
             services.AddAutoMapper(typeof(Startup));
         }
