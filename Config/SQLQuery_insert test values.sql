@@ -523,7 +523,7 @@ INSERT INTO [dbo].[Workshops]
            ,5 --minAge
            ,100 --maxAge
            ,2 --days per week
-           ,0 --price
+           ,100 --price
            ,'Уроки гри на флейті'
            ,1 --WithDisabilityOptions
            ,'Немає конкретних обмежень' -- disability description

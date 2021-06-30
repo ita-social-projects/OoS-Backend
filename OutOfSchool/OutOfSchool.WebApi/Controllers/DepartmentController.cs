@@ -50,20 +50,20 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-            var entities = await service.GetAll().ConfigureAwait(false);
+            var departments = await service.GetAll().ConfigureAwait(false);
 
-            if (!entities.Any())
+            if (!departments.Any())
             {
                 return NoContent();
             }
 
-            return Ok(entities);
+            return Ok(departments);
         }
 
         /// <summary>
         /// To recieve the department with the defined id.
         /// </summary>
-        /// <param name="id">Key in table.</param>
+        /// <param name="id">Key of the department in the table.</param>
         /// <returns><see cref="DepartmentDto"/>.</returns>
         /// <response code="200">The entity was found by given Id.</response>
         /// <response code="500">If any server error occures. For example: Id was wrong.</response>
@@ -97,14 +97,14 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                var entities = await service.GetByDirectionId(id).ConfigureAwait(false);
+                var departments = await service.GetByDirectionId(id).ConfigureAwait(false);
 
-                if (!entities.Any())
+                if (!departments.Any())
                 {
                     return NoContent();
                 }
 
-                return Ok(entities);
+                return Ok(departments);
             }
             catch (ArgumentException ex)
             {
@@ -141,12 +141,12 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 departmentDto.Id = default;
 
-                var entity = await service.Create(departmentDto).ConfigureAwait(false);
+                var department = await service.Create(departmentDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                      nameof(GetById),
-                     new { id = entity.Id, },
-                     entity);
+                     new { id = department.Id, },
+                     department);
             }
             catch (ArgumentException ex)
             {

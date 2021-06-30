@@ -50,20 +50,20 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-            var entities = await service.GetAll().ConfigureAwait(false);
+            var classes = await service.GetAll().ConfigureAwait(false);
 
-            if (!entities.Any())
+            if (!classes.Any())
             {
                 return NoContent();
             }
 
-            return Ok(entities);
+            return Ok(classes);
         }
 
         /// <summary>
         /// To recieve the class with the defined id.
         /// </summary>
-        /// <param name="id">Key in table.</param>
+        /// <param name="id">Key of the class in table.</param>
         /// <returns><see cref="ClassDto"/>.</returns>
         /// <response code="200">The entity was found by given Id.</response>
         /// <response code="500">If any server error occures. For example: Id was wrong.</response>
@@ -97,14 +97,14 @@ namespace OutOfSchool.WebApi.Controllers
         {
             try
             {
-                var entities = await service.GetByDepartmentId(id).ConfigureAwait(false);
+                var classes = await service.GetByDepartmentId(id).ConfigureAwait(false);
 
-                if (!entities.Any())
+                if (!classes.Any())
                 {
                     return NoContent();
                 }
 
-                return Ok(entities);
+                return Ok(classes);
             }
             catch (ArgumentException ex)
             {
@@ -141,12 +141,12 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 classDto.Id = default;
 
-                var entity = await service.Create(classDto).ConfigureAwait(false);
+                var classEntity = await service.Create(classDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                      nameof(GetById),
-                     new { id = entity.Id, },
-                     entity);
+                     new { id = classEntity.Id, },
+                     classEntity);
             }
             catch (ArgumentException ex)
             {

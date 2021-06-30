@@ -50,20 +50,20 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-            var entities = await service.GetAll().ConfigureAwait(false);
+            var directions = await service.GetAll().ConfigureAwait(false);
 
-            if (!entities.Any())
+            if (!directions.Any())
             {
                 return NoContent();
             }
 
-            return Ok(entities);
+            return Ok(directions);
         }
 
         /// <summary>
         /// To recieve the direction with the defined id.
         /// </summary>
-        /// <param name="id">Key in table.</param>
+        /// <param name="id">Key of the direction in the table.</param>
         /// <returns><see cref="DirectionDto"/>.</returns>
         /// <response code="200">The entity was found by given Id.</response>
         /// <response code="500">If any server error occures. For example: Id was wrong.</response>
@@ -107,12 +107,12 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 directionDto.Id = default;
 
-                var entity = await service.Create(directionDto).ConfigureAwait(false);
+                var direction = await service.Create(directionDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                      nameof(GetById),
-                     new { id = entity.Id, },
-                     entity);
+                     new { id = direction.Id, },
+                     direction);
             }
             catch (ArgumentException ex)
             {
