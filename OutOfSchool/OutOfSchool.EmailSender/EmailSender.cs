@@ -8,8 +8,8 @@ namespace OutOfSchool.EmailSender
 {
     public class EmailSender : IEmailSender
     {
-        IOptions<EmailOptions> _emailOptions;
-        IOptions<SmtpOptions> _smtpOptions;
+        private readonly IOptions<EmailOptions> _emailOptions;
+        private readonly IOptions<SmtpOptions> _smtpOptions;
 
         public EmailSender(IOptions<EmailOptions> emailOptions, IOptions<SmtpOptions> smtpOptions)
         {
@@ -17,10 +17,10 @@ namespace OutOfSchool.EmailSender
             _smtpOptions = smtpOptions;
         }
 
-        public Task SendAsync(Message message)
+        private Task SendAsync(Message message)
         {
             var mimeMessage = CreateMimeMessage(message);
-            return SendAsync(mimeMessage);
+            return SendMimeMessageAsync(mimeMessage);
         }
 
         public Task SendAsync(string email, string subject, string htmlMessage)
@@ -56,7 +56,7 @@ namespace OutOfSchool.EmailSender
             return mimeMessage;
         }
 
-        private async Task SendAsync(MimeMessage mimeMessage)
+        private async Task SendMimeMessageAsync(MimeMessage mimeMessage)
         {
             if (!_emailOptions.Value.Enabled)
                 return;
