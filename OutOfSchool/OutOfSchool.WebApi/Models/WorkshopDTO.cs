@@ -85,13 +85,13 @@ namespace OutOfSchool.WebApi.Models
         public long AddressId { get; set; }
 
         [Required]
-        public long CategoryId { get; set; }
+        public long DirectionId { get; set; }
 
         [Required]
-        public long SubcategoryId { get; set; }
+        public long DepartmentId { get; set; }
 
         [Required]
-        public long SubsubcategoryId { get; set; }
+        public long ClassId { get; set; }
 
         public AddressDto Address { get; set; }
 

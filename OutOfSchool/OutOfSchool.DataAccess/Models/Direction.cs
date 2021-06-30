@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.Services.Models
 {
-    public class SubsubcategoryDTO
+    public class Direction
     {
         public long Id { get; set; }
 
@@ -19,7 +16,6 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
 
-        [Required]
-        public long SubcategoryId { get; set; }
+        public virtual List<Department> Departments { get; set; }
     }
 }

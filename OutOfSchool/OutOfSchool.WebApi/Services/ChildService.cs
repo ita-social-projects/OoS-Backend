@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDto> GetByIdWithDetails(long id)
         {
-            logger.Information($"Getting Child by Id with details started. Looking CategoryId = {id}.");
+            logger.Information($"Getting Child by Id with details started. Looking ChildId = {id}.");
 
             Expression<Func<Child, bool>> filter = child => child.Id == id;
 

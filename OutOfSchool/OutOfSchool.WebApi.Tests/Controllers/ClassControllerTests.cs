@@ -17,35 +17,35 @@ using OutOfSchool.WebApi.Services;
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
     [TestFixture]
-    public class CategoryControllerTests
+    public class ClassControllerTests
     {
-        private CategoryController controller;
-        private Mock<ICategoryService> service;
+        private ClassController controller;
+        private Mock<IClassService> service;
         private ClaimsPrincipal user;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
-        private IEnumerable<CategoryDTO> categories;
-        private CategoryDTO category;
+        private IEnumerable<ClassDto> classes;
+        private ClassDto classEntity;
 
         [SetUp]
         public void Setup()
         {
-            service = new Mock<ICategoryService>();
+            service = new Mock<IClassService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new CategoryController(service.Object, localizer.Object);
+            controller = new ClassController(service.Object, localizer.Object);
             user = new ClaimsPrincipal(new ClaimsIdentity());
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
-            categories = FakeCategories();
-            category = FakeCategory();
+            classes = FakeClasses();
+            classEntity = FakeClass();
         }
 
         [Test]
-        public async Task GetCategories_WhenCalled_ReturnsOkResultObject()
+        public async Task Get_WhenCalled_ReturnsOkResultObject()
         {
             // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(categories);
+            service.Setup(x => x.GetAll()).ReturnsAsync(classes);
 
             // Act
             var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
@@ -57,10 +57,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task GetCategoriesById_WhenIdIsValid_ReturnsOkObjectResult(long id)
+        public async Task GetById_WhenIdIsValid_ReturnsOkObjectResult(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(categories.SingleOrDefault(x => x.Id == id));
+            service.Setup(x => x.GetById(id)).ReturnsAsync(classes.SingleOrDefault(x => x.Id == id));
 
             // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
@@ -72,10 +72,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(-1)]
-        public void GetCategoriesById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
+        public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(categories.SingleOrDefault(x => x.Id == id));
+            service.Setup(x => x.GetById(id)).ReturnsAsync(classes.SingleOrDefault(x => x.Id == id));
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -84,10 +84,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task GetCategoriesById_WhenIdIsInvalid_ReturnsNull(long id)
+        public async Task GetById_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(categories.SingleOrDefault(x => x.Id == id));
+            service.Setup(x => x.GetById(id)).ReturnsAsync(classes.SingleOrDefault(x => x.Id == id));
 
             // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
@@ -98,13 +98,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateCategory_WhenModelIsValid_ReturnsCreatedAtActionResult()
+        public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
         {
             // Arrange
-            service.Setup(x => x.Create(category)).ReturnsAsync(category);
+            service.Setup(x => x.Create(classEntity)).ReturnsAsync(classEntity);
 
             // Act
-            var result = await controller.Create(category).ConfigureAwait(false) as CreatedAtActionResult;
+            var result = await controller.Create(classEntity).ConfigureAwait(false) as CreatedAtActionResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -112,13 +112,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateCategory_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+        public async Task Create_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
-            controller.ModelState.AddModelError("CreateCategory", "Invalid model state.");
+            controller.ModelState.AddModelError("CreateClass", "Invalid model state.");
 
             // Act
-            var result = await controller.Create(category).ConfigureAwait(false);
+            var result = await controller.Create(classEntity).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -126,18 +126,19 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task UpdateCategory_WhenModelIsValid_ReturnsOkObjectResult()
+        public async Task Update_WhenModelIsValid_ReturnsOkObjectResult()
         {
             // Arrange
-            var changedCategory = new CategoryDTO()
+            var changedClass = new ClassDto()
             {
                 Id = 1,
                 Title = "ChangedTitle",
+                DepartmentId = 1,
             };
-            service.Setup(x => x.Update(changedCategory)).ReturnsAsync(changedCategory);
+            service.Setup(x => x.Update(changedClass)).ReturnsAsync(changedClass);
 
             // Act
-            var result = await controller.Update(changedCategory).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.Update(changedClass).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -145,13 +146,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task UpdateCategory_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+        public async Task Update_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
-            controller.ModelState.AddModelError("UpdateCategory", "Invalid model state.");
+            controller.ModelState.AddModelError("UpdateClass", "Invalid model state.");
 
             // Act
-            var result = await controller.Update(category).ConfigureAwait(false);
+            var result = await controller.Update(classEntity).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -160,7 +161,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task DeleteCategory_WhenIdIsValid_ReturnsNoContentResult(long id)
+        public async Task Delete_WhenIdIsValid_ReturnsNoContentResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
@@ -175,7 +176,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public void DeleteCategory_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+        public void Delete_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
@@ -187,7 +188,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task DeleteCategory_WhenIdIsInvalid_ReturnsNull(long id)
+        public async Task Delete_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
@@ -199,33 +200,81 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.That(result, Is.Null);
         }
 
-        private CategoryDTO FakeCategory()
+        [Test]
+        [TestCase(3)]
+        public async Task GetByDepartmentId_WhenIdIsInvalid_ReturnsNoContent(long id)
         {
-            return new CategoryDTO()
+            // Arrange
+            service.Setup(x => x.GetByDepartmentId(id)).ReturnsAsync(classes.Where(x => x.DepartmentId == id));
+
+            // Act
+            var result = await controller.GetByDepartmentId(id).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        [TestCase(1)]
+        public async Task GetByDepartmentId_WhenIdIsValid_ReturnsOkObject(long id)
+        {
+            // Arrange
+            service.Setup(x => x.GetByDepartmentId(id)).ReturnsAsync(classes.Where(x => x.DepartmentId == id));
+
+            // Act
+            var result = await controller.GetByDepartmentId(id).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(200, result.StatusCode);
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task GetByDepartmentId_WhenIdIsInvalid_ReturnsBadRequest(long id)
+        {
+            // Arrange
+            service.Setup(x => x.GetByDepartmentId(id)).ThrowsAsync(new ArgumentException("message"));
+
+            // Act
+            var result = await controller.GetByDepartmentId(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+        }
+
+        private ClassDto FakeClass()
+        {
+            return new ClassDto()
             {
                 Title = "Test1",
                 Description = "Test1",
+                DepartmentId = 1,
             };
         }
 
-        private IEnumerable<CategoryDTO> FakeCategories()
+        private IEnumerable<ClassDto> FakeClasses()
         {
-            return new List<CategoryDTO>()
+            return new List<ClassDto>()
             {
-                   new CategoryDTO()
+                   new ClassDto()
                    {
                        Title = "Test1",
                        Description = "Test1",
+                       DepartmentId = 1,
                    },
-                   new CategoryDTO
+                   new ClassDto
                    {
                        Title = "Test2",
                        Description = "Test2",
+                       DepartmentId = 1,
                    },
-                   new CategoryDTO
+                   new ClassDto
                    {
                        Title = "Test3",
                        Description = "Test3",
+                       DepartmentId = 1,
                    },
             };
         }
