@@ -190,5 +190,31 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             return Ok();
         }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult ChangePassword(string returnUrl = "Login")
+        {
+            return View("Password/Change", new ChangePasswordViewModel() { ReturnUrl = returnUrl });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Error");
+            }
+
+            var user = await userManager.GetUserAsync(User);
+            var result = await userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return View("Password/ChangePasswordConfirmation");
+            }
+
+            return Ok();
+        }
     }
 }
