@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.Services.Repository
 {
-    public interface IExistable<T>
+    public interface IExistable<in T>
     {
         /// <summary>
         /// Checks entity elements for uniqueness.
