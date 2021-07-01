@@ -1,19 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using OutOfSchool.Services.Models;
+﻿using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
 {
-    public interface IClassRepository : IEntityRepository<Class>
+    public interface IClassRepository : IEntityRepository<Class>, IExistable<Class>
     {
-        /// <summary>
-        /// Checks entity elements for uniqueness.
-        /// </summary>
-        /// <param name="entity">Entity.</param>
-        /// <returns>Bool.</returns>
-        bool SameExists(Class entity);
-
         /// <summary>
         /// Checks entity departmentId existens.
         /// </summary>
