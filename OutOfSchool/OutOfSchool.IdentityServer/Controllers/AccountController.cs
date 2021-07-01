@@ -62,7 +62,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             if (userId == null || email == null || token == null)
             {
-                return View("Error");
+                return BadRequest("One or more parameters are null.");
             }
 
             var user = await userManager.FindByIdAsync(userId);
@@ -74,13 +74,13 @@ namespace OutOfSchool.IdentityServer.Controllers
             var result = await userManager.ChangeEmailAsync(user, email, token);
             if (!result.Succeeded)
             {
-                return View("Error");
+                return BadRequest();
             }
 
             var setUserNameResult = await userManager.SetUserNameAsync(user, email);
             if (!setUserNameResult.Succeeded)
             {
-                return View("Error");
+                return BadRequest();
             }
 
             await signInManager.RefreshSignInAsync(user);
@@ -108,7 +108,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             if (userId == null || token == null)
             {
-                return View("Error");
+                return BadRequest("One or more parameters are null.");
             }
 
             var user = await userManager.FindByIdAsync(userId);
@@ -120,7 +120,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             var result = await userManager.ConfirmEmailAsync(user, token);
             if (!result.Succeeded)
             {
-                return View("Error");
+                return BadRequest();
             }
 
             return Ok();
@@ -173,7 +173,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View("Error");
+                return BadRequest(ModelState);
             }
 
             var user = await userManager.FindByEmailAsync(model.Email);
@@ -204,7 +204,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View("Error");
+                return BadRequest(ModelState);
             }
 
             var user = await userManager.GetUserAsync(User);
@@ -214,7 +214,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return View("Password/ChangePasswordConfirmation");
             }
 
-            return Ok();
+            return Redirect(model.ReturnUrl);
         }
     }
 }
