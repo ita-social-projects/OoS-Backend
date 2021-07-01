@@ -296,7 +296,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                await CheckUserRights(parentId: applicationDto.ParentId).ConfigureAwait(false);
+                await CheckUserRights(parentId: applicationDto?.ParentId).ConfigureAwait(false);
 
                 applicationDto.Id = default;
 
@@ -331,7 +331,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(ShortApplicationDTO applicationDto)
+        public async Task<IActionResult> Update(ShortApplicationDto applicationDto)
         {
             if (!ModelState.IsValid)
             {
@@ -391,7 +391,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
-        private IEnumerable<ApplicationDto> CreateMultiple(ApplicationApiModel applicationApiModel)
+        private static IEnumerable<ApplicationDto> CreateMultiple(ApplicationApiModel applicationApiModel)
         {
             var applications = applicationApiModel.Children.Select(child => new ApplicationDto
             {

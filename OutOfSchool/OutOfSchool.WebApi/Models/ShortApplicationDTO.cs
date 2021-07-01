@@ -7,7 +7,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class ShortApplicationDTO
+    public class ShortApplicationDto
     {
         public long Id { get; set; }
 

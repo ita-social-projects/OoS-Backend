@@ -217,7 +217,7 @@ namespace OutOfSchool.WebApi.Services
 
             ModelNullValidation(applicationDto);
 
-            CheckApplicationExists(applicationDto.Id);
+            CheckApplicationExists(applicationDto?.Id);
 
             try
             {
@@ -272,7 +272,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private void CheckApplicationExists(long id)
+        private void CheckApplicationExists(long? id)
         {
             var applications = applicationRepository.Get<int>(where: a => a.Id == id);
 

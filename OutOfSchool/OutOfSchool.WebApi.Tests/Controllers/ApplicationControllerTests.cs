@@ -32,6 +32,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         private IEnumerable<ApplicationDto> applications;
         private IEnumerable<ChildDto> children;
+        private IEnumerable<WorkshopDTO> workshops;
         private ParentDTO parent;
         private ProviderDto provider;
 
@@ -62,6 +63,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             applications = FakeApplications();
             children = FakeChildren();
+            workshops = FakeWorkshops();
 
             parent = new ParentDTO { Id = 1, UserId = userId };
             provider = new ProviderDto { Id = 1, UserId = userId };
@@ -240,7 +242,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
-            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(FakeWorkshop());
+            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.First());
             applicationService.Setup(s => s.GetAllByProvider(id))
                 .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
             applicationService.Setup(s => s.GetAllByWorkshop(id))
@@ -304,11 +306,26 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherProvider);
-            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(FakeWorkshop());
+            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.First());
             applicationService.Setup(s => s.GetAllByProvider(id))
                 .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
             applicationService.Setup(s => s.GetAllByWorkshop(id))
                 .ReturnsAsync(applications.Where(a => a.WorkshopId == id));
+
+            // Act
+            var result = await controller.GetByPropertyId(property, id).ConfigureAwait(false) as BadRequestObjectResult;
+
+            // Assert
+            result.Should().NotBeNull();
+            result.StatusCode.Should().Be(400);
+        }
+
+        [Test]
+        [TestCase(10, "workshop")]
+        public async Task GetByPropertyId_WhenThereIsNoWorkshopWithId_ShouldReturnBadRequest(long id, string property)
+        {
+            // Arrange
+            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.Where(w => w.Id == id).FirstOrDefault());
 
             // Act
             var result = await controller.GetByPropertyId(property, id).ConfigureAwait(false) as BadRequestObjectResult;
@@ -336,6 +353,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
+        [TestCase(-1)]
         public async Task GetByStatus_WhenIdIsNotValid_ShouldReturnBadRequest(int status)
         {
             // Act
@@ -496,7 +514,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateApplication_WhenModelIsValid_ShouldReturnOkObjectResult(string role)
         {
             // Arrange
-            var shortApplication = new ShortApplicationDTO
+            var shortApplication = new ShortApplicationDto
             {
                 Id = 1,
                 Status = ApplicationStatus.Pending,
@@ -522,7 +540,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateApplication_WhenModelIsNotValid_ShouldReturnBadRequest()
         {
             // Arrange
-            var shortApplication = new ShortApplicationDTO
+            var shortApplication = new ShortApplicationDto
             {
                 Id = 1,
                 Status = ApplicationStatus.Pending,
@@ -544,7 +562,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateApplication_WhenUserHasNoRights_ShouldReturnBadRequest(string role)
         {
             // Arrange
-            var shortApplication = new ShortApplicationDTO
+            var shortApplication = new ShortApplicationDto
             {
                 Id = 1,
                 Status = ApplicationStatus.Pending,
@@ -560,6 +578,27 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             applicationService.Setup(s => s.Update(applications.First())).ReturnsAsync(applications.First());
             applicationService.Setup(s => s.GetById(shortApplication.Id)).ReturnsAsync(applications.First());
+
+            // Act
+            var result = await controller.Update(shortApplication).ConfigureAwait(false) as BadRequestObjectResult;
+
+            // Assert
+            result.Should().NotBeNull();
+            result.StatusCode.Should().Be(400);
+        }
+
+        [Test]
+        public async Task UpdateApplication_WhenThereIsNoApplicationWithId_ShouldReturnBadRequest()
+        {
+            // Arrange
+            var shortApplication = new ShortApplicationDto
+            {
+                Id = 10,
+                Status = ApplicationStatus.Pending,
+            };
+
+            applicationService.Setup(s => s.GetById(shortApplication.Id))
+                .ReturnsAsync(applications.Where(a => a.Id == shortApplication.Id).FirstOrDefault());
 
             // Act
             var result = await controller.Update(shortApplication).ConfigureAwait(false) as BadRequestObjectResult;
@@ -622,7 +661,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Status = ApplicationStatus.Pending,
                     ParentId = 1,
                     WorkshopId = 1,
-                    Workshop = FakeWorkshop(),
+                    Workshop = FakeWorkshops().First(),
                 },
                 new ApplicationDto()
                 {
@@ -631,18 +670,21 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Status = ApplicationStatus.Pending,
                     ParentId = 2,
                     WorkshopId = 1,
-                    Workshop = FakeWorkshop(),
+                    Workshop = FakeWorkshops().First(),
                 },
             };
         }
 
-        private WorkshopDTO FakeWorkshop()
+        private IEnumerable<WorkshopDTO> FakeWorkshops()
         {
-            return new WorkshopDTO()
+            return new List<WorkshopDTO>()
             {
-                Id = 1,
-                Title = "w1",
-                ProviderId = 1,
+                new WorkshopDTO()
+                {
+                    Id = 1,
+                    Title = "w1",
+                    ProviderId = 1,
+                },
             };
         }
 

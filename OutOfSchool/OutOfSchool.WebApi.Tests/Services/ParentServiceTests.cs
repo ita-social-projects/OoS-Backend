@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Localization;
@@ -95,6 +96,28 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 async () => await service.GetById(id).ConfigureAwait(false));
+        }
+
+        [Test]
+        [TestCase("de909f35-5eb7-4b7a-bda8-40a5bfda96a6")]
+        public async Task GetByUserId_WhenIdIsValid_ReturnsEntities(string id)
+        {
+            // Arrange
+            var expected = await repoParent.GetByFilter(p => p.UserId == id);
+
+            // Act
+            var result = await service.GetByUserId(id).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeEquivalentTo(expected.FirstOrDefault().ToModel());
+        }
+
+        [Test]
+        [TestCase("fakeString")]
+        public void GetByUserId_WhenIdIsNotValid_TrowsArgumentException(string id)
+        {
+            // Act and Assert
+            service.Invoking(s => s.GetByUserId(id)).Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]

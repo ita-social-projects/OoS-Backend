@@ -273,6 +273,32 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        [TestCase(1)]
+        public async Task GetAllByParent_WhenIdIsValid_ShouldReturnApplications(long id)
+        {
+            // Arrange
+            Expression<Func<Application, bool>> filter = a => a.ParentId == id;
+            var expected = await applicationRepository.GetByFilter(filter);
+
+            // Act
+            var result = await service.GetAllByParent(id).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task GetAllByParent_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
+        {
+            // Act
+            var result = await service.GetAllByParent(id).ConfigureAwait(false);
+
+            // Assert
+            result.Count().Should().Be(0);
+        }
+
+        [Test]
         [TestCase(0)]
         public async Task GetAllByStatus_WhenStatusIsValid_ShouldReturnApplications(int status)
         {
@@ -334,6 +360,13 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
                 async () => await service.Update(application).ConfigureAwait(false));
+        }
+
+        [Test]
+        public void UpdateApplication_WhenModelIsNull_ShouldThrowArgumentException()
+        {
+            // Act and Assert
+            service.Invoking(s => s.Update(null)).Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
