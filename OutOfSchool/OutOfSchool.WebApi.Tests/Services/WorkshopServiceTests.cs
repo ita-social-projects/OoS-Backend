@@ -26,7 +26,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private OutOfSchoolDbContext dbContext;
 
         private IWorkshopRepository workshopRepository;
-        private Mock<ISubsubcategoryRepository> sscategoryRepositoryMoq;
+        private Mock<IClassRepository> classRepositoryMoq;
         private IEntityRepository<Teacher> teacherRepository;
         private IEntityRepository<Address> addressRepository;
 
@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IStringLocalizer<SharedResource>> localizerMoq;
 
         private Workshop newWorkshop;
-        private Subsubcategory sscategory;
+        private Class classEntity;
 
         [SetUp]
         public void SetUp()
@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             dbContext = new OutOfSchoolDbContext(options);
 
             workshopRepository = new WorkshopRepository(dbContext);
-            sscategoryRepositoryMoq = new Mock<ISubsubcategoryRepository>();
+            classRepositoryMoq = new Mock<IClassRepository>();
             teacherRepository = new EntityRepository<Teacher>(dbContext);
             addressRepository = new EntityRepository<Address>(dbContext);
 
@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             workshopService = new WorkshopService(
                 workshopRepository,
-                sscategoryRepositoryMoq.Object,
+                classRepositoryMoq.Object,
                 teacherRepository,
                 addressRepository,
                 ratingServiceMoq.Object,
@@ -74,8 +74,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ShouldCreateEntities()
         {
             // Arrange
-            sscategoryRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-               .ReturnsAsync(sscategory);
+            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
+               .ReturnsAsync(classEntity);
             var teachersCount = dbContext.Teachers.Count();
             var addressecCount = dbContext.Addresses.Count();
 
@@ -87,9 +87,9 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.AreEqual(6, result.Id);
             Assert.AreEqual(newWorkshop.Title, result.Title);
 
-            Assert.AreEqual(sscategory.Id, result.SubsubcategoryId);
-            Assert.AreEqual(sscategory.SubcategoryId, result.SubcategoryId);
-            Assert.AreEqual(sscategory.Subcategory.CategoryId, result.CategoryId);
+            Assert.AreEqual(classEntity.Id, result.ClassId);
+            Assert.AreEqual(classEntity.DepartmentId, result.DepartmentId);
+            Assert.AreEqual(classEntity.Department.DirectionId, result.DirectionId);
 
             Assert.AreEqual(newWorkshop.Teachers.Count, result.Teachers.Count());
             Assert.AreEqual(dbContext.Teachers.Count(), teachersCount + 2);
@@ -99,15 +99,15 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public async Task Create_WhenCategoriesIdsSetWrong_ShouldCreateEntitiesWithRightCategoriesIds()
+        public async Task Create_WhenDirectionsIdsAreWrong_ShouldCreateEntitiesWithRightDirectionsIds()
         {
             // Arrange
-            sscategoryRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-               .ReturnsAsync(sscategory);
+            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
+               .ReturnsAsync(classEntity);
             newWorkshop.Title = "newWorkshopTitle2";
             newWorkshop.ProviderId = 7;
-            newWorkshop.SubcategoryId = 10;
-            newWorkshop.CategoryId = 90;
+            newWorkshop.DepartmentId = 10;
+            newWorkshop.DirectionId = 90;
 
             // Act
             var result = await workshopService.Create(newWorkshop.ToModel()).ConfigureAwait(false);
@@ -117,16 +117,16 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.AreEqual(6, result.Id);
             Assert.AreEqual(newWorkshop.Title, result.Title);
 
-            Assert.AreEqual(sscategory.Id, result.SubsubcategoryId);
-            Assert.AreEqual(sscategory.SubcategoryId, result.SubcategoryId);
-            Assert.AreEqual(sscategory.Subcategory.CategoryId, result.CategoryId);
+            Assert.AreEqual(classEntity.Id, result.ClassId);
+            Assert.AreEqual(classEntity.DepartmentId, result.DepartmentId);
+            Assert.AreEqual(classEntity.Department.DirectionId, result.DirectionId);
         }
 
         [Test]
-        public void Create_WhenSubsubcategoryIdSetWrong_ShouldThrowArgumentOutOfRangeException()
+        public void Create_WhenThereIsNoClassId_ShouldThrowArgumentOutOfRangeException()
         {
             // Arrange
-            sscategoryRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
+            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
                .ReturnsAsync(() => null);
             newWorkshop.Title = "newWorkshopTitle3";
 
@@ -187,8 +187,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Update_WhenEntityIsValid_ShouldUpdateAllRelationalEntities()
         {
             // Arrange
-            sscategoryRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-               .ReturnsAsync(sscategory);
+            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
+               .ReturnsAsync(classEntity);
             var changedFirstEntity = new Workshop()
             {
                 Id = 1,
@@ -210,9 +210,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                 MinAge = 4,
                 Logo = "image1",
                 ProviderId = 1,
-                CategoryId = 1,
-                SubsubcategoryId = 1,
-                SubcategoryId = 1,
+                DirectionId = 1,
+                ClassId = 1,
+                DepartmentId = 1,
                 AddressId = 55,
                 Address = new Address
                 {
@@ -262,9 +262,9 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Assert
             Assert.AreEqual(changedFirstEntity.Title, result.Title);
 
-            Assert.AreEqual(sscategory.Id, result.SubsubcategoryId);
-            Assert.AreEqual(sscategory.SubcategoryId, result.SubcategoryId);
-            Assert.AreEqual(sscategory.Subcategory.CategoryId, result.CategoryId);
+            Assert.AreEqual(classEntity.Id, result.ClassId);
+            Assert.AreEqual(classEntity.DepartmentId, result.DepartmentId);
+            Assert.AreEqual(classEntity.Department.DirectionId, result.DirectionId);
 
             Assert.AreEqual(changedFirstEntity.Teachers.Count, result.Teachers.Count());
             Assert.AreEqual(dbContext.Teachers.Where(x => x.WorkshopId == 1).Count(), result.Teachers.Count());
@@ -281,8 +281,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Update_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException()
         {
             // Arrange
-            sscategoryRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-               .ReturnsAsync(sscategory);
+            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
+               .ReturnsAsync(classEntity);
             var changedEntity = new WorkshopDTO()
             {
                 Id = 99,
@@ -360,9 +360,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                 MinAge = 4,
                 Logo = "image",
                 ProviderId = 6,
-                CategoryId = 1,
-                SubsubcategoryId = 1,
-                SubcategoryId = 1,
+                DirectionId = 1,
+                ClassId = 1,
+                DepartmentId = 1,
                 AddressId = 0,
                 Address = new Address
                 {
@@ -398,17 +398,17 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                 },
             };
-            sscategory = new Subsubcategory()
+            classEntity = new Class()
             {
                 Id = 1,
                 Title = "new SSC",
-                SubcategoryId = 1,
-                Subcategory = new Subcategory()
+                DepartmentId = 1,
+                Department = new Department()
                 {
                     Id = 1,
                     Title = "new SC",
-                    CategoryId = 1,
-                    Category = new Category()
+                    DirectionId = 1,
+                    Direction = new Direction()
                     {
                         Id = 1,
                         Title = "new C",
@@ -444,9 +444,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                         MinAge = 4,
                         Logo = "image1",
                         ProviderId = 1,
-                        CategoryId = 1,
-                        SubsubcategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        ClassId = 1,
+                        DepartmentId = 1,
                         AddressId = 55,
                         Address = new Address
                         {
@@ -506,8 +506,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                         MinAge = 4,
                         Logo = "image2",
                         ProviderId = 2,
-                        CategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        DepartmentId = 1,
                         AddressId = 10,
                         Address = new Address
                         {
@@ -566,8 +566,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                         MinAge = 4,
                         Logo = "image3",
                         ProviderId = 3,
-                        CategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        DepartmentId = 1,
                         AddressId = 11,
                         Address = new Address
                         {
@@ -627,8 +627,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                         MinAge = 4,
                         Logo = "image4",
                         ProviderId = 4,
-                        CategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        DepartmentId = 1,
                         AddressId = 15,
                         Address = new Address
                         {
@@ -688,8 +688,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                         MinAge = 4,
                         Logo = "image5",
                         ProviderId = 5,
-                        CategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        DepartmentId = 1,
                         AddressId = 17,
                         Address = new Address
                         {
@@ -733,12 +733,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                 var apps = new List<Application>() { new Application() { Id = 1, WorkshopId = 1 }, new Application() { Id = 2, WorkshopId = 1 }, new Application() { Id = 3, WorkshopId = 2 }, new Application() { Id = 4, WorkshopId = 2 } };
                 context.Applications.AddRangeAsync(apps);
 
-                var categories = new List<Category>() { new Category() { Title = "Category1" }, new Category() { Title = "Category2" } };
-                context.Categories.AddRangeAsync(categories);
-                var subcategories = new List<Subcategory>() { new Subcategory() { Title = "new1", CategoryId = 1 }, new Subcategory() { Title = "new2", CategoryId = 1 } };
-                context.Subcategories.AddRangeAsync(subcategories);
-                var subsubcategories = new List<Subsubcategory>() { new Subsubcategory() { Title = "new1", SubcategoryId = 1 }, new Subsubcategory() { Title = "new2", SubcategoryId = 1 } };
-                context.Subsubcategories.AddRangeAsync(subsubcategories);
+                var directions = new List<Direction>() { new Direction() { Title = "Direction1" }, new Direction() { Title = "Direction2" } };
+                context.Directions.AddRangeAsync(directions);
+                var departments = new List<Department>() { new Department() { Title = "new1", DirectionId = 1 }, new Department() { Title = "new2", DirectionId = 1 } };
+                context.Departments.AddRangeAsync(departments);
+                var classes = new List<Class>() { new Class() { Title = "new1", DepartmentId = 1 }, new Class() { Title = "new2", DepartmentId = 1 } };
+                context.Classes.AddRangeAsync(classes);
 
                 context.Workshops.AddRangeAsync(workshops);
                 context.SaveChangesAsync();

@@ -18,12 +18,12 @@ using Serilog;
 namespace OutOfSchool.WebApi.Tests.Services
 {
     [TestFixture]
-    public class SubsubcategoryServiceTests
+    public class DirectionServiceTests
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
-        private ISubsubcategoryRepository repo;
-        private ISubsubcategoryService service;
+        private IEntityRepository<Direction> repo;
+        private IDirectionService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
 
@@ -37,10 +37,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
 
-            repo = new SubsubcategoryRepository(context);
+            repo = new EntityRepository<Direction>(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger>();
-            service = new SubsubcategoryService(repo, logger.Object, localizer.Object);
+            service = new DirectionService(repo, logger.Object, localizer.Object);
 
             SeedDatabase();
         }
@@ -50,11 +50,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
-            var expected = new Subsubcategory()
+            var expected = new Direction()
             {
                 Title = "NewTitle",
                 Description = "NewDescription",
-                SubcategoryId = 1,
             };
 
             // Act
@@ -108,7 +107,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [Order(5)]
-        [TestCase(100)]
+        [TestCase(10)]
         public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
             // Act and Assert
@@ -121,12 +120,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
-            var changedEntity = new SubsubcategoryDTO()
+            var changedEntity = new DirectionDto()
             {
                 Id = 1,
                 Title = "ChangedTitle1",
-                Description = "Bla-bla",
-                SubcategoryId = 1,
             };
 
             // Act
@@ -141,10 +138,9 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
-            var changedEntity = new SubsubcategoryDTO()
+            var changedEntity = new DirectionDto()
             {
                 Title = "NewTitle1",
-                SubcategoryId = 1,
             };
 
             // Act and Assert
@@ -160,7 +156,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act
             var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
 
-            context.Entry<Subsubcategory>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
+            context.Entry<Direction>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
 
             await service.Delete(id).ConfigureAwait(false);
 
@@ -180,32 +176,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 async () => await service.Delete(id).ConfigureAwait(false));
         }
 
-        [Test]
-        [Order(10)]
-        [TestCase(1)]
-        public async Task GetBySubcategoryId_WhenIdIsValid_ReturnsEntities(long id)
-        {
-            // Arrange
-            var expected = await repo.GetAll().ConfigureAwait(false);
-            expected = expected.Where(x => x.SubcategoryId == id);
-
-            // Act
-            var entities = await service.GetBySubcategoryId(id);
-
-            // Assert
-            Assert.That(entities.Count(), Is.EqualTo(expected.Count()));
-        }
-
-        [Test]
-        [Order(11)]
-        [TestCase(10)]
-        public void GetBySubcategoryId_WhenIdIsInvalid_ThrowsArgumentException(long id)
-        {
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.GetBySubcategoryId(id).ConfigureAwait(false));
-        }
-
         private void SeedDatabase()
         {
             using var ctx = new OutOfSchoolDbContext(options);
@@ -213,54 +183,26 @@ namespace OutOfSchool.WebApi.Tests.Services
                 ctx.Database.EnsureDeleted();
                 ctx.Database.EnsureCreated();
 
-                var subcategories = new List<Subcategory>()
+                var directions = new List<Direction>()
                 {
-                   new Subcategory()
+                   new Direction()
                    {
                        Title = "Test1",
                        Description = "Test1",
-                       CategoryId = 1,
                    },
-                   new Subcategory
+                   new Direction
                    {
                        Title = "Test2",
                        Description = "Test2",
-                       CategoryId = 1,
                    },
-                   new Subcategory
+                   new Direction
                    {
                        Title = "Test3",
                        Description = "Test3",
-                       CategoryId = 1,
                    },
                 };
 
-                ctx.Subcategories.AddRangeAsync(subcategories);
-
-                var subsubcategories = new List<Subsubcategory>()
-                {
-                   new Subsubcategory()
-                   {
-                       Title = "Test1",
-                       Description = "Test1",
-                       SubcategoryId = 1,
-                   },
-                   new Subsubcategory
-                   {
-                       Title = "Test2",
-                       Description = "Test2",
-                       SubcategoryId = 1,
-                   },
-                   new Subsubcategory
-                   {
-                       Title = "Test3",
-                       Description = "Test3",
-                       SubcategoryId = 1,
-                   },
-                };
-
-                ctx.Subsubcategories.AddRangeAsync(subsubcategories);
-
+                ctx.Directions.AddRangeAsync(directions);
                 ctx.SaveChangesAsync();
             }
         }

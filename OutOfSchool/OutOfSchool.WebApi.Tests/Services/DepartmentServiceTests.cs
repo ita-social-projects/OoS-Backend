@@ -18,12 +18,12 @@ using Serilog;
 namespace OutOfSchool.WebApi.Tests.Services
 {
     [TestFixture]
-    public class SubcategoryServiceTests
+    public class DepartmentServiceTests
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
-        private ISubcategoryRepository repo;
-        private ISubcategoryService service;
+        private IDepartmentRepository repo;
+        private IDepartmentService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
 
@@ -37,10 +37,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
 
-            repo = new SubcategoryRepository(context);
+            repo = new DepartmentRepository(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger>();
-            service = new SubcategoryService(repo, logger.Object, localizer.Object);
+            service = new DepartmentService(repo, logger.Object, localizer.Object);
 
             SeedDatabase();
         }
@@ -50,11 +50,11 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
-            var expected = new Subcategory()
+            var expected = new Department()
             {
                 Title = "NewTitle",
                 Description = "NewDescription",
-                CategoryId = 1,
+                DirectionId = 1,
             };
 
             // Act
@@ -121,12 +121,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
-            var changedEntity = new SubcategoryDTO()
+            var changedEntity = new DepartmentDto()
             {
                 Id = 1,
                 Title = "ChangedTitle1",
                 Description = "Bla-bla",
-                CategoryId = 1,
+                DirectionId = 1,
             };
 
             // Act
@@ -141,10 +141,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
-            var changedEntity = new SubcategoryDTO()
+            var changedEntity = new DepartmentDto()
             {
                 Title = "New",
-                CategoryId = 1,
+                DirectionId = 1,
             };
 
             // Act and Assert
@@ -160,7 +160,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act
             var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
 
-            context.Entry<Subcategory>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
+            context.Entry<Department>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
 
             await service.Delete(id).ConfigureAwait(false);
 
@@ -183,14 +183,14 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         [Order(10)]
         [TestCase(1)]
-        public async Task GetByCategoryId_WhenIdIsValid_ReturnsEntities(long id)
+        public async Task GetByDirectionId_WhenIdIsValid_ReturnsEntities(long id)
         {
             // Arrange
             var expected = await repo.GetAll().ConfigureAwait(false);
-            expected = expected.Where(x => x.CategoryId == id);
+            expected = expected.Where(x => x.DirectionId == id);
 
             // Act
-            var entities = await service.GetByCategoryId(id);
+            var entities = await service.GetByDirectionId(id);
 
             // Assert
             Assert.That(entities.Count(), Is.EqualTo(expected.Count()));
@@ -199,11 +199,11 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         [Order(11)]
         [TestCase(10)]
-        public void GetByCategoryId_WhenIdIsInvalid_ThrowsArgumentException(long id)
+        public void GetByDirectionId_WhenIdIsInvalid_ThrowsArgumentException(long id)
         {
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.GetByCategoryId(id).ConfigureAwait(false));
+            async () => await service.GetByDirectionId(id).ConfigureAwait(false));
         }
 
         private void SeedDatabase()
@@ -213,50 +213,50 @@ namespace OutOfSchool.WebApi.Tests.Services
                 ctx.Database.EnsureDeleted();
                 ctx.Database.EnsureCreated();
 
-                var categories = new List<Category>()
+                var directions = new List<Direction>()
                 {
-                   new Category()
+                   new Direction()
                    {
                        Title = "Test1",
                        Description = "Test1",
                    },
-                   new Category
+                   new Direction
                    {
                        Title = "Test2",
                        Description = "Test2",
                    },
-                   new Category
+                   new Direction
                    {
                        Title = "Test3",
                        Description = "Test3",
                    },
                 };
 
-                ctx.Categories.AddRangeAsync(categories);
+                ctx.Directions.AddRangeAsync(directions);
 
-                var subcategories = new List<Subcategory>()
+                var departments = new List<Department>()
                 {
-                   new Subcategory()
+                   new Department()
                    {
                        Title = "Test1",
                        Description = "Test1",
-                       CategoryId = 1,
+                       DirectionId = 1,
                    },
-                   new Subcategory
+                   new Department
                    {
                        Title = "Test2",
                        Description = "Test2",
-                       CategoryId = 1,
+                       DirectionId = 1,
                    },
-                   new Subcategory
+                   new Department
                    {
                        Title = "Test3",
                        Description = "Test3",
-                       CategoryId = 1,
+                       DirectionId = 1,
                    },
                 };
 
-                ctx.Subcategories.AddRangeAsync(subcategories);
+                ctx.Departments.AddRangeAsync(departments);
 
                 ctx.SaveChangesAsync();
             }

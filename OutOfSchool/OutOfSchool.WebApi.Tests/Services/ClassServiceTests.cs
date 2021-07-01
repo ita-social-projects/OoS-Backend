@@ -18,12 +18,12 @@ using Serilog;
 namespace OutOfSchool.WebApi.Tests.Services
 {
     [TestFixture]
-    public class CategoryServiceTests
+    public class ClassServiceTests
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
-        private IEntityRepository<Category> repo;
-        private ICategoryService service;
+        private IClassRepository repo;
+        private IClassService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
 
@@ -37,10 +37,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
 
-            repo = new EntityRepository<Category>(context);
+            repo = new ClassRepository(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger>();
-            service = new CategoryService(repo, logger.Object, localizer.Object);
+            service = new ClassService(repo, logger.Object, localizer.Object);
 
             SeedDatabase();
         }
@@ -50,10 +50,11 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
-            var expected = new Category()
+            var expected = new Class()
             {
                 Title = "NewTitle",
                 Description = "NewDescription",
+                DepartmentId = 1,
             };
 
             // Act
@@ -107,7 +108,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [Order(5)]
-        [TestCase(10)]
+        [TestCase(100)]
         public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
             // Act and Assert
@@ -120,10 +121,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
-            var changedEntity = new CategoryDTO()
+            var changedEntity = new ClassDto()
             {
                 Id = 1,
                 Title = "ChangedTitle1",
+                Description = "Bla-bla",
+                DepartmentId = 1,
             };
 
             // Act
@@ -138,9 +141,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
-            var changedEntity = new CategoryDTO()
+            var changedEntity = new ClassDto()
             {
                 Title = "NewTitle1",
+                DepartmentId = 1,
             };
 
             // Act and Assert
@@ -156,7 +160,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act
             var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
 
-            context.Entry<Category>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
+            context.Entry<Class>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
 
             await service.Delete(id).ConfigureAwait(false);
 
@@ -176,6 +180,32 @@ namespace OutOfSchool.WebApi.Tests.Services
                 async () => await service.Delete(id).ConfigureAwait(false));
         }
 
+        [Test]
+        [Order(10)]
+        [TestCase(1)]
+        public async Task GetByDepartmentId_WhenIdIsValid_ReturnsEntities(long id)
+        {
+            // Arrange
+            var expected = await repo.GetAll().ConfigureAwait(false);
+            expected = expected.Where(x => x.DepartmentId == id);
+
+            // Act
+            var entities = await service.GetByDepartmentId(id);
+
+            // Assert
+            Assert.That(entities.Count(), Is.EqualTo(expected.Count()));
+        }
+
+        [Test]
+        [Order(11)]
+        [TestCase(10)]
+        public void GetByDepartmentId_WhenIdIsInvalid_ThrowsArgumentException(long id)
+        {
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(
+            async () => await service.GetByDepartmentId(id).ConfigureAwait(false));
+        }
+
         private void SeedDatabase()
         {
             using var ctx = new OutOfSchoolDbContext(options);
@@ -183,26 +213,54 @@ namespace OutOfSchool.WebApi.Tests.Services
                 ctx.Database.EnsureDeleted();
                 ctx.Database.EnsureCreated();
 
-                var categories = new List<Category>()
+                var departments = new List<Department>()
                 {
-                   new Category()
+                   new Department()
                    {
                        Title = "Test1",
                        Description = "Test1",
+                       DirectionId = 1,
                    },
-                   new Category
+                   new Department
                    {
                        Title = "Test2",
                        Description = "Test2",
+                       DirectionId = 1,
                    },
-                   new Category
+                   new Department
                    {
                        Title = "Test3",
                        Description = "Test3",
+                       DirectionId = 1,
                    },
                 };
 
-                ctx.Categories.AddRangeAsync(categories);
+                ctx.Departments.AddRangeAsync(departments);
+
+                var classes = new List<Class>()
+                {
+                   new Class()
+                   {
+                       Title = "Test1",
+                       Description = "Test1",
+                       DepartmentId = 1,
+                   },
+                   new Class
+                   {
+                       Title = "Test2",
+                       Description = "Test2",
+                       DepartmentId = 1,
+                   },
+                   new Class
+                   {
+                       Title = "Test3",
+                       Description = "Test3",
+                       DepartmentId = 1,
+                   },
+                };
+
+                ctx.Classes.AddRangeAsync(classes);
+
                 ctx.SaveChangesAsync();
             }
         }

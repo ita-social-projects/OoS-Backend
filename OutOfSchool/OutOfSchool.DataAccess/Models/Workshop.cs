@@ -84,19 +84,19 @@ namespace OutOfSchool.Services.Models
         public long AddressId { get; set; }
 
         [Required]
-        public long CategoryId { get; set; }
+        public long DirectionId { get; set; }
 
         [Required]
-        public long SubcategoryId { get; set; }
+        public long DepartmentId { get; set; }
 
         [Required]
-        public long SubsubcategoryId { get; set; }
+        public long ClassId { get; set; }
 
         public virtual Provider Provider { get; set; }
 
         public virtual Address Address { get; set; }
 
-        public virtual Subsubcategory Subsubcategory { get; set; }
+        public virtual Class Class { get; set; }
 
         public virtual List<Teacher> Teachers { get; set; }
 

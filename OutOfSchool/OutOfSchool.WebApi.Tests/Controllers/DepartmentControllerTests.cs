@@ -17,35 +17,35 @@ using OutOfSchool.WebApi.Services;
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
     [TestFixture]
-    public class SubcategoryControllerTests
+    public class DepartmentControllerTests
     {
-        private SubcategoryController controller;
-        private Mock<ISubcategoryService> service;
+        private DepartmentController controller;
+        private Mock<IDepartmentService> service;
         private ClaimsPrincipal user;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
-        private IEnumerable<SubcategoryDTO> categories;
-        private SubcategoryDTO category;
+        private IEnumerable<DepartmentDto> departments;
+        private DepartmentDto department;
 
         [SetUp]
         public void Setup()
         {
-            service = new Mock<ISubcategoryService>();
+            service = new Mock<IDepartmentService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new SubcategoryController(service.Object, localizer.Object);
+            controller = new DepartmentController(service.Object, localizer.Object);
             user = new ClaimsPrincipal(new ClaimsIdentity());
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
-            categories = FakeSubcategories();
-            category = FakeSubcategory();
+            departments = FakeDepartments();
+            department = FakeDepartment();
         }
 
         [Test]
-        public async Task GetSubcategories_WhenCalled_ReturnsOkResultObject()
+        public async Task Get_WhenCalled_ReturnsOkResultObject()
         {
             // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(categories);
+            service.Setup(x => x.GetAll()).ReturnsAsync(departments);
 
             // Act
             var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
@@ -57,10 +57,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task GetSubcategoriesById_WhenIdIsValid_ReturnsOkObjectResult(long id)
+        public async Task GetById_WhenIdIsValid_ReturnsOkObjectResult(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(categories.SingleOrDefault(x => x.Id == id));
+            service.Setup(x => x.GetById(id)).ReturnsAsync(departments.SingleOrDefault(x => x.Id == id));
 
             // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
@@ -72,10 +72,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(-1)]
-        public void GetSubcategoriesById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
+        public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(categories.SingleOrDefault(x => x.Id == id));
+            service.Setup(x => x.GetById(id)).ReturnsAsync(departments.SingleOrDefault(x => x.Id == id));
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -84,10 +84,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task GetSubcategoriesById_WhenIdIsInvalid_ReturnsNull(long id)
+        public async Task GetById_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(categories.SingleOrDefault(x => x.Id == id));
+            service.Setup(x => x.GetById(id)).ReturnsAsync(departments.SingleOrDefault(x => x.Id == id));
 
             // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
@@ -98,13 +98,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateSubcategory_WhenModelIsValid_ReturnsCreatedAtActionResult()
+        public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
         {
             // Arrange
-            service.Setup(x => x.Create(category)).ReturnsAsync(category);
+            service.Setup(x => x.Create(department)).ReturnsAsync(department);
 
             // Act
-            var result = await controller.Create(category).ConfigureAwait(false) as CreatedAtActionResult;
+            var result = await controller.Create(department).ConfigureAwait(false) as CreatedAtActionResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -112,13 +112,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task CreateSubcategory_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+        public async Task Create_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
-            controller.ModelState.AddModelError("CreateCategory", "Invalid model state.");
+            controller.ModelState.AddModelError("CreateDepartment", "Invalid model state.");
 
             // Act
-            var result = await controller.Create(category).ConfigureAwait(false);
+            var result = await controller.Create(department).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -126,19 +126,19 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task UpdateSubcategory_WhenModelIsValid_ReturnsOkObjectResult()
+        public async Task Update_WhenModelIsValid_ReturnsOkObjectResult()
         {
             // Arrange
-            var changedSubcategory = new SubcategoryDTO()
+            var changedDepartment = new DepartmentDto()
             {
                 Id = 1,
                 Title = "ChangedTitle",
-                CategoryId = 1,
+                DirectionId = 1,
             };
-            service.Setup(x => x.Update(changedSubcategory)).ReturnsAsync(changedSubcategory);
+            service.Setup(x => x.Update(changedDepartment)).ReturnsAsync(changedDepartment);
 
             // Act
-            var result = await controller.Update(changedSubcategory).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.Update(changedDepartment).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -146,13 +146,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task UpdateSubcategory_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+        public async Task Update_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
-            controller.ModelState.AddModelError("UpdateCategory", "Invalid model state.");
+            controller.ModelState.AddModelError("UpdateDepartment", "Invalid model state.");
 
             // Act
-            var result = await controller.Update(category).ConfigureAwait(false);
+            var result = await controller.Update(department).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -161,7 +161,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task DeleteSubcategory_WhenIdIsValid_ReturnsNoContentResult(long id)
+        public async Task Delete_WhenIdIsValid_ReturnsNoContentResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
@@ -176,7 +176,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(0)]
-        public void DeleteSubcategory_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+        public void Delete_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
@@ -188,7 +188,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task DeleteSubcategory_WhenIdIsInvalid_ReturnsNull(long id)
+        public async Task Delete_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
@@ -202,13 +202,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(3)]
-        public async Task GetByCategoryId_WhenIdIsInvalid_ReturnsNoContent(long id)
+        public async Task GetByDirectionId_WhenIdIsInvalid_ReturnsNoContent(long id)
         {
             // Arrange
-            service.Setup(x => x.GetByCategoryId(id)).ReturnsAsync(categories.Where(x => x.CategoryId == id));
+            service.Setup(x => x.GetByDirectionId(id)).ReturnsAsync(departments.Where(x => x.DirectionId == id));
 
             // Act
-            var result = await controller.GetByCategoryId(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByDirectionId(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Null);
@@ -216,13 +216,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(1)]
-        public async Task GetByCategoryId_WhenIdIsValid_ReturnsOkObject(long id)
+        public async Task GetByDirectionId_WhenIdIsValid_ReturnsOkObject(long id)
         {
             // Arrange
-            service.Setup(x => x.GetByCategoryId(id)).ReturnsAsync(categories.Where(x => x.CategoryId == id));
+            service.Setup(x => x.GetByDirectionId(id)).ReturnsAsync(departments.Where(x => x.DirectionId == id));
 
             // Act
-            var result = await controller.GetByCategoryId(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByDirectionId(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -231,50 +231,50 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(10)]
-        public async Task GetByCategoryId_WhenIdIsInvalid_ReturnsBadRequest(long id)
+        public async Task GetByDirectionId_WhenIdIsInvalid_ReturnsBadRequest(long id)
         {
             // Arrange
-            service.Setup(x => x.GetByCategoryId(id)).ThrowsAsync(new ArgumentException("message"));
+            service.Setup(x => x.GetByDirectionId(id)).ThrowsAsync(new ArgumentException("message"));
 
             // Act
-            var result = await controller.GetByCategoryId(id).ConfigureAwait(false);
+            var result = await controller.GetByDirectionId(id).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
             Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
         }
 
-        private SubcategoryDTO FakeSubcategory()
+        private DepartmentDto FakeDepartment()
         {
-            return new SubcategoryDTO()
+            return new DepartmentDto()
             {
                 Title = "Test1",
                 Description = "Test1",
-                CategoryId = 1,
+                DirectionId = 1,
             };
         }
 
-        private IEnumerable<SubcategoryDTO> FakeSubcategories()
+        private IEnumerable<DepartmentDto> FakeDepartments()
         {
-            return new List<SubcategoryDTO>()
+            return new List<DepartmentDto>()
             {
-                   new SubcategoryDTO()
+                   new DepartmentDto()
                    {
                        Title = "Test1",
                        Description = "Test1",
-                       CategoryId = 1,
+                       DirectionId = 1,
                    },
-                   new SubcategoryDTO
+                   new DepartmentDto
                    {
                        Title = "Test2",
                        Description = "Test2",
-                       CategoryId = 1,
+                       DirectionId = 1,
                    },
-                   new SubcategoryDTO
+                   new DepartmentDto
                    {
                        Title = "Test3",
                        Description = "Test3",
-                       CategoryId = 1,
+                       DirectionId = 1,
                    },
             };
         }

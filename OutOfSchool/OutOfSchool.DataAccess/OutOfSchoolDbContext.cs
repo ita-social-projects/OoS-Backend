@@ -22,11 +22,11 @@ namespace OutOfSchool.Services
 
         public DbSet<Teacher> Teachers { get; set; }
 
-        public DbSet<Subcategory> Subcategories { get; set; }
+        public DbSet<Department> Departments { get; set; }
 
-        public DbSet<Subsubcategory> Subsubcategories { get; set; }
+        public DbSet<Class> Classes { get; set; }
 
-        public DbSet<Category> Categories { get; set; }
+        public DbSet<Direction> Directions { get; set; }
 
         public DbSet<SocialGroup> SocialGroups { get; set; }
 

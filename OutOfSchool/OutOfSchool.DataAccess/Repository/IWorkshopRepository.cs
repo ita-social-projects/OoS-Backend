@@ -9,10 +9,10 @@ namespace OutOfSchool.Services.Repository
     public interface IWorkshopRepository : IEntityRepository<Workshop>
     {
         /// <summary>
-        /// Checks entity subcategoryId existence.
+        /// Checks entity classId existence.
         /// </summary>
-        /// <param name="id">Subcategory id.</param>
-        /// <returns>True if Subsubcaategory exists, otherwise false.</returns>
-        bool SubsubcategoryExists(long id);
+        /// <param name="id">Class id.</param>
+        /// <returns>True if Class exists, otherwise false.</returns>
+        bool ClassExists(long id);
     }
 }

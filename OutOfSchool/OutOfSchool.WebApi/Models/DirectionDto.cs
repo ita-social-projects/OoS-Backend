@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class CategoryDTO
+    public class DirectionDto
     {
         public long Id { get; set; }
 

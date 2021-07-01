@@ -44,6 +44,6 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public bool SubsubcategoryExists(long id) => db.Subsubcategories.Any(x => x.Id == id);
+        public bool ClassExists(long id) => db.Classes.Any(x => x.Id == id);
     }
 }

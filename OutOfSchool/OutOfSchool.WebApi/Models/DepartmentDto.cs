@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.WebApi.Models
 {
-    public class Subsubcategory
+    public class DepartmentDto
     {
         public long Id { get; set; }
 
@@ -19,8 +17,6 @@ namespace OutOfSchool.Services.Models
         public string Description { get; set; } = string.Empty;
 
         [Required]
-        public long SubcategoryId { get; set; }
-
-        public virtual Subcategory Subcategory { get; set; }
+        public long DirectionId { get; set; }
     }
 }
