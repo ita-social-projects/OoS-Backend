@@ -473,6 +473,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
+        public async Task CreateApplication_WhenModelIsNull_ShouldReturnBadRequest()
+        {
+            // Arrange
+            ApplicationDto application = null;
+
+            // Act
+            var result = await controller.Create(application).ConfigureAwait(false) as BadRequestObjectResult;
+
+            // Assert
+            result.Should().NotBeNull();
+            result.StatusCode.Should().Be(400);
+        }
+
+        [Test]
         public async Task CreateApplication_WhenParentHasNoRights_ShouldReturnBadRequest()
         {
             // Arrange

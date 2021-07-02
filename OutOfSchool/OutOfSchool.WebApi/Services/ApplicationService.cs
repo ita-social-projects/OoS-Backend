@@ -251,6 +251,7 @@ namespace OutOfSchool.WebApi.Services
             Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
                                                               && a.WorkshopId == applicationDto.WorkshopId
                                                               && a.ParentId == applicationDto.ParentId;
+
             if (applicationRepository.Get<int>(where: filter).Any())
             {
                 logger.Information("Creation failed. Application with such data alredy exists.");

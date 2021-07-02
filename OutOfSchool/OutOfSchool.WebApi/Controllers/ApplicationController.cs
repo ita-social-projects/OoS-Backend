@@ -294,6 +294,11 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
+            if (applicationDto is null)
+            {
+                return BadRequest(localizer[$"Application dto should not be null"]);
+            }
+
             try
             {
                 await CheckUserRights(parentId: applicationDto?.ParentId).ConfigureAwait(false);
