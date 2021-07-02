@@ -98,6 +98,30 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        [TestCase(1)]
+        public async Task GetByUserId_WhenIdIsValid_ReturnsEntity(long id)
+        {
+            // Arrange
+            Expression<Func<Parent, bool>> filter = p => p.UserId == "de909f35-5eb7-4b7a-bda8-40a5bfda96a6";
+            var expected = await repoParent.GetByFilter(filter);
+
+            // Act
+            var result = await service.GetById(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected.FirstOrDefault().Id, result.Id);
+        }
+
+        [Test]
+        [TestCase("Invalid Id")]
+        public void GetByUserId_WhenIdInvalid_ReturnsArgumentException(string id)
+        {
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.GetByUserId(id).ConfigureAwait(false));
+        }
+
+        [Test]
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
@@ -121,6 +145,24 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.That(changedEntity.LastName, Is.EqualTo(result.LastName));
             Assert.That(changedEntity.MiddleName, Is.EqualTo(result.MiddleName));
             Assert.That(changedEntity.PhoneNumber, Is.EqualTo(result.PhoneNumber));
+        }
+
+        [Test]
+        public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
+        {
+            // Arrange
+            var changedEntity = new ShortUserDto()
+            {
+               Id = "Invalid Id",
+               PhoneNumber = "1160327456",
+               LastName = "LastName",
+               MiddleName = "MiddleName",
+               FirstName = "FirstName",
+            };
+
+            // Act and Assert
+            Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+                async () => await service.Update(changedEntity).ConfigureAwait(false));
         }
 
         [Test]

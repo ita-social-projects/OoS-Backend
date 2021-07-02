@@ -10,6 +10,8 @@ using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using Serilog;
 
@@ -80,6 +82,50 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
                 async () => await service.GetById(id).ConfigureAwait(false));
+        }
+
+        [Test]
+        public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
+        {
+            // Arrange
+            var changedEntity = new ShortUserDto()
+            {
+                Id = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c",
+                PhoneNumber = "1160327456",
+                LastName = "LastName",
+                MiddleName = "MiddleName",
+                FirstName = "FirstName",
+            };
+            Expression<Func<User, bool>> filter = p => p.Id == changedEntity.Id;
+
+            var users = repo.GetByFilterNoTracking(filter);
+
+            // Act
+            var result = await repo.Update(changedEntity.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(changedEntity.FirstName, Is.EqualTo(result.FirstName));
+            Assert.That(changedEntity.LastName, Is.EqualTo(result.LastName));
+            Assert.That(changedEntity.MiddleName, Is.EqualTo(result.MiddleName));
+            Assert.That(changedEntity.PhoneNumber, Is.EqualTo(result.PhoneNumber));
+        }
+
+        [Test]
+        public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
+        {
+            // Arrange
+            var changedEntity = new ShortUserDto()
+            {
+                Id = "Invalid Id",
+                PhoneNumber = "1160327456",
+                LastName = "LastName",
+                MiddleName = "MiddleName",
+                FirstName = "FirstName",
+            };
+
+            // Act and Assert
+            Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+                async () => await service.Update(changedEntity).ConfigureAwait(false));
         }
 
         private void SeedDatabase()
