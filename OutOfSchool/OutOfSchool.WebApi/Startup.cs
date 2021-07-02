@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -102,14 +103,14 @@ namespace OutOfSchool.WebApi
             // entities services
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
-            services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<IChildService, ChildService>();
+            services.AddTransient<IClassService, ClassService>();
+            services.AddTransient<IDepartmentService, DepartmentService>();
+            services.AddTransient<IDirectionService, DirectionService>();
             services.AddTransient<IParentService, ParentService>();
             services.AddTransient<IProviderService, ProviderService>();
             services.AddTransient<IRatingService, RatingService>();
             services.AddTransient<ISocialGroupService, SocialGroupService>();
-            services.AddTransient<ISubcategoryService, SubcategoryService>();
-            services.AddTransient<ISubsubcategoryService, SubsubcategoryService>();
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
@@ -117,18 +118,18 @@ namespace OutOfSchool.WebApi
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
-            services.AddTransient<IEntityRepository<Category>, EntityRepository<Category>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
+            services.AddTransient<IEntityRepository<Direction>, EntityRepository<Direction>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
-            services.AddTransient<IProviderRepository, ProviderRepository>();
+            services.AddTransient<IClassRepository, ClassRepository>();
+            services.AddTransient<IDepartmentRepository, DepartmentRepository>();
             services.AddTransient<IParentRepository, ParentRepository>();
+            services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
-            services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();
-            services.AddTransient<ISubsubcategoryRepository, SubsubcategoryRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
 
             services.AddSingleton(Log.Logger);
@@ -140,6 +141,26 @@ namespace OutOfSchool.WebApi
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
+
+                c.TagActionsBy(api =>
+                {
+                    // If there is a groupName that is specified, then use it.
+                    if (api.GroupName != null)
+                    {
+                        return new[] { api.GroupName };
+                    }
+
+                    // else use the controller name which is the default used by Swashbuckle.
+                    var controllerActionDescriptor = api.ActionDescriptor as ControllerActionDescriptor;
+                    if (controllerActionDescriptor != null)
+                    {
+                        return new[] { controllerActionDescriptor.ControllerName };
+                    }
+
+                    throw new InvalidOperationException("Unable to determine tag for endpoint.");
+                });
+
+                c.DocInclusionPredicate((name, api) => true);
             });
 
             services.AddAutoMapper(typeof(Startup));

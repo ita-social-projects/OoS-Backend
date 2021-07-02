@@ -2,10 +2,8 @@
 
 namespace OutOfSchool.Services.Repository
 {
-    public interface IProviderRepository : IEntityRepository<Provider>
+    public interface IProviderRepository : IEntityRepository<Provider>, IExistable<Provider>
     {
-        bool Exists(Provider entity);
-
         bool ExistsUserId(string id);
     }
 }

@@ -139,16 +139,16 @@ INSERT INTO [dbo].[AspNetUserRoles]
            ,[RoleId])
      VALUES
            ('16575ce5-38e3-4ae7-b991-4508ed488369' --UserId (test1)
-           ,'c2e1a3bd-bafd-4c94-bc63-d33791b6e3c8') --roleId (parent)
+           ,'12470199-4ac1-47b3-975d-bb4dca8b8d05') --roleId (parent)
 
 		   ,('7604a851-66db-4236-9271-1f037ffe3a81' --UserId (test2)
-           ,'c2e1a3bd-bafd-4c94-bc63-d33791b6e3c8') --roleId (parent)
+           ,'12470199-4ac1-47b3-975d-bb4dca8b8d05') --roleId (parent)
 
 		   ,('47802b21-2fb5-435e-9057-75c43d002cef' --UserId (test3)
-           ,'739f5d36-64da-42d9-a967-bec1695e0e61') --roleId (provider)
+           ,'dd8cb086-4f49-407c-82d2-f835289870b5') --roleId (provider)
 
 		   ,('5bff5f95-1848-4c87-9846-a567aeb407ea' --UserId (test4)
-           ,'739f5d36-64da-42d9-a967-bec1695e0e61') --roleId (provider)
+           ,'dd8cb086-4f49-407c-82d2-f835289870b5') --roleId (provider)
 GO
 
 --====================PARENTS AND CHILDREN================================
@@ -240,11 +240,11 @@ INSERT INTO [dbo].[BirthCertificates]
 GO
 
 --==================== PROVIDERS AND WORKSHOPS ================================
---Categories
-INSERT INTO Categories (Title, Description) VALUES ('Музика', 'Музика'), ('Танці', 'Танці'), ('Спорт', 'Спорт')
+--Directions
+INSERT INTO Directions (Title, Description) VALUES ('Музика', 'Музика'), ('Танці', 'Танці'), ('Спорт', 'Спорт')
 GO
 
-INSERT INTO Subcategories (Title, Description, CategoryId) 
+INSERT INTO Departments (Title, Description, DirectionId) 
 VALUES 
 ('Народних інструментів', 'Народних інструментів', 1),
 ('Духових та ударних інструментів', 'Духових та ударних інструментів', 1),
@@ -253,7 +253,7 @@ VALUES
 ('Неолімпійські види спорту', 'Неолімпійські види спорту', 3)
 GO
 
-INSERT INTO SubSubcategories (Title, Description, SubcategoryId) 
+INSERT INTO Classes (Title, Description, DepartmentId) 
 VALUES 
 ('Бандура', 'Клас Бандури', 1),
 ('Акордеон', 'Клас Акордеону', 1),
@@ -441,9 +441,9 @@ INSERT INTO [dbo].[Workshops]
            ,[IsPerMonth]
            ,[ProviderId]
            ,[AddressId]
-		   ,[CategoryId]
-		   ,[SubcategoryId]
-           ,[SubsubcategoryId])
+		   ,[DirectionId]
+		   ,[DepartmentId]
+           ,[ClassId])
      VALUES
             ('Уроки аккордиону'
            ,'1234567890' --Phone
@@ -464,9 +464,9 @@ INSERT INTO [dbo].[Workshops]
            ,1 --IsPerMonth
            ,1 --ProviderId
            ,5 --AddressId
-		   ,1 --categoryId
-		   ,2 --subcategoryId
-           ,2) --SubsubcategoryId
+		   ,1 --directionId
+		   ,2 --departmentId
+           ,2) --classId
 
            ,('Уроки бандури'
            ,'1234567890' --Phone
@@ -487,9 +487,9 @@ INSERT INTO [dbo].[Workshops]
            ,1 --IsPerMonth
            ,1 --ProviderId
            ,6 --AddressId
-		   ,1 --categoryId
-		   ,1 --subcategoryId
-           ,1) --SubsubcategoryId
+		   ,1 --directionId
+		   ,1 --departmentId
+           ,1) --classId
 
 		   ,('Гра на барабані'
            ,'1234567890' --Phone
@@ -510,9 +510,9 @@ INSERT INTO [dbo].[Workshops]
            ,0 --IsPerMonth
            ,1 --ProviderId
            ,7 --AddressId
-		   ,1 --categoryId
-		   ,2 --subcategoryId
-           ,3) --SubsubcategoryId
+		   ,1 --directionId
+		   ,2 --departmentId
+           ,3) --classId
 
 		   ,('Уроки гри на флейті'
            ,'1234567890' --Phone
@@ -523,7 +523,7 @@ INSERT INTO [dbo].[Workshops]
            ,5 --minAge
            ,100 --maxAge
            ,2 --days per week
-           ,0 --price
+           ,100 --price
            ,'Уроки гри на флейті'
            ,1 --WithDisabilityOptions
            ,'Немає конкретних обмежень' -- disability description
@@ -533,9 +533,9 @@ INSERT INTO [dbo].[Workshops]
            ,0 --IsPerMonth
            ,1 --ProviderId
            ,8 --AddressId
-		   ,1 --categoryId
-		   ,2 --subcategoryId
-           ,4) --SubsubcategoryId
+		   ,1 --directionId
+		   ,2 --departmentId
+           ,4) --classId
 
 		   ,('Айкідо'
            ,'1234567890' --Phone
@@ -556,9 +556,9 @@ INSERT INTO [dbo].[Workshops]
            ,1 --IsPerMonth
            ,2 --ProviderId
            ,9 --AddressId
-		   ,3 --categoryId
-		   ,5 --subcategoryId
-           ,9) --SubsubcategoryId
+		   ,3 --directionId
+		   ,5 --departmentId
+           ,9) --classId
 
 		   ,('Плавання'
            ,'1234567890' --Phone
@@ -579,9 +579,9 @@ INSERT INTO [dbo].[Workshops]
            ,1 --IsPerMonth
            ,2 --ProviderId
            ,10 --AddressId
-		   ,3 --categoryId
-		   ,4 --subcategoryId
-           ,7) --SubsubcategoryId
+		   ,3 --directionId
+		   ,4 --departmentId
+           ,7) --classId
 GO
 
 --teachers

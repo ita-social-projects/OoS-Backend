@@ -365,8 +365,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 MinAge = 4,
                 Logo = "image6",
                 ProviderId = 1,
-                CategoryId = 1,
-                SubcategoryId = 1,
+                DirectionId = 1,
+                DepartmentId = 1,
+                ClassId = 1,
                 AddressId = 55,
                 Address = new AddressDto
                 {
@@ -432,6 +433,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     MaxAge = 10,
                     MinAge = 4,
                     Logo = "image1",
+                    DirectionId = 1,
+                    DepartmentId = 1,
+                    ClassId = 1,
                 },
                 new WorkshopDTO()
                 {
@@ -454,6 +458,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     MaxAge = 10,
                     MinAge = 4,
                     Logo = "image2",
+                    DirectionId = 1,
+                    DepartmentId = 1,
+                    ClassId = 1,
                 },
                 new WorkshopDTO()
                 {
@@ -476,6 +483,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     MaxAge = 10,
                     MinAge = 4,
                     Logo = "image3",
+                    DirectionId = 1,
+                    DepartmentId = 1,
+                    ClassId = 1,
                 },
                 new WorkshopDTO()
                 {
@@ -498,6 +508,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     MaxAge = 10,
                     MinAge = 4,
                     Logo = "image4",
+                    DirectionId = 1,
+                    DepartmentId = 1,
+                    ClassId = 1,
                 },
                 new WorkshopDTO()
                 {
@@ -520,6 +533,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     MaxAge = 10,
                     MinAge = 4,
                     Logo = "image5",
+                    DirectionId = 1,
+                    DepartmentId = 1,
+                    ClassId = 1,
                 },
             };
         }

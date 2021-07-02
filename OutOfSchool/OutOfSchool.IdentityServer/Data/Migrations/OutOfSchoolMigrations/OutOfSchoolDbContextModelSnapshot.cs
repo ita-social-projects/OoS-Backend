@@ -247,27 +247,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("BirthCertificates");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Category", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .UseIdentityColumn();
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categories");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
                     b.Property<long>("Id")
@@ -308,6 +287,79 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("SocialGroupId");
 
                     b.ToTable("Children");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Class", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<long>("DepartmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.ToTable("Classes");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long>("DirectionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DirectionId");
+
+                    b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Direction", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Directions");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
@@ -482,58 +534,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         });
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Subcategory", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .UseIdentityColumn();
-
-                    b.Property<long>("CategoryId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("Subcategories");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Subsubcategory", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .UseIdentityColumn();
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<long>("SubcategoryId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SubcategoryId");
-
-                    b.ToTable("Subsubcategories");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
                     b.Property<long>("Id")
@@ -675,16 +675,22 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("AddressId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("CategoryId")
+                    b.Property<long>("ClassId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("DaysPerWeek")
                         .HasColumnType("int");
 
+                    b.Property<long>("DepartmentId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<long>("DirectionId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("DisabilityOptionsDesc")
                         .HasMaxLength(200)
@@ -736,12 +742,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("SubcategoryId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("SubsubcategoryId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -757,9 +757,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("AddressId");
 
-                    b.HasIndex("ProviderId");
+                    b.HasIndex("ClassId");
 
-                    b.HasIndex("SubsubcategoryId");
+                    b.HasIndex("ProviderId");
 
                     b.ToTable("Workshops");
                 });
@@ -828,7 +828,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("UserId");
 
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
-                        .WithMany()
+                        .WithMany("Applications")
                         .HasForeignKey("WorkshopId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -866,6 +866,28 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Parent");
 
                     b.Navigation("SocialGroup");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Class", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Department", "Department")
+                        .WithMany("Classes")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Direction", "Direction")
+                        .WithMany("Departments")
+                        .HasForeignKey("DirectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Direction");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
@@ -917,28 +939,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Subcategory", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Category", "Category")
-                        .WithMany("Subcategories")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Subsubcategory", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Subcategory", "Subcategory")
-                        .WithMany("Subsubcategories")
-                        .HasForeignKey("SubcategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Subcategory");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
@@ -958,33 +958,38 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("OutOfSchool.Services.Models.Class", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
                         .WithMany("Workshops")
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OutOfSchool.Services.Models.Subsubcategory", "Subsubcategory")
-                        .WithMany()
-                        .HasForeignKey("SubsubcategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Address");
 
+                    b.Navigation("Class");
+
                     b.Navigation("Provider");
-
-                    b.Navigation("Subsubcategory");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Category", b =>
-                {
-                    b.Navigation("Subcategories");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
                     b.Navigation("BirthCertificate");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>
+                {
+                    b.Navigation("Classes");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Direction", b =>
+                {
+                    b.Navigation("Departments");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
@@ -1002,13 +1007,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Children");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Subcategory", b =>
-                {
-                    b.Navigation("Subsubcategories");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
                 {
+                    b.Navigation("Applications");
+
                     b.Navigation("Teachers");
                 });
 #pragma warning restore 612, 618
