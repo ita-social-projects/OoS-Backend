@@ -103,9 +103,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = ApplicationStatus.Pending,
                 WorkshopId = 2,
                 ParentId = 2,
-                Workshop = context.Workshops.Find(2L).ToModel(),
-                Child = context.Children.Find(2L).ToModel(),
-                Parent = context.Parents.Find(2L).ToModel(),
             };
 
             // Act

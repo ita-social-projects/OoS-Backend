@@ -13,7 +13,6 @@ namespace OutOfSchool.Tests
         {
             var options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .UseLazyLoadingProxies()
                 .Options;
 
             using (var context = new OutOfSchoolDbContext(options))
