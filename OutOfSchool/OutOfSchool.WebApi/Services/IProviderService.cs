@@ -42,8 +42,10 @@ namespace OutOfSchool.WebApi.Services
         /// Update entity.
         /// </summary>
         /// <param name="dto">Provider entity to add.</param>
+        /// <param name="userId">Id of user that request update.</param>
+        /// <param name="userRole">User Role.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ProviderDto> Update(ProviderDto dto);
+        Task<ProviderDto> Update(ProviderDto dto, string userId, string userRole);
 
         /// <summary>
         ///  Delete entity.
