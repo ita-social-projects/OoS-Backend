@@ -86,5 +86,7 @@ namespace OutOfSchool.WebApi.Models
         public AddressDto LegalAddress { get; set; }
 
         public AddressDto ActualAddress { get; set; }
+
+        public UserDto User { get; set; }
     }
 }
