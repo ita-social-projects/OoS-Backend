@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         private IWorkshopService workshopService;
 
         private Mock<IWorkshopRepository> workshopRepositoryMoq;
-        private Mock<ISubsubcategoryRepository> sscategoryRepositoryMoq;
+        private Mock<IClassRepository> classRepositoryMoq;
         private Mock<IEntityRepository<Teacher>> teacherRepositoryMoq;
         private Mock<IEntityRepository<Address>> addressRepositoryMoq;
 
@@ -31,13 +31,13 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
 
         private Workshop newWorkshop;
         private List<Workshop> workshops;
-        private Subsubcategory sscategory;
+        private Class classEntity;
 
         [SetUp]
         public void SetUp()
         {
             workshopRepositoryMoq = new Mock<IWorkshopRepository>();
-            sscategoryRepositoryMoq = new Mock<ISubsubcategoryRepository>();
+            classRepositoryMoq = new Mock<IClassRepository>();
             teacherRepositoryMoq = new Mock<IEntityRepository<Teacher>>();
             addressRepositoryMoq = new Mock<IEntityRepository<Address>>();
             ratingService = new Mock<IRatingService>();
@@ -46,7 +46,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
 
             workshopService = new WorkshopService(
                 workshopRepositoryMoq.Object,
-                sscategoryRepositoryMoq.Object,
+                classRepositoryMoq.Object,
                 teacherRepositoryMoq.Object,
                 addressRepositoryMoq.Object,
                 ratingService.Object,
@@ -62,8 +62,8 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         public async Task Create_WhenEntityIsValid_ShouldRunInTransaction()
         {
             // Arrange
-            sscategoryRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-                .ReturnsAsync(sscategory);
+            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
+                .ReturnsAsync(classEntity);
             workshopRepositoryMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
                 .ReturnsAsync(newWorkshop);
 
@@ -193,9 +193,9 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 MinAge = 4,
                 Logo = "image1",
                 ProviderId = 1,
-                CategoryId = 1,
-                SubsubcategoryId = 1,
-                SubcategoryId = 1,
+                DirectionId = 1,
+                ClassId = 1,
+                DepartmentId = 1,
                 AddressId = 55,
                 Address = new Address
                 {
@@ -241,8 +241,8 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             IQueryable<Workshop> quer = new EnumerableQuery<Workshop>(workshops);
             workshopRepositoryMoq.Setup(z => z.GetByFilterNoTracking(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
                 .Returns(quer);
-            sscategoryRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-                .ReturnsAsync(sscategory);
+            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
+                .ReturnsAsync(classEntity);
 
             workshopRepositoryMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
                 .ReturnsAsync(changedFirstEntity);
@@ -254,7 +254,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             Assert.Multiple(() =>
             {
                 workshopRepositoryMoq.Verify(x => x.GetByFilterNoTracking(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()), Times.Once());
-                sscategoryRepositoryMoq.Verify(x => x.GetById(It.IsAny<long>()), Times.Once());
+                classRepositoryMoq.Verify(x => x.GetById(It.IsAny<long>()), Times.Once());
                 workshopRepositoryMoq.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once());
 
                 Assert.IsNotNull(result);
@@ -328,9 +328,9 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 MinAge = 4,
                 Logo = "image",
                 ProviderId = 1,
-                CategoryId = 1,
-                SubsubcategoryId = 1,
-                SubcategoryId = 1,
+                DirectionId = 1,
+                ClassId = 1,
+                DepartmentId = 1,
                 AddressId = 0,
                 Address = new Address
                 {
@@ -389,9 +389,9 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         MinAge = 4,
                         Logo = "image1",
                         ProviderId = 1,
-                        CategoryId = 1,
-                        SubsubcategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        ClassId = 1,
+                        DepartmentId = 1,
                         AddressId = 55,
                         Address = new Address
                         {
@@ -451,8 +451,8 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         MinAge = 4,
                         Logo = "image2",
                         ProviderId = 1,
-                        CategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        DepartmentId = 1,
                         AddressId = 10,
                         Address = new Address
                         {
@@ -511,8 +511,8 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         MinAge = 4,
                         Logo = "image3",
                         ProviderId = 1,
-                        CategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        DepartmentId = 1,
                         AddressId = 11,
                         Address = new Address
                         {
@@ -572,8 +572,8 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         MinAge = 4,
                         Logo = "image4",
                         ProviderId = 1,
-                        CategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        DepartmentId = 1,
                         AddressId = 15,
                         Address = new Address
                         {
@@ -633,8 +633,8 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         MinAge = 4,
                         Logo = "image5",
                         ProviderId = 1,
-                        CategoryId = 1,
-                        SubcategoryId = 1,
+                        DirectionId = 1,
+                        DepartmentId = 1,
                         AddressId = 17,
                         Address = new Address
                         {
@@ -674,17 +674,17 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         },
                     },
                 };
-            sscategory = new Subsubcategory()
+            classEntity = new Class()
             {
                 Id = 1,
                 Title = "new SSC",
-                SubcategoryId = 1,
-                Subcategory = new Subcategory()
+                DepartmentId = 1,
+                Department = new Department()
                 {
                     Id = 1,
                     Title = "new SC",
-                    CategoryId = 1,
-                    Category = new Category()
+                    DirectionId = 1,
+                    Direction = new Direction()
                     {
                         Id = 1,
                         Title = "new C",

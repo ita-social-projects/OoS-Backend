@@ -30,11 +30,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Category, CategoryDTO>(category, cfg => { cfg.CreateMap<Category, CategoryDTO>(); });
         }
 
-        public static CityDto ToModel(this City city)
-        {
-            return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
-        }
-
         public static ChildDto ToModel(this Child child)
         {
             return child.Mapper<Child, ChildDto>(cfg =>
@@ -42,6 +37,26 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<BirthCertificate, BirthCertificateDto>();
                 cfg.CreateMap<Child, ChildDto>();
             });
+        }
+
+        public static CityDto ToModel(this City city)
+        {
+            return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
+        }
+
+        public static ClassDto ToModel(this Class classEntity)
+        {
+            return Mapper<Class, ClassDto>(classEntity, cfg => { cfg.CreateMap<Class, ClassDto>(); });
+        }
+
+        public static DepartmentDto ToModel(this Department department)
+        {
+            return Mapper<Department, DepartmentDto>(department, cfg => { cfg.CreateMap<Department, DepartmentDto>(); });
+        }
+
+        public static DirectionDto ToModel(this Direction direction)
+        {
+            return Mapper<Direction, DirectionDto>(direction, cfg => { cfg.CreateMap<Direction, DirectionDto>(); });
         }
 
         public static ParentDTO ToModel(this Parent parent)
@@ -89,16 +104,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<SocialGroup, SocialGroupDto>(group, cfg => { cfg.CreateMap<SocialGroup, SocialGroupDto>(); });
         }
 
-        public static SubcategoryDTO ToModel(this Subcategory category)
-        {
-            return Mapper<Subcategory, SubcategoryDTO>(category, cfg => { cfg.CreateMap<Subcategory, SubcategoryDTO>(); });
-        }
-
-        public static SubsubcategoryDTO ToModel(this Subsubcategory category)
-        {
-            return Mapper<Subsubcategory, SubsubcategoryDTO>(category, cfg => { cfg.CreateMap<Subsubcategory, SubsubcategoryDTO>(); });
-        }
-
         public static TeacherDTO ToModel(this Teacher teacher)
         {
             return Mapper<Teacher, TeacherDTO>(teacher, cfg => { cfg.CreateMap<Teacher, TeacherDTO>(); });
@@ -111,9 +116,9 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<Workshop, WorkshopDTO>();
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>();
-                cfg.CreateMap<Category, CategoryDTO>();
-                cfg.CreateMap<Subcategory, SubcategoryDTO>();
-                cfg.CreateMap<Subsubcategory, SubsubcategoryDTO>();
+                cfg.CreateMap<Direction, DirectionDto>();
+                cfg.CreateMap<Department, DepartmentDto>();
+                cfg.CreateMap<Class, ClassDto>();
                 cfg.CreateMap<Teacher, TeacherDTO>();
             });
         }
@@ -145,11 +150,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<CategoryDTO, Category>(categoryDto, cfg => { cfg.CreateMap<CategoryDTO, Category>(); });
         }
 
-        public static City ToDomain(this CityDto cityDto)
-        {
-            return Mapper<CityDto, City>(cityDto, cfg => { cfg.CreateMap<CityDto, City>(); });
-        }
-
         public static Child ToDomain(this ChildDto childDto)
         {
             return Mapper<ChildDto, Child>(childDto, cfg =>
@@ -157,6 +157,26 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
                 cfg.CreateMap<ChildDto, Child>();
             });
+        }
+
+        public static City ToDomain(this CityDto cityDto)
+        {
+            return Mapper<CityDto, City>(cityDto, cfg => { cfg.CreateMap<CityDto, City>(); });
+        }
+
+        public static Class ToDomain(this ClassDto classDto)
+        {
+            return Mapper<ClassDto, Class>(classDto, cfg => { cfg.CreateMap<ClassDto, Class>(); });
+        }
+
+        public static Department ToDomain(this DepartmentDto departmentDto)
+        {
+            return Mapper<DepartmentDto, Department>(departmentDto, cfg => { cfg.CreateMap<DepartmentDto, Department>(); });
+        }
+
+        public static Direction ToDomain(this DirectionDto directionDto)
+        {
+            return Mapper<DirectionDto, Direction>(directionDto, cfg => { cfg.CreateMap<DirectionDto, Direction>(); });
         }
 
         public static Parent ToDomain(this ParentDTO parentDto)
@@ -183,16 +203,6 @@ namespace OutOfSchool.WebApi.Extensions
         public static SocialGroup ToDomain(this SocialGroupDto groupDto)
         {
             return Mapper<SocialGroupDto, SocialGroup>(groupDto, cfg => { cfg.CreateMap<SocialGroupDto, SocialGroup>(); });
-        }
-
-        public static Subcategory ToDomain(this SubcategoryDTO categoryDto)
-        {
-            return Mapper<SubcategoryDTO, Subcategory>(categoryDto, cfg => { cfg.CreateMap<SubcategoryDTO, Subcategory>(); });
-        }
-
-        public static Subsubcategory ToDomain(this SubsubcategoryDTO categoryDto)
-        {
-            return Mapper<SubsubcategoryDTO, Subsubcategory>(categoryDto, cfg => { cfg.CreateMap<SubsubcategoryDTO, Subsubcategory>(); });
         }
 
         public static Teacher ToDomain(this TeacherDTO teacherDto)
@@ -236,9 +246,9 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<WorkshopDTO, Workshop>();
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
-                cfg.CreateMap<CategoryDTO, Category>();
-                cfg.CreateMap<SubcategoryDTO, Subcategory>();
-                cfg.CreateMap<SubsubcategoryDTO, Subsubcategory>();
+                cfg.CreateMap<DirectionDto, Direction>();
+                cfg.CreateMap<DepartmentDto, Department>();
+                cfg.CreateMap<ClassDto, Class>();
                 cfg.CreateMap<TeacherDTO, Teacher>();
             });
         }

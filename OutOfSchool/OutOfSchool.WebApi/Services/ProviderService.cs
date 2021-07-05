@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Provider creating was started.");
 
-            if (providerRepository.Exists(dto.ToDomain()))
+            if (providerRepository.SameExists(dto.ToDomain()))
             {
                 throw new ArgumentException(localizer["There is already a provider with such a data."]);
             }

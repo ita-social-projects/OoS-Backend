@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services
     public class WorkshopService : IWorkshopService
     {
         private readonly IWorkshopRepository workshopRepository;
-        private readonly ISubsubcategoryRepository subsubcategoryRepository;
+        private readonly IClassRepository classRepository;
         private readonly IEntityRepository<Teacher> teacherRepository;
         private readonly IEntityRepository<Address> addressRepository;
         private readonly IRatingService ratingService;
@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
         /// </summary>
         /// <param name="workshopRepository">Repository for Workshop entity.</param>
-        /// <param name="subsubcategoryRepository">Repository for Subsubcategory entity.</param>
+        /// <param name="classRepository">Repository for Class entity.</param>
         /// <param name="teacherRepository">Repository for Teacher.</param>
         /// <param name="addressRepository">Repository for Address.</param>
         /// <param name="ratingService">Rating service.</param>
@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="localizer">Localizer.</param>
         public WorkshopService(
             IWorkshopRepository workshopRepository,
-            ISubsubcategoryRepository subsubcategoryRepository,
+            IClassRepository classRepository,
             IEntityRepository<Teacher> teacherRepository,
             IEntityRepository<Address> addressRepository,
             IRatingService ratingService,
@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Services
             IStringLocalizer<SharedResource> localizer)
         {
             this.workshopRepository = workshopRepository;
-            this.subsubcategoryRepository = subsubcategoryRepository;
+            this.classRepository = classRepository;
             this.teacherRepository = teacherRepository;
             this.addressRepository = addressRepository;
             this.ratingService = ratingService;
@@ -63,8 +63,8 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Workshop creating was started.");
 
-            // In case if CategoryId and SubcategoryId does not match SubsubcategoryId
-            await this.FillCategoriesFields(dto).ConfigureAwait(false);
+            // In case if DirectionId and DepartmentId does not match ClassId
+            await this.FillDirectionsFields(dto).ConfigureAwait(false);
 
             Func<Task<Workshop>> operation = async () => await workshopRepository.Create(dto.ToDomain()).ConfigureAwait(false);
 
@@ -150,8 +150,8 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                // In case if CategoryId and SubcategoryId does not match SubsubcategoryId
-                await this.FillCategoriesFields(dto).ConfigureAwait(false);
+                // In case if DirectionId and DepartmentId does not match ClassId
+                await this.FillDirectionsFields(dto).ConfigureAwait(false);
 
                 // In case if AddressId was changed. AddresId is one and unique for workshop.
                 dto.AddressId = workshop.AddressId;
@@ -294,34 +294,34 @@ namespace OutOfSchool.WebApi.Services
 
             predicate = predicate.And(x => x.WithDisabilityOptions == filter.Disability);
 
-            if (filter.Categories != null)
+            if (filter.Directions != null)
             {
                 var tempPredicate = PredicateBuilder.True<Workshop>();
-                foreach (var category in filter.Categories)
+                foreach (var direction in filter.Directions)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Subsubcategory.Subcategory.Category.Title == category);
+                    tempPredicate = tempPredicate.Or(x => x.Class.Department.Direction.Title == direction);
                 }
 
                 predicate = predicate.And(tempPredicate);
             }
 
-            if (filter.Subcategories != null)
+            if (filter.Departments != null)
             {
                 var tempPredicate = PredicateBuilder.True<Workshop>();
-                foreach (var subcategory in filter.Subcategories)
+                foreach (var department in filter.Departments)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Subsubcategory.Subcategory.Title == subcategory);
+                    tempPredicate = tempPredicate.Or(x => x.Class.Department.Title == department);
                 }
 
                 predicate = predicate.And(tempPredicate);
             }
 
-            if (filter.Subsubcategories != null)
+            if (filter.Classes != null)
             {
                 var tempPredicate = PredicateBuilder.True<Workshop>();
-                foreach (var subsubcategory in filter.Subsubcategories)
+                foreach (var classEntity in filter.Classes)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Subsubcategory.Title == subsubcategory);
+                    tempPredicate = tempPredicate.Or(x => x.Class.Title == classEntity);
                 }
 
                 predicate = predicate.And(tempPredicate);
@@ -331,21 +331,21 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <summary>
-        /// Set properties of the given WorkshopDTO with certain data: categoryId and SubctegoryId are set with data according to found Subsubcategory entity.
+        /// Set properties of the given WorkshopDTO with certain data: DirectionId and DepartmentId are set with data according to the found Class entity.
         /// </summary>
         /// <param name="dto">WorkshopDTO to fill.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        /// <exception cref="ArgumentException">If Subsubctegory was not found.</exception>
-        private async Task FillCategoriesFields(WorkshopDTO dto)
+        /// <exception cref="ArgumentException">If Class was not found.</exception>
+        private async Task FillDirectionsFields(WorkshopDTO dto)
         {
-            var sscategory = await subsubcategoryRepository.GetById(dto.SubsubcategoryId).ConfigureAwait(false);
-            if (sscategory is null)
+            var classEntity = await classRepository.GetById(dto.ClassId).ConfigureAwait(false);
+            if (classEntity is null)
             {
-                throw new ArgumentOutOfRangeException($"There is no Subsubcategory with id:{dto.SubsubcategoryId}");
+                throw new ArgumentOutOfRangeException($"There is no Class with id:{dto.ClassId}");
             }
 
-            dto.SubcategoryId = sscategory.SubcategoryId;
-            dto.CategoryId = sscategory.Subcategory.CategoryId;
+            dto.DepartmentId = classEntity.DepartmentId;
+            dto.DirectionId = classEntity.Department.DirectionId;
         }
 
         private void CompareTwoListsOfTeachers(

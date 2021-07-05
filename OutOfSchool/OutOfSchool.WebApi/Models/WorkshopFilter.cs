@@ -21,10 +21,10 @@ namespace OutOfSchool.WebApi.Models
 
         public bool OrderByPriceAscending { get; set; } = true;
 
-        public IEnumerable<string> Categories { get; set; } = null;
+        public IEnumerable<string> Directions { get; set; } = null;
 
-        public IEnumerable<string> Subcategories { get; set; } = null;
+        public IEnumerable<string> Departments { get; set; } = null;
 
-        public IEnumerable<string> Subsubcategories { get; set; } = null;
+        public IEnumerable<string> Classes { get; set; } = null;
     }
 }

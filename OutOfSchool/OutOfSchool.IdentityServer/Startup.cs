@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OutOfSchool.EmailSender;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 
@@ -83,6 +84,10 @@ namespace OutOfSchool.IdentityServer
                 })
                 .AddAspNetIdentity<User>()
                 .AddProfileService<ProfileService>();
+
+            services.AddEmailSender(
+                builder => builder.Bind(config.GetSection(EmailOptions.SectionName)),
+                builder => builder.Bind(config.GetSection(SmtpOptions.SectionName)));
 
             services.AddControllersWithViews()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
