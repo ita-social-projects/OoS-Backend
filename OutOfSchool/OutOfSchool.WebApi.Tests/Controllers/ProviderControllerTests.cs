@@ -39,7 +39,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             controller = new ProviderController(serviceProvider.Object, localizer.Object);
             user = new ClaimsPrincipal(new ClaimsIdentity(
-                new Claim[] { new Claim("sub", "de909f35-5eb7-4b7a-bda8-40a5bfda67a6"), new Claim("role", "provider") }, "sub"));
+                new Claim[]
+                {
+                    new Claim("sub", "de909f35-5eb7-4b7a-bda8-40a5bfda67a6"),
+                    new Claim("role", "provider"),
+                }, "sub"));
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
             providers = FakeProviders();
@@ -162,6 +166,25 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.NotNull(result);
             Assert.AreEqual(OkStatusCode, result.StatusCode);
+        }
+
+        [Test]
+        public async Task UpdateProvider_WhenUserIsNotAdminAndUpdateNotOwnProvider_ReturnsBadRequestResult()
+        {
+            // Arrange
+            var changedProvider = new ProviderDto()
+            {
+                Id = 1,
+                FullTitle = "ChangedTitle",
+            };
+            serviceProvider.Setup(x => x.Update(changedProvider, "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c", "provider")).ReturnsAsync(changedProvider);
+
+            // Act
+            var result = await controller.Update(changedProvider).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
         }
 
         [Test]

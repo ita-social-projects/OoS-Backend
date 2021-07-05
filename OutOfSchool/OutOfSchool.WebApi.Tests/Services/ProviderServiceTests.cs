@@ -49,7 +49,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(1)]
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
@@ -126,7 +125,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(2)]
         public void Create_WhenUserIdExists_ReturnsArgumentException()
         {
             // Arrange
@@ -179,7 +177,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(3)]
         public void Create_NotUniqueEntity_ReturnsArgumentException()
         {
             // Arrange
@@ -228,7 +225,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(4)]
         public async Task GetAll_WhenCalled_ReturnsAllEntities()
         {
             // Arrange
@@ -242,7 +238,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(5)]
         [TestCase(1)]
         public async Task GetById_WhenIdIsValid_ReturnsEntity(long id)
         {
@@ -257,7 +252,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(6)]
         [TestCase(10)]
         public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
@@ -267,7 +261,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(7)]
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
@@ -275,7 +268,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             {
                 Id = 1,
                 FullTitle = "ChangedTitle1",
-                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
             };
 
             // Act
@@ -286,7 +278,40 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(8)]
+        public async Task Update_WhenUserIsAdmin_UpdatesExistedEntity()
+        {
+            // Arrange
+            var changedEntity = new ProviderDto()
+            {
+                Id = 1,
+                FullTitle = "ChangedTitle1",
+            };
+
+            // Act
+            var result = await service.Update(changedEntity, "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c", "admin").ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(changedEntity.FullTitle, result.FullTitle);
+        }
+
+        [Test]
+        public async Task Update_WhenUserIdIsNotValid_ReturnNull()
+        {
+            // Arrange
+            var changedEntity = new ProviderDto()
+            {
+                Id = 1,
+                FullTitle = "ChangedTitle1",
+            };
+
+            // Act
+            var result = await service.Update(changedEntity, "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c", "provider").ConfigureAwait(false);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Test]
         public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
@@ -301,7 +326,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(9)]
         [TestCase(1)]
         public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
         {
@@ -317,7 +341,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(10)]
         [TestCase(10)]
         public void Delete_WhenIdIsInvalid_ThrowsArgumentNullException(long id)
         {
