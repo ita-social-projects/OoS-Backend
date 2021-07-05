@@ -7,8 +7,10 @@ namespace OutOfSchool.Services.Models
     {
         public long Id { get; set; }
 
+        [MaxLength(30)]
         public string Region { get; set; } = string.Empty;
 
+        [MaxLength(30)]
         public string District { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "City is required")]

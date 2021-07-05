@@ -29,6 +29,7 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.EmailAddress)]
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid Email Address")]
+        [MaxLength(256)]
         public string Email { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
@@ -47,6 +48,7 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(
             @"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU/IPN code must contain 8 or 10 digits")]
+        [MaxLength(12)]
         public string EdrpouIpn { get; set; }
 
         [MaxLength(50)]
@@ -60,9 +62,11 @@ namespace OutOfSchool.WebApi.Models
             @"([\d]{10})",
             ErrorMessage = "Phone number format is incorrect. Example: 0501234567")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
+        [MaxLength(15)]
         public string PhoneNumber { get; set; } = string.Empty;
 
         [Required]
+        [MaxLength(30)]
         public string Founder { get; set; } = string.Empty;
 
         [Required]
