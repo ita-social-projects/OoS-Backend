@@ -145,7 +145,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var checkProvider = providerRepository.GetByFilterNoTracking(p => p.Id == dto.Id).FirstOrDefault();
 
-                if (checkProvider.UserId == userId || userRole == AdminRole)
+                if (checkProvider?.UserId == userId || userRole == AdminRole)
                 {
                     var provider = await providerRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
