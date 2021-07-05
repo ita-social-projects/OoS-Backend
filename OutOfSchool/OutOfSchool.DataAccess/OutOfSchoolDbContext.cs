@@ -38,6 +38,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Rating> Ratings { get; set; }
 
+        public DbSet<City> Cities { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
