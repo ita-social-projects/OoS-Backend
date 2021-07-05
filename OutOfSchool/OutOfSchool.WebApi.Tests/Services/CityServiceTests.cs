@@ -88,7 +88,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.GetByCityName(name).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(result.ToList().Count(), expected.Count());
+            Assert.AreEqual(result.Count(), expected.Count());
         }
 
         [Test]

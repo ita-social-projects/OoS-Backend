@@ -224,7 +224,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.IsNull(result);
         }
 
-        private CityDto FakeCity()
+        private static CityDto FakeCity()
         {
             return new CityDto()
             {
@@ -235,7 +235,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<CityDto> FakeCities()
+        private static IEnumerable<CityDto> FakeCities()
         {
             return new List<CityDto>()
             {
