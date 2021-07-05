@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
@@ -87,6 +88,7 @@ namespace OutOfSchool.WebApi.Models
 
         public AddressDto ActualAddress { get; set; }
 
+        [JsonIgnore]
         public UserDto User { get; set; }
     }
 }
