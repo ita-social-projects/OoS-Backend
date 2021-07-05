@@ -20,13 +20,16 @@ namespace OutOfSchool.WebApi.Models
             @"([\d]{10})",
             ErrorMessage = "Phone number format is incorrect. Example: 0501234567")]
         [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
+        [MaxLength(15)]
         public string Phone { get; set; } = string.Empty;
 
         [DataType(DataType.EmailAddress)]
         [Required(ErrorMessage = "Email is required")]
+        [MaxLength(256)]
         public string Email { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
+        [MaxLength(256)]
         public string Website { get; set; } = string.Empty;
 
         [MaxLength(30)]
@@ -60,6 +63,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(200)]
         public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
+        [MaxLength(256)]
         public string Logo { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Head's information is required")]
@@ -71,6 +75,7 @@ namespace OutOfSchool.WebApi.Models
         public DateTime HeadDateOfBirth { get; set; }
 
         [Required]
+        [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
 
         [Required]
