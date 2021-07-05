@@ -34,6 +34,11 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static CityDto ToModel(this City city)
+        {
+            return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
+        }
+
         public static ClassDto ToModel(this Class classEntity)
         {
             return Mapper<Class, ClassDto>(classEntity, cfg => { cfg.CreateMap<Class, ClassDto>(); });
@@ -142,6 +147,11 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
                 cfg.CreateMap<ChildDto, Child>();
             });
+        }
+
+        public static City ToDomain(this CityDto cityDto)
+        {
+            return Mapper<CityDto, City>(cityDto, cfg => { cfg.CreateMap<CityDto, City>(); });
         }
 
         public static Class ToDomain(this ClassDto classDto)
