@@ -275,13 +275,14 @@ namespace OutOfSchool.WebApi.Tests.Services
             {
                 Id = 1,
                 FullTitle = "ChangedTitle1",
+                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
             };
 
             // Act
-            var result = await service.Update(changedEntity).ConfigureAwait(false);
+            var result = await service.Update(changedEntity, "de909f35-5eb7-4b7a-bda8-40a5bfda96a6", "provider").ConfigureAwait(false);
 
             // Assert
-            Assert.That(changedEntity.FullTitle, Is.EqualTo(result.FullTitle));
+            Assert.AreEqual(changedEntity.FullTitle, result.FullTitle);
         }
 
         [Test]
@@ -296,7 +297,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act and Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-                async () => await service.Update(changedEntity).ConfigureAwait(false));
+                async () => await service.Update(changedEntity, "de909f35-5eb7-4b7a-bda8-40a5bfda96a6", "admin").ConfigureAwait(false));
         }
 
         [Test]

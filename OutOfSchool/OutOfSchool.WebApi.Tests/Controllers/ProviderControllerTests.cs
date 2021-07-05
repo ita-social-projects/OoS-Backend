@@ -18,6 +18,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class ProviderControllerTests
     {
+        private const int OkStatusCode = 200;
+        private const int CreateStatusCode = 201;
+        private const int NoContentStatusCode = 204;
+        private const int BadRequestStatusCode = 400;
+
         private ProviderController controller;
         private Mock<IProviderService> serviceProvider;
         private ClaimsPrincipal user;
@@ -33,7 +38,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
             controller = new ProviderController(serviceProvider.Object, localizer.Object);
-            user = new ClaimsPrincipal(new ClaimsIdentity());
+            user = new ClaimsPrincipal(new ClaimsIdentity(
+                new Claim[] { new Claim("sub", "de909f35-5eb7-4b7a-bda8-40a5bfda67a6"), new Claim("role", "provider") }, "sub"));
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
             providers = FakeProviders();
@@ -50,8 +56,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetProfile().ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.NotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -64,8 +70,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.NotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -79,8 +85,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.NotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -106,8 +112,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.NotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -120,8 +126,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Create(provider).ConfigureAwait(false) as CreatedAtActionResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(201, result.StatusCode);
+            Assert.NotNull(result);
+            Assert.AreEqual(CreateStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -135,7 +141,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
         }
 
         [Test]
@@ -146,15 +152,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             {
                 Id = 1,
                 FullTitle = "ChangedTitle",
+                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda67a6",
             };
-            serviceProvider.Setup(x => x.Update(changedProvider)).ReturnsAsync(changedProvider);
+            serviceProvider.Setup(x => x.Update(changedProvider, changedProvider.UserId, "provider")).ReturnsAsync(changedProvider);
 
             // Act
             var result = await controller.Update(changedProvider).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
+            Assert.NotNull(result);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -168,7 +175,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
         }
 
         [Test]
@@ -182,8 +189,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Delete(id) as NoContentResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 204);
+            Assert.NotNull(result);
+            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
         }
 
         [Test]
