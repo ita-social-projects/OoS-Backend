@@ -169,56 +169,72 @@ namespace OutOfSchool.IdentityServer.Controllers
                IsRegistered = false,
             };
 
-            var result = await userManager.CreateAsync(user, model.Password);
-            if (result.Succeeded)
+            try
             {
-                IdentityResult roleAssignResult = IdentityResult.Failed();
-
-                roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
-
-                if (roleAssignResult.Succeeded)
+                var result = await userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
                 {
-                    await signInManager.SignInAsync(user, false);
+                    IdentityResult roleAssignResult = IdentityResult.Failed();
 
-                    if (user.Role == Role.Parent.ToString().ToLower())
+                    roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
+
+                    if (roleAssignResult.Succeeded)
                     {
-                        var parent = new Parent()
+                        await signInManager.SignInAsync(user, false);
+
+                        if (user.Role == Role.Parent.ToString().ToLower())
                         {
-                            UserId = user.Id,
-                        };
+                            var parent = new Parent()
+                            {
+                                UserId = user.Id,
+                            };
 
-                        await parentRepository.Create(parent);
+                            Func<Task<Parent>> operation = async () => await parentRepository.Create(parent).ConfigureAwait(false);
+
+                            await parentRepository.RunInTransaction(operation).ConfigureAwait(false);
+                        }
+
+                        return Redirect(model.ReturnUrl);
                     }
 
-                    return Redirect(model.ReturnUrl);
-                }
+                    var deletionResult = await userManager.DeleteAsync(user);
 
-                var deletionResult = await userManager.DeleteAsync(user);
-
-                if (!deletionResult.Succeeded)
-                {
-                    logger.Log(LogLevel.Warning, "User was created without role");
-                }
-
-                foreach (var error in roleAssignResult.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
-            else
-            {
-                foreach (var error in result.Errors)
-                {
-                    if (error.Code == "DuplicateUserName")
+                    if (!deletionResult.Succeeded)
                     {
-                        error.Description = $"Email {error.Description.Substring(10).Split('\'')[0]} is alredy taken";
+                        logger.Log(LogLevel.Warning, "User was created without role");
                     }
 
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    foreach (var error in roleAssignResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
-            }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        if (error.Code == "DuplicateUserName")
+                        {
+                            error.Description = $"Email {error.Description.Substring(10).Split('\'')[0]} is alredy taken";
+                        }
 
-            return View(model);
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                await userManager.RemoveFromRoleAsync(user, user.Role);
+                await userManager.DeleteAsync(user);
+
+                ModelState.AddModelError(string.Empty, "Error! Something happened on the server!");
+
+                logger.Log(LogLevel.Error, "Error happened while creating Parent entity! " + ex.Message);
+
+                return View(model);
+            }
         }
 
         public Task<IActionResult> ExternalLogin(string provider, string returnUrl)
