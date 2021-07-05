@@ -104,6 +104,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IApplicationService, ApplicationService>();
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<IChildService, ChildService>();
+            services.AddTransient<ICityService, CityService>();
             services.AddTransient<IParentService, ParentService>();
             services.AddTransient<IProviderService, ProviderService>();
             services.AddTransient<IRatingService, RatingService>();
@@ -113,18 +114,16 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
-            services.AddTransient<ISocialGroupService, SocialGroupService>();
-            services.AddTransient<ICityService, CityService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
             services.AddTransient<IEntityRepository<Category>, EntityRepository<Category>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
+            services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
-            services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<IProviderRepository, ProviderRepository>();
