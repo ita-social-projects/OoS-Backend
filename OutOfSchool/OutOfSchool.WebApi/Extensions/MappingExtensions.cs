@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
@@ -54,7 +53,6 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<Provider, ProviderDto>()
                  .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(c => c.ActualAddress))
                  .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(c => c.LegalAddress));
-                cfg.CreateMap<User, UserDto>();
             });
         }
 
@@ -163,7 +161,6 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
-                cfg.CreateMap<UserDto, User>();
             });
         }
 
