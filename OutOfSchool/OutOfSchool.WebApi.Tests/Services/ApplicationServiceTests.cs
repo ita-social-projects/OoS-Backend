@@ -24,7 +24,9 @@ namespace OutOfSchool.WebApi.Tests.Services
     public class ApplicationServiceTests
     {
         private IApplicationService service;
-        private IApplicationRepository repository;
+        private IApplicationRepository applicationRepository;
+        private IWorkshopRepository workshopRepository;
+        private IEntityRepository<Child> childRepository;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
         private OutOfSchoolDbContext context;
@@ -35,10 +37,19 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void SetUp()
         {
             context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
-            repository = new ApplicationRepository(context);
+
+            applicationRepository = new ApplicationRepository(context);
+            workshopRepository = new WorkshopRepository(context);
+            childRepository = new EntityRepository<Child>(context);
+
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger>();
-            service = new ApplicationService(repository, logger.Object, localizer.Object);
+            service = new ApplicationService(
+                applicationRepository,
+                logger.Object,
+                localizer.Object,
+                workshopRepository,
+                childRepository);
 
             applications = FakeApplications();
         }
@@ -47,7 +58,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetApplications_WhenCalled_ShouldReturnApplications()
         {
             // Arrange
-            var expected = await repository.GetAll();
+            var expected = await applicationRepository.GetAll();
 
             // Act
             var result = await service.GetAll().ConfigureAwait(false);
@@ -61,7 +72,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetApplicationById_WhenIdIsValid_ShouldReturnApplication(long id)
         {
             // Arrange
-            var expected = await repository.GetById(id);
+            var expected = await applicationRepository.GetById(id);
 
             // Act
             var result = await service.GetById(id).ConfigureAwait(false);
@@ -72,31 +83,34 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(10)]
-        public void GetApplicationById_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
+        public async Task GetApplicationById_WhenIdIsNotValid_ShouldReturnNull(long id)
         {
+            // Act
+            var result = await service.GetById(id).ConfigureAwait(false);
+
             // Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await service.GetById(id).ConfigureAwait(false));
+            result.Should().BeNull();
         }
 
         [Test]
         public async Task CreateApplication_WhenCalled_ShouldReturnApplication()
         {
             // Arrange
-            var expected = new ApplicationDto()
+            var toCreate = new ApplicationDto()
             {
                 Id = 2,
                 ChildId = 2,
                 Status = ApplicationStatus.Pending,
                 WorkshopId = 2,
-                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEFA6",
+                ParentId = 2,
             };
 
             // Act
-            var result = await service.Create(expected).ConfigureAwait(false);
+            var result = await service.Create(toCreate).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(expected);
+            result.Should().BeEquivalentTo(toCreate, options =>
+            options.Excluding(t => t.Workshop.Teachers));
         }
 
         [Test]
@@ -114,18 +128,36 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void CreateApplication_WhenModelAlreadyExists_ShouldThrowArgumentException()
         {
             // Arrange
-            var expected = new ApplicationDto()
+            var toCreate = new ApplicationDto()
             {
                 Id = 4,
                 ChildId = 1,
                 Status = ApplicationStatus.Pending,
                 WorkshopId = 1,
-                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
+                ParentId = 1,
             };
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Create(expected).ConfigureAwait(false));
+                async () => await service.Create(toCreate).ConfigureAwait(false));
+        }
+
+        [Test]
+        public void CreateApplication_WhenParametersAreNotValid_ShouldThrowArgumentException()
+        {
+            // Arrange
+            var toCreate = new ApplicationDto()
+            {
+                Id = 7,
+                ChildId = 2,
+                Status = ApplicationStatus.Pending,
+                WorkshopId = 1,
+                ParentId = 1,
+            };
+
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Create(toCreate).ConfigureAwait(false));
         }
 
         [Test]
@@ -176,7 +208,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     ChildId = 1,
                     Status = ApplicationStatus.Pending,
                     WorkshopId = 1,
-                    UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
+                    ParentId = 1,
                 },
             };
 
@@ -191,7 +223,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
-            var expected = await repository.GetByFilter(filter);
+            var expected = await applicationRepository.GetByFilter(filter);
 
             // Act
             var result = await service.GetAllByWorkshop(id).ConfigureAwait(false);
@@ -202,35 +234,91 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(10)]
-        public void GetAllByWorkshop_WhenIdIsNotValid_ShouldThrowArgumentException(long id)
+        public async Task GetAllByWorkshop_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
         {
+            // Act
+            var result = await service.GetAllByWorkshop(id).ConfigureAwait(false);
+
             // Assert
-            Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.GetAllByWorkshop(id).ConfigureAwait(false));
+            result.Count().Should().Be(0);
         }
 
         [Test]
-        [TestCase("de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6")]
-        public async Task GetAllByUser_WhenIdIsValid_ShouldReturnApplications(string id)
+        [TestCase(1)]
+        public async Task GetAllByProvider_WhenIdIsValid_ShouldReturnApplications(long id)
         {
             // Arrange
-            Expression<Func<Application, bool>> filter = a => a.UserId.Equals(id);
-            var expected = await repository.GetByFilter(filter);
+            Expression<Func<Application, bool>> filter = a => a.Workshop.ProviderId == id;
+            var expected = await applicationRepository.GetByFilter(filter);
 
             // Act
-            var result = await service.GetAllByUser(id).ConfigureAwait(false);
+            var result = await service.GetAllByProvider(id).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
         }
 
         [Test]
-        [TestCase("string")]
-        public void GetAllByUser_WhenIdIsNotValid_ShouldThrowArgumentException(string id)
+        [TestCase(10)]
+        public async Task GetAllByProvider_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
         {
+            // Act
+            var result = await service.GetAllByProvider(id).ConfigureAwait(false);
+
             // Assert
-            Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.GetAllByUser(id).ConfigureAwait(false));
+            result.Count().Should().Be(0);
+        }
+
+        [Test]
+        [TestCase(1)]
+        public async Task GetAllByParent_WhenIdIsValid_ShouldReturnApplications(long id)
+        {
+            // Arrange
+            Expression<Func<Application, bool>> filter = a => a.ParentId == id;
+            var expected = await applicationRepository.GetByFilter(filter);
+
+            // Act
+            var result = await service.GetAllByParent(id).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task GetAllByParent_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
+        {
+            // Act
+            var result = await service.GetAllByParent(id).ConfigureAwait(false);
+
+            // Assert
+            result.Count().Should().Be(0);
+        }
+
+        [Test]
+        [TestCase(0)]
+        public async Task GetAllByStatus_WhenStatusIsValid_ShouldReturnApplications(int status)
+        {
+            // Arrange
+            Expression<Func<Application, bool>> filter = a => (int)a.Status == status;
+            var expected = await applicationRepository.GetByFilter(filter);
+
+            // Act
+            var result = await service.GetAllByStatus(status).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
+        }
+
+        [Test]
+        [TestCase(2)]
+        public async Task GetAllByStatus_WhenStatusIsNotValid_ShouldReturnEmptyCollection(int status)
+        {
+            // Act
+            var result = await service.GetAllByStatus(status).ConfigureAwait(false);
+
+            // Assert
+            result.Count().Should().Be(0);
         }
 
         [Test]
@@ -241,35 +329,41 @@ namespace OutOfSchool.WebApi.Tests.Services
             {
                 Id = 1,
                 Status = ApplicationStatus.Approved,
+                ChildId = 1,
+                WorkshopId = 1,
+                ParentId = 1,
             };
 
             // Act
             var result = await service.Update(expected).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(expected);
+            result.Should().BeEquivalentTo(expected, options =>
+            options.Excluding(e => e.Parent)
+                   .Excluding(e => e.Workshop)
+                   .Excluding(e => e.Child));
         }
 
         [Test]
-        public void UpdateApplication_WhenIdIsNotValid_ShouldThrowDbUpdateConcurrencyException()
+        public void UpdateApplication_WhenThereIsNoApplicationWithId_ShouldTrowArgumentException()
         {
             // Arrange
-            var changedApplication = new Application()
+            var application = new ApplicationDto
             {
+                Id = 10,
                 Status = ApplicationStatus.Approved,
             };
 
             // Act and Assert
-            Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-                async () => await service.Update(changedApplication.ToModel()).ConfigureAwait(false));
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Update(application).ConfigureAwait(false));
         }
 
         [Test]
         public void UpdateApplication_WhenModelIsNull_ShouldThrowArgumentException()
         {
-            // Assert
-            Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Update(null).ConfigureAwait(false));
+            // Act and Assert
+            service.Invoking(s => s.Update(null)).Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -289,10 +383,10 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(10)]
-        public void DeleteApplication_WhenIdIsNotValid_ShouldThrowDbUpdateConcurrencyException(long id)
+        public void DeleteApplication_WhenIdIsNotValid_ShouldThrowArgumentException(long id)
         {
             // Assert
-            Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+            Assert.ThrowsAsync<ArgumentException>(
                 async () => await service.Delete(id).ConfigureAwait(false));
         }
 
@@ -303,17 +397,17 @@ namespace OutOfSchool.WebApi.Tests.Services
                 new ApplicationDto()
                 {
                     Id = 5,
-                    ChildId = 3,
+                    ChildId = 2,
                     Status = ApplicationStatus.Pending,
-                    UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
-                    WorkshopId = 2,
+                    ParentId = 2,
+                    WorkshopId = 1,
                 },
                 new ApplicationDto()
                 {
                     Id = 6,
                     ChildId = 3,
                     Status = ApplicationStatus.Pending,
-                    UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
+                    ParentId = 1,
                     WorkshopId = 2,
                 },
             };

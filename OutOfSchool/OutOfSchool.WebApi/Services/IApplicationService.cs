@@ -44,11 +44,25 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id);
 
         /// <summary>
+        /// Get applications by provider id.
+        /// </summary>
+        /// <param name="id">Key in the table.</param>
+        /// <returns>List of applications.</returns>
+        Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id);
+
+        /// <summary>
+        /// Get applications by status.
+        /// </summary>
+        /// <param name="status">Status of application.</param>
+        /// <returns>List of applications.</returns>
+        Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status);
+
+        /// <summary>
         /// Get applications by user id.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByUser(string id);
+        Task<IEnumerable<ApplicationDto>> GetAllByParent(long id);
 
         /// <summary>
         /// Update entity.

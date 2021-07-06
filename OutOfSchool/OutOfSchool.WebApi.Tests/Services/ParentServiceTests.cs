@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Localization;
@@ -98,27 +99,25 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task GetByUserId_WhenIdIsValid_ReturnsEntity(long id)
+        [TestCase("de909f35-5eb7-4b7a-bda8-40a5bfda96a6")]
+        public async Task GetByUserId_WhenIdIsValid_ReturnsEntities(string id)
         {
             // Arrange
-            Expression<Func<Parent, bool>> filter = p => p.UserId == "de909f35-5eb7-4b7a-bda8-40a5bfda96a6";
-            var expected = await repoParent.GetByFilter(filter);
+            var expected = await repoParent.GetByFilter(p => p.UserId == id);
 
             // Act
-            var result = await service.GetById(id).ConfigureAwait(false);
+            var result = await service.GetByUserId(id).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.FirstOrDefault().Id, result.Id);
+            result.Should().BeEquivalentTo(expected.FirstOrDefault().ToModel());
         }
 
         [Test]
-        [TestCase("Invalid Id")]
-        public void GetByUserId_WhenIdInvalid_ReturnsArgumentException(string id)
+        [TestCase("fakeString")]
+        public void GetByUserId_WhenIdIsNotValid_TrowsArgumentException(string id)
         {
             // Act and Assert
-            Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.GetByUserId(id).ConfigureAwait(false));
+            service.Invoking(s => s.GetByUserId(id)).Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]

@@ -17,7 +17,16 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static ApplicationDto ToModel(this Application application)
         {
-            return Mapper<Application, ApplicationDto>(application, cfg => { cfg.CreateMap<Application, ApplicationDto>(); });
+            return Mapper<Application, ApplicationDto>(application, cfg =>
+            {
+                cfg.CreateMap<Workshop, WorkshopDTO>()
+                .ForMember(w => w.Address, m => m.Ignore())
+                .ForMember(w => w.Teachers, m => m.Ignore());
+                cfg.CreateMap<Child, ChildDto>()
+                .ForMember(c => c.BirthCertificate, m => m.Ignore());
+                cfg.CreateMap<Parent, ParentDTO>();
+                cfg.CreateMap<Application, ApplicationDto>();
+            });
         }
 
         public static BirthCertificateDto ToModel(this BirthCertificate birthCertificate)
@@ -129,7 +138,13 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static Application ToDomain(this ApplicationDto applicationDTO)
         {
-            return Mapper<ApplicationDto, Application>(applicationDTO, cfg => { cfg.CreateMap<ApplicationDto, Application>(); });
+            return Mapper<ApplicationDto, Application>(applicationDTO, cfg =>
+            {
+                cfg.CreateMap<WorkshopDTO, Workshop>();
+                cfg.CreateMap<ChildDto, Child>();
+                cfg.CreateMap<ParentDTO, Parent>();
+                cfg.CreateMap<ApplicationDto, Application>();
+            });
         }
 
         public static BirthCertificate ToDomain(this BirthCertificateDto birthCertificateDTO)

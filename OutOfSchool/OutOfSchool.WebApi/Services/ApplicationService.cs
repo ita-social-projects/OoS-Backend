@@ -18,7 +18,9 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ApplicationService : IApplicationService
     {
-        private readonly IApplicationRepository repository;
+        private readonly IApplicationRepository applicationRepository;
+        private readonly IWorkshopRepository workshopRepository;
+        private readonly IEntityRepository<Child> childRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -28,11 +30,20 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Application repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ApplicationService(IApplicationRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        /// <param name="workshopRepository">Workshop repository.</param>
+        /// <param name="childRepository">Child repository.</param>
+        public ApplicationService(
+            IApplicationRepository repository,
+            ILogger logger,
+            IStringLocalizer<SharedResource> localizer,
+            IWorkshopRepository workshopRepository,
+            IEntityRepository<Child> childRepository)
         {
-            this.repository = repository;
+            this.applicationRepository = repository;
+            this.workshopRepository = workshopRepository;
             this.logger = logger;
             this.localizer = localizer;
+            this.childRepository = childRepository;
         }
 
         /// <inheritdoc/>
@@ -42,9 +53,17 @@ namespace OutOfSchool.WebApi.Services
 
             ModelCreationValidation(applicationDto);
 
+            var isChildParent = await CheckChildParent(applicationDto.ParentId, applicationDto.ChildId).ConfigureAwait(false);
+
+            if (!isChildParent)
+            {
+                logger.Information("Operation failed. Unable to create application for another parent`s child.");
+                throw new ArgumentException(localizer["Unable to create application for another parent`s child."]);
+            }
+
             var application = applicationDto.ToDomain();
 
-            var newApplication = await repository.Create(application).ConfigureAwait(false);
+            var newApplication = await applicationRepository.Create(application).ConfigureAwait(false);
 
             logger.Information($"Application with Id = {newApplication?.Id} created successfully.");
 
@@ -60,7 +79,7 @@ namespace OutOfSchool.WebApi.Services
 
             var applications = applicationDtos.Select(a => a.ToDomain()).ToList();
 
-            var newApplications = await repository.Create(applications).ConfigureAwait(false);
+            var newApplications = await applicationRepository.Create(applications).ConfigureAwait(false);
 
             logger.Information("Applications created successfully.");
 
@@ -72,17 +91,19 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Deleting Application with Id = {id} started.");
 
+            CheckApplicationExists(id);
+
             var application = new Application { Id = id };
 
             try
             {
-                await repository.Delete(application).ConfigureAwait(false);
+                await applicationRepository.Delete(application).ConfigureAwait(false);
 
                 logger.Information($"Application with Id = {id} succesfully deleted.");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                logger.Error($"Deleting failed. Application with Id = {id} doesn't exist in the system.");
+                logger.Error($"Deleting failed. Exception: {ex.Message}.");
                 throw;
             }
         }
@@ -92,7 +113,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Getting all Applications started.");
 
-            var applications = await repository.GetAll().ConfigureAwait(false);
+            var applications = await applicationRepository.GetAllWithDetails("Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? "Application table is empty."
@@ -102,20 +123,17 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByUser(string id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByParent(long id)
         {
-            logger.Information($"Getting Applications by User Id started. Looking User Id = {id}.");
+            logger.Information($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
 
-            Expression<Func<Application, bool>> filter = a => a.UserId == id;
+            Expression<Func<Application, bool>> filter = a => a.ParentId == id;
 
-            var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
+            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
-            if (!applications.Any())
-            {
-                throw new ArgumentException(localizer["There is no Application in the Db with such User id"], nameof(id));
-            }
-
-            logger.Information($"Successfully got Applications with User Id = {id}.");
+            logger.Information(!applications.Any()
+                ? $"There is no applications in the Db with Parent Id = {id}."
+                : $"Successfully got Applications with Parent Id = {id}.");
 
             return applications.Select(a => a.ToModel()).ToList();
         }
@@ -123,18 +141,51 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id)
         {
-            logger.Information("Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
+            logger.Information($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
 
             Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
 
-            var applications = await repository.GetByFilter(filter).ConfigureAwait(false);
+            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
-            if (!applications.Any())
-            {
-                throw new ArgumentException(localizer["There is no Application in the Db with such User id"], nameof(id));
-            }
+            logger.Information(!applications.Any()
+                ? $"There is no applications in the Db with Workshop Id = {id}."
+                : $"Successfully got Applications with Workshop Id = {id}.");
 
-            logger.Information($"Successfully got Applications with Workshop Id = {id}.");
+            return applications.Select(a => a.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id)
+        {
+            logger.Information($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
+
+            Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
+
+            var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
+
+            Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
+
+            var applications = await applicationRepository.GetByFilter(applicationFilter, "Workshop,Child,Parent").ConfigureAwait(false);
+
+            logger.Information(!applications.Any()
+                ? $"There is no applications in the Db with Provider Id = {id}."
+                : $"Successfully got Applications with Provider Id = {id}.");
+
+            return applications.Select(a => a.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status)
+        {
+            logger.Information($"Getting Applications by Status started. Looking Status = {status}.");
+
+            Expression<Func<Application, bool>> filter = a => (int)a.Status == status;
+
+            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+
+            logger.Information(!applications.Any()
+                ? $"There is no applications in the Db with Status = {status}."
+                : $"Successfully got Applications with Status = {status}.");
 
             return applications.Select(a => a.ToModel()).ToList();
         }
@@ -144,13 +195,15 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Getting Application by Id started. Looking Id = {id}.");
 
-            var application = await repository.GetById(id).ConfigureAwait(false);
+            Expression<Func<Application, bool>> filter = a => a.Id == id;
+
+            var application = await applicationRepository.GetByFilterNoTracking(filter, "Workshop,Child,Parent")
+                                                         .FirstOrDefaultAsync().ConfigureAwait(false);
 
             if (application is null)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["There is no Application in the Db with such id."]);
+                logger.Information($"There is no application in the Db with Id = {id}.");
+                return null;
             }
 
             logger.Information($"Successfully got an Application with Id = {id}.");
@@ -158,24 +211,26 @@ namespace OutOfSchool.WebApi.Services
             return application.ToModel();
         }
 
-        /// <inheritdoc/>
         public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
         {
             logger.Information($"Updating Application with Id = {applicationDto?.Id} started.");
 
             ModelNullValidation(applicationDto);
 
+            CheckApplicationExists(applicationDto?.Id);
+
             try
             {
-                var application = await repository.Update(applicationDto.ToDomain()).ConfigureAwait(false);
+                var updatedApplication = await applicationRepository.Update(applicationDto.ToDomain())
+                    .ConfigureAwait(false);
 
                 logger.Information($"Application with Id = {applicationDto?.Id} updated succesfully.");
 
-                return application.ToModel();
+                return updatedApplication.ToModel();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                logger.Error($"Updating failed. Application with Id = {applicationDto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Exception = {ex.Message}.");
                 throw;
             }
         }
@@ -195,8 +250,9 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
                                                               && a.WorkshopId == applicationDto.WorkshopId
-                                                              && a.UserId == applicationDto.UserId;
-            if (repository.Get<int>(where: filter).Any())
+                                                              && a.ParentId == applicationDto.ParentId;
+
+            if (applicationRepository.Get<int>(where: filter).Any())
             {
                 logger.Information("Creation failed. Application with such data alredy exists.");
                 throw new ArgumentException(localizer["There is already an application with such data."]);
@@ -215,6 +271,26 @@ namespace OutOfSchool.WebApi.Services
             {
                 ModelCreationValidation(application);
             }
+        }
+
+        private void CheckApplicationExists(long? id)
+        {
+            var applications = applicationRepository.Get<int>(where: a => a.Id == id);
+
+            if (!applications.Any())
+            {
+                logger.Information($"Operation failed. Application with Id = {id} doesn't exist in the system.");
+                throw new ArgumentException(localizer[$"Application with Id = {id} doesn't exist in the system."]);
+            }
+        }
+
+        private async Task<bool> CheckChildParent(long parentId, long childId)
+        {
+            Expression<Func<Child, bool>> filter = c => c.ParentId == parentId;
+
+            var children = childRepository.Get<int>(where: filter).Select(c => c.Id);
+
+            return await children.ContainsAsync(childId).ConfigureAwait(false);
         }
     }
 }
