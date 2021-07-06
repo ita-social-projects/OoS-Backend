@@ -118,9 +118,9 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Get Applications by User Id.
+        /// Get Applications by Parent Id.
         /// </summary>
-        /// <param name="id">User id.</param>
+        /// <param name="id">Parent id.</param>
         /// <returns>List of applications.</returns>
         /// <response code="200">Entities were found by given Id.</response>
         /// <response code="204">No entity with given Id was found.</response>
