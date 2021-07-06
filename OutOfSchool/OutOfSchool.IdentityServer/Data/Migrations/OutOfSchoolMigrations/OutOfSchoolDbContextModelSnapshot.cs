@@ -204,11 +204,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("ParentId")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<long>("WorkshopId")
                         .HasColumnType("bigint");
@@ -217,7 +217,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ChildId");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("UserId");
 
                     b.HasIndex("WorkshopId");
 
@@ -870,11 +870,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
+                    b.HasOne("OutOfSchool.Services.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
                         .WithMany("Applications")
@@ -884,7 +882,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Navigation("Child");
 
-                    b.Navigation("Parent");
+                    b.Navigation("User");
 
                     b.Navigation("Workshop");
                 });
