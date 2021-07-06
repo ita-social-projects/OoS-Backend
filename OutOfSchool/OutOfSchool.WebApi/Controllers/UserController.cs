@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -28,14 +29,21 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get all users from the database.
         /// </summary>
         /// <returns>List of all users.</returns>
-        [Authorize(Roles = "parent,provider,admin")]
+        [Authorize(Roles = "admin")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetUsers()
         {
-            return Ok(await userService.GetAll().ConfigureAwait(false));
+            var users = await userService.GetAll().ConfigureAwait(false);
+
+            if (!users.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(users);
         }
 
         /// <summary>
@@ -51,14 +59,21 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetUserById(string id)
         {
-            try
+            string userId = User.FindFirst("sub")?.Value;
+
+            if (userId != id)
             {
-                return Ok(await userService.GetById(id).ConfigureAwait(false));
+                 return StatusCode(403, "Forbidden to get another user.");
             }
-            catch (ArgumentException ex)
+
+            var user = await userService.GetById(id).ConfigureAwait(false);
+
+            if (user is null)
             {
-                return BadRequest(ex.Message);
+                return NoContent();
             }
+
+            return Ok(user);
         }
 
         /// <summary>
@@ -71,6 +86,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
         public async Task<IActionResult> Update(ShortUserDto dto)
@@ -78,6 +94,13 @@ namespace OutOfSchool.WebApi.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            string userId = User.FindFirst("sub")?.Value;
+
+            if (userId != dto.Id)
+            {
+                return StatusCode(403, "Forbidden to update another user.");
             }
 
             return Ok(await userService.Update(dto).ConfigureAwait(false));

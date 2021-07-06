@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.IdentityServer.Controllers
 {
@@ -20,6 +21,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> userManager;
         private readonly IIdentityServerInteractionService interactionService;
         private readonly ILogger<AuthController> logger;
+        private readonly IParentRepository parentRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -27,14 +29,17 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="userManager"> ASP.Net Core Identity User Manager.</param>
         /// <param name="signInManager"> ASP.Net Core Identity Sign in Manager.</param>
         /// <param name="interactionService"> Identity Server 4 interaction service.</param>
+        /// <param name="parentRepository">Repository for Parent model.</param>
         /// <param name="logger"> ILogger class.</param>
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IIdentityServerInteractionService interactionService,
-            ILogger<AuthController> logger)
+            ILogger<AuthController> logger,
+            IParentRepository parentRepository)
         {
             this.logger = logger;
+            this.parentRepository = parentRepository;
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.interactionService = interactionService;
@@ -164,46 +169,72 @@ namespace OutOfSchool.IdentityServer.Controllers
                IsRegistered = false,
             };
 
-            var result = await userManager.CreateAsync(user, model.Password);
-            if (result.Succeeded)
+            try
             {
-                IdentityResult roleAssignResult = IdentityResult.Failed();
-
-                roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
-              
-                if (roleAssignResult.Succeeded)
+                var result = await userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
                 {
-                    await signInManager.SignInAsync(user, false);
+                    IdentityResult roleAssignResult = IdentityResult.Failed();
 
-                    return Redirect(model.ReturnUrl);
-                }
+                    roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
 
-                var deletionResult = await userManager.DeleteAsync(user);
-
-                if (!deletionResult.Succeeded)
-                {
-                    logger.Log(LogLevel.Warning, "User was created without role");
-                }
-
-                foreach (var error in roleAssignResult.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
-            else
-            {
-                foreach (var error in result.Errors)
-                {                   
-                    if (error.Code == "DuplicateUserName")
+                    if (roleAssignResult.Succeeded)
                     {
-                        error.Description = $"Email {error.Description.Substring(10).Split('\'')[0]} is alredy taken";                     
+                        await signInManager.SignInAsync(user, false);
+
+                        if (user.Role == Role.Parent.ToString().ToLower())
+                        {
+                            var parent = new Parent()
+                            {
+                                UserId = user.Id,
+                            };
+
+                            Func<Task<Parent>> operation = async () => await parentRepository.Create(parent).ConfigureAwait(false);
+
+                            await parentRepository.RunInTransaction(operation).ConfigureAwait(false);
+                        }
+
+                        return Redirect(model.ReturnUrl);
                     }
 
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
+                    var deletionResult = await userManager.DeleteAsync(user);
 
-            return View(model);
+                    if (!deletionResult.Succeeded)
+                    {
+                        logger.Log(LogLevel.Warning, "User was created without role");
+                    }
+
+                    foreach (var error in roleAssignResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        if (error.Code == "DuplicateUserName")
+                        {
+                            error.Description = $"Email {error.Description.Substring(10).Split('\'')[0]} is alredy taken";
+                        }
+
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                await userManager.RemoveFromRoleAsync(user, user.Role);
+                await userManager.DeleteAsync(user);
+
+                ModelState.AddModelError(string.Empty, "Error! Something happened on the server!");
+
+                logger.Log(LogLevel.Error, "Error happened while creating Parent entity! " + ex.Message);
+
+                return View(model);
+            }
         }
 
         public Task<IActionResult> ExternalLogin(string provider, string returnUrl)

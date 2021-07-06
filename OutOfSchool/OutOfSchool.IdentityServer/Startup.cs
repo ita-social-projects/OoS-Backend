@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using OutOfSchool.EmailSender;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.IdentityServer
 {
@@ -91,6 +92,8 @@ namespace OutOfSchool.IdentityServer
 
             services.AddControllersWithViews()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
+
+            services.AddTransient<IParentRepository, ParentRepository>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

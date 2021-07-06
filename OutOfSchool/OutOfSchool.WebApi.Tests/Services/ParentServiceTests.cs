@@ -147,6 +147,24 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
+        {
+            // Arrange
+            var changedEntity = new ShortUserDto()
+            {
+               Id = "Invalid Id",
+               PhoneNumber = "1160327456",
+               LastName = "LastName",
+               MiddleName = "MiddleName",
+               FirstName = "FirstName",
+            };
+
+            // Act and Assert
+            Assert.ThrowsAsync<DbUpdateConcurrencyException>(
+                async () => await service.Update(changedEntity).ConfigureAwait(false));
+        }
+
+        [Test]
         [TestCase(1)]
         public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
         {
