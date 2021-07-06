@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
@@ -16,20 +18,29 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private UserController controller;
         private Mock<IUserService> serviceUser;
-
         private IEnumerable<ShortUserDto> users;
         private ShortUserDto user;
+        private Mock<HttpContext> httpContextMoq;
 
         [SetUp]
         public void Setup()
         {
             serviceUser = new Mock<IUserService>();
-            controller = new UserController(serviceUser.Object);
+
+            httpContextMoq = new Mock<HttpContext>();
+            httpContextMoq.Setup(x => x.User.FindFirst("sub"))
+                .Returns(new Claim(ClaimTypes.NameIdentifier, "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c"));
+
+            controller = new UserController(serviceUser.Object)
+            {
+                ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
+            };
 
             users = FakeUsers();
             user = FakeUser();
         }
 
+        #region GetUsers
         [Test]
         public async Task GetUsers_WhenCalled_ReturnsOkResultObject()
         {
@@ -44,6 +55,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.AreEqual(200, result.StatusCode);
         }
 
+        [Test]
+        public async Task GetUsers_WhenThereIsNoUsers_ShouldReturnNoConterntResult()
+        {
+            // Arrange
+            var emptyList = new List<ShortUserDto>();
+            serviceUser.Setup(x => x.GetAll()).ReturnsAsync(emptyList);
+
+            // Act
+            var result = await controller.GetUsers().ConfigureAwait(false) as NoContentResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(204, result.StatusCode);
+        }
+
+        #endregion
+
+        #region GetUserById
         [Test]
         [TestCase("cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c")]
         public async Task GetUserById_WhenIdIsValid_ReturnsOkObjectResult(string id)
@@ -61,17 +90,94 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase("Invalid Id")]
-        public async Task GetUserById_WhenIdIsInvalid_ReturnsNull(string id)
+        public async Task GetUserById_WhenIdIsInvalid_ReturnsForbidden(string id)
         {
             // Arrange
             serviceUser.Setup(x => x.GetById(id)).ReturnsAsync(users.SingleOrDefault(x => x.Id == id));
 
             // Act
-            var result = await controller.GetUserById(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetUserById(id).ConfigureAwait(false) as ObjectResult;
 
             // Assert
-            Assert.That(result.Value, Is.Null);
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(403, result.StatusCode);
         }
+
+        [Test]
+        [TestCase("cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c")]
+        public async Task GetUserById_WhenThereIsNoUser_ReturnsNoContent(string id)
+        {
+            // Arrange
+            ShortUserDto user = null;
+            serviceUser.Setup(x => x.GetById(id)).ReturnsAsync(user);
+
+            // Act
+            var result = await controller.GetUserById(id).ConfigureAwait(false) as NoContentResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(204, result.StatusCode);
+        }
+        #endregion
+
+        #region UpdateUser
+        public async Task UpdateUser_WhenModelIsValid_ReturnsOkObjectResult()
+        {
+            // Arrange
+            var changedUser = new ShortUserDto()
+            {
+                Id = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c",
+                PhoneNumber = "1160327456",
+                LastName = "LastName",
+                MiddleName = "MiddleName",
+                FirstName = "FirstName",
+            };
+
+            serviceUser.Setup(x => x.Update(changedUser)).ReturnsAsync(changedUser);
+
+            // Act
+            var result = await controller.Update(changedUser).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 200);
+        }
+
+        [Test]
+        public async Task UpdateUser_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+        {
+            // Arrange
+            controller.ModelState.AddModelError("UpdateUser", "Invalid model state.");
+
+            // Act
+            var result = await controller.Update(new ShortUserDto()).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+        }
+
+        [Test]
+        public async Task UpdateUser_WhenIdUserHasNoRights_ShouldReturn403ObjectResult()
+        {
+            // Arrange
+            var changedUser = new ShortUserDto()
+            {
+                Id = "Forbidden Id",
+                FirstName = "FirstName",
+                LastName = "LastName",
+                PhoneNumber = "0960456732",
+            };
+
+            // Act
+            var result = await controller.Update(user).ConfigureAwait(false) as ObjectResult;
+
+            // Assert
+            serviceUser.Verify(x => x.Update(It.IsAny<ShortUserDto>()), Times.Never);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(403, result.StatusCode);
+        }
+        #endregion
 
         private ShortUserDto FakeUser()
         {
