@@ -45,6 +45,7 @@ namespace OutOfSchool.Services
             base.OnModelCreating(builder);
 
             builder.Seed();
+            builder.UpdateIdentityTables();
         }
     }
 }

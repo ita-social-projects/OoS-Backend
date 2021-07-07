@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Extensions
@@ -37,6 +38,47 @@ namespace OutOfSchool.Services.Extensions
                     Id = 5,
                     Name = "Діти, позбавлені батьківського піклування",
                 });
+        }
+
+        /// <summary>
+        /// Add configuration to reduce field sizes of Identity User and Role.
+        /// </summary>
+        /// <param name="builder">Model Builder.</param>
+        public static void UpdateIdentityTables(this ModelBuilder builder)
+        {
+            builder.Entity<User>(u =>
+            {
+                u.Property(user => user.PhoneNumber)
+                    .IsUnicode(false)
+                    .IsFixedLength(false)
+                    .HasMaxLength(15);
+
+                u.Property(user => user.PasswordHash)
+                    .IsUnicode(false)
+                    .IsFixedLength(true)
+                    .HasMaxLength(84);
+
+                u.Property(user => user.ConcurrencyStamp)
+                    .IsUnicode(false)
+                    .IsFixedLength(true)
+                    .HasMaxLength(36)
+                    .IsRequired(true);
+
+                u.Property(user => user.SecurityStamp)
+                    .IsUnicode(false)
+                    .IsFixedLength(false)
+                    .HasMaxLength(36)
+                    .IsRequired(true);
+            });
+
+            builder.Entity<IdentityRole>(r =>
+            {
+                r.Property(role => role.ConcurrencyStamp)
+                    .IsUnicode(false)
+                    .IsFixedLength(true)
+                    .HasMaxLength(36)
+                    .IsRequired(true);
+            });
         }
     }
 }

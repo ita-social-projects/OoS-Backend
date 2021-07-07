@@ -33,10 +33,10 @@ namespace OutOfSchool.Services.Models
         [MaxLength(256)]
         public string Website { get; set; } = string.Empty;
 
-        [MaxLength(30)]
+        [MaxLength(256)]
         public string Facebook { get; set; } = string.Empty;
 
-        [MaxLength(30)]
+        [MaxLength(256)]
         public string Instagram { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Children's min age is required")]
