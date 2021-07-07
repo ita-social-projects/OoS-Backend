@@ -247,10 +247,12 @@ namespace OutOfSchool.WebApi.Extensions
 
         public static Workshop ToDomain(this WorkshopDTO workshopDto)
         {
+            var distinctKeywords = workshopDto.Keywords.Distinct();
+
             return Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
             {
                 cfg.CreateMap<WorkshopDTO, Workshop>()
-                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())));
+                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', distinctKeywords)));
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
                 cfg.CreateMap<DirectionDto, Direction>();
