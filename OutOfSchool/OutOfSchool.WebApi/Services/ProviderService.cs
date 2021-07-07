@@ -19,6 +19,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ProviderService : IProviderService
     {
+        private const string AdminRole = "admin";
         private readonly IProviderRepository providerRepository;
         private readonly IRatingService ratingService;
         private readonly ILogger logger;
@@ -136,17 +137,26 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDto> Update(ProviderDto dto)
+        public async Task<ProviderDto> Update(ProviderDto dto, string userId, string userRole)
         {
             logger.Information($"Updating Provider with Id = {dto?.Id} started.");
 
             try
             {
-                var provider = await providerRepository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var checkProvider = providerRepository.GetByFilterNoTracking(p => p.Id == dto.Id).FirstOrDefault();
 
-                logger.Information($"Provider with Id = {provider?.Id} updated succesfully.");
+                if (checkProvider?.UserId == userId || userRole == AdminRole)
+                {
+                    var provider = await providerRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                return provider.ToModel();
+                    logger.Information($"Provider with Id = {provider?.Id} updated succesfully.");
+
+                    return provider.ToModel();
+                }
+                else
+                {
+                    return null;
+                }
             }
             catch (DbUpdateConcurrencyException)
             {

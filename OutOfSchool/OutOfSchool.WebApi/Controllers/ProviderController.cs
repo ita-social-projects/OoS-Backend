@@ -142,7 +142,19 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok(await providerService.Update(dto).ConfigureAwait(false));
+            string userId = User.FindFirst("sub")?.Value;
+
+            string userRole = User.FindFirst("role")?.Value;
+
+            var provider = await providerService.Update(dto, userId, userRole).ConfigureAwait(false);
+
+            if (provider == null)
+            {
+                return BadRequest("Can't change Provider with such parameters.\n" +
+                    "Please check that information are valid.");
+            }
+
+            return Ok(provider);
         }
 
         /// <summary>
