@@ -78,6 +78,8 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
 
+        public List<string> Keywords { get; set; } = default;
+
         [Required]
         public bool IsPerMonth { get; set; }
 
