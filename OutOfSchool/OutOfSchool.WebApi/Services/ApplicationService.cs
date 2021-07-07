@@ -139,6 +139,22 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<ApplicationDto>> GetAllByChild(long id)
+        {
+            logger.Information($"Getting Applications by Child Id started. Looking Child Id = {id}.");
+
+            Expression<Func<Application, bool>> filter = a => a.ChildId == id;
+
+            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+
+            logger.Information(!applications.Any()
+                ? $"There is no applications in the Db with Child Id = {id}."
+                : $"Successfully got Applications with Child Id = {id}.");
+
+            return applications.Select(a => a.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id)
         {
             logger.Information($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
