@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Extensions
         {
             var resp = client.Indices.Exists(indexName);
 
-            if (!resp.Exists)
+            if (resp.ApiCall.HttpStatusCode == 404 && !resp.Exists)
             {
                 var createIndexResponse = client.Indices.Create(
                     indexName,
