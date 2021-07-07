@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
@@ -37,6 +38,7 @@ namespace OutOfSchool.WebApi.Models
 
         public long? SocialGroupId { get; set; } = default;
 
+        [JsonIgnore]
         public ParentDTO Parent { get; set; }
 
         public BirthCertificateDto BirthCertificate { get; set; }
