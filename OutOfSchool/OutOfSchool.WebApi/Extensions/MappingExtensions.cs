@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;

@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -85,6 +84,7 @@ namespace OutOfSchool.WebApi.Models
 
         public float Rating { get; set; }
 
+        [Required]
         public string UserId { get; set; }
 
         [Required]
