@@ -72,7 +72,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Getting all Cities by name started.");
 
-            var cities = await repository.GetByFilter(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
+            var cities = await repository.GetByFilter(c => c.Name.StartsWith(name)).ConfigureAwait(false);
 
             logger.Information(!cities.Any()
                 ? "City table is empty."
