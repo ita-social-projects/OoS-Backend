@@ -4,6 +4,7 @@ using System.Globalization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Extensions.Tests
@@ -235,103 +236,6 @@ namespace OutOfSchool.WebApi.Extensions.Tests
         #endregion
 
         [Test]
-        public void Mapping_WorkshopDTO_ToCardDto_IsCorrect()
-        {
-            // Arrange
-            var workshopDto = new WorkshopDTO()
-            {
-                Id = 5,
-                Title = "Title5",
-                Phone = "1111111111",
-                Description = "Desc5",
-                Price = 5000,
-                IsPerMonth = true,
-                WithDisabilityOptions = true,
-                DaysPerWeek = 5,
-                Head = "Head5",
-                HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-                ProviderTitle = "ProviderTitle",
-                DisabilityOptionsDesc = "Desc5",
-                Website = "website5",
-                Instagram = "insta5",
-                Facebook = "facebook5",
-                Email = "email5@gmail.com",
-                MaxAge = 10,
-                MinAge = 4,
-                Logo = "image5",
-                ProviderId = 5,
-                DirectionId = 1,
-                Direction = "Some title of direction",
-                DepartmentId = 1,
-                ClassId = 1,
-                AddressId = 17,
-                Address = new AddressDto
-            {
-                    Id = 17,
-                    Region = "Region17",
-                    District = "District17",
-                    City = "City17",
-                    Street = "Street17",
-                    BuildingNumber = "BuildingNumber17",
-                    Latitude = 123.2355,
-                    Longitude = 23.1234,
-                },
-                Teachers = new List<TeacherDTO>()
-        {
-                            new TeacherDTO
-            {
-                                Id = 9,
-                                FirstName = "Alex",
-                                LastName = "Brown",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("1990-01-01"),
-                                WorkshopId = 5,
-                            },
-                            new TeacherDTO
-            {
-                                Id = 10,
-                                FirstName = "John",
-                                LastName = "Snow",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("1990-01-01"),
-                                WorkshopId = 5,
-                            },
-                        },
-                Keywords = new List<string>()
-            {
-                    "dance",
-                    "twist",
-                },
-                Rating = 23.12314f,
-            };
-
-            // Act
-            var result = workshopDto.ToCardDto();
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOf<WorkshopCard>(result);
-            Assert.AreEqual(workshopDto.Id, result.WorkshopId);
-            Assert.AreEqual(workshopDto.Title, result.Title);
-            Assert.AreEqual(workshopDto.Price, result.Price);
-            Assert.AreEqual(workshopDto.IsPerMonth, result.IsPerMonth);
-            Assert.AreEqual(workshopDto.ProviderId, result.ProviderId);
-            Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
-            Assert.AreEqual(workshopDto.MinAge, result.MinAge);
-            Assert.AreEqual(workshopDto.MaxAge, result.MaxAge);
-            Assert.AreEqual(workshopDto.Logo, result.Photo);
-            Assert.AreEqual(workshopDto.Direction, result.Direction);
-            Assert.IsNotNull(result.Address);
-            Assert.IsInstanceOf<AddressDto>(result.Address);
-            Assert.AreEqual(workshopDto.Address.Latitude, result.Address.Latitude);
-            Assert.AreEqual(workshopDto.Rating, result.Rating);
-        }
-
-        [Test]
         public void Mapping_ChatMessageDtoToDomain_IsCorrect()
         {
             // Arrange
@@ -419,19 +323,15 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
             };
 
-            var listOfUsers = new List<UserDto>();
-            listOfUsers.Add(user1);
-            listOfUsers.Add(user2);
+            var listOfUsers = new List<UserDto>() { user1, user2 };
 
-            var listOfMessages = new List<ChatMessageDto>();
-            listOfMessages.Add(chatMessage1);
-            listOfMessages.Add(chatMessage2);
+            var listOfMessages = new List<ChatMessageDto>() { chatMessage1, chatMessage2 };
 
             var chatRoomDto = new ChatRoomDto()
             {
                 Id = 1,
                 WorkshopId = 1,
-                ChatMessages = new List<ChatMessageDto>(),
+                ChatMessages = listOfMessages,
                 Users = listOfUsers,
                 NotReadMessagesCount = 4,
             };
@@ -486,13 +386,9 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 ChatRoom = Mock.Of<ChatRoom>(),
             };
 
-            var listOfUsers = new List<User>();
-            listOfUsers.Add(user1);
-            listOfUsers.Add(user2);
+            var listOfUsers = new List<User>() { user1, user2 };
 
-            var listOfMessages = new List<ChatMessage>();
-            listOfMessages.Add(chatMessage1);
-            listOfMessages.Add(chatMessage2);
+            var listOfMessages = new List<ChatMessage>() { chatMessage1, chatMessage2 };
 
             var chatRoom = new ChatRoom()
             {
@@ -553,13 +449,9 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 ChatRoom = Mock.Of<ChatRoom>(),
             };
 
-            var listOfUsers = new List<User>();
-            listOfUsers.Add(user1);
-            listOfUsers.Add(user2);
+            var listOfUsers = new List<User>() { user1, user2 };
 
-            var listOfMessages = new List<ChatMessage>();
-            listOfMessages.Add(chatMessage1);
-            listOfMessages.Add(chatMessage2);
+            var listOfMessages = new List<ChatMessage>() { chatMessage1, chatMessage2 };
 
             var chatRoom = new ChatRoom()
             {
@@ -583,6 +475,103 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.AreEqual(chatRoom.Id, result.Id);
             Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
             Assert.Zero(result.NotReadMessagesCount);
+        }
+
+        [Test]
+        public void Mapping_WorkshopDTO_ToCardDto_IsCorrect()
+        {
+            // Arrange
+            var workshopDto = new WorkshopDTO()
+            {
+                Id = 5,
+                Title = "Title5",
+                Phone = "1111111111",
+                Description = "Desc5",
+                Price = 5000,
+                IsPerMonth = true,
+                WithDisabilityOptions = true,
+                DaysPerWeek = 5,
+                Head = "Head5",
+                HeadDateOfBirth = new DateTime(1980, month: 12, 28),
+                ProviderTitle = "ProviderTitle",
+                DisabilityOptionsDesc = "Desc5",
+                Website = "website5",
+                Instagram = "insta5",
+                Facebook = "facebook5",
+                Email = "email5@gmail.com",
+                MaxAge = 10,
+                MinAge = 4,
+                Logo = "image5",
+                ProviderId = 5,
+                DirectionId = 1,
+                Direction = "Some title of direction",
+                DepartmentId = 1,
+                ClassId = 1,
+                AddressId = 17,
+                Address = new AddressDto
+                {
+                    Id = 17,
+                    Region = "Region17",
+                    District = "District17",
+                    City = "City17",
+                    Street = "Street17",
+                    BuildingNumber = "BuildingNumber17",
+                    Latitude = 123.2355,
+                    Longitude = 23.1234,
+                },
+                Teachers = new List<TeacherDTO>()
+                        {
+                            new TeacherDTO
+                            {
+                                Id = 9,
+                                FirstName = "Alex",
+                                LastName = "Brown",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                                DateOfBirth = DateTime.Parse("1990-01-01"),
+                                WorkshopId = 5,
+                            },
+                            new TeacherDTO
+                            {
+                                Id = 10,
+                                FirstName = "John",
+                                LastName = "Snow",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                                DateOfBirth = DateTime.Parse("1990-01-01"),
+                                WorkshopId = 5,
+                            },
+                        },
+                Keywords = new List<string>()
+                {
+                    "dance",
+                    "twist",
+                },
+                Rating = 23.12314f,
+            };
+
+            // Act
+            var result = workshopDto.ToCardDto();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<WorkshopCard>(result);
+            Assert.AreEqual(workshopDto.Id, result.WorkshopId);
+            Assert.AreEqual(workshopDto.Title, result.Title);
+            Assert.AreEqual(workshopDto.Price, result.Price);
+            Assert.AreEqual(workshopDto.IsPerMonth, result.IsPerMonth);
+            Assert.AreEqual(workshopDto.ProviderId, result.ProviderId);
+            Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
+            Assert.AreEqual(workshopDto.MinAge, result.MinAge);
+            Assert.AreEqual(workshopDto.MaxAge, result.MaxAge);
+            Assert.AreEqual(workshopDto.Logo, result.Photo);
+            Assert.AreEqual(workshopDto.Direction, result.Direction);
+            Assert.IsNotNull(result.Address);
+            Assert.IsInstanceOf<AddressDto>(result.Address);
+            Assert.AreEqual(workshopDto.Address.Latitude, result.Address.Latitude);
+            Assert.AreEqual(workshopDto.Rating, result.Rating);
         }
     }
 }
