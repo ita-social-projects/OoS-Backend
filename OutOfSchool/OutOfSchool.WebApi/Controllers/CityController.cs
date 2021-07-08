@@ -12,7 +12,7 @@ using OutOfSchool.WebApi.Services;
 namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class CityController : ControllerBase
     {
@@ -31,26 +31,26 @@ namespace OutOfSchool.WebApi.Controllers
             this.localizer = localizer;
         }
 
-        /// <summary>
-        /// Get all Cities from the database.
-        /// </summary>
-        /// <returns>List of all Cities.</returns>
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CityDto>))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            var cities = await service.GetAll().ConfigureAwait(false);
+        ///// <summary>
+        ///// Get all Cities from the database.
+        ///// </summary>
+        ///// <returns>List of all Cities.</returns>
+        //[AllowAnonymous]
+        //[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CityDto>))]
+        //[ProducesResponseType(StatusCodes.Status204NoContent)]
+        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        //[HttpGet]
+        //public async Task<IActionResult> Get()
+        //{
+        //    var cities = await service.GetAll().ConfigureAwait(false);
 
-            if (!cities.Any())
-            {
-                return NoContent();
-            }
+        //    if (!cities.Any())
+        //    {
+        //        return NoContent();
+        //    }
 
-            return Ok(cities);
-        }
+        //    return Ok(cities);
+        //}
 
         /// <summary>
         /// Get City by it's id.
@@ -77,8 +77,8 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{name}")]
-        public async Task<IActionResult> GetByName(string name)
+        [HttpGet]
+        public async Task<IActionResult> GetByName([FromQuery] string name)
         {
             if (name?.Length < MinimumNameLength)
             {
