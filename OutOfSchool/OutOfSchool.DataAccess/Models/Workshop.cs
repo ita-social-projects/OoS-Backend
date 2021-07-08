@@ -79,6 +79,7 @@ namespace OutOfSchool.Services.Models
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
 
+        [MaxLength(200)]
         public string Keywords { get; set; } = string.Empty;
 
         [Required]
