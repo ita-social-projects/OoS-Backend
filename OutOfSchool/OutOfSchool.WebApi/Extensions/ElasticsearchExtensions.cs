@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
-using OutOfSchool.Services.Models;
+using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.WebApi.Extensions
 {
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Extensions
             var user = configuration["elasticsearch:user"];
             var password = configuration["elasticsearch:password"];
 
-            var defaultIndex = nameof(Workshop).ToLower(System.Globalization.CultureInfo.CurrentCulture);
+            var defaultIndex = "workshop";
 
             var settings = new ConnectionSettings(new Uri(url))
                 .DefaultIndex(defaultIndex)
@@ -39,14 +39,14 @@ namespace OutOfSchool.WebApi.Extensions
 
             services.AddSingleton(client);
 
-            EnsureIndexCreated<Workshop>(client, defaultIndex);
+            EnsureIndexCreated<WorkshopES>(client, defaultIndex);
         }
 
         private static void AddDefaultMappings(ConnectionSettings settings)
         {
             settings
-                .DefaultMappingFor<Workshop>(m =>
-                m.IndexName(nameof(Workshop).ToLower(System.Globalization.CultureInfo.CurrentCulture)));
+                .DefaultMappingFor<WorkshopES>(m =>
+                m.IndexName("workshop"));
         }
 
         private static void EnsureIndexCreated<T>(IElasticClient client, string indexName)

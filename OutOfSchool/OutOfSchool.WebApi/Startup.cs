@@ -16,6 +16,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Nest;
 using OutOfSchool.ElasticsearchData;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -113,7 +114,7 @@ namespace OutOfSchool.WebApi
 
             // Add Elasticsearch client
             services.AddElasticsearch(Configuration);
-            services.AddTransient<IElasticsearchProvider<Workshop>, ElasticsearchProvider<Workshop>>();
+            services.AddTransient<IElasticsearchProvider<WorkshopES>, ElasticsearchProvider<WorkshopES>>();
 
             // entities services
             services.AddTransient<IAddressService, AddressService>();
