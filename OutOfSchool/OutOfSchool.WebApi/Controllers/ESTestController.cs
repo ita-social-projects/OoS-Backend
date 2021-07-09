@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using OutOfSchool.ElasticsearchData;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Controllers
 {
@@ -21,30 +13,28 @@ namespace OutOfSchool.WebApi.Controllers
     public class ESTestController : ControllerBase
     {
         private readonly IWorkshopService service;
-        private readonly IElasticsearchProvider<WorkshopDTO> esProvider;
-        private readonly ILogger logger;
+        private readonly IElasticsearchProvider<WorkshopES> esProvider;
 
-        public ESTestController(IWorkshopService workshopService, IElasticsearchProvider<WorkshopDTO> provider, ILogger logger)
+        public ESTestController(IWorkshopService workshopService, IElasticsearchProvider<WorkshopES> provider)
         {
             this.service = workshopService;
             this.esProvider = provider;
-            this.logger = logger;
         }
 
         [HttpPost]
-        public async Task Add(WorkshopDTO entity)
+        public async Task Add(WorkshopES entity)
         {
             await esProvider.IndexEntityAsync(entity).ConfigureAwait(false);
         }
 
         [HttpPut]
-        public async Task Update(WorkshopDTO entity)
+        public async Task Update(WorkshopES entity)
         {
             await esProvider.UpdateEntityAsync(entity).ConfigureAwait(false);
         }
 
         [HttpDelete]
-        public async Task Delete(WorkshopDTO entity)
+        public async Task Delete(WorkshopES entity)
         {
             await esProvider.DeleteEntityAsync(entity).ConfigureAwait(false);
         }
@@ -52,7 +42,14 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpDelete]
         public async Task ReIndex()
         {
-            var source = await service.GetAll().ConfigureAwait(false);
+            var sourceDto = await service.GetAll().ConfigureAwait(false);
+
+            List<WorkshopES> source = new List<WorkshopES>();
+            foreach (var item in sourceDto)
+            {
+                source.Add(item.ToESModel());
+            }
+
             await esProvider.ReIndexAll(source).ConfigureAwait(false);
         }
 

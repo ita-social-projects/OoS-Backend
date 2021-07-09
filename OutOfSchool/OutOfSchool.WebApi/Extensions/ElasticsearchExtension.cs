@@ -6,7 +6,7 @@ using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.WebApi.Extensions
 {
-    public static class ElasticsearchExtensions
+    public static class ElasticsearchExtension
     {
         /// <summary>
         /// Use this method to add ElasticsearchClient to the <see cref="Microsoft.Extensions.DependencyInjection.IServiceCollection"/>>.
@@ -30,8 +30,8 @@ namespace OutOfSchool.WebApi.Extensions
             var defaultIndex = "workshop";
 
             var settings = new ConnectionSettings(new Uri(url))
-                .DefaultIndex(defaultIndex)
-                .BasicAuthentication(user, password);
+                    .DefaultIndex(defaultIndex)
+                    .BasicAuthentication(user, password);
 
             AddDefaultMappings(settings);
 
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Extensions
         {
             var resp = client.Indices.Exists(indexName);
 
-            if (resp.ApiCall.HttpStatusCode == 404 && !resp.Exists)
+            if (resp.ApiCall.HttpStatusCode == 404)
             {
                 var createIndexResponse = client.Indices.Create(
                     indexName,

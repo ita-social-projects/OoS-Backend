@@ -40,5 +40,7 @@ namespace OutOfSchool.ElasticsearchData.Models
         public bool WithDisabilityOptions { get; set; }
 
         public string Keywords { get; set; }
+
+        public IEnumerable<TeacherES> Teachers { get; set; }
     }
 }

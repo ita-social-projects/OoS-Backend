@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
@@ -279,6 +280,19 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        #endregion
+
+        #region Elasticsearch
+        public static WorkshopES ToESModel(this WorkshopDTO workshopDto)
+        {
+            return Mapper<WorkshopDTO, WorkshopES>(workshopDto, cfg =>
+            {
+                cfg.CreateMap<WorkshopDTO, WorkshopES>()
+                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())));
+                cfg.CreateMap<AddressDto, AddressES>();
+                cfg.CreateMap<TeacherDTO, TeacherES>();
+            });
+        }
         #endregion
 
         private static TDestination Mapper<TSource, TDestination>(
