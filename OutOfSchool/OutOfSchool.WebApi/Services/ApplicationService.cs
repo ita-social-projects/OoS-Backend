@@ -18,6 +18,8 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ApplicationService : IApplicationService
     {
+        private const int ApplicationsLimit = 2;
+
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IEntityRepository<Child> childRepository;
@@ -51,7 +53,9 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Application creating started.");
 
-            ModelCreationValidation(applicationDto);
+            ModelNullValidation(applicationDto);
+
+            await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
 
             var isChildParent = await CheckChildParent(applicationDto.ParentId, applicationDto.ChildId).ConfigureAwait(false);
 
@@ -260,21 +264,6 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private void ModelCreationValidation(ApplicationDto applicationDto)
-        {
-            ModelNullValidation(applicationDto);
-
-            Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
-                                                              && a.WorkshopId == applicationDto.WorkshopId
-                                                              && a.ParentId == applicationDto.ParentId;
-
-            if (applicationRepository.Get<int>(where: filter).Any())
-            {
-                logger.Information("Creation failed. Application with such data alredy exists.");
-                throw new ArgumentException(localizer["There is already an application with such data."]);
-            }
-        }
-
         private void MultipleModelCreationValidation(IEnumerable<ApplicationDto> applicationDtos)
         {
             if (!applicationDtos.Any())
@@ -285,7 +274,7 @@ namespace OutOfSchool.WebApi.Services
 
             foreach (var application in applicationDtos)
             {
-                ModelCreationValidation(application);
+                ModelNullValidation(application);
             }
         }
 
@@ -307,6 +296,26 @@ namespace OutOfSchool.WebApi.Services
             var children = childRepository.Get<int>(where: filter).Select(c => c.Id);
 
             return await children.ContainsAsync(childId).ConfigureAwait(false);
+        }
+
+        private async Task CheckApplicationsLimit(ApplicationDto applicationDto)
+        {
+            var endDate = applicationDto.CreationTime;
+
+            var startDate = endDate.AddDays(-7);
+
+            Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
+                                                              && a.WorkshopId == applicationDto.WorkshopId
+                                                              && a.ParentId == applicationDto.ParentId
+                                                              && (a.CreationTime >= startDate && a.CreationTime <= endDate);
+
+            var applications = await applicationRepository.GetByFilter(filter).ConfigureAwait(false);
+
+            if (applications.Count() >= ApplicationsLimit)
+            {
+                logger.Information($"Operation failed. Limit of applications per week is exceeded.");
+                throw new ArgumentException(localizer["Limit of applications per week is exceeded."]);
+            }
         }
     }
 }
