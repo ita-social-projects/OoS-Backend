@@ -103,6 +103,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = ApplicationStatus.Pending,
                 WorkshopId = 2,
                 ParentId = 2,
+                CreationTime = new DateTime(2021, 7, 9),
             };
 
             // Act
@@ -125,7 +126,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void CreateApplication_WhenModelAlreadyExists_ShouldThrowArgumentException()
+        public void CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
         {
             // Arrange
             var toCreate = new ApplicationDto()
@@ -135,6 +136,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = ApplicationStatus.Pending,
                 WorkshopId = 1,
                 ParentId = 1,
+                CreationTime = new DateTime(2021, 7, 9),
             };
 
             // Act and Assert
@@ -153,6 +155,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = ApplicationStatus.Pending,
                 WorkshopId = 1,
                 ParentId = 1,
+                CreationTime = new DateTime(2021, 7, 9),
             };
 
             // Act and Assert
@@ -189,27 +192,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             IEnumerable<ApplicationDto> applications = new List<ApplicationDto>()
             {
                 application,
-            };
-
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Create(applications).ConfigureAwait(false));
-        }
-
-        [Test]
-        public void CreateMultipleApplications_WhenModelAlreadyExists_ShouldThrowArgumentException()
-        {
-            // Arrange
-            IEnumerable<ApplicationDto> applications = new List<ApplicationDto>()
-            {
-                new ApplicationDto
-                {
-                    Id = 4,
-                    ChildId = 1,
-                    Status = ApplicationStatus.Pending,
-                    WorkshopId = 1,
-                    ParentId = 1,
-                },
             };
 
             // Act and Assert
