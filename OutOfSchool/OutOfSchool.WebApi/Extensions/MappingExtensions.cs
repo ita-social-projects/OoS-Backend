@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
@@ -116,7 +118,8 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
             {
-                cfg.CreateMap<Workshop, WorkshopDTO>();
+                cfg.CreateMap<Workshop, WorkshopDTO>()
+                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)));
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>();
                 cfg.CreateMap<Direction, DirectionDto>();
@@ -247,7 +250,8 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
             {
-                cfg.CreateMap<WorkshopDTO, Workshop>();
+                cfg.CreateMap<WorkshopDTO, Workshop>()
+                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())));
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
                 cfg.CreateMap<DirectionDto, Direction>();
