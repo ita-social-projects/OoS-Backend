@@ -9,5 +9,7 @@ namespace OutOfSchool.Services.Enums
         Pending,
         Approved,
         Rejected,
+        AcceptedForSelection,
+        Left,
     }
 }
