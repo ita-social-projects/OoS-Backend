@@ -39,33 +39,33 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             city = FakeCity();
         }
 
-        [Test]
-        public async Task GetCities_WhenCalled_ReturnsOkResultObject()
-        {
-            // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(cities);
+        //[Test]
+        //public async Task GetCities_WhenCalled_ReturnsOkResultObject()
+        //{
+        //    // Arrange
+        //    service.Setup(x => x.GetAll()).ReturnsAsync(cities);
 
-            // Act
-            var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+        //    // Act
+        //    var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
 
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
-        }
+        //    // Assert
+        //    Assert.IsNotNull(result);
+        //    Assert.AreEqual(OkStatusCode, result.StatusCode);
+        //}
 
-        [Test]
-        public async Task GetCities_WhenEmptyCollection_ReturnsNoContentResult()
-        {
-            // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(new List<CityDto>());
+        //[Test]
+        //public async Task GetCities_WhenEmptyCollection_ReturnsNoContentResult()
+        //{
+        //    // Arrange
+        //    service.Setup(x => x.GetAll()).ReturnsAsync(new List<CityDto>());
 
-            // Act
-            var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
+        //    // Act
+        //    var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
 
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
-        }
+        //    // Assert
+        //    Assert.IsNotNull(result);
+        //    Assert.AreEqual(NoContentStatusCode, result.StatusCode);
+        //}
 
         [Test]
         [TestCase(1)]
