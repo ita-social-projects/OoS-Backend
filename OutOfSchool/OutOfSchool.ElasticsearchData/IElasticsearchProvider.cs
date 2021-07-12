@@ -47,7 +47,7 @@ namespace OutOfSchool.ElasticsearchData
         Task ReIndexAll(IEnumerable<TEntity> source);
 
         /// <summary>
-        /// Use this method to search entities that match query parameters.
+        /// Use this method to search entities that match the filter's parameters.
         /// </summary>
         /// <param name="filter">The filter parameters.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
