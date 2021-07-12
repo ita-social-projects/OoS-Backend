@@ -2,6 +2,9 @@
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
+    /// <summary>
+    /// Add Keywords property To Workshop.
+    /// </summary>
     public partial class AddKeywordsToWorkshop : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
