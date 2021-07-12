@@ -39,7 +39,7 @@ namespace OutOfSchool.Tests
             context.Workshops.Add(new Workshop { Id = 2, Title = "w2" });
 
             context.Applications.Add(new Application() { Id = 1, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, Child = context.Children.Find(1L), Parent = context.Parents.Find(1L), Workshop = context.Workshops.Find(1L) });
-            context.Applications.Add(new Application() { Id = 3, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, Child = context.Children.Find(3L), Parent = context.Parents.Find(1L), Workshop = context.Workshops.Find(1L) });
+            context.Applications.Add(new Application() { Id = 3, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, Child = context.Children.Find(1L), Parent = context.Parents.Find(1L), Workshop = context.Workshops.Find(1L) });
 
             context.SaveChanges();
         }

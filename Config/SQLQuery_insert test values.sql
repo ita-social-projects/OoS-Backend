@@ -139,16 +139,16 @@ INSERT INTO [dbo].[AspNetUserRoles]
            ,[RoleId])
      VALUES
            ('16575ce5-38e3-4ae7-b991-4508ed488369' --UserId (test1)
-           ,'12470199-4ac1-47b3-975d-bb4dca8b8d05') --roleId (parent)
+           ,'a43f3877-80a2-4ac0-aec9-3eeff38756ca') --roleId (parent)
 
 		   ,('7604a851-66db-4236-9271-1f037ffe3a81' --UserId (test2)
-           ,'12470199-4ac1-47b3-975d-bb4dca8b8d05') --roleId (parent)
+           ,'a43f3877-80a2-4ac0-aec9-3eeff38756ca') --roleId (parent)
 
 		   ,('47802b21-2fb5-435e-9057-75c43d002cef' --UserId (test3)
-           ,'dd8cb086-4f49-407c-82d2-f835289870b5') --roleId (provider)
+           ,'8e35c5fc-6545-465d-a640-5788257511ce') --roleId (provider)
 
 		   ,('5bff5f95-1848-4c87-9846-a567aeb407ea' --UserId (test4)
-           ,'dd8cb086-4f49-407c-82d2-f835289870b5') --roleId (provider)
+           ,'8e35c5fc-6545-465d-a640-5788257511ce') --roleId (provider)
 GO
 
 --====================PARENTS AND CHILDREN================================
@@ -443,7 +443,8 @@ INSERT INTO [dbo].[Workshops]
            ,[AddressId]
 		   ,[DirectionId]
 		   ,[DepartmentId]
-           ,[ClassId])
+           ,[ClassId]
+		   ,[ProviderTitle])
      VALUES
             ('Уроки аккордиону'
            ,'1234567890' --Phone
@@ -466,7 +467,8 @@ INSERT INTO [dbo].[Workshops]
            ,5 --AddressId
 		   ,1 --directionId
 		   ,2 --departmentId
-           ,2) --classId
+           ,2 --classId
+		   ,'Музична школа №1') --provider title
 
            ,('Уроки бандури'
            ,'1234567890' --Phone
@@ -489,7 +491,8 @@ INSERT INTO [dbo].[Workshops]
            ,6 --AddressId
 		   ,1 --directionId
 		   ,1 --departmentId
-           ,1) --classId
+           ,1 --classId
+		   ,'Музична школа №1') --provider title
 
 		   ,('Гра на барабані'
            ,'1234567890' --Phone
@@ -512,7 +515,8 @@ INSERT INTO [dbo].[Workshops]
            ,7 --AddressId
 		   ,1 --directionId
 		   ,2 --departmentId
-           ,3) --classId
+           ,3 --classId
+		   ,'Музична школа №1') --provider title
 
 		   ,('Уроки гри на флейті'
            ,'1234567890' --Phone
@@ -535,7 +539,56 @@ INSERT INTO [dbo].[Workshops]
            ,8 --AddressId
 		   ,1 --directionId
 		   ,2 --departmentId
-           ,4) --classId
+           ,4 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Гра на барабані'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,5 --minAge
+           ,100 --maxAge
+           ,2 --days per week
+           ,500 --price
+           ,'Уроки гри на ударних інструментах'
+           ,1 --WithDisabilityOptions
+           ,'Немає конкретних обмежень' -- disability description
+           ,'Logo'
+           ,'Гуляйборода Катерина Василівна'
+           ,'1977-09-22'
+           ,0 --IsPerMonth
+           ,1 --ProviderId
+           ,7 --AddressId
+		   ,1 --categoryId
+		   ,2 --subcategoryId
+           ,3 --SubsubcategoryId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Уроки гри на флейті'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,5 --minAge
+           ,100 --maxAge
+           ,2 --days per week
+           ,0 --price
+           ,'Уроки гри на флейті'
+           ,1 --WithDisabilityOptions
+           ,'Немає конкретних обмежень' -- disability description
+           ,'Logo'
+           ,'Гуляйборода Катерина Василівна'
+           ,'1977-09-22'
+           ,0 --IsPerMonth
+           ,1 --ProviderId
+           ,8 --AddressId
+		   ,1 --categoryId
+		   ,2 --subcategoryId
+           ,4 --SubsubcategoryId
+		   ,'Музична школа №1') --provider title
 
 		   ,('Айкідо'
            ,'1234567890' --Phone
@@ -558,7 +611,8 @@ INSERT INTO [dbo].[Workshops]
            ,9 --AddressId
 		   ,3 --directionId
 		   ,5 --departmentId
-           ,9) --classId
+           ,9 --classId
+		   ,'Школа бойових мистецтв №2') --provider title
 
 		   ,('Плавання'
            ,'1234567890' --Phone
@@ -581,7 +635,8 @@ INSERT INTO [dbo].[Workshops]
            ,10 --AddressId
 		   ,3 --directionId
 		   ,4 --departmentId
-           ,7) --classId
+           ,7 --classId
+		   ,'Школа бойових мистецтв №2') --provider title
 GO
 
 --teachers
@@ -645,48 +700,48 @@ GO
 
 --Applications
 INSERT INTO [dbo].[Applications]
-           ([Status]
+		    ([Status]
            ,[WorkshopId]
            ,[ChildId]
-           ,[UserId]
-           ,[CreationTime])
+           ,[CreationTime]
+           ,[ParentId])
      VALUES
 
 --workshop1
            (1 --<Status, int,>
            ,1 --<WorkshopId, bigint,>
            ,1 --<ChildId, bigint,>
-           ,'16575ce5-38e3-4ae7-b991-4508ed488369' --<UserId, nvarchar(450),> 1
-           ,'2021-06-06 12:20:20') --<CreationTime>
+           ,'2021-06-06 12:20:20' --<CreationTime>
+		   ,1) --parentId
 
 		   ,(1 --<Status, int,>
            ,1 --<WorkshopId, bigint,>
            ,2 --<ChildId, bigint,>
-           ,'7604a851-66db-4236-9271-1f037ffe3a81' --<UserId, nvarchar(450),> 2
-           ,'2021-06-04 15:34:20') --<CreationTime>
+           ,'2021-06-04 15:34:20' --<CreationTime>
+		   ,2) --parentId
 
 		   ,(0 --<Status, int,>
            ,1 --<WorkshopId, bigint,>
            ,3 --<ChildId, bigint,>
-           ,'7604a851-66db-4236-9271-1f037ffe3a81' --<UserId, nvarchar(450),> 2
-           ,'2021-06-05 08:23:20') --<CreationTime>
+           ,'2021-06-05 08:23:20' --<CreationTime>
+		   ,2) --parentId
 
 --workshop2
 		   ,(0 --<Status, int,>
            ,2 --<WorkshopId, bigint,>
            ,1 --<ChildId, bigint,>
-           ,'16575ce5-38e3-4ae7-b991-4508ed488369' --<UserId, nvarchar(450),> 1
-           ,'2021-06-15 17:20:00') --<CreationTime>
+           ,'2021-06-15 17:20:00' --<CreationTime>
+		   ,1) --parentId
 
 		   ,(0 --<Status, int,>
            ,2 --<WorkshopId, bigint,>
            ,2 --<ChildId, bigint,>
-           ,'7604a851-66db-4236-9271-1f037ffe3a81' --<UserId, nvarchar(450),> 2
-           ,'2021-06-15 17:26:10') --<CreationTime>
+           ,'2021-06-15 17:26:10' --<CreationTime>
+		   ,2) --parentId
 
 		   ,(0 --<Status, int,>
            ,2 --<WorkshopId, bigint,>
            ,3 --<ChildId, bigint,>
-           ,'7604a851-66db-4236-9271-1f037ffe3a81' --<UserId, nvarchar(450),> 2
-           ,'2021-06-15 18:00:45') --<CreationTime>
+           ,'2021-06-15 18:00:45' --<CreationTime>
+		   ,2) --parentId
 GO

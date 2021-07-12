@@ -296,6 +296,32 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        [TestCase(1)]
+        public async Task GetAllByChild_WhenIdIsValid_ShouldReturnApplications(long id)
+        {
+            // Arrange
+            Expression<Func<Application, bool>> filter = a => a.ChildId == id;
+            var expected = await applicationRepository.GetByFilter(filter);
+
+            // Act
+            var result = await service.GetAllByChild(id).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task GetAllByChild_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
+        {
+            // Act
+            var result = await service.GetAllByChild(id).ConfigureAwait(false);
+
+            // Assert
+            result.Count().Should().Be(0);
+        }
+
+        [Test]
         [TestCase(0)]
         public async Task GetAllByStatus_WhenStatusIsValid_ShouldReturnApplications(int status)
         {

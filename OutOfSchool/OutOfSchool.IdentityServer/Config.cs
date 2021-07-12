@@ -57,6 +57,7 @@ namespace OutOfSchool.IdentityServer
                     AllowedGrantTypes = GrantTypes.Code,
                     RequirePkce = true,
                     RequireClientSecret = false,
+                    AllowOfflineAccess = true,
 
                     RedirectUris = { "http://localhost:4200", "http://oos.dmytrominochkin.cloud" },
                     PostLogoutRedirectUris = { "http://localhost:4200", "http://oos.dmytrominochkin.cloud" },
