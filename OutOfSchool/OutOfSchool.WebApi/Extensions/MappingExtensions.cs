@@ -41,6 +41,7 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<BirthCertificate, BirthCertificateDto>();
                 cfg.CreateMap<Child, ChildDto>();
+                cfg.CreateMap<Parent, ParentDTO>();
             });
         }
 
@@ -163,6 +164,7 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
                 cfg.CreateMap<ChildDto, Child>();
+                cfg.CreateMap<ParentDTO, Parent>();
             });
         }
 
