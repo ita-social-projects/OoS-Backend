@@ -13,9 +13,9 @@ namespace OutOfSchool.WebApi.Controllers
     public class ESTestController : ControllerBase
     {
         private readonly IWorkshopService service;
-        private readonly IElasticsearchProvider<WorkshopES> esProvider;
+        private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
 
-        public ESTestController(IWorkshopService workshopService, IElasticsearchProvider<WorkshopES> provider)
+        public ESTestController(IWorkshopService workshopService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> provider)
         {
             this.service = workshopService;
             this.esProvider = provider;
@@ -54,9 +54,9 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Search(string query)
+        public async Task<IActionResult> Search(WorkshopFilterES filter)
         {
-            var res = await esProvider.Search(query).ConfigureAwait(false);
+            var res = await esProvider.Search(filter).ConfigureAwait(false);
 
             return Ok(res);
         }

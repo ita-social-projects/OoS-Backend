@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nest;
 
@@ -8,76 +7,61 @@ namespace OutOfSchool.ElasticsearchData
     /// <summary>
     /// A provider for the Elasticsearch API.
     /// </summary>
-    /// <typeparam name="T">Name of the entity and its index.</typeparam>
-    public class ElasticsearchProvider<T> : IElasticsearchProvider<T>
-        where T : class, new()
+    /// <typeparam name="TEntity">The entity type.</typeparam>
+    /// <typeparam name="TSearch">The filter type.</typeparam>
+    public class ElasticsearchProvider<TEntity, TSearch> : IElasticsearchProvider<TEntity, TSearch>
+        where TEntity : class, new()
+        where TSearch : class, new()
     {
-        private readonly ElasticClient elasticClient;
-
         public ElasticsearchProvider(ElasticClient elasticClient)
         {
-            this.elasticClient = elasticClient;
+            this.ElasticClient = elasticClient;
         }
 
+        protected ElasticClient ElasticClient { get; private set; }
+
         /// <inheritdoc/>
-        public async Task IndexEntityAsync(T entity)
+        public async Task IndexEntityAsync(TEntity entity)
         {
-            var resp = await elasticClient.IndexDocumentAsync(entity);
+            var resp = await ElasticClient.IndexDocumentAsync(entity);
 
             CheckResponse(resp);
         }
 
         /// <inheritdoc/>
-        public async Task UpdateEntityAsync(T entity)
+        public async Task UpdateEntityAsync(TEntity entity)
         {
-            var resp = await elasticClient.UpdateAsync<T>(entity, u => u.Doc(entity));
+            var resp = await ElasticClient.UpdateAsync<TEntity>(entity, u => u.Doc(entity));
 
             CheckResponse(resp);
         }
 
         /// <inheritdoc/>
-        public async Task DeleteEntityAsync(T entity)
+        public async Task DeleteEntityAsync(TEntity entity)
         {
-            var resp = await elasticClient.DeleteAsync<T>(entity);
+            var resp = await ElasticClient.DeleteAsync<TEntity>(entity);
 
             CheckResponse(resp);
         }
 
         /// <inheritdoc/>
-        public async Task ReIndexAll(IEnumerable<T> source)
+        public async Task ReIndexAll(IEnumerable<TEntity> source)
         {
-            await elasticClient.DeleteByQueryAsync<T>(q => q.MatchAll());
+            await ElasticClient.DeleteByQueryAsync<TEntity>(q => q.MatchAll());
 
             foreach (var entity in source)
             {
-                try
-                {
-                    var resp = await elasticClient.IndexDocumentAsync(entity);
-                    CheckResponse(resp);
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
+                var resp = await ElasticClient.IndexDocumentAsync(entity);
+                CheckResponse(resp);
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<T>> Search(string query)
+        public virtual async Task<IEnumerable<TEntity>> Search(TSearch filter)
         {
-            ISearchResponse<T> resp;
-
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                resp = await elasticClient.SearchAsync<T>(
+            var resp = await ElasticClient.SearchAsync<TEntity>(
                     s => s.Query(
                         q => q.MatchAll()));
-            }
-
-            resp = await elasticClient.SearchAsync<T>(
-                s => s.Query(
-                    q => q.Match(
-                        m => m.Query(query))));
 
             CheckResponse(resp);
 
@@ -88,8 +72,7 @@ namespace OutOfSchool.ElasticsearchData
         {
             if (!resp.IsValid)
             {
-                var message = $"Elasticsearch error: {{ \nApi call: {resp.ApiCall}\nOriginal exception: {resp.OriginalException}";
-                throw new Exception(message);
+                throw resp.OriginalException;
             }
         }
     }
