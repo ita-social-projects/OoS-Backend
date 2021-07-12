@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -11,11 +12,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -61,7 +65,12 @@ namespace OutOfSchool.WebApi
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); });
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); 
+                c.OAuthClientId("Swagger");
+                c.OAuthUsePkce();
+            });
 
             app.UseHttpsRedirection();
 
@@ -161,7 +170,24 @@ namespace OutOfSchool.WebApi
 
                     throw new InvalidOperationException("Unable to determine tag for endpoint.");
                 });
-
+                c.OperationFilter<AuthorizeCheckOperationFilter>();
+                c.AddSecurityDefinition("Identity server", new OpenApiSecurityScheme
+                {
+                    Description = "Identity server",
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri("http://localhost:5443/connect/authorize", UriKind.Absolute),
+                            TokenUrl = new Uri("http://localhost:5443/connect/token", UriKind.Absolute),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "openid outofschoolapi.read offline_access", "Scopes" },
+                            },
+                        },
+                    },
+                });
                 c.DocInclusionPredicate((name, api) => true);
             });
 

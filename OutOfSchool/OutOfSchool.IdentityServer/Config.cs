@@ -72,6 +72,29 @@ namespace OutOfSchool.IdentityServer
                     AllowAccessTokensViaBrowser = true,
                     RequireConsent = false,
                 },
+                
+                new Client
+                {
+                    ClientId = "Swagger",
+
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RequirePkce = true,
+                    RequireClientSecret = false,
+                    AllowOfflineAccess = true,
+
+                    RedirectUris = { "http://oos.dmytrominochkin.cloud", "http://localhost:5000/swagger/oauth2-redirect.html", "https://api.oos.dmytrominochkin.cloud/swagger/oauth2-redirect.html"},
+                    PostLogoutRedirectUris = { "http://oos.dmytrominochkin.cloud", "http://localhost:5000/swagger/oauth2-redirect.html", "https://api.oos.dmytrominochkin.cloud/swagger/oauth2-redirect.html" },
+                    AllowedCorsOrigins = { "http://oos.dmytrominochkin.cloud", "http://localhost:5000", "https://api.oos.dmytrominochkin.cloud" },
+
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        "outofschoolapi.read", "outofschoolapi.write",
+                    },
+
+                    AllowAccessTokensViaBrowser = true,
+                    RequireConsent = false,
+                },
             };
     }
 }
