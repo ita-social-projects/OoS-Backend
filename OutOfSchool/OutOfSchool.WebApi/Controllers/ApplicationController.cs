@@ -159,6 +159,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="property">Property to find by (workshop or provider).</param>
         /// <param name="id">Provider or Workshop id.</param>
+        /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
         /// <response code="200">Entities were found by given Id.</response>
         /// <response code="204">No entity with given Id was found.</response>
@@ -169,7 +170,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{property:regex(^provider$|^workshop$)}/{id}")]
-        public async Task<IActionResult> GetByPropertyId(string property, long id)
+        public async Task<IActionResult> GetByPropertyId(string property, long id, [FromQuery]ApplicationFilter filter)
         {
             IEnumerable<ApplicationDto> applications = default;
 
@@ -179,7 +180,7 @@ namespace OutOfSchool.WebApi.Controllers
 
                 if (property.Equals("provider", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    applications = await GetByProviderId(id).ConfigureAwait(false);
+                    applications = await GetByProviderId(id, filter).ConfigureAwait(false);
                 }
                 else if (property.Equals("workshop", StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -432,11 +433,11 @@ namespace OutOfSchool.WebApi.Controllers
             return applications;
         }
 
-        private async Task<IEnumerable<ApplicationDto>> GetByProviderId(long id)
+        private async Task<IEnumerable<ApplicationDto>> GetByProviderId(long id, ApplicationFilter filter)
         {
             await CheckUserRights(providerId: id).ConfigureAwait(false);
 
-            var applications = await applicationService.GetAllByProvider(id).ConfigureAwait(false);
+            var applications = await applicationService.GetAllByProvider(id, filter).ConfigureAwait(false);
 
             return applications;
         }

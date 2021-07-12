@@ -9,6 +9,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Util;
 using Serilog;
 
 namespace OutOfSchool.WebApi.Services
@@ -175,9 +176,11 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id, ApplicationFilter filter)
         {
             logger.Information($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
+
+            var predicate = PredicateBuild(filter);
 
             Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
 
@@ -185,7 +188,11 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
 
-            var applications = await applicationRepository.GetByFilter(applicationFilter, "Workshop,Child,Parent").ConfigureAwait(false);
+            predicate = predicate.And(applicationFilter);
+
+            //var applications = await applicationRepository.GetByFilter(applicationFilter, "Workshop,Child,Parent").ConfigureAwait(false);
+
+            var applications = await applicationRepository.GetByFilter(predicate, "Workshop,Child,Parent").ConfigureAwait(false);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Provider Id = {id}."
@@ -316,6 +323,30 @@ namespace OutOfSchool.WebApi.Services
                 logger.Information($"Operation failed. Limit of applications per week is exceeded.");
                 throw new ArgumentException(localizer["Limit of applications per week is exceeded."]);
             }
+        }
+
+        private Expression<Func<Application, bool>> PredicateBuild(ApplicationFilter filter)
+        {
+            var predicate = PredicateBuilder.True<Application>();
+
+            if (filter.Status != 0)
+            {
+                predicate = predicate.And(a => (int)a.Status == filter.Status);
+            }
+
+            if (filter.Workshops != null)
+            {
+                var tempPredicate = PredicateBuilder.True<Application>();
+
+                foreach (var workshop in filter.Workshops)
+                {
+                    tempPredicate = tempPredicate.Or(a => a.WorkshopId == workshop);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            return predicate;
         }
     }
 }

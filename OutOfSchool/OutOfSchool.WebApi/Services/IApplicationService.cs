@@ -47,8 +47,9 @@ namespace OutOfSchool.WebApi.Services
         /// Get applications by provider id.
         /// </summary>
         /// <param name="id">Key in the table.</param>
+        /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id);
+        Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id, ApplicationFilter filter);
 
         /// <summary>
         /// Get applications by status.
