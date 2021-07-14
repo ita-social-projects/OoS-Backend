@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Search([FromQuery]WorkshopFilterES filter)
+        public async Task<IActionResult> Search([FromQuery] WorkshopFilterES filter)
         {
             var res = await esProvider.Search(filter).ConfigureAwait(false);
 

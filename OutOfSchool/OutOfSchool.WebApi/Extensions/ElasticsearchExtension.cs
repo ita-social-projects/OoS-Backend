@@ -31,7 +31,8 @@ namespace OutOfSchool.WebApi.Extensions
 
             var settings = new ConnectionSettings(new Uri(url))
                     .DefaultIndex(defaultIndex)
-                    .BasicAuthentication(user, password);
+                    .BasicAuthentication(user, password)
+                    .EnableDebugMode();
 
             AddDefaultMappings(settings);
 
