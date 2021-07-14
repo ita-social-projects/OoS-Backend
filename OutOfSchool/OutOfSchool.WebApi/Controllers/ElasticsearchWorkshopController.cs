@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Roles = "admin")]
     public class ElasticsearchWorkshopController : ControllerBase
     {
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> esService;
