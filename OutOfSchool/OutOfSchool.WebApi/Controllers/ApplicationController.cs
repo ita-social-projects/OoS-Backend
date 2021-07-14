@@ -184,7 +184,7 @@ namespace OutOfSchool.WebApi.Controllers
                 }
                 else if (property.Equals("workshop", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    applications = await GetByWorkshopId(id).ConfigureAwait(false);
+                    applications = await GetByWorkshopId(id, filter).ConfigureAwait(false);
                 }
             }
             catch (ArgumentException ex)
@@ -417,7 +417,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
-        private async Task<IEnumerable<ApplicationDto>> GetByWorkshopId(long id)
+        private async Task<IEnumerable<ApplicationDto>> GetByWorkshopId(long id, ApplicationFilter filter)
         {
             var workshop = await workshopService.GetById(id).ConfigureAwait(false);
 
@@ -428,7 +428,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             await CheckUserRights(providerId: workshop.ProviderId).ConfigureAwait(false);
 
-            var applications = await applicationService.GetAllByWorkshop(id).ConfigureAwait(false);
+            var applications = await applicationService.GetAllByWorkshop(id, filter).ConfigureAwait(false);
 
             return applications;
         }

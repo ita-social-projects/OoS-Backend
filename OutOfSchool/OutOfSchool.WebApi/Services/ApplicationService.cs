@@ -161,19 +161,21 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id, ApplicationFilter filter)
         {
             logger.Information($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
 
-            Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
+            Expression<Func<Application, bool>> applicationFilter = a => a.WorkshopId == id;
 
-            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+            var applications = applicationRepository.Get<int>(where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
-            logger.Information(!applications.Any()
+            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
+
+            logger.Information(!filteredApplications.Any()
                 ? $"There is no applications in the Db with Workshop Id = {id}."
                 : $"Successfully got Applications with Workshop Id = {id}.");
 
-            return applications.Select(a => a.ToModel()).ToList();
+            return filteredApplications.Select(a => a.ToModel());
         }
 
         /// <inheritdoc/>
@@ -182,24 +184,18 @@ namespace OutOfSchool.WebApi.Services
             logger.Information($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
 
             Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
-
             var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
+            var applications = applicationRepository.Get<int>(where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
-            var predicate = PredicateBuild(filter, applicationFilter);
+            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
 
-            var applications = applicationRepository.Get<int>(where: predicate, includeProperties: "Workshop,Child,Parent");
-
-            var orderByExpression = SortExpressionBuild(filter);
-
-            applications = applications.DynamicOrderBy(orderByExpression);
-
-            logger.Information(!applications.Any()
+            logger.Information(!filteredApplications.Any()
                 ? $"There is no applications in the Db with Provider Id = {id}."
                 : $"Successfully got Applications with Provider Id = {id}.");
 
-            return await applications.Select(a => a.ToModel()).ToListAsync().ConfigureAwait(false);
+            return filteredApplications.Select(a => a.ToModel());
         }
 
         /// <inheritdoc/>
@@ -324,6 +320,17 @@ namespace OutOfSchool.WebApi.Services
                 logger.Information($"Operation failed. Limit of applications per week is exceeded.");
                 throw new ArgumentException(localizer["Limit of applications per week is exceeded."]);
             }
+        }
+
+        private IQueryable<Application> GetFiltered(IQueryable<Application> applications, ApplicationFilter filter)
+        {
+            var filterPredicate = PredicateBuild(filter);
+            var filteredApplications = applications.Where(filterPredicate);
+
+            var sortPredicate = SortExpressionBuild(filter);
+            filteredApplications = filteredApplications.DynamicOrderBy(sortPredicate);
+
+            return filteredApplications;
         }
 
         private Expression<Func<Application, bool>> PredicateBuild(

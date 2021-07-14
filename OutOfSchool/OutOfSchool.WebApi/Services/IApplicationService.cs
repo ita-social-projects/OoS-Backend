@@ -40,8 +40,9 @@ namespace OutOfSchool.WebApi.Services
         /// Get applications by workshop id.
         /// </summary>
         /// <param name="id">Key in the table.</param>
+        /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id);
+        Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id, ApplicationFilter filter);
 
         /// <summary>
         /// Get applications by provider id.
