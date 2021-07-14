@@ -24,11 +24,11 @@ namespace OutOfSchool.ElasticsearchData.Models
             var bindingResults = new List<AgeRange>();
             foreach (var item in ages)
             {
-                // example of item: {"minAge":0,"maxAge":5}
-                var strings = item.Split(':', ',', '{', '}');
+                // example of item: {"minAge":0,"maxAge":5}, "minAge":0,"maxAge":5
+                var strings = item.Trim().Split(':', ',', '}');
                 var ageRange = new AgeRange();
-                ageRange.MinAge = int.Parse(strings[2]);
-                ageRange.MaxAge = int.Parse(strings[4]);
+                ageRange.MinAge = int.Parse(strings[1]);
+                ageRange.MaxAge = int.Parse(strings[3]);
                 bindingResults.Add(ageRange);
             }
 
