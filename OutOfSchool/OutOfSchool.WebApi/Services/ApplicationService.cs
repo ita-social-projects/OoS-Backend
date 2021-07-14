@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -180,25 +181,25 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
 
-            var predicate = PredicateBuild(filter);
-
             Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
 
             var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
 
-            predicate = predicate.And(applicationFilter);
+            var predicate = PredicateBuild(filter, applicationFilter);
 
-            //var applications = await applicationRepository.GetByFilter(applicationFilter, "Workshop,Child,Parent").ConfigureAwait(false);
+            var applications = applicationRepository.Get<int>(where: predicate, includeProperties: "Workshop,Child,Parent");
 
-            var applications = await applicationRepository.GetByFilter(predicate, "Workshop,Child,Parent").ConfigureAwait(false);
+            var orderByExpression = SortExpressionBuild(filter);
+
+            applications = applications.DynamicOrderBy(orderByExpression);
 
             logger.Information(!applications.Any()
                 ? $"There is no applications in the Db with Provider Id = {id}."
                 : $"Successfully got Applications with Provider Id = {id}.");
 
-            return applications.Select(a => a.ToModel()).ToList();
+            return await applications.Select(a => a.ToModel()).ToListAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -325,9 +326,14 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private Expression<Func<Application, bool>> PredicateBuild(ApplicationFilter filter)
+        private Expression<Func<Application, bool>> PredicateBuild(
+            ApplicationFilter filter,
+            Expression<Func<Application, bool>> predicate = null)
         {
-            var predicate = PredicateBuilder.True<Application>();
+            if (predicate is null)
+            {
+                predicate = PredicateBuilder.True<Application>();
+            }
 
             if (filter.Status != 0)
             {
@@ -336,7 +342,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (filter.Workshops != null)
             {
-                var tempPredicate = PredicateBuilder.True<Application>();
+                var tempPredicate = PredicateBuilder.False<Application>();
 
                 foreach (var workshop in filter.Workshops)
                 {
@@ -347,6 +353,28 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return predicate;
+        }
+
+        private Dictionary<Expression<Func<Application, object>>, SortDirection> SortExpressionBuild(ApplicationFilter filter)
+        {
+            var sortExpression = new Dictionary<Expression<Func<Application, object>>, SortDirection>();
+
+            if (filter.OrderByStatus)
+            {
+                sortExpression.Add(a => a.Status, SortDirection.Ascending);
+            }
+
+            if (filter.OrderByDateAscending)
+            {
+                sortExpression.Add(a => a.CreationTime, SortDirection.Ascending);
+            }
+
+            if (filter.OrderByAlphabetically)
+            {
+                sortExpression.Add(a => a.Parent.User.LastName, SortDirection.Ascending);
+            }
+
+            return sortExpression;
         }
     }
 }
