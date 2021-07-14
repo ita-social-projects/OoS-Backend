@@ -18,11 +18,13 @@ RUN apt-get update \
 WORKDIR /OoS-Backend
 COPY ./OutOfSchool/OutOfSchool.IdentityServer/*.csproj ./OutOfSchool.IdentityServer/
 COPY ./OutOfSchool/OutOfSchool.DataAccess/*.csproj ./OutOfSchool.DataAccess/
+COPY ./OutOfSchool/OutOfSchool.EmailSender/*.csproj ./OutOfSchool.EmailSender/
 
 RUN dotnet restore ./OutOfSchool.IdentityServer/OutOfSchool.IdentityServer.csproj
 
 COPY ./OutOfSchool/OutOfSchool.IdentityServer/ ./OutOfSchool.IdentityServer/
 COPY ./OutOfSchool/OutOfSchool.DataAccess/ ./OutOfSchool.DataAccess/
+COPY ./OutOfSchool/OutOfSchool.EmailSender/ ./OutOfSchool.EmailSender/
 
 
 RUN dotnet build ./OutOfSchool.IdentityServer/OutOfSchool.IdentityServer.csproj -c $Configuration -o /app

@@ -24,7 +24,8 @@ namespace OutOfSchool.WebApi.Extensions
                 .ForMember(w => w.Address, m => m.Ignore())
                 .ForMember(w => w.Teachers, m => m.Ignore());
                 cfg.CreateMap<Child, ChildDto>()
-                .ForMember(c => c.BirthCertificate, m => m.Ignore());
+                .ForMember(c => c.BirthCertificate, m => m.Ignore())
+                .ForMember(c => c.Parent, m => m.Ignore());
                 cfg.CreateMap<Parent, ParentDTO>();
                 cfg.CreateMap<Application, ApplicationDto>();
             });
