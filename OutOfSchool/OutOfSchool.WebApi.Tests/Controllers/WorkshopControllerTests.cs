@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Controllers;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -17,25 +19,22 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class WorkshopControllerTests
     {
+        private static IEnumerable<WorkshopDTO> workshops;
+        private static IEnumerable<WorkshopES> workshopESs;
+        private static WorkshopDTO workshop;
+        private static ProviderDto provider;
+
         private WorkshopController controller;
-        private Mock<IWorkshopService> workshopServiceMoq;
+        private Mock<IWorkshopServicesProvider> workshopServiceMoq;
         private Mock<IProviderService> providerServiceMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-
-        private IEnumerable<WorkshopDTO> workshops;
-        private WorkshopDTO workshop;
-        private ProviderDto provider;
 
         private string userId;
         private Mock<HttpContext> httpContextMoq;
 
-        [SetUp]
-        public void Setup()
+        [OneTimeSetUp]
+        public void OneTimeSetup()
         {
-            workshopServiceMoq = new Mock<IWorkshopService>();
-            providerServiceMoq = new Mock<IProviderService>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
-
             userId = "someUserId";
             httpContextMoq = new Mock<HttpContext>();
             httpContextMoq.Setup(x => x.User.FindFirst("sub"))
@@ -43,14 +42,23 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContextMoq.Setup(x => x.User.IsInRole("provider"))
                 .Returns(true);
 
+            workshops = FakeWorkshops();
+            workshop = FakeWorkshop();
+            provider = FakeProvider();
+            workshopESs = FakeWorkshopESs();
+        }
+
+        [SetUp]
+        public void Setup()
+        {
+            workshopServiceMoq = new Mock<IWorkshopServicesProvider>();
+            providerServiceMoq = new Mock<IProviderService>();
+            localizer = new Mock<IStringLocalizer<SharedResource>>();
+
             controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object)
             {
                 ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
             };
-
-            workshops = FakeWorkshops();
-            workshop = FakeWorkshop();
-            provider = FakeProvider();
         }
 
         #region GetWorkshops
@@ -58,10 +66,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetWorkshops_WhenThereAreWorkshops_ShouldReturnOkResultObject()
         {
             // Arrange
-            workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(workshops);
+            workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(workshopESs);
 
             // Act
-            var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetAll().ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -72,11 +80,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetWorkshops_WhenThereIsNoAnyWorkshop_ShouldReturnNoConterntResult()
         {
             // Arrange
-            var emptyList = new List<WorkshopDTO>();
+            var emptyList = new List<WorkshopES>();
             workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(emptyList);
 
             // Act
-            var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetAll().ConfigureAwait(false) as NoContentResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -135,7 +143,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void GetByProviderId_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException(long id)
         {
             // Arrange
-            workshopServiceMoq.Setup(x => x.GetWorkshopsByProviderId(id)).ReturnsAsync(workshops.Where(x => x.ProviderId == id));
+            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshops.Where(x => x.ProviderId == id));
 
             // Assert
             Assert.That(
@@ -148,7 +156,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject(long id)
         {
             // Arrange
-            workshopServiceMoq.Setup(x => x.GetWorkshopsByProviderId(id)).ReturnsAsync(workshops.Where(x => x.ProviderId == id));
+            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshops.Where(x => x.ProviderId == id));
 
             // Act
             var result = await controller.GetByProviderId(id).ConfigureAwait(false) as OkObjectResult;
@@ -165,7 +173,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var emptyList = new List<WorkshopDTO>();
-            workshopServiceMoq.Setup(x => x.GetWorkshopsByProviderId(id)).ReturnsAsync(emptyList);
+            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(emptyList);
 
             // Act
             var result = await controller.GetByProviderId(id).ConfigureAwait(false) as NoContentResult;
@@ -547,6 +555,18 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 UserId = userId,
                 Id = 1,
             };
+        }
+
+        private IEnumerable<WorkshopES> FakeWorkshopESs()
+        {
+            var list = FakeWorkshops();
+            var eSlist = new List<WorkshopES>();
+            foreach (var item in list)
+            {
+                eSlist.Add(item.ToESModel());
+            }
+
+            return eSlist;
         }
     }
 }

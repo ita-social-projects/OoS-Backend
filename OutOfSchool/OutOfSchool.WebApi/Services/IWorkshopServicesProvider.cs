@@ -2,34 +2,29 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Defines interface for CRUD functionality for Workshop entity.
+    /// The interface for CRUD operations with workshops.
     /// </summary>
-    public interface IWorkshopService
+    public interface IWorkshopServicesProvider
     {
         /// <summary>
-        /// Add entity.
+        /// Save the entity in data stores.
         /// </summary>
         /// <param name="dto">Workshop to add.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="WorkshopDTO"/> that was created.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">If the Subsubctegory was not found.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the <see cref="ClassDto"/> was not found.</exception>
         /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        /// <exception cref="Exception">If some errors occure in Elasticsearch client.</exception>
         Task<WorkshopDTO> Create(WorkshopDTO dto);
 
         /// <summary>
-        /// Get all entities.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="IEnumerable{WorkshopDTO}"/> that contains found elements.</returns>
-        Task<IEnumerable<WorkshopDTO>> GetAll();
-
-        /// <summary>
-        /// Get entity by it's key.
+        /// Get the entity by it's key.
         /// </summary>
         /// <param name="id">Workshop's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
@@ -37,29 +32,48 @@ namespace OutOfSchool.WebApi.Services
         Task<WorkshopDTO> GetById(long id);
 
         /// <summary>
-        /// Get all workshops by provider Id.
-        /// </summary>
-        /// <param name="id">Provider's key.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{WorkshopDTO}"/> that contains elements from the input sequence.</returns>
-        Task<IEnumerable<WorkshopDTO>> GetWorkshopsByProviderId(long id);
-
-        /// <summary>
-        /// Update entity.
+        /// Update the entity.
         /// </summary>
         /// <param name="dto">Workshop entity to update.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="WorkshopDTO"/> that was updated.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">If the workshop was not found. Or if the Subsubctegory was not found.</exception>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="WorkshopDTO"/> that was updated.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If the <see cref="ClassDto"/> was not found.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        /// <exception cref="Exception">If some errors occure in Elasticsearch client.</exception>
         Task<WorkshopDTO> Update(WorkshopDTO dto);
 
         /// <summary>
-        /// Delete entity.
+        /// Delete the entity with the specified id.
         /// </summary>
         /// <param name="id">Workshop's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">If the workshop was not found in the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        /// <exception cref="Exception">If some errors occure in Elasticsearch client.</exception>
         Task Delete(long id);
+
+        /// <summary>
+        /// Get all entities.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="IEnumerable{WorkshopES}"/> that contains found elements.</returns>
+        Task<IEnumerable<WorkshopES>> GetAll();
+
+        /// <summary>
+        /// Get all workshops with the specified provider's Id.
+        /// </summary>
+        /// <param name="id">Provider's key.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="IEnumerable{WorkshopDTO}"/> that contains elements from the input sequence.</returns>
+        Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id);
+
+        /// <summary>
+        /// Get all entities that matches filter's parameters.
+        /// </summary>
+        /// <param name="filter">Entity that represents searching parameters.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="IEnumerable{WorkshopES}"/> that contains elements that were found.</returns>
+        Task<IEnumerable<WorkshopES>> GetByFilter(WorkshopFilterES filter);
 
         /// <summary>
         /// Get count of pages of filtered workshop records.

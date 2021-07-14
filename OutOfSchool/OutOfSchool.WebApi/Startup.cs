@@ -116,6 +116,8 @@ namespace OutOfSchool.WebApi
             services.AddElasticsearch(Configuration);
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
 
+            services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
+
             // entities services
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
@@ -131,6 +133,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
+            services.AddTransient<IWorkshopServicesProvider, WorkshopServicesProvider>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();

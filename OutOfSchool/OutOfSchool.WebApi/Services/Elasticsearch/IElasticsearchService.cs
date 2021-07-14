@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace OutOfSchool.ElasticsearchData
+namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// An interface for the Elasticsearch API.
+    /// An interface for the Elasticsearch client.
     /// </summary>
     /// <typeparam name="TEntity">The entity type.</typeparam>
     /// <typeparam name="TSearch">The filter type.</typeparam>
-    public interface IElasticsearchProvider<TEntity, TSearch>
+    public interface IElasticsearchService<TEntity, TSearch>
         where TEntity : class, new()
         where TSearch : class, new()
     {
@@ -18,42 +18,40 @@ namespace OutOfSchool.ElasticsearchData
         /// </summary>
         /// <param name="entity">The entity that will be stored as a document.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        /// <exception cref="Exception">If response from the Elasticsearch server was Invalid.</exception>
-        Task IndexEntityAsync(TEntity entity);
+        /// <exception cref="Exception">If some errors occure in Elasticsearch client.</exception>
+        Task Index(TEntity entity);
 
         /// <summary>
         /// Use this method to update entity in the index.
         /// </summary>
         /// <param name="entity">The entity that will be updated as a document.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        /// <exception cref="Exception">If response from the Elasticsearch server was Invalid.</exception>
-        Task UpdateEntityAsync(TEntity entity);
+        /// <exception cref="Exception">If some errors occure in Elasticsearch client.</exception>
+        Task Update(TEntity entity);
 
         /// <summary>
         /// Use this method to delete entity from the index.
         /// </summary>
-        /// <param name="entity">The entity that will be deleted from the index.</param>
+        /// <param name="id">The entity's key that will be deleted from the index.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        /// <exception cref="Exception">If response from the Elasticsearch server was Invalid.</exception>
-        Task DeleteEntityAsync(TEntity entity);
+        /// <exception cref="Exception">If some errors occure in Elasticsearch client.</exception>
+        Task Delete(long id);
 
         /// <summary>
         /// Use this method to delete all entities from the index.
         /// And then to add all entities from the source of truth.
         /// </summary>
-        /// <param name="source">The source from which entities will be retrieved.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        /// <exception cref="Exception">If response from the Elasticsearch server was Invalid.</exception>
-        Task ReIndexAll(IEnumerable<TEntity> source);
+        /// <exception cref="Exception">If some errors occure in Elasticsearch client.</exception>
+        Task ReIndex();
 
         /// <summary>
         /// Use this method to search entities that match the filter's parameters.
-        /// If filter is null or method is not overrided than all entites shoud be returned.
         /// </summary>
         /// <param name="filter">The filter parameters.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
         /// The task result contains the entities that were found.</returns>
-        /// <exception cref="Exception">If response from the Elasticsearch server was Invalid.</exception>
-        Task<IEnumerable<TEntity>> Search(TSearch filter = null);
+        /// <exception cref="Exception">If some errors occure in Elasticsearch client.</exception>
+        Task<IEnumerable<TEntity>> Search(TSearch filter);
     }
 }

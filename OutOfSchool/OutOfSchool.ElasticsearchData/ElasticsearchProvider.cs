@@ -21,7 +21,7 @@ namespace OutOfSchool.ElasticsearchData
         protected ElasticClient ElasticClient { get; private set; }
 
         /// <inheritdoc/>
-        public async Task IndexEntityAsync(TEntity entity)
+        public virtual async Task IndexEntityAsync(TEntity entity)
         {
             var resp = await ElasticClient.IndexDocumentAsync(entity);
 
@@ -29,7 +29,7 @@ namespace OutOfSchool.ElasticsearchData
         }
 
         /// <inheritdoc/>
-        public async Task UpdateEntityAsync(TEntity entity)
+        public virtual async Task UpdateEntityAsync(TEntity entity)
         {
             var resp = await ElasticClient.UpdateAsync<TEntity>(entity, u => u.Doc(entity));
 
@@ -37,7 +37,7 @@ namespace OutOfSchool.ElasticsearchData
         }
 
         /// <inheritdoc/>
-        public async Task DeleteEntityAsync(TEntity entity)
+        public virtual async Task DeleteEntityAsync(TEntity entity)
         {
             var resp = await ElasticClient.DeleteAsync<TEntity>(entity);
 
@@ -45,7 +45,7 @@ namespace OutOfSchool.ElasticsearchData
         }
 
         /// <inheritdoc/>
-        public async Task ReIndexAll(IEnumerable<TEntity> source)
+        public virtual async Task ReIndexAll(IEnumerable<TEntity> source)
         {
             await ElasticClient.DeleteByQueryAsync<TEntity>(q => q.MatchAll());
 
@@ -57,7 +57,7 @@ namespace OutOfSchool.ElasticsearchData
         }
 
         /// <inheritdoc/>
-        public virtual async Task<IEnumerable<TEntity>> Search(TSearch filter)
+        public virtual async Task<IEnumerable<TEntity>> Search(TSearch filter = null)
         {
             var resp = await ElasticClient.SearchAsync<TEntity>(
                     s => s.Query(
@@ -68,7 +68,7 @@ namespace OutOfSchool.ElasticsearchData
             return resp.Documents;
         }
 
-        private void CheckResponse(IResponse resp)
+        protected void CheckResponse(IResponse resp)
         {
             if (!resp.IsValid)
             {

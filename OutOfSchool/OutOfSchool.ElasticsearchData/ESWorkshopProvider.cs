@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nest;
 using OutOfSchool.ElasticsearchData.Enums;
@@ -31,6 +30,8 @@ namespace OutOfSchool.ElasticsearchData
                     Query = query,
                     Sort = sorts,
                 });
+
+            this.CheckResponse(resp);
 
             return resp.Documents;
         }
