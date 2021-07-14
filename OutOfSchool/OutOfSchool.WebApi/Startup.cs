@@ -67,7 +67,7 @@ namespace OutOfSchool.WebApi
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API"); 
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API");
                 c.OAuthClientId("Swagger");
                 c.OAuthUsePkce();
             });
@@ -171,6 +171,7 @@ namespace OutOfSchool.WebApi
                     throw new InvalidOperationException("Unable to determine tag for endpoint.");
                 });
                 c.OperationFilter<AuthorizeCheckOperationFilter>();
+                var baseUrl = Configuration["SwaggerIdentityAccess:BaseUrl"];
                 c.AddSecurityDefinition("Identity server", new OpenApiSecurityScheme
                 {
                     Description = "Identity server",
@@ -179,8 +180,8 @@ namespace OutOfSchool.WebApi
                     {
                         AuthorizationCode = new OpenApiOAuthFlow
                         {
-                            AuthorizationUrl = new Uri("http://localhost:5443/connect/authorize", UriKind.Absolute),
-                            TokenUrl = new Uri("http://localhost:5443/connect/token", UriKind.Absolute),
+                            AuthorizationUrl = new Uri($"{baseUrl}/connect/authorize", UriKind.Absolute),
+                            TokenUrl = new Uri($"{baseUrl}/connect/token", UriKind.Absolute),
                             Scopes = new Dictionary<string, string>
                             {
                                 { "openid outofschoolapi.read offline_access", "Scopes" },
