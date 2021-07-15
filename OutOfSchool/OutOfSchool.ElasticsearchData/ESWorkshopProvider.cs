@@ -61,7 +61,9 @@ namespace OutOfSchool.ElasticsearchData
             {
                 queryContainer &= new MultiMatchQuery()
                 {
-                    Fields = Infer.Field<WorkshopES>(w => w.Title).And(Infer.Field<WorkshopES>(w => w.ProviderTitle)).And(Infer.Field<WorkshopES>(w => w.Keywords)),
+                    Fields = Infer.Field<WorkshopES>(w => w.Title)
+                            .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
+                            .And(Infer.Field<WorkshopES>(w => w.Keywords)),
                     Query = filter.SearchText,
                 };
             }
