@@ -117,15 +117,15 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public Dictionary<long, float> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type)
+        public Dictionary<long, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type)
         {
             var entitiesRating = ratingRepository.GetAverageRatingForEntities(entities, type);
 
-            var formattedEntities = new Dictionary<long, float>(entitiesRating.Count);
+            var formattedEntities = new Dictionary<long, Tuple<float, int>>(entitiesRating.Count);
 
             foreach (var entity in entitiesRating)
             {
-                formattedEntities.Add(entity.Key, (float)Math.Round(entity.Value, roundToDigits));
+                formattedEntities.Add(entity.Key, new Tuple<float, int>((float)Math.Round(entity.Value.Item1, roundToDigits), entity.Value.Item2));
             }
 
             return formattedEntities;

@@ -94,7 +94,9 @@ namespace OutOfSchool.WebApi.Services
             {
                 foreach (var workshop in workshopsDTO)
                 {
-                    workshop.Rating = averageRatings.FirstOrDefault(r => r.Key == workshop.Id).Value;
+                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
+                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
+                    workshop.NumberOfRatings = ratingTuple.Value?.Item2 ?? default;
                 }
             }
 
@@ -141,7 +143,9 @@ namespace OutOfSchool.WebApi.Services
             {
                 foreach (var workshop in workshopsDTO)
                 {
-                    workshop.Rating = averageRatings.FirstOrDefault(r => r.Key == workshop.Id).Value;
+                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
+                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
+                    workshop.NumberOfRatings = ratingTuple.Value?.Item2 ?? default;
                 }
             }
 

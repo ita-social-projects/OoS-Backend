@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
@@ -30,13 +30,13 @@ namespace OutOfSchool.Services.Repository
             }
         }
 
-        public Dictionary<long, double> GetAverageRatingForEntities(IEnumerable<long> entities, RatingType type)
+        public Dictionary<long, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<long> entities, RatingType type)
         {
             return db.Ratings
                 .Where(r => r.Type == type)
                 .AsEnumerable()
                 .GroupBy(g => g.EntityId)
-                .ToDictionary(g => g.Key, g => g.Average(p => p.Rate));
+                .ToDictionary(g => g.Key, g => new Tuple<double, int>(g.Average(p => p.Rate), g.Count()));
         }
     }
 }

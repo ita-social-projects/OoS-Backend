@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
@@ -61,7 +62,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entities">Entities keys.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>Average rating of entities range.</returns>
-        Dictionary<long, float> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type);
+        Dictionary<long, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type);
 
         /// <summary>
         /// Update rating entity.
