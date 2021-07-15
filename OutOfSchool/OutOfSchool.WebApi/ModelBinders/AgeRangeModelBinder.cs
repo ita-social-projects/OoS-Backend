@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.ElasticsearchData.Models
+namespace OutOfSchool.WebApi.ModelBinders
 {
     public class AgeRangeModelBinder : IModelBinder
     {
@@ -16,25 +18,21 @@ namespace OutOfSchool.ElasticsearchData.Models
 
             var query = bindingContext.HttpContext.Request.Query;
 
-            // Examples:
-            // In QueryString: Ages={"minAge":0,"maxAge":5}&Ages={"minAge":10,"maxAge":14}
-            // ages = 2 elements of StringValues {"minAge":0,"maxAge":5}, {"minAge":10,"maxAge":14}
             var ages = query["Ages"];
 
-            var bindingResults = new List<AgeRangeES>();
+            var bindingResults = new List<AgeRange>();
             foreach (var item in ages)
             {
-                // example of item: {"minAge":0,"maxAge":5}, "minAge":0,"maxAge":5
                 var strings = item.Trim().Split(':', ',', '}');
-                var ageRange = new AgeRangeES();
-                ageRange.MinAge = int.Parse(strings[1]);
-                ageRange.MaxAge = int.Parse(strings[3]);
+                var ageRange = new AgeRange();
+                ageRange.MinAge = int.Parse(strings[1], CultureInfo.CurrentCulture);
+                ageRange.MaxAge = int.Parse(strings[3], CultureInfo.CurrentCulture);
                 bindingResults.Add(ageRange);
             }
 
             if (bindingResults.Count == 0)
             {
-                bindingResults.Add(new AgeRangeES() { MinAge = 0, MaxAge = 100 });
+                bindingResults.Add(new AgeRange() { MinAge = 0, MaxAge = 100 });
             }
 
             bindingContext.Result = ModelBindingResult.Success(bindingResults);

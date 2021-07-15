@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
-using OutOfSchool.ElasticsearchData.Enums;
+using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.WebApi.Enums;
+using OutOfSchool.WebApi.ModelBinders;
 
-namespace OutOfSchool.ElasticsearchData.Models
+namespace OutOfSchool.WebApi.Models
 {
-    public class WorkshopFilterES
+    public class WorkshopFilterDto
     {
         public List<long> Ids { get; set; } = null;
 
@@ -11,7 +13,8 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public OrderBy OrderByField { get; set; } = OrderBy.Rating;
 
-        public List<AgeRangeES> Ages { get; set; } = new List<AgeRangeES>() { new AgeRangeES() { MinAge = 0, MaxAge = 100 } };
+        [ModelBinder(BinderType = typeof(AgeRangeModelBinder))]
+        public List<AgeRange> Ages { get; set; } = new List<AgeRange>() { new AgeRange() { MinAge = 0, MaxAge = 100 } };
 
         public int MinPrice { get; set; } = 0;
 

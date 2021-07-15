@@ -129,9 +129,9 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopES>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilterES filter)
+        public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilterDto filter)
         {
-            var workshops = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+            var workshops = await workshopService.GetByFilter(filter.ToESModel()).ConfigureAwait(false);
 
             if (!workshops.Any())
             {

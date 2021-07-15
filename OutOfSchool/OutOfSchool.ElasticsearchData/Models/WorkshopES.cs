@@ -30,6 +30,8 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public long DirectionId { get; set; }
 
+        public string Direction { get; set; }
+
         public long DepartmentId { get; set; }
 
         public long ClassId { get; set; }
