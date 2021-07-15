@@ -17,7 +17,6 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Innerspace";
   color: #000000;
   margin: 0;
 }
@@ -112,7 +111,8 @@ a {
 .wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 50px;
+  flex-direction: column;
+  margin: 2rem;
 }
 
 .icon_wrapper {
@@ -127,7 +127,6 @@ a {
   width: 640px;
 }
 .icon_title {
-  line-height: 20px;
   text-align: center;
   color: #444444;
   margin: 0;
@@ -329,7 +328,6 @@ a {
   padding-right: 30px !important;
 }
 .registration_label {
-  font-family: Innerspace;
   font-style: normal;
   font-weight: bold;
   font-size: 13px;
@@ -364,7 +362,7 @@ a {
   width: 12rem;
   margin: 16px auto;
   border-radius: 20px;
-  font-family: Innerspace;
+  font-family: Open Sans;
   font-style: normal;
   font-weight: bold;
   font-size: 13px;
@@ -445,10 +443,20 @@ a {
   line-height: 18px;
   text-align: center;
   color: #AAAAAA;
+  margin: 1rem;
 }
 .warning{
+  display: flex;
+  justify-content: center;
+  align-items: center;
   min-width: max-content;
   min-height: 56px;
   background: #FFEBB3;
   border-radius: 5px;
+  font-family: Open Sans;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 18px;
+  color: #272425;
 }

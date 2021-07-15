@@ -10,29 +10,32 @@
     Layout = "_Layout";
 }
 
+<div class="wrapper" >
 <h1 class="icon_title">@SharedLocalizer["ЗМІНИТИ ЕМЕЙЛ"].Value.ToUpper()</h1>
 
 <h3 class="instruction">@SharedLocalizer["Введіть ваш новий емейл на який буде надіслана інструкція по зміні емейлу."].Value.ToUpper()</h3>
-<div class="option">
-    <p>@SharedLocalizer["Зверніть увагу, що після зміни емейлу ви не матимете змоги увійти у систему зі старим емейлом."].Value.ToUpper()</p>
-<div>
-<div class="wrapper">
-    <form asp-action="ChangeEmail" class="login__wrapper">
+<div class="warning">
+    <p>@SharedLocalizer["Зверніть увагу, що після зміни емейлу ви не матимете змоги увійти у систему зі старим емейлом."]</p>
+</div>
+    <form asp-action="ChangeEmail" class="wrapper">
         <input type="hidden" asp-for="ReturnUrl" />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <ul class="registration_list">
             <li class="registration_item">
-                <label asp-for="CurrentEmail" class="registration_label"></label>
-                <input asp-for="CurrentEmail" class="registration_input" />
-                <span asp-validation-for="CurrentEmail" class="text-danger"></span>
+                <label class="registration_label">@SharedLocalizer["Старий емейл"]</label>
+                <input class="registration_input" asp-for="CurrentEmail" />
+                <div>
+                    <span asp-validation-for="CurrentEmail"></span>
+                </div>
             </li>
             <li class="registration_item">
-                <label asp-for="Email" class="registration_label"></label>
-                <input asp-for="Email" class="registration_input" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+                <label class="registration_label">@SharedLocalizer["Новий емейл"]</label>
+                <input class="registration_input" asp-for="Email" />
+                <div>
+                    <span asp-validation-for="Email"></span>
+                </div>
             </li>
         <li class="registration_item">
-            <input class="registration_cancel registration_button"/>
             <input type="submit" value="Save" class="registration_submit registration_button"/>
         </li>
         </ul>
