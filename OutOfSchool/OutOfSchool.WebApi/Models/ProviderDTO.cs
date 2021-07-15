@@ -84,6 +84,8 @@ namespace OutOfSchool.WebApi.Models
 
         public float Rating { get; set; }
 
+        public int NumberOfRatings { get; set; }
+
         [Required]
         public string UserId { get; set; }
 
