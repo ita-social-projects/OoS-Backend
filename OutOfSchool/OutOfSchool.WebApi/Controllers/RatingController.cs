@@ -71,6 +71,32 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
+        /// Get all ratings from the database.
+        /// </summary>
+        /// <param name="entityType">Entity type (provider or workshop).</param>
+        /// <param name="entityId">Id of Entity.</param>
+        /// <returns>List of all ratings.</returns>
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}")]
+        public async Task<IActionResult> GetByEntityId(string entityType, long entityId)
+        {
+            RatingType type = ToRatingType(entityType);
+
+            var ratings = await service.GetAllByEntityId(entityId, type).ConfigureAwait(false);
+
+            if (!ratings.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(ratings);
+        }
+
+        /// <summary>
         /// Get parent rating for the specified entity.
         /// </summary>
         /// <param name="entityType">Entity type (provider or workshop).</param>
@@ -89,17 +115,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             this.ValidateId(entityId, localizer);
 
-            RatingType type = default;
-
-            switch (entityType.ToLower(CultureInfo.CurrentCulture))
-            {
-                case "provider":
-                    type = RatingType.Provider;
-                    break;
-                case "workshop":
-                    type = RatingType.Workshop;
-                    break;
-            }
+            RatingType type = ToRatingType(entityType);
 
             var rating = await service.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
 
@@ -179,6 +195,23 @@ namespace OutOfSchool.WebApi.Controllers
             await service.Delete(id).ConfigureAwait(false);
 
             return NoContent();
+        }
+
+        private RatingType ToRatingType(string entityType)
+        {
+            RatingType type = default;
+
+            switch (entityType.ToLower(CultureInfo.CurrentCulture))
+            {
+                case "provider":
+                    type = RatingType.Provider;
+                    break;
+                case "workshop":
+                    type = RatingType.Workshop;
+                    break;
+            }
+
+            return type;
         }
     }
 }
