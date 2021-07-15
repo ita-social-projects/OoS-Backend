@@ -80,6 +80,21 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<RatingDto>> GetAllByEntityId(long entityId, RatingType type)
+        {
+            logger.Information($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
+
+            var ratings = await ratingRepository.GetByFilter(r => r.EntityId == entityId && r.Type == type).ConfigureAwait(false);
+
+            logger.Information(!ratings.Any()
+                ? "Rating table is empty."
+                : $"All {ratings.Count()} records with EntityId = {entityId} and RatingType = {type} " +
+                        $"were successfully received from the Rating table");
+
+            return ratings.Select(r => r.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
         public async Task<RatingDto> GetParentRating(long parentId, long entityId, RatingType type)
         {
             logger.Information($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId} and type = {type}.");

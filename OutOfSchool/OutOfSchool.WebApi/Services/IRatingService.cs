@@ -31,6 +31,14 @@ namespace OutOfSchool.WebApi.Services
         Task<RatingDto> GetById(long id);
 
         /// <summary>
+        /// Get all rating entities with specified Id and type.
+        /// </summary>
+        /// <param name="entityId">Entity key.</param>
+        /// <param name="type">Entity type.</param>
+        /// <returns>List of all rating records.</returns>
+        Task<IEnumerable<RatingDto>> GetAllByEntityId(long entityId, RatingType type);
+
+        /// <summary>
         /// Get parent rating for the specified entity.
         /// </summary>
         /// <param name="parentId">Parent key.</param>
