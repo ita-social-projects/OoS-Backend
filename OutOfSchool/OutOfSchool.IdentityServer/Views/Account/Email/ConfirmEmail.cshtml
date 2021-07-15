@@ -1,5 +1,9 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+@{
     ViewData["Title"] = "Confirm email";
 }
-
-<h1>Email has been confirmed.</h1>
+<div class="wrapper">
+    <h3 class="option">@SharedLocalizer["Емейл підтвердження."].Value.ToUpper()</h3>
+</div>
