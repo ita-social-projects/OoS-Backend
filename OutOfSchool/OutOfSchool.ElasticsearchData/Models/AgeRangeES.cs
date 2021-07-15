@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.ElasticsearchData.Models
 {
-    public class AgeRange
+    public class AgeRangeES
     {
         public int MinAge { get; set; }
 

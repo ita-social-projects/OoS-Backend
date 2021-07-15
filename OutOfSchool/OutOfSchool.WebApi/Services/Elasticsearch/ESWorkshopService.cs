@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
@@ -30,12 +31,16 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Index(WorkshopES entity)
         {
+            NullCheck(entity);
+
             await esProvider.IndexEntityAsync(entity).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task Update(WorkshopES entity)
         {
+            NullCheck(entity);
+
             entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop);
 
             await esProvider.UpdateEntityAsync(entity).ConfigureAwait(false);
@@ -65,9 +70,22 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopES>> Search(WorkshopFilterES filter)
         {
+            if (filter is null)
+            {
+                throw new ArgumentNullException($"{filter} is not set to an instance.");
+            }
+
             var res = await esProvider.Search(filter).ConfigureAwait(false);
 
             return res;
+        }
+
+        private void NullCheck(WorkshopES entity)
+        {
+            if (entity is null)
+            {
+                throw new ArgumentNullException($"{entity} is not set to an instance.");
+            }
         }
     }
 }
