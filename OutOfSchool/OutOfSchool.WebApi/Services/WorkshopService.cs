@@ -133,7 +133,19 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There aren't Workshops for Provider with Id = {id}."
                 : $"From Workshop table were successfully received {workshops.Count()} records.");
 
-            return workshops.Select(x => x.ToModel()).ToList();
+            var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
+
+            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTO.Select(p => p.Id), RatingType.Workshop);
+
+            if (averageRatings != null)
+            {
+                foreach (var workshop in workshopsDTO)
+                {
+                    workshop.Rating = averageRatings.FirstOrDefault(r => r.Key == workshop.Id).Value;
+                }
+            }
+
+            return workshopsDTO;
         }
 
         /// <inheritdoc/>
