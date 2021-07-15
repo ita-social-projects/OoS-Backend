@@ -237,6 +237,17 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(1)]
+        public void GetAllByWorkshop_WhenFilterIsNull_ShouldThrowArgumentException(long id)
+        {
+            // Arrange
+            ApplicationFilter filter = null;
+
+            // Act and Assert
+            service.Invoking(s => s.GetAllByWorkshop(id, filter)).Should().ThrowAsync<ArgumentException>();
+        }
+
+        [Test]
+        [TestCase(1)]
         public async Task GetAllByProvider_WhenIdIsValid_ShouldReturnApplications(long id)
         {
             // Arrange
@@ -270,6 +281,17 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Assert
             result.Count().Should().Be(0);
+        }
+
+        [Test]
+        [TestCase(1)]
+        public void GetAllByProvider_WhenFilterIsNull_ShouldThrowArgumentException(long id)
+        {
+            // Arrange
+            ApplicationFilter filter = null;
+
+            // Act and Assert
+            service.Invoking(s => s.GetAllByProvider(id, filter)).Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
