@@ -9,10 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OutOfSchool.IdentityServer;
+using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Extensions;
 
-namespace IdentityServer
+namespace OutOfSchool.IdentityServer
 {
     public class Program
     {
@@ -34,8 +35,12 @@ namespace IdentityServer
                     .Database.Migrate();
                 var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
                 var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+                // TODO: Move to identity options
                 var apiSecret = configService["outofschoolapi:ApiSecret"];
                 var clientSecret = configService["m2m.client:ClientSecret"];
+                var identityOptions = new IdentityAccessOptions();
+                configService.GetSection(identityOptions.Name).Bind(identityOptions);
 
                 context.Database.Migrate();
                 identityContext.Database.Migrate();
@@ -46,45 +51,34 @@ namespace IdentityServer
                     RolesInit(manager);
                 }
 
-                if (!context.Clients.Any())
+                foreach (var client in StaticConfig.Clients(clientSecret, identityOptions.AdditionalIdentityClients))
                 {
-                    foreach (var client in Config.Clients(clientSecret))
-                    {
-                        context.Clients.Add(client.ToEntity());
-                    }
-
-                    context.SaveChanges();
+                    context.Clients.AddIfNotExists(client.ToEntity(), c => c.ClientId == client.ClientId);
                 }
 
-                if (!context.IdentityResources.Any())
-                {
-                    foreach (var resource in Config.IdentityResources)
-                    {
-                        context.IdentityResources.Add(resource.ToEntity());
-                    }
+                context.SaveChanges();
 
-                    context.SaveChanges();
+
+                foreach (var resource in StaticConfig.IdentityResources)
+                {
+                    context.IdentityResources.AddIfNotExists(resource.ToEntity(), ir => resource.Name == ir.Name);
                 }
 
-                if (!context.ApiResources.Any())
-                {
-                    foreach (var resource in Config.ApiResources(apiSecret))
-                    {
-                        context.ApiResources.Add(resource.ToEntity());
-                    }
+                context.SaveChanges();
 
-                    context.SaveChanges();
+                foreach (var resource in StaticConfig.ApiResources(apiSecret))
+                {
+                    context.ApiResources.AddIfNotExists(resource.ToEntity(), ar => resource.Name == ar.Name);
                 }
 
-                if (!context.ApiScopes.Any())
-                {
-                    foreach (var resource in Config.ApiScopes)
-                    {
-                        context.ApiScopes.Add(resource.ToEntity());
-                    }
+                context.SaveChanges();
 
-                    context.SaveChanges();
+                foreach (var resource in StaticConfig.ApiScopes)
+                {
+                    context.ApiScopes.AddIfNotExists(resource.ToEntity(), apiScope => apiScope.Name == resource.Name);
                 }
+
+                context.SaveChanges();
             }
 
             host.Run();
