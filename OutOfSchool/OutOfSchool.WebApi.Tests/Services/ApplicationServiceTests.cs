@@ -204,11 +204,20 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAllByWokshop_WhenIdIsValid_ShouldReturnApplications(long id)
         {
             // Arrange
+            var applicationFilter = new ApplicationFilter
+            {
+                Status = 1,
+                OrderByAlphabetically = false,
+                OrderByDateAscending = false,
+                OrderByStatus = false,
+            };
+
             Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
             var expected = await applicationRepository.GetByFilter(filter);
+            expected = expected.Where(a => (int)a.Status == applicationFilter.Status);
 
             // Act
-            var result = await service.GetAllByWorkshop(id).ConfigureAwait(false);
+            var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
@@ -219,7 +228,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAllByWorkshop_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
         {
             // Act
-            var result = await service.GetAllByWorkshop(id).ConfigureAwait(false);
+            var applicationFilter = new ApplicationFilter { Status = 1 };
+            var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
 
             // Assert
             result.Count().Should().Be(0);
@@ -230,11 +240,20 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAllByProvider_WhenIdIsValid_ShouldReturnApplications(long id)
         {
             // Arrange
+            var applicationFilter = new ApplicationFilter
+            {
+                Status = 0,
+                OrderByAlphabetically = false,
+                OrderByStatus = false,
+                OrderByDateAscending = false,
+            };
+
             Expression<Func<Application, bool>> filter = a => a.Workshop.ProviderId == id;
             var expected = await applicationRepository.GetByFilter(filter);
+            expected = expected.Where(a => (int)a.Status == applicationFilter.Status);
 
             // Act
-            var result = await service.GetAllByProvider(id).ConfigureAwait(false);
+            var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
@@ -245,7 +264,9 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAllByProvider_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
         {
             // Act
-            var result = await service.GetAllByProvider(id).ConfigureAwait(false);
+            var applicationFilter = new ApplicationFilter { Status = 1 };
+
+            var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
 
             // Assert
             result.Count().Should().Be(0);
