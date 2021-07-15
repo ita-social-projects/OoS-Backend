@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -20,6 +21,7 @@ namespace OutOfSchool.WebApi.Controllers
     public class RatingController : ControllerBase
     {
         private readonly IRatingService service;
+        private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> esWorkshopService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -27,10 +29,12 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="service">Service for Rating model.</param>
         /// <param name="localizer">Localizer.</param>
-        public RatingController(IRatingService service, IStringLocalizer<SharedResource> localizer)
+        /// <param name="esWorkshopService">Service for operations with workshop documents of Elasticsearch data.</param>
+        public RatingController(IRatingService service, IStringLocalizer<SharedResource> localizer, IElasticsearchService<WorkshopES, WorkshopFilterES> esWorkshopService)
         {
             this.service = service;
             this.localizer = localizer;
+            this.esWorkshopService = esWorkshopService;
         }
 
         /// <summary>
@@ -173,6 +177,11 @@ namespace OutOfSchool.WebApi.Controllers
                     "Please check that entity, parent, type information are valid and don't exist in the system yet.");
             }
 
+            if (dto.Type == RatingType.Workshop)
+            {
+                await this.UpdateWorkshopInElasticsearch(dto.EntityId).ConfigureAwait(false);
+            }
+
             return CreatedAtAction(
                 nameof(GetById),
                 new { id = rating.Id, },
@@ -200,6 +209,11 @@ namespace OutOfSchool.WebApi.Controllers
                     "Please check that id, entity, parent, type information are valid and exist in the system.");
             }
 
+            if (dto.Type == RatingType.Workshop)
+            {
+                await this.UpdateWorkshopInElasticsearch(dto.EntityId).ConfigureAwait(false);
+            }
+
             return Ok(rating);
         }
 
@@ -216,6 +230,12 @@ namespace OutOfSchool.WebApi.Controllers
         public async Task<IActionResult> Delete(long id)
         {
             this.ValidateId(id, localizer);
+
+            var dto = await service.GetById(id).ConfigureAwait(false);
+            if (!(dto is null) && dto.Type == RatingType.Workshop)
+            {
+                await this.UpdateWorkshopInElasticsearch(dto.Id).ConfigureAwait(false);
+            }
 
             await service.Delete(id).ConfigureAwait(false);
 
@@ -244,6 +264,13 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             return type;
+        }
+
+        private async Task UpdateWorkshopInElasticsearch(long id)
+        {
+            var entitis = await esWorkshopService.Search(new WorkshopFilterES() { Ids = new List<long>() { id } }).ConfigureAwait(false);
+
+            await esWorkshopService.Update(entitis.Single()).ConfigureAwait(false);
         }
     }
 }

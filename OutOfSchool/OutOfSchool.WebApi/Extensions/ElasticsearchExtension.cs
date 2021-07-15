@@ -57,9 +57,7 @@ namespace OutOfSchool.WebApi.Extensions
 
             if (resp.ApiCall.HttpStatusCode == 404)
             {
-                var createIndexResponse = client.Indices.Create(
-                    indexName,
-                    index => index.Map<T>(x => x.AutoMap<T>()));
+                client.Indices.Create(indexName, index => index.Map<T>(x => x.AutoMap<T>()));
             }
         }
     }
