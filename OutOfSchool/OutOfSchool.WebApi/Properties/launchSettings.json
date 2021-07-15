@@ -20,7 +20,7 @@
     "OutOfSchool": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "Organization/TestOk",
+      "launchUrl": "swagger",
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
