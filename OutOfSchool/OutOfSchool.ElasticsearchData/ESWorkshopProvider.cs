@@ -38,7 +38,24 @@ namespace OutOfSchool.ElasticsearchData
 
         private QueryContainer CreateQueryFromFilter(WorkshopFilterES filter)
         {
-            QueryContainer queryContainer = new QueryContainer();
+            var queryContainer = new QueryContainer();
+
+            if (!(filter.Ids is null) && filter.Ids.Count > 0)
+            {
+                var box = new List<object>();
+                foreach (var item in filter.Ids)
+                {
+                    box.Add(item);
+                }
+
+                queryContainer &= new TermsQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.Id),
+                    Terms = box,
+                };
+
+                return queryContainer;
+            }
 
             if (!string.IsNullOrEmpty(filter.SearchText))
             {

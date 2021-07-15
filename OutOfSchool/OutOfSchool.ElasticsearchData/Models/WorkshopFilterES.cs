@@ -6,6 +6,8 @@ namespace OutOfSchool.ElasticsearchData.Models
 {
     public class WorkshopFilterES
     {
+        public List<long> Ids { get; set; } = null;
+
         public string SearchText { get; set; } = string.Empty;
 
         public OrderBy OrderByField { get; set; } = OrderBy.Rating;
