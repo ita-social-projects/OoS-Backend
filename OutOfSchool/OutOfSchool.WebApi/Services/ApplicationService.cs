@@ -165,8 +165,9 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
 
-            Expression<Func<Application, bool>> applicationFilter = a => a.WorkshopId == id;
+            FilterNullValidation(filter);
 
+            Expression<Func<Application, bool>> applicationFilter = a => a.WorkshopId == id;
             var applications = applicationRepository.Get<int>(where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
             var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
@@ -182,6 +183,8 @@ namespace OutOfSchool.WebApi.Services
         public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id, ApplicationFilter filter)
         {
             logger.Information($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
+
+            FilterNullValidation(filter);
 
             Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
             var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
@@ -265,6 +268,15 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.Information("Operation failed. ApplicationDto is null");
                 throw new ArgumentException(localizer["Application dto is null."], nameof(applicationDto));
+            }
+        }
+
+        private void FilterNullValidation(ApplicationFilter filter)
+        {
+            if (filter is null)
+            {
+                logger.Information("Operation failed. Application filter is null.");
+                throw new ArgumentException(localizer["Application filter is null."], nameof(filter));
             }
         }
 
