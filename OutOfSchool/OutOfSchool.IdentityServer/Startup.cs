@@ -65,6 +65,7 @@ namespace OutOfSchool.IdentityServer
                 {
                     if (env.IsEnvironment("Release"))
                     {
+                        // TODO: Change this to something decent and configurable
                         options.IssuerUri = "http://hostname:5443";
                     }
                 })
