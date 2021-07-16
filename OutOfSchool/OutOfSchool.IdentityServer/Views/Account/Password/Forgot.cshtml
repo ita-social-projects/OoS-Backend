@@ -10,25 +10,20 @@
     Layout = "_Layout";
 }
 
-<div class="wrapper" >
-<h2 class="icon_title">@SharedLocalizer["Forgot password"].Value.ToUpper()</h2>
+<h2 class="title">@SharedLocalizer["Forgot password"].Value.ToUpper()</h2>
 
 <h3 class="instruction">@SharedLocalizer["Enter email to change password"].Value.ToUpper()</h3>
 
-    <form asp-action="ForgotPassword">
-        <input type="hidden" asp-for="ReturnUrl" />
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <ul class="registration_list">
-            <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["Email"]</label>
-                <input class="registration_input" asp-for="Email" autocomplete="password" aria-required="true" />
-                <div>
-                    <span asp-validation-for="Email"></span>
-                </div>
-            </li>
-        <li class="registration_item">
-            <input type="submit" value="Reset password" class="registration_submit registration_button"/>
-        </li>
-        </ul>
-    </form>
-</div>
+<form asp-action="ForgotPassword">
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <label class="registration_label">@SharedLocalizer["Email"]</label>
+    <input class="registration_input" asp-for="Email" autocomplete="password" aria-required="true" />
+    <div>
+        <span asp-validation-for="Email"></span>
+    </div>
+    <div class="registration_item">
+        <input type="submit" value="Reset password" class="registration_submit registration_button"/>
+    </div>
+</form>

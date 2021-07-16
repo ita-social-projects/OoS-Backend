@@ -8,6 +8,7 @@
     ViewData["Title"] = SharedLocalizer["Entrance to Extracurricular activities"];
     Layout = "_Layout";
 }
+<div class="wrapper_body">
     <div class="wrapper modal">
     <h1 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h1>
         <div class="icon_wrapper">
@@ -15,7 +16,7 @@
             <a class="icon_social_link" href="''"><img class="icon-image" src="/icons/facebook.png" alt="facebook"></a>
             <a class="icon_social_link" href="''"><img class="icon-image" src="/icons/google.png" alt="google"></a>
         </div>
-      <div class="option">або заповніть форму</div>
+      <div class="option">@SharedLocalizer["or fill out the form"]</div>
 
 @* <form asp-controller="Auth" asp-action="ExternalLogin" *@
 @*       asp-route-returnUrl="@Model.ReturnUrl" method="post"> *@
@@ -29,32 +30,26 @@
 @*     } *@
 @* </form> *@
 
-<form asp-controller="Auth" asp-action="Login" method="post">
-    <input type="hidden" asp-for="ReturnUrl" />
-    <div asp-validation-summary="ModelOnly"></div>
-     <ul class="registration_list">
-        <li class="registration_item">
+    <form asp-controller="Auth" asp-action="Login" method="post">
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly"></div>
             <label class="registration_label">@SharedLocalizer["Email"]</label>
             <input class="registration_input" asp-for="Username" />
             <div>
-            <span asp-validation-for="Username"></span>
+                <span asp-validation-for="Username"></span>
             </div>
-        </li>
-          <li class="registration_item">
             <label class="registration_label">@SharedLocalizer["Password"]</label>
             <input class="registration_input" asp-for="Password" />
             <div>
-            <span asp-validation-for="Password"></span>
+                <span asp-validation-for="Password"></span>
             </div>
-        </li>
-
-        <li class="registration_item">
-        <button class="registration_submit registration_button"  type="submit">@SharedLocalizer["Sign In"]</button>
-        </li>
-    </ul>
-    <div><span>Ще не зареєстровані?</span>
-    <a class="link" asp-controller="Auth" asp-action="Register"asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
-</div>
-</form>
+            <div class="registration_item">
+                <button class="registration_submit registration_button"  type="submit">@SharedLocalizer["Sign In"]</button>
+            </div>
+            <div class="registration_item">
+                <span>Ще не зареєстровані?</span>
+                <a class="link" asp-controller="Auth" asp-action="Register"asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
+            </div>
+    </form>
 </div>
 </div>
