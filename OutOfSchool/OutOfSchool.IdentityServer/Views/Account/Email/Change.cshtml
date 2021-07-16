@@ -15,7 +15,7 @@
 
 <h3 class="instruction">@SharedLocalizer["Введіть ваш новий емейл на який буде надіслана інструкція по зміні емейлу."].Value.ToUpper()</h3>
 <div class="warning">
-    <p>@SharedLocalizer["Зверніть увагу, що після зміни емейлу ви не матимете змоги увійти у систему зі старим емейлом."]</p>
+    <img src="/icons/warning.svg" alt="warning"><p>@SharedLocalizer["Зверніть увагу, що після зміни емейлу ви не матимете змоги увійти у систему зі старим емейлом."]</p>
 </div>
     <form asp-action="ChangeEmail" class="wrapper">
         <input type="hidden" asp-for="ReturnUrl" />
