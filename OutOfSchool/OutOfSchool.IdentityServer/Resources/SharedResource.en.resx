@@ -192,4 +192,70 @@
   <data name="You must be over 18 to register!" xml:space="preserve">
     <value>You must be over 18 to register!</value>
   </data>
+  <data name="Reset password" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
+  <data name="Change password alert" xml:space="preserve">
+    <value>Note that after changing the password, you will not be able to log in with the old password</value>
+  </data>
+  <data name="Old email" xml:space="preserve">
+    <value>Old email</value>
+  </data>
+  <data name="New email" xml:space="preserve">
+    <value>New email</value>
+  </data>
+  <data name="Change email" xml:space="preserve">
+    <value>Change email</value>
+  </data>
+  <data name="Enter new email message" xml:space="preserve">
+    <value>Enter your new email to which change email instructions will be sent</value>
+  </data>
+  <data name="Change email alert" xml:space="preserve">
+    <value>Note that after changing your email, you will not be able to log in with your old email</value>
+  </data>
+  <data name="Confirm email change" xml:space="preserve">
+    <value>Confirm email change</value>
+    <comment>Confirm email change</comment>
+  </data>
+  <data name="Change password" xml:space="preserve">
+    <value>Change password</value>
+    <comment>Change password</comment>
+  </data>
+  <data name="Old password" xml:space="preserve">
+    <value>Old password</value>
+  </data>
+  <data name="New password" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="Repeat new password" xml:space="preserve">
+    <value>Repeat new password</value>
+  </data>
+  <data name="Change password confirmation" xml:space="preserve">
+    <value>Change password confirmation</value>
+    <comment>Change password confirmation</comment>
+  </data>
+  <data name="Your password was changed" xml:space="preserve">
+    <value>Your password was changed</value>
+  </data>
+  <data name="Enter email to change password" xml:space="preserve">
+    <value>Enter your email to which the password reset instructions will be sent</value>
+  </data>
+  <data name="Check your email for instructions" xml:space="preserve">
+    <value>Check your email for instructions</value>
+  </data>
+  <data name="Reset password confirmation" xml:space="preserve">
+    <value>Reset password confirmation</value>
+  </data>
+  <data name="Your password has been reset" xml:space="preserve">
+    <value>Your password has been reset</value>
+  </data>
+  <data name="Forgot password" xml:space="preserve">
+    <value>Forgot password</value>
+  </data>
+  <data name="Forgot password confirmation" xml:space="preserve">
+    <value>Forgot password confirmation</value>
+  </data>
+  <data name="Confirm email" xml:space="preserve">
+    <value>Підтвердження емейлу</value>
+  </data>
 </root>

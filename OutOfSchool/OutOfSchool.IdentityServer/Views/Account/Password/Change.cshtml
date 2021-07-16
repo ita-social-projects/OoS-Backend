@@ -11,31 +11,31 @@
 }
 
 <div class="wrapper" >
-<h1 class="icon_title">@SharedLocalizer["ЗМІНИТИ ПАРОЛЬ"].Value.ToUpper()</h1>
+<h1 class="icon_title">@SharedLocalizer["Change password"].Value.ToUpper()</h1>
 
 <div class="warning">
-    <img src="/icons/warning.svg" alt="warning"><p>@SharedLocalizer["Зверніть увагу, що після зміни паролю ви не матимете змоги увійти у систему зі старим паролем."]</p>
+    <img src="/icons/warning.svg" alt="warning"><p>@SharedLocalizer["Change password alert"]</p>
 </div>
     <form method="post" class="wrapper">
         <input type="hidden" asp-for="ReturnUrl" />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <ul class="registration_list">
             <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["Старий пароль"]</label>
+                <label class="registration_label">@SharedLocalizer["Old password"]</label>
                 <input class="registration_input" asp-for="CurrentPassword" autocomplete="password" aria-required="true" />
                 <div>
                     <span asp-validation-for="CurrentPassword"></span>
                 </div>
             </li>
             <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["Новий пароль"]</label>
+                <label class="registration_label">@SharedLocalizer["New password"]</label>
                 <input class="registration_input" asp-for="NewPassword" autocomplete="new-password" aria-required="true"/>
                 <div>
                     <span asp-validation-for="NewPassword"></span>
                 </div>
             </li>
             <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["Підтвердити новий пароль"]</label>
+                <label class="registration_label">@SharedLocalizer["Repeat new password"]</label>
                 <input class="registration_input" asp-for="ConfirmNewPassword" autocomplete="new-password" aria-required="true"/>
                 <div>
                     <span asp-validation-for="ConfirmNewPassword"></span>

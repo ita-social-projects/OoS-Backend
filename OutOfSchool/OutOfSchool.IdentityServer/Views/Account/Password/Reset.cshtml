@@ -11,31 +11,31 @@
 }
 
 <div class="wrapper" >
-<h1 class="icon_title">@SharedLocalizer["ВІДНОВИТИ ПАРОЛЬ"].Value.ToUpper()</h1>
+<h1 class="icon_title">@SharedLocalizer["Reset password"].Value.ToUpper()</h1>
 
 <div class="warning">
-    <img src="/icons/warning.svg" alt="warning"><p>@SharedLocalizer["Зверніть увагу, що після зміни паролю ви не матимете змоги увійти у систему зі старим паролем."]</p>
+    <img src="/icons/warning.svg" alt="warning"><p>@SharedLocalizer["Change password alert"]</p>
 </div>
     <form method="post" class="wrapper">
         <input type="hidden" asp-for="Token" />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <ul class="registration_list">
             <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["Емейл"]</label>
+                <label class="registration_label">@SharedLocalizer["Email"]</label>
                 <input class="registration_input" asp-for="Email" autocomplete="username" aria-required="true" />
                 <div>
                     <span asp-validation-for="Email"></span>
                 </div>
             </li>
             <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["Пароль"]</label>
+                <label class="registration_label">@SharedLocalizer["Password"]</label>
                 <input class="registration_input" asp-for="Password" autocomplete="new-password" aria-required="true"/>
                 <div>
                     <span asp-validation-for="Password"></span>
                 </div>
             </li>
             <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["Підтвердити пароль"]</label>
+                <label class="registration_label">@SharedLocalizer["Confirm password"]</label>
                 <input class="registration_input" asp-for="ConfirmPassword" autocomplete="new-password" aria-required="true"/>
                 <div>
                     <span asp-validation-for="ConfirmPassword"></span>

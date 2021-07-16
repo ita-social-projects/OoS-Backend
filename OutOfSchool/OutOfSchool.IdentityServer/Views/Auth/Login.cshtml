@@ -10,7 +10,7 @@
 }
     <div class="wrapper">
         <div class="icon_wrapper">
-        <h3 class="icon_title">@SharedLocalizer["Увійти"].Value.ToUpper()</h3>
+        <h3 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h3>
         <div class="icon_social">
             <button class="icon_button">
                 <img src="/icons/fb.png" alt="facebook">
@@ -38,14 +38,14 @@
     <div asp-validation-summary="ModelOnly"></div>
      <ul class="registration_list">
         <li class="registration_item">
-            <label class="registration_label">@SharedLocalizer["Емейл"]</label>
+            <label class="registration_label">@SharedLocalizer["Email"]</label>
             <input class="registration_input" asp-for="Username" />
             <div>
             <span asp-validation-for="Username"></span>
             </div>
         </li>
           <li class="registration_item">
-            <label class="registration_label">@SharedLocalizer["Пароль"]</label>
+            <label class="registration_label">@SharedLocalizer["Password"]</label>
             <input class="registration_input" asp-for="Password" />
             <div>
             <span asp-validation-for="Password"></span>
@@ -53,14 +53,14 @@
         </li>
 
         <li class="registration_item">
-        <button class=" registration_submit"  type="submit">@SharedLocalizer["Увійти"]</button>
+        <button class=" registration_submit"  type="submit">@SharedLocalizer["Sign In"]</button>
         </li>
     </ul>
     <div class="registration_login">
 <span>Ще не зареєстровані?</span>
     <a class="link" asp-controller="Auth" asp-action="Register"
        asp-route-returnUrl="@Model.ReturnUrl">
-        @SharedLocalizer["Зареєструватися"]
+        @SharedLocalizer["Register"]
     </a>
 </div>
 </form>
