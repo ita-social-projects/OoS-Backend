@@ -1,31 +1,50 @@
-﻿@model OutOfSchool.IdentityServer.ViewModels.ChangePasswordViewModel
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.IdentityServer
+
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@model OutOfSchool.IdentityServer.ViewModels.ChangePasswordViewModel
+
 @{
-    ViewData["Title"] = "Change password";
+    ViewData["Title"] =  SharedLocalizer["Change password"];
+    Layout = "_Layout";
 }
 
-<h1>@ViewData["Title"]</h1>
-<h2>Change your password.</h2>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>            
-            <div class="form-group">
-                <label asp-for="CurrentPassword"></label>
-                <input asp-for="CurrentPassword" class="form-control" autocomplete="password" aria-required="true" />
-                <span asp-validation-for="CurrentPassword" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="NewPassword"></label>
-                <input asp-for="NewPassword" class="form-control" autocomplete="new-password" aria-required="true" />
-                <span asp-validation-for="NewPassword" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ConfirmNewPassword"></label>
-                <input asp-for="ConfirmNewPassword" class="form-control" autocomplete="new-password" aria-required="true" />
-                <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
-            </div>
-            <button type="submit" class="btn btn-primary">Change password</button>
-        </form>
-    </div>
+<div class="wrapper" >
+<h1 class="icon_title">@SharedLocalizer["ЗМІНИТИ ПАРОЛЬ"].Value.ToUpper()</h1>
+
+<div class="warning">
+    <p>@SharedLocalizer["Зверніть увагу, що після зміни паролю ви не матимете змоги увійти у систему зі старим паролем."]</p>
 </div>
+    <form method="post" class="wrapper">
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <ul class="registration_list">
+            <li class="registration_item">
+                <label class="registration_label">@SharedLocalizer["Старий пароль"]</label>
+                <input class="registration_input" asp-for="CurrentPassword" autocomplete="password" aria-required="true" />
+                <div>
+                    <span asp-validation-for="CurrentPassword"></span>
+                </div>
+            </li>
+            <li class="registration_item">
+                <label class="registration_label">@SharedLocalizer["Новий пароль"]</label>
+                <input class="registration_input" asp-for="NewPassword" autocomplete="new-password" aria-required="true"/>
+                <div>
+                    <span asp-validation-for="NewPassword"></span>
+                </div>
+            </li>
+            <li class="registration_item">
+                <label class="registration_label">@SharedLocalizer["Підтвердити новий пароль"]</label>
+                <input class="registration_input" asp-for="ConfirmNewPassword" autocomplete="new-password" aria-required="true"/>
+                <div>
+                    <span asp-validation-for="ConfirmNewPassword"></span>
+                </div>
+            </li>
+        <li class="registration_item">
+            <input type="submit" value="Save" class="registration_submit registration_button"/>
+        </li>
+        </ul>
+    </form>
+</div>
+

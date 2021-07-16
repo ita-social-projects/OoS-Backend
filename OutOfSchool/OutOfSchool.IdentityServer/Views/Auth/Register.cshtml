@@ -3,7 +3,7 @@
 @using OutOfSchool.IdentityServer
 
 @inject IHtmlLocalizer<SharedResource> SharedLocalizer
-
+    
 @model OutOfSchool.IdentityServer.ViewModels.RegisterViewModel
 @{
     ViewData["Title"] = SharedLocalizer["Registration for Extracurricular activities"];
@@ -15,10 +15,10 @@
         <h5 class="icon_subtitle">@SharedLocalizer["To be able to apply to clubs or become a service provider"]</h5>
         <div class="icon_social">
             <button class="icon_button">
-                <img src="/icons/fb.png" alt="facebook">
+                <img src="/icons/fb.svg" alt="facebook">
             </button>
             <button class="button">
-                <img src="/icons/google.png" alt="google">
+                <img src="/icons/google.svg" alt="google">
             </button>
         </div>
         <div class="option">@SharedLocalizer["or fill out the form"]</div>
