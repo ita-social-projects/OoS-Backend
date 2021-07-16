@@ -96,34 +96,44 @@ a {
   margin: 0 0.3rem;
   cursor: pointer;
 }
-.option {
+.option, .option-short {
   font-size: 0.8125rem;
   line-height: 18px;
   text-align: center;
   color: #333333;
   position: relative;
 }
-.option:after {
-  content: "";
+.option:after, .option-short:after{
+   content: "";
   display: block;
   position: absolute;
   height: 1px;
   width: 7rem;
   background-color: #e3e3e3;
-  left: 10rem;
   top: 50%;
   transform: translate(-120%, -50%);
 }
-.option:before {
+.option:after {
+  left: 10rem;
+}
+.option-short:after {
+  left: 5rem;
+}
+.option:before, .option-short:before {
   content: "";
   display: block;
   position: absolute;
   height: 1px;
   width: 7rem;
   background-color: #e3e3e3;
-  right: 10rem;
   top: 50%;
   transform: translate(120%, -50%);
+}
+.option:before {
+  left: 10rem;
+}
+.option-short:before {
+  left: 5rem;
 }
 .registration_star {
   color: red;

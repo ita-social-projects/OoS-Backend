@@ -18,7 +18,7 @@
             <a class="icon_social_link" href="''"><img class="icon-image" src="/icons/facebook.png" alt="facebook"></a>
             <a class="icon_social_link" href="''"><img class="icon-image" src="/icons/google.png" alt="google"></a>
         </div>
-        <div class="option">@SharedLocalizer["or fill out the form"]</div>
+        <div class="option-short">@SharedLocalizer["or fill out the form"]</div>
         <form onsubmit="return validateForm(this)" asp-controller="Auth" asp-action="Register" method="post">
             <input type="hidden" asp-for="ReturnUrl" />
             <div asp-validation-summary="ModelOnly"></div>
