@@ -43,10 +43,10 @@
             <div>
                 <span asp-validation-for="Password"></span>
             </div>
-            <div class="registration_item">
+            <div class="title">
                 <button class="registration_submit registration_button"  type="submit">@SharedLocalizer["Sign In"]</button>
             </div>
-            <div class="registration_item">
+            <div class="title">
                 <span>Ще не зареєстровані?</span>
                 <a class="link" asp-controller="Auth" asp-action="Register"asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
             </div>

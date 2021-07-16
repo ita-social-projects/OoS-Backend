@@ -113,12 +113,7 @@ a {
   top: 50%;
   transform: translate(-120%, -50%);
 }
-.option:after {
-  left: 10rem;
-}
-.option-short:after {
-  left: 5rem;
-}
+
 .option:before, .option-short:before {
   content: "";
   display: block;
@@ -129,11 +124,17 @@ a {
   top: 50%;
   transform: translate(120%, -50%);
 }
-.option:before {
+.option:after {
   left: 10rem;
 }
+.option-short:after {
+  left: 4rem;
+}
+.option:before {
+  right: 10rem;
+}
 .option-short:before {
-  left: 5rem;
+  right: 4rem;
 }
 .registration_star {
   color: red;
