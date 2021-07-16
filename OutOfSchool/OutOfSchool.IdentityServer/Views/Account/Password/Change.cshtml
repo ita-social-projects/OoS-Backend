@@ -10,40 +10,35 @@
     Layout = "_Layout";
 }
 
-<div class="wrapper modal" >
-<h2 class="icon_title">@SharedLocalizer["Change password"].Value.ToUpper()</h2>
+
+<h2 class="title">@SharedLocalizer["Change password"].Value.ToUpper()</h2>
 
 <div class="warning">
     <img src="/icons/warning.svg" alt="warning" class="warning_icon" ><p>@SharedLocalizer["Change password alert"]</p>
 </div>
-    <form method="post">
-        <input type="hidden" asp-for="ReturnUrl" />
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <ul class="registration_list">
-            <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["Old password"]</label>
-                <input class="registration_input" asp-for="CurrentPassword" autocomplete="password" aria-required="true" />
-                <div>
-                    <span asp-validation-for="CurrentPassword"></span>
-                </div>
-            </li>
-            <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["New password"]</label>
-                <input class="registration_input" asp-for="NewPassword" autocomplete="new-password" aria-required="true"/>
-                <div>
-                    <span asp-validation-for="NewPassword"></span>
-                </div>
-            </li>
-            <li class="registration_item">
-                <label class="registration_label">@SharedLocalizer["Repeat new password"]</label>
-                <input class="registration_input" asp-for="ConfirmNewPassword" autocomplete="new-password" aria-required="true"/>
-                <div>
-                    <span asp-validation-for="ConfirmNewPassword"></span>
-                </div>
-            </li>
-        <li class="registration_item">
-            <input type="submit" value="Save" class="registration_submit registration_button"/>
-        </li>
-        </ul>
-    </form>
-</div>
+<form method="post">
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <label class="registration_label">@SharedLocalizer["Old password"]</label>
+    <input class="registration_input" asp-for="CurrentPassword" autocomplete="password" aria-required="true" />
+    <div>
+        <span asp-validation-for="CurrentPassword"></span>
+    </div>
+
+    <label class="registration_label">@SharedLocalizer["New password"]</label>
+    <input class="registration_input" asp-for="NewPassword" autocomplete="new-password" aria-required="true"/>
+    <div>
+        <span asp-validation-for="NewPassword"></span>
+    </div>
+
+    <label class="registration_label">@SharedLocalizer["Repeat new password"]</label>
+    <input class="registration_input" asp-for="ConfirmNewPassword" autocomplete="new-password" aria-required="true"/>
+    <div>
+        <span asp-validation-for="ConfirmNewPassword"></span>
+    </div>
+
+    <div class="registration_item">
+        <input type="submit" value="Save" class="registration_submit registration_button"/>
+    </div>
+</form>

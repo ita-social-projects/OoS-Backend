@@ -3,15 +3,11 @@ body {
   height: 100%;
 }
 body {
-  margin: 5rem;
   font-family: "Open Sans", sans-serif;
   font-size: 0.8125rem;
   line-height: 1.125rem;
   background-color: #f8f8f8;
   color: #333333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 h1,
@@ -55,21 +51,27 @@ a {
   text-decoration: none;
   color: inherit;
 }
-
+.wrapper_body{
+  margin: 5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .wrapper {
   display: flex;
   justify-content: center;
   flex-direction: column;
   align-items: center;
   padding: 2rem;
-}
-.modal{
   background: #ffffff;
   box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
   border-radius: 5px;
   width: 640px;
 }
-
+.title{
+  display: flex;
+  justify-content: center;
+}
 .icon_wrapper {
   display: flex;
   justify-content: center;
@@ -94,34 +96,45 @@ a {
   margin: 0 0.3rem;
   cursor: pointer;
 }
-.option {
+.option, .option-short {
   font-size: 0.8125rem;
   line-height: 18px;
   text-align: center;
   color: #333333;
   position: relative;
 }
-.option:after {
-  content: "";
+.option:after, .option-short:after{
+   content: "";
   display: block;
   position: absolute;
   height: 1px;
   width: 7rem;
   background-color: #e3e3e3;
-  left: 10rem;
   top: 50%;
   transform: translate(-120%, -50%);
 }
-.option:before {
+
+.option:before, .option-short:before {
   content: "";
   display: block;
   position: absolute;
   height: 1px;
   width: 7rem;
   background-color: #e3e3e3;
-  right: 10rem;
   top: 50%;
   transform: translate(120%, -50%);
+}
+.option:after {
+  left: 10rem;
+}
+.option-short:after {
+  left: 4rem;
+}
+.option:before {
+  right: 10rem;
+}
+.option-short:before {
+  right: 4rem;
 }
 .registration_star {
   color: red;

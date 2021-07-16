@@ -9,6 +9,7 @@
     ViewData["Title"] = SharedLocalizer["Registration for Extracurricular activities"];
     Layout = "_Layout";
 }
+<div class="wrapper_body">
 <div class="wrapper modal">
     <h1 class="icon_title">@SharedLocalizer["Register"].Value.ToUpper()</h1>
     <div class="icon_wrapper">
@@ -17,7 +18,7 @@
             <a class="icon_social_link" href="''"><img class="icon-image" src="/icons/facebook.png" alt="facebook"></a>
             <a class="icon_social_link" href="''"><img class="icon-image" src="/icons/google.png" alt="google"></a>
         </div>
-        <div class="option">@SharedLocalizer["or fill out the form"]</div>
+        <div class="option-short">@SharedLocalizer["or fill out the form"]</div>
         <form onsubmit="return validateForm(this)" asp-controller="Auth" asp-action="Register" method="post">
             <input type="hidden" asp-for="ReturnUrl" />
             <div asp-validation-summary="ModelOnly"></div>
@@ -132,10 +133,11 @@
                 <li class="registration_item">
                     <input class="registration_submit registration_button" type="submit" id="btn_register" name="Parent" value="@SharedLocalizer["Register"].Value.ToUpper()">
                 </li>
-                <div class="registration_link">@SharedLocalizer["Already registered?"] <a href="Login" class="link">@SharedLocalizer["Sign In"]</a></div>
+                <div class="title">@SharedLocalizer["Already registered?"] <a href="Login" class="link">@SharedLocalizer["Sign In"]</a></div>
             </ul>
         </form>
 
     </div>
 </div>
+<div>
 <script src="~/js/site.js"></script>
