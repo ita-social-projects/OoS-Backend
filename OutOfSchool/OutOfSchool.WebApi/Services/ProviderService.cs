@@ -116,8 +116,8 @@ namespace OutOfSchool.WebApi.Services
 
             var rating = ratingService.GetAverageRating(providerDTO.Id, RatingType.Provider);
 
-            providerDTO.Rating = rating.Item1;
-            providerDTO.NumberOfRatings = rating.Item2;
+            providerDTO.Rating = rating?.Item1 ?? default;
+            providerDTO.NumberOfRatings = rating?.Item2 ?? default;
 
             return providerDTO;
         }

@@ -121,8 +121,8 @@ namespace OutOfSchool.WebApi.Services
 
             var rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
 
-            workshopDTO.Rating = rating.Item1;
-            workshopDTO.NumberOfRatings = rating.Item2;
+            workshopDTO.Rating = rating?.Item1 ?? default;
+            workshopDTO.NumberOfRatings = rating?.Item2 ?? default;
 
             return workshopDTO;
         }
