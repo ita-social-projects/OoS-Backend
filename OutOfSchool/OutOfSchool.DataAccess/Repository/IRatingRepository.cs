@@ -7,7 +7,7 @@ namespace OutOfSchool.Services.Repository
 {
     public interface IRatingRepository : IEntityRepository<Rating>
     {
-        double GetAverageRating(long entityId, RatingType type);
+        Tuple<double, int> GetAverageRating(long entityId, RatingType type);
 
         Dictionary<long, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<long> entities, RatingType type);
     }

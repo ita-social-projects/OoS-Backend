@@ -16,13 +16,13 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public double GetAverageRating(long entityId, RatingType type)
+        public Tuple<double, int> GetAverageRating(long entityId, RatingType type)
         {
             var ratings = db.Ratings.Where(rating => rating.EntityId == entityId && rating.Type == type);
 
             if (ratings.Count() != 0)
             {
-                return ratings.Average(rating => rating.Rate);
+                return new Tuple<double, int>(ratings.Average(rating => rating.Rate), ratings.Count());
             }
             else
             {

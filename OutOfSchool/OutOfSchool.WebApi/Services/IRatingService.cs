@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityId">Entity key.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>Average rating of entity.</returns>
-        float GetAverageRating(long entityId, RatingType type);
+        Tuple<float, int> GetAverageRating(long entityId, RatingType type);
 
         /// <summary>
         /// Get average rating for entities range.

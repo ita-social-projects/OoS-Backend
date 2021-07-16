@@ -114,7 +114,10 @@ namespace OutOfSchool.WebApi.Services
 
             var providerDTO = provider.ToModel();
 
-            providerDTO.Rating = ratingService.GetAverageRating(providerDTO.Id, RatingType.Provider);
+            var rating = ratingService.GetAverageRating(providerDTO.Id, RatingType.Provider);
+
+            providerDTO.Rating = rating.Item1;
+            providerDTO.NumberOfRatings = rating.Item2;
 
             return providerDTO;
         }

@@ -111,9 +111,10 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public float GetAverageRating(long entityId, RatingType type)
+        public Tuple<float, int> GetAverageRating(long entityId, RatingType type)
         {
-            return (float)Math.Round(ratingRepository.GetAverageRating(entityId, type), roundToDigits);
+            var ratingTuple = ratingRepository.GetAverageRating(entityId, type);
+            return new Tuple<float, int>((float)Math.Round(ratingTuple?.Item1 ?? default, roundToDigits), ratingTuple?.Item2 ?? default);
         }
 
         /// <inheritdoc/>

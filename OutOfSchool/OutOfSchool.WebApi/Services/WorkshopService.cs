@@ -119,7 +119,10 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopDTO = workshop.ToModel();
 
-            workshopDTO.Rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
+            var rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
+
+            workshopDTO.Rating = rating.Item1;
+            workshopDTO.NumberOfRatings = rating.Item2;
 
             return workshopDTO;
         }
