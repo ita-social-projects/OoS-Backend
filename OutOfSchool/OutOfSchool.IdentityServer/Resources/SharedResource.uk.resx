@@ -192,4 +192,68 @@
   <data name="You must be over 18 to register!" xml:space="preserve">
     <value>Для реєстрації Вам має бути більше 18 років!</value>
   </data>
+  <data name="Reset password" xml:space="preserve">
+    <value>Відновити пароль</value>
+  </data>
+  <data name="Change password alert" xml:space="preserve">
+    <value>Зверніть увагу, що після зміни паролю ви не матимете змоги увійти у систему зі старим паролем</value>
+  </data>
+  <data name="Old email" xml:space="preserve">
+    <value>Старий емейл</value>
+  </data>
+  <data name="New email" xml:space="preserve">
+    <value>Новий емейл</value>
+  </data>
+  <data name="Change email" xml:space="preserve">
+    <value>Змінити емейл</value>
+  </data>
+  <data name="Enter new email message" xml:space="preserve">
+    <value>Введіть ваш новий емейл на який буде надіслана інструкція по зміні емейлу</value>
+  </data>
+  <data name="Change email alert" xml:space="preserve">
+    <value>Зверніть увагу, що після зміни емейлу ви не матимете змоги увійти у систему зі старим емейлом</value>
+  </data>
+  <data name="Confirm email change" xml:space="preserve">
+    <value>Підтвердіть зміну емейлу</value>
+    <comment>Confirm email change</comment>
+  </data>
+  <data name="Change password" xml:space="preserve">
+    <value>Змінити пароль</value>
+  </data>
+  <data name="Old password" xml:space="preserve">
+    <value>Старий пароль</value>
+  </data>
+  <data name="New password" xml:space="preserve">
+    <value>Новий пароль</value>
+  </data>
+  <data name="Repeat new password" xml:space="preserve">
+    <value>Повторіть новий пароль</value>
+  </data>
+  <data name="Change password confirmation" xml:space="preserve">
+    <value>Підтвердження зміни паролю</value>
+  </data>
+  <data name="Your password was changed" xml:space="preserve">
+    <value>Ваш пароль було змінено</value>
+  </data>
+  <data name="Enter email to change password" xml:space="preserve">
+    <value>Введіть ваш емейл на який буде надіслано інструкцію для скидання пароля</value>
+  </data>
+  <data name="Check your email for instructions" xml:space="preserve">
+    <value>Перевірте вашу пошту для отримання інструкцій</value>
+  </data>
+  <data name="Reset password confirmation" xml:space="preserve">
+    <value>Підтвердження зміни паролю</value>
+  </data>
+  <data name="Your password has been reset" xml:space="preserve">
+    <value>Ваш пароль було відновлено</value>
+  </data>
+  <data name="Forgot password" xml:space="preserve">
+    <value>Забули пароль</value>
+  </data>
+  <data name="Forgot password confirmation" xml:space="preserve">
+    <value>Забули пароль</value>
+  </data>
+  <data name="Confirm email" xml:space="preserve">
+    <value>Підтвердження емейлу</value>
+  </data>
 </root>

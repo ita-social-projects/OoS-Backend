@@ -1,5 +1,11 @@
-﻿@{
-    ViewData["Title"] = "Confirm email";
-}
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using OutOfSchool.IdentityServer
 
-<h1>Email has been confirmed.</h1>
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["Confirm email"];
+    Layout = "_Layout";
+}
+<div class="wrapper modal">
+    <h3 class="instruction">@SharedLocalizer["Confirm email"]</h3>
+</div>
