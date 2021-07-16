@@ -10,12 +10,12 @@
     Layout = "_Layout";
 }
 
-<div class="wrapper" >
+<div class="wrapper modal" >
 <h1 class="icon_title">@SharedLocalizer["Forgot password"].Value.ToUpper()</h1>
 
 <h3 class="instruction">@SharedLocalizer["Enter email to change password"].Value.ToUpper()</h3>
 
-    <form asp-action="ForgotPassword" class="wrapper">
+    <form asp-action="ForgotPassword">
         <input type="hidden" asp-for="ReturnUrl" />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <ul class="registration_list">

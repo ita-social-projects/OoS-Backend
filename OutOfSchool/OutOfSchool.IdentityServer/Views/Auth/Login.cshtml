@@ -8,16 +8,12 @@
     ViewData["Title"] = SharedLocalizer["Entrance to Extracurricular activities"];
     Layout = "_Layout";
 }
-    <div class="wrapper">
+    <div class="wrapper modal">
+    <h1 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h1>
         <div class="icon_wrapper">
-        <h3 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h3>
         <div class="icon_social">
-            <button class="icon_button">
-                <img src="/icons/fb.png" alt="facebook">
-            </button>
-            <button class="button">
-                <img src="/icons/google.png" alt="google">
-            </button>
+            <a class="icon_social_link" href="''"><img class="icon-image" src="/icons/facebook.png" alt="facebook"></a>
+            <a class="icon_social_link" href="''"><img class="icon-image" src="/icons/google.png" alt="google"></a>
         </div>
       <div class="option">або заповніть форму</div>
 
@@ -33,7 +29,7 @@
 @*     } *@
 @* </form> *@
 
-<form class="wrapper" asp-controller="Auth" asp-action="Login" method="post">
+<form asp-controller="Auth" asp-action="Login" method="post">
     <input type="hidden" asp-for="ReturnUrl" />
     <div asp-validation-summary="ModelOnly"></div>
      <ul class="registration_list">
@@ -53,15 +49,11 @@
         </li>
 
         <li class="registration_item">
-        <button class=" registration_submit"  type="submit">@SharedLocalizer["Sign In"]</button>
+        <button class="registration_submit registration_button"  type="submit">@SharedLocalizer["Sign In"]</button>
         </li>
     </ul>
-    <div class="registration_login">
-<span>Ще не зареєстровані?</span>
-    <a class="link" asp-controller="Auth" asp-action="Register"
-       asp-route-returnUrl="@Model.ReturnUrl">
-        @SharedLocalizer["Register"]
-    </a>
+    <div><span>Ще не зареєстровані?</span>
+    <a class="link" asp-controller="Auth" asp-action="Register"asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
 </div>
 </form>
 </div>
