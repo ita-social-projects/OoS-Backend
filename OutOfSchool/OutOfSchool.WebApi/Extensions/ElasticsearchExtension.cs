@@ -46,10 +46,16 @@ namespace OutOfSchool.WebApi.Extensions
         private static void AddDefaultMappings(ConnectionSettings settings)
         {
             settings
-                .DefaultMappingFor<WorkshopES>(m =>
-                m.IndexName("workshop"));
+                .DefaultMappingFor<WorkshopES>(m => m.IndexName("workshop"));
         }
 
+        /// <summary>
+        /// The method checks if the index with the specified name exists in the Elasticsearch and creates it if not.
+        /// The created index will be strongly typed with the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type for strongly typed queries.</typeparam>
+        /// <param name="client">Elasticsearch client.</param>
+        /// <param name="indexName">Name of the index.</param>
         private static void EnsureIndexCreated<T>(IElasticClient client, string indexName)
             where T : class
         {

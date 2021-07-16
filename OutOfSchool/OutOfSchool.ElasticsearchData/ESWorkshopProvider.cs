@@ -31,8 +31,6 @@ namespace OutOfSchool.ElasticsearchData
                     Sort = sorts,
                 });
 
-            this.CheckResponse(resp);
-
             return resp.Documents;
         }
 
