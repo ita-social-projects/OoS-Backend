@@ -21,20 +21,20 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class WorkshopController : ControllerBase
     {
-        private readonly IWorkshopServicesProvider workshopService;
+        private readonly IWorkshopServicesCombiner combinedWorkshopService;
         private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
         /// </summary>
-        /// <param name="workshopService">Service for Workshop model.</param>
+        /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
-        public WorkshopController(IWorkshopServicesProvider workshopService, IProviderService providerService, IStringLocalizer<SharedResource> localizer)
+        public WorkshopController(IWorkshopServicesCombiner combinedWorkshopService, IProviderService providerService, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.workshopService = workshopService;
+            this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
         }
 
@@ -52,7 +52,7 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var workshops = await workshopService.GetAll().ConfigureAwait(false);
+            var workshops = await combinedWorkshopService.GetAll().ConfigureAwait(false);
 
             if (!workshops.Any())
             {
@@ -79,7 +79,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+            var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
 
             if (workshop is null)
             {
@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            var workshops = await workshopService.GetByProviderId(id).ConfigureAwait(false);
+            var workshops = await combinedWorkshopService.GetByProviderId(id).ConfigureAwait(false);
 
             if (!workshops.Any())
             {
@@ -131,7 +131,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilterDto filter)
         {
-            var workshops = await workshopService.GetByFilter(filter.ToESModel()).ConfigureAwait(false);
+            var workshops = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
 
             if (!workshops.Any())
             {
@@ -181,7 +181,7 @@ namespace OutOfSchool.WebApi.Controllers
                 }
             }
 
-            var workshop = await workshopService.Create(dto).ConfigureAwait(false);
+            var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -219,7 +219,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return StatusCode(403, "Forbidden to update workshops for another providers.");
             }
 
-            return Ok(await workshopService.Update(dto).ConfigureAwait(false));
+            return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -241,7 +241,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+            var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
 
             if (workshop is null)
             {
@@ -254,7 +254,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return StatusCode(403, "Forbidden to delete workshops of another providers.");
             }
 
-            await workshopService.Delete(id).ConfigureAwait(false);
+            await combinedWorkshopService.Delete(id).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -274,7 +274,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             PageSizeValidation(pageSize);
 
-            int count = await workshopService.GetPagesCount(filter, pageSize).ConfigureAwait(false);
+            int count = await combinedWorkshopService.GetPagesCount(filter, pageSize).ConfigureAwait(false);
 
             if (count == 0)
             {
@@ -301,7 +301,7 @@ namespace OutOfSchool.WebApi.Controllers
             PageSizeValidation(pageSize);
             PageNumberValidation(pageNumber);
 
-            var workshops = await workshopService.GetPage(filter, pageSize, pageNumber).ConfigureAwait(false);
+            var workshops = await combinedWorkshopService.GetPage(filter, pageSize, pageNumber).ConfigureAwait(false);
 
             if (!workshops.Any())
             {

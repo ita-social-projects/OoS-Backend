@@ -65,7 +65,7 @@ namespace OutOfSchool.ElasticsearchData
 
             var waitHandle = new ManualResetEvent(false);
             ExceptionDispatchInfo exceptionDispatchInfo = null;
-            Result result = Result.Noop;
+            Result result = Result.Error;
 
             var observer = new BulkAllObserver(
                 onError: exception =>

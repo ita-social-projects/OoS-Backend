@@ -24,9 +24,11 @@ namespace OutOfSchool.WebApi.ModelBinders
             foreach (var item in ages)
             {
                 var strings = item.Trim().Split(':', ',', '}');
-                var ageRange = new AgeRange();
-                ageRange.MinAge = int.Parse(strings[1], CultureInfo.CurrentCulture);
-                ageRange.MaxAge = int.Parse(strings[3], CultureInfo.CurrentCulture);
+                var ageRange = new AgeRange()
+                {
+                    MinAge = int.Parse(strings[1], CultureInfo.CurrentCulture),
+                    MaxAge = int.Parse(strings[3], CultureInfo.CurrentCulture),
+                };
                 bindingResults.Add(ageRange);
             }
 

@@ -20,12 +20,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     public class WorkshopControllerTests
     {
         private static IEnumerable<WorkshopDTO> workshops;
-        private static IEnumerable<WorkshopES> workshopESs;
+        private static IEnumerable<WorkshopCard> workshopESs;
         private static WorkshopDTO workshop;
         private static ProviderDto provider;
 
         private WorkshopController controller;
-        private Mock<IWorkshopServicesProvider> workshopServiceMoq;
+        private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
         private Mock<IProviderService> providerServiceMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [SetUp]
         public void Setup()
         {
-            workshopServiceMoq = new Mock<IWorkshopServicesProvider>();
+            workshopServiceMoq = new Mock<IWorkshopServicesCombiner>();
             providerServiceMoq = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetWorkshops_WhenThereIsNoAnyWorkshop_ShouldReturnNoConterntResult()
         {
             // Arrange
-            var emptyList = new List<WorkshopES>();
+            var emptyList = new List<WorkshopCard>();
             workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(emptyList);
 
             // Act
@@ -557,13 +557,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<WorkshopES> FakeWorkshopESs()
+        private IEnumerable<WorkshopCard> FakeWorkshopESs()
         {
             var list = FakeWorkshops();
-            var eSlist = new List<WorkshopES>();
+            var eSlist = new List<WorkshopCard>();
             foreach (var item in list)
             {
-                eSlist.Add(item.ToESModel());
+                eSlist.Add(item.ToESModel().ToCardDto());
             }
 
             return eSlist;

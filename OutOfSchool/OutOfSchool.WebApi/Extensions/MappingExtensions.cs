@@ -277,11 +277,11 @@ namespace OutOfSchool.WebApi.Extensions
 
         #endregion
 
-        public static CardDto ToCardDto(this WorkshopDTO workshopDTO)
+        public static WorkshopCard ToCardDto(this WorkshopDTO workshopDTO)
         {
-            return Mapper<WorkshopDTO, CardDto>(workshopDTO, cfg =>
+            return Mapper<WorkshopDTO, WorkshopCard>(workshopDTO, cfg =>
             {
-                cfg.CreateMap<WorkshopDTO, CardDto>()
+                cfg.CreateMap<WorkshopDTO, WorkshopCard>()
                     .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                     .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo));
             });

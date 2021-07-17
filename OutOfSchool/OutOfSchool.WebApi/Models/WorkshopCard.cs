@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class CardDto
+    public class WorkshopCard
     {
         [Required]
         public long WorkshopId { get; set; }

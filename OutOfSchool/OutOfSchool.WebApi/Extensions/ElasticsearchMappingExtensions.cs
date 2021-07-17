@@ -31,11 +31,11 @@ namespace OutOfSchool.WebApi.Extensions
         }
 
         // From ES models to DTO
-        public static CardDto ToCardDto(this WorkshopES workshopES)
+        public static WorkshopCard ToCardDto(this WorkshopES workshopES)
         {
-            return Mapper<WorkshopES, CardDto>(workshopES, cfg =>
+            return Mapper<WorkshopES, WorkshopCard>(workshopES, cfg =>
             {
-                cfg.CreateMap<WorkshopES, CardDto>()
+                cfg.CreateMap<WorkshopES, WorkshopCard>()
                     .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                     .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo));
                 cfg.CreateMap<AddressES, AddressDto>();

@@ -133,7 +133,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
-            services.AddTransient<IWorkshopServicesProvider, WorkshopServicesProvider>();
+            services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();

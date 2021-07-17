@@ -59,6 +59,9 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        /// <exception cref="ArgumentOutOfRangeException">If any inner entities were not found.</exception>
+        /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
             logger.Information("Workshop creating was started.");
@@ -116,7 +119,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByProviderId(long id)
+        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id)
         {
             logger.Information($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -132,6 +135,8 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        /// <exception cref="ArgumentOutOfRangeException">If the workshop was not found. Or if any inner entities were not found.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
             logger.Information($"Updating Workshop with Id = {dto?.Id} started.");
@@ -206,6 +211,8 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        /// <exception cref="ArgumentNullException">If the entity with specified id was not found in the database.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task Delete(long id)
         {
             logger.Information($"Deleting Workshop with Id = {id} started.");

@@ -214,7 +214,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<CardDto>(result);
+            Assert.IsInstanceOf<WorkshopCard>(result);
             Assert.AreEqual(workshopES.Id, result.WorkshopId);
             Assert.AreEqual(workshopES.Title, result.Title);
             Assert.AreEqual(workshopES.Price, result.Price);
@@ -312,7 +312,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<CardDto>(result);
+            Assert.IsInstanceOf<WorkshopCard>(result);
             Assert.AreEqual(workshopDto.Id, result.WorkshopId);
             Assert.AreEqual(workshopDto.Title, result.Title);
             Assert.AreEqual(workshopDto.Price, result.Price);
