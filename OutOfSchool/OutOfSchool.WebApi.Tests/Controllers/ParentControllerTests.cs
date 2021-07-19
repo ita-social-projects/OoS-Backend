@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             httpContextMoq = new Mock<HttpContext>();
             httpContextMoq.Setup(x => x.User.FindFirst("sub"))
-                .Returns(new Claim(ClaimTypes.NameIdentifier, "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6"));
+                .Returns(new Claim(ClaimTypes.NameIdentifier, "38776161-734b-4aec-96eb-4a1f87a2e5f3"));
             httpContextMoq.Setup(x => x.User.IsInRole("parent"))
                 .Returns(true);
 
@@ -212,11 +212,22 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         #region GetChildrenWorkshops
-
+        [Order(13)]
         [Test]
         public async Task GetChildrenWorkshops_WhenCalled_ReturnsOkResultObject()
         {
             // Arrange
+            httpContextMoq = new Mock<HttpContext>();
+            httpContextMoq.Setup(x => x.User.FindFirst("sub"))
+                .Returns(new Claim(ClaimTypes.NameIdentifier, "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6"));
+            httpContextMoq.Setup(x => x.User.IsInRole("parent"))
+                .Returns(true);
+
+            controller = new ParentController(serviceParent.Object, serviceApplication.Object, serviceChild.Object, localizer.Object)
+            {
+                ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
+            };
+
             serviceParent.Setup(x => x.GetByUserId("de804f35-bda8-4b8n-5eb7-70a5tyfg90a6")).ReturnsAsync(parent);
             serviceChild.Setup(x => x.GetAllByParent(parent.Id, "de909f35-5eb7-4b7a-bda8-ccc0a5bfda96a6")).ReturnsAsync(children);
             serviceApplication.Setup(x => x.GetAllByChild(children.First().Id)).ReturnsAsync(application);
