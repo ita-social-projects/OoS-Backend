@@ -235,9 +235,12 @@ namespace OutOfSchool.WebApi.Controllers
             if (!(dto is null) && dto.Type == RatingType.Workshop)
             {
                 await this.UpdateWorkshopInElasticsearch(dto.Id).ConfigureAwait(false);
+                await service.Delete(id).ConfigureAwait(false);
             }
-
-            await service.Delete(id).ConfigureAwait(false);
+            else
+            {
+                await service.Delete(id).ConfigureAwait(false);
+            }
 
             return NoContent();
         }
