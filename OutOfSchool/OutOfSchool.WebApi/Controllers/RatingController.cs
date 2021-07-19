@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -221,9 +222,14 @@ namespace OutOfSchool.WebApi.Controllers
             return NoContent();
         }
 
-        private RatingType ToRatingType(string entityType)
+        private static RatingType ToRatingType(string entityType)
         {
-            RatingType type = default;
+            if (entityType == null)
+            {
+                throw new ArgumentNullException(nameof(entityType), "entityType could not be null");
+            }
+
+            RatingType type;
 
             switch (entityType.ToLower(CultureInfo.CurrentCulture))
             {
@@ -233,6 +239,8 @@ namespace OutOfSchool.WebApi.Controllers
                 case "workshop":
                     type = RatingType.Workshop;
                     break;
+                default:
+                    throw new ArgumentException("entityType should be provider or workshop", nameof(entityType));
             }
 
             return type;
