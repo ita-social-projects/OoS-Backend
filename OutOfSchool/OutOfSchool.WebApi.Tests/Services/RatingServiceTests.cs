@@ -19,6 +19,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     [TestFixture]
     public class RatingServiceTests
     {
+        private const int RoundToDigits = 2;
         private IRatingService service;
         private OutOfSchoolDbContext context;
         private IRatingRepository ratingRepository;
@@ -85,6 +86,21 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
+        [TestCase(1, RatingType.Provider)]
+        [TestCase(1, RatingType.Workshop)]
+        public async Task GetAllByEntityId_WhenRatingExist_ReturnsCorrectRating(long entityId, RatingType type)
+        {
+            // Arrange
+            var expected = await ratingRepository.GetByFilter(r => r.EntityId == entityId && r.Type == type).ConfigureAwait(false);
+
+            // Act
+            var result = await service.GetAllByEntityId(entityId, type).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(result.Count(), expected.Count());
+        }
+
+        [Test]
         [TestCase(1, 1, RatingType.Provider)]
         [TestCase(3, 1, RatingType.Workshop)]
         public async Task GetParentRating_WhenRatingExist_ReturnsCorrectRating(long parentId, long entityId, RatingType type)
@@ -121,14 +137,17 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void GetAverageRating_WhenExistRatingForEntityId_ReturnsAverageRating(long entityId, RatingType type)
         {
             // Arrange
-            var expected = (float)Math.Round(ratingRepository.GetAverageRating(entityId, type), 2);
+            var ratingTuple = ratingRepository.GetAverageRating(entityId, type);
+            var expectedRating = (float)Math.Round(ratingTuple.Item1, RoundToDigits);
+            var expectedNumbers = ratingTuple.Item2;
 
             // Act
             var result = service.GetAverageRating(entityId, type);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(expected, result);
+            Assert.AreEqual(expectedRating, result.Item1);
+            Assert.AreEqual(expectedNumbers, result.Item2);
         }
 
         [Test]
@@ -136,14 +155,16 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void GetAverageRating_WhenEntityNotExist_ReturnsZero(long entityId, RatingType type)
         {
             // Arrange
-            var expected = default(float);
+            var expectedRating = default(float);
+            var expectedNumber = default(int);
 
             // Act
             var result = service.GetAverageRating(entityId, type);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(expected, result);
+            Assert.AreEqual(expectedRating, result?.Item1);
+            Assert.AreEqual(expectedNumber, result?.Item1);
         }
 
         [Test]
@@ -151,14 +172,16 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void GetAverageRating_WhenNotExistRatingForEntityId_ReturnsZero(long entityId, RatingType type)
         {
             // Arrange
-            var expected = default(float);
+            var expectedRating = default(float);
+            var expectedNumber = default(int);
 
             // Act
             var result = service.GetAverageRating(entityId, type);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(expected, result);
+            Assert.AreEqual(expectedRating, result?.Item1);
+            Assert.AreEqual(expectedNumber, result?.Item1);
         }
 
         [Test]
@@ -182,11 +205,11 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var averageEntities = ratingRepository.GetAverageRatingForEntities(entities, type);
-            var expected = new Dictionary<long, float>(averageEntities.Count);
+            var expected = new Dictionary<long, Tuple<double, int>>(averageEntities.Count);
 
             foreach (var entity in averageEntities)
             {
-                expected.Add(entity.Key, (float)Math.Round(entity.Value, 2));
+                expected.Add(entity.Key, new Tuple<double, int>((float)Math.Round(entity.Value.Item1, RoundToDigits), entity.Value.Item2));
             }
 
             // Act
