@@ -540,7 +540,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
 
             applicationService.Setup(s => s.Update(applications.First())).ReturnsAsync(applications.First());
-            applicationService.Setup(s => s.GetById(shortApplication.Id)).ReturnsAsync(applications.First());
+            applicationService.Setup(s => s.GetByIdNoTracking(shortApplication.Id)).ReturnsAsync(applications.First());
 
             // Act
             var result = await controller.Update(shortApplication).ConfigureAwait(false) as OkObjectResult;

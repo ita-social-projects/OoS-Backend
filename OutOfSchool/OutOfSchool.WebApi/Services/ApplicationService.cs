@@ -213,8 +213,8 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> filter = a => a.Id == id;
 
-            var application = await applicationRepository.GetByFilterNoTracking(filter, "Workshop,Child,Parent")
-                                                         .FirstOrDefaultAsync().ConfigureAwait(false);
+            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+            var application = applications.FirstOrDefault();
 
             if (application is null)
             {
@@ -225,6 +225,17 @@ namespace OutOfSchool.WebApi.Services
             logger.Information($"Successfully got an Application with Id = {id}.");
 
             return application.ToModel();
+        }
+
+        /// <inheritdoc/>
+        public async Task<ApplicationDto> GetByIdNoTracking(long id)
+        {
+            Expression<Func<Application, bool>> filter = a => a.Id == id;
+
+            var application = await applicationRepository.GetByFilterNoTracking(filter, "Workshop,Child,Parent")
+                .FirstOrDefaultAsync().ConfigureAwait(false);
+
+            return application?.ToShortModel();
         }
 
         public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
