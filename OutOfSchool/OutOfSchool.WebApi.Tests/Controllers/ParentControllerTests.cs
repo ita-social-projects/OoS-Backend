@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -18,32 +19,41 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     public class ParentControllerTests
     {
         private ParentController controller;
-        private Mock<IParentService> service;
+        private Mock<IParentService> serviceParent;
+        private Mock<IApplicationService> serviceApplication;
+        private Mock<IChildService> serviceChild;
         private Mock<HttpContext> httpContextMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private IEnumerable<ParentDTO> parents;
+        private IEnumerable<ChildDto> children;
+        private IEnumerable<ApplicationDto> application;
         private ParentDTO parent;
 
         [SetUp]
         public void Setup()
         {
-            service = new Mock<IParentService>();
+            serviceParent = new Mock<IParentService>();
+            serviceApplication = new Mock<IApplicationService>();
+            serviceChild = new Mock<IChildService>();
+
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
             httpContextMoq = new Mock<HttpContext>();
             httpContextMoq.Setup(x => x.User.FindFirst("sub"))
-                .Returns(new Claim(ClaimTypes.NameIdentifier, "38776161-734b-4aec-96eb-4a1f87a2e5f3"));
+                .Returns(new Claim(ClaimTypes.NameIdentifier, "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6"));
             httpContextMoq.Setup(x => x.User.IsInRole("parent"))
                 .Returns(true);
 
-            controller = new ParentController(service.Object, localizer.Object)
+            controller = new ParentController(serviceParent.Object, serviceApplication.Object, serviceChild.Object, localizer.Object)
             {
                 ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
             };
 
             parents = FakeParents();
             parent = FakeParent();
+            children = FakeChildren();
+            application = FakeApplications();
         }
 
         public IEnumerable<ParentDTO> FakeParents()
@@ -61,12 +71,172 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             return new ParentDTO() { Id = 4, UserId = "de909f35-5eb7-4b7a-bda8-ccc0a5bfda96a6" };
         }
 
+        public IEnumerable<ChildDto> FakeChildren()
+        {
+            return new List<ChildDto>
+            {
+                new ChildDto()
+                {
+                    Id = 1,
+                    FirstName = "FirstName",
+                    LastName = "LastName",
+                    MiddleName = "MiddleName",
+                    DateOfBirth = new DateTime(2005, 2, 23),
+                    Gender = Gender.Male,
+                    SocialGroupId = 1,
+                    ParentId = 2,
+                    BirthCertificate = new BirthCertificateDto()
+                    {
+                        Id = 1,
+                        SvidDate = new DateTime(2000, 11, 1),
+                        SvidNum = "SvidNum",
+                        SvidNumMD5 = "SvidNumMD5",
+                        SvidSer = "SvidSer",
+                        SvidWho = "SvidWho",
+                        ChildId = 1,
+                    },
+                },
+                new ChildDto()
+                {
+                    Id = 2,
+                    FirstName = "FirstName",
+                    LastName = "LastName",
+                    MiddleName = "MiddleName",
+                    DateOfBirth = new DateTime(2005, 2, 23),
+                    Gender = Gender.Female,
+                    SocialGroupId = 1,
+                    ParentId = 2,
+                    BirthCertificate = new BirthCertificateDto()
+                    {
+                        Id = 2,
+                        SvidDate = new DateTime(2000, 11, 1),
+                        SvidNum = "SvidNum",
+                        SvidNumMD5 = "SvidNumMD5",
+                        SvidSer = "SvidSer",
+                        SvidWho = "SvidWho",
+                        ChildId = 2,
+                    },
+                },
+            };
+        }
+
+        public WorkshopDTO FakeWorkshop()
+        {
+            return new WorkshopDTO()
+            {
+                Id = 6,
+                Title = "Title6",
+                Phone = "1111111111",
+                Description = "Desc6",
+                Price = 6000,
+                WithDisabilityOptions = true,
+                DaysPerWeek = 6,
+                Head = "Head6",
+                HeadDateOfBirth = new DateTime(1980, month: 12, 28),
+                ProviderTitle = "ProviderTitle",
+                DisabilityOptionsDesc = "Desc6",
+                Website = "website6",
+                Instagram = "insta6",
+                Facebook = "facebook6",
+                Email = "email6@gmail.com",
+                MaxAge = 10,
+                MinAge = 4,
+                Logo = "image6",
+                ProviderId = 1,
+                DirectionId = 1,
+                DepartmentId = 1,
+                ClassId = 1,
+                AddressId = 55,
+                Address = new AddressDto
+                {
+                    Id = 55,
+                    Region = "Region55",
+                    District = "District55",
+                    City = "City55",
+                    Street = "Street55",
+                    BuildingNumber = "BuildingNumber55",
+                    Latitude = 0,
+                    Longitude = 0,
+                },
+                Teachers = new List<TeacherDTO>
+                {
+                    new TeacherDTO
+                    {
+                        Id = 1,
+                        FirstName = "Alex",
+                        LastName = "Brown",
+                        MiddleName = "SomeMiddleName",
+                        Description = "Description",
+                        Image = "Image",
+                        DateOfBirth = DateTime.Parse("2000-01-01"),
+                        WorkshopId = 6,
+                    },
+                    new TeacherDTO
+                    {
+                        Id = 2,
+                        FirstName = "John",
+                        LastName = "Snow",
+                        MiddleName = "SomeMiddleName",
+                        Description = "Description",
+                        Image = "Image",
+                        DateOfBirth = DateTime.Parse("1990-01-01"),
+                        WorkshopId = 6,
+                    },
+                },
+            };
+        }
+
+        public IEnumerable<ApplicationDto> FakeApplications()
+        {
+            return new List<ApplicationDto>()
+            {
+                new ApplicationDto()
+                {
+                    Id = 1,
+                    ChildId = 1,
+                    Status = ApplicationStatus.Pending,
+                    ParentId = 2,
+                    WorkshopId = 1,
+                    Workshop = FakeWorkshop(),
+                },
+                new ApplicationDto()
+                {
+                    Id = 2,
+                    ChildId = 2,
+                    Status = ApplicationStatus.Pending,
+                    ParentId = 2,
+                    WorkshopId = 1,
+                    Workshop = FakeWorkshop(),
+                },
+            };
+        }
+
+        #region GetChildrenWorkshops
+
+        [Test]
+        public async Task GetChildrenWorkshops_WhenCalled_ReturnsOkResultObject()
+        {
+            // Arrange
+            serviceParent.Setup(x => x.GetByUserId("de804f35-bda8-4b8n-5eb7-70a5tyfg90a6")).ReturnsAsync(parent);
+            serviceChild.Setup(x => x.GetAllByParent(parent.Id, "de909f35-5eb7-4b7a-bda8-ccc0a5bfda96a6")).ReturnsAsync(children);
+            serviceApplication.Setup(x => x.GetAllByChild(children.First().Id)).ReturnsAsync(application);
+
+            // Act
+            var result = await controller.GetChildrenWorkshops().ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(result.StatusCode, 200);
+        }
+
+        #endregion
+
         #region GetParents
         [Test]
         public async Task GetParents_WhenCalled_ReturnsOkResultObject()
         {
             // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(parents);
+            serviceParent.Setup(x => x.GetAll()).ReturnsAsync(parents);
 
             // Act
             var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
@@ -81,7 +251,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var emptyList = new List<ParentDTO>();
-            service.Setup(x => x.GetAll()).ReturnsAsync(emptyList);
+            serviceParent.Setup(x => x.GetAll()).ReturnsAsync(emptyList);
 
             // Act
             var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
@@ -98,7 +268,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetParentById_WhenIdIsValid_ReturnsOkObjectResult(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(parents.SingleOrDefault(x => x.Id == id));
+            serviceParent.Setup(x => x.GetById(id)).ReturnsAsync(parents.SingleOrDefault(x => x.Id == id));
 
             // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
@@ -113,7 +283,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void GetParentById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(parents.SingleOrDefault(x => x.Id == id));
+            serviceParent.Setup(x => x.GetById(id)).ReturnsAsync(parents.SingleOrDefault(x => x.Id == id));
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -125,7 +295,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetParentById_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(parents.SingleOrDefault(x => x.Id == id));
+            serviceParent.Setup(x => x.GetById(id)).ReturnsAsync(parents.SingleOrDefault(x => x.Id == id));
 
             // Act
             var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
@@ -149,7 +319,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 MiddleName = "MiddleName",
                 FirstName = "FirstName",
             };
-            service.Setup(x => x.Update(changedParent)).ReturnsAsync(changedParent);
+            serviceParent.Setup(x => x.Update(changedParent)).ReturnsAsync(changedParent);
 
             // Act
             var result = await controller.Update(changedParent).ConfigureAwait(false) as OkObjectResult;
@@ -178,13 +348,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var notAuthorParent = new ParentDTO() { Id = 7, UserId = "Forbidden Id" };
-            service.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorParent);
+            serviceParent.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorParent);
 
             // Act
             var result = await controller.Update(new ShortUserDto()).ConfigureAwait(false) as ObjectResult;
 
             // Assert
-            service.Verify(x => x.Update(It.IsAny<ShortUserDto>()), Times.Never);
+            serviceParent.Verify(x => x.Update(It.IsAny<ShortUserDto>()), Times.Never);
             Assert.IsNotNull(result);
             Assert.AreEqual(403, result.StatusCode);
         }
@@ -197,7 +367,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteParent_WhenIdIsValid_ReturnsNoContentResult(long id)
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            serviceParent.Setup(x => x.Delete(id));
 
             // Act
             var result = await controller.Delete(id) as NoContentResult;
@@ -212,7 +382,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void DeleteParent_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            serviceParent.Setup(x => x.Delete(id));
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
@@ -224,7 +394,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteParent_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            serviceParent.Setup(x => x.Delete(id));
 
             // Act
             var result = await controller.Delete(id) as OkObjectResult;
@@ -238,15 +408,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteParent_WhenParentHasNoRights_ShouldReturn403ObjectResult(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(parent);
+            serviceParent.Setup(x => x.GetById(id)).ReturnsAsync(parent);
             var notAuthorParent = new ParentDTO() { Id = 10, UserId = "Forbidden Id" };
-            service.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorParent);
+            serviceParent.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(notAuthorParent);
 
             // Act
             var result = await controller.Delete(id) as ObjectResult;
 
             // Assert
-            service.Verify(x => x.Delete(It.IsAny<long>()), Times.Never);
+            serviceParent.Verify(x => x.Delete(It.IsAny<long>()), Times.Never);
             Assert.IsNotNull(result);
             Assert.AreEqual(403, result.StatusCode);
         }
