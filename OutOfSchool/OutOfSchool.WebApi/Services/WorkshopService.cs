@@ -88,17 +88,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
 
-            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTO.Select(p => p.Id), RatingType.Workshop);
-
-            if (averageRatings != null)
-            {
-                foreach (var workshop in workshopsDTO)
-                {
-                    workshop.Rating = averageRatings.FirstOrDefault(r => r.Key == workshop.Id).Value;
-                }
-            }
-
-            return workshopsDTO;
+            return GetWorkshopsWithAverageRating(workshopsDTO);
         }
 
         /// <inheritdoc/>
@@ -117,7 +107,10 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopDTO = workshop.ToModel();
 
-            workshopDTO.Rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
+            var rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
+
+            workshopDTO.Rating = rating?.Item1 ?? default;
+            workshopDTO.NumberOfRatings = rating?.Item2 ?? default;
 
             return workshopDTO;
         }
@@ -133,7 +126,9 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There aren't Workshops for Provider with Id = {id}."
                 : $"From Workshop table were successfully received {workshops.Count()} records.");
 
-            return workshops.Select(x => x.ToModel()).ToList();
+            var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
+
+            return GetWorkshopsWithAverageRating(workshopsDTO);
         }
 
         /// <inheritdoc/>
@@ -386,6 +381,23 @@ namespace OutOfSchool.WebApi.Services
                     teachersToDelete.Add(teacher.ToModel());
                 }
             }
+        }
+
+        private IEnumerable<WorkshopDTO> GetWorkshopsWithAverageRating(IEnumerable<WorkshopDTO> workshopsDTOs)
+        {
+            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTOs.Select(p => p.Id), RatingType.Workshop);
+
+            if (averageRatings != null)
+            {
+                foreach (var workshop in workshopsDTOs)
+                {
+                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
+                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
+                    workshop.NumberOfRatings = ratingTuple.Value?.Item2 ?? default;
+                }
+            }
+
+            return workshopsDTOs;
         }
     }
 }

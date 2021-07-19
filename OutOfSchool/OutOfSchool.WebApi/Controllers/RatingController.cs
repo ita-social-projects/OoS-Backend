@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -36,7 +38,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of all ratings.</returns>
         [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -59,7 +61,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">Rating's id.</param>
         /// <returns>Rating.</returns>
         [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RatingDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
@@ -71,6 +73,55 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
+        /// Get all ratings from the database.
+        /// </summary>
+        /// <param name="entityType">Entity type (provider or workshop).</param>
+        /// <param name="entityId">Id of Entity.</param>
+        /// <returns>List of all ratings.</returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}")]
+        public async Task<IActionResult> GetByEntityId(string entityType, long entityId)
+        {
+            RatingType type = ToRatingType(entityType);
+
+            var ratings = await service.GetAllByEntityId(entityId, type).ConfigureAwait(false);
+
+            if (!ratings.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(ratings);
+        }
+
+        /// <summary>
+        /// Get all ratings from the database.
+        /// </summary>
+        /// <param name="id">Provider Id.</param>
+        /// <returns>List of all workshop ratings by provider.</returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("byprovider/{id}")]
+        public async Task<IActionResult> GetAllWorshopsByProvider(long id)
+        {
+            var ratings = await service.GetAllWorshopsRatingByProvider(id).ConfigureAwait(false);
+
+            if (!ratings.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(ratings);
+        }
+
+        /// <summary>
         /// Get parent rating for the specified entity.
         /// </summary>
         /// <param name="entityType">Entity type (provider or workshop).</param>
@@ -78,7 +129,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="entityId">Id of Entity.</param>
         /// <returns>Parent rating for the specified entity.</returns>
         [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -89,17 +140,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             this.ValidateId(entityId, localizer);
 
-            RatingType type = default;
-
-            switch (entityType.ToLower(CultureInfo.CurrentCulture))
-            {
-                case "provider":
-                    type = RatingType.Provider;
-                    break;
-                case "workshop":
-                    type = RatingType.Workshop;
-                    break;
-            }
+            RatingType type = ToRatingType(entityType);
 
             var rating = await service.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
 
@@ -117,7 +158,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Rating entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(RatingDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -144,7 +185,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="dto">Rating to update.</param>
         /// <returns>Rating.</returns>
         [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RatingDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -179,6 +220,30 @@ namespace OutOfSchool.WebApi.Controllers
             await service.Delete(id).ConfigureAwait(false);
 
             return NoContent();
+        }
+
+        private static RatingType ToRatingType(string entityType)
+        {
+            if (entityType == null)
+            {
+                throw new ArgumentNullException(nameof(entityType), "entityType could not be null");
+            }
+
+            RatingType type;
+
+            switch (entityType.ToLower(CultureInfo.CurrentCulture))
+            {
+                case "provider":
+                    type = RatingType.Provider;
+                    break;
+                case "workshop":
+                    type = RatingType.Workshop;
+                    break;
+                default:
+                    throw new ArgumentException("entityType should be provider or workshop", nameof(entityType));
+            }
+
+            return type;
         }
     }
 }

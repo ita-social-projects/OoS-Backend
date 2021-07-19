@@ -80,6 +80,44 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<RatingDto>> GetAllByEntityId(long entityId, RatingType type)
+        {
+            logger.Information($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
+
+            var ratings = await ratingRepository.GetByFilter(r => r.EntityId == entityId && r.Type == type).ConfigureAwait(false);
+
+            logger.Information(!ratings.Any()
+                ? "Rating table is empty."
+                : $"All {ratings.Count()} records with EntityId = {entityId} and RatingType = {type} " +
+                        $"were successfully received from the Rating table");
+
+            return ratings.Select(r => r.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<RatingDto>> GetAllWorshopsRatingByProvider(long id)
+        {
+            logger.Information($"Getting all Worshops Ratings by ProviderId = {id} started.");
+
+            var worshops = await workshopRepository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
+
+            List<Rating> worshopsRating = new List<Rating>();
+
+            foreach (var workshop in worshops)
+            {
+                worshopsRating.AddRange(await ratingRepository.GetByFilter(r => r.EntityId == workshop.Id
+                                                   && r.Type == RatingType.Workshop).ConfigureAwait(false));
+            }
+
+            logger.Information(!worshopsRating.Any()
+                ? "Rating table is empty."
+                : $"All {worshopsRating.Count} records with ProviderId = {id} " +
+                        $"were successfully received from the Rating table");
+
+            return worshopsRating.Select(r => r.ToModel());
+        }
+
+        /// <inheritdoc/>
         public async Task<RatingDto> GetParentRating(long parentId, long entityId, RatingType type)
         {
             logger.Information($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId} and type = {type}.");
@@ -96,21 +134,22 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public float GetAverageRating(long entityId, RatingType type)
+        public Tuple<float, int> GetAverageRating(long entityId, RatingType type)
         {
-            return (float)Math.Round(ratingRepository.GetAverageRating(entityId, type), roundToDigits);
+            var ratingTuple = ratingRepository.GetAverageRating(entityId, type);
+            return new Tuple<float, int>((float)Math.Round(ratingTuple?.Item1 ?? default, roundToDigits), ratingTuple?.Item2 ?? default);
         }
 
         /// <inheritdoc/>
-        public Dictionary<long, float> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type)
+        public Dictionary<long, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type)
         {
             var entitiesRating = ratingRepository.GetAverageRatingForEntities(entities, type);
 
-            var formattedEntities = new Dictionary<long, float>(entitiesRating.Count);
+            var formattedEntities = new Dictionary<long, Tuple<float, int>>(entitiesRating.Count);
 
             foreach (var entity in entitiesRating)
             {
-                formattedEntities.Add(entity.Key, (float)Math.Round(entity.Value, roundToDigits));
+                formattedEntities.Add(entity.Key, new Tuple<float, int>((float)Math.Round(entity.Value.Item1, roundToDigits), entity.Value.Item2));
             }
 
             return formattedEntities;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
@@ -31,6 +32,21 @@ namespace OutOfSchool.WebApi.Services
         Task<RatingDto> GetById(long id);
 
         /// <summary>
+        /// Get all rating entities with specified Id and type.
+        /// </summary>
+        /// <param name="entityId">Entity key.</param>
+        /// <param name="type">Entity type.</param>
+        /// <returns>List of all rating records.</returns>
+        Task<IEnumerable<RatingDto>> GetAllByEntityId(long entityId, RatingType type);
+
+        /// <summary>
+        /// Get all workshop rating by provider.
+        /// </summary>
+        /// <param name="id">Entity key.</param>
+        /// <returns>List of all rating records relatet to provider.</returns>
+        Task<IEnumerable<RatingDto>> GetAllWorshopsRatingByProvider(long id);
+
+        /// <summary>
         /// Get parent rating for the specified entity.
         /// </summary>
         /// <param name="parentId">Parent key.</param>
@@ -45,7 +61,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityId">Entity key.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>Average rating of entity.</returns>
-        float GetAverageRating(long entityId, RatingType type);
+        Tuple<float, int> GetAverageRating(long entityId, RatingType type);
 
         /// <summary>
         /// Get average rating for entities range.
@@ -53,7 +69,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entities">Entities keys.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>Average rating of entities range.</returns>
-        Dictionary<long, float> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type);
+        Dictionary<long, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type);
 
         /// <summary>
         /// Update rating entity.
