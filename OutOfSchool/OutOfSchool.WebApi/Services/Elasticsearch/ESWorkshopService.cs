@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop);
+                entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop).Item1;
 
                 var resp = await esProvider.UpdateEntityAsync(entity).ConfigureAwait(false);
 
@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Services
                 List<WorkshopES> source = new List<WorkshopES>();
                 foreach (var entity in sourceDto)
                 {
-                    entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop);
+                    entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop).Item1;
                     source.Add(entity.ToESModel());
                 }
 
