@@ -3,7 +3,6 @@ body {
   height: 100%;
 }
 body {
-  margin: 0;
   font-family: "Open Sans", sans-serif;
   font-size: 0.8125rem;
   line-height: 1.125rem;
@@ -17,7 +16,6 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Innerspace";
   color: #000000;
   margin: 0;
 }
@@ -53,85 +51,33 @@ a {
   text-decoration: none;
   color: inherit;
 }
-.login__text,
-.login__label,
-.login__link {
-  font-weight: 400;
-  font-family: Roboto, Helvetica Neue, sans-serif;
-  letter-spacing: normal;
-}
-.login__label {
-  margin-top: 10px;
-  font-size: 1.2rem;
-}
-.login__input {
-  max-width: 800px;
-  width: 100%;
-  height: 2rem;
-  border: none;
-  outline: none;
-  font-size: 2rem;
-  border-bottom: 1px solid silver;
-  cursor: text;
-}
-.login__input:focus {
-  border-bottom: 1px solid #4158d0;
-}
-.login__button {
-  text-align: center;
-  outline: none;
-  border: none;
-  margin: 20px;
-  padding: 10px;
-  font-size: 1.5rem;
-  border-radius: 4px;
-  color: rgba(0, 0, 0, 0.87);
-  background-color: #fff;
-  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.5), 0 2px 2px 0 rgba(0, 0, 0, 0.5),
-    0 1px 5px 0 rgba(0, 0, 0, 0.5);
-  cursor: pointer;
-}
-.login__button:hover {
-  box-shadow: 0 3px 1px -2px #4158d0, 0 2px 2px 0 #4158d0, 0 1px 5px 0 #4158d0;
-}
-.login .login__link {
-  border-bottom: 1px solid silver;
-  text-decoration: none;
-  cursor: pointer;
-  color: rgba(0, 0, 0, 0.87);
-}
-.login__link {
-  font-size: 1.5rem;
-}
-.login__link:hover,
-.login__input:focus,
-.login__button:hover {
-  color: #4158d0;
-}
-
-.wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 50px;
-}
-
-.icon_wrapper {
-  background: #ffffff;
-  box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
-  border-radius: 5px;
-  padding: 3rem 4.3125rem;
+.wrapper_body{
+  margin: 5rem;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.wrapper {
+  display: flex;
+  justify-content: center;
   flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background: #ffffff;
+  box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
+  border-radius: 5px;
   width: 640px;
 }
-.icon_title {
-  line-height: 20px;
-  text-align: center;
-  color: #444444;
-  margin: 0;
+.title{
+  display: flex;
+  justify-content: center;
 }
+.icon_wrapper {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
 .icon_subtitle {
   line-height: 18px;
   text-align: center;
@@ -139,7 +85,9 @@ a {
   margin: 16px 0 0 0;
 }
 .icon_social {
-  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .icon_button {
   border: none;
@@ -148,39 +96,45 @@ a {
   margin: 0 0.3rem;
   cursor: pointer;
 }
-.option {
+.option, .option-short {
   font-size: 0.8125rem;
   line-height: 18px;
   text-align: center;
   color: #333333;
   position: relative;
-  margin-top: 24px;
 }
-.option:after {
-  content: "";
+.option:after, .option-short:after{
+   content: "";
   display: block;
   position: absolute;
   height: 1px;
   width: 7rem;
   background-color: #e3e3e3;
-  left: 0%;
   top: 50%;
   transform: translate(-120%, -50%);
 }
-.option:before {
+
+.option:before, .option-short:before {
   content: "";
   display: block;
   position: absolute;
   height: 1px;
   width: 7rem;
   background-color: #e3e3e3;
-  right: 0%;
   top: 50%;
   transform: translate(120%, -50%);
 }
-.registration_form {
-  margin-top: 24px;
-  width: 80%;
+.option:after {
+  left: 10rem;
+}
+.option-short:after {
+  left: 4rem;
+}
+.option:before {
+  right: 10rem;
+}
+.option-short:before {
+  right: 4rem;
 }
 .registration_star {
   color: red;
@@ -329,7 +283,6 @@ a {
   padding-right: 30px !important;
 }
 .registration_label {
-  font-family: Innerspace;
   font-style: normal;
   font-weight: bold;
   font-size: 13px;
@@ -357,21 +310,27 @@ a {
   line-height: 26px;
   color: #333333;
 }
-.registration_submit {
+.registration_button {
   border: none;
   outline: none;
   height: 34px;
   width: 12rem;
   margin: 16px auto;
-  background: #3849f9;
   border-radius: 20px;
-  font-family: Innerspace;
+  font-family: Open Sans;
   font-style: normal;
   font-weight: bold;
   font-size: 13px;
   line-height: 34px;
-  color: #ffffff;
   cursor: pointer;
+}
+.registration_submit {
+  background: #3849f9;
+  color: #ffffff;
+}
+.registration_cancel {
+  background: transparent;
+  color: #444444;
 }
 .registration_privacy_password,
 .registration_privacy_confirm_password {
@@ -392,17 +351,6 @@ a {
   height: 16px;
   width: auto;
 }
-
-.field-validation-error {
-    color: #ff0000;
-    font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif;
-    font-size: 12px;
-}
-
-.field-validation-valid {
-  display: none;
-}
-
 .input-validation-error {
   border: 1px solid #ff0000 !important;
   background-color: #ffeeee !important;
@@ -412,22 +360,53 @@ a {
   font-weight: bold !important;
   color: #ff0000 !important;
 }
-
-.validation-summary-valid {
-  display: none;
-}
-
 .maturity {
-    color: #ff0000;
-    visibility: hidden;
+  color: #ff0000;
+  visibility: hidden;
 }
-
-@media screen and (max-width: 750px) {
-    .registration_wrapper {
-    width: 100%;
-    padding: 3rem 0.4rem;
-  }
-  .registration_form {
-    width: 95%;
-  }
+.instruction{
+  font-family: Open Sans;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 13px;
+  line-height: 18px;
+  text-align: center;
+  color: #AAAAAA;
+  margin: 1rem;
+}
+.warning{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: max-content;
+  min-height: 56px;
+  background: #FFEBB3;
+  border-radius: 5px;
+  font-family: Open Sans;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 18px;
+  color: #272425;
+  margin: 1rem;
+}
+.warning_icon{
+  max-width: 1rem;
+  margin: 1rem;
+}
+.icon_social_link{
+  display: inline-block;
+  margin: 1rem;
+  cursor: pointer;
+}
+.icon-image{
+  width: 3rem;
+}
+.icon_social_link:hover{
+  opacity: 0.5;
+}
+.registration_link{
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
