@@ -23,10 +23,7 @@ namespace OutOfSchool.WebApi.Controllers
     {
         private readonly IParentService serviceParent;
         private readonly IApplicationService serviceApplication;
-        private readonly IWorkshopService serviceWorkshop;
         private readonly IChildService serviceChild;
-        private readonly IDirectionService serviceDirection;
-
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -36,17 +33,13 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="serviceParent">Parent service for ParentController.</param>
         /// <param name="serviceApplication">Application service for ParentController.</param>
         /// <param name="serviceChild">Child service for ParentController.</param>
-        /// <param name="serviceDirection">Direction service for ParentController.</param>
-        /// <param name="serviceWorkshop">Workshop service for ParentController.</param>
         /// <param name="localizer">Localizer.</param>
-        public ParentController(IParentService serviceParent, IWorkshopService serviceWorkshop ,IApplicationService serviceApplication, IChildService serviceChild, IDirectionService serviceDirection, IStringLocalizer<SharedResource> localizer)
+        public ParentController(IParentService serviceParent, IApplicationService serviceApplication, IChildService serviceChild, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.serviceParent = serviceParent;
-            this.serviceWorkshop = serviceWorkshop;
             this.serviceApplication = serviceApplication;
             this.serviceChild = serviceChild;
-            this.serviceDirection = serviceDirection;
         }
 
         /// <summary>
@@ -77,45 +70,34 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentCardDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetChildWorkshops()
+        public async Task<IActionResult> GetChildrenWorkshops()
         {
-            string userId = User.FindFirst("sub")?.Value;
-
-            var parent = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
-
-            var children = await serviceChild.GetAllByParent(parent.Id, userId).ConfigureAwait(false);
-
-            var cards = new List<ParentCardDto>();
-
-            foreach (var child in children)
+            try
             {
-                var applications = await serviceApplication.GetAllByChild(child.Id).ConfigureAwait(false);
+                string userId = User.FindFirst("sub")?.Value;
 
-                foreach (var application in applications)
+                var parent = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
+
+                var children = await serviceChild.GetAllByParent(parent.Id, userId).ConfigureAwait(false);
+
+                var cards = new List<ParentCardDto>();
+
+                foreach (var child in children)
                 {
-                    var direction = await serviceDirection.GetById(application.Workshop.DirectionId).ConfigureAwait(false);
+                    var applications = await serviceApplication.GetAllByChild(child.Id).ConfigureAwait(false);
 
-                    cards.Add(new ParentCardDto()
+                    foreach (var application in applications)
                     {
-                        ChildId = child.Id,
-                        WorkshopId = application.WorkshopId,
-                        ProviderId = application.Workshop.ProviderId,
-                        Direction = direction.Title,
-                        MaxAge = application.Workshop.MaxAge,
-                        MinAge = application.Workshop.MinAge,
-                        Price = application.Workshop.Price,
-                        ProviderTitle = application.Workshop.ProviderTitle,
-                        IsPerMonth = application.Workshop.IsPerMonth,
-                        Title = application.Workshop.Title,
-                        Rating = application.Workshop.Rating,
-                        Photo = application.Workshop.Logo,
-                        Status = application.Status,
-                        Address = application.Workshop.Address,
-                    });
+                        cards.Add(application.ToCard());
+                    }
                 }
-            }
 
-            return Ok(cards);
+                return Ok(cards);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         /// <summary>
