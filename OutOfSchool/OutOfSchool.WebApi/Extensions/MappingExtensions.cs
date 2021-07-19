@@ -136,7 +136,8 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
             {
                 cfg.CreateMap<Workshop, WorkshopDTO>()
-                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)));
+                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)))
+                    .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>();
                 cfg.CreateMap<Direction, DirectionDto>();
