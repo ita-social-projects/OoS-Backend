@@ -77,7 +77,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="entityType">Entity type (provider or workshop).</param>
         /// <param name="entityId">Id of Entity.</param>
         /// <returns>List of all ratings.</returns>
-        [Authorize(Roles = "admin")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -88,6 +88,29 @@ namespace OutOfSchool.WebApi.Controllers
             RatingType type = ToRatingType(entityType);
 
             var ratings = await service.GetAllByEntityId(entityId, type).ConfigureAwait(false);
+
+            if (!ratings.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(ratings);
+        }
+
+        /// <summary>
+        /// Get all ratings from the database.
+        /// </summary>
+        /// <param name="id">Provider Id.</param>
+        /// <returns>List of all workshop ratings by provider.</returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("byprovider/{id}")]
+        public async Task<IActionResult> GetAllWorshopsByProvider(long id)
+        {
+            var ratings = await service.GetAllWorshopsRatingByProvider(id).ConfigureAwait(false);
 
             if (!ratings.Any())
             {

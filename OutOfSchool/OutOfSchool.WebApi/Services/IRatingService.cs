@@ -40,6 +40,13 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<RatingDto>> GetAllByEntityId(long entityId, RatingType type);
 
         /// <summary>
+        /// Get all workshop rating by provider.
+        /// </summary>
+        /// <param name="entityId">Entity key.</param>
+        /// <returns>List of all rating records relatet to provider.</returns>
+        Task<IEnumerable<RatingDto>> GetAllWorshopsRatingByProvider(long entityId);
+
+        /// <summary>
         /// Get parent rating for the specified entity.
         /// </summary>
         /// <param name="parentId">Parent key.</param>
