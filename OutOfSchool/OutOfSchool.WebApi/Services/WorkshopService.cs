@@ -88,19 +88,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
 
-            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTO.Select(p => p.Id), RatingType.Workshop);
-
-            if (averageRatings != null)
-            {
-                foreach (var workshop in workshopsDTO)
-                {
-                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
-                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
-                    workshop.NumberOfRatings = ratingTuple.Value?.Item2 ?? default;
-                }
-            }
-
-            return workshopsDTO;
+            return GetWorkshopsWithAverageRating(workshopsDTO);
         }
 
         /// <inheritdoc/>
@@ -140,19 +128,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
 
-            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTO.Select(p => p.Id), RatingType.Workshop);
-
-            if (averageRatings != null)
-            {
-                foreach (var workshop in workshopsDTO)
-                {
-                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
-                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
-                    workshop.NumberOfRatings = ratingTuple.Value?.Item2 ?? default;
-                }
-            }
-
-            return workshopsDTO;
+            return GetWorkshopsWithAverageRating(workshopsDTO);
         }
 
         /// <inheritdoc/>
@@ -405,6 +381,23 @@ namespace OutOfSchool.WebApi.Services
                     teachersToDelete.Add(teacher.ToModel());
                 }
             }
+        }
+
+        private IEnumerable<WorkshopDTO> GetWorkshopsWithAverageRating(IEnumerable<WorkshopDTO> workshopsDTOs)
+        {
+            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTOs.Select(p => p.Id), RatingType.Workshop);
+
+            if (averageRatings != null)
+            {
+                foreach (var workshop in workshopsDTOs)
+                {
+                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
+                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
+                    workshop.NumberOfRatings = ratingTuple.Value?.Item2 ?? default;
+                }
+            }
+
+            return workshopsDTOs;
         }
     }
 }
