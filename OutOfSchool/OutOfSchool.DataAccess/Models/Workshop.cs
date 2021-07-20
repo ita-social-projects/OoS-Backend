@@ -106,6 +106,8 @@ namespace OutOfSchool.Services.Models
 
         public virtual Class Class { get; set; }
 
+        public virtual Direction Direction { get; set; }
+
         public virtual List<Teacher> Teachers { get; set; }
 
         public virtual List<Application> Applications { get; set; }

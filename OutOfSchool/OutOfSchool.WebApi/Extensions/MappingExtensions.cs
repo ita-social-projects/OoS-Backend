@@ -136,12 +136,10 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
             {
                 cfg.CreateMap<Workshop, WorkshopDTO>()
-                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)));
+                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)))
+                    .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>();
-                cfg.CreateMap<Direction, DirectionDto>();
-                cfg.CreateMap<Department, DepartmentDto>();
-                cfg.CreateMap<Class, ClassDto>();
                 cfg.CreateMap<Teacher, TeacherDTO>();
             });
         }
@@ -269,17 +267,25 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
             {
                 cfg.CreateMap<WorkshopDTO, Workshop>()
-                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())));
+                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())))
+                    .ForMember(dest => dest.Direction, opt => opt.Ignore());
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
-                cfg.CreateMap<DirectionDto, Direction>();
-                cfg.CreateMap<DepartmentDto, Department>();
-                cfg.CreateMap<ClassDto, Class>();
                 cfg.CreateMap<TeacherDTO, Teacher>();
             });
         }
 
         #endregion
+
+        public static WorkshopCard ToCardDto(this WorkshopDTO workshopDTO)
+        {
+            return Mapper<WorkshopDTO, WorkshopCard>(workshopDTO, cfg =>
+            {
+                cfg.CreateMap<WorkshopDTO, WorkshopCard>()
+                    .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
+                    .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo));
+            });
+        }
 
         private static TDestination Mapper<TSource, TDestination>(
             this TSource source,

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
@@ -22,6 +23,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private const int BadRequestStatusCode = 400;
         private RatingController controller;
         private Mock<IRatingService> service;
+        private Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>> eSWorkshopservice;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private IEnumerable<RatingDto> ratings;
@@ -32,8 +34,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             service = new Mock<IRatingService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
+            eSWorkshopservice = new Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>>();
 
-            controller = new RatingController(service.Object, localizer.Object);
+            controller = new RatingController(service.Object, localizer.Object, eSWorkshopservice.Object);
 
             ratings = FakeRatings();
             rating = FakeRating();

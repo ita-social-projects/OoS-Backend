@@ -139,16 +139,16 @@ INSERT INTO [dbo].[AspNetUserRoles]
            ,[RoleId])
      VALUES
            ('16575ce5-38e3-4ae7-b991-4508ed488369' --UserId (test1)
-           ,'a43f3877-80a2-4ac0-aec9-3eeff38756ca') --roleId (parent)
+           ,'3022b015-a2e4-496d-92d1-ead5b41f7dba') --roleId (parent)
 
 		   ,('7604a851-66db-4236-9271-1f037ffe3a81' --UserId (test2)
-           ,'a43f3877-80a2-4ac0-aec9-3eeff38756ca') --roleId (parent)
+           ,'3022b015-a2e4-496d-92d1-ead5b41f7dba') --roleId (parent)
 
 		   ,('47802b21-2fb5-435e-9057-75c43d002cef' --UserId (test3)
-           ,'8e35c5fc-6545-465d-a640-5788257511ce') --roleId (provider)
+           ,'a9179c0c-e1c6-4d50-b1c8-1f3266cf4bba') --roleId (provider)
 
 		   ,('5bff5f95-1848-4c87-9846-a567aeb407ea' --UserId (test4)
-           ,'8e35c5fc-6545-465d-a640-5788257511ce') --roleId (provider)
+           ,'a9179c0c-e1c6-4d50-b1c8-1f3266cf4bba') --roleId (provider)
 GO
 
 --====================PARENTS AND CHILDREN================================
@@ -358,6 +358,167 @@ INSERT INTO [dbo].[Addresses]
            ,'12А'
            ,50.2648700
            ,28.6766900) --workshop6 provider2 actual
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ляхова'
+           ,'12'
+           ,51.4547
+           ,31.5238) --id 11
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ляхова'
+           ,'12'
+           ,51.4547
+           ,31.5238) --id 12
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ляхова'
+           ,'12'
+           ,51.4547
+           ,31.5238) --id 13
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ляхова'
+           ,'12'
+           ,51.4547
+           ,31.5238) --id 14
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ляхова'
+           ,'12'
+           ,51.4547
+           ,31.5238) --id 15
+
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ворфоломіївська'
+           ,'12'
+           ,50.5
+           ,30.5) --id 16
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ворфоломіївська'
+           ,'12'
+           ,50.5
+           ,30.5) --id 17
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ворфоломіївська'
+           ,'12'
+           ,50.5
+           ,30.5) --id 18
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ворфоломіївська'
+           ,'12'
+           ,50.5
+           ,30.5) --id 19
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Ворфоломіївська'
+           ,'12'
+           ,50.5
+           ,30.5) --id 20
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Бажана'
+           ,'12'
+           ,50.5
+           ,31.5) --id 21
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Бажана'
+           ,'12'
+           ,50.5
+           ,31.5) --id 22
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Бажана'
+           ,'12'
+           ,50.5
+           ,31.5) --id 23
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Бажана'
+           ,'12'
+           ,50.5
+           ,31.5) --id 24
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Бажана'
+           ,'12'
+           ,50.5
+           ,31.5) --id 25
+
+		   ,('Київська обл.'
+           ,'м. Київ'
+           ,'Київ'
+           ,'Бажана'
+           ,'12'
+           ,50.5
+           ,31.5) --id 26
+
+		   ,('Житомирська обл.'
+           ,'м. Житомир'
+           ,'Житомир'
+           ,'Бойченка'
+           ,'42'
+           ,50.265
+           ,28.677) --id 27
+
+		   ,('Житомирська обл.'
+           ,'м. Житомир'
+           ,'Житомир'
+           ,'Бойченка'
+           ,'42'
+           ,50.265
+           ,28.677) --id 28
+
+		   ,('Житомирська обл.'
+           ,'м. Житомир'
+           ,'Житомир'
+           ,'Вокарчука'
+           ,'42'
+           ,50.5
+           ,28.9) --id 29
+
+		   ,('Житомирська обл.'
+           ,'м. Житомир'
+           ,'Житомир'
+           ,'Вокарчука'
+           ,'42'
+           ,50.5
+           ,28.9) --id 30
 GO
 
 --Providers
@@ -423,6 +584,7 @@ GO
 --workshops
 INSERT INTO [dbo].[Workshops]
            ([Title]
+		   ,[Keywords]
            ,[Phone]
            ,[Email]
            ,[Website]
@@ -447,6 +609,7 @@ INSERT INTO [dbo].[Workshops]
 		   ,[ProviderTitle])
      VALUES
             ('Уроки аккордиону'
+			,null
            ,'1234567890' --Phone
            ,'provider1@test.com'
            ,'http://provider1'
@@ -471,6 +634,7 @@ INSERT INTO [dbo].[Workshops]
 		   ,'Музична школа №1') --provider title
 
            ,('Уроки бандури'
+		   ,null
            ,'1234567890' --Phone
            ,'provider1@test.com'
            ,'http://provider1'
@@ -495,6 +659,7 @@ INSERT INTO [dbo].[Workshops]
 		   ,'Музична школа №1') --provider title
 
 		   ,('Гра на барабані'
+		   ,null
            ,'1234567890' --Phone
            ,'provider1@test.com'
            ,'http://provider1'
@@ -519,6 +684,7 @@ INSERT INTO [dbo].[Workshops]
 		   ,'Музична школа №1') --provider title
 
 		   ,('Уроки гри на флейті'
+		   ,null
            ,'1234567890' --Phone
            ,'provider1@test.com'
            ,'http://provider1'
@@ -542,55 +708,8 @@ INSERT INTO [dbo].[Workshops]
            ,4 --classId
 		   ,'Музична школа №1') --provider title
 
-		   ,('Гра на барабані'
-           ,'1234567890' --Phone
-           ,'provider1@test.com'
-           ,'http://provider1'
-           ,'http://facebook/provider1'
-           ,'http://instagram/provider1'
-           ,5 --minAge
-           ,100 --maxAge
-           ,2 --days per week
-           ,500 --price
-           ,'Уроки гри на ударних інструментах'
-           ,1 --WithDisabilityOptions
-           ,'Немає конкретних обмежень' -- disability description
-           ,'Logo'
-           ,'Гуляйборода Катерина Василівна'
-           ,'1977-09-22'
-           ,0 --IsPerMonth
-           ,1 --ProviderId
-           ,7 --AddressId
-		   ,1 --categoryId
-		   ,2 --subcategoryId
-           ,3 --SubsubcategoryId
-		   ,'Музична школа №1') --provider title
-
-		   ,('Уроки гри на флейті'
-           ,'1234567890' --Phone
-           ,'provider1@test.com'
-           ,'http://provider1'
-           ,'http://facebook/provider1'
-           ,'http://instagram/provider1'
-           ,5 --minAge
-           ,100 --maxAge
-           ,2 --days per week
-           ,0 --price
-           ,'Уроки гри на флейті'
-           ,1 --WithDisabilityOptions
-           ,'Немає конкретних обмежень' -- disability description
-           ,'Logo'
-           ,'Гуляйборода Катерина Василівна'
-           ,'1977-09-22'
-           ,0 --IsPerMonth
-           ,1 --ProviderId
-           ,8 --AddressId
-		   ,1 --categoryId
-		   ,2 --subcategoryId
-           ,4 --SubsubcategoryId
-		   ,'Музична школа №1') --provider title
-
 		   ,('Айкідо'
+		   ,null
            ,'1234567890' --Phone
            ,'provider2@test.com'
            ,'http://provider2'
@@ -615,6 +734,7 @@ INSERT INTO [dbo].[Workshops]
 		   ,'Школа бойових мистецтв №2') --provider title
 
 		   ,('Плавання'
+		   ,null
            ,'1234567890' --Phone
            ,'provider2@test.com'
            ,'http://provider2'
@@ -637,6 +757,506 @@ INSERT INTO [dbo].[Workshops]
 		   ,4 --departmentId
            ,7 --classId
 		   ,'Школа бойових мистецтв №2') --provider title
+
+		   ,('Співочий аккордион дошкільнят'
+			,'аккордион¤співи'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,0 --minAge
+           ,5 --maxAge
+           ,1 --days per week
+           ,0 --price
+           ,'Аккордион і співи' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,11 --AddressId
+		   ,1 --directionId
+		   ,1 --departmentId
+           ,1 --classId
+		   ,'Музична школа №1') --provider title
+
+           ,('Співочий аккордион юніорів'
+		   ,'аккордион¤співи'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,6 --minAge
+           ,10 --maxAge
+           ,1 --days per week
+           ,0 --price
+           ,'Аккордион і співи' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,12 --AddressId
+		   ,1 --directionId
+		   ,1 --departmentId
+           ,1 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Співочий аккордион тінейджерів'
+		   ,'аккордион¤співи'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,11 --minAge
+           ,16 --maxAge
+           ,1 --days per week
+           ,0 --price
+           ,'Аккордион і співи' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,13 --AddressId
+		   ,1 --directionId
+		   ,1 --departmentId
+           ,1 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Струни душі'
+		   ,'бандура'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,6 --minAge
+           ,10 --maxAge
+           ,1 --days per week
+           ,360 --price
+           ,'Гра на бандурі' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,14 --AddressId
+		   ,1 --directionId
+		   ,1 --departmentId
+           ,1 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Балалайка для малят'
+		   ,'бандура'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,0 --minAge
+           ,5 --maxAge
+           ,1 --days per week
+           ,0 --price
+           ,'Гра на бандурі' --Description
+           ,240 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,15 --AddressId
+		   ,1 --directionId
+		   ,1 --departmentId
+           ,1 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Тендітні носочки'
+		   ,'танці¤бальні¤класичні'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,0 --minAge
+           ,5 --maxAge
+           ,1 --days per week
+           ,240 --price
+           ,'Бальні танці' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,16 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,5 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Прима-балерина'
+		   ,'танці¤бальні¤класичні'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,10 --minAge
+           ,18 --maxAge
+           ,1 --days per week
+           ,780 --price
+           ,'Бальні танці' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,17 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,5 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Танці вулиць'
+		   ,'танці¤вуличні¤сучасні'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,6 --minAge
+           ,8 --maxAge
+           ,1 --days per week
+           ,640 --price
+           ,'Ми навчимо вашу дитину танцювати енергійно. STREET DANCE.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,18 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Хіп-хоп'
+		   ,'танці¤сучасні'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,9 --minAge
+           ,12 --maxAge
+           ,1 --days per week
+           ,740 --price
+           ,'HIP-HOP і тільки.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,19 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Електрік-бугі'
+		   ,'танці¤сучасні¤вугі'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,9 --minAge
+           ,12 --maxAge
+           ,1 --days per week
+           ,740 --price
+           ,'ELECTRIC BOOGIE це весело і корисно.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,20 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Диско денс'
+		   ,'диско'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,10 --minAge
+           ,12 --maxAge
+           ,1 --days per week
+           ,490 --price
+           ,'Танці диско - це ярко і сміливо.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,21 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Степ'
+		   ,'степ¤сучасно¤танці'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,10 --minAge
+           ,12 --maxAge
+           ,1 --days per week
+           ,355 --price
+           ,'Просто приходь, просто танцюй.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,22 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Диско як стан душі'
+		   ,'диско¤дорослі¤танці'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,18 --minAge
+           ,100 --maxAge
+           ,1 --days per week
+           ,278 --price
+           ,'Просто приходь, просто танцюй.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,23 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Шаффл-денс'
+		   ,'шаффл¤дорослі¤танці'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,18 --minAge
+           ,40 --maxAge
+           ,1 --days per week
+           ,600 --price
+           ,'Відкриваємо світ енергійноо, незвичного танцю шаффл.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,24 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Шаффл'
+		   ,'шаффл¤дорослі¤танці'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,6 --minAge
+           ,10 --maxAge
+           ,1 --days per week
+           ,300 --price
+           ,'Відкриваємо світ енергійноо, незвичного танцю шаффл.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,25 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Уроки гри на флейті'
+		   ,null
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,5 --minAge
+           ,10 --maxAge
+           ,2 --days per week
+           ,90 --price
+           ,'Уроки гри на флейті'
+           ,1 --WithDisabilityOptions
+           ,'Немає конкретних обмежень' -- disability description
+           ,'Logo'
+           ,'Гуляйборода Катерина Василівна'
+           ,'1977-09-22'
+           ,0 --IsPerMonth
+           ,1 --ProviderId
+           ,26 --AddressId
+		   ,1 --categoryId
+		   ,2 --subcategoryId
+           ,4 --SubsubcategoryId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Шаффл діти'
+		   ,'шаффл¤сучасні¤танці'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,5 --minAge
+           ,8 --maxAge
+           ,1 --days per week
+           ,200 --price
+           ,'Крутий танок шаффл.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,27 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Шаффл школярі'
+		   ,'шаффл¤сучасні¤танці'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,9 --minAge
+           ,12 --maxAge
+           ,1 --days per week
+           ,250 --price
+           ,'Крутий танок шаффл.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,28 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Шаффл підлітки'
+		   ,'шаффл¤сучасні¤танці'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,13 --minAge
+           ,18 --maxAge
+           ,1 --days per week
+           ,350 --price
+           ,'Крутий танок шаффл.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,29 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
+
+		   ,('Шаффл дорослі'
+		   ,'шаффл¤сучасні¤танці'
+           ,'1234567890' --Phone
+           ,'provider1@test.com'
+           ,'http://provider1'
+           ,'http://facebook/provider1'
+           ,'http://instagram/provider1'
+           ,19 --minAge
+           ,100 --maxAge
+           ,1 --days per week
+           ,550 --price
+           ,'Крутий танок шаффл.' --Description
+           ,0 --WithDisabilityOptions
+           ,null -- disability description
+           ,null --'Logo'
+           ,'Василенко Світлана Львівна' --Head
+           ,'1987-09-22'
+           ,1 --IsPerMonth
+           ,1 --ProviderId
+           ,30 --AddressId
+		   ,2 --directionId
+		   ,2 --departmentId
+           ,6 --classId
+		   ,'Музична школа №1') --provider title
 GO
 
 --teachers
@@ -744,4 +1364,284 @@ INSERT INTO [dbo].[Applications]
            ,3 --<ChildId, bigint,>
            ,'2021-06-15 18:00:45' --<CreationTime>
 		   ,2) --parentId
+GO
+
+--Rating
+INSERT INTO [dbo].[Ratings]
+           ([Rate]
+           ,[Type]
+           ,[EntityId]
+           ,[ParentId])
+     VALUES
+--parent 1
+           (5 --rating
+           ,2 --workshop
+           ,1 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,2 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,3 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,4 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,4 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,5 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,6 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,7 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,8 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,9 -- workshopId
+           ,1) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,10 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,11 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,12 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,13 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,14 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,15 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,16 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,17 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,18 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,19 -- workshopId
+           ,1) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,20 -- workshopId
+           ,1) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,21 -- workshopId
+           ,1) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,22 -- workshopId
+           ,1) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,23 -- workshopId
+           ,1) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,24 -- workshopId
+           ,1) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,25 -- workshopId
+           ,1) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,26 -- workshopId
+           ,1) --parent
+
+--parent 2
+           ,(5 --rating
+           ,2 --workshop
+           ,1 -- workshopId
+           ,2) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,2 -- workshopId
+           ,2) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,3 -- workshopId
+           ,2) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,4 -- workshopId
+           ,2) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,4 -- workshopId
+           ,2) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,5 -- workshopId
+           ,2) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,6 -- workshopId
+           ,2) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,7 -- workshopId
+           ,2) --parent
+
+		   ,(2 --rating
+           ,2 --workshop
+           ,8 -- workshopId
+           ,2) --parent
+
+		   ,(1 --rating
+           ,2 --workshop
+           ,9 -- workshopId
+           ,2) --parent
+
+		   ,(2 --rating
+           ,2 --workshop
+           ,10 -- workshopId
+           ,2) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,11 -- workshopId
+           ,2) --parent
+
+		   ,(2 --rating
+           ,2 --workshop
+           ,12 -- workshopId
+           ,2) --parent
+
+		   ,(2 --rating
+           ,2 --workshop
+           ,13 -- workshopId
+           ,2) --parent
+
+		   ,(2 --rating
+           ,2 --workshop
+           ,14 -- workshopId
+           ,2) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,15 -- workshopId
+           ,2) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,16 -- workshopId
+           ,2) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,17 -- workshopId
+           ,2) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,18 -- workshopId
+           ,2) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,19 -- workshopId
+           ,2) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,20 -- workshopId
+           ,2) --parent
+
+		   ,(5 --rating
+           ,2 --workshop
+           ,21 -- workshopId
+           ,2) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,22 -- workshopId
+           ,2) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,23 -- workshopId
+           ,2) --parent
+
+		   ,(4 --rating
+           ,2 --workshop
+           ,24 -- workshopId
+           ,2) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,25 -- workshopId
+           ,2) --parent
+
+		   ,(3 --rating
+           ,2 --workshop
+           ,26 -- workshopId
+           ,2) --parent
 GO

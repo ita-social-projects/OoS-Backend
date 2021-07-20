@@ -96,6 +96,8 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long DirectionId { get; set; }
 
+        public string Direction { get; set; }
+
         [Required]
         public long DepartmentId { get; set; }
 
