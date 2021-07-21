@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
@@ -112,9 +113,10 @@ namespace OutOfSchool.IdentityServer
 
             var requestLocalization = new RequestLocalizationOptions
             {
-                DefaultRequestCulture = new RequestCulture("uk"),
+                // DefaultRequestCulture = new RequestCulture("uk"),
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures,
+                RequestCultureProviders = new List<IRequestCultureProvider>{new QueryStringRequestCultureProvider() }
             };
 
             app.UseRequestLocalization(requestLocalization);
