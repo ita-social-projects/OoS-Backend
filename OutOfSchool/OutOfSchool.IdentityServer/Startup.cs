@@ -1,12 +1,20 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -107,23 +115,47 @@ namespace OutOfSchool.IdentityServer
 
             var supportedCultures = new[]
             {
-                  new CultureInfo("en"),
-                  new CultureInfo("uk"),
+                new CultureInfo("en"),
+                new CultureInfo("uk"),
             };
 
             var requestLocalization = new RequestLocalizationOptions
             {
-                // DefaultRequestCulture = new RequestCulture("uk"),
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures,
-                RequestCultureProviders = new List<IRequestCultureProvider>{new QueryStringRequestCultureProvider() }
+                RequestCultureProviders = new List<IRequestCultureProvider>
+                {
+                    new CustomRequestCultureProvider(context =>
+                    {
+                        if (!context.Request.Query.TryGetValue("ui-culture", out var selectedUiCulture) &
+                            !context.Request.Query.TryGetValue("culture", out var selectedCulture))
+                        {
+                            var encodedPathAndQuery = context.Request.GetEncodedPathAndQuery();
+                            var decodedUrl = WebUtility.UrlDecode(encodedPathAndQuery);
+                            var dictionary = QueryHelpers.ParseQuery(decodedUrl);
+                            dictionary.TryGetValue("ui-culture", out selectedUiCulture);
+                            dictionary.TryGetValue("culture", out selectedCulture);
+                        }
+
+                        if (selectedCulture.FirstOrDefault() is null ^ selectedUiCulture.FirstOrDefault() is null)
+                        {
+                            return Task.FromResult(new ProviderCultureResult(
+                                selectedCulture.FirstOrDefault() ??
+                                selectedUiCulture.FirstOrDefault()));
+                        }
+
+                        return Task.FromResult(new ProviderCultureResult(
+                            selectedCulture.FirstOrDefault(),
+                            selectedUiCulture.FirstOrDefault()));
+                    }),
+                },
             };
 
             app.UseRequestLocalization(requestLocalization);
 
             app.UseRouting();
 
-            app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
+            app.UseCookiePolicy(new CookiePolicyOptions {MinimumSameSitePolicy = SameSiteMode.Lax});
 
             app.UseStaticFiles();
 
@@ -132,10 +164,7 @@ namespace OutOfSchool.IdentityServer
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
         }
     }
 }
