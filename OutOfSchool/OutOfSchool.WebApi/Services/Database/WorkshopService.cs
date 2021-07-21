@@ -59,6 +59,9 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        /// <exception cref="ArgumentOutOfRangeException">If any inner entities were not found.</exception>
+        /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
             logger.Information("Workshop creating was started.");
@@ -88,17 +91,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
 
-            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTO.Select(p => p.Id), RatingType.Workshop);
-
-            if (averageRatings != null)
-            {
-                foreach (var workshop in workshopsDTO)
-                {
-                    workshop.Rating = averageRatings.FirstOrDefault(r => r.Key == workshop.Id).Value;
-                }
-            }
-
-            return workshopsDTO;
+            return GetWorkshopsWithAverageRating(workshopsDTO);
         }
 
         /// <inheritdoc/>
@@ -117,13 +110,16 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopDTO = workshop.ToModel();
 
-            workshopDTO.Rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
+            var rating = ratingService.GetAverageRating(workshopDTO.Id, RatingType.Workshop);
+
+            workshopDTO.Rating = rating?.Item1 ?? default;
+            workshopDTO.NumberOfRatings = rating?.Item2 ?? default;
 
             return workshopDTO;
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsByProviderId(long id)
+        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id)
         {
             logger.Information($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -133,10 +129,14 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There aren't Workshops for Provider with Id = {id}."
                 : $"From Workshop table were successfully received {workshops.Count()} records.");
 
-            return workshops.Select(x => x.ToModel()).ToList();
+            var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
+
+            return GetWorkshopsWithAverageRating(workshopsDTO);
         }
 
         /// <inheritdoc/>
+        /// <exception cref="ArgumentOutOfRangeException">If the workshop was not found. Or if any inner entities were not found.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
             logger.Information($"Updating Workshop with Id = {dto?.Id} started.");
@@ -211,6 +211,8 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        /// <exception cref="ArgumentNullException">If the entity with specified id was not found in the database.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task Delete(long id)
         {
             logger.Information($"Deleting Workshop with Id = {id} started.");
@@ -386,6 +388,23 @@ namespace OutOfSchool.WebApi.Services
                     teachersToDelete.Add(teacher.ToModel());
                 }
             }
+        }
+
+        private IEnumerable<WorkshopDTO> GetWorkshopsWithAverageRating(IEnumerable<WorkshopDTO> workshopsDTOs)
+        {
+            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTOs.Select(p => p.Id), RatingType.Workshop);
+
+            if (averageRatings != null)
+            {
+                foreach (var workshop in workshopsDTOs)
+                {
+                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
+                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
+                    workshop.NumberOfRatings = ratingTuple.Value?.Item2 ?? default;
+                }
+            }
+
+            return workshopsDTOs;
         }
     }
 }

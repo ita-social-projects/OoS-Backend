@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
@@ -16,8 +17,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class RatingControllerTests
     {
+        private const int OkStatusCode = 200;
+        private const int NoContentStatusCode = 204;
+        private const int CreateStatusCode = 201;
+        private const int BadRequestStatusCode = 400;
         private RatingController controller;
         private Mock<IRatingService> service;
+        private Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>> eSWorkshopservice;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private IEnumerable<RatingDto> ratings;
@@ -28,8 +34,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             service = new Mock<IRatingService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
+            eSWorkshopservice = new Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>>();
 
-            controller = new RatingController(service.Object, localizer.Object);
+            controller = new RatingController(service.Object, localizer.Object, eSWorkshopservice.Object);
 
             ratings = FakeRatings();
             rating = FakeRating();
@@ -46,7 +53,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -60,7 +67,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -76,7 +83,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -106,7 +113,39 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Value, Is.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
+        }
+
+        [Test]
+        [TestCase(1, "provider")]
+        public async Task GetByEntityId_WhenDataIsValid_ReturnsOkResultObject(long entityId, string entityType)
+        {
+            // Arrange
+            RatingType type = entityType == "provider" ? RatingType.Provider : RatingType.Workshop;
+            service.Setup(x => x.GetAllByEntityId(entityId, type)).ReturnsAsync(ratings.Where(r => r.EntityId == entityId && r.Type == type));
+
+            // Act
+            var result = await controller.GetByEntityId(entityType, entityId).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
+        }
+
+        [Test]
+        [TestCase(2, "provider")]
+        public async Task GetByEntityId_WhenEmptyCollection_ReturnsNoContentResult(long entityId, string entityType)
+        {
+            // Arrange
+            RatingType type = entityType == "provider" ? RatingType.Provider : RatingType.Workshop;
+            service.Setup(x => x.GetAllByEntityId(entityId, type)).ReturnsAsync(new List<RatingDto>());
+
+            // Act
+            var result = await controller.GetByEntityId(entityType, entityId).ConfigureAwait(false) as NoContentResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -124,7 +163,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -143,7 +182,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -157,7 +196,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(201, result.StatusCode);
+            Assert.AreEqual(CreateStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -171,7 +210,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
         }
 
         [Test]
@@ -185,7 +224,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(OkStatusCode, result.StatusCode);
         }
 
         [Test]
@@ -199,7 +238,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
         }
 
         [Test]
@@ -214,7 +253,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
         }
 
         [Test]

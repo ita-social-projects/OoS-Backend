@@ -14,6 +14,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Nest;
+using OutOfSchool.ElasticsearchData;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -109,6 +112,12 @@ namespace OutOfSchool.WebApi
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
+            // Add Elasticsearch client
+            services.AddElasticsearch(Configuration);
+            services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
+
+            services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
+
             // entities services
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
@@ -124,6 +133,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
+            services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -153,6 +163,7 @@ namespace OutOfSchool.WebApi
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
 
+                // Set grouping for elements.
                 c.TagActionsBy(api =>
                 {
                     // If there is a groupName that is specified, then use it.
@@ -162,8 +173,7 @@ namespace OutOfSchool.WebApi
                     }
 
                     // else use the controller name which is the default used by Swashbuckle.
-                    var controllerActionDescriptor = api.ActionDescriptor as ControllerActionDescriptor;
-                    if (controllerActionDescriptor != null)
+                    if (api.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
                     {
                         return new[] { controllerActionDescriptor.ControllerName };
                     }

@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.IdentityServer"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.EmailSender", "OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj", "{85D50989-9BE6-47C9-8573-E7DF0FCC22A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.ElasticsearchData", "OutOfSchool.ElasticsearchData\OutOfSchool.ElasticsearchData.csproj", "{9CAE12AE-CE1A-409D-9B29-4F6E8DA0AC29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{85D50989-9BE6-47C9-8573-E7DF0FCC22A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{85D50989-9BE6-47C9-8573-E7DF0FCC22A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85D50989-9BE6-47C9-8573-E7DF0FCC22A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CAE12AE-CE1A-409D-9B29-4F6E8DA0AC29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CAE12AE-CE1A-409D-9B29-4F6E8DA0AC29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CAE12AE-CE1A-409D-9B29-4F6E8DA0AC29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CAE12AE-CE1A-409D-9B29-4F6E8DA0AC29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
