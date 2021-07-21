@@ -301,22 +301,19 @@ namespace OutOfSchool.WebApi.Extensions
                 .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Workshop.Direction))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Workshop.Address));
             });
+        }
 
-            public static WorkshopCard ToCardDto(this WorkshopDTO workshopDTO)
+        public static WorkshopCard ToCardDto(this WorkshopDTO workshopDTO)
+        {
+            return Mapper<WorkshopDTO, WorkshopCard>(workshopDTO, cfg =>
             {
-                return Mapper<WorkshopDTO, WorkshopCard>(workshopDTO, cfg =>
-                {
-                    cfg.CreateMap<WorkshopDTO, WorkshopCard>()
-                        .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                        .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo));
-                });
-            }
+                cfg.CreateMap<WorkshopDTO, WorkshopCard>()
+                    .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
+                    .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo));
+            });
         }
 
         #endregion
-
-      
-
         private static TDestination Mapper<TSource, TDestination>(
             this TSource source,
             Action<IMapperConfigurationExpression> configure)
