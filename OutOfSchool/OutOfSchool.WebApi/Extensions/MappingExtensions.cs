@@ -81,6 +81,11 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Direction, DirectionDto>(direction, cfg => { cfg.CreateMap<Direction, DirectionDto>(); });
         }
 
+        public static FavoriteDto ToModel(this Favorite favorite)
+        {
+            return Mapper<Favorite, FavoriteDto>(favorite, cfg => { cfg.CreateMap<Favorite, FavoriteDto>(); });
+        }
+
         public static ParentDTO ToModel(this Parent parent)
         {
             var parentDto =
@@ -200,6 +205,11 @@ namespace OutOfSchool.WebApi.Extensions
         public static Direction ToDomain(this DirectionDto directionDto)
         {
             return Mapper<DirectionDto, Direction>(directionDto, cfg => { cfg.CreateMap<DirectionDto, Direction>(); });
+        }
+
+        public static Favorite ToDomain(this FavoriteDto favoriteDto)
+        {
+            return Mapper<FavoriteDto, Favorite>(favoriteDto, cfg => { cfg.CreateMap<FavoriteDto, Favorite>(); });
         }
 
         public static Parent ToDomain(this ParentDTO parentDto)
