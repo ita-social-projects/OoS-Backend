@@ -19,8 +19,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class WorkshopControllerTests
     {
-        private static IEnumerable<WorkshopDTO> workshops;
-        private static IEnumerable<WorkshopCard> workshopESs;
+        private static List<WorkshopDTO> workshops;
+        private static List<WorkshopCard> workshopCards;
         private static WorkshopDTO workshop;
         private static ProviderDto provider;
 
@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             workshops = FakeWorkshops();
             workshop = FakeWorkshop();
             provider = FakeProvider();
-            workshopESs = FakeWorkshopESs();
+            workshopCards = FakeWorkshopCards();
         }
 
         [SetUp]
@@ -66,7 +66,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetWorkshops_WhenThereAreWorkshops_ShouldReturnOkResultObject()
         {
             // Arrange
-            workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(workshopESs);
+            var res = new SearchResult<WorkshopCard>() { TotalAmount = workshopCards.Count, Entities = workshopCards };
+            workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(res);
 
             // Act
             var result = await controller.GetAll().ConfigureAwait(false) as OkObjectResult;
@@ -81,7 +82,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var emptyList = new List<WorkshopCard>();
-            workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(emptyList);
+            workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(new SearchResult<WorkshopCard>() { Entities = emptyList });
 
             // Act
             var result = await controller.GetAll().ConfigureAwait(false) as NoContentResult;
@@ -416,7 +417,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<WorkshopDTO> FakeWorkshops()
+        private List<WorkshopDTO> FakeWorkshops()
         {
             return new List<WorkshopDTO>()
             {
@@ -557,7 +558,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<WorkshopCard> FakeWorkshopESs()
+        private List<WorkshopCard> FakeWorkshopCards()
         {
             var list = FakeWorkshops();
             var eSlist = new List<WorkshopCard>();

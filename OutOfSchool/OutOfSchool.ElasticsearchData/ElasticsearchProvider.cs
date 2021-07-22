@@ -4,6 +4,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Nest;
+using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.ElasticsearchData
 {
@@ -89,16 +90,16 @@ namespace OutOfSchool.ElasticsearchData
         }
 
         /// <inheritdoc/>
-        public virtual async Task<IEnumerable<TEntity>> Search(TSearch filter = null)
+        public virtual async Task<SearchResultES<TEntity>> Search(TSearch filter = null)
         {
             var resp = await ElasticClient.SearchAsync<TEntity>(
                     s => s.Query(
                         q => q.MatchAll()));
 
-            return resp.Documents;
+            return new SearchResultES<TEntity>() { TotalAmount = resp.Total, Entities = resp.Documents };
         }
 
-        public async Task<bool> CheckServerAsync()
+        public async Task<bool> PingServerAsync()
         {
             var resp = await ElasticClient.PingAsync();
 

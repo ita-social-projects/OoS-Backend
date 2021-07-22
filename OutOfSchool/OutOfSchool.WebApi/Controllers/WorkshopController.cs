@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -46,20 +44,20 @@ namespace OutOfSchool.WebApi.Controllers
         /// <response code="204">No entity was found.</response>
         /// <response code="500">If any server error occures.</response>
         [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopES>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var workshops = await combinedWorkshopService.GetAll().ConfigureAwait(false);
+            var result = await combinedWorkshopService.GetAll().ConfigureAwait(false);
 
-            if (!workshops.Any())
+            if (result.TotalAmount < 1)
             {
                 return NoContent();
             }
 
-            return Ok(workshops);
+            return Ok(result);
         }
 
         /// <summary>
@@ -120,25 +118,25 @@ namespace OutOfSchool.WebApi.Controllers
         /// Get workshops that matches filter's parameters.
         /// </summary>
         /// <param name="filter">Entity that represents searching parameters.</param>
-        /// <returns><see cref="IEnumerable{WorkshopES}"/>, or no content.</returns>
+        /// <returns><see cref="SearchResult{WorkshopCard}"/>, or no content.</returns>
         /// <response code="200">The list of found entities by given filter.</response>
         /// <response code="204">No entity with given filter was found.</response>
         /// <response code="500">If any server error occures. For example: Id was less than one.</response>
         [AllowAnonymous]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopES>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilterDto filter)
         {
-            var workshops = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
+            var result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
 
-            if (!workshops.Any())
+            if (result.TotalAmount < 1)
             {
                 return NoContent();
             }
 
-            return Ok(workshops);
+            return Ok(result);
         }
 
         /// <summary>
@@ -257,78 +255,6 @@ namespace OutOfSchool.WebApi.Controllers
             await combinedWorkshopService.Delete(id).ConfigureAwait(false);
 
             return NoContent();
-        }
-
-        /// <summary>
-        /// Get count of pages of filtered workshop records.
-        /// </summary>
-        /// <param name="filter">Workshop filter.</param>
-        /// <param name="pageSize">Count of records on one page.</param>
-        /// <returns>Count of pages.</returns>
-        [AllowAnonymous]
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetPagesCount(WorkshopFilter filter, int pageSize)
-        {
-            PageSizeValidation(pageSize);
-
-            int count = await combinedWorkshopService.GetPagesCount(filter, pageSize).ConfigureAwait(false);
-
-            if (count == 0)
-            {
-                return NoContent();
-            }
-
-            return Ok(count);
-        }
-
-        /// <summary>
-        /// Get page of filtered workshop records.
-        /// </summary>
-        /// <param name="filter">Workshop filter.</param>
-        /// <param name="pageNumber">Number of page.</param>
-        /// <param name="pageSize">Count of records on one page.</param>
-        /// <returns>The list of workshops for this page.</returns>
-        [AllowAnonymous]
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetPage(WorkshopFilter filter, int pageNumber, int pageSize)
-        {
-            PageSizeValidation(pageSize);
-            PageNumberValidation(pageNumber);
-
-            var workshops = await combinedWorkshopService.GetPage(filter, pageSize, pageNumber).ConfigureAwait(false);
-
-            if (!workshops.Any())
-            {
-                return NoContent();
-            }
-
-            return Ok(workshops);
-        }
-
-        private void PageSizeValidation(int pageSize)
-        {
-            if (pageSize < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(pageSize),
-                    localizer["The pageSize cannot be less than 1."]);
-            }
-        }
-
-        private void PageNumberValidation(int pageNumber)
-        {
-            if (pageNumber < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(pageNumber),
-                    localizer["The pageSize cannot be less than 1."]);
-            }
         }
 
         private async Task<bool> IsUserProvidersOwner(long providerId)

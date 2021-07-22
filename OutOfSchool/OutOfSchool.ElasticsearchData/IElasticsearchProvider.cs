@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nest;
+using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.ElasticsearchData
 {
@@ -62,18 +63,19 @@ namespace OutOfSchool.ElasticsearchData
 
         /// <summary>
         /// Use this method to search entities that match the filter's parameters.
-        /// If filter is null or method is not overrided than all entites shoud be returned.
+        /// If the filter is null, than filter with default values will be used.
+        /// If the method is not overrided in the typed inheritor than all entites shoud be returned.
         /// </summary>
         /// <param name="filter">The filter parameters.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
         /// The task result contains the entities that were found.</returns>
-        Task<IEnumerable<TEntity>> Search(TSearch filter = null);
+        Task<SearchResultES<TEntity>> Search(TSearch filter = null);
 
         /// <summary>
         /// Use this method to check if Elasticsearch is available.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
         /// The task result contains true if server is available.</returns>
-        Task<bool> CheckServerAsync();
+        Task<bool> PingServerAsync();
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Extensions;
@@ -74,54 +72,36 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopCard>> GetAll()
+        public async Task<SearchResult<WorkshopCard>> GetAll()
         {
-            var workshops = await elasticsearchService.Search(null).ConfigureAwait(false);
+            var result = await elasticsearchService.Search(null).ConfigureAwait(false);
 
-            if (workshops.Any())
+            if (result.TotalAmount > 0 || await elasticsearchService.PingServer().ConfigureAwait(false))
             {
-                return ESModelsToWorkshopCards(workshops);
+                return result.ToSearchResult();
             }
             else
             {
-                var esResultIsValid = await elasticsearchService.PingServer().ConfigureAwait(false);
+                var databaseResult = await databaseService.GetByFilter(null).ConfigureAwait(false);
 
-                if (esResultIsValid)
-                {
-                    return ESModelsToWorkshopCards(workshops);
-                }
-                else
-                {
-                    var databaseResult = await ((ICRUDService<WorkshopDTO>)this).GetAll().ConfigureAwait(false);
-
-                    return DtoModelsToWorkshopCards(databaseResult);
-                }
+                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = DtoModelsToWorkshopCards(databaseResult.Entities) };
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopCard>> GetByFilter(WorkshopFilterDto filter)
+        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilterDto filter)
         {
-            var workshops = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
+            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
 
-            if (workshops.Any())
+            if (result.TotalAmount > 0 || await elasticsearchService.PingServer().ConfigureAwait(false))
             {
-                return ESModelsToWorkshopCards(workshops);
+                return result.ToSearchResult();
             }
             else
             {
-                var esResultIsValid = await elasticsearchService.PingServer().ConfigureAwait(false);
+                var databaseResult = await databaseService.GetByFilter(filter).ConfigureAwait(false);
 
-                if (esResultIsValid)
-                {
-                    return ESModelsToWorkshopCards(workshops);
-                }
-                else
-                {
-                    var databaseResult = await databaseService.GetAll().ConfigureAwait(false);
-
-                    return DtoModelsToWorkshopCards(databaseResult);
-                }
+                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = DtoModelsToWorkshopCards(databaseResult.Entities) };
             }
         }
 
@@ -131,18 +111,6 @@ namespace OutOfSchool.WebApi.Services
             var workshop = await databaseService.GetByProviderId(id).ConfigureAwait(false);
 
             return workshop;
-        }
-
-        /// <inheritdoc/>
-        public async Task<List<WorkshopDTO>> GetPage(WorkshopFilter filter, int size, int pageNumber)
-        {
-            return await databaseService.GetPage(filter, size, pageNumber).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public async Task<int> GetPagesCount(WorkshopFilter filter, int size)
-        {
-            return await databaseService.GetPagesCount(filter, size).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

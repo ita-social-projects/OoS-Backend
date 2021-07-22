@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 using Nest;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
@@ -15,11 +16,11 @@ namespace OutOfSchool.ElasticsearchData
         }
 
         /// <inheritdoc/>
-        public override async Task<IEnumerable<WorkshopES>> Search(WorkshopFilterES filter = null)
+        public override async Task<SearchResultES<WorkshopES>> Search(WorkshopFilterES filter = null)
         {
             if (filter is null)
             {
-                return await base.Search(filter);
+                filter = new WorkshopFilterES();
             }
 
             var query = this.CreateQueryFromFilter(filter);
@@ -29,9 +30,11 @@ namespace OutOfSchool.ElasticsearchData
                 {
                     Query = query,
                     Sort = sorts,
+                    From = filter.From,
+                    Size = filter.Size,
                 });
 
-            return resp.Documents;
+            return new SearchResultES<WorkshopES>() { TotalAmount = resp.Total, Entities = resp.Documents };
         }
 
         private QueryContainer CreateQueryFromFilter(WorkshopFilterES filter)
@@ -61,8 +64,10 @@ namespace OutOfSchool.ElasticsearchData
                 {
                     Fields = Infer.Field<WorkshopES>(w => w.Title)
                             .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
-                            .And(Infer.Field<WorkshopES>(w => w.Keywords)),
+                            .And(Infer.Field<WorkshopES>(w => w.Keywords))
+                            .And(Infer.Field<WorkshopES>(w => w.Description)),
                     Query = filter.SearchText,
+                    Fuzziness = Fuzziness.Auto,
                 };
             }
 
@@ -146,6 +151,7 @@ namespace OutOfSchool.ElasticsearchData
                     break;
 
                 case OrderBy.Statistic:
+                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
                     break;
 
                 case OrderBy.Price:
@@ -157,6 +163,7 @@ namespace OutOfSchool.ElasticsearchData
                     break;
 
                 case OrderBy.Nearest:
+                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
                     break;
 
                 default:
