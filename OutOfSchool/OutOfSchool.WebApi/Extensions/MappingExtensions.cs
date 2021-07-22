@@ -37,7 +37,8 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Teacher, TeacherDTO>();
-                cfg.CreateMap<Workshop, WorkshopDTO>();
+                cfg.CreateMap<Workshop, WorkshopDTO>()
+                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
                 cfg.CreateMap<BirthCertificate, BirthCertificateDto>();
                 cfg.CreateMap<Child, ChildDto>()
                 .ForMember(c => c.Parent, m => m.Ignore());
@@ -277,6 +278,31 @@ namespace OutOfSchool.WebApi.Extensions
 
         #endregion
 
+        #region ToCard
+
+        public static ParentCardDto ToCard(this ApplicationDto applicationDTO)
+        {
+            return Mapper<ApplicationDto, ParentCardDto>(applicationDTO, cfg =>
+            {
+                cfg.CreateMap<ApplicationDto, ParentCardDto>()
+                .ForMember(dest => dest.ApplicationId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.ChildId, opt => opt.MapFrom(src => src.ChildId))
+                .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.WorkshopId))
+                .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Workshop.ProviderId))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.ProviderTitle, opt => opt.MapFrom(src => src.Workshop.ProviderTitle))
+                .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title))
+                .ForMember(dest => dest.IsPerMonth, opt => opt.MapFrom(src => src.Workshop.IsPerMonth))
+                .ForMember(dest => dest.Photo, opt => opt.MapFrom(src => src.Workshop.Logo))
+                .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
+                .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Workshop.MinAge))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Workshop.Price))
+                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Workshop.Direction))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Workshop.Address));
+            });
+        }
+
         public static WorkshopCard ToCardDto(this WorkshopDTO workshopDTO)
         {
             return Mapper<WorkshopDTO, WorkshopCard>(workshopDTO, cfg =>
@@ -287,6 +313,7 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        #endregion
         private static TDestination Mapper<TSource, TDestination>(
             this TSource source,
             Action<IMapperConfigurationExpression> configure)

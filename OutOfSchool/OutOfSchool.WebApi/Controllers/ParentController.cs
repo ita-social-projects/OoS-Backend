@@ -21,19 +21,25 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ParentController : ControllerBase
     {
-        private readonly IParentService service;
+        private readonly IParentService serviceParent;
+        private readonly IApplicationService serviceApplication;
+        private readonly IChildService serviceChild;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParentController"/> class.
         /// Initialization of ParentController.
         /// </summary>
-        /// <param name="service">Service for ParentCOntroller.</param>
+        /// <param name="serviceParent">Parent service for ParentController.</param>
+        /// <param name="serviceApplication">Application service for ParentController.</param>
+        /// <param name="serviceChild">Child service for ParentController.</param>
         /// <param name="localizer">Localizer.</param>
-        public ParentController(IParentService service, IStringLocalizer<SharedResource> localizer)
+        public ParentController(IParentService serviceParent, IApplicationService serviceApplication, IChildService serviceChild, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.service = service;
+            this.serviceParent = serviceParent;
+            this.serviceApplication = serviceApplication;
+            this.serviceChild = serviceChild;
         }
 
         /// <summary>
@@ -46,7 +52,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-            var parents = await service.GetAll().ConfigureAwait(false);
+            var parents = await serviceParent.GetAll().ConfigureAwait(false);
 
             if (!parents.Any())
             {
@@ -54,6 +60,44 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             return Ok(parents);
+        }
+
+        /// <summary>
+        /// To get information about workshops that parent applied child for.
+        /// </summary>
+        /// <returns>List of ParentCardDto.</returns>
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentCardDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetChildrenWorkshops()
+        {
+            try
+            {
+                string userId = User.FindFirst("sub")?.Value;
+
+                var parent = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
+
+                var children = await serviceChild.GetAllByParent(parent.Id, userId).ConfigureAwait(false);
+
+                var cards = new List<ParentCardDto>();
+
+                foreach (var child in children)
+                {
+                    var applications = await serviceApplication.GetAllByChild(child.Id).ConfigureAwait(false);
+
+                    foreach (var application in applications)
+                    {
+                        cards.Add(application.ToCard());
+                    }
+                }
+
+                return Ok(cards);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         /// <summary>
@@ -68,7 +112,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            return Ok(await service.GetById(id).ConfigureAwait(false));
+            return Ok(await serviceParent.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -96,7 +140,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return StatusCode(403, "Forbidden to update another user.");
             }
 
-            return Ok(await service.Update(shortUserDto).ConfigureAwait(false));
+            return Ok(await serviceParent.Update(shortUserDto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -114,7 +158,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.ValidateId(id, localizer);
 
-            var parent = await service.GetById(id).ConfigureAwait(false);
+            var parent = await serviceParent.GetById(id).ConfigureAwait(false);
 
             if (parent is null)
             {
@@ -128,7 +172,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return StatusCode(403, "Forbidden to delete another parent account.");
             }
 
-            await service.Delete(id).ConfigureAwait(false);
+            await serviceParent.Delete(id).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -147,7 +191,7 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 string userId = User.FindFirst("sub")?.Value;
-                var parents = await service.GetAll().ConfigureAwait(false);
+                var parents = await serviceParent.GetAll().ConfigureAwait(false);
                 var parentDTO = parents.FirstOrDefault(x => x.UserId == userId);
                 return this.Ok(parentDTO);
             }
@@ -164,7 +208,7 @@ namespace OutOfSchool.WebApi.Controllers
             if (User.IsInRole("parent"))
             {
                 var userId = User.FindFirst("sub")?.Value;
-                var parent = await service.GetByUserId(userId).ConfigureAwait(false);
+                var parent = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
 
                 if (parentId != parent.Id)
                 {

@@ -102,11 +102,11 @@ namespace OutOfSchool.Services.Models
 
         public virtual Provider Provider { get; set; }
 
+        public virtual Direction Direction { get; set; }
+
         public virtual Address Address { get; set; }
 
         public virtual Class Class { get; set; }
-
-        public virtual Direction Direction { get; set; }
 
         public virtual List<Teacher> Teachers { get; set; }
 
