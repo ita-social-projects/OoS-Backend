@@ -40,6 +40,8 @@ namespace OutOfSchool.Services
 
         public DbSet<City> Cities { get; set; }
 
+        public DbSet<Favorite> Favorites { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
