@@ -126,6 +126,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IClassService, ClassService>();
             services.AddTransient<IDepartmentService, DepartmentService>();
             services.AddTransient<IDirectionService, DirectionService>();
+            services.AddTransient<IFavoriteService, FavoriteService>();
             services.AddTransient<IParentService, ParentService>();
             services.AddTransient<IProviderService, ProviderService>();
             services.AddTransient<IRatingService, RatingService>();
@@ -140,6 +141,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
+            services.AddTransient<IEntityRepository<Favorite>, EntityRepository<Favorite>>();
             services.AddTransient<IEntityRepository<Direction>, EntityRepository<Direction>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
