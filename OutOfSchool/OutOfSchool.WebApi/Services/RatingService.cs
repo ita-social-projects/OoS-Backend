@@ -365,8 +365,8 @@ namespace OutOfSchool.WebApi.Services
             for (int i = 0; i < ratingDtosList.Count; i++)
             {
                 var userInfo = newUsers.FirstOrDefault(p => p.ParentId == ratingDtosList[i].ParentId);
-                ratingDtosList[i].FirstName = userInfo.FirstName;
-                ratingDtosList[i].LastName = userInfo.LastName;
+                ratingDtosList[i].FirstName = userInfo?.FirstName;
+                ratingDtosList[i].LastName = userInfo?.LastName;
             }
 
             return ratingDtosList;
