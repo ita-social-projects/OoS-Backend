@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IRatingRepository ratingRepository;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IProviderRepository providerRepository;
-        private readonly IEntityRepository<Parent> parentRepository;
+        private readonly IParentRepository parentRepository;
         private readonly IEntityRepository<User> userRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Services
             IRatingRepository ratingRepository,
             IWorkshopRepository workshopRepository,
             IProviderRepository providerRepository,
-            IEntityRepository<Parent> parentRepository,
+            IParentRepository parentRepository,
             IEntityRepository<User> userRepository,
             ILogger logger,
             IStringLocalizer<SharedResource> localizer)
