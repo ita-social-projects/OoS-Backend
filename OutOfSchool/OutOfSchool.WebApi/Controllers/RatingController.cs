@@ -269,11 +269,20 @@ namespace OutOfSchool.WebApi.Controllers
             return type;
         }
 
-        private async Task UpdateWorkshopInElasticsearch(long id)
+        private async Task<bool> UpdateWorkshopInElasticsearch(long id)
         {
-            var entitis = await esWorkshopService.Search(new WorkshopFilterES() { Ids = new List<long>() { id } }).ConfigureAwait(false);
+            try
+            {
+                var entitis = await esWorkshopService.Search(new WorkshopFilterES() { Ids = new List<long>() { id } }).ConfigureAwait(false);
 
-            await esWorkshopService.Update(entitis.Entities.Single()).ConfigureAwait(false);
+                var res = await esWorkshopService.Update(entitis.Entities.Single()).ConfigureAwait(false);
+
+                return res;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
