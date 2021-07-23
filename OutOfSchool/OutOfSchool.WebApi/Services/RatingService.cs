@@ -65,7 +65,9 @@ namespace OutOfSchool.WebApi.Services
                 ? "Rating table is empty."
                 : $"All {ratings.Count()} records were successfully received from the Rating table");
 
-            return ratings.Select(r => r.ToModel()).ToList();
+            var ratingsDto = ratings.Select(r => r.ToModel());
+
+            return await GetUsersAsync(ratingsDto).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -359,14 +361,15 @@ namespace OutOfSchool.WebApi.Services
 
             var newUsers = users.Join(parentWithUsers, u => u.Id, r => r.UserId, (u, r) => new { u.FirstName, u.LastName, r.ParentId });
 
-            foreach (var rating in ratingDtos)
+            var ratingDtosList = ratingDtos.ToList();
+            for (int i = 0; i < ratingDtosList.Count; i++)
             {
-                var userInfo = newUsers.FirstOrDefault(p => p.ParentId == rating.ParentId);
-                rating.FirstName = userInfo.FirstName;
-                rating.LastName = userInfo.LastName;
+                var userInfo = newUsers.FirstOrDefault(p => p.ParentId == ratingDtosList[i].ParentId);
+                ratingDtosList[i].FirstName = userInfo.FirstName;
+                ratingDtosList[i].LastName = userInfo.LastName;
             }
 
-            return ratingDtos;
+            return ratingDtosList;
         }
     }
 }
