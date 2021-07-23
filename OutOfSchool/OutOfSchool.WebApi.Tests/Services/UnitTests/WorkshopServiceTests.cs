@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Models;
@@ -27,7 +26,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
 
         private Mock<IRatingService> ratingService;
         private Mock<ILogger> logger;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private Workshop newWorkshop;
         private List<Workshop> workshops;
@@ -42,7 +40,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             addressRepositoryMoq = new Mock<IEntityRepository<Address>>();
             ratingService = new Mock<IRatingService>();
             logger = new Mock<ILogger>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
 
             workshopService = new WorkshopService(
                 workshopRepositoryMoq.Object,
@@ -50,13 +47,11 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 teacherRepositoryMoq.Object,
                 addressRepositoryMoq.Object,
                 ratingService.Object,
-                logger.Object,
-                localizer.Object);
+                logger.Object);
 
             FakeEntities();
         }
 
-#pragma warning disable SA1124 // Do not use regions
         #region Create
         [Test]
         public async Task Create_WhenEntityIsValid_ShouldRunInTransaction()
@@ -302,8 +297,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 Throws.Exception.TypeOf<NullReferenceException>());
         }
         #endregion
-
-#pragma warning restore SA1124 // Do not use regions
 
         private void FakeEntities()
         {

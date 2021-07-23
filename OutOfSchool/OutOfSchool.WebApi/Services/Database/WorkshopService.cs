@@ -4,10 +4,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
@@ -26,8 +26,6 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Address> addressRepository;
         private readonly IRatingService ratingService;
         private readonly ILogger logger;
-        private readonly IStringLocalizer<SharedResource> localizer;
-        private readonly IPaginationHelper<Workshop> paginationHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -38,15 +36,13 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="addressRepository">Repository for Address.</param>
         /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
-        /// <param name="localizer">Localizer.</param>
         public WorkshopService(
             IWorkshopRepository workshopRepository,
             IClassRepository classRepository,
             IEntityRepository<Teacher> teacherRepository,
             IEntityRepository<Address> addressRepository,
             IRatingService ratingService,
-            ILogger logger,
-            IStringLocalizer<SharedResource> localizer)
+            ILogger logger)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
@@ -54,8 +50,6 @@ namespace OutOfSchool.WebApi.Services
             this.addressRepository = addressRepository;
             this.ratingService = ratingService;
             this.logger = logger;
-            this.localizer = localizer;
-            this.paginationHelper = new PaginationHelper<Workshop>(workshopRepository);
         }
 
         /// <inheritdoc/>
@@ -239,97 +233,110 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<int> GetPagesCount(WorkshopFilter filter, int size)
+        public async Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilterDto filter = null)
         {
-            PaginationValidation(filter);
-            var predicate = PredicateBuild(filter);
-            return await paginationHelper.GetCountOfPages(size, predicate).ConfigureAwait(false);
-        }
+            logger.Information("Getting Workshops by filter started.");
 
-        /// <inheritdoc/>
-        public async Task<List<WorkshopDTO>> GetPage(WorkshopFilter filter, int size, int pageNumber)
-        {
-            PaginationValidation(filter);
-            var predicate = PredicateBuild(filter);
-
-            bool ascending = filter.OrderByPriceAscending;
-            Expression<Func<Workshop, decimal>> orderBy = x => x.Price;
-
-            var page = await paginationHelper.GetPage(pageNumber, size, null, predicate, orderBy, ascending).ConfigureAwait(false);
-
-            return page.Select(x => x.ToModel()).ToList();
-        }
-
-        private void PaginationValidation(WorkshopFilter filter)
-        {
-            if (filter == null)
+            if (filter is null)
             {
-                throw new ArgumentException(localizer["The filter cannot be null"]);
+                filter = new WorkshopFilterDto();
             }
+
+            var filterPredicate = PredicateBuild(filter);
+            var orderBy = GetOrderParameter(filter);
+
+            var workshopsCount = await workshopRepository.Get<dynamic>(where: filterPredicate).ToListAsync().ConfigureAwait(false);
+            var workshops = workshopRepository.Get<dynamic>(filter.From, filter.Size, string.Empty, filterPredicate, orderBy.Item1, orderBy.Item2).ToList();
+
+            logger.Information(!workshops.Any()
+                ? "There was no matching entity found."
+                : $"All matching {workshops.Count} records were successfully received from the Workshop table");
+
+            var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
+
+            var result = new SearchResult<WorkshopDTO>()
+            {
+                TotalAmount = workshopsCount.Count,
+                Entities = GetWorkshopsWithAverageRating(workshopsDTO),
+            };
+
+            return result;
         }
 
-        private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
+        private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilterDto filter)
         {
             var predicate = PredicateBuilder.True<Workshop>();
 
-            if (!string.IsNullOrEmpty(filter.SearchFieldText))
+            if (!(filter.Ids is null) && filter.Ids.Count > 0)
             {
-                predicate = predicate.And(x => x.Title.Contains(filter.SearchFieldText, StringComparison.CurrentCulture));
+                predicate = predicate.And(x => filter.Ids.Any(c => c == x.Id));
+
+                return predicate;
             }
 
-            if (filter.Age != 0)
+            if (!string.IsNullOrEmpty(filter.SearchText))
             {
-                predicate = predicate.And(x => (x.MinAge <= filter.Age) && (x.MaxAge >= filter.Age));
-            }
-
-            if (filter.DaysPerWeek != 0)
-            {
-                predicate = predicate.And(x => x.DaysPerWeek == filter.DaysPerWeek);
-            }
-
-            predicate = predicate.And(x => x.Price >= filter.MinPrice);
-
-            if (filter.MaxPrice != 0)
-            {
-                predicate = predicate.And(x => x.Price <= filter.MaxPrice);
-            }
-
-            predicate = predicate.And(x => x.WithDisabilityOptions == filter.Disability);
-
-            if (filter.Directions != null)
-            {
-                var tempPredicate = PredicateBuilder.True<Workshop>();
-                foreach (var direction in filter.Directions)
+                var tempPredicate = PredicateBuilder.False<Workshop>();
+                foreach (var word in filter.SearchText.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Class.Department.Direction.Title == direction);
+                    tempPredicate = tempPredicate.Or(x => EF.Functions.Like(x.Keywords, $"%{word}%"));
                 }
 
                 predicate = predicate.And(tempPredicate);
             }
 
-            if (filter.Departments != null)
+            if (filter.DirectionIds[0] != 0)
             {
-                var tempPredicate = PredicateBuilder.True<Workshop>();
-                foreach (var department in filter.Departments)
+                var tempPredicate = PredicateBuilder.False<Workshop>();
+                foreach (var direction in filter.DirectionIds)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Class.Department.Title == department);
+                    tempPredicate = tempPredicate.Or(x => x.DirectionId == direction);
                 }
 
                 predicate = predicate.And(tempPredicate);
             }
 
-            if (filter.Classes != null)
+            if (filter.MinPrice >= 0 && filter.MaxPrice < int.MaxValue)
             {
-                var tempPredicate = PredicateBuilder.True<Workshop>();
-                foreach (var classEntity in filter.Classes)
+                predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
+            }
+
+            if (filter.MinPrice == 0 && filter.MaxPrice == 0)
+            {
+                predicate = predicate.And(x => x.Price == filter.MaxPrice);
+            }
+
+            if (filter.Ages[0].MinAge != 0 || filter.Ages[0].MaxAge != 100)
+            {
+                var tempPredicate = PredicateBuilder.False<Workshop>();
+
+                foreach (var age in filter.Ages)
                 {
-                    tempPredicate = tempPredicate.Or(x => x.Class.Title == classEntity);
+                    tempPredicate = tempPredicate.Or(x => x.MinAge <= age.MaxAge && x.MaxAge >= age.MinAge);
                 }
 
                 predicate = predicate.And(tempPredicate);
             }
+
+            predicate = predicate.And(x => x.Address.City == filter.City);
 
             return predicate;
+        }
+
+        private Tuple<Expression<Func<Workshop, dynamic>>, bool> GetOrderParameter(WorkshopFilterDto filter)
+        {
+            switch (filter.OrderByField)
+            {
+                case OrderBy.Alphabet:
+                    Expression<Func<Workshop, dynamic>> orderByAlphabet = x => x.Title;
+                    var alphabetIsAscending = true;
+                    return Tuple.Create(orderByAlphabet, alphabetIsAscending);
+
+                default:
+                    Expression<Func<Workshop, dynamic>> orderBy = x => x.Price;
+                    var isAscending = true;
+                    return Tuple.Create(orderBy, isAscending);
+            }
         }
 
         /// <summary>
@@ -390,7 +397,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private IEnumerable<WorkshopDTO> GetWorkshopsWithAverageRating(IEnumerable<WorkshopDTO> workshopsDTOs)
+        private List<WorkshopDTO> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshopsDTOs)
         {
             var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTOs.Select(p => p.Id), RatingType.Workshop);
 

@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -53,6 +52,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="filter">The filter parameters.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
         /// The task result contains the entities that were found.</returns>
-        Task<IEnumerable<TEntity>> Search(TSearch filter);
+        Task<SearchResultES<TEntity>> Search(TSearch filter);
     }
 }

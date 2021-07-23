@@ -42,6 +42,18 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static SearchResult<WorkshopCard> ToSearchResult(this SearchResultES<WorkshopES> searchResult)
+        {
+            return Mapper<SearchResultES<WorkshopES>, SearchResult<WorkshopCard>>(searchResult, cfg =>
+            {
+                cfg.CreateMap<SearchResultES<WorkshopES>, SearchResult<WorkshopCard>>();
+                cfg.CreateMap<WorkshopES, WorkshopCard>()
+                    .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
+                    .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo));
+                cfg.CreateMap<AddressES, AddressDto>();
+            });
+        }
+
         private static TDestination Mapper<TSource, TDestination>(
             this TSource source,
             Action<IMapperConfigurationExpression> configure)

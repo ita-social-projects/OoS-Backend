@@ -116,6 +116,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.IsNotNull(result.Teachers);
             Assert.IsInstanceOf<IEnumerable<TeacherES>>(result.Teachers);
             Assert.AreEqual("dance¤twist", result.Keywords);
+            Assert.AreEqual(workshopDto.Description, result.Description);
         }
 
         [Test]
@@ -132,6 +133,8 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 MaxPrice = 20,
                 OrderByField = Enums.OrderBy.Price,
                 SearchText = "Text",
+                From = 13,
+                Size = 12,
             };
 
             // Act
@@ -149,6 +152,8 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.AreEqual(filter.MaxPrice, result.MaxPrice);
             Assert.AreEqual(filter.OrderByField.ToString(), result.OrderByField.ToString());
             Assert.AreEqual(filter.SearchText, result.SearchText);
+            Assert.AreEqual(filter.From, result.From);
+            Assert.AreEqual(filter.Size, result.Size);
         }
 
         [Test]
@@ -163,6 +168,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 IsPerMonth = true,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
+                Description = "Some description",
                 MaxAge = 10,
                 MinAge = 4,
                 Logo = "image5",
@@ -173,7 +179,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 ClassId = 1,
                 AddressId = 17,
                 Address = new AddressES
-            {
+                {
                     Id = 17,
                     Region = "Region17",
                     District = "District17",
@@ -184,7 +190,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                     Longitude = 23.1234,
                 },
                 Teachers = new List<TeacherES>()
-            {
+                        {
                             new TeacherES
                             {
                                 Id = 9,
@@ -232,6 +238,84 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.IsInstanceOf<AddressDto>(result.Address);
             Assert.AreEqual(workshopES.Address.Latitude, result.Address.Latitude);
             Assert.AreEqual(workshopES.Rating, result.Rating);
+        }
+
+        [Test]
+        public void Mapping_SearchResultES_ToSearchResult_IsCorrect()
+        {
+            // Arrange
+            var workshopES = new WorkshopES()
+            {
+                Id = 5,
+                Title = "Title5",
+                Price = 5000,
+                IsPerMonth = true,
+                WithDisabilityOptions = true,
+                ProviderTitle = "ProviderTitle",
+                MaxAge = 10,
+                MinAge = 4,
+                Logo = "image5",
+                ProviderId = 5,
+                DirectionId = 1,
+                Direction = "Some title of direction",
+                DepartmentId = 1,
+                ClassId = 1,
+                AddressId = 17,
+                Address = new AddressES
+                {
+                    Id = 17,
+                    Region = "Region17",
+                    District = "District17",
+                    City = "City17",
+                    Street = "Street17",
+                    BuildingNumber = "BuildingNumber17",
+                    Latitude = 123.2355,
+                    Longitude = 23.1234,
+                },
+                Teachers = new List<TeacherES>()
+                        {
+                            new TeacherES
+                            {
+                                Id = 9,
+                                FirstName = "Alex",
+                                LastName = "Brown",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                                DateOfBirth = DateTime.Parse("1990-01-01"),
+                                WorkshopId = 5,
+                            },
+                            new TeacherES
+                            {
+                                Id = 10,
+                                FirstName = "John",
+                                LastName = "Snow",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                                DateOfBirth = DateTime.Parse("1990-01-01"),
+                                WorkshopId = 5,
+                            },
+                        },
+                Keywords = "dance¤twist",
+                Rating = 23.12314f,
+            };
+            var searchResultES = new SearchResultES<WorkshopES>()
+            {
+                TotalAmount = 1,
+                Entities = new List<WorkshopES>() { workshopES },
+            };
+
+            // Act
+            var result = searchResultES.ToSearchResult();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
+            Assert.IsNotNull(result.Entities);
+            Assert.IsInstanceOf<IReadOnlyCollection<WorkshopCard>>(result.Entities);
+            Assert.AreEqual(searchResultES.TotalAmount, result.TotalAmount);
+            Assert.AreEqual(searchResultES.Entities.Count, result.Entities.Count);
         }
         #endregion
 
