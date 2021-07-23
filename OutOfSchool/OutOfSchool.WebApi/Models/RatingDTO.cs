@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
@@ -21,5 +22,11 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         [Range(1, long.MaxValue, ErrorMessage = "The ParentId field should be bigger than 0")]
         public long ParentId { get; set; }
+
+        public DateTime CreationTime { get; set; } = DateTime.Now;
+
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
     }
 }

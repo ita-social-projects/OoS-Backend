@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -21,6 +22,9 @@ namespace OutOfSchool.Services.Models
         [Required]
         [Range(1, long.MaxValue, ErrorMessage = "The ParentId field should be bigger than 0")]
         public long ParentId { get; set; }
+
+        [Required]
+        public DateTime CreationTime { get; set; }
 
         public virtual Parent Parent { get; set; }
     }
