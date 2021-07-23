@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using Moq;
 using NUnit.Framework;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Extensions.Tests
@@ -113,6 +116,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.IsNotNull(result.Teachers);
             Assert.IsInstanceOf<IEnumerable<TeacherES>>(result.Teachers);
             Assert.AreEqual("dance¤twist", result.Keywords);
+            Assert.AreEqual(workshopDto.Description, result.Description);
         }
 
         [Test]
@@ -129,6 +133,8 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 MaxPrice = 20,
                 OrderByField = Enums.OrderBy.Price,
                 SearchText = "Text",
+                From = 13,
+                Size = 12,
             };
 
             // Act
@@ -146,6 +152,8 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.AreEqual(filter.MaxPrice, result.MaxPrice);
             Assert.AreEqual(filter.OrderByField.ToString(), result.OrderByField.ToString());
             Assert.AreEqual(filter.SearchText, result.SearchText);
+            Assert.AreEqual(filter.From, result.From);
+            Assert.AreEqual(filter.Size, result.Size);
         }
 
         [Test]
@@ -160,6 +168,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 IsPerMonth = true,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
+                Description = "Some description",
                 MaxAge = 10,
                 MinAge = 4,
                 Logo = "image5",
@@ -229,8 +238,328 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.IsInstanceOf<AddressDto>(result.Address);
             Assert.AreEqual(workshopES.Address.Latitude, result.Address.Latitude);
             Assert.AreEqual(workshopES.Rating, result.Rating);
-        } 
+        }
+
+        [Test]
+        public void Mapping_SearchResultES_ToSearchResult_IsCorrect()
+        {
+            // Arrange
+            var workshopES = new WorkshopES()
+            {
+                Id = 5,
+                Title = "Title5",
+                Price = 5000,
+                IsPerMonth = true,
+                WithDisabilityOptions = true,
+                ProviderTitle = "ProviderTitle",
+                MaxAge = 10,
+                MinAge = 4,
+                Logo = "image5",
+                ProviderId = 5,
+                DirectionId = 1,
+                Direction = "Some title of direction",
+                DepartmentId = 1,
+                ClassId = 1,
+                AddressId = 17,
+                Address = new AddressES
+                {
+                    Id = 17,
+                    Region = "Region17",
+                    District = "District17",
+                    City = "City17",
+                    Street = "Street17",
+                    BuildingNumber = "BuildingNumber17",
+                    Latitude = 123.2355,
+                    Longitude = 23.1234,
+                },
+                Teachers = new List<TeacherES>()
+                        {
+                            new TeacherES
+                            {
+                                Id = 9,
+                                FirstName = "Alex",
+                                LastName = "Brown",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                                DateOfBirth = DateTime.Parse("1990-01-01"),
+                                WorkshopId = 5,
+                            },
+                            new TeacherES
+                            {
+                                Id = 10,
+                                FirstName = "John",
+                                LastName = "Snow",
+                                MiddleName = "SomeMiddleName",
+                                Description = "Description",
+                                Image = "Image",
+                                DateOfBirth = DateTime.Parse("1990-01-01"),
+                                WorkshopId = 5,
+                            },
+                        },
+                Keywords = "dance¤twist",
+                Rating = 23.12314f,
+            };
+            var searchResultES = new SearchResultES<WorkshopES>()
+            {
+                TotalAmount = 1,
+                Entities = new List<WorkshopES>() { workshopES },
+            };
+
+            // Act
+            var result = searchResultES.ToSearchResult();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
+            Assert.IsNotNull(result.Entities);
+            Assert.IsInstanceOf<IReadOnlyCollection<WorkshopCard>>(result.Entities);
+            Assert.AreEqual(searchResultES.TotalAmount, result.TotalAmount);
+            Assert.AreEqual(searchResultES.Entities.Count, result.Entities.Count);
+        }
         #endregion
+
+        [Test]
+        public void Mapping_ChatMessageDtoToDomain_IsCorrect()
+        {
+            // Arrange
+            ChatMessageDto chatMessageDTO = new ChatMessageDto()
+            {
+                Id = 1,
+                UserId = "test",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = true,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+            };
+
+            // Act
+            var result = chatMessageDTO.ToDomain();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ChatMessage>(result);
+            Assert.IsNotNull(result.Text);
+            Assert.AreEqual(chatMessageDTO.Id, result.Id);
+            Assert.AreEqual(chatMessageDTO.UserId, result.UserId);
+            Assert.AreEqual(chatMessageDTO.ChatRoomId, result.ChatRoomId);
+            Assert.AreEqual(chatMessageDTO.Text, result.Text);
+            Assert.AreEqual(chatMessageDTO.CreatedTime, result.CreatedTime);
+            Assert.AreEqual(chatMessageDTO.IsRead, result.IsRead);
+            Assert.IsNull(result.User);
+            Assert.IsNull(result.ChatRoom);
+        }
+
+        [Test]
+        public void Mapping_ChatMessageToModel_IsCorrect()
+        {
+            // Arrange
+            ChatMessage chatMessage = new ChatMessage()
+            {
+                Id = 1,
+                UserId = "test",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = true,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                User = Mock.Of<User>(),
+                ChatRoom = Mock.Of<ChatRoom>(),
+            };
+
+            // Act
+            var result = chatMessage.ToModel();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ChatMessageDto>(result);
+            Assert.IsNotNull(result.Text);
+            Assert.AreEqual(chatMessage.Id, result.Id);
+            Assert.AreEqual(chatMessage.UserId, result.UserId);
+            Assert.AreEqual(chatMessage.ChatRoomId, result.ChatRoomId);
+            Assert.AreEqual(chatMessage.Text, result.Text);
+            Assert.AreEqual(chatMessage.CreatedTime, result.CreatedTime);
+            Assert.AreEqual(chatMessage.IsRead, result.IsRead);
+        }
+
+        [Test]
+        public void Mapping_ChatRoomDtoToDomain_IsCorrect()
+        {
+            // Arrange
+            var user1 = new UserDto() { Id = "test" };
+            var user2 = new UserDto() { Id = "test2" };
+
+            var chatMessage1 = new ChatMessageDto()
+            {
+                Id = 1,
+                UserId = "test",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = true,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+            };
+            var chatMessage2 = new ChatMessageDto()
+            {
+                Id = 2,
+                UserId = "test2",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = false,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
+            };
+
+            var listOfUsers = new List<UserDto>() { user1, user2 };
+
+            var listOfMessages = new List<ChatMessageDto>() { chatMessage1, chatMessage2 };
+
+            var chatRoomDto = new ChatRoomDto()
+            {
+                Id = 1,
+                WorkshopId = 1,
+                ChatMessages = listOfMessages,
+                Users = listOfUsers,
+                NotReadMessagesCount = 4,
+            };
+
+            // Act
+            var result = chatRoomDto.ToDomain();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ChatRoom>(result);
+            Assert.IsNull(result.Workshop);
+            Assert.IsNotNull(result.ChatMessages);
+            Assert.IsInstanceOf<ICollection<ChatMessage>>(result.ChatMessages);
+            Assert.IsNotNull(result.Users);
+            Assert.IsInstanceOf<ICollection<User>>(result.Users);
+            Assert.IsNull(result.ChatRoomUsers);
+            Assert.AreEqual(chatRoomDto.Id, result.Id);
+            Assert.AreEqual(chatRoomDto.WorkshopId, result.WorkshopId);
+            foreach (var el in result.ChatMessages)
+            {
+                Assert.AreEqual(chatMessage1.Text, el.Text);
+            }
+        }
+
+        [Test]
+        public void Mapping_ChatRoomToModel_IsCorrect()
+        {
+            // Arrange
+            var user1 = new User() { Id = "test" };
+            var user2 = new User() { Id = "test2" };
+
+            var chatMessage1 = new ChatMessage()
+            {
+                Id = 1,
+                UserId = "test",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = true,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                User = Mock.Of<User>(),
+                ChatRoom = Mock.Of<ChatRoom>(),
+            };
+            var chatMessage2 = new ChatMessage()
+            {
+                Id = 2,
+                UserId = "test2",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = false,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
+                User = Mock.Of<User>(),
+                ChatRoom = Mock.Of<ChatRoom>(),
+            };
+
+            var listOfUsers = new List<User>() { user1, user2 };
+
+            var listOfMessages = new List<ChatMessage>() { chatMessage1, chatMessage2 };
+
+            var chatRoom = new ChatRoom()
+            {
+                Id = 1,
+                WorkshopId = 1,
+                Workshop = Mock.Of<Workshop>(),
+                ChatMessages = listOfMessages,
+                Users = listOfUsers,
+                ChatRoomUsers = new List<ChatRoomUser>(),
+            };
+
+            // Act
+            var result = chatRoom.ToModel();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ChatRoomDto>(result);
+            Assert.IsNotNull(result.ChatMessages);
+            Assert.IsInstanceOf<IEnumerable<ChatMessageDto>>(result.ChatMessages);
+            Assert.IsNotNull(result.Users);
+            Assert.IsInstanceOf<IEnumerable<UserDto>>(result.Users);
+            Assert.AreEqual(chatRoom.Id, result.Id);
+            Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
+            Assert.Zero(result.NotReadMessagesCount);
+            foreach (var el in result.ChatMessages)
+            {
+                Assert.AreEqual(chatMessage1.Text, el.Text);
+            }
+        }
+
+        [Test]
+        public void Mapping_ChatRoomToModelWithoutCHatMessages_IsCorrect()
+        {
+            // Arrange
+            var user1 = new User() { Id = "test" };
+            var user2 = new User() { Id = "test2" };
+
+            var chatMessage1 = new ChatMessage()
+            {
+                Id = 1,
+                UserId = "test",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = true,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                User = Mock.Of<User>(),
+                ChatRoom = Mock.Of<ChatRoom>(),
+            };
+            var chatMessage2 = new ChatMessage()
+            {
+                Id = 2,
+                UserId = "test2",
+                ChatRoomId = 2,
+                Text = "test mess",
+                IsRead = false,
+                CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
+                User = Mock.Of<User>(),
+                ChatRoom = Mock.Of<ChatRoom>(),
+            };
+
+            var listOfUsers = new List<User>() { user1, user2 };
+
+            var listOfMessages = new List<ChatMessage>() { chatMessage1, chatMessage2 };
+
+            var chatRoom = new ChatRoom()
+            {
+                Id = 1,
+                WorkshopId = 1,
+                Workshop = Mock.Of<Workshop>(),
+                ChatMessages = listOfMessages,
+                Users = listOfUsers,
+                ChatRoomUsers = new List<ChatRoomUser>(),
+            };
+
+            // Act
+            var result = chatRoom.ToModelWithoutChatMessages();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ChatRoomDto>(result);
+            Assert.IsNull(result.ChatMessages);
+            Assert.IsNotNull(result.Users);
+            Assert.IsInstanceOf<IEnumerable<UserDto>>(result.Users);
+            Assert.AreEqual(chatRoom.Id, result.Id);
+            Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
+            Assert.Zero(result.NotReadMessagesCount);
+        }
 
         [Test]
         public void Mapping_WorkshopDTO_ToCardDto_IsCorrect()

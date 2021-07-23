@@ -18,20 +18,11 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id);
 
         /// <summary>
-        /// Get count of pages of filtered workshop records.
+        /// Get entities from the database that match filter's parameters.
         /// </summary>
-        /// <param name="filter">Workshop filter.</param>
-        /// <param name="size">Count of records on one page.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains <see cref="int"/> count of pages.</returns>
-        Task<int> GetPagesCount(WorkshopFilter filter, int size);
-
-        /// <summary>
-        /// Get page of filtered workshop records.
-        /// </summary>
-        /// <param name="filter">Workshop filter.</param>
-        /// <param name="size">Count of records on one page.</param>
-        /// <param name="pageNumber">Number of page.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation. The task result contains List of <see cref="WorkshopDTO"/> for this page.</returns>
-        Task<List<WorkshopDTO>> GetPage(WorkshopFilter filter, int size, int pageNumber);
+        /// <param name="filter">Filter with specified searching parameters.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the <see cref="SearchResult{WorkshopCard}"/> that contains found elements.</returns>
+        Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilterDto filter = null);
     }
 }

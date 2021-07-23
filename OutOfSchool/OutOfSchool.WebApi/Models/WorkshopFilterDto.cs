@@ -23,5 +23,9 @@ namespace OutOfSchool.WebApi.Models
         public List<long> DirectionIds { get; set; } = new List<long> { 0 };
 
         public string City { get; set; } = "Київ";
+
+        public int Size { get; set; } = 12;
+
+        public int From { get; set; } = 0;
     }
 }

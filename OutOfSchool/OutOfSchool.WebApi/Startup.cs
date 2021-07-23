@@ -21,6 +21,8 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Hubs;
+using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Util;
 using Serilog;
@@ -81,10 +83,17 @@ namespace OutOfSchool.WebApi
 
             app.UseRouting();
 
+            // Enable extracting token from QueryString for Hub-connection authorization
+            app.UseMiddleware<AuthorizationTokenMiddleware>();
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/chathub");
+            });
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -103,9 +112,10 @@ namespace OutOfSchool.WebApi
             services.AddCors(confg =>
                 confg.AddPolicy(
                     "AllowAll",
-                    p => p.AllowAnyOrigin()
+                    p => p.WithOrigins(Configuration["AllowedCorsOrigins"].Split(','))
                         .AllowAnyMethod()
-                        .AllowAnyHeader()));
+                        .AllowAnyHeader()
+                        .AllowCredentials()));
 
             services.AddControllers();
 
@@ -121,6 +131,8 @@ namespace OutOfSchool.WebApi
             // entities services
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
+            services.AddTransient<IChatMessageService, ChatMessageService>();
+            services.AddTransient<IChatRoomService, ChatRoomService>();
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<ICityService, CityService>();
             services.AddTransient<IClassService, ClassService>();
@@ -139,6 +151,9 @@ namespace OutOfSchool.WebApi
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
+            services.AddTransient<IEntityRepository<ChatMessage>, EntityRepository<ChatMessage>>();
+            services.AddTransient<IEntityRepository<ChatRoom>, EntityRepository<ChatRoom>>();
+            services.AddTransient<IEntityRepository<ChatRoomUser>, EntityRepository<ChatRoomUser>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
             services.AddTransient<IEntityRepository<Favorite>, EntityRepository<Favorite>>();
@@ -205,6 +220,8 @@ namespace OutOfSchool.WebApi
             });
 
             services.AddAutoMapper(typeof(Startup));
+
+            services.AddSignalR();
         }
     }
 }

@@ -234,8 +234,8 @@ namespace OutOfSchool.WebApi.Controllers
             var dto = await service.GetById(id).ConfigureAwait(false);
             if (!(dto is null) && dto.Type == RatingType.Workshop)
             {
-                await this.UpdateWorkshopInElasticsearch(dto.Id).ConfigureAwait(false);
                 await service.Delete(id).ConfigureAwait(false);
+                await this.UpdateWorkshopInElasticsearch(dto.Id).ConfigureAwait(false);
             }
             else
             {
@@ -273,7 +273,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             var entitis = await esWorkshopService.Search(new WorkshopFilterES() { Ids = new List<long>() { id } }).ConfigureAwait(false);
 
-            await esWorkshopService.Update(entitis.Single()).ConfigureAwait(false);
+            await esWorkshopService.Update(entitis.Entities.Single()).ConfigureAwait(false);
         }
     }
 }
