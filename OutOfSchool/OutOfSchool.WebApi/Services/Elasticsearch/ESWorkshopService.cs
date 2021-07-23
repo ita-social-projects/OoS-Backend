@@ -126,22 +126,29 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopES>> Search(WorkshopFilterES filter)
+        public async Task<SearchResultES<WorkshopES>> Search(WorkshopFilterES filter)
         {
             if (filter is null)
             {
                 filter = new WorkshopFilterES();
             }
 
-            var res = await esProvider.Search(filter).ConfigureAwait(false);
+            try
+            {
+                var res = await esProvider.Search(filter).ConfigureAwait(false);
 
-            return res;
+                return res;
+            }
+            catch
+            {
+                return new SearchResultES<WorkshopES>();
+            }
         }
 
         /// <inheritdoc/>
         public async Task<bool> PingServer()
         {
-            return await esProvider.CheckServerAsync().ConfigureAwait(false);
+            return await esProvider.PingServerAsync().ConfigureAwait(false);
         }
 
         private void NullCheck(WorkshopES entity)

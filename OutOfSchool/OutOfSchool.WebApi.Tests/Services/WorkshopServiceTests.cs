@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -32,7 +31,6 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private Mock<IRatingService> ratingServiceMoq;
         private Mock<ILogger> loggerMoq;
-        private Mock<IStringLocalizer<SharedResource>> localizerMoq;
 
         private Workshop newWorkshop;
         private Class classEntity;
@@ -55,7 +53,6 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             ratingServiceMoq = new Mock<IRatingService>();
             loggerMoq = new Mock<ILogger>();
-            localizerMoq = new Mock<IStringLocalizer<SharedResource>>();
 
             workshopService = new WorkshopService(
                 workshopRepository,
@@ -63,8 +60,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 teacherRepository,
                 addressRepository,
                 ratingServiceMoq.Object,
-                loggerMoq.Object,
-                localizerMoq.Object);
+                loggerMoq.Object);
 
             SeedDatabase();
         }
