@@ -20,6 +20,8 @@ namespace OutOfSchool.WebApi.Services
         private readonly IRatingRepository ratingRepository;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IProviderRepository providerRepository;
+        private readonly IEntityRepository<Parent> parentRepository;
+        private readonly IEntityRepository<User> userRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly int roundToDigits = 2;
@@ -30,18 +32,24 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="ratingRepository">Repository for Rating entity.</param>
         /// <param name="workshopRepository">Repository for Workshop entity.</param>
         /// <param name="providerRepository">Repository for Provider entity.</param>
+        /// <param name="parentRepository">Repository for Parent entity.</param>
+        /// <param name="userRepository">Repository for User entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         public RatingService(
             IRatingRepository ratingRepository,
             IWorkshopRepository workshopRepository,
             IProviderRepository providerRepository,
+            IEntityRepository<Parent> parentRepository,
+            IEntityRepository<User> userRepository,
             ILogger logger,
             IStringLocalizer<SharedResource> localizer)
         {
             this.ratingRepository = ratingRepository;
             this.workshopRepository = workshopRepository;
             this.providerRepository = providerRepository;
+            this.parentRepository = parentRepository;
+            this.userRepository = userRepository;
             this.logger = logger;
             this.localizer = localizer;
         }
@@ -91,7 +99,9 @@ namespace OutOfSchool.WebApi.Services
                 : $"All {ratings.Count()} records with EntityId = {entityId} and RatingType = {type} " +
                         $"were successfully received from the Rating table");
 
-            return ratings.Select(r => r.ToModel()).ToList();
+            var ratingsDto = ratings.Select(r => r.ToModel());
+
+            return await GetUsersAsync(ratingsDto).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -114,7 +124,9 @@ namespace OutOfSchool.WebApi.Services
                 : $"All {worshopsRating.Count} records with ProviderId = {id} " +
                         $"were successfully received from the Rating table");
 
-            return worshopsRating.Select(r => r.ToModel());
+            var ratingsDto = worshopsRating.Select(r => r.ToModel());
+
+            return await GetUsersAsync(ratingsDto).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -336,6 +348,25 @@ namespace OutOfSchool.WebApi.Services
                 default:
                     return false;
             }
+        }
+
+        private async Task<IEnumerable<RatingDto>> GetUsersAsync(IEnumerable<RatingDto> ratingDtos)
+        {
+            var parents = await parentRepository.GetAll().ConfigureAwait(false);
+            var users = await userRepository.GetAll().ConfigureAwait(false);
+
+            var parentWithUsers = parents.Join(ratingDtos, p => p.Id, r => r.ParentId, (p, r) => new { ParentId = p.Id, p.UserId });
+
+            var newUsers = users.Join(parentWithUsers, u => u.Id, r => r.UserId, (u, r) => new { u.FirstName, u.LastName, r.ParentId });
+
+            foreach (var rating in ratingDtos)
+            {
+                var userInfo = newUsers.FirstOrDefault(p => p.ParentId == rating.ParentId);
+                rating.FirstName = userInfo.FirstName;
+                rating.LastName = userInfo.LastName;
+            }
+
+            return ratingDtos;
         }
     }
 }
