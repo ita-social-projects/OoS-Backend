@@ -1371,277 +1371,332 @@ INSERT INTO [dbo].[Ratings]
            ([Rate]
            ,[Type]
            ,[EntityId]
-           ,[ParentId])
+           ,[ParentId]
+		   ,[CreationTime])
      VALUES
 --parent 1
            (5 --rating
            ,2 --workshop
            ,1 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-01-15 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,2 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-02-15 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,3 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-03-15 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,4 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-04-15 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,4 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-05-15 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,5 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-06-15 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,6 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-01 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,7 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-02 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,8 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-03 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,9 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-04 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,10 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-05 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,11 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-06 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,12 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-08 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,13 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-09 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,14 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-10 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,15 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-11 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,16 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-12 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,17 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-13 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,18 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-14 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,19 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-15 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,20 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-16 18:00:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,21 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-17 18:00:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,22 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-18 18:00:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,23 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-19 18:00:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,24 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-20 18:00:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,25 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-21 18:00:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,26 -- workshopId
-           ,1) --parent
+           ,1 --parent
+		   ,'2021-07-22 18:00:45')
 
 --parent 2
            ,(5 --rating
            ,2 --workshop
            ,1 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-01-02 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,2 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-02-02 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,3 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-03-02 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,4 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-04-02 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,4 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-05-01 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,5 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-05-02 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,6 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-06-02 18:00:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,7 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-02 18:00:45')
 
 		   ,(2 --rating
            ,2 --workshop
            ,8 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-01 18:00:45')
 
 		   ,(1 --rating
            ,2 --workshop
            ,9 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-02 18:00:45')
 
 		   ,(2 --rating
            ,2 --workshop
            ,10 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-02 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,11 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-03 18:00:45')
 
 		   ,(2 --rating
            ,2 --workshop
            ,12 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-04 18:00:45')
 
 		   ,(2 --rating
            ,2 --workshop
            ,13 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-05 18:00:45')
 
 		   ,(2 --rating
            ,2 --workshop
            ,14 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-06 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,15 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-07 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,16 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-08 18:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,17 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-09 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,18 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-10 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,19 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-10 19:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,20 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-11 10:00:45')
 
 		   ,(5 --rating
            ,2 --workshop
            ,21 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-11 13:00:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,22 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-12 13:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,23 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-13 18:00:45')
 
 		   ,(4 --rating
            ,2 --workshop
            ,24 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-14 18:20:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,25 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-15 18:00:45')
 
 		   ,(3 --rating
            ,2 --workshop
            ,26 -- workshopId
-           ,2) --parent
+           ,2 --parent
+		   ,'2021-07-16 18:00:45')
 GO
