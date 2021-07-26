@@ -94,6 +94,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return View(new LoginViewModel
                 {
                     ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                    ReturnUrl = model.ReturnUrl,
                 });
             }
 
