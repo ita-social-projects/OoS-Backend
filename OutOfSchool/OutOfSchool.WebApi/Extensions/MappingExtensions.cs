@@ -130,6 +130,19 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static PhotoDto ToModel(this Photo photo)
+        {
+            return Mapper<Photo, PhotoDto>(photo, cfg =>
+            {
+                cfg.CreateMap<Photo, PhotoDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
+                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(c => c.EntityType))
+                .ForMember(dest => dest.Path, opt => opt.MapFrom(c => c.Path))
+                .ForMember(dest => dest.Photo, opt => opt.Ignore())
+                .ForMember(dest => dest.PhotoExtension, opt => opt.Ignore());
+            });
+        }
+
         public static RatingDto ToModel(this Rating rating)
         {
             return Mapper<Rating, RatingDto>(rating, cfg => { cfg.CreateMap<Rating, RatingDto>(); });
@@ -266,6 +279,17 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
+            });
+        }
+
+        public static Photo ToDomain(this PhotoDto photoDto)
+        {
+            return Mapper<PhotoDto, Photo>(photoDto, cfg =>
+            {
+                cfg.CreateMap<PhotoDto, Photo>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
+                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(c => c.EntityType))
+                .ForMember(dest => dest.Path, opt => opt.MapFrom(c => c.Path));
             });
         }
 

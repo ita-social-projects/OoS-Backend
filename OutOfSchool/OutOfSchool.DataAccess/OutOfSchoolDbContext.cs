@@ -16,6 +16,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Provider> Providers { get; set; }
 
+        public DbSet<Photo> Photos { get; set; }
+
         public DbSet<ChatRoom> ChatRooms { get; set; }
 
         public DbSet<ChatRoomUser> ChatRoomUsers { get; set; }
