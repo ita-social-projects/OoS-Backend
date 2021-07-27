@@ -54,10 +54,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var dirPath = Path.GetDirectoryName(FilePath);
 
-                if (!Directory.Exists(dirPath))
-                {
-                    Directory.CreateDirectory(dirPath);
-                }
+                Directory.CreateDirectory(dirPath);
 
                 var filePath = $"{FilePath}\\{fileName.TrimEnd()}";
 
@@ -74,12 +71,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 return photoInfo.ToModel();
             }
-            catch (ArgumentException ex)
-            {
-                logger.Error($"Process of creating photo failed. {ex}");
-                throw;
-            }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
                 logger.Error($"Process of creating photo failed. {ex}");
                 throw;
@@ -100,10 +92,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var dirPath = Path.GetDirectoryName(FilePath);
 
-                if (!Directory.Exists(dirPath))
-                {
-                    Directory.CreateDirectory(dirPath);
-                }
+                Directory.CreateDirectory(dirPath);
 
                 var createdPhotos = new List<PhotoDto>();
 
@@ -129,12 +118,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 return createdPhotos;
             }
-            catch (ArgumentException ex)
-            {
-                logger.Error($"Process of creating photos failed. {ex}");
-                throw;
-            }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
                 logger.Error($"Process of creating photos failed. {ex}");
                 throw;
@@ -155,20 +139,13 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 File.Delete(filePath);
 
-                Expression<Func<Photo, bool>> filter = p => p.Path == filePath;
-
-                var photo = await repository.GetByFilter(filter).ConfigureAwait(false);
+                var photo = await GetFilesByPath(filePath).ConfigureAwait(false);
 
                 await repository.Delete(photo.FirstOrDefault()).ConfigureAwait(false);
 
                 logger.Information($"Photo deleted photo successfully.");
             }
-            catch (ArgumentException ex)
-            {
-                logger.Error($"Process of deleting photo failed. {ex}");
-                throw;
-            }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
                 logger.Error($"Process of deleting photo failed. {ex}");
                 throw;
@@ -191,21 +168,14 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                 {
                     File.Delete(path);
 
-                    Expression<Func<Photo, bool>> filter = p => p.Path == path;
-
-                    var photos = await repository.GetByFilter(filter).ConfigureAwait(false);
+                    var photos = await GetFilesByPath(path).ConfigureAwait(false);
 
                     await repository.Delete(photos.FirstOrDefault()).ConfigureAwait(false);
                 }
 
                 logger.Information($"Photo deleted photo successfully.");
             }
-            catch (ArgumentException ex)
-            {
-                logger.Error($"Process of deleting photos failed. {ex}");
-                throw;
-            }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
                 logger.Error($"Process of deleting photos failed. {ex}");
                 throw;
@@ -221,9 +191,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var photos = new List<byte[]>();
 
-                Expression<Func<Photo, bool>> filter = p => p.EntityId == entityId && p.EntityType == entityType;
-
-                var images = await repository.GetByFilter(filter).ConfigureAwait(false);
+                var images = await GetFilesByEntity(entityId, entityType).ConfigureAwait(false);
 
                 foreach (var image in images)
                 {
@@ -246,12 +214,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 return photos;
             }
-            catch (ArgumentException ex)
-            {
-                logger.Error($"Process of getting photos failed. {ex}");
-                throw;
-            }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
                 logger.Error($"Process of getting photos failed. {ex}");
                 throw;
@@ -267,9 +230,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var paths = new List<string>();
 
-                Expression<Func<Photo, bool>> filter = p => p.EntityId == entityId && p.EntityType == entityType;
-
-                var photos = await repository.GetByFilter(filter).ConfigureAwait(false);
+                var photos = await GetFilesByEntity(entityId, entityType).ConfigureAwait(false);
 
                 foreach (var photo in photos)
                 {
@@ -280,12 +241,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 return paths;
             }
-            catch (ArgumentException ex)
-            {
-                logger.Error($"Process of getting paths of the photos failed. {ex}");
-                throw;
-            }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
                 logger.Error($"Process of getting paths of the photos failed. {ex}");
                 throw;
@@ -299,20 +255,13 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
             {
                 logger.Information($"Process of getting path of the photo started.");
 
-                Expression<Func<Photo, bool>> filter = p => p.EntityId == entityId && p.EntityType == entityType;
-
-                var photos = await repository.GetByFilter(filter).ConfigureAwait(false);
+                var photos = await GetFilesByEntity(entityId, entityType).ConfigureAwait(false);
 
                 logger.Information($"Successfully got path of the photo.");
 
                 return photos.FirstOrDefault().Path;
             }
-            catch (ArgumentException ex)
-            {
-                logger.Error($"Process of getting path of the photo failed. {ex}");
-                throw;
-            }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
                 logger.Error($"Process of getting path of the photo failed. {ex}");
                 throw;
@@ -345,6 +294,20 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                 logger.Error($"Process of updating the photo failed. {ex}");
                 throw;
             }
+        }
+
+        private async Task<IEnumerable<Photo>> GetFilesByEntity(long entityId, EntityType entityType)
+        {
+            Expression<Func<Photo, bool>> filter = p => p.EntityId == entityId && p.EntityType == entityType;
+
+            return await repository.GetByFilter(filter).ConfigureAwait(false);
+        }
+
+        private async Task<IEnumerable<Photo>> GetFilesByPath(string filePath)
+        {
+            Expression<Func<Photo, bool>> filter = p => p.Path == filePath;
+
+            return await repository.GetByFilter(filter).ConfigureAwait(false);
         }
     }
 }
