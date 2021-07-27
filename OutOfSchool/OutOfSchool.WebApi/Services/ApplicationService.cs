@@ -5,10 +5,12 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Util;
 using Serilog;
 
 namespace OutOfSchool.WebApi.Services
@@ -18,6 +20,8 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ApplicationService : IApplicationService
     {
+        private const int ApplicationsLimit = 2;
+
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IEntityRepository<Child> childRepository;
@@ -51,7 +55,9 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Application creating started.");
 
-            ModelCreationValidation(applicationDto);
+            ModelNullValidation(applicationDto);
+
+            await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
 
             var isChildParent = await CheckChildParent(applicationDto.ParentId, applicationDto.ChildId).ConfigureAwait(false);
 
@@ -155,39 +161,44 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id, ApplicationFilter filter)
         {
             logger.Information($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
 
-            Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
+            FilterNullValidation(filter);
 
-            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+            Expression<Func<Application, bool>> applicationFilter = a => a.WorkshopId == id;
+            var applications = applicationRepository.Get<int>(where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
-            logger.Information(!applications.Any()
+            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
+
+            logger.Information(!filteredApplications.Any()
                 ? $"There is no applications in the Db with Workshop Id = {id}."
                 : $"Successfully got Applications with Workshop Id = {id}.");
 
-            return applications.Select(a => a.ToModel()).ToList();
+            return filteredApplications.Select(a => a.ToModel());
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id, ApplicationFilter filter)
         {
             logger.Information($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
 
-            Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
+            FilterNullValidation(filter);
 
+            Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
             var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
+            var applications = applicationRepository.Get<int>(where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
-            var applications = await applicationRepository.GetByFilter(applicationFilter, "Workshop,Child,Parent").ConfigureAwait(false);
+            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
 
-            logger.Information(!applications.Any()
+            logger.Information(!filteredApplications.Any()
                 ? $"There is no applications in the Db with Provider Id = {id}."
                 : $"Successfully got Applications with Provider Id = {id}.");
 
-            return applications.Select(a => a.ToModel()).ToList();
+            return filteredApplications.Select(a => a.ToModel());
         }
 
         /// <inheritdoc/>
@@ -271,18 +282,12 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private void ModelCreationValidation(ApplicationDto applicationDto)
+        private void FilterNullValidation(ApplicationFilter filter)
         {
-            ModelNullValidation(applicationDto);
-
-            Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
-                                                              && a.WorkshopId == applicationDto.WorkshopId
-                                                              && a.ParentId == applicationDto.ParentId;
-
-            if (applicationRepository.Get<int>(where: filter).Any())
+            if (filter is null)
             {
-                logger.Information("Creation failed. Application with such data alredy exists.");
-                throw new ArgumentException(localizer["There is already an application with such data."]);
+                logger.Information("Operation failed. Application filter is null.");
+                throw new ArgumentException(localizer["Application filter is null."], nameof(filter));
             }
         }
 
@@ -296,7 +301,7 @@ namespace OutOfSchool.WebApi.Services
 
             foreach (var application in applicationDtos)
             {
-                ModelCreationValidation(application);
+                ModelNullValidation(application);
             }
         }
 
@@ -318,6 +323,88 @@ namespace OutOfSchool.WebApi.Services
             var children = childRepository.Get<int>(where: filter).Select(c => c.Id);
 
             return await children.ContainsAsync(childId).ConfigureAwait(false);
+        }
+
+        private async Task CheckApplicationsLimit(ApplicationDto applicationDto)
+        {
+            var endDate = applicationDto.CreationTime;
+
+            var startDate = endDate.AddDays(-7);
+
+            Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
+                                                              && a.WorkshopId == applicationDto.WorkshopId
+                                                              && a.ParentId == applicationDto.ParentId
+                                                              && (a.CreationTime >= startDate && a.CreationTime <= endDate);
+
+            var applications = await applicationRepository.GetByFilter(filter).ConfigureAwait(false);
+
+            if (applications.Count() >= ApplicationsLimit)
+            {
+                logger.Information($"Operation failed. Limit of applications per week is exceeded.");
+                throw new ArgumentException(localizer["Limit of applications per week is exceeded."]);
+            }
+        }
+
+        private IQueryable<Application> GetFiltered(IQueryable<Application> applications, ApplicationFilter filter)
+        {
+            var filterPredicate = PredicateBuild(filter);
+            var filteredApplications = applications.Where(filterPredicate);
+
+            var sortPredicate = SortExpressionBuild(filter);
+            filteredApplications = filteredApplications.DynamicOrderBy(sortPredicate);
+
+            return filteredApplications;
+        }
+
+        private Expression<Func<Application, bool>> PredicateBuild(
+            ApplicationFilter filter,
+            Expression<Func<Application, bool>> predicate = null)
+        {
+            if (predicate is null)
+            {
+                predicate = PredicateBuilder.True<Application>();
+            }
+
+            if (filter.Status != 0)
+            {
+                predicate = predicate.And(a => (int)a.Status == filter.Status);
+            }
+
+            if (filter.Workshops != null)
+            {
+                var tempPredicate = PredicateBuilder.False<Application>();
+
+                foreach (var workshop in filter.Workshops)
+                {
+                    tempPredicate = tempPredicate.Or(a => a.WorkshopId == workshop);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            return predicate;
+        }
+
+        private Dictionary<Expression<Func<Application, object>>, SortDirection> SortExpressionBuild(ApplicationFilter filter)
+        {
+            var sortExpression = new Dictionary<Expression<Func<Application, object>>, SortDirection>();
+
+            if (filter.OrderByStatus)
+            {
+                sortExpression.Add(a => a.Status, SortDirection.Ascending);
+            }
+
+            if (filter.OrderByDateAscending)
+            {
+                sortExpression.Add(a => a.CreationTime, SortDirection.Ascending);
+            }
+
+            if (filter.OrderByAlphabetically)
+            {
+                sortExpression.Add(a => a.Parent.User.LastName, SortDirection.Ascending);
+            }
+
+            return sortExpression;
         }
     }
 }
