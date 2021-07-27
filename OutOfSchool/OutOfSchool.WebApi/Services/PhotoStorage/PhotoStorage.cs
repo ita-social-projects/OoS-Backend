@@ -38,19 +38,19 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <inheritdoc/>
         public async Task<PhotoDto> AddFile(PhotoDto photo, string fileName)
         {
-            if (photo is null)
-            {
-                throw new ArgumentNullException(localizer["Photo can not be null!."]);
-            }
-
-            if (fileName is null)
-            {
-                throw new ArgumentNullException(localizer["File name can not be null!."]);
-            }
-
             try
             {
                 logger.Information("Process of creating photo started.");
+
+                if (photo is null)
+                {
+                    throw new ArgumentNullException(localizer["Photo can not be null!."]);
+                }
+
+                if (fileName is null)
+                {
+                    throw new ArgumentNullException(localizer["File name can not be null!."]);
+                }
 
                 var dirPath = Path.GetDirectoryName(FilePath);
 
@@ -89,14 +89,14 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <inheritdoc/>
         public async Task<List<PhotoDto>> AddFiles(List<PhotoDto> photos)
         {
-            if (photos is null)
-            {
-                throw new ArgumentNullException(localizer["Photos can not be null!."]);
-            }
-
             try
             {
                 logger.Information("Process of creating photos started.");
+
+                if (photos is null)
+                {
+                    throw new ArgumentNullException(localizer["Photos can not be null!."]);
+                }
 
                 var dirPath = Path.GetDirectoryName(FilePath);
 
@@ -144,14 +144,14 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <inheritdoc/>
         public async Task DeleteFile(string filePath)
         {
-            if (filePath is null)
-            {
-                throw new ArgumentNullException(localizer["File path can not be null!"]);
-            }
-
             try
             {
                 logger.Information($"Process of deleting photo started.");
+
+                if (filePath is null)
+                {
+                    throw new ArgumentNullException(localizer["File path can not be null!"]);
+                }
 
                 File.Delete(filePath);
 
@@ -178,14 +178,14 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <inheritdoc/>
         public async Task DeleteFiles(List<string> filesPaths)
         {
-            if (filesPaths is null)
-            {
-                throw new ArgumentNullException(localizer["File paths can not be null!"]);
-            }
-
             try
             {
                 logger.Information($"Process of deleting photos started.");
+
+                if (filesPaths is null)
+                {
+                    throw new ArgumentNullException(localizer["File paths can not be null!"]);
+                }
 
                 foreach (var path in filesPaths)
                 {
@@ -322,14 +322,14 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <inheritdoc/>
         public async Task<PhotoDto> UpdateFile(PhotoDto photo)
         {
-            if (photo is null)
-            {
-                throw new ArgumentNullException(localizer["Photo can not be null!"]);
-            }
-
             try
             {
                 logger.Information($"Process of updating the photo started.");
+
+                if (photo is null)
+                {
+                    throw new ArgumentNullException(localizer["Photo can not be null!"]);
+                }
 
                 using (var fileStream = File.Open(photo.Path, FileMode.Create))
                 {

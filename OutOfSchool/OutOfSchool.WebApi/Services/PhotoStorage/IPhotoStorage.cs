@@ -14,9 +14,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// Adds file to data storage.
         /// </summary>
         /// <param name="photo">Photo data.</param>
-        /// <param name="filePath">File path.</param>
+        /// <param name="fileName">File name.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<PhotoDto> AddFile(PhotoDto photo, string filePath);
+        Task<PhotoDto> AddFile(PhotoDto photo, string fileName);
 
         /// <summary>
         /// Adds files to data storage.
@@ -28,9 +28,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <summary>
         /// Delete file from data storage.
         /// </summary>
-        /// <param name="fileName">File name.</param>
+        /// <param name="filePath">File path.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task DeleteFile(string fileName);
+        Task DeleteFile(string filePath);
 
         /// <summary>
         /// Delete files from data storage.
