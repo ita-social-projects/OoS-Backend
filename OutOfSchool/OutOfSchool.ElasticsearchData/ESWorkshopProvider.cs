@@ -87,7 +87,15 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            if (filter.MinPrice >= 0 && filter.MaxPrice < int.MaxValue)
+            if (filter.IsFree && !filter.IsPaid)
+            {
+                queryContainer &= new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.Price),
+                    Value = 0,
+                };
+            }
+            else if (!filter.IsFree && filter.IsPaid)
             {
                 queryContainer &= new NumericRangeQuery()
                 {
@@ -96,14 +104,24 @@ namespace OutOfSchool.ElasticsearchData
                     LessThanOrEqualTo = filter.MaxPrice,
                 };
             }
-
-            if (filter.MinPrice == 0 && filter.MaxPrice == 0)
+            else if (filter.IsFree && filter.IsPaid)
             {
-                queryContainer &= new TermQuery()
+                var tempQuery = new QueryContainer();
+
+                tempQuery = new NumericRangeQuery()
                 {
                     Field = Infer.Field<WorkshopES>(w => w.Price),
-                    Value = filter.MaxPrice,
+                    GreaterThanOrEqualTo = filter.MinPrice,
+                    LessThanOrEqualTo = filter.MaxPrice,
                 };
+
+                tempQuery |= new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.Price),
+                    Value = 0,
+                };
+
+                queryContainer &= tempQuery;
             }
 
             if (filter.MinAge != 0 || filter.MaxAge != 100)
