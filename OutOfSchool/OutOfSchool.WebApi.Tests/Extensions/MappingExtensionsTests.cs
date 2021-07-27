@@ -136,7 +136,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 IsPaid = true,
                 MinPrice = 0,
                 MaxPrice = 20,
-                OrderByField = Enums.OrderBy.PriceDesc,
+                OrderByField = Enums.OrderBy.PriceDesc.ToString(),
                 SearchText = "Text",
                 From = 13,
                 Size = 12,

@@ -333,10 +333,15 @@ namespace OutOfSchool.WebApi.Services
         {
             switch (filter.OrderByField)
             {
-                case OrderBy.Alphabet:
+                case nameof(OrderBy.Alphabet):
                     Expression<Func<Workshop, dynamic>> orderByAlphabet = x => x.Title;
                     var alphabetIsAscending = true;
                     return Tuple.Create(orderByAlphabet, alphabetIsAscending);
+
+                case nameof(OrderBy.PriceDesc):
+                    Expression<Func<Workshop, dynamic>> orderByPriceDesc = x => x.Price;
+                    var priceIsAsc = false;
+                    return Tuple.Create(orderByPriceDesc, priceIsAsc);
 
                 default:
                     Expression<Func<Workshop, dynamic>> orderBy = x => x.Price;

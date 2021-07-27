@@ -167,27 +167,27 @@ namespace OutOfSchool.ElasticsearchData
 
             switch (filter.OrderByField)
             {
-                case OrderBy.Rating:
+                case nameof(OrderBy.Rating):
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
                     break;
 
-                case OrderBy.Statistic:
+                case nameof(OrderBy.Statistic):
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
                     break;
 
-                case OrderBy.PriceAsc:
+                case nameof(OrderBy.PriceAsc):
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Ascending });
                     break;
 
-                case OrderBy.PriceDesc:
+                case nameof(OrderBy.PriceDesc):
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Descending });
                     break;
 
-                case OrderBy.Alphabet:
+                case nameof(OrderBy.Alphabet):
                     sorts.Add(new FieldSort() { Field = "title.keyword", Order = SortOrder.Ascending });
                     break;
 
-                case OrderBy.Nearest:
+                case nameof(OrderBy.Nearest):
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
                     break;
 
