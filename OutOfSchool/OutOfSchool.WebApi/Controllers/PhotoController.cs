@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.PhotoStorage;
 
@@ -37,18 +38,24 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpGet("{entityId}/{entityType}")]
         public async Task<IActionResult> GetFiles(long entityId, EntityType entityType)
         {
+            this.ValidateId(entityId, localizer);
+
             return Ok(await photoService.GetFiles(entityId, entityType).ConfigureAwait(false));
         }
 
         [HttpGet("{entityId}/{entityType}")]
         public async Task<IActionResult> GetFilesPaths(long entityId, EntityType entityType)
         {
+            this.ValidateId(entityId, localizer);
+
             return Ok(await photoService.GetFilesPaths(entityId, entityType).ConfigureAwait(false));
         }
 
         [HttpGet("{entityId}/{entityType}")]
         public async Task<IActionResult> GetFilePath(long entityId, EntityType entityType)
         {
+            this.ValidateId(entityId, localizer);
+
             return Ok(await photoService.GetFilePath(entityId, entityType).ConfigureAwait(false));
         }
 
@@ -58,6 +65,11 @@ namespace OutOfSchool.WebApi.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            if (photoInfo is null)
+            {
+                return BadRequest("Photo Info is null!");
             }
 
             PhotoStorage.FilePath = $"{Path}\\{photoInfo.EntityType}";
