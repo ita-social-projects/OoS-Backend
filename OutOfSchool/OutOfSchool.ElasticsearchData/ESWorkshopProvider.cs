@@ -143,6 +143,15 @@ namespace OutOfSchool.ElasticsearchData
                 queryContainer &= ageQuery;
             }
 
+            if (filter.WithDisabilityOptions)
+            {
+                queryContainer &= new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.WithDisabilityOptions),
+                    Value = filter.WithDisabilityOptions,
+                };
+            }
+
             queryContainer &= new MatchQuery()
             {
                 Field = Infer.Field<WorkshopES>(w => w.Address.City),

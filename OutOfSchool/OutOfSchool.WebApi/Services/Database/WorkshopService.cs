@@ -319,6 +319,11 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(x => x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge);
             }
 
+            if (filter.WithDisabilityOptions)
+            {
+                predicate = predicate.And(x => x.WithDisabilityOptions);
+            }
+
             predicate = predicate.And(x => x.Address.City == filter.City);
 
             return predicate;
