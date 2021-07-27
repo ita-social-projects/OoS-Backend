@@ -343,6 +343,16 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static BackupOperation ToDomain(this BackupOperationDto backupOperationDto)
+        {
+            return Mapper<BackupOperationDto, BackupOperation>(backupOperationDto, cfg => { cfg.CreateMap<BackupOperationDto, BackupOperation>(); });
+        }
+
+        public static BackupOperationDto ToModel(this BackupOperation backupOperation)
+        {
+            return Mapper<BackupOperation, BackupOperationDto>(backupOperation, cfg => { cfg.CreateMap<BackupOperation, BackupOperationDto>(); });
+        }
+
         #endregion
 
         #region ToCard
