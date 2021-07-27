@@ -101,6 +101,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.AreEqual(workshopDto.WithDisabilityOptions, result.WithDisabilityOptions);
             Assert.AreEqual(workshopDto.ProviderId, result.ProviderId);
             Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
+            Assert.IsNull(result.ProviderDescription);
             Assert.AreEqual(workshopDto.MinAge, result.MinAge);
             Assert.AreEqual(workshopDto.MaxAge, result.MaxAge);
             Assert.AreEqual(workshopDto.Logo, result.Logo);
@@ -126,12 +127,16 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             var filter = new WorkshopFilterDto()
             {
                 Ids = new List<long>() { 1, 2 },
-                Ages = new List<AgeRange>() { new AgeRange() { MinAge = 0, MaxAge = 5 } },
+                MinAge = 0,
+                MaxAge = 5,
+                WithDisabilityOptions = true,
                 City = "City",
                 DirectionIds = new List<long>() { 1, 2 },
+                IsFree = false,
+                IsPaid = true,
                 MinPrice = 0,
                 MaxPrice = 20,
-                OrderByField = Enums.OrderBy.Price,
+                OrderByField = Enums.OrderBy.PriceDesc,
                 SearchText = "Text",
                 From = 13,
                 Size = 12,
@@ -145,8 +150,11 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.IsInstanceOf<WorkshopFilterES>(result);
             Assert.AreEqual(filter.Ids, result.Ids);
             Assert.AreEqual(filter.DirectionIds, result.DirectionIds);
-            Assert.IsNotNull(result.Ages);
-            Assert.IsInstanceOf<List<AgeRangeES>>(result.Ages);
+            Assert.AreEqual(filter.IsFree, result.IsFree);
+            Assert.AreEqual(filter.IsPaid, result.IsPaid);
+            Assert.AreEqual(filter.MinAge, result.MinAge);
+            Assert.AreEqual(filter.MaxAge, result.MaxAge);
+            Assert.AreEqual(filter.WithDisabilityOptions, result.WithDisabilityOptions);
             Assert.AreEqual(filter.City, result.City);
             Assert.AreEqual(filter.MinPrice, result.MinPrice);
             Assert.AreEqual(filter.MaxPrice, result.MaxPrice);
@@ -168,6 +176,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 IsPerMonth = true,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
+                ProviderDescription = "Provider description",
                 Description = "Some description",
                 MaxAge = 10,
                 MinAge = 4,
@@ -252,6 +261,7 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 IsPerMonth = true,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
+                ProviderDescription = "Provider description",
                 MaxAge = 10,
                 MinAge = 4,
                 Logo = "image5",

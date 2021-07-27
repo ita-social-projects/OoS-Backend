@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.ModelBinders;
 
 namespace OutOfSchool.WebApi.Models
 {

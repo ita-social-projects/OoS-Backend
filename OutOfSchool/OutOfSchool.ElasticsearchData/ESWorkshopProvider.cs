@@ -105,28 +105,21 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            if (filter.Ages[0].MinAge != 0 || filter.Ages[0].MaxAge != 100)
+            if (filter.MinAge != 0 || filter.MaxAge != 100)
             {
                 var ageQuery = new QueryContainer();
 
-                foreach (var age in filter.Ages)
+                ageQuery = new NumericRangeQuery()
                 {
-                    var ageQueryItem = new QueryContainer();
+                    Field = Infer.Field<WorkshopES>(w => w.MinAge),
+                    LessThanOrEqualTo = filter.MaxAge,
+                };
 
-                    ageQueryItem = new NumericRangeQuery()
-                    {
-                        Field = Infer.Field<WorkshopES>(w => w.MinAge),
-                        LessThanOrEqualTo = age.MaxAge,
-                    };
-
-                    ageQueryItem &= new NumericRangeQuery()
-                    {
-                        Field = Infer.Field<WorkshopES>(w => w.MaxAge),
-                        GreaterThanOrEqualTo = age.MinAge,
-                    };
-
-                    ageQuery |= ageQueryItem;
-                }
+                ageQuery &= new NumericRangeQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.MaxAge),
+                    GreaterThanOrEqualTo = filter.MinAge,
+                };
 
                 queryContainer &= ageQuery;
             }
@@ -154,8 +147,12 @@ namespace OutOfSchool.ElasticsearchData
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
                     break;
 
-                case OrderBy.Price:
+                case OrderBy.PriceAsc:
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Ascending });
+                    break;
+
+                case OrderBy.PriceDesc:
+                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Descending });
                     break;
 
                 case OrderBy.Alphabet:

@@ -306,16 +306,9 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(x => x.Price == filter.MaxPrice);
             }
 
-            if (filter.Ages[0].MinAge != 0 || filter.Ages[0].MaxAge != 100)
+            if (filter.MinAge != 0 || filter.MaxAge != 100)
             {
-                var tempPredicate = PredicateBuilder.False<Workshop>();
-
-                foreach (var age in filter.Ages)
-                {
-                    tempPredicate = tempPredicate.Or(x => x.MinAge <= age.MaxAge && x.MaxAge >= age.MinAge);
-                }
-
-                predicate = predicate.And(tempPredicate);
+                predicate = predicate.And(x => x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge);
             }
 
             predicate = predicate.And(x => x.Address.City == filter.City);
