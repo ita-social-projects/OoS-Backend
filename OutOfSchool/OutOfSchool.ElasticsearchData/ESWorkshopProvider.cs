@@ -65,7 +65,8 @@ namespace OutOfSchool.ElasticsearchData
                     Fields = Infer.Field<WorkshopES>(w => w.Title)
                             .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
                             .And(Infer.Field<WorkshopES>(w => w.Keywords))
-                            .And(Infer.Field<WorkshopES>(w => w.Description)),
+                            .And(Infer.Field<WorkshopES>(w => w.Description))
+                            .And(Infer.Field<WorkshopES>(w => w.ProviderDescription)),
                     Query = filter.SearchText,
                     Fuzziness = Fuzziness.Auto,
                 };
