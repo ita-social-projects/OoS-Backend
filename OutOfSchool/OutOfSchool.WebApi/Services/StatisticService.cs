@@ -138,6 +138,62 @@ namespace OutOfSchool.WebApi.Services
             return popularCategories;
         }
 
+        // Return categories with 1 SQL query
+        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategoriesFinal(int limit)
+        {
+            logger.Information("Getting popular categories started.");
+
+            var workshops = workshopRepository.Get<int>();
+            var applications = applicationRepository.Get<int>();
+
+            var categoriesWithWorkshops = workshops.GroupBy(w => w.CategoryId)
+                .Select(g => new
+                {
+                    CategoryId = g.Key,
+                    WorkshopsCount = g.Count() as int?,
+                });
+
+            var categoriesWithApplications = applications.GroupBy(a => a.Workshop.CategoryId)
+                .Select(g => new
+                {
+                    CategoryId = g.Key,
+                    ApplicationsCount = g.Count() as int?,
+                });
+
+            var popularCategories = categoriesWithApplications.OrderByDescending(c => c.ApplicationsCount)
+                .Take(limit);
+
+            var categoriesWithCounts = popularCategories.Select(c => new
+            {
+                c.CategoryId,
+                c.ApplicationsCount,
+                categoriesWithWorkshops.FirstOrDefault(ct => ct.CategoryId == c.CategoryId)
+                .WorkshopsCount,
+            });
+
+            var allCategories = categoryRepository.Get<int>();
+
+            var statistics = allCategories
+                .GroupJoin(
+                categoriesWithCounts,
+                category => category.Id,
+                categoryWithCounts => categoryWithCounts.CategoryId,
+                (category, categoriesWithCounts) => new { category, categoriesWithCounts })
+                .SelectMany(
+                x => x.categoriesWithCounts.DefaultIfEmpty(),
+                (x, y) => new CategoryStatistic
+                {
+                    Category = x.category.ToModel(),
+                    ApplicationsCount = y.ApplicationsCount ?? 0,
+                    WorkshopsCount = y.WorkshopsCount ?? 0,
+                })
+                .ToList();
+
+            logger.Information($"All {statistics.Count} records were successfully received");
+
+            return statistics;
+        }
+
         /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit)
         {
