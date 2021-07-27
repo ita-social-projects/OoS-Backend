@@ -1328,38 +1328,38 @@ INSERT INTO [dbo].[Applications]
      VALUES
 
 --workshop1
-           (1 --<Status, int,>
+           (2 --<Status, int,>
            ,1 --<WorkshopId, bigint,>
            ,1 --<ChildId, bigint,>
            ,'2021-06-06 12:20:20' --<CreationTime>
 		   ,1) --parentId
 
-		   ,(1 --<Status, int,>
+		   ,(2 --<Status, int,>
            ,1 --<WorkshopId, bigint,>
            ,2 --<ChildId, bigint,>
            ,'2021-06-04 15:34:20' --<CreationTime>
 		   ,2) --parentId
 
-		   ,(0 --<Status, int,>
+		   ,(1 --<Status, int,>
            ,1 --<WorkshopId, bigint,>
            ,3 --<ChildId, bigint,>
            ,'2021-06-05 08:23:20' --<CreationTime>
 		   ,2) --parentId
 
 --workshop2
-		   ,(0 --<Status, int,>
+		   ,(1 --<Status, int,>
            ,2 --<WorkshopId, bigint,>
            ,1 --<ChildId, bigint,>
            ,'2021-06-15 17:20:00' --<CreationTime>
 		   ,1) --parentId
 
-		   ,(0 --<Status, int,>
+		   ,(1 --<Status, int,>
            ,2 --<WorkshopId, bigint,>
            ,2 --<ChildId, bigint,>
            ,'2021-06-15 17:26:10' --<CreationTime>
 		   ,2) --parentId
 
-		   ,(0 --<Status, int,>
+		   ,(1 --<Status, int,>
            ,2 --<WorkshopId, bigint,>
            ,3 --<ChildId, bigint,>
            ,'2021-06-15 18:00:45' --<CreationTime>
