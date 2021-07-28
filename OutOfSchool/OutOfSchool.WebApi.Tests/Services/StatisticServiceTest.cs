@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
 
             // Act
-            var result = await service.GetPopularCategoriesV1(2).ConfigureAwait(false);
+            var result = await service.GetPopularCategories(2).ConfigureAwait(false);
 
             // Assert
             result.Should().HaveCount(2);
