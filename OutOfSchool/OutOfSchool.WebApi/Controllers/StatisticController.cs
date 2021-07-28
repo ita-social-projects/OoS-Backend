@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             var newLimit = ValidateNumberOfEntries(limit);
 
-            var popularCategories = await service.GetPopularCategories(newLimit).ConfigureAwait(false);
+            var popularCategories = await service.GetPopularCategoriesFinal(newLimit).ConfigureAwait(false);
 
             if (!popularCategories.Any())
             {

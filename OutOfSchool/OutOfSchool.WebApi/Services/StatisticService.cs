@@ -160,16 +160,24 @@ namespace OutOfSchool.WebApi.Services
                     ApplicationsCount = g.Count() as int?,
                 });
 
-            var popularCategories = categoriesWithApplications.OrderByDescending(c => c.ApplicationsCount)
-                .Take(limit);
-
-            var categoriesWithCounts = popularCategories.Select(c => new
-            {
-                c.CategoryId,
-                c.ApplicationsCount,
-                categoriesWithWorkshops.FirstOrDefault(ct => ct.CategoryId == c.CategoryId)
-                .WorkshopsCount,
-            });
+            var categoriesWithCounts = categoriesWithWorkshops
+                .GroupJoin(
+                categoriesWithApplications,
+                categoryWithWorkshop => categoryWithWorkshop.CategoryId,
+                categoryWithApplication => categoryWithApplication.CategoryId,
+                (categoryWithWorkshop, categoriesWithApplications) => new
+                {
+                    categoryWithWorkshop,
+                    categoriesWithApplications,
+                })
+                .SelectMany(
+                x => x.categoriesWithApplications.DefaultIfEmpty(),
+                (x, y) => new 
+                {
+                    CategoryId = x.categoryWithWorkshop.CategoryId,
+                    ApplicationsCount = y.ApplicationsCount,
+                    WorkshopsCount = x.categoryWithWorkshop.WorkshopsCount,
+                });
 
             var allCategories = categoryRepository.Get<int>();
 
@@ -186,12 +194,16 @@ namespace OutOfSchool.WebApi.Services
                     Category = x.category.ToModel(),
                     ApplicationsCount = y.ApplicationsCount ?? 0,
                     WorkshopsCount = y.WorkshopsCount ?? 0,
-                })
-                .ToList();
+                });
 
-            logger.Information($"All {statistics.Count} records were successfully received");
+            var sortedStatistics = await statistics.OrderByDescending(s => s.ApplicationsCount)
+                .Take(limit)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
-            return statistics;
+            logger.Information($"All {sortedStatistics.Count} records were successfully received");
+
+            return sortedStatistics;
         }
 
         /// <inheritdoc/>
