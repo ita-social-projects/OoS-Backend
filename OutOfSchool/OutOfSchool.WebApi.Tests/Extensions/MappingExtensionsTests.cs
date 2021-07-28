@@ -133,7 +133,6 @@ namespace OutOfSchool.WebApi.Extensions.Tests
                 City = "City",
                 DirectionIds = new List<long>() { 1, 2 },
                 IsFree = false,
-                IsPaid = true,
                 MinPrice = 0,
                 MaxPrice = 20,
                 OrderByField = Enums.OrderBy.PriceDesc.ToString(),
@@ -151,7 +150,6 @@ namespace OutOfSchool.WebApi.Extensions.Tests
             Assert.AreEqual(filter.Ids, result.Ids);
             Assert.AreEqual(filter.DirectionIds, result.DirectionIds);
             Assert.AreEqual(filter.IsFree, result.IsFree);
-            Assert.AreEqual(filter.IsPaid, result.IsPaid);
             Assert.AreEqual(filter.MinAge, result.MinAge);
             Assert.AreEqual(filter.MaxAge, result.MaxAge);
             Assert.AreEqual(filter.WithDisabilityOptions, result.WithDisabilityOptions);
