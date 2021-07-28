@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Services
         // Return Categories with 2 SQL queries per category
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
+        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategoriesV1(int limit)
         {
             var categories = await categoryRepository.GetAll().ConfigureAwait(false);
 
@@ -139,7 +139,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         // Return categories with 1 SQL query
-        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategoriesFinal(int limit)
+        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
         {
             logger.Information("Getting popular categories started.");
 
@@ -160,6 +160,7 @@ namespace OutOfSchool.WebApi.Services
                     ApplicationsCount = g.Count() as int?,
                 });
 
+            // LEFT JOIN CategoriesWithWorkshops with CategoriesWithApplications
             var categoriesWithCounts = categoriesWithWorkshops
                 .GroupJoin(
                 categoriesWithApplications,
@@ -181,6 +182,7 @@ namespace OutOfSchool.WebApi.Services
 
             var allCategories = categoryRepository.Get<int>();
 
+            // LEFT JOIN CategoriesWithCounts with all Categories
             var statistics = allCategories
                 .GroupJoin(
                 categoriesWithCounts,

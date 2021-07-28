@@ -68,7 +68,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetCategories_WhenLimitIsValid_ShouldReturnOkResultObject(int limit)
         {
             // Arrange
-            service.Setup(s => s.GetPopularCategories(It.IsInRange(3, 10, Range.Inclusive))).ReturnsAsync(categories);
+            service.Setup(s => s.GetPopularCategoriesV1(It.IsInRange(3, 10, Range.Inclusive))).ReturnsAsync(categories);
 
             // Act
             var result = await controller.GetCategories(limit).ConfigureAwait(false) as OkObjectResult;
@@ -83,7 +83,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetCategories_WhenCollectionIsEmpty_ShouldReturnNoContent(int limit)
         {
             // Arrange
-            service.Setup(s => s.GetPopularCategories(limit)).ReturnsAsync(new List<CategoryStatistic>());
+            service.Setup(s => s.GetPopularCategoriesV1(limit)).ReturnsAsync(new List<CategoryStatistic>());
 
             // Act
             var result = await controller.GetCategories(limit).ConfigureAwait(false) as NoContentResult;
