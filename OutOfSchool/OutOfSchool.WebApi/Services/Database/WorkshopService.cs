@@ -296,20 +296,15 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(tempPredicate);
             }
 
-            if (filter.MinPrice >= 0 && filter.MaxPrice < int.MaxValue)
+            if (filter.IsFree && (filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
+            {
+                predicate = predicate.And(x => x.Price == filter.MinPrice);
+            }
+            else if (!filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
             {
                 predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
             }
-
-            if (filter.IsFree && !filter.IsPaid)
-            {
-                predicate = predicate.And(x => x.Price == filter.MaxPrice);
-            }
-            else if (!filter.IsFree && filter.IsPaid)
-            {
-                predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
-            }
-            else if (filter.IsFree && filter.IsPaid)
+            else if (filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
             {
                 predicate = predicate.And(x => (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
             }

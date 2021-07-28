@@ -17,8 +17,6 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public bool IsFree { get; set; } = false;
 
-        public bool IsPaid { get; set; } = false;
-
         public int MinPrice { get; set; } = 0;
 
         public int MaxPrice { get; set; } = int.MaxValue;
