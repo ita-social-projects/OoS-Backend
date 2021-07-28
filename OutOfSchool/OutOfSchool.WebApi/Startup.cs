@@ -151,6 +151,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
+            services.AddTransient<IElasticsearchSynchronizationService, ElasticsearchSynchronizationService>();
+
             // entities services
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
@@ -175,6 +177,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
             services.AddTransient<IBackupOperationService, BackupOperationService>();
+            services.AddTransient<IBackupTrackerService, BackupTrackerService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -191,6 +194,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
             services.AddTransient<IEntityRepository<BackupOperation>, EntityRepository<BackupOperation>>();
+            services.AddTransient<IEntityRepository<BackupTracker>, EntityRepository<BackupTracker>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository>();

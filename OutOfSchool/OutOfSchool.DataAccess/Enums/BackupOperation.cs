@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.Services.Enums
 {
-    public enum Operations
+    public enum BackupOperation
     {
         Create,
         Update,

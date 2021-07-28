@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services
             this.workshopService = workshopService;
             this.elasticsearchService = elasticsearchService;
             this.logger = logger;
-            this.backupOperationService = backupOperationService;
+            this.backupTrackerService = backupTrackerService;
         }
 
         /// <inheritdoc/>
@@ -31,15 +31,15 @@ namespace OutOfSchool.WebApi.Services
 
             var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
 
-            BackupOperationDto backupOperationDto = new BackupOperationDto()
+            BackupTrackerDto backupTrackerDto = new BackupTrackerDto()
             {
-                Operation = OutOfSchool.Services.Enums.Operations.Create,
+                Operation = OutOfSchool.Services.Enums.BackupOperation.Create,
                 OperationDate = DateTime.UtcNow,
                 TableName = "Workshop",
                 RecordId = 1,
             };
 
-            var backupOperation = await backupOperationService.Create(backupOperationDto).ConfigureAwait(false);
+            var backupTracker = await backupTrackerService.Create(backupTrackerDto).ConfigureAwait(false);
 
             if (!esResultIsValid)
             {

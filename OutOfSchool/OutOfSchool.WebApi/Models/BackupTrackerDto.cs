@@ -3,7 +3,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class BackupOperationDto
+    public class BackupTrackerDto
     {
         public Guid Id { get; set; }
 
@@ -13,6 +13,6 @@ namespace OutOfSchool.WebApi.Models
 
         public long RecordId { get; set; }
 
-        public Operations Operation { get; set; }
+        public BackupOperation Operation { get; set; }
     }
 }

@@ -3,8 +3,8 @@ using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
 {
-    public interface IBackupOperationService
+    public interface IBackupTrackerService
     {
-        Task<BackupOperationDto> Create(BackupOperationDto dto);
+        Task<BackupTrackerDto> Create(BackupTrackerDto dto);
     }
 }

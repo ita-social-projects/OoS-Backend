@@ -3,7 +3,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
-    public class BackupOperation
+    public class BackupTracker
     {
         public Guid Id { get; set; }
 
@@ -13,6 +13,6 @@ namespace OutOfSchool.Services.Models
 
         public long RecordId { get; set; }
 
-        public Operations Operation { get; set; }
+        public BackupOperation Operation { get; set; }
     }
 }

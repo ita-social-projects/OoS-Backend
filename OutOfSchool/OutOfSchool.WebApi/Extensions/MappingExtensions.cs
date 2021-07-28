@@ -190,6 +190,11 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static BackupTrackerDto ToModel(this BackupTracker backupTracker)
+        {
+            return Mapper<BackupTracker, BackupTrackerDto>(backupTracker, cfg => { cfg.CreateMap<BackupTracker, BackupTrackerDto>(); });
+        }
+
         #endregion
 
         #region ToDomain
@@ -343,14 +348,9 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static BackupOperation ToDomain(this BackupOperationDto backupOperationDto)
+        public static BackupTracker ToDomain(this BackupTrackerDto backupTrackerDto)
         {
-            return Mapper<BackupOperationDto, BackupOperation>(backupOperationDto, cfg => { cfg.CreateMap<BackupOperationDto, BackupOperation>(); });
-        }
-
-        public static BackupOperationDto ToModel(this BackupOperation backupOperation)
-        {
-            return Mapper<BackupOperation, BackupOperationDto>(backupOperation, cfg => { cfg.CreateMap<BackupOperation, BackupOperationDto>(); });
+            return Mapper<BackupTrackerDto, BackupTracker>(backupTrackerDto, cfg => { cfg.CreateMap<BackupTrackerDto, BackupTracker>(); });
         }
 
         #endregion
