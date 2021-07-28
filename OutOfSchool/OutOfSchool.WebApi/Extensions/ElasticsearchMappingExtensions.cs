@@ -26,7 +26,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<WorkshopFilterDto, WorkshopFilterES>(workshopFilterDto, cfg =>
             {
                 cfg.CreateMap<WorkshopFilterDto, WorkshopFilterES>();
-                cfg.CreateMap<AgeRange, AgeRangeES>();
             });
         }
 

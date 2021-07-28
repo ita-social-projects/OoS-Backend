@@ -10,14 +10,16 @@ namespace OutOfSchool.WebApi.Services
     public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     {
         private readonly IWorkshopService databaseService;
+        private readonly IProviderService providerService;
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly ILogger logger;
 
-        public WorkshopServicesCombiner(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger logger)
+        public WorkshopServicesCombiner(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger logger, IProviderService providerService)
         {
             this.databaseService = workshopService;
             this.elasticsearchService = elasticsearchService;
             this.logger = logger;
+            this.providerService = providerService;
         }
 
         /// <inheritdoc/>
@@ -25,7 +27,9 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await databaseService.Create(dto).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
+            var workshopES = await this.SetProviderDescriptionToWorkshopEsModel(workshop).ConfigureAwait(false);
+
+            var esResultIsValid = await elasticsearchService.Index(workshopES).ConfigureAwait(false);
 
             if (!esResultIsValid)
             {
@@ -48,7 +52,9 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await databaseService.Update(dto).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
+            var workshopES = await this.SetProviderDescriptionToWorkshopEsModel(workshop).ConfigureAwait(false);
+
+            var esResultIsValid = await elasticsearchService.Update(workshopES).ConfigureAwait(false);
 
             if (!esResultIsValid)
             {
@@ -141,6 +147,16 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return workshopCards;
+        }
+
+        private async Task<WorkshopES> SetProviderDescriptionToWorkshopEsModel(WorkshopDTO workshopDto)
+        {
+            var provider = await providerService.GetById(workshopDto.ProviderId).ConfigureAwait(false);
+
+            var workshopES = workshopDto.ToESModel();
+            workshopES.ProviderDescription = provider.Description;
+
+            return workshopES;
         }
     }
 }

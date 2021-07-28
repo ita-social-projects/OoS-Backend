@@ -330,11 +330,11 @@ namespace OutOfSchool.WebApi.Extensions
 
         #region ToCard
 
-        public static ParentCardDto ToCard(this ApplicationDto applicationDTO)
+        public static ParentCard ToCard(this ApplicationDto applicationDTO)
         {
-            return Mapper<ApplicationDto, ParentCardDto>(applicationDTO, cfg =>
+            return Mapper<ApplicationDto, ParentCard>(applicationDTO, cfg =>
             {
-                cfg.CreateMap<ApplicationDto, ParentCardDto>()
+                cfg.CreateMap<ApplicationDto, ParentCard>()
                 .ForMember(dest => dest.ApplicationId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.ChildId, opt => opt.MapFrom(src => src.ChildId))
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.WorkshopId))

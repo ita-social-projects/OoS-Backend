@@ -301,21 +301,27 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
             }
 
-            if (filter.MinPrice == 0 && filter.MaxPrice == 0)
+            if (filter.IsFree && !filter.IsPaid)
             {
                 predicate = predicate.And(x => x.Price == filter.MaxPrice);
             }
-
-            if (filter.Ages[0].MinAge != 0 || filter.Ages[0].MaxAge != 100)
+            else if (!filter.IsFree && filter.IsPaid)
             {
-                var tempPredicate = PredicateBuilder.False<Workshop>();
+                predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
+            }
+            else if (filter.IsFree && filter.IsPaid)
+            {
+                predicate = predicate.And(x => (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
+            }
 
-                foreach (var age in filter.Ages)
-                {
-                    tempPredicate = tempPredicate.Or(x => x.MinAge <= age.MaxAge && x.MaxAge >= age.MinAge);
-                }
+            if (filter.MinAge != 0 || filter.MaxAge != 100)
+            {
+                predicate = predicate.And(x => x.MinAge <= filter.MaxAge && x.MaxAge >= filter.MinAge);
+            }
 
-                predicate = predicate.And(tempPredicate);
+            if (filter.WithDisabilityOptions)
+            {
+                predicate = predicate.And(x => x.WithDisabilityOptions);
             }
 
             predicate = predicate.And(x => x.Address.City == filter.City);
@@ -327,10 +333,15 @@ namespace OutOfSchool.WebApi.Services
         {
             switch (filter.OrderByField)
             {
-                case OrderBy.Alphabet:
+                case nameof(OrderBy.Alphabet):
                     Expression<Func<Workshop, dynamic>> orderByAlphabet = x => x.Title;
                     var alphabetIsAscending = true;
                     return Tuple.Create(orderByAlphabet, alphabetIsAscending);
+
+                case nameof(OrderBy.PriceDesc):
+                    Expression<Func<Workshop, dynamic>> orderByPriceDesc = x => x.Price;
+                    var priceIsAsc = false;
+                    return Tuple.Create(orderByPriceDesc, priceIsAsc);
 
                 default:
                     Expression<Func<Workshop, dynamic>> orderBy = x => x.Price;

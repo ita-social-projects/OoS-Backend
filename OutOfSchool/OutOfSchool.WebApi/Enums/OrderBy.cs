@@ -4,7 +4,8 @@
     {
         Statistic,
         Rating,
-        Price,
+        PriceDesc,
+        PriceAsc,
         Alphabet,
         Nearest,
     }

@@ -67,7 +67,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of ParentCardDto.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentCardDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentCard>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetChildrenWorkshops()
@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Controllers
 
                 var children = await serviceChild.GetAllByParent(parent.Id, userId).ConfigureAwait(false);
 
-                var cards = new List<ParentCardDto>();
+                var cards = new List<ParentCard>();
 
                 foreach (var child in children)
                 {
