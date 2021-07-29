@@ -15,7 +15,7 @@ using Serilog;
 namespace OutOfSchool.WebApi.Tests.Services.UnitTests
 {
     [TestFixture]
-    public class WorkshopServiceTests
+    public class WorkshopServiceUnitTests
     {
         private IWorkshopService workshopService;
 
