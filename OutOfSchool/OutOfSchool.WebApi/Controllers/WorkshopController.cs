@@ -37,30 +37,6 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Get all workshops from the database.
-        /// </summary>
-        /// <returns>List of all workshops, or no content.</returns>
-        /// <response code="200">One or more entites were found.</response>
-        /// <response code="204">No entity was found.</response>
-        /// <response code="500">If any server error occures.</response>
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var result = await combinedWorkshopService.GetAll().ConfigureAwait(false);
-
-            if (result.TotalAmount < 1)
-            {
-                return NoContent();
-            }
-
-            return Ok(result);
-        }
-
-        /// <summary>
         /// Get workshop by it's id.
         /// </summary>
         /// <param name="id">Workshop's id.</param>
@@ -147,7 +123,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <response code="201">Entity was created and returned with Id.</response>
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
-        /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
+        /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDTO))]
