@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 Directory.CreateDirectory(dirPath);
 
-                var filePath = $"{FilePath}\\{fileName.TrimEnd()}";
+                var filePath = Path.Combine(FilePath, fileName.TrimEnd());
 
                 using (var fileStream = File.Open(filePath, FileMode.OpenOrCreate))
                 {
@@ -100,7 +100,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                 {
                     var fileName = $"{photos[i].EntityId}_{photos[i].EntityType}_{i}.{photos[i].PhotoExtension.ToString().ToLower()}";
 
-                    var filePath = $"{FilePath}\\{fileName.TrimEnd()}";
+                    var filePath = Path.Combine(FilePath, fileName.TrimEnd());
 
                     photos[i].Path = filePath;
 
