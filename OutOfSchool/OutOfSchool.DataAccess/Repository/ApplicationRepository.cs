@@ -49,12 +49,11 @@ namespace OutOfSchool.Services.Repository
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public new async Task<Application> Update(Application entity)
         {
-            bool tracking = db.ChangeTracker.Entries<Application>().Any(a => a.Entity.Id == entity.Id);
+            var application = dbSet.Find(entity.Id);
 
-            if (!tracking)
-            {
-                db.Entry(entity).State = EntityState.Modified;
-            }
+            db.Entry(application).CurrentValues.SetValues(entity);
+
+            db.Entry(application).State = EntityState.Modified;
 
             await this.db.SaveChangesAsync();
             return entity;
