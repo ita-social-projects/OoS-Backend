@@ -8,7 +8,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "BackupOperations",
+                name: "BackupTrackers",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -19,14 +19,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BackupOperations", x => x.Id);
+                    table.PrimaryKey("PK_BackupTrackers", x => x.Id);
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "BackupOperations");
+                name: "BackupTrackers");
         }
     }
 }

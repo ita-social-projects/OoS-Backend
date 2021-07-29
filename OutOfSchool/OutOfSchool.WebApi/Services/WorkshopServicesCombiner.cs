@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
+            //var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
 
             BackupTrackerDto backupTrackerDto = new BackupTrackerDto()
             {

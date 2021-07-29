@@ -22,5 +22,12 @@ namespace OutOfSchool.WebApi.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public async Task<ActionResult> GetAll()
+        {
+            var result = await elasticsearchSynchronizationService.GetAll();
+
+            return Ok(result);
+        }
     }
 }

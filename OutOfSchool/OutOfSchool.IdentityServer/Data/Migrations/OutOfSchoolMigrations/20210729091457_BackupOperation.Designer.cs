@@ -10,7 +10,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210727132218_BackupOperation")]
+    [Migration("20210729091457_BackupOperation")]
     partial class BackupOperation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -230,7 +230,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Applications");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.BackupOperation", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.BackupTracker", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -250,7 +250,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BackupOperations");
+                    b.ToTable("BackupTrackers");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.BirthCertificate", b =>
