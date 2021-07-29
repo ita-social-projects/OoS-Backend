@@ -240,6 +240,7 @@ namespace OutOfSchool.WebApi.Services
             if (filter is null)
             {
                 filter = new WorkshopFilterDto();
+                filter.City = string.Empty;
             }
 
             var filterPredicate = PredicateBuild(filter);
@@ -274,7 +275,7 @@ namespace OutOfSchool.WebApi.Services
                 return predicate;
             }
 
-            if (!string.IsNullOrEmpty(filter.SearchText))
+            if (!(string.IsNullOrEmpty(filter.SearchText) || string.IsNullOrWhiteSpace(filter.SearchText)))
             {
                 var tempPredicate = PredicateBuilder.False<Workshop>();
                 foreach (var word in filter.SearchText.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
@@ -319,7 +320,10 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(x => x.WithDisabilityOptions);
             }
 
-            predicate = predicate.And(x => x.Address.City == filter.City);
+            if (!(string.IsNullOrEmpty(filter.City) || string.IsNullOrWhiteSpace(filter.City)))
+            {
+                predicate = predicate.And(x => x.Address.City == filter.City);
+            }
 
             return predicate;
         }

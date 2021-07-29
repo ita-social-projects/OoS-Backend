@@ -23,7 +23,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public List<long> DirectionIds { get; set; } = new List<long> { 0 };
 
-        public string City { get; set; } = "Київ";
+        public string City { get; set; } = string.Empty;
 
         public bool WithDisabilityOptions { get; set; } = false;
 

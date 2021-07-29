@@ -58,7 +58,7 @@ namespace OutOfSchool.ElasticsearchData
                 return queryContainer;
             }
 
-            if (!string.IsNullOrEmpty(filter.SearchText))
+            if (!(string.IsNullOrEmpty(filter.SearchText) || string.IsNullOrWhiteSpace(filter.SearchText)))
             {
                 queryContainer &= new MultiMatchQuery()
                 {
@@ -152,11 +152,14 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            queryContainer &= new MatchQuery()
+            if (!(string.IsNullOrEmpty(filter.City) || string.IsNullOrWhiteSpace(filter.City)))
             {
-                Field = Infer.Field<WorkshopES>(w => w.Address.City),
-                Query = filter.City,
-            };
+                queryContainer &= new MatchQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.Address.City),
+                    Query = filter.City,
+                };
+            }
 
             return queryContainer;
         }

@@ -132,11 +132,6 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResultES<WorkshopES>> Search(WorkshopFilterES filter)
         {
-            if (filter is null)
-            {
-                filter = new WorkshopFilterES();
-            }
-
             try
             {
                 var res = await esProvider.Search(filter).ConfigureAwait(false);
