@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -26,14 +27,16 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <param name="repository">Repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public PhotoStorage(IEntityRepository<Photo> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        /// <param name="config">Config.</param>
+        public PhotoStorage(IEntityRepository<Photo> repository, ILogger logger, IStringLocalizer<SharedResource> localizer, IConfiguration config)
         {
             this.repository = repository;
             this.logger = logger;
             this.localizer = localizer;
+            FilePath = config.GetValue<string>("BasePhotoPath");
         }
 
-        public static string FilePath { get; set; }
+        private static string FilePath { get; set; }
 
         /// <inheritdoc/>
         public async Task<PhotoDto> AddFile(PhotoDto photo, string fileName)
@@ -56,7 +59,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 Directory.CreateDirectory(dirPath);
 
-                var filePath = Path.Combine(FilePath, fileName.TrimEnd());
+                var filePath = Path.Combine(FilePath, photo.EntityType.ToString(), fileName.TrimEnd());
 
                 using (var fileStream = File.Open(filePath, FileMode.OpenOrCreate))
                 {
@@ -100,7 +103,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                 {
                     var fileName = $"{photos[i].EntityId}_{photos[i].EntityType}_{i}.{photos[i].PhotoExtension.ToString().ToLower()}";
 
-                    var filePath = Path.Combine(FilePath, fileName.TrimEnd());
+                    var filePath = Path.Combine(FilePath, photos[i].EntityType.ToString(), fileName.TrimEnd());
 
                     photos[i].Path = filePath;
 

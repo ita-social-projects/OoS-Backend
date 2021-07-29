@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +13,7 @@ namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    //[Authorize(AuthenticationSchemes = "Bearer")]
     public class PhotoController : ControllerBase
     {
         private readonly IPhotoStorage photoService;
@@ -31,10 +28,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             this.localizer = localizer;
             this.photoService = photoService;
-            this.Path = $"{Directory.GetParent(Environment.CurrentDirectory).Parent.FullName}\\Photos";
         }
-
-        private string Path { get; set; }
 
         /// <summary>
         /// Get files by it's keys.
@@ -99,7 +93,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="photoInfo">Photo entity.</param>
         /// <returns>Created photo info.</returns>
         [HttpPost]
-        [Authorize(Roles = "parent,provider,admin")]
+       // [Authorize(Roles = "parent,provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -116,8 +110,6 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest("Photo Info is null!");
             }
 
-            PhotoStorage.FilePath = $"{Path}\\{photoInfo.EntityType}";
-
             var fileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}.{photoInfo.PhotoExtension.ToString().ToLower()}";
 
             var result = await photoService.AddFile(photoInfo, fileName).ConfigureAwait(false);
@@ -131,7 +123,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="photosInfo">Photo entities.</param>
         /// <returns>Created photos info.</returns>
         [HttpPost]
-        [Authorize(Roles = "parent,provider,admin")]
+        //[Authorize(Roles = "parent,provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -142,8 +134,6 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return BadRequest("Photos Info is null!");
             }
-
-            PhotoStorage.FilePath = $"{Path}\\{photosInfo.FirstOrDefault().EntityType}";
 
             var result = await photoService.AddFiles(photosInfo).ConfigureAwait(false);
 
