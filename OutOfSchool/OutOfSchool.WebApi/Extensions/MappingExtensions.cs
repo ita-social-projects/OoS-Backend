@@ -16,23 +16,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
         }
 
-        public static ApplicationDto ToShortModel(this Application application)
-        {
-            return Mapper<Application, ApplicationDto>(application, cfg =>
-            {
-                cfg.CreateMap<Workshop, WorkshopDTO>()
-                .ForMember(w => w.Address, m => m.Ignore())
-                .ForMember(w => w.Teachers, m => m.Ignore())
-                .ForMember(w => w.Direction, m => m.Ignore())
-                .ForMember(w => w.Keywords, m => m.Ignore());
-                cfg.CreateMap<Child, ChildDto>()
-                .ForMember(c => c.BirthCertificate, m => m.Ignore())
-                .ForMember(c => c.Parent, m => m.Ignore());
-                cfg.CreateMap<Parent, ParentDTO>();
-                cfg.CreateMap<Application, ApplicationDto>();
-            });
-        }
-
         public static ApplicationDto ToModel(this Application application)
         {
             return Mapper<Application, ApplicationDto>(application, cfg =>
@@ -191,7 +174,12 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<ApplicationDto, Application>(applicationDTO, cfg =>
             {
-                cfg.CreateMap<WorkshopDTO, Workshop>();
+                cfg.CreateMap<AddressDto, Address>();
+                cfg.CreateMap<TeacherDTO, Teacher>();
+                cfg.CreateMap<WorkshopDTO, Workshop>()
+                .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())))
+                .ForMember(dest => dest.Direction, opt => opt.Ignore());
+                cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
                 cfg.CreateMap<ChildDto, Child>();
                 cfg.CreateMap<ParentDTO, Parent>();
                 cfg.CreateMap<ApplicationDto, Application>();
