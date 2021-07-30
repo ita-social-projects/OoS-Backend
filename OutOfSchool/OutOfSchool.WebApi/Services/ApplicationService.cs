@@ -238,17 +238,6 @@ namespace OutOfSchool.WebApi.Services
             return application.ToModel();
         }
 
-        /// <inheritdoc/>
-        public async Task<ApplicationDto> GetByIdNoTracking(long id)
-        {
-            Expression<Func<Application, bool>> filter = a => a.Id == id;
-
-            var application = await applicationRepository.GetByFilterNoTracking(filter, "Workshop,Child,Parent")
-                .FirstOrDefaultAsync().ConfigureAwait(false);
-
-            return application?.ToShortModel();
-        }
-
         public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
         {
             logger.Information($"Updating Application with Id = {applicationDto?.Id} started.");

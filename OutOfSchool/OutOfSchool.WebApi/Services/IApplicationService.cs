@@ -37,13 +37,6 @@ namespace OutOfSchool.WebApi.Services
         Task<ApplicationDto> GetById(long id);
 
         /// <summary>
-        /// Get entity by it's key as no tracking.
-        /// </summary>
-        /// <param name="id">Key in the table.</param>
-        /// <returns>Application.</returns>
-        Task<ApplicationDto> GetByIdNoTracking(long id);
-
-        /// <summary>
         /// Get applications by workshop id.
         /// </summary>
         /// <param name="id">Key in the table.</param>

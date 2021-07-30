@@ -344,7 +344,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var application = await applicationService.GetByIdNoTracking(applicationDto.Id).ConfigureAwait(false);
+            var application = await applicationService.GetById(applicationDto.Id).ConfigureAwait(false);
 
             if (application is null)
             {
