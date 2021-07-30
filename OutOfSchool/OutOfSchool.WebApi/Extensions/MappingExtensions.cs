@@ -161,6 +161,18 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static WorkshopDTO ToModelSimple(this Workshop workshop)
+        {
+            return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
+            {
+                cfg.CreateMap<Workshop, WorkshopDTO>()
+                   .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)))
+                   .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
+                   .ForMember(w => w.Address, m => m.Ignore())
+                   .ForMember(w => w.Teachers, m => m.Ignore());
+            });
+        }
+
         #endregion
 
         #region ToDomain

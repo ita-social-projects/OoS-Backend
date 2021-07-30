@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
-        private readonly IEntityRepository<Category> categoryRepository;
+        private readonly IEntityRepository<Direction> directionRepository;
         private readonly ILogger logger;
 
         /// <summary>
@@ -26,17 +26,17 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="applicationRepository">Application repository.</param>
         /// <param name="workshopRepository">Workshop repository.</param>
-        /// <param name="categoryRepository">Category repository.</param>
+        /// <param name="directionRepository">Direction repository.</param>
         /// <param name="logger">Logger.</param>
         public StatisticService(
             IApplicationRepository applicationRepository,
             IWorkshopRepository workshopRepository,
-            IEntityRepository<Category> categoryRepository,
+            IEntityRepository<Direction> directionRepository,
             ILogger logger)
         {
             this.applicationRepository = applicationRepository;
             this.workshopRepository = workshopRepository;
-            this.categoryRepository = categoryRepository;
+            this.directionRepository = directionRepository;
             this.logger = logger;
         }
 
@@ -50,54 +50,54 @@ namespace OutOfSchool.WebApi.Services
             var workshops = workshopRepository.Get<int>();
             var applications = applicationRepository.Get<int>();
 
-            var categoriesWithWorkshops = workshops.GroupBy(w => w.CategoryId)
+            var directionsWithWorkshops = workshops.GroupBy(w => w.DirectionId)
                 .Select(g => new
                 {
-                    CategoryId = g.Key,
+                    DirectionId = g.Key,
                     WorkshopsCount = g.Count() as int?,
                 });
 
-            var categoriesWithApplications = applications.GroupBy(a => a.Workshop.CategoryId)
+            var directionsWithApplications = applications.GroupBy(a => a.Workshop.DirectionId)
                 .Select(g => new
                 {
-                    CategoryId = g.Key,
+                    DirectionId = g.Key,
                     ApplicationsCount = g.Count() as int?,
                 });
 
             // LEFT JOIN CategoriesWithWorkshops with CategoriesWithApplications
-            var categoriesWithCounts = categoriesWithWorkshops
+            var directionsWithCounts = directionsWithWorkshops
                 .GroupJoin(
-                categoriesWithApplications,
-                categoryWithWorkshop => categoryWithWorkshop.CategoryId,
-                categoryWithApplication => categoryWithApplication.CategoryId,
-                (categoryWithWorkshop, categoriesWithApplications) => new
+                directionsWithApplications,
+                directionWithWorkshop => directionWithWorkshop.DirectionId,
+                directionWithApplication => directionWithApplication.DirectionId,
+                (directionWithWorkshop, directionsWithApplications) => new
                 {
-                    categoryWithWorkshop,
-                    categoriesWithApplications,
+                    directionWithWorkshop,
+                    directionsWithApplications,
                 })
                 .SelectMany(
-                x => x.categoriesWithApplications.DefaultIfEmpty(),
-                (x, y) => new 
+                x => x.directionsWithApplications.DefaultIfEmpty(),
+                (x, y) => new
                 {
-                    CategoryId = x.categoryWithWorkshop.CategoryId,
+                    DirectionId = x.directionWithWorkshop.DirectionId,
                     ApplicationsCount = y.ApplicationsCount,
-                    WorkshopsCount = x.categoryWithWorkshop.WorkshopsCount,
+                    WorkshopsCount = x.directionWithWorkshop.WorkshopsCount,
                 });
 
-            var allCategories = categoryRepository.Get<int>();
+            var allDirections = directionRepository.Get<int>();
 
             // LEFT JOIN CategoriesWithCounts with all Categories
-            var statistics = allCategories
+            var statistics = allDirections
                 .GroupJoin(
-                categoriesWithCounts,
-                category => category.Id,
-                categoryWithCounts => categoryWithCounts.CategoryId,
-                (category, categoriesWithCounts) => new { category, categoriesWithCounts })
+                directionsWithCounts,
+                direction => direction.Id,
+                directionWithCounts => directionWithCounts.DirectionId,
+                (direction, directionsWithCounts) => new { direction, directionsWithCounts })
                 .SelectMany(
-                x => x.categoriesWithCounts.DefaultIfEmpty(),
+                x => x.directionsWithCounts.DefaultIfEmpty(),
                 (x, y) => new CategoryStatistic
                 {
-                    Category = x.category.ToModel(),
+                    Direction = x.direction.ToModel(),
                     ApplicationsCount = y.ApplicationsCount ?? 0,
                     WorkshopsCount = y.WorkshopsCount ?? 0,
                 });
@@ -129,12 +129,11 @@ namespace OutOfSchool.WebApi.Services
                                                             .Select(w => w.Workshop)
                                                             .Take(limit);
 
-            var workshopDtos = await popularWorkshops.Select(w => w.ToModelSimple())
-                                                     .ToListAsync().ConfigureAwait(false);
+            var popularWorkshopsList = await popularWorkshops.ToListAsync().ConfigureAwait(false);
 
-            logger.Information($"All {workshopDtos.Count} records were successfully received");
+            logger.Information($"All {popularWorkshopsList.Count} records were successfully received");
 
-            return workshopDtos;
+            return popularWorkshopsList.Select(w => w.ToModelSimple());
         }
     }
 }

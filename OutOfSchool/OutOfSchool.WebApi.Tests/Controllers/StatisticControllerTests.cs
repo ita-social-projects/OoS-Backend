@@ -101,14 +101,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 {
                     WorkshopsCount = 2,
                     ApplicationsCount = 2,
-                    Category = new CategoryDTO { Id = 1, Title = "c1" },
+                    Direction = new CategoryDTO { Id = 1, Title = "c1" },
                 },
 
                 new CategoryStatistic()
                 {
                     WorkshopsCount = 1,
                     ApplicationsCount = 1,
-                    Category = new CategoryDTO { Id = 3, Title = "c3" },
+                    Direction = new CategoryDTO { Id = 3, Title = "c3" },
                 },
             };
         }

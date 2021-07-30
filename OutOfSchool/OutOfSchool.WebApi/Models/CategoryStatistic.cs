@@ -2,7 +2,7 @@
 {
     public class CategoryStatistic
     {
-        public CategoryDTO Category { get; set; }
+        public DirectionDto Direction { get; set; }
 
         public int WorkshopsCount { get; set; }
 

@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             var expected = new CategoryStatistic
             {
-                Category = categories.First().ToModel(),
+                Direction = categories.First().ToModel(),
                 WorkshopsCount = 2,
                 ApplicationsCount = 2,
             };
