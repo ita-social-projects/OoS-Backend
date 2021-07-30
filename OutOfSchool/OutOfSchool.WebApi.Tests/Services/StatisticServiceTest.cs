@@ -40,14 +40,20 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetPopularWorkshops_ShouldReturnWorkshops()
         {
             // Arrange
-            var expected = context.Workshops;
+            var expected = new WorkshopDTO
+            {
+                Id = 1,
+                Title = "w1",
+                CategoryId = 1,
+                Teachers = null,
+            };
 
             // Act
             var result = await service.GetPopularWorkshops(2).ConfigureAwait(false);
 
             // Assert
             result.Should().HaveCount(2);
-            result.Should().ContainEquivalentOf(expected.First().ToModel());
+            result.Should().ContainEquivalentOf(expected);
         }
 
         [Test]
