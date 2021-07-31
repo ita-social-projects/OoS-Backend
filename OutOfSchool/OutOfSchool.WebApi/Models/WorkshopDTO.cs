@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -107,5 +108,7 @@ namespace OutOfSchool.WebApi.Models
         public AddressDto Address { get; set; }
 
         public IEnumerable<TeacherDTO> Teachers { get; set; }
+
+        public List<DateTimeRange> DateTimeRanges { get; set; }
     }
 }

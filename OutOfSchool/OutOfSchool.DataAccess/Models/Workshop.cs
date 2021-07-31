@@ -113,6 +113,8 @@ namespace OutOfSchool.Services.Models
 
         public virtual List<Application> Applications { get; set; }
 
+        public virtual List<DateTimeRange> DateTimeRanges { get; set; }
+
         // These properties are only for navigation EF Core.
         public virtual ICollection<ChatRoom> ChatRooms { get; set; }
     }
