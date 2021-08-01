@@ -44,11 +44,13 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetFiles(long entityId, EntityType entityType)
+        public async Task<IActionResult> GetFile(long entityId, EntityType entityType)
         {
             this.ValidateId(entityId, localizer);
 
-            return Ok(await photoService.GetFiles(entityId, entityType).ConfigureAwait(false));
+            var bytes = await photoService.GetFile(entityId, entityType).ConfigureAwait(false);
+
+            return File(bytes, MimeTypeMap.CurentContentType);
         }
 
         /// <summary>

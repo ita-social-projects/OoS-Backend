@@ -187,36 +187,23 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<List<byte[]>> GetFiles(long entityId, EntityType entityType)
+        public async Task<byte[]> GetFile(long entityId, EntityType entityType)
         {
             try
             {
                 logger.Information($"Process of getting photos started.");
 
-                var photos = new List<byte[]>();
+                var photosInfo = await GetFilesByEntity(entityId, entityType).ConfigureAwait(false);
 
-                var images = await GetFilesByEntity(entityId, entityType).ConfigureAwait(false);
+                var photoInfo = photosInfo.FirstOrDefault();
 
-                foreach (var image in images)
-                {
-                    using (var stream = File.Open(image.Path, FileMode.Open))
-                    {
-                        byte[] fileContent;
+                MimeTypeMap.GetMimeType(Path.GetExtension(photoInfo.Path));
 
-                        using (var ms = new MemoryStream())
-                        {
-                            await stream.CopyToAsync(ms).ConfigureAwait(false);
-
-                            fileContent = ms.ToArray();
-
-                            photos.Add(fileContent);
-                        }
-                    }
-                }
+                var file = await File.ReadAllBytesAsync(photoInfo.Path).ConfigureAwait(false);
 
                 logger.Information($"Successfully got photos.");
 
-                return photos;
+                return file;
             }
             catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {

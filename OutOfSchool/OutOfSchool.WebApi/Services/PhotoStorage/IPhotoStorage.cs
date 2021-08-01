@@ -43,12 +43,12 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         Task DeleteFiles(List<string> filePaths);
 
         /// <summary>
-        /// Gets files from data storage.
+        /// Gets file from data storage.
         /// </summary>
         /// <param name="entityId">Entity Id.</param>
         /// <param name="entityType">Entity type.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<List<byte[]>> GetFiles(long entityId, EntityType entityType);
+        Task<byte[]> GetFile(long entityId, EntityType entityType);
 
         /// <summary>
         /// Gets paths of the files from data storage.
