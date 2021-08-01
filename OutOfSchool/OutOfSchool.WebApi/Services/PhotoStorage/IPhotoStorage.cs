@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
@@ -14,16 +15,18 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// Adds file to data storage.
         /// </summary>
         /// <param name="photo">Photo data.</param>
+        /// <param name="photoInfo">Information about photo.</param>
         /// <param name="fileName">File name.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<PhotoDto> AddFile(PhotoDto photo, string fileName);
+        Task<PhotoDto> AddFile(IFormFile photo, PhotoDto photoInfo, string fileName);
 
         /// <summary>
         /// Adds files to data storage.
         /// </summary>
-        /// <param name="photos">Photos.</param>
+        /// <param name="photos">Photos data.</param>
+        /// <param name="photoInfo">Information about photo.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<List<PhotoDto>> AddFiles(List<PhotoDto> photos);
+        Task<List<PhotoDto>> AddFiles(IFormFileCollection photos, PhotoDto photoInfo);
 
         /// <summary>
         /// Delete file from data storage.
@@ -66,8 +69,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <summary>
         /// Update file from data storage.
         /// </summary>
-        /// <param name="photo">Photo entity.</param>
+        /// <param name="photoInfo">Information about photo.</param>
+        /// <param name="photo">Photo data.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<PhotoDto> UpdateFile(PhotoDto photo);
+        Task<PhotoDto> UpdateFile(PhotoDto photoInfo, IFormFile photo);
     }
 }

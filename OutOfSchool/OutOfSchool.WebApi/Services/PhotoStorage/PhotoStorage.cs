@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
@@ -39,7 +40,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         private static string FilePath { get; set; }
 
         /// <inheritdoc/>
-        public async Task<PhotoDto> AddFile(PhotoDto photo, string fileName)
+        public async Task<PhotoDto> AddFile(IFormFile photo, PhotoDto photoInfo, string fileName)
         {
             try
             {
@@ -59,20 +60,20 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 Directory.CreateDirectory(dirPath);
 
-                var filePath = Path.Combine(FilePath, photo.EntityType.ToString(), fileName.TrimEnd());
+                var filePath = Path.Combine(FilePath, photoInfo.EntityType.ToString(), fileName.TrimEnd());
+
+                photoInfo.Path = filePath;
 
                 using (var fileStream = File.Open(filePath, FileMode.OpenOrCreate))
                 {
-                    await fileStream.WriteAsync(photo.Photo, 0, photo.Photo.Length).ConfigureAwait(false);
+                    await photo.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
 
-                photo.Path = filePath;
-
-                var photoInfo = await repository.Create(photo.ToDomain()).ConfigureAwait(false);
+                var createdPhoto = await repository.Create(photoInfo.ToDomain()).ConfigureAwait(false);
 
                 logger.Information($"Photo with Id = {photoInfo?.Id} created successfully.");
 
-                return photoInfo.ToModel();
+                return createdPhoto.ToModel();
             }
             catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
@@ -82,7 +83,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<List<PhotoDto>> AddFiles(List<PhotoDto> photos)
+        public async Task<List<PhotoDto>> AddFiles(IFormFileCollection photos, PhotoDto photoInfo)
         {
             try
             {
@@ -101,22 +102,22 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 for (int i = 0; i < photos.Count; i++)
                 {
-                    var fileName = $"{photos[i].EntityId}_{photos[i].EntityType}_{i}.{photos[i].PhotoExtension.ToString().ToLower()}";
+                    var fileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}_{i}{Path.GetExtension(photos[i].FileName)}";
 
-                    var filePath = Path.Combine(FilePath, photos[i].EntityType.ToString(), fileName.TrimEnd());
+                    var filePath = Path.Combine(FilePath, photoInfo.EntityType.ToString(), fileName.TrimEnd());
 
-                    photos[i].Path = filePath;
+                    photoInfo.Path = filePath;
 
                     using (var fileStream = File.Open(filePath, FileMode.OpenOrCreate))
                     {
-                        await fileStream.WriteAsync(photos[i].Photo, 0, photos[i].Photo.Length).ConfigureAwait(false);
+                        await photos[i].CopyToAsync(fileStream).ConfigureAwait(false);
                     }
 
-                    var photoInfo = await repository.Create(photos[i].ToDomain()).ConfigureAwait(false);
+                    var cratedPhotoInfo = await repository.Create(photoInfo.ToDomain()).ConfigureAwait(false);
 
                     logger.Information($"Photos created successfully.");
 
-                    createdPhotos.Add(photoInfo.ToModel());
+                    createdPhotos.Add(cratedPhotoInfo.ToModel());
                 }
 
                 return createdPhotos;
@@ -272,7 +273,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<PhotoDto> UpdateFile(PhotoDto photo)
+        public async Task<PhotoDto> UpdateFile(PhotoDto photoInfo, IFormFile photo)
         {
             try
             {
@@ -283,14 +284,14 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photo can not be null!"]);
                 }
 
-                using (var fileStream = File.Open(photo.Path, FileMode.Create))
+                using (var fileStream = File.Open(photoInfo.Path, FileMode.Create))
                 {
-                    await fileStream.WriteAsync(photo.Photo, 0, photo.Photo.Length).ConfigureAwait(false);
+                    await photo.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
 
                 logger.Information($"Successfully update the photo.");
 
-                return photo;
+                return photoInfo;
             }
             catch (ArgumentException ex)
             {

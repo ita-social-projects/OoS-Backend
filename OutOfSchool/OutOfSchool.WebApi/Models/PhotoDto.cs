@@ -14,10 +14,5 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         public EntityType EntityType { get; set; }
-
-        [Required]
-        public PhotoExtension PhotoExtension { get; set; }
-
-        public byte[] Photo { get; set; }
     }
 }
