@@ -121,7 +121,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
         public void Mapping_WorkshopFilterDto_ToESModel_IsCorrect()
         {
             // Arrange
-            var filter = new WorkshopFilterDto()
+            var filter = new WorkshopFilter()
             {
                 Ids = new List<long>() { 1, 2 },
                 MinAge = 0,

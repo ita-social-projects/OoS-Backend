@@ -138,12 +138,14 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var expected = await workshopRepository.GetAll();
+            var filter = new OffsetFilter();
 
             // Act
-            var result = await workshopService.GetAll().ConfigureAwait(false);
+            var result = await workshopService.GetAll(filter).ConfigureAwait(false);
 
             // Assert
-            Assert.That(expected.Count(), Is.EqualTo(result.Count()));
+            Assert.AreEqual(expected.Count(), result.TotalAmount);
+            Assert.AreEqual(expected.First().Id, result.Entities.First().Id);
         }
         #endregion
 
@@ -299,7 +301,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Delete_WhenIdIsValid_ShouldDeleteAllRelationalEntities(long id)
         {
             // Act
-            var countWorkshopsBeforeDeleting = (await workshopService.GetAll().ConfigureAwait(false)).Count();
+            var countWorkshopsBeforeDeleting = (await workshopService.GetAll(new OffsetFilter()).ConfigureAwait(false)).TotalAmount;
             var countAddressesBeforeDeleting = (await addressRepository.GetAll().ConfigureAwait(false)).Count();
             var countTeachersBeforeDeleting = (await teacherRepository.GetAll().ConfigureAwait(false)).Count();
 
@@ -309,7 +311,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act
             await workshopService.Delete(id).ConfigureAwait(false);
 
-            var countWorkshopsAfterDeleting = (await workshopService.GetAll().ConfigureAwait(false)).Count();
+            var countWorkshopsAfterDeleting = (await workshopService.GetAll(new OffsetFilter()).ConfigureAwait(false)).TotalAmount;
             var countAddressesAfterDeleting = (await addressRepository.GetAll().ConfigureAwait(false)).Count();
             var countTeachersAfterDeleting = (await teacherRepository.GetAll().ConfigureAwait(false)).Count();
 

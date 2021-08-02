@@ -195,7 +195,7 @@ namespace OutOfSchool.ElasticsearchData
                     break;
 
                 default:
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
+                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Id), Order = SortOrder.Ascending });
                     break;
             }
 

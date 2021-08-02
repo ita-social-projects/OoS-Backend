@@ -164,10 +164,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var searchResult = new SearchResult<WorkshopCard>() { TotalAmount = 5, Entities = workshopCards };
-            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>())).ReturnsAsync(searchResult);
+            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(searchResult);
 
             // Act
-            var result = await controller.GetByFilter(null).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByFilter(new WorkshopFilter()).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -180,10 +180,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var searchResult = new SearchResult<WorkshopCard>() { TotalAmount = 0, Entities = new List<WorkshopCard>() };
-            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>())).ReturnsAsync(searchResult);
+            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(searchResult);
 
             // Act
-            var result = await controller.GetByFilter(null).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetByFilter(new WorkshopFilter()).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);

@@ -103,8 +103,13 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilterDto filter)
+        public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilter filter)
         {
+            if (string.IsNullOrEmpty(filter.City) || string.IsNullOrWhiteSpace(filter.City))
+            {
+                filter.City = "Êè¿â";
+            }
+
             var result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
 
             if (result.TotalAmount < 1)

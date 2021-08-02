@@ -3,7 +3,7 @@ using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class WorkshopFilterDto
+    public class WorkshopFilter : OffsetFilter
     {
         public List<long> Ids { get; set; } = null;
 
@@ -23,12 +23,8 @@ namespace OutOfSchool.WebApi.Models
 
         public List<long> DirectionIds { get; set; } = new List<long> { 0 };
 
-        public string City { get; set; } = "Київ";
+        public string City { get; set; } = string.Empty;
 
         public bool WithDisabilityOptions { get; set; } = false;
-
-        public int Size { get; set; } = 12;
-
-        public int From { get; set; } = 0;
     }
 }

@@ -78,14 +78,18 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         public async Task GetAll_WhenCalled_ShouldReturnAllEntities()
         {
             // Arrange
-            workshopRepositoryMoq.Setup(x => x.GetAll())
-                .ReturnsAsync(workshops);
+            var queryable = new EnumerableQuery<Workshop>(workshops);
+            workshopRepositoryMoq.Setup(x => x.Count(It.IsAny<Expression<Func<Workshop, bool>>>())).ReturnsAsync(workshops.Count);
+            workshopRepositoryMoq.Setup(x => x.Get<long>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<Expression<Func<Workshop, long>>>(), It.IsAny<bool>()))
+                .Returns(queryable);
 
             // Act
-            var result = await workshopService.GetAll().ConfigureAwait(false);
+            var result = await workshopService.GetAll(new OffsetFilter()).ConfigureAwait(false);
 
             // Assert
-            Assert.That(workshops.Count(), Is.EqualTo(result.Count()));
+            workshopRepositoryMoq.Verify(x => x.Get<long>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<Expression<Func<Workshop, long>>>(), It.IsAny<bool>()), Times.Once);
+            Assert.AreEqual(workshops.Count(), result.TotalAmount);
+            Assert.AreEqual(workshops.First().Id, result.Entities.First().Id);
         }
         #endregion
 

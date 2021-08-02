@@ -19,7 +19,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         private static ProviderDto provider;
         private static List<WorkshopDTO> workshops;
         private static List<WorkshopES> workshopESs;
-        private static List<WorkshopCard> workshopCards;
 
         private Mock<IWorkshopService> mockDatabaseService;
         private Mock<IProviderService> mockProviderService;
@@ -36,7 +35,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             provider = FakeProvider();
             workshops = FakeWorkshops();
             workshopESs = FakeWorkshopESs();
-            workshopCards = FakeWorkshopCards();
         }
 
         [SetUp]
@@ -149,18 +147,18 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var databaseResult = new SearchResult<WorkshopDTO>() { TotalAmount = workshops.Count, Entities = workshops };
             var elasticResult = new SearchResultES<WorkshopES>() { TotalAmount = workshopESs.Count, Entities = workshopESs };
-            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>())).ReturnsAsync(databaseResult);
+            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(databaseResult);
             mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(elasticResult);
             mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(true);
 
             // Act
-            var result = await service.GetAll().ConfigureAwait(false);
+            var result = await service.GetAll(new OffsetFilter()).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
             Assert.AreEqual(elasticResult.TotalAmount, result.TotalAmount);
 
-            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>()), Times.Never);
+            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilter>()), Times.Never);
             mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
             mockElasticsearchService.Verify(x => x.PingServer(), Times.Never);
         }
@@ -171,18 +169,18 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var databaseResult = new SearchResult<WorkshopDTO>() { TotalAmount = workshops.Count, Entities = workshops };
             var elasticResult = new SearchResultES<WorkshopES>() { TotalAmount = 0, Entities = new List<WorkshopES>() };
-            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>())).ReturnsAsync(databaseResult);
+            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(databaseResult);
             mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(elasticResult);
             mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(false);
 
             // Act
-            var result = await service.GetAll().ConfigureAwait(false);
+            var result = await service.GetAll(new OffsetFilter()).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
             Assert.AreEqual(databaseResult.TotalAmount, result.TotalAmount);
 
-            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>()), Times.Once);
+            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilter>()), Times.Once);
             mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
             mockElasticsearchService.Verify(x => x.PingServer(), Times.Once);
         }
@@ -193,18 +191,18 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var databaseResult = new SearchResult<WorkshopDTO>() { TotalAmount = workshops.Count, Entities = workshops };
             var elasticResult = new SearchResultES<WorkshopES>() { TotalAmount = workshopESs.Count, Entities = workshopESs };
-            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>())).ReturnsAsync(databaseResult);
+            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(databaseResult);
             mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(elasticResult);
             mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(true);
 
             // Act
-            var result = await service.GetAll().ConfigureAwait(false);
+            var result = await service.GetAll(new OffsetFilter()).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
             Assert.AreEqual(elasticResult.TotalAmount, result.TotalAmount);
 
-            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>()), Times.Never);
+            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilter>()), Times.Never);
             mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
             mockElasticsearchService.Verify(x => x.PingServer(), Times.Never);
         }
@@ -215,18 +213,18 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var databaseResult = new SearchResult<WorkshopDTO>() { TotalAmount = workshops.Count, Entities = workshops };
             var elasticResult = new SearchResultES<WorkshopES>() { TotalAmount = 0, Entities = new List<WorkshopES>() };
-            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>())).ReturnsAsync(databaseResult);
+            mockDatabaseService.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(databaseResult);
             mockElasticsearchService.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(elasticResult);
             mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(false);
 
             // Act
-            var result = await service.GetAll().ConfigureAwait(false);
+            var result = await service.GetAll(new OffsetFilter()).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
             Assert.AreEqual(databaseResult.TotalAmount, result.TotalAmount);
 
-            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilterDto>()), Times.Once);
+            mockDatabaseService.Verify(x => x.GetByFilter(It.IsAny<WorkshopFilter>()), Times.Once);
             mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
             mockElasticsearchService.Verify(x => x.PingServer(), Times.Once);
         }
@@ -459,18 +457,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             foreach (var item in list)
             {
                 eSlist.Add(item.ToESModel());
-            }
-
-            return eSlist;
-        }
-
-        private List<WorkshopCard> FakeWorkshopCards()
-        {
-            var list = FakeWorkshopESs();
-            var eSlist = new List<WorkshopCard>();
-            foreach (var item in list)
-            {
-                eSlist.Add(item.ToCardDto());
             }
 
             return eSlist;

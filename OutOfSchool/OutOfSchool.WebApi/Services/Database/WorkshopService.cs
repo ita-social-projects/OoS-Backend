@@ -73,19 +73,20 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetAll()
+        public async Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter filter)
         {
             logger.Information("Getting all Workshops started.");
 
-            var workshops = await workshopRepository.GetAll().ConfigureAwait(false);
+            var count = await workshopRepository.Count().ConfigureAwait(false);
+            var workshops = workshopRepository.Get<long>(skip: filter.From, take: filter.Size, orderBy: x => x.Id, ascending: true).ToList();
 
             logger.Information(!workshops.Any()
                 ? "Workshop table is empty."
-                : $"All {workshops.Count()} records were successfully received from the Workshop table");
+                : $"All {workshops.Count} records were successfully received from the Workshop table");
 
             var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
-
-            return GetWorkshopsWithAverageRating(workshopsDTO);
+            var workshopsWithRating = GetWorkshopsWithAverageRating(workshopsDTO);
+            return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
         }
 
         /// <inheritdoc/>
@@ -233,14 +234,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilterDto filter = null)
+        public async Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null)
         {
             logger.Information("Getting Workshops by filter started.");
 
             if (filter is null)
             {
-                filter = new WorkshopFilterDto();
-                filter.City = string.Empty;
+                filter = new WorkshopFilter();
             }
 
             var filterPredicate = PredicateBuild(filter);
@@ -264,7 +264,7 @@ namespace OutOfSchool.WebApi.Services
             return result;
         }
 
-        private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilterDto filter)
+        private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
         {
             var predicate = PredicateBuilder.True<Workshop>();
 
@@ -328,7 +328,7 @@ namespace OutOfSchool.WebApi.Services
             return predicate;
         }
 
-        private Tuple<Expression<Func<Workshop, dynamic>>, bool> GetOrderParameter(WorkshopFilterDto filter)
+        private Tuple<Expression<Func<Workshop, dynamic>>, bool> GetOrderParameter(WorkshopFilter filter)
         {
             switch (filter.OrderByField)
             {
@@ -342,8 +342,13 @@ namespace OutOfSchool.WebApi.Services
                     var priceIsAsc = false;
                     return Tuple.Create(orderByPriceDesc, priceIsAsc);
 
+                case nameof(OrderBy.PriceAsc):
+                    Expression<Func<Workshop, dynamic>> orderByPriceAsc = x => x.Price;
+                    var priceIsAsce = true;
+                    return Tuple.Create(orderByPriceAsc, priceIsAsce);
+
                 default:
-                    Expression<Func<Workshop, dynamic>> orderBy = x => x.Price;
+                    Expression<Func<Workshop, dynamic>> orderBy = x => x.Id;
                     var isAscending = true;
                     return Tuple.Create(orderBy, isAscending);
             }

@@ -104,14 +104,21 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var sourceDto = await workshopService.GetAll().ConfigureAwait(false);
+                var filter = new OffsetFilter() { From = 0, Size = 500 };
+                var source = new List<WorkshopES>();
 
-                List<WorkshopES> source = new List<WorkshopES>();
-                foreach (var entity in sourceDto)
+                var data = await workshopService.GetAll(filter).ConfigureAwait(false);
+                while (data.Entities.Count > 0)
                 {
-                    entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop).Item1;
-                    var workshopES = await this.SetProviderDescriptionToWorkshopEsModel(entity).ConfigureAwait(false);
-                    source.Add(workshopES);
+                    foreach (var entity in data.Entities)
+                    {
+                        entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop).Item1;
+                        var workshopES = await this.SetProviderDescriptionToWorkshopEsModel(entity).ConfigureAwait(false);
+                        source.Add(workshopES);
+                    }
+
+                    filter.From += filter.Size;
+                    data = await workshopService.GetAll(filter).ConfigureAwait(false);
                 }
 
                 var resp = await esProvider.ReIndexAll(source).ConfigureAwait(false);

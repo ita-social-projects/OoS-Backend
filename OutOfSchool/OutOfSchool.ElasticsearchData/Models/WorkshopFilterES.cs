@@ -9,7 +9,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string SearchText { get; set; } = string.Empty;
 
-        public string OrderByField { get; set; } = OrderBy.Rating.ToString();
+        public string OrderByField { get; set; } = OrderBy.Id.ToString();
 
         public int MinAge { get; set; } = 0;
 
