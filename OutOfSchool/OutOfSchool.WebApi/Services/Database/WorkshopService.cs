@@ -118,7 +118,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
-            var workshops = await workshopRepository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
+            var workshops = await workshopRepository.GetByFilter(x => x.ProviderId == id).ConfigureAwait(false);
 
             logger.Information(!workshops.Any()
                 ? $"There aren't Workshops for Provider with Id = {id}."
@@ -301,11 +301,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 predicate = predicate.And(x => x.Price == filter.MinPrice);
             }
-            else if (!filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
+            else if (!filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
                 predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
             }
-            else if (filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
+            else if (filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
                 predicate = predicate.And(x => (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
             }

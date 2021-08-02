@@ -95,7 +95,7 @@ namespace OutOfSchool.ElasticsearchData
                     Value = 0,
                 };
             }
-            else if (!filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
+            else if (!filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
                 queryContainer &= new NumericRangeQuery()
                 {
@@ -104,7 +104,7 @@ namespace OutOfSchool.ElasticsearchData
                     LessThanOrEqualTo = filter.MaxPrice,
                 };
             }
-            else if (filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
+            else if (filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
                 var tempQuery = new QueryContainer();
 

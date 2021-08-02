@@ -7,8 +7,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -177,7 +179,35 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
         #endregion
 
-        #region GetWorkshopsByOrganization
+        #region GetByProviderId
+        [Test]
+        [TestCase(1)]
+        public async Task GetByProviderId_WhenIdIsValid_ShouldReturnEntities(long id)
+        {
+            // Arrange
+            var expected = await workshopRepository.GetByFilter(x => x.ProviderId == id).ConfigureAwait(false);
+
+            // Act
+            var result = await workshopService.GetByProviderId(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected.First().Id, result.First().Id);
+        }
+
+        [Test]
+        [TestCase(0)]
+        [TestCase(99)]
+        public async Task GetByProviderId_WhenThereIsNoEntityWithId_ShouldReturnEmptyList(long id)
+        {
+            // Arrange
+            var expected = await workshopRepository.GetByFilter(x => x.ProviderId == id).ConfigureAwait(false);
+
+            // Act
+            var result = await workshopService.GetByProviderId(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsEmpty(result);
+        }
         #endregion
 
         #region Update
@@ -335,6 +365,284 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
         #endregion
 
+        #region GetByFilter
+        [Test]
+        public async Task GetByFilter_WhenFilterIsNull_ShouldReturnFirstPortionOfAllEntities()
+        {
+            // Arrange
+            var expected = await workshopRepository.GetAll();
+
+            // Act
+            var result = await workshopService.GetByFilter(null).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected.Count(), result.TotalAmount);
+            Assert.AreEqual(expected.First().Id, result.Entities.First().Id);
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenIdsIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 2;
+            var filter = new WorkshopFilter()
+            {
+                Ids = new List<long>() { 1, 2 },
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.Id == 1 || x.Id == 2));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenNotOnlyIdsAreSet_ShouldReturnEntitiesOnlyByIdsSearch()
+        {
+            // Arrange
+            var expected = 2;
+            var filter = new WorkshopFilter()
+            {
+                Ids = new List<long>() { 1, 2 },
+                IsFree = true,
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.Id == 1 || x.Id == 2));
+            Assert.IsFalse(result.Entities.All(x => x.Price == 0));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenCityIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 3;
+            var filter = new WorkshopFilter()
+            {
+                City = "Київ",
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenSearchTextIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 2;
+            var filter = new WorkshopFilter()
+            {
+                SearchText = "діти",
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.Keywords.Contains(filter.SearchText)));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenAgeIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 3;
+            var filter = new WorkshopFilter()
+            {
+                MinAge = 3,
+                MaxAge = 6,
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.MaxAge >= filter.MinAge));
+            Assert.IsTrue(result.Entities.All(x => x.MinAge <= filter.MaxAge));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenDirectionIdsIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 4;
+            var filter = new WorkshopFilter()
+            {
+                DirectionIds = new List<long>() { 1 },
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.DirectionId == 1));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenWithDisabilityOptionsIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 3;
+            var filter = new WorkshopFilter()
+            {
+                WithDisabilityOptions = true,
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.WithDisabilityOptions));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenIsFreeIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 2;
+            var filter = new WorkshopFilter()
+            {
+                IsFree = true,
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.Price == 0));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenMinPriceIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 2;
+            var filter = new WorkshopFilter()
+            {
+                MinPrice = 100,
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.Price >= filter.MinPrice));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenMaxPriceIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 4;
+            var filter = new WorkshopFilter()
+            {
+                MaxPrice = 100,
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.Price <= filter.MaxPrice));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenMinMaxPriceIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 2;
+            var filter = new WorkshopFilter()
+            {
+                MinPrice = 50,
+                MaxPrice = 100,
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenIsFreeMinMaxPriceIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 3;
+            var filter = new WorkshopFilter()
+            {
+                IsFree = true,
+                MinPrice = 100,
+                MaxPrice = 500,
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenMultipleParamsAreSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 1;
+            var filter = new WorkshopFilter()
+            {
+                City = "Чернігів",
+                SearchText = "танці",
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.IsTrue(result.Entities.All(x => (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0));
+            Assert.IsTrue(result.Entities.All(x => x.Keywords.Contains(filter.SearchText)));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenFilterIsSet_ShouldReturnValidResults()
+        {
+            // Arrange
+            var expected = 3;
+            var filter = new WorkshopFilter()
+            {
+                City = "Київ",
+                OrderByField = OrderBy.Alphabet.ToString(),
+            };
+
+            // Act
+            var result = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(expected, result.TotalAmount);
+            Assert.AreEqual("Вишивання", result.Entities.First().Title);
+        }
+
+        #endregion
+
         private void SeedDatabase()
         {
             newWorkshop = new Workshop()
@@ -424,22 +732,23 @@ namespace OutOfSchool.WebApi.Tests.Services
                     new Workshop()
                     {
                         Id = 1,
-                        Title = "Title1",
+                        Title = "Шаффл",
                         Phone = "1111111111",
-                        Description = "Desc1",
-                        Price = 1000,
+                        Description = "Танці",
+                        Keywords = "шаффл",
+                        Price = 0,
                         WithDisabilityOptions = true,
                         DaysPerWeek = 1,
                         Head = "Head1",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-                        ProviderTitle = "ProviderTitle",
-                        DisabilityOptionsDesc = "Desc1",
+                        ProviderTitle = "Школа танцю",
+                        DisabilityOptionsDesc = "пандус",
                         Website = "website1",
                         Instagram = "insta1",
                         Facebook = "facebook1",
                         Email = "email1@gmail.com",
-                        MaxAge = 10,
-                        MinAge = 4,
+                        MaxAge = 6,
+                        MinAge = 3,
                         Logo = "image1",
                         ProviderId = 1,
                         DirectionId = 1,
@@ -449,9 +758,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Address = new Address
                         {
                             Id = 55,
-                            Region = "Region55",
-                            District = "District55",
-                            City = "City55",
+                            Region = "Київ",
+                            District = "Київ55",
+                            City = "Київ",
                             Street = "Street55",
                             BuildingNumber = "BuildingNumber55",
                             Latitude = 0,
@@ -486,24 +795,25 @@ namespace OutOfSchool.WebApi.Tests.Services
                     new Workshop()
                     {
                         Id = 2,
-                        Title = "Title2",
+                        Title = "Шаффл для дорослих",
                         Phone = "1111111111",
-                        Description = "Desc2",
-                        Price = 2000,
-                        WithDisabilityOptions = true,
+                        Description = "Танці",
+                        Keywords = "танці¤діти¤шаффл",
+                        Price = 50,
+                        WithDisabilityOptions = false,
                         DaysPerWeek = 2,
                         Head = "Head2",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
-                        ProviderTitle = "ProviderTitle",
+                        ProviderTitle = "Школа танцю",
                         DisabilityOptionsDesc = "Desc2",
                         Website = "website2",
                         Instagram = "insta2",
                         Facebook = "facebook2",
                         Email = "email2@gmail.com",
                         MaxAge = 10,
-                        MinAge = 4,
+                        MinAge = 7,
                         Logo = "image2",
-                        ProviderId = 2,
+                        ProviderId = 1,
                         DirectionId = 1,
                         DepartmentId = 1,
                         AddressId = 10,
@@ -512,7 +822,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                             Id = 10,
                             Region = "Region10",
                             District = "District10",
-                            City = "City10",
+                            City = "Чернігів",
                             Street = "Street10",
                             BuildingNumber = "BuildingNumber10",
                             Latitude = 0,
@@ -547,10 +857,11 @@ namespace OutOfSchool.WebApi.Tests.Services
                     new Workshop()
                     {
                         Id = 3,
-                        Title = "Title3",
+                        Title = "Футбол",
                         Phone = "1111111111",
-                        Description = "Desc3",
-                        Price = 3000,
+                        Description = "гра з м'ячем",
+                        Keywords = "м'яч¤біг¤ноги¤діти¤дорослі¤спорт",
+                        Price = 100,
                         WithDisabilityOptions = true,
                         DaysPerWeek = 3,
                         Head = "Head3",
@@ -561,7 +872,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Facebook = "facebook3",
                         Email = "email3@gmail.com",
                         MaxAge = 10,
-                        MinAge = 4,
+                        MinAge = 7,
                         Logo = "image3",
                         ProviderId = 3,
                         DirectionId = 1,
@@ -572,7 +883,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                             Id = 11,
                             Region = "Region11",
                             District = "District11",
-                            City = "City11",
+                            City = "Київ",
                             Street = "Street11",
                             BuildingNumber = "BuildingNumber11",
                             Latitude = 0,
@@ -607,11 +918,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                     new Workshop()
                     {
                         Id = 4,
-                        Title = "Title4",
+                        Title = "Футбол",
                         Phone = "1111111111",
                         Description = "Desc4",
-                        Price = 4000,
-                        WithDisabilityOptions = true,
+                        Keywords = "м'яч¤біг¤спорт",
+                        Price = 1000,
+                        WithDisabilityOptions = false,
                         DaysPerWeek = 4,
                         Head = "Head4",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
@@ -621,8 +933,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Instagram = "insta4",
                         Facebook = "facebook4",
                         Email = "email4@gmail.com",
-                        MaxAge = 10,
-                        MinAge = 4,
+                        MaxAge = 6,
+                        MinAge = 3,
                         Logo = "image4",
                         ProviderId = 4,
                         DirectionId = 1,
@@ -633,7 +945,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                             Id = 15,
                             Region = "Region15",
                             District = "District15",
-                            City = "City15",
+                            City = "Чернігів",
                             Street = "Street15",
                             BuildingNumber = "BuildingNumber15",
                             Latitude = 0,
@@ -668,10 +980,11 @@ namespace OutOfSchool.WebApi.Tests.Services
                     new Workshop()
                     {
                         Id = 5,
-                        Title = "Title5",
+                        Title = "Вишивання",
                         Phone = "1111111111",
                         Description = "Desc5",
-                        Price = 5000,
+                        Keywords = "рукоділля¤вишивка",
+                        Price = 0,
                         WithDisabilityOptions = true,
                         DaysPerWeek = 5,
                         Head = "Head5",
@@ -682,11 +995,11 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Instagram = "insta5",
                         Facebook = "facebook5",
                         Email = "email5@gmail.com",
-                        MaxAge = 10,
-                        MinAge = 4,
+                        MaxAge = 100,
+                        MinAge = 5,
                         Logo = "image5",
                         ProviderId = 5,
-                        DirectionId = 1,
+                        DirectionId = 2,
                         DepartmentId = 1,
                         AddressId = 17,
                         Address = new Address
@@ -694,7 +1007,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                             Id = 17,
                             Region = "Region17",
                             District = "District17",
-                            City = "City17",
+                            City = "Київ",
                             Street = "Street17",
                             BuildingNumber = "BuildingNumber17",
                             Latitude = 0,
