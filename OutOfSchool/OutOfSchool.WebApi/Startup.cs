@@ -110,7 +110,7 @@ namespace OutOfSchool.WebApi
                         .AllowAnyHeader()
                         .AllowCredentials()));
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
 
             // TODO: Ask frontend if all enums as strings are fine by adding serializer project wide
             // .AddJsonOptions(options =>
