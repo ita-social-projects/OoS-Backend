@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Services
         // Return categories with 1 SQL query
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit)
+        public async Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit)
         {
             logger.Information("Getting popular categories started.");
 
@@ -95,7 +95,7 @@ namespace OutOfSchool.WebApi.Services
                 (direction, directionsWithCounts) => new { direction, directionsWithCounts })
                 .SelectMany(
                 x => x.directionsWithCounts.DefaultIfEmpty(),
-                (x, y) => new CategoryStatistic
+                (x, y) => new DirectionStatistic
                 {
                     Direction = x.direction.ToModel(),
                     ApplicationsCount = y.ApplicationsCount ?? 0,

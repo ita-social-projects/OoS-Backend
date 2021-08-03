@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private StatisticController controller;
         private Mock<IStatisticService> service;
 
-        private IEnumerable<CategoryStatistic> categories;
+        private IEnumerable<DirectionStatistic> categories;
         private IEnumerable<WorkshopDTO> workshops;
 
         [SetUp]
@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service = new Mock<IStatisticService>();
             controller = new StatisticController(service.Object);
 
-            categories = FakeCategoryStatistics();
+            categories = FakeDirectionStatistics();
             workshops = FakeWorkshops();
         }
 
@@ -65,13 +65,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [TestCase(5)]
         [TestCase(2)]
         [TestCase(12)]
-        public async Task GetCategories_WhenLimitIsValid_ShouldReturnOkResultObject(int limit)
+        public async Task GetDirections_WhenLimitIsValid_ShouldReturnOkResultObject(int limit)
         {
             // Arrange
-            service.Setup(s => s.GetPopularCategories(It.IsInRange(3, 10, Range.Inclusive))).ReturnsAsync(categories);
+            service.Setup(s => s.GetPopularDirections(It.IsInRange(3, 10, Range.Inclusive))).ReturnsAsync(categories);
 
             // Act
-            var result = await controller.GetCategories(limit).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetDirections(limit).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -80,35 +80,35 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         [Test]
         [TestCase(5)]
-        public async Task GetCategories_WhenCollectionIsEmpty_ShouldReturnNoContent(int limit)
+        public async Task GetDirections_WhenCollectionIsEmpty_ShouldReturnNoContent(int limit)
         {
             // Arrange
-            service.Setup(s => s.GetPopularCategories(limit)).ReturnsAsync(new List<CategoryStatistic>());
+            service.Setup(s => s.GetPopularDirections(limit)).ReturnsAsync(new List<DirectionStatistic>());
 
             // Act
-            var result = await controller.GetCategories(limit).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetDirections(limit).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             result.Should().NotBeNull();
             result.StatusCode.Should().Be(204);
         }
 
-        private IEnumerable<CategoryStatistic> FakeCategoryStatistics()
+        private IEnumerable<DirectionStatistic> FakeDirectionStatistics()
         {
-            return new List<CategoryStatistic>()
+            return new List<DirectionStatistic>()
             {
-                new CategoryStatistic()
+                new DirectionStatistic()
                 {
                     WorkshopsCount = 2,
                     ApplicationsCount = 2,
-                    Direction = new CategoryDTO { Id = 1, Title = "c1" },
+                    Direction = new DirectionDto { Id = 1, Title = "c1" },
                 },
 
-                new CategoryStatistic()
+                new DirectionStatistic()
                 {
                     WorkshopsCount = 1,
                     ApplicationsCount = 1,
-                    Direction = new CategoryDTO { Id = 3, Title = "c3" },
+                    Direction = new DirectionDto { Id = 3, Title = "c3" },
                 },
             };
         }
@@ -121,14 +121,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 {
                     Id = 1,
                     Title = "w1",
-                    SubsubcategoryId = 1,
+                    DirectionId = 1,
                 },
 
                 new WorkshopDTO()
                 {
                     Id = 2,
                     Title = "w2",
-                    SubsubcategoryId = 2,
+                    DirectionId = 2,
                 },
             };
         }

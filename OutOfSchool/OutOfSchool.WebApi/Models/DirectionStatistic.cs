@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.WebApi.Models
 {
-    public class CategoryStatistic
+    public class DirectionStatistic
     {
         public DirectionDto Direction { get; set; }
 

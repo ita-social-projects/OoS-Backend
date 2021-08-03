@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
@@ -20,7 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private StatisticService service;
         private IApplicationRepository applicationRepository;
         private IWorkshopRepository workshopRepository;
-        private IEntityRepository<Category> categoryRepository;
+        private IEntityRepository<Direction> directionRepository;
         private OutOfSchoolDbContext context;
         private Mock<ILogger> logger;
 
@@ -30,22 +31,26 @@ namespace OutOfSchool.WebApi.Tests.Services
             context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             applicationRepository = new ApplicationRepository(context);
             workshopRepository = new WorkshopRepository(context);
-            categoryRepository = new EntityRepository<Category>(context);
+            directionRepository = new EntityRepository<Direction>(context);
 
             logger = new Mock<ILogger>();
-            service = new StatisticService(applicationRepository, workshopRepository, categoryRepository, logger.Object);
+            service = new StatisticService(applicationRepository, workshopRepository, directionRepository, logger.Object);
         }
 
         [Test]
         public async Task GetPopularWorkshops_ShouldReturnWorkshops()
         {
+            var directions = context.Directions;
+
             // Arrange
             var expected = new WorkshopDTO
             {
                 Id = 1,
                 Title = "w1",
-                CategoryId = 1,
+                DirectionId = 1,
+                Direction = directions.First().Title,
                 Teachers = null,
+                Keywords = new List<string>() {string.Empty},
             };
 
             // Act
@@ -60,9 +65,9 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetPopularCategories_ShouldReturnCategories()
         {
             // Arrange
-            var categories = context.Categories;
+            var categories = context.Directions;
 
-            var expected = new CategoryStatistic
+            var expected = new DirectionStatistic
             {
                 Direction = categories.First().ToModel(),
                 WorkshopsCount = 2,
@@ -70,7 +75,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
 
             // Act
-            var result = await service.GetPopularCategories(2).ConfigureAwait(false);
+            var result = await service.GetPopularDirections(2).ConfigureAwait(false);
 
             // Assert
             result.Should().HaveCount(2);

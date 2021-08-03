@@ -30,27 +30,27 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Get popular categories.
+        /// Get popular directions.
         /// </summary>
         /// <param name="limit">The number of entries.</param>
-        /// <returns>List of popular categories.</returns>
+        /// <returns>List of popular directions.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CategoryStatistic>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionStatistic>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [AllowAnonymous]
-        public async Task<IActionResult> GetCategories(int limit)
+        public async Task<IActionResult> GetDirections(int limit)
         {
             var newLimit = ValidateNumberOfEntries(limit);
 
-            var popularCategories = await service.GetPopularCategories(newLimit).ConfigureAwait(false);
+            var popularDirections = await service.GetPopularDirections(newLimit).ConfigureAwait(false);
 
-            if (!popularCategories.Any())
+            if (!popularDirections.Any())
             {
                 return NoContent();
             }
 
-            return Ok(popularCategories);
+            return Ok(popularDirections);
         }
 
         /// <summary>

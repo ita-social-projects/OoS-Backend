@@ -14,7 +14,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="limit">Number of entries.</param>
         /// <returns>List of popular categories.</returns>
-        Task<IEnumerable<CategoryStatistic>> GetPopularCategories(int limit);
+        Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit);
 
         /// <summary>
         /// Get popular workshops.
