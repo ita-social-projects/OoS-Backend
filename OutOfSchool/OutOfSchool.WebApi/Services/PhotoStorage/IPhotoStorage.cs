@@ -16,9 +16,8 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// </summary>
         /// <param name="photo">Photo data.</param>
         /// <param name="photoInfo">Information about photo.</param>
-        /// <param name="fileName">File name.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<PhotoDto> AddFile(IFormFile photo, PhotoDto photoInfo, string fileName);
+        Task<PhotoDto> AddFile(IFormFile photo, PhotoDto photoInfo);
 
         /// <summary>
         /// Adds files to data storage.
@@ -31,40 +30,39 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <summary>
         /// Delete file from data storage.
         /// </summary>
-        /// <param name="filePath">File path.</param>
+        /// <param name="fileName">File name.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task DeleteFile(string filePath);
+        Task DeleteFile(string fileName);
 
         /// <summary>
         /// Delete files from data storage.
         /// </summary>
-        /// <param name="filePaths">File paths.</param>
+        /// <param name="fileNames">Files names.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task DeleteFiles(List<string> filePaths);
+        Task DeleteFiles(List<string> fileNames);
 
         /// <summary>
         /// Gets file from data storage.
         /// </summary>
-        /// <param name="entityId">Entity Id.</param>
-        /// <param name="entityType">Entity type.</param>
+        /// <param name="fileName">Name of the file.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<byte[]> GetFile(long entityId, EntityType entityType);
+        Task<byte[]> GetFile(string fileName);
 
         /// <summary>
-        /// Gets paths of the files from data storage.
+        /// Gets names of the files from data storage.
         /// </summary>
         /// <param name="entityId">Entity Id.</param>
         /// <param name="entityType">Entity type.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<List<string>> GetFilesPaths(long entityId, EntityType entityType);
+        Task<List<string>> GetFilesNames(long entityId, EntityType entityType);
 
         /// <summary>
-        /// Gets path of the file from data storage.
+        /// Gets name of the file from data storage.
         /// </summary>
         /// <param name="entityId">Entity Id.</param>
         /// <param name="entityType">Entity type.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<string> GetFilePath(long entityId, EntityType entityType);
+        Task<string> GetFileName(long entityId, EntityType entityType);
 
         /// <summary>
         /// Update file from data storage.

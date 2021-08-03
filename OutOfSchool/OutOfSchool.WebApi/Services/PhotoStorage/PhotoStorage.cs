@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         private static string FilePath { get; set; }
 
         /// <inheritdoc/>
-        public async Task<PhotoDto> AddFile(IFormFile photo, PhotoDto photoInfo, string fileName)
+        public async Task<PhotoDto> AddFile(IFormFile photo, PhotoDto photoInfo)
         {
             try
             {
@@ -51,18 +51,14 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photo can not be null!."]);
                 }
 
-                if (fileName is null)
+                if (photoInfo.FileName is null)
                 {
                     throw new ArgumentNullException(localizer["File name can not be null!."]);
                 }
 
-                var dirPath = Path.GetDirectoryName(FilePath);
+                var filePath = Path.Combine(FilePath, photoInfo.EntityType.ToString(), photoInfo.FileName.TrimEnd());
 
-                Directory.CreateDirectory(dirPath);
-
-                var filePath = Path.Combine(FilePath, photoInfo.EntityType.ToString(), fileName.TrimEnd());
-
-                photoInfo.FileName = filePath;
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
                 using (var fileStream = File.Open(filePath, FileMode.OpenOrCreate))
                 {
@@ -94,7 +90,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photos can not be null!."]);
                 }
 
-                var dirPath = Path.GetDirectoryName(FilePath);
+                var dirPath = Path.GetFullPath(Path.Combine(FilePath, photoInfo.EntityType.ToString()));
 
                 Directory.CreateDirectory(dirPath);
 
@@ -102,11 +98,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 for (int i = 0; i < photos.Count; i++)
                 {
-                    var fileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}_{i}{Path.GetExtension(photos[i].FileName)}";
+                    photoInfo.FileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}_{i}{Path.GetExtension(photos[i].FileName)}";
 
-                    var filePath = Path.Combine(FilePath, photoInfo.EntityType.ToString(), fileName.TrimEnd());
-
-                    photoInfo.FileName = filePath;
+                    var filePath = Path.Combine(FilePath, photoInfo.EntityType.ToString(), photoInfo.FileName.TrimEnd());
 
                     using (var fileStream = File.Open(filePath, FileMode.OpenOrCreate))
                     {
@@ -130,22 +124,24 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task DeleteFile(string filePath)
+        public async Task DeleteFile(string fileName)
         {
             try
             {
                 logger.Information($"Process of deleting photo started.");
 
-                if (filePath is null)
+                if (fileName is null)
                 {
-                    throw new ArgumentNullException(localizer["File path can not be null!"]);
+                    throw new ArgumentNullException(localizer["File name can not be null!"]);
                 }
 
-                File.Delete(filePath);
+                var photos = await GetFilesByName(fileName).ConfigureAwait(false);
 
-                var photo = await GetFilesByPath(filePath).ConfigureAwait(false);
+                var photo = photos.FirstOrDefault();
 
-                await repository.Delete(photo.FirstOrDefault()).ConfigureAwait(false);
+                File.Delete(Path.Combine(FilePath, photo.EntityType.ToString(), photo.FileName));
+
+                await repository.Delete(photo).ConfigureAwait(false);
 
                 logger.Information($"Photo deleted photo successfully.");
             }
@@ -157,24 +153,26 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task DeleteFiles(List<string> filesPaths)
+        public async Task DeleteFiles(List<string> filesNames)
         {
             try
             {
                 logger.Information($"Process of deleting photos started.");
 
-                if (filesPaths is null)
+                if (filesNames is null)
                 {
-                    throw new ArgumentNullException(localizer["File paths can not be null!"]);
+                    throw new ArgumentNullException(localizer["Files names can not be null!"]);
                 }
 
-                foreach (var path in filesPaths)
+                foreach (var name in filesNames)
                 {
-                    File.Delete(path);
+                    var photos = await GetFilesByName(name).ConfigureAwait(false);
 
-                    var photos = await GetFilesByPath(path).ConfigureAwait(false);
+                    var photo = photos.FirstOrDefault();
 
-                    await repository.Delete(photos.FirstOrDefault()).ConfigureAwait(false);
+                    File.Delete(Path.Combine(FilePath, photo.EntityType.ToString(), photo.FileName));
+
+                    await repository.Delete(photo).ConfigureAwait(false);
                 }
 
                 logger.Information($"Photo deleted photo successfully.");
@@ -187,37 +185,37 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<byte[]> GetFile(long entityId, EntityType entityType)
+        public async Task<byte[]> GetFile(string fileName)
         {
             try
             {
-                logger.Information($"Process of getting photos started.");
+                logger.Information($"Process of getting photo started.");
 
-                var photosInfo = await GetFilesByEntity(entityId, entityType).ConfigureAwait(false);
+                var photosInfo = await GetFilesByName(fileName).ConfigureAwait(false);
 
                 var photoInfo = photosInfo.FirstOrDefault();
 
                 MimeTypeMap.GetMimeType(Path.GetExtension(photoInfo.FileName));
 
-                var file = await File.ReadAllBytesAsync(photoInfo.FileName).ConfigureAwait(false);
+                var file = await File.ReadAllBytesAsync(Path.Combine(FilePath, photoInfo.EntityType.ToString(), photoInfo.FileName)).ConfigureAwait(false);
 
-                logger.Information($"Successfully got photos.");
+                logger.Information($"Successfully got photo.");
 
                 return file;
             }
             catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
-                logger.Error($"Process of getting photos failed. {ex}");
+                logger.Error($"Process of getting photo failed. {ex}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<List<string>> GetFilesPaths(long entityId, EntityType entityType)
+        public async Task<List<string>> GetFilesNames(long entityId, EntityType entityType)
         {
             try
             {
-                logger.Information($"Process of getting paths of the photos started.");
+                logger.Information($"Process of getting names of the photos started.");
 
                 var paths = new List<string>();
 
@@ -228,33 +226,33 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     paths.Add(photo.FileName);
                 }
 
-                logger.Information($"Successfully got paths of the photos.");
+                logger.Information($"Successfully got names of the photos.");
 
                 return paths;
             }
             catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
-                logger.Error($"Process of getting paths of the photos failed. {ex}");
+                logger.Error($"Process of getting names of the photos failed. {ex}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<string> GetFilePath(long entityId, EntityType entityType)
+        public async Task<string> GetFileName(long entityId, EntityType entityType)
         {
             try
             {
-                logger.Information($"Process of getting path of the photo started.");
+                logger.Information($"Process of getting name of the photo started.");
 
                 var photos = await GetFilesByEntity(entityId, entityType).ConfigureAwait(false);
 
-                logger.Information($"Successfully got path of the photo.");
+                logger.Information($"Successfully got name of the photo.");
 
                 return photos.FirstOrDefault().FileName;
             }
             catch (Exception ex) when (ex is ArgumentException || ex is IOException)
             {
-                logger.Error($"Process of getting path of the photo failed. {ex}");
+                logger.Error($"Process of getting name of the photo failed. {ex}");
                 throw;
             }
         }
@@ -271,7 +269,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photo can not be null!"]);
                 }
 
-                using (var fileStream = File.Open(photoInfo.FileName, FileMode.Create))
+                using (var fileStream = File.Open(Path.Combine(FilePath, photoInfo.EntityType.ToString(), photoInfo.FileName), FileMode.Create))
                 {
                     await photo.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
@@ -294,9 +292,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
             return await repository.GetByFilter(filter).ConfigureAwait(false);
         }
 
-        private async Task<IEnumerable<Photo>> GetFilesByPath(string filePath)
+        private async Task<IEnumerable<Photo>> GetFilesByName(string fileName)
         {
-            Expression<Func<Photo, bool>> filter = p => p.FileName == filePath;
+            Expression<Func<Photo, bool>> filter = p => p.FileName == fileName;
 
             return await repository.GetByFilter(filter).ConfigureAwait(false);
         }

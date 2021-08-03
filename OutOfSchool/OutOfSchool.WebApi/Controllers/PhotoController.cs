@@ -33,28 +33,25 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Get files by it's keys.
+        /// Get file by it's name.
         /// </summary>
-        /// <param name="entityId">Id of the some entity.</param>
-        /// <param name="entityType">Type of the some entity.</param>
-        /// <returns>List of photos.</returns>
-        [HttpGet("{entityId}/{entityType}")]
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>Photo.</returns>
+        [HttpGet]
         [Authorize(Roles = "parent,provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetFile(long entityId, EntityType entityType)
+        public async Task<IActionResult> GetFile(string fileName)
         {
-            this.ValidateId(entityId, localizer);
-
-            var bytes = await photoService.GetFile(entityId, entityType).ConfigureAwait(false);
+            var bytes = await photoService.GetFile(fileName).ConfigureAwait(false);
 
             return File(bytes, MimeTypeMap.CurentContentType);
         }
 
         /// <summary>
-        /// Get paths of the files by it's keys.
+        /// Get names of the files by it's keys.
         /// </summary>
         /// <param name="entityId">Id of the some entity.</param>
         /// <param name="entityType">Type of the some entity.</param>
@@ -65,15 +62,15 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetFilesPaths(long entityId, EntityType entityType)
+        public async Task<IActionResult> GetFilesNames(long entityId, EntityType entityType)
         {
             this.ValidateId(entityId, localizer);
 
-            return Ok(await photoService.GetFilesPaths(entityId, entityType).ConfigureAwait(false));
+            return Ok(await photoService.GetFilesNames(entityId, entityType).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Get path of the file by it's keys.
+        /// Get name of the file by it's keys.
         /// </summary>
         /// <param name="entityId">Id of the some entity.</param>
         /// <param name="entityType">Type of the some entity.</param>
@@ -84,11 +81,11 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetFilePath(long entityId, EntityType entityType)
+        public async Task<IActionResult> GetFileName(long entityId, EntityType entityType)
         {
             this.ValidateId(entityId, localizer);
 
-            return Ok(await photoService.GetFilePath(entityId, entityType).ConfigureAwait(false));
+            return Ok(await photoService.GetFileName(entityId, entityType).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -127,9 +124,9 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest("Photo Info is null!");
             }
 
-            var fileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}{Path.GetExtension(photo.FileName)}";
+            photoInfo.FileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}{Path.GetExtension(photo.FileName)}";
 
-            var result = await photoService.AddFile(photo, photoInfo, fileName).ConfigureAwait(false);
+            var result = await photoService.AddFile(photo, photoInfo).ConfigureAwait(false);
 
             return Ok(result);
         }
@@ -178,7 +175,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Delete a specific Photo entity.
         /// </summary>
-        /// <param name="filePath">Photo path.</param>
+        /// <param name="fileName">Photo name.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpDelete]
         [Authorize(Roles = "parent,provider,admin")]
@@ -186,14 +183,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteFile(string filePath)
+        public async Task<IActionResult> DeleteFile(string fileName)
         {
-            if (filePath is null)
+            if (fileName is null)
             {
                 return BadRequest("File Path can not be null!");
             }
 
-            await photoService.DeleteFile(filePath).ConfigureAwait(false);
+            await photoService.DeleteFile(fileName).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -201,7 +198,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Delete a range of Photo entities.
         /// </summary>
-        /// <param name="filesPaths">Paths of the photos.</param>
+        /// <param name="filesNames">Names of the photos.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpDelete]
         [Authorize(Roles = "parent,provider,admin")]
@@ -209,14 +206,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteFiles(List<string> filesPaths)
+        public async Task<IActionResult> DeleteFiles(List<string> filesNames)
         {
-            if (filesPaths is null)
+            if (filesNames is null)
             {
                 return BadRequest("Paths of the files can not be null!");
             }
 
-            await photoService.DeleteFiles(filesPaths).ConfigureAwait(false);
+            await photoService.DeleteFiles(filesNames).ConfigureAwait(false);
 
             return NoContent();
         }
