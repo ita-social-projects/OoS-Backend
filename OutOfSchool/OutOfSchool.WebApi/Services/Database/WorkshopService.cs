@@ -73,12 +73,17 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter filter)
+        public async Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter offsetFilter)
         {
             logger.Information("Getting all Workshops started.");
 
+            if (offsetFilter is null)
+            {
+                offsetFilter = new OffsetFilter();
+            }
+
             var count = await workshopRepository.Count().ConfigureAwait(false);
-            var workshops = workshopRepository.Get<long>(skip: filter.From, take: filter.Size, orderBy: x => x.Id, ascending: true).ToList();
+            var workshops = workshopRepository.Get<long>(skip: offsetFilter.From, take: offsetFilter.Size, orderBy: x => x.Id, ascending: true).ToList();
 
             logger.Information(!workshops.Any()
                 ? "Workshop table is empty."

@@ -98,7 +98,6 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             Assert.AreEqual(workshopDto.WithDisabilityOptions, result.WithDisabilityOptions);
             Assert.AreEqual(workshopDto.ProviderId, result.ProviderId);
             Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
-            Assert.IsNull(result.ProviderDescription);
             Assert.AreEqual(workshopDto.MinAge, result.MinAge);
             Assert.AreEqual(workshopDto.MaxAge, result.MaxAge);
             Assert.AreEqual(workshopDto.Logo, result.Logo);
@@ -171,7 +170,6 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 IsPerMonth = true,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
-                ProviderDescription = "Provider description",
                 Description = "Some description",
                 MaxAge = 10,
                 MinAge = 4,
@@ -256,7 +254,6 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 IsPerMonth = true,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
-                ProviderDescription = "Provider description",
                 MaxAge = 10,
                 MinAge = 4,
                 Logo = "image5",

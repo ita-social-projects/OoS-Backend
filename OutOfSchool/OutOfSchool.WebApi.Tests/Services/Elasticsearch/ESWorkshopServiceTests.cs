@@ -20,7 +20,6 @@ namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
         private IElasticsearchService<WorkshopES, WorkshopFilterES> service;
 
         private Mock<IWorkshopService> mockWorkshopService;
-        private Mock<IProviderService> mockProviderService;
         private Mock<IRatingService> mockRatingService;
         private Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>> mockEsProvider;
 
@@ -28,11 +27,10 @@ namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
         public void SetUp()
         {
             mockWorkshopService = new Mock<IWorkshopService>();
-            mockProviderService = new Mock<IProviderService>();
             mockRatingService = new Mock<IRatingService>();
             mockEsProvider = new Mock<IElasticsearchProvider<WorkshopES, WorkshopFilterES>>();
 
-            service = new ESWorkshopService(mockWorkshopService.Object, mockRatingService.Object, mockEsProvider.Object, mockProviderService.Object);
+            service = new ESWorkshopService(mockWorkshopService.Object, mockRatingService.Object, mockEsProvider.Object);
         }
 
         #region Index
@@ -345,7 +343,6 @@ namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
             mockEsProvider.Setup(x => x.ReIndexAll(It.IsAny<IEnumerable<WorkshopES>>()))
                .ReturnsAsync(Result.Updated);
             mockRatingService.Setup(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop)).Returns(new Tuple<float, int>(3.5f, 4));
-            mockProviderService.Setup(x => x.GetById(It.IsAny<long>())).ReturnsAsync(new ProviderDto() { Id = 1, Description = "description" });
 
             // Act
             var result = await service.ReIndex().ConfigureAwait(false);
@@ -354,7 +351,6 @@ namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
             Assert.IsTrue(result);
             mockEsProvider.Verify(x => x.ReIndexAll(It.IsAny<IEnumerable<WorkshopES>>()), Times.Once);
             mockRatingService.Verify(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop), Times.AtLeastOnce);
-            mockProviderService.Verify(x => x.GetById(It.IsAny<long>()), Times.AtLeastOnce);
         }
 
         [Test]
@@ -495,7 +491,6 @@ namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
             mockEsProvider.Setup(x => x.ReIndexAll(It.IsAny<IEnumerable<WorkshopES>>()))
                .ReturnsAsync(Result.Error);
             mockRatingService.Setup(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop)).Returns(new Tuple<float, int>(3.5f, 4));
-            mockProviderService.Setup(x => x.GetById(It.IsAny<long>())).ReturnsAsync(new ProviderDto() { Id = 1, Description = "description" });
 
             // Act
             var result = await service.ReIndex().ConfigureAwait(false);
@@ -504,7 +499,6 @@ namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
             Assert.IsFalse(result);
             mockEsProvider.Verify(x => x.ReIndexAll(It.IsAny<IEnumerable<WorkshopES>>()), Times.Once);
             mockRatingService.Verify(x => x.GetAverageRating(It.IsAny<long>(), RatingType.Workshop), Times.AtLeastOnce);
-            mockProviderService.Verify(x => x.GetById(It.IsAny<long>()), Times.AtLeastOnce);
         }
 
         [Test]

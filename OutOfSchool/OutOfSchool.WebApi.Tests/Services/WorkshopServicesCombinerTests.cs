@@ -21,7 +21,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         private static List<WorkshopES> workshopESs;
 
         private Mock<IWorkshopService> mockDatabaseService;
-        private Mock<IProviderService> mockProviderService;
         private Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>> mockElasticsearchService;
         private Mock<ILogger> mockLogger;
 
@@ -41,11 +40,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void SetUp()
         {
             mockDatabaseService = new Mock<IWorkshopService>();
-            mockProviderService = new Mock<IProviderService>();
             mockElasticsearchService = new Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>>();
             mockLogger = new Mock<ILogger>();
 
-            service = new WorkshopServicesCombiner(mockDatabaseService.Object, mockElasticsearchService.Object, mockLogger.Object, mockProviderService.Object);
+            service = new WorkshopServicesCombiner(mockDatabaseService.Object, mockElasticsearchService.Object, mockLogger.Object);
         }
 
         [Test]
@@ -53,7 +51,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             mockDatabaseService.Setup(x => x.Create(workshop)).ReturnsAsync(workshop);
-            mockProviderService.Setup(x => x.GetById(It.IsAny<long>())).ReturnsAsync(provider);
             mockElasticsearchService.Setup(x => x.Index(workshopES)).ReturnsAsync(true);
 
             // Act
@@ -64,7 +61,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.AreEqual(workshop.Title, result.Title);
 
             mockDatabaseService.Verify(x => x.Create(workshop), Times.Once);
-            mockProviderService.Verify(x => x.GetById(workshop.ProviderId), Times.Once);
             mockElasticsearchService.Verify(x => x.Index(It.IsAny<WorkshopES>()), Times.Once);
         }
 
@@ -73,7 +69,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             mockDatabaseService.Setup(x => x.Update(workshop)).ReturnsAsync(workshop);
-            mockProviderService.Setup(x => x.GetById(It.IsAny<long>())).ReturnsAsync(provider);
             mockElasticsearchService.Setup(x => x.Update(workshopES)).ReturnsAsync(true);
 
             // Act
@@ -84,7 +79,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.AreEqual(workshop.Title, result.Title);
 
             mockDatabaseService.Verify(x => x.Update(workshop), Times.Once);
-            mockProviderService.Verify(x => x.GetById(workshop.ProviderId), Times.Once);
             mockElasticsearchService.Verify(x => x.Update(It.IsAny<WorkshopES>()), Times.Once);
         }
 
@@ -196,7 +190,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(true);
 
             // Act
-            var result = await service.GetAll(new OffsetFilter()).ConfigureAwait(false);
+            var result = await service.GetByFilter(new WorkshopFilter()).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
@@ -218,7 +212,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             mockElasticsearchService.Setup(x => x.PingServer()).ReturnsAsync(false);
 
             // Act
-            var result = await service.GetAll(new OffsetFilter()).ConfigureAwait(false);
+            var result = await service.GetByFilter(new WorkshopFilter()).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result);
