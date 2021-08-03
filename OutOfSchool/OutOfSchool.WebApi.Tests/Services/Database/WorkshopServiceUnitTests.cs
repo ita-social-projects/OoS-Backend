@@ -131,7 +131,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         public async Task GetWorkshopsByOrganization_WhenIdIsValid_ShouldReturnEntities(long id)
         {
             // Arrange
-            workshopRepositoryMoq.Setup(z => z.GetByFilter(x => x.Provider.Id == id, It.IsAny<string>()))
+            workshopRepositoryMoq.Setup(z => z.GetByFilter(x => x.ProviderId == id, It.IsAny<string>()))
                 .ReturnsAsync(workshops);
 
             // Act
@@ -140,7 +140,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             // Assert
             Assert.Multiple(() =>
             {
-                workshopRepositoryMoq.Verify(x => x.GetByFilter(x => x.Provider.Id == id, It.IsAny<string>()), Times.Once());
+                workshopRepositoryMoq.Verify(x => x.GetByFilter(x => x.ProviderId == id, It.IsAny<string>()), Times.Once());
                 Assert.That(workshops.Count(), Is.EqualTo(result.Count()));
             });
         }
@@ -151,7 +151,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         {
             // Arrange
             var emptyList = new List<Workshop>();
-            workshopRepositoryMoq.Setup(z => z.GetByFilter(x => x.Provider.Id == id, It.IsAny<string>()))
+            workshopRepositoryMoq.Setup(z => z.GetByFilter(x => x.ProviderId == id, It.IsAny<string>()))
                 .ReturnsAsync(emptyList);
 
             // Act
@@ -160,7 +160,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             // Assert
             Assert.Multiple(() =>
                 {
-                    workshopRepositoryMoq.Verify(x => x.GetByFilter(x => x.Provider.Id == id, It.IsAny<string>()), Times.Once());
+                    workshopRepositoryMoq.Verify(x => x.GetByFilter(x => x.ProviderId == id, It.IsAny<string>()), Times.Once());
                     Assert.That(emptyList.Count(), Is.EqualTo(result.Count()));
                 });
         }
