@@ -10,7 +10,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210727092300_AddPhotos")]
+    [Migration("20210803083124_AddPhotos")]
     partial class AddPhotos
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -530,7 +530,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("EntityType")
                         .HasColumnType("int");
 
-                    b.Property<string>("Path")
+                    b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

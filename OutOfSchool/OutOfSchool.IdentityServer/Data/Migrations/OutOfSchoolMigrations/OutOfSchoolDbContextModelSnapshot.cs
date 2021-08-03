@@ -528,7 +528,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<int>("EntityType")
                         .HasColumnType("int");
 
-                    b.Property<string>("Path")
+                    b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

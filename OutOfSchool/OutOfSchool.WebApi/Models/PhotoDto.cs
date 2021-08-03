@@ -7,7 +7,7 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        public string Path { get; set; }
+        public string FileName { get; set; }
 
         [Required]
         public long EntityId { get; set; }

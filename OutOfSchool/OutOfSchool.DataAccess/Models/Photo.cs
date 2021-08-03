@@ -8,7 +8,7 @@ namespace OutOfSchool.Services.Models
         public long Id { get; set; }
 
         [Required]
-        public string Path { get; set; }
+        public string FileName { get; set; }
 
         [Required]
         public long EntityId { get; set; }
