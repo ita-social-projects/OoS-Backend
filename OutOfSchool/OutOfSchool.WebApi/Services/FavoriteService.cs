@@ -18,14 +18,16 @@ namespace OutOfSchool.WebApi.Services
     public class FavoriteService : IFavoriteService
     {
         private readonly IEntityRepository<Favorite> repository;
+        private readonly IWorkshopService workshopService;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
-        public FavoriteService(IEntityRepository<Favorite> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public FavoriteService(IEntityRepository<Favorite> repository, ILogger logger, IStringLocalizer<SharedResource> localizer, IWorkshopService worshopService)
         {
             this.repository = repository;
             this.logger = logger;
             this.localizer = localizer;
+            this.workshopService = worshopService;
         }
 
         /// <inheritdoc/>
@@ -73,6 +75,23 @@ namespace OutOfSchool.WebApi.Services
                 : $"All {favorites.Count()} records were successfully received from the Favorites table");
 
             return favorites.Select(x => x.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<WorkshopCard>> GetFavoriteWorkshopsByUser(string userId)
+        {
+            logger.Information($"Getting Favorites by User started. Looking UserId = {userId}.");
+
+            var favorites = await repository.Get<int>(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
+            var filter = new WorkshopFilterDto() { Ids = favorites };
+
+            var workshops = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            logger.Information(!workshops.Entities.Any()
+                ? $"There aren't Favorites for User with Id = {userId}."
+                : $"All {workshops.Entities.Count()} records were successfully received from the Favorites table");
+
+            return workshops.Entities.Select(x => x.ToCardDto());
         }
 
         /// <inheritdoc/>
