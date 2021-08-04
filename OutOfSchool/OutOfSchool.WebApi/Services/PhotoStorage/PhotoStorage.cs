@@ -21,6 +21,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         private readonly IEntityRepository<Photo> repository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly string basePhotoPath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhotoStorage"/> class.
@@ -34,10 +35,8 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
             this.repository = repository;
             this.logger = logger;
             this.localizer = localizer;
-            FilePath = config.GetValue<string>("BasePhotoPath");
+            this.basePhotoPath = config.GetValue<string>("PhotoSettings:BasePath");
         }
-
-        private static string FilePath { get; set; }
 
         /// <inheritdoc/>
         public async Task<PhotoDto> AddFile(IFormFile photo, PhotoDto photoInfo)
@@ -51,12 +50,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photo can not be null!."]);
                 }
 
-                if (photoInfo.FileName is null)
-                {
-                    throw new ArgumentNullException(localizer["File name can not be null!."]);
-                }
+                photoInfo.FileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}{Path.GetExtension(photo.FileName)}";
 
-                var filePath = Path.Combine(FilePath, photoInfo.EntityType.ToString(), photoInfo.FileName.TrimEnd());
+                var filePath = Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName.TrimEnd());
 
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
@@ -90,7 +86,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photos can not be null!."]);
                 }
 
-                var dirPath = Path.GetFullPath(Path.Combine(FilePath, photoInfo.EntityType.ToString()));
+                var dirPath = Path.GetFullPath(Path.Combine(basePhotoPath, photoInfo.EntityType.ToString()));
 
                 Directory.CreateDirectory(dirPath);
 
@@ -100,7 +96,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                 {
                     photoInfo.FileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}_{i}{Path.GetExtension(photos[i].FileName)}";
 
-                    var filePath = Path.Combine(FilePath, photoInfo.EntityType.ToString(), photoInfo.FileName.TrimEnd());
+                    var filePath = Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName.TrimEnd());
 
                     using (var fileStream = File.Open(filePath, FileMode.OpenOrCreate))
                     {
@@ -139,7 +135,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var photo = photos.FirstOrDefault();
 
-                File.Delete(Path.Combine(FilePath, photo.EntityType.ToString(), photo.FileName));
+                File.Delete(Path.Combine(basePhotoPath, photo.EntityType.ToString(), photo.FileName));
 
                 await repository.Delete(photo).ConfigureAwait(false);
 
@@ -170,7 +166,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                     var photo = photos.FirstOrDefault();
 
-                    File.Delete(Path.Combine(FilePath, photo.EntityType.ToString(), photo.FileName));
+                    File.Delete(Path.Combine(basePhotoPath, photo.EntityType.ToString(), photo.FileName));
 
                     await repository.Delete(photo).ConfigureAwait(false);
                 }
@@ -197,7 +193,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 MimeTypeMap.GetMimeType(Path.GetExtension(photoInfo.FileName));
 
-                var file = await File.ReadAllBytesAsync(Path.Combine(FilePath, photoInfo.EntityType.ToString(), photoInfo.FileName)).ConfigureAwait(false);
+                var file = await File.ReadAllBytesAsync(Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName)).ConfigureAwait(false);
 
                 logger.Information($"Successfully got photo.");
 
@@ -269,7 +265,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photo can not be null!"]);
                 }
 
-                using (var fileStream = File.Open(Path.Combine(FilePath, photoInfo.EntityType.ToString(), photoInfo.FileName), FileMode.Create))
+                using (var fileStream = File.Open(Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName), FileMode.Create))
                 {
                     await photo.CopyToAsync(fileStream).ConfigureAwait(false);
                 }

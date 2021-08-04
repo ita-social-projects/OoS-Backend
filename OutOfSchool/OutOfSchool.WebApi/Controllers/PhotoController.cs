@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
@@ -20,16 +21,19 @@ namespace OutOfSchool.WebApi.Controllers
     {
         private readonly IPhotoStorage photoService;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly long maxSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhotoController"/> class.
         /// </summary>
         /// <param name="photoService">Service for Photo model.</param>
         /// <param name="localizer">Localizer.</param>
-        public PhotoController(IPhotoStorage photoService, IStringLocalizer<SharedResource> localizer)
+        /// <param name="config">Config.</param>
+        public PhotoController(IPhotoStorage photoService, IStringLocalizer<SharedResource> localizer, IConfiguration config)
         {
             this.localizer = localizer;
             this.photoService = photoService;
+            this.maxSize = config.GetValue<long>("PhotoSettings:MaxSize");
         }
 
         /// <summary>
@@ -117,14 +121,17 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest("Photo is null!");
             }
 
+            if (!IsFileValid(photo))
+            {
+                return BadRequest("The size or extension of the photo invalid!");
+            }
+
             var photoInfo = JsonConvert.DeserializeObject<PhotoDto>(photoInfoJson);
 
             if (photoInfo is null)
             {
                 return BadRequest("Photo Info is null!");
             }
-
-            photoInfo.FileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}{Path.GetExtension(photo.FileName)}";
 
             var result = await photoService.AddFile(photo, photoInfo).ConfigureAwait(false);
 
@@ -158,6 +165,14 @@ namespace OutOfSchool.WebApi.Controllers
             if (photos is null)
             {
                 return BadRequest("Photos is null!");
+            }
+
+            foreach (var photo in photos)
+            {
+                if (!IsFileValid(photo))
+                {
+                    return BadRequest("The size or extension of the photo invalid!");
+                }
             }
 
             var photoInfo = JsonConvert.DeserializeObject<PhotoDto>(photoInfoJson);
@@ -247,6 +262,11 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest("Photo is null!");
             }
 
+            if (!IsFileValid(photo))
+            {
+                return BadRequest("The size or extension of the photo invalid!");
+            }
+
             var photoInfo = JsonConvert.DeserializeObject<PhotoDto>(photoInfoJson);
 
             if (photoInfo is null)
@@ -257,6 +277,25 @@ namespace OutOfSchool.WebApi.Controllers
             var result = await photoService.UpdateFile(photoInfo, photo).ConfigureAwait(false);
 
             return Ok(result);
+        }
+
+        private bool IsFileValid(IFormFile photo)
+        {
+            if (photo.Length > maxSize)
+            {
+                return false;
+            }
+
+            try
+            {
+                MimeTypeMap.GetExtension(photo.ContentType);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
