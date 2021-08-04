@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="userId">User Id.</param>
         /// <returns>List of all Favorites by User.</returns>
-        Task<IEnumerable<WorkshopCard>> GetFavoriteWorkshopsByUser(string userId)
+        Task<IEnumerable<WorkshopCard>> GetFavoriteWorkshopsByUser(string userId);
 
         /// <summary>
         /// Add entity.
