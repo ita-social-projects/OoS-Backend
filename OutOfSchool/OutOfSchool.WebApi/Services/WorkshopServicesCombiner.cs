@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Enums;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
@@ -62,7 +63,9 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
+            //var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
+
+            var esResultIsValid = false;
 
             if (!esResultIsValid)
             {
@@ -77,7 +80,9 @@ namespace OutOfSchool.WebApi.Services
         {
             await workshopService.Delete(id).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Delete(id).ConfigureAwait(false);
+            //var esResultIsValid = await elasticsearchService.Delete(id).ConfigureAwait(false);
+
+            var esResultIsValid = false;
 
             if (!esResultIsValid)
             {
@@ -162,6 +167,18 @@ namespace OutOfSchool.WebApi.Services
             return filter != null && filter.MaxStartTime >= filter.MinStartTime
                                   && filter.MaxAge >= filter.MinAge
                                   && filter.MaxPrice >= filter.MinPrice;
+        }
+
+        private async void AddRecordToBackupTracker(long id, BackupOperation operation)
+        {
+            BackupTrackerDto backupTrackerDto = new BackupTrackerDto()
+            {
+                Operation = operation,
+                OperationDate = DateTime.UtcNow,
+                TableName = "workshop",
+                RecordId = id,
+            };
+            await backupTrackerService.Create(backupTrackerDto).ConfigureAwait(false);
         }
     }
 }

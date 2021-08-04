@@ -10,7 +10,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210729091457_BackupOperation")]
+    [Migration("20210802094738_BackupOperation")]
     partial class BackupOperation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

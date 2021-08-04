@@ -16,16 +16,16 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Test()
+        public async Task<IActionResult> Synchronize()
         {
-            var result = await elasticsearchSynchronizationService.Synchronize();
+            var result = await elasticsearchSynchronizationService.Synchronize().ConfigureAwait(false);
             return Ok(result);
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var result = await elasticsearchSynchronizationService.GetAll();
+            var result = await elasticsearchSynchronizationService.GetAll().ConfigureAwait(false);
 
             return Ok(result);
         }
