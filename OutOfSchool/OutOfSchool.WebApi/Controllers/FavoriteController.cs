@@ -99,8 +99,8 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet]
-        public async Task<IActionResult> GetFavoriteWorkshopsByUser(OffsetFilter offsetFilter)
+        [HttpGet("workshops")]
+        public async Task<IActionResult> GetFavoriteWorkshopsByUser([FromQuery] OffsetFilter offsetFilter)
         {
             string userId = User.FindFirst("sub")?.Value;
 
