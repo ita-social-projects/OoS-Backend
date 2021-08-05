@@ -78,12 +78,18 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopCard>> GetFavoriteWorkshopsByUser(string userId)
+        public async Task<SearchResult<WorkshopCard>> GetFavoriteWorkshopsByUser(string userId, OffsetFilter offsetFilter)
         {
             logger.Information($"Getting Favorites by User started. Looking UserId = {userId}.");
 
             var favorites = await repository.Get<int>(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
-            var filter = new WorkshopFilterDto() { Ids = favorites, Size = 1000 };
+
+            if (offsetFilter is null)
+            {
+                offsetFilter = new OffsetFilter();
+            }
+
+            var filter = new WorkshopFilter() { Ids = favorites, Size = offsetFilter.Size, From = offsetFilter.From };
 
             var workshops = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
@@ -91,7 +97,7 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There aren't Favorites for User with Id = {userId}."
                 : $"All {workshops.TotalAmount} records were successfully received from the Favorites table");
 
-            return workshops.Entities.Select(x => x.ToCardDto());
+            return new SearchResult<WorkshopCard>() { TotalAmount = workshops.TotalAmount, Entities = DtoModelsToWorkshopCards(workshops.Entities) };
         }
 
         /// <inheritdoc/>
@@ -145,6 +151,17 @@ namespace OutOfSchool.WebApi.Services
             await repository.Delete(favorite).ConfigureAwait(false);
 
             logger.Information($"Favorite with Id = {id} succesfully deleted.");
+        }
+
+        private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
+        {
+            List<WorkshopCard> workshopCards = new List<WorkshopCard>();
+            foreach (var item in source)
+            {
+                workshopCards.Add(item.ToCardDto());
+            }
+
+            return workshopCards;
         }
     }
 }

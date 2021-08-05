@@ -93,19 +93,20 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get all Favorites workshops from the database by UserId.
         /// </summary>
+        /// <param name="offsetFilter">Filter to get spesified portion of entities.</param>
         /// <returns>List of all User favorite Workshops.</returns>
         [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<IActionResult> GetFavoriteWorkshopsByUser()
+        public async Task<IActionResult> GetFavoriteWorkshopsByUser(OffsetFilter offsetFilter)
         {
             string userId = User.FindFirst("sub")?.Value;
 
-            var favorites = await service.GetFavoriteWorkshopsByUser(userId).ConfigureAwait(false);
+            var favorites = await service.GetFavoriteWorkshopsByUser(userId, offsetFilter).ConfigureAwait(false);
 
-            if (!favorites.Any())
+            if (favorites.TotalAmount == 0)
             {
                 return NoContent();
             }
