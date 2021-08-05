@@ -15,7 +15,6 @@ namespace OutOfSchool.WebApi.Services
     public class ESWorkshopService : IElasticsearchService<WorkshopES, WorkshopFilterES>
     {
         private readonly IWorkshopService workshopService;
-        private readonly IProviderService providerService;
         private readonly IRatingService ratingService;
         private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
 
@@ -25,12 +24,11 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopService">Service that provides access to Workshops in the database.</param>
         /// <param name="ratingService">Service that provides access to Ratings in the database.</param>
         /// <param name="esProvider">Povider to the Elasticsearch workshops index.</param>
-        public ESWorkshopService(IWorkshopService workshopService, IRatingService ratingService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider, IProviderService providerService)
+        public ESWorkshopService(IWorkshopService workshopService, IRatingService ratingService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider)
         {
             this.workshopService = workshopService;
             this.ratingService = ratingService;
             this.esProvider = esProvider;
-            this.providerService = providerService;
         }
 
         /// <inheritdoc/>
@@ -104,14 +102,20 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var sourceDto = await workshopService.GetAll().ConfigureAwait(false);
+                var filter = new OffsetFilter() { From = 0, Size = 500 };
+                var source = new List<WorkshopES>();
 
-                List<WorkshopES> source = new List<WorkshopES>();
-                foreach (var entity in sourceDto)
+                var data = await workshopService.GetAll(filter).ConfigureAwait(false);
+                while (data.Entities.Count > 0)
                 {
-                    entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop).Item1;
-                    var workshopES = await this.SetProviderDescriptionToWorkshopEsModel(entity).ConfigureAwait(false);
-                    source.Add(workshopES);
+                    foreach (var entity in data.Entities)
+                    {
+                        entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop).Item1;
+                        source.Add(entity.ToESModel());
+                    }
+
+                    filter.From += filter.Size;
+                    data = await workshopService.GetAll(filter).ConfigureAwait(false);
                 }
 
                 var resp = await esProvider.ReIndexAll(source).ConfigureAwait(false);
@@ -132,11 +136,6 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResultES<WorkshopES>> Search(WorkshopFilterES filter)
         {
-            if (filter is null)
-            {
-                filter = new WorkshopFilterES();
-            }
-
             try
             {
                 var res = await esProvider.Search(filter).ConfigureAwait(false);
@@ -161,16 +160,6 @@ namespace OutOfSchool.WebApi.Services
             {
                 throw new ArgumentNullException($"{entity} is not set to an instance.");
             }
-        }
-
-        private async Task<WorkshopES> SetProviderDescriptionToWorkshopEsModel(WorkshopDTO workshopDto)
-        {
-            var provider = await providerService.GetById(workshopDto.ProviderId).ConfigureAwait(false);
-
-            var workshopES = workshopDto.ToESModel();
-            workshopES.ProviderDescription = provider.Description;
-
-            return workshopES;
         }
     }
 }

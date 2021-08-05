@@ -16,8 +16,6 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string ProviderTitle { get; set; }
 
-        public string ProviderDescription { get; set; }
-
         public string Description { get; set; }
 
         public int MinAge { get; set; }

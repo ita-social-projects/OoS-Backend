@@ -73,19 +73,25 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetAll()
+        public async Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter offsetFilter)
         {
             logger.Information("Getting all Workshops started.");
 
-            var workshops = await workshopRepository.GetAll().ConfigureAwait(false);
+            if (offsetFilter is null)
+            {
+                offsetFilter = new OffsetFilter();
+            }
+
+            var count = await workshopRepository.Count().ConfigureAwait(false);
+            var workshops = workshopRepository.Get<long>(skip: offsetFilter.From, take: offsetFilter.Size, orderBy: x => x.Id, ascending: true).ToList();
 
             logger.Information(!workshops.Any()
                 ? "Workshop table is empty."
-                : $"All {workshops.Count()} records were successfully received from the Workshop table");
+                : $"All {workshops.Count} records were successfully received from the Workshop table");
 
             var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
-
-            return GetWorkshopsWithAverageRating(workshopsDTO);
+            var workshopsWithRating = GetWorkshopsWithAverageRating(workshopsDTO);
+            return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
         }
 
         /// <inheritdoc/>
@@ -117,7 +123,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
-            var workshops = await workshopRepository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
+            var workshops = await workshopRepository.GetByFilter(x => x.ProviderId == id).ConfigureAwait(false);
 
             logger.Information(!workshops.Any()
                 ? $"There aren't Workshops for Provider with Id = {id}."
@@ -233,13 +239,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilterDto filter = null)
+        public async Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null)
         {
             logger.Information("Getting Workshops by filter started.");
 
             if (filter is null)
             {
-                filter = new WorkshopFilterDto();
+                filter = new WorkshopFilter();
             }
 
             var filterPredicate = PredicateBuild(filter);
@@ -263,7 +269,7 @@ namespace OutOfSchool.WebApi.Services
             return result;
         }
 
-        private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilterDto filter)
+        private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
         {
             var predicate = PredicateBuilder.True<Workshop>();
 
@@ -274,7 +280,7 @@ namespace OutOfSchool.WebApi.Services
                 return predicate;
             }
 
-            if (!string.IsNullOrEmpty(filter.SearchText))
+            if (!string.IsNullOrWhiteSpace(filter.SearchText))
             {
                 var tempPredicate = PredicateBuilder.False<Workshop>();
                 foreach (var word in filter.SearchText.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
@@ -300,11 +306,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 predicate = predicate.And(x => x.Price == filter.MinPrice);
             }
-            else if (!filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
+            else if (!filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
                 predicate = predicate.And(x => x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice);
             }
-            else if (filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
+            else if (filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
                 predicate = predicate.And(x => (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
             }
@@ -319,12 +325,15 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(x => x.WithDisabilityOptions);
             }
 
-            predicate = predicate.And(x => x.Address.City == filter.City);
+            if (!string.IsNullOrWhiteSpace(filter.City))
+            {
+                predicate = predicate.And(x => x.Address.City == filter.City);
+            }
 
             return predicate;
         }
 
-        private Tuple<Expression<Func<Workshop, dynamic>>, bool> GetOrderParameter(WorkshopFilterDto filter)
+        private Tuple<Expression<Func<Workshop, dynamic>>, bool> GetOrderParameter(WorkshopFilter filter)
         {
             switch (filter.OrderByField)
             {
@@ -338,8 +347,13 @@ namespace OutOfSchool.WebApi.Services
                     var priceIsAsc = false;
                     return Tuple.Create(orderByPriceDesc, priceIsAsc);
 
+                case nameof(OrderBy.PriceAsc):
+                    Expression<Func<Workshop, dynamic>> orderByPriceAsc = x => x.Price;
+                    var priceIsAsce = true;
+                    return Tuple.Create(orderByPriceAsc, priceIsAsce);
+
                 default:
-                    Expression<Func<Workshop, dynamic>> orderBy = x => x.Price;
+                    Expression<Func<Workshop, dynamic>> orderBy = x => x.Id;
                     var isAscending = true;
                     return Tuple.Create(orderBy, isAscending);
             }

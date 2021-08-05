@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -19,6 +18,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class WorkshopControllerTests
     {
+        private const int Ok = 200;
+        private const int NoContent = 204;
+        private const int Create = 201;
+        private const int BadRequest = 400;
+        private const int Forbidden = 403;
+
         private static List<WorkshopDTO> workshops;
         private static List<WorkshopCard> workshopCards;
         private static WorkshopDTO workshop;
@@ -61,38 +66,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        #region GetWorkshops
-        [Test]
-        public async Task GetWorkshops_WhenThereAreWorkshops_ShouldReturnOkResultObject()
-        {
-            // Arrange
-            var res = new SearchResult<WorkshopCard>() { TotalAmount = workshopCards.Count, Entities = workshopCards };
-            workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(res);
-
-            // Act
-            var result = await controller.GetAll().ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
-        }
-
-        [Test]
-        public async Task GetWorkshops_WhenThereIsNoAnyWorkshop_ShouldReturnNoConterntResult()
-        {
-            // Arrange
-            var emptyList = new List<WorkshopCard>();
-            workshopServiceMoq.Setup(x => x.GetAll()).ReturnsAsync(new SearchResult<WorkshopCard>() { Entities = emptyList });
-
-            // Act
-            var result = await controller.GetAll().ConfigureAwait(false) as NoContentResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
-        }
-        #endregion
-
         #region GetWorkshopById
         [Test]
         [TestCase(1)]
@@ -106,7 +79,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
         }
 
         [Test]
@@ -134,7 +107,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
         #endregion
 
@@ -164,7 +137,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
             Assert.AreEqual(2, (result.Value as IEnumerable<WorkshopDTO>).Count());
         }
 
@@ -181,7 +154,40 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
+        }
+        #endregion
+
+        #region GetWorkshopsByFilter
+        [Test]
+        public async Task GetWorkshopByFilter_WhenThereAreWorkshops_ShouldReturnOkResultObject()
+        {
+            // Arrange
+            var searchResult = new SearchResult<WorkshopCard>() { TotalAmount = 5, Entities = workshopCards };
+            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(searchResult);
+
+            // Act
+            var result = await controller.GetByFilter(new WorkshopFilter()).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(Ok, result.StatusCode);
+            Assert.IsInstanceOf<SearchResult<WorkshopCard>>(result.Value);
+        }
+
+        [Test]
+        public async Task GetWorkshopByFilter_WhenThereIsNoAnyWorkshop_ShouldReturnNoConterntResult()
+        {
+            // Arrange
+            var searchResult = new SearchResult<WorkshopCard>() { TotalAmount = 0, Entities = new List<WorkshopCard>() };
+            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(searchResult);
+
+            // Act
+            var result = await controller.GetByFilter(new WorkshopFilter()).ConfigureAwait(false) as NoContentResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
         #endregion
 
@@ -199,7 +205,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             workshopServiceMoq.Verify(x => x.Create(workshop), Times.Once);
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(201, result.StatusCode);
+            Assert.AreEqual(Create, result.StatusCode);
         }
 
         [Test]
@@ -215,7 +221,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(400, result.StatusCode);
+            Assert.AreEqual(BadRequest, result.StatusCode);
         }
 
         [Test]
@@ -231,7 +237,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
         #endregion
 
@@ -248,7 +254,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
         }
 
         [Test]
@@ -264,7 +270,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopDTO>()), Times.Never);
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(400, result.StatusCode);
+            Assert.AreEqual(BadRequest, result.StatusCode);
         }
 
         [Test]
@@ -280,7 +286,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             workshopServiceMoq.Verify(x => x.Update(It.IsAny<WorkshopDTO>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
         #endregion
 
@@ -300,7 +306,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             workshopServiceMoq.Verify(x => x.Delete(It.IsAny<long>()), Times.Once);
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
 
         [Test]
@@ -329,7 +335,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             workshopServiceMoq.Verify(x => x.Delete(It.IsAny<long>()), Times.Never);
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
 
         [Test]
@@ -347,7 +353,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             workshopServiceMoq.Verify(x => x.Delete(It.IsAny<long>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
         #endregion
 
@@ -383,7 +389,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = 55,
                     Region = "Region55",
                     District = "District55",
-                    City = "City55",
+                    City = "Київ",
                     Street = "Street55",
                     BuildingNumber = "BuildingNumber55",
                     Latitude = 0,
@@ -445,6 +451,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
+                    Address = new AddressDto
+                    {
+                        City = "Київ",
+                    },
                 },
                 new WorkshopDTO()
                 {
@@ -470,6 +480,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
+                    Address = new AddressDto
+                    {
+                        City = "Київ",
+                    },
                 },
                 new WorkshopDTO()
                 {
@@ -545,6 +559,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
+                    Address = new AddressDto
+                    {
+                        City = "Київ",
+                    },
                 },
             };
         }

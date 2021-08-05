@@ -17,6 +17,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class ChatControllerTests
     {
+        private const int Ok = 200;
+        private const int NoContent = 204;
+        private const int CreatedAtAction = 201;
+        private const int BadRequest = 400;
+        private const int Forbidden = 403;
+
         private ChatController controller;
         private Mock<IChatMessageService> messageServiceMoq;
         private Mock<IChatRoomService> roomServiceMoq;
@@ -65,7 +71,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(400, result.StatusCode);
+            Assert.AreEqual(BadRequest, result.StatusCode);
             Assert.IsNotNull(result.Value);
         }
 
@@ -94,7 +100,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -143,7 +149,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -173,7 +179,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -217,7 +223,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             roomServiceMoq.Verify(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()), Times.Never);
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Never);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Once);
-            Assert.AreEqual(201, result.StatusCode);
+            Assert.AreEqual(CreatedAtAction, result.StatusCode);
             Assert.IsNotNull(result.Value);
             Assert.IsInstanceOf<ChatMessageDto>(result.Value);
             Assert.AreEqual(message.UserId, (result.Value as ChatMessageDto).UserId);
@@ -268,7 +274,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             roomServiceMoq.Verify(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()), Times.Once);
             roomServiceMoq.Verify(x => x.CreateOrReturnExisting(userId, "anotherUserId", 1), Times.Once);
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Once);
-            Assert.AreEqual(201, result.StatusCode);
+            Assert.AreEqual(CreatedAtAction, result.StatusCode);
             Assert.IsNotNull(result.Value);
             Assert.IsInstanceOf<ChatMessageDto>(result.Value);
             Assert.AreEqual(message.UserId, (result.Value as ChatMessageDto).UserId);
@@ -300,7 +306,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
 
         [Test]
@@ -319,7 +325,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -338,7 +344,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetMessageById(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
             Assert.IsNotNull(result.Value);
         }
         #endregion
@@ -366,7 +372,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
 
         [Test]
@@ -386,7 +392,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -406,7 +412,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetRoomById(id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
             Assert.IsNotNull(result.Value);
         }
         #endregion
@@ -425,7 +431,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             roomServiceMoq.Verify(x => x.GetByUserId(userId), Times.Once);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
             Assert.That(() => (result.Value as List<ChatRoomDto>).Count == 0);
         }
 
@@ -449,7 +455,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             roomServiceMoq.Verify(x => x.GetByUserId(userId), Times.Once);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
             Assert.That(() => (result.Value as List<ChatRoomDto>).Count > 0);
         }
         #endregion
@@ -478,7 +484,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             roomServiceMoq.Verify(x => x.GetById(roomId), Times.Once);
             Assert.IsNotNull(result);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
 
         [Test]
@@ -497,7 +503,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             roomServiceMoq.Verify(x => x.GetById(roomId), Times.Once);
-            Assert.AreEqual(400, result.StatusCode);
+            Assert.AreEqual(BadRequest, result.StatusCode);
         }
 
         [Test]
@@ -522,7 +528,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             messageServiceMoq.Verify(x => x.GetAllNotReadByUserInChatRoom(roomId, userId), Times.Once);
             messageServiceMoq.Verify(x => x.UpdateIsRead(It.IsAny<IEnumerable<ChatMessageDto>>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
         }
 
         [Test]
@@ -597,7 +603,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             messageServiceMoq.Verify(x => x.GetAllNotReadByUserInChatRoom(roomId, userId), Times.Once);
             messageServiceMoq.Verify(x => x.UpdateIsRead(listOfMess), Times.Once);
             Assert.IsNotNull(result);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
             Assert.IsNotNull(result.Value);
         }
         #endregion
@@ -617,7 +623,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             messageServiceMoq.Verify(x => x.Create(It.IsAny<ChatMessageDto>()), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(400, result.StatusCode);
+            Assert.AreEqual(BadRequest, result.StatusCode);
             Assert.IsNotNull(result.Value);
         }
 
@@ -651,7 +657,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Update(message), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
 
         [Test]
@@ -674,7 +680,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Update(message), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -702,7 +708,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Update(message), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -731,7 +737,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Update(message), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -787,7 +793,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Update(message), Times.Once);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual(Ok, result.StatusCode);
             Assert.IsNotNull(result.Value);
         }
         #endregion
@@ -819,7 +825,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Delete(id), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
 
         [Test]
@@ -841,7 +847,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Delete(id), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -865,7 +871,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Delete(id), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -933,7 +939,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             messageServiceMoq.Verify(x => x.GetById(id), Times.Once);
             messageServiceMoq.Verify(x => x.Delete(id), Times.Once);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
         #endregion
 
@@ -962,7 +968,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             roomServiceMoq.Verify(x => x.GetById(id), Times.Once);
             roomServiceMoq.Verify(x => x.Delete(id), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
 
         [Test]
@@ -983,7 +989,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             roomServiceMoq.Verify(x => x.GetById(id), Times.Once);
             roomServiceMoq.Verify(x => x.Delete(id), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -1005,7 +1011,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             roomServiceMoq.Verify(x => x.GetById(id), Times.Once);
             roomServiceMoq.Verify(x => x.Delete(id), Times.Never);
             Assert.IsNotNull(result);
-            Assert.AreEqual(403, result.StatusCode);
+            Assert.AreEqual(Forbidden, result.StatusCode);
         }
 
         [Test]
@@ -1073,7 +1079,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             roomServiceMoq.Verify(x => x.GetById(id), Times.Once);
             roomServiceMoq.Verify(x => x.Delete(id), Times.Once);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.AreEqual(NoContent, result.StatusCode);
         }
         #endregion
     }

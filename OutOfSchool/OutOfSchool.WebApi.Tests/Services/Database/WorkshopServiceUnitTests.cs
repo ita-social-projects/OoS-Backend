@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -14,121 +12,64 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using Serilog;
 
-namespace OutOfSchool.WebApi.Tests.Services
+namespace OutOfSchool.WebApi.Tests.Services.UnitTests
 {
     [TestFixture]
-    public class WorkshopServiceTests
+    public class WorkshopServiceUnitTests
     {
         private IWorkshopService workshopService;
 
-        private DbContextOptions<OutOfSchoolDbContext> options;
-        private OutOfSchoolDbContext dbContext;
-
-        private IWorkshopRepository workshopRepository;
+        private Mock<IWorkshopRepository> workshopRepositoryMoq;
         private Mock<IClassRepository> classRepositoryMoq;
-        private IEntityRepository<Teacher> teacherRepository;
-        private IEntityRepository<Address> addressRepository;
+        private Mock<IEntityRepository<Teacher>> teacherRepositoryMoq;
+        private Mock<IEntityRepository<Address>> addressRepositoryMoq;
 
-        private Mock<IRatingService> ratingServiceMoq;
-        private Mock<ILogger> loggerMoq;
+        private Mock<IRatingService> ratingService;
+        private Mock<ILogger> logger;
 
         private Workshop newWorkshop;
+        private List<Workshop> workshops;
         private Class classEntity;
 
         [SetUp]
         public void SetUp()
         {
-            var builder =
-                new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-                .UseInMemoryDatabase(databaseName: "OutOfSchoolWorkshopTestDB")
-                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning));
-
-            options = builder.Options;
-            dbContext = new OutOfSchoolDbContext(options);
-
-            workshopRepository = new WorkshopRepository(dbContext);
+            workshopRepositoryMoq = new Mock<IWorkshopRepository>();
             classRepositoryMoq = new Mock<IClassRepository>();
-            teacherRepository = new EntityRepository<Teacher>(dbContext);
-            addressRepository = new EntityRepository<Address>(dbContext);
-
-            ratingServiceMoq = new Mock<IRatingService>();
-            loggerMoq = new Mock<ILogger>();
+            teacherRepositoryMoq = new Mock<IEntityRepository<Teacher>>();
+            addressRepositoryMoq = new Mock<IEntityRepository<Address>>();
+            ratingService = new Mock<IRatingService>();
+            logger = new Mock<ILogger>();
 
             workshopService = new WorkshopService(
-                workshopRepository,
+                workshopRepositoryMoq.Object,
                 classRepositoryMoq.Object,
-                teacherRepository,
-                addressRepository,
-                ratingServiceMoq.Object,
-                loggerMoq.Object);
+                teacherRepositoryMoq.Object,
+                addressRepositoryMoq.Object,
+                ratingService.Object,
+                logger.Object);
 
-            SeedDatabase();
+            FakeEntities();
         }
 
         #region Create
         [Test]
-        public async Task Create_WhenEntityIsValid_ShouldCreateEntities()
+        public async Task Create_WhenEntityIsValid_ShouldRunInTransaction()
         {
             // Arrange
             classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-               .ReturnsAsync(classEntity);
-            var teachersCount = dbContext.Teachers.Count();
-            var addressecCount = dbContext.Addresses.Count();
+                .ReturnsAsync(classEntity);
+            workshopRepositoryMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
+                .ReturnsAsync(newWorkshop);
 
             // Act
             var result = await workshopService.Create(newWorkshop.ToModel()).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(dbContext.Workshops.Last().Id, result.Id);
-            Assert.AreEqual(6, result.Id);
-            Assert.AreEqual(newWorkshop.Title, result.Title);
-
-            Assert.AreEqual(classEntity.Id, result.ClassId);
-            Assert.AreEqual(classEntity.DepartmentId, result.DepartmentId);
-            Assert.AreEqual(classEntity.Department.DirectionId, result.DirectionId);
-
-            Assert.AreEqual(newWorkshop.Teachers.Count, result.Teachers.Count());
-            Assert.AreEqual(dbContext.Teachers.Count(), teachersCount + 2);
-
-            Assert.AreEqual(dbContext.Addresses.Last().Id, result.Address.Id);
-            Assert.AreEqual(dbContext.Addresses.Count(), addressecCount + 1);
-        }
-
-        [Test]
-        public async Task Create_WhenDirectionsIdsAreWrong_ShouldCreateEntitiesWithRightDirectionsIds()
-        {
-            // Arrange
-            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-               .ReturnsAsync(classEntity);
-            newWorkshop.Title = "newWorkshopTitle2";
-            newWorkshop.ProviderId = 7;
-            newWorkshop.DepartmentId = 10;
-            newWorkshop.DirectionId = 90;
-
-            // Act
-            var result = await workshopService.Create(newWorkshop.ToModel()).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(dbContext.Workshops.Last().Id, result.Id);
-            Assert.AreEqual(6, result.Id);
-            Assert.AreEqual(newWorkshop.Title, result.Title);
-
-            Assert.AreEqual(classEntity.Id, result.ClassId);
-            Assert.AreEqual(classEntity.DepartmentId, result.DepartmentId);
-            Assert.AreEqual(classEntity.Department.DirectionId, result.DirectionId);
-        }
-
-        [Test]
-        public void Create_WhenThereIsNoClassId_ShouldThrowArgumentOutOfRangeException()
-        {
-            // Arrange
-            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-               .ReturnsAsync(() => null);
-            newWorkshop.Title = "newWorkshopTitle3";
-
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await workshopService.Create(newWorkshop.ToModel()).ConfigureAwait(false));
+            Assert.Multiple(() =>
+            {
+                workshopRepositoryMoq.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once());
+            });
         }
         #endregion
 
@@ -137,13 +78,18 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAll_WhenCalled_ShouldReturnAllEntities()
         {
             // Arrange
-            var expected = await workshopRepository.GetAll();
+            var queryable = new EnumerableQuery<Workshop>(workshops);
+            workshopRepositoryMoq.Setup(x => x.Count(It.IsAny<Expression<Func<Workshop, bool>>>())).ReturnsAsync(workshops.Count);
+            workshopRepositoryMoq.Setup(x => x.Get<long>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<Expression<Func<Workshop, long>>>(), It.IsAny<bool>()))
+                .Returns(queryable);
 
             // Act
-            var result = await workshopService.GetAll().ConfigureAwait(false);
+            var result = await workshopService.GetAll(new OffsetFilter()).ConfigureAwait(false);
 
             // Assert
-            Assert.That(expected.Count(), Is.EqualTo(result.Count()));
+            workshopRepositoryMoq.Verify(x => x.Get<long>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<Expression<Func<Workshop, long>>>(), It.IsAny<bool>()), Times.Once);
+            Assert.AreEqual(workshops.Count(), result.TotalAmount);
+            Assert.AreEqual(workshops.First().Id, result.Entities.First().Id);
         }
         #endregion
 
@@ -153,20 +99,24 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetById_WhenIdIsValid_ShouldReturnEntity(long id)
         {
             // Arrange
-            var expected = await workshopRepository.GetById(id);
+            workshopRepositoryMoq.Setup(x => x.GetById(id))
+                .ReturnsAsync(workshops.First());
 
             // Act
             var result = await workshopService.GetById(id).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.Id, result.Id);
+            Assert.AreEqual(workshops.First().Id, result.Id);
         }
 
         [Test]
-        [TestCase(0)]
-        [TestCase(99)]
+        [TestCase(10)]
         public async Task GetById_WhenThereIsNoEntityWithId_ShouldReturnNull(long id)
         {
+            // Arrange
+            workshopRepositoryMoq.Setup(x => x.GetById(id))
+                .ReturnsAsync(() => null);
+
             // Act
             var result = await workshopService.GetById(id).ConfigureAwait(false);
 
@@ -176,15 +126,51 @@ namespace OutOfSchool.WebApi.Tests.Services
         #endregion
 
         #region GetWorkshopsByOrganization
+        [Test]
+        [TestCase(1)]
+        public async Task GetWorkshopsByOrganization_WhenIdIsValid_ShouldReturnEntities(long id)
+        {
+            // Arrange
+            workshopRepositoryMoq.Setup(z => z.GetByFilter(x => x.ProviderId == id, It.IsAny<string>()))
+                .ReturnsAsync(workshops);
+
+            // Act
+            var result = await workshopService.GetByProviderId(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                workshopRepositoryMoq.Verify(x => x.GetByFilter(x => x.ProviderId == id, It.IsAny<string>()), Times.Once());
+                Assert.That(workshops.Count(), Is.EqualTo(result.Count()));
+            });
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task GetWorkshopsByOrganization_WhenThereIsNoWorkshop_ShouldReturnEmptyList(long id)
+        {
+            // Arrange
+            var emptyList = new List<Workshop>();
+            workshopRepositoryMoq.Setup(z => z.GetByFilter(x => x.ProviderId == id, It.IsAny<string>()))
+                .ReturnsAsync(emptyList);
+
+            // Act
+            var result = await workshopService.GetByProviderId(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.Multiple(() =>
+                {
+                    workshopRepositoryMoq.Verify(x => x.GetByFilter(x => x.ProviderId == id, It.IsAny<string>()), Times.Once());
+                    Assert.That(emptyList.Count(), Is.EqualTo(result.Count()));
+                });
+        }
         #endregion
 
         #region Update
         [Test]
-        public async Task Update_WhenEntityIsValid_ShouldUpdateAllRelationalEntities()
+        public async Task Update_WhenEntityIsValid_ShouldRunInTransaction()
         {
             // Arrange
-            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-               .ReturnsAsync(classEntity);
             var changedFirstEntity = new Workshop()
             {
                 Id = 1,
@@ -251,89 +237,72 @@ namespace OutOfSchool.WebApi.Tests.Services
                             },
                         },
             };
+            IQueryable<Workshop> quer = new EnumerableQuery<Workshop>(workshops);
+            workshopRepositoryMoq.Setup(z => z.GetByFilterNoTracking(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
+                .Returns(quer);
+            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
+                .ReturnsAsync(classEntity);
+
+            workshopRepositoryMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
+                .ReturnsAsync(changedFirstEntity);
 
             // Act
             var result = await workshopService.Update(changedFirstEntity.ToModel()).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(changedFirstEntity.Title, result.Title);
-
-            Assert.AreEqual(classEntity.Id, result.ClassId);
-            Assert.AreEqual(classEntity.DepartmentId, result.DepartmentId);
-            Assert.AreEqual(classEntity.Department.DirectionId, result.DirectionId);
-
-            Assert.AreEqual(changedFirstEntity.Teachers.Count, result.Teachers.Count());
-            Assert.AreEqual(dbContext.Teachers.Where(x => x.WorkshopId == 1).Count(), result.Teachers.Count());
-            Assert.AreEqual(0, dbContext.Teachers.Where(x => x.Id == 1).Count());
-            Assert.AreEqual("Targaryen", dbContext.Teachers.Where(x => x.Id == 2).First().MiddleName);
-            Assert.AreEqual("Daenerys", dbContext.Teachers.Where(x => x.Id == 11).First().FirstName);
-
-            Assert.AreEqual(changedFirstEntity.Address.Latitude, result.Address.Latitude);
-            Assert.AreEqual(10, dbContext.Addresses.Where(x => x.Id == 55).First().Latitude);
-            Assert.AreEqual(dbContext.Addresses.Where(x => x.Id == 55).First().Latitude, result.Address.Latitude);
-        }
-
-        [Test]
-        public void Update_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException()
-        {
-            // Arrange
-            classRepositoryMoq.Setup(x => x.GetById(It.IsAny<long>()))
-               .ReturnsAsync(classEntity);
-            var changedEntity = new WorkshopDTO()
+            Assert.Multiple(() =>
             {
-                Id = 99,
-                Title = "Title1",
-            };
+                workshopRepositoryMoq.Verify(x => x.GetByFilterNoTracking(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()), Times.Once());
+                classRepositoryMoq.Verify(x => x.GetById(It.IsAny<long>()), Times.Once());
+                workshopRepositoryMoq.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once());
 
-            // Act and Assert
-            Assert.That(
-                async () => await workshopService.Update(changedEntity).ConfigureAwait(false),
-                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOf<WorkshopDTO>(result);
+            });
         }
-
         #endregion
 
         #region Delete
         [Test]
         [TestCase(1)]
-        public async Task Delete_WhenIdIsValid_ShouldDeleteAllRelationalEntities(long id)
+        public async Task Delete_WhenIdIsValid_ShouldRunInTransactionDelete(long id)
         {
-            // Act
-            var countWorkshopsBeforeDeleting = (await workshopService.GetAll().ConfigureAwait(false)).Count();
-            var countAddressesBeforeDeleting = (await addressRepository.GetAll().ConfigureAwait(false)).Count();
-            var countTeachersBeforeDeleting = (await teacherRepository.GetAll().ConfigureAwait(false)).Count();
-
-            var appRepository = new EntityRepository<Application>(dbContext);
-            var countAppsBeforeDeleting = (await appRepository.GetAll().ConfigureAwait(false)).Count();
+            // Arrange
+            var moqObject = new Workshop() { Id = default };
+            workshopRepositoryMoq.Setup(x => x.GetById(id))
+                .ReturnsAsync(workshops.First());
+            workshopRepositoryMoq.Setup(x => x.Delete(It.IsAny<Workshop>()))
+                .Returns(Task.CompletedTask);
+            workshopRepositoryMoq.Setup(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
+                .ReturnsAsync(moqObject);
 
             // Act
             await workshopService.Delete(id).ConfigureAwait(false);
 
-            var countWorkshopsAfterDeleting = (await workshopService.GetAll().ConfigureAwait(false)).Count();
-            var countAddressesAfterDeleting = (await addressRepository.GetAll().ConfigureAwait(false)).Count();
-            var countTeachersAfterDeleting = (await teacherRepository.GetAll().ConfigureAwait(false)).Count();
-
-            var countAppsAfterDeleting = (await appRepository.GetAll().ConfigureAwait(false)).Count();
-
             // Assert
-            Assert.AreEqual(countWorkshopsBeforeDeleting - 1, countWorkshopsAfterDeleting);
-            Assert.AreEqual(countAddressesBeforeDeleting - 1, countAddressesAfterDeleting);
-            Assert.AreEqual(countTeachersBeforeDeleting - 2, countTeachersAfterDeleting);
-            Assert.AreEqual(countAppsBeforeDeleting - 2, countAppsAfterDeleting);
+            Assert.Multiple(() =>
+            {
+                workshopRepositoryMoq.Verify(x => x.GetById(id), Times.Once());
+                workshopRepositoryMoq.Verify(x => x.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()), Times.Once());
+            });
         }
 
         [Test]
-        [TestCase(7)]
+        [TestCase(1)]
         public void Delete_WhenIdIsInvalid_ShouldThrowNullReferenceException(long id)
         {
-            // Assert
+            // Arrange
+            workshopRepositoryMoq.Setup(x => x.GetById(id))
+                .Returns(() => null);
+
+            // Act and Assert
             Assert.That(
                 async () => await workshopService.Delete(id).ConfigureAwait(false),
                 Throws.Exception.TypeOf<NullReferenceException>());
         }
         #endregion
 
-        private void SeedDatabase()
+        private void FakeEntities()
         {
             newWorkshop = new Workshop()
             {
@@ -355,7 +324,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 MaxAge = 10,
                 MinAge = 4,
                 Logo = "image",
-                ProviderId = 6,
+                ProviderId = 1,
                 DirectionId = 1,
                 ClassId = 1,
                 DepartmentId = 1,
@@ -394,30 +363,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                 },
             };
-            classEntity = new Class()
-            {
-                Id = 1,
-                Title = "new SSC",
-                DepartmentId = 1,
-                Department = new Department()
-                {
-                    Id = 1,
-                    Title = "new SC",
-                    DirectionId = 1,
-                    Direction = new Direction()
-                    {
-                        Id = 1,
-                        Title = "new C",
-                    },
-                },
-            };
-
-            using var context = new OutOfSchoolDbContext(options);
-            {
-                context.Database.EnsureDeleted();
-                context.Database.EnsureCreated();
-
-                var workshops = new List<Workshop>()
+            workshops = new List<Workshop>()
                 {
                     new Workshop()
                     {
@@ -501,7 +447,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         MaxAge = 10,
                         MinAge = 4,
                         Logo = "image2",
-                        ProviderId = 2,
+                        ProviderId = 1,
                         DirectionId = 1,
                         DepartmentId = 1,
                         AddressId = 10,
@@ -520,7 +466,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         {
                             new Teacher
                             {
-                                Id = 3,
+                                Id = 4,
                                 FirstName = "Alex",
                                 LastName = "Brown",
                                 MiddleName = "SomeMiddleName",
@@ -531,7 +477,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                             },
                             new Teacher
                             {
-                                Id = 4,
+                                Id = 5,
                                 FirstName = "John",
                                 LastName = "Snow",
                                 MiddleName = "SomeMiddleName",
@@ -561,7 +507,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         MaxAge = 10,
                         MinAge = 4,
                         Logo = "image3",
-                        ProviderId = 3,
+                        ProviderId = 1,
                         DirectionId = 1,
                         DepartmentId = 1,
                         AddressId = 11,
@@ -580,7 +526,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         {
                             new Teacher
                             {
-                                Id = 5,
+                                Id = 6,
                                 FirstName = "Alex",
                                 LastName = "Brown",
                                 MiddleName = "SomeMiddleName",
@@ -591,7 +537,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                             },
                             new Teacher
                             {
-                                Id = 6,
+                                Id = 7,
                                 FirstName = "John",
                                 LastName = "Snow",
                                 MiddleName = "SomeMiddleName",
@@ -622,7 +568,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         MaxAge = 10,
                         MinAge = 4,
                         Logo = "image4",
-                        ProviderId = 4,
+                        ProviderId = 1,
                         DirectionId = 1,
                         DepartmentId = 1,
                         AddressId = 15,
@@ -641,7 +587,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         {
                             new Teacher
                             {
-                                Id = 7,
+                                Id = 8,
                                 FirstName = "Alex",
                                 LastName = "Brown",
                                 MiddleName = "SomeMiddleName",
@@ -652,7 +598,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                             },
                             new Teacher
                             {
-                                Id = 8,
+                                Id = 9,
                                 FirstName = "John",
                                 LastName = "Snow",
                                 MiddleName = "SomeMiddleName",
@@ -683,7 +629,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         MaxAge = 10,
                         MinAge = 4,
                         Logo = "image5",
-                        ProviderId = 5,
+                        ProviderId = 1,
                         DirectionId = 1,
                         DepartmentId = 1,
                         AddressId = 17,
@@ -702,7 +648,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                         {
                             new Teacher
                             {
-                                Id = 9,
+                                Id = 10,
                                 FirstName = "Alex",
                                 LastName = "Brown",
                                 MiddleName = "SomeMiddleName",
@@ -713,7 +659,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                             },
                             new Teacher
                             {
-                                Id = 10,
+                                Id = 11,
                                 FirstName = "John",
                                 LastName = "Snow",
                                 MiddleName = "SomeMiddleName",
@@ -725,20 +671,23 @@ namespace OutOfSchool.WebApi.Tests.Services
                         },
                     },
                 };
-
-                var apps = new List<Application>() { new Application() { Id = 1, WorkshopId = 1 }, new Application() { Id = 2, WorkshopId = 1 }, new Application() { Id = 3, WorkshopId = 2 }, new Application() { Id = 4, WorkshopId = 2 } };
-                context.Applications.AddRangeAsync(apps);
-
-                var directions = new List<Direction>() { new Direction() { Title = "Direction1" }, new Direction() { Title = "Direction2" } };
-                context.Directions.AddRangeAsync(directions);
-                var departments = new List<Department>() { new Department() { Title = "new1", DirectionId = 1 }, new Department() { Title = "new2", DirectionId = 1 } };
-                context.Departments.AddRangeAsync(departments);
-                var classes = new List<Class>() { new Class() { Title = "new1", DepartmentId = 1 }, new Class() { Title = "new2", DepartmentId = 1 } };
-                context.Classes.AddRangeAsync(classes);
-
-                context.Workshops.AddRangeAsync(workshops);
-                context.SaveChangesAsync();
-            }
+            classEntity = new Class()
+            {
+                Id = 1,
+                Title = "new SSC",
+                DepartmentId = 1,
+                Department = new Department()
+                {
+                    Id = 1,
+                    Title = "new SC",
+                    DirectionId = 1,
+                    Direction = new Direction()
+                    {
+                        Id = 1,
+                        Title = "new C",
+                    },
+                },
+            };
         }
     }
 }

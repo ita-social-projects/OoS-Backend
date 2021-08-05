@@ -58,15 +58,14 @@ namespace OutOfSchool.ElasticsearchData
                 return queryContainer;
             }
 
-            if (!string.IsNullOrEmpty(filter.SearchText))
+            if (!string.IsNullOrWhiteSpace(filter.SearchText))
             {
                 queryContainer &= new MultiMatchQuery()
                 {
                     Fields = Infer.Field<WorkshopES>(w => w.Title)
                             .And(Infer.Field<WorkshopES>(w => w.ProviderTitle))
                             .And(Infer.Field<WorkshopES>(w => w.Keywords))
-                            .And(Infer.Field<WorkshopES>(w => w.Description))
-                            .And(Infer.Field<WorkshopES>(w => w.ProviderDescription)),
+                            .And(Infer.Field<WorkshopES>(w => w.Description)),
                     Query = filter.SearchText,
                     Fuzziness = Fuzziness.Auto,
                 };
@@ -95,7 +94,7 @@ namespace OutOfSchool.ElasticsearchData
                     Value = 0,
                 };
             }
-            else if (!filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
+            else if (!filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
                 queryContainer &= new NumericRangeQuery()
                 {
@@ -104,7 +103,7 @@ namespace OutOfSchool.ElasticsearchData
                     LessThanOrEqualTo = filter.MaxPrice,
                 };
             }
-            else if (filter.IsFree && !(filter.MinPrice == 0 || filter.MaxPrice == int.MaxValue))
+            else if (filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
                 var tempQuery = new QueryContainer();
 
@@ -152,11 +151,14 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            queryContainer &= new MatchQuery()
+            if (!string.IsNullOrWhiteSpace(filter.City))
             {
-                Field = Infer.Field<WorkshopES>(w => w.Address.City),
-                Query = filter.City,
-            };
+                queryContainer &= new MatchQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.Address.City),
+                    Query = filter.City,
+                };
+            }
 
             return queryContainer;
         }
@@ -192,7 +194,7 @@ namespace OutOfSchool.ElasticsearchData
                     break;
 
                 default:
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
+                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Id), Order = SortOrder.Ascending });
                     break;
             }
 

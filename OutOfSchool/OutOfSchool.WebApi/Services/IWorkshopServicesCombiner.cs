@@ -12,9 +12,10 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Get all entities from the database.
         /// </summary>
+        /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains the <see cref="IEnumerable{TEntity}"/> that contains found elements.</returns>
-        new Task<SearchResult<WorkshopCard>> GetAll();
+        Task<SearchResult<WorkshopCard>> GetAll(OffsetFilter offsetFilter);
 
         /// <summary>
         /// Get all workshops with the specified provider's Id.
@@ -30,6 +31,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="filter">Entity that represents searching parameters.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="IEnumerable{WorkshopES}"/> that contains elements that were found.</returns>
-        Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilterDto filter);
+        Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter);
     }
 }

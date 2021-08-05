@@ -214,6 +214,32 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
+        public async Task CreateRating_WhenCalled_CallsElasticsearchServiceToUpdateWorkshopRating()
+        {
+            // Arrange
+            var ratingWorkshop = new RatingDto()
+            {
+                Id = 1,
+                Rate = 5,
+                ParentId = 1,
+                EntityId = 1,
+                Type = RatingType.Workshop,
+            };
+
+            var fakeWorkshop = new WorkshopES() { Id = 1 };
+            service.Setup(x => x.Create(ratingWorkshop)).ReturnsAsync(rating);
+            eSWorkshopservice.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(new SearchResultES<WorkshopES>() { Entities = new List<WorkshopES> { fakeWorkshop } });
+            eSWorkshopservice.Setup(x => x.Update(It.IsAny<WorkshopES>())).ReturnsAsync(true);
+
+            // Act
+            await controller.Create(ratingWorkshop).ConfigureAwait(false);
+
+            // Assert
+            eSWorkshopservice.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
+            eSWorkshopservice.Verify(x => x.Update(It.IsAny<WorkshopES>()), Times.Once);
+        }
+
+        [Test]
         public async Task UpdateRating_WhenModelIsValid_ReturnsOkObjectResult()
         {
             // Arrange
@@ -239,6 +265,32 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
             Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
+        }
+
+        [Test]
+        public async Task UpdateRating_WhenCalled_CallsElasticsearchServiceToUpdateWorkshopRating()
+        {
+            // Arrange
+            var ratingWorkshop = new RatingDto()
+            {
+                Id = 1,
+                Rate = 5,
+                ParentId = 1,
+                EntityId = 1,
+                Type = RatingType.Workshop,
+            };
+
+            var fakeWorkshop = new WorkshopES() { Id = 1 };
+            service.Setup(x => x.Update(ratingWorkshop)).ReturnsAsync(rating);
+            eSWorkshopservice.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(new SearchResultES<WorkshopES>() { Entities = new List<WorkshopES> { fakeWorkshop } });
+            eSWorkshopservice.Setup(x => x.Update(It.IsAny<WorkshopES>())).ReturnsAsync(true);
+
+            // Act
+            await controller.Update(ratingWorkshop).ConfigureAwait(false);
+
+            // Assert
+            eSWorkshopservice.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
+            eSWorkshopservice.Verify(x => x.Update(It.IsAny<WorkshopES>()), Times.Once);
         }
 
         [Test]
@@ -281,6 +333,37 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        [TestCase(1)]
+        public async Task DeleteRating_WhenCalled_CallsElasticsearchServiceToUpdateWorkshopRating(long id)
+        {
+            // Arrange
+            var ratingWorkshop = new RatingDto()
+            {
+                Id = 1,
+                Rate = 5,
+                ParentId = 1,
+                EntityId = 1,
+                Type = RatingType.Workshop,
+            };
+
+            var fakeWorkshop = new WorkshopES() { Id = 1 };
+
+            service.Setup(x => x.GetById(id)).ReturnsAsync(ratingWorkshop);
+            service.Setup(x => x.Delete(id));
+
+            eSWorkshopservice.Setup(x => x.Search(It.IsAny<WorkshopFilterES>())).ReturnsAsync(new SearchResultES<WorkshopES>() { Entities = new List<WorkshopES> { fakeWorkshop } });
+            eSWorkshopservice.Setup(x => x.Update(It.IsAny<WorkshopES>())).ReturnsAsync(true);
+
+            // Act
+            await controller.Delete(id).ConfigureAwait(false);
+
+            // Assert
+            eSWorkshopservice.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Once);
+            eSWorkshopservice.Verify(x => x.Update(It.IsAny<WorkshopES>()), Times.Once);
+            service.Verify(x => x.Delete(id), Times.Once);
         }
 
         private RatingDto FakeRating()

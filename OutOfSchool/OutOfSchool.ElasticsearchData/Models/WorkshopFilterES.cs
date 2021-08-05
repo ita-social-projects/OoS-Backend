@@ -9,7 +9,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string SearchText { get; set; } = string.Empty;
 
-        public string OrderByField { get; set; } = OrderBy.Rating.ToString();
+        public string OrderByField { get; set; } = OrderBy.Id.ToString();
 
         public int MinAge { get; set; } = 0;
 
@@ -23,7 +23,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public List<long> DirectionIds { get; set; } = new List<long> { 0 };
 
-        public string City { get; set; } = "Київ";
+        public string City { get; set; } = string.Empty;
 
         public bool WithDisabilityOptions { get; set; } = false;
 

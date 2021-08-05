@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using Serilog;
@@ -10,16 +11,14 @@ namespace OutOfSchool.WebApi.Services
     public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     {
         private readonly IWorkshopService databaseService;
-        private readonly IProviderService providerService;
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly ILogger logger;
 
-        public WorkshopServicesCombiner(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger logger, IProviderService providerService)
+        public WorkshopServicesCombiner(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger logger)
         {
             this.databaseService = workshopService;
             this.elasticsearchService = elasticsearchService;
             this.logger = logger;
-            this.providerService = providerService;
         }
 
         /// <inheritdoc/>
@@ -27,9 +26,7 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await databaseService.Create(dto).ConfigureAwait(false);
 
-            var workshopES = await this.SetProviderDescriptionToWorkshopEsModel(workshop).ConfigureAwait(false);
-
-            var esResultIsValid = await elasticsearchService.Index(workshopES).ConfigureAwait(false);
+            var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
 
             if (!esResultIsValid)
             {
@@ -52,9 +49,7 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await databaseService.Update(dto).ConfigureAwait(false);
 
-            var workshopES = await this.SetProviderDescriptionToWorkshopEsModel(workshop).ConfigureAwait(false);
-
-            var esResultIsValid = await elasticsearchService.Update(workshopES).ConfigureAwait(false);
+            var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
 
             if (!esResultIsValid)
             {
@@ -78,9 +73,21 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopCard>> GetAll()
+        public async Task<SearchResult<WorkshopCard>> GetAll(OffsetFilter offsetFilter)
         {
-            var result = await elasticsearchService.Search(null).ConfigureAwait(false);
+            if (offsetFilter == null)
+            {
+                offsetFilter = new OffsetFilter();
+            }
+
+            var filter = new WorkshopFilter()
+            {
+                Size = offsetFilter.Size,
+                From = offsetFilter.From,
+                OrderByField = OrderBy.Id.ToString(),
+            };
+
+            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
 
             if (result.TotalAmount > 0 || await elasticsearchService.PingServer().ConfigureAwait(false))
             {
@@ -88,14 +95,14 @@ namespace OutOfSchool.WebApi.Services
             }
             else
             {
-                var databaseResult = await databaseService.GetByFilter(null).ConfigureAwait(false);
+                var databaseResult = await databaseService.GetByFilter(filter).ConfigureAwait(false);
 
                 return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = DtoModelsToWorkshopCards(databaseResult.Entities) };
             }
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilterDto filter)
+        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter)
         {
             var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
 
@@ -119,25 +126,6 @@ namespace OutOfSchool.WebApi.Services
             return workshop;
         }
 
-        /// <inheritdoc/>
-        async Task<IEnumerable<WorkshopDTO>> ICRUDService<WorkshopDTO>.GetAll()
-        {
-            var workshops = await databaseService.GetAll().ConfigureAwait(false);
-
-            return workshops;
-        }
-
-        private List<WorkshopCard> ESModelsToWorkshopCards(IEnumerable<WorkshopES> source)
-        {
-            List<WorkshopCard> workshopCards = new List<WorkshopCard>();
-            foreach (var item in source)
-            {
-                workshopCards.Add(item.ToCardDto());
-            }
-
-            return workshopCards;
-        }
-
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {
             List<WorkshopCard> workshopCards = new List<WorkshopCard>();
@@ -147,16 +135,6 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return workshopCards;
-        }
-
-        private async Task<WorkshopES> SetProviderDescriptionToWorkshopEsModel(WorkshopDTO workshopDto)
-        {
-            var provider = await providerService.GetById(workshopDto.ProviderId).ConfigureAwait(false);
-
-            var workshopES = workshopDto.ToESModel();
-            workshopES.ProviderDescription = provider.Description;
-
-            return workshopES;
         }
     }
 }
