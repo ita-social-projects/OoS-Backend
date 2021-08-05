@@ -34,7 +34,7 @@ namespace OutOfSchool.ElasticsearchData
                     Size = filter.Size,
                 });
 
-            return new SearchResultES<WorkshopES>() { TotalAmount = resp.Total, Entities = resp.Documents };
+            return new SearchResultES<WorkshopES>() { TotalAmount = (int)resp.Total, Entities = resp.Documents };
         }
 
         private QueryContainer CreateQueryFromFilter(WorkshopFilterES filter)
