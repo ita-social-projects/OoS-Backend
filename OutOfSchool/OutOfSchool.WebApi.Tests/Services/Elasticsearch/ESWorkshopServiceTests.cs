@@ -8,7 +8,6 @@ using NUnit.Framework;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -210,7 +209,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
         {
             // Arrange
             var listDto = new List<WorkshopDTO>()
-        {
+            {
                 new WorkshopDTO()
                     {
                         Id = 1,
@@ -358,7 +357,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
         {
             // Arrange
             var listDto = new List<WorkshopDTO>()
-        {
+            {
                 new WorkshopDTO()
                     {
                         Id = 1,
@@ -522,7 +521,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Elasticsearch
         {
             // Arrange
             var listES = new List<WorkshopES>()
-        {
+            {
                 new WorkshopES()
                     {
                         Id = 1,
