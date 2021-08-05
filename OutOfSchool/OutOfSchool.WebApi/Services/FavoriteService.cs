@@ -83,13 +83,13 @@ namespace OutOfSchool.WebApi.Services
             logger.Information($"Getting Favorites by User started. Looking UserId = {userId}.");
 
             var favorites = await repository.Get<int>(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
-            var filter = new WorkshopFilterDto() { Ids = favorites };
+            var filter = new WorkshopFilterDto() { Ids = favorites, Size = 1000 };
 
             var workshops = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
             logger.Information(!workshops.Entities.Any()
                 ? $"There aren't Favorites for User with Id = {userId}."
-                : $"All {workshops.Entities.Count()} records were successfully received from the Favorites table");
+                : $"All {workshops.TotalAmount} records were successfully received from the Favorites table");
 
             return workshops.Entities.Select(x => x.ToCardDto());
         }
