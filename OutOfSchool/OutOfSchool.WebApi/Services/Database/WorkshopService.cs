@@ -280,7 +280,7 @@ namespace OutOfSchool.WebApi.Services
                 return predicate;
             }
 
-            if (!(string.IsNullOrEmpty(filter.SearchText) || string.IsNullOrWhiteSpace(filter.SearchText)))
+            if (!string.IsNullOrWhiteSpace(filter.SearchText))
             {
                 var tempPredicate = PredicateBuilder.False<Workshop>();
                 foreach (var word in filter.SearchText.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
@@ -325,7 +325,7 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(x => x.WithDisabilityOptions);
             }
 
-            if (!(string.IsNullOrEmpty(filter.City) || string.IsNullOrWhiteSpace(filter.City)))
+            if (!string.IsNullOrWhiteSpace(filter.City))
             {
                 predicate = predicate.And(x => x.Address.City == filter.City);
             }

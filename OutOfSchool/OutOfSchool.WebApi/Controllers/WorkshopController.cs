@@ -105,7 +105,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilter filter)
         {
-            if (string.IsNullOrEmpty(filter.City) || string.IsNullOrWhiteSpace(filter.City))
+            if (string.IsNullOrWhiteSpace(filter.City))
             {
                 filter.City = "Êè¿â";
             }

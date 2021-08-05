@@ -58,7 +58,7 @@ namespace OutOfSchool.ElasticsearchData
                 return queryContainer;
             }
 
-            if (!(string.IsNullOrEmpty(filter.SearchText) || string.IsNullOrWhiteSpace(filter.SearchText)))
+            if (!string.IsNullOrWhiteSpace(filter.SearchText))
             {
                 queryContainer &= new MultiMatchQuery()
                 {
@@ -151,7 +151,7 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            if (!(string.IsNullOrEmpty(filter.City) || string.IsNullOrWhiteSpace(filter.City)))
+            if (!string.IsNullOrWhiteSpace(filter.City))
             {
                 queryContainer &= new MatchQuery()
                 {
