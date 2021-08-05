@@ -251,7 +251,7 @@ namespace OutOfSchool.WebApi.Services
             var filterPredicate = PredicateBuild(filter);
             var orderBy = GetOrderParameter(filter);
 
-            var workshopsCount = await workshopRepository.Get<dynamic>(where: filterPredicate).ToListAsync().ConfigureAwait(false);
+            var workshopsCount = await workshopRepository.Count(where: filterPredicate).ConfigureAwait(false);
             var workshops = workshopRepository.Get<dynamic>(filter.From, filter.Size, string.Empty, filterPredicate, orderBy.Item1, orderBy.Item2).ToList();
 
             logger.Information(!workshops.Any()
@@ -262,7 +262,7 @@ namespace OutOfSchool.WebApi.Services
 
             var result = new SearchResult<WorkshopDTO>()
             {
-                TotalAmount = workshopsCount.Count,
+                TotalAmount = workshopsCount,
                 Entities = GetWorkshopsWithAverageRating(workshopsDTO),
             };
 

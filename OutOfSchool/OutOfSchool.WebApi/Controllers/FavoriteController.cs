@@ -91,6 +91,30 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
+        /// Get all Favorites workshops from the database by UserId.
+        /// </summary>
+        /// <param name="offsetFilter">Filter to get spesified portion of entities.</param>
+        /// <returns>List of all User favorite Workshops.</returns>
+        [Authorize(Roles = "parent,admin")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        public async Task<IActionResult> GetFavoriteWorkshopsByUser(OffsetFilter offsetFilter)
+        {
+            string userId = User.FindFirst("sub")?.Value;
+
+            var favorites = await service.GetFavoriteWorkshopsByUser(userId, offsetFilter).ConfigureAwait(false);
+
+            if (favorites.TotalAmount == 0)
+            {
+                return NoContent();
+            }
+
+            return Ok(favorites);
+        }
+
+        /// <summary>
         /// Add a new Favorite to the database.
         /// </summary>
         /// <param name="dto">Favorite entity to add.</param>

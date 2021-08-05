@@ -18,14 +18,16 @@ namespace OutOfSchool.WebApi.Services
     public class FavoriteService : IFavoriteService
     {
         private readonly IEntityRepository<Favorite> repository;
+        private readonly IWorkshopService workshopService;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
-        public FavoriteService(IEntityRepository<Favorite> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public FavoriteService(IEntityRepository<Favorite> repository, ILogger logger, IStringLocalizer<SharedResource> localizer, IWorkshopService worshopService)
         {
             this.repository = repository;
             this.logger = logger;
             this.localizer = localizer;
+            this.workshopService = worshopService;
         }
 
         /// <inheritdoc/>
@@ -73,6 +75,29 @@ namespace OutOfSchool.WebApi.Services
                 : $"All {favorites.Count()} records were successfully received from the Favorites table");
 
             return favorites.Select(x => x.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<SearchResult<WorkshopCard>> GetFavoriteWorkshopsByUser(string userId, OffsetFilter offsetFilter)
+        {
+            logger.Information($"Getting Favorites by User started. Looking UserId = {userId}.");
+
+            var favorites = await repository.Get<int>(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
+
+            if (offsetFilter is null)
+            {
+                offsetFilter = new OffsetFilter();
+            }
+
+            var filter = new WorkshopFilter() { Ids = favorites, Size = offsetFilter.Size, From = offsetFilter.From };
+
+            var workshops = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            logger.Information(!workshops.Entities.Any()
+                ? $"There aren't Favorites for User with Id = {userId}."
+                : $"All {workshops.TotalAmount} records were successfully received from the Favorites table");
+
+            return new SearchResult<WorkshopCard>() { TotalAmount = workshops.TotalAmount, Entities = DtoModelsToWorkshopCards(workshops.Entities) };
         }
 
         /// <inheritdoc/>
@@ -126,6 +151,17 @@ namespace OutOfSchool.WebApi.Services
             await repository.Delete(favorite).ConfigureAwait(false);
 
             logger.Information($"Favorite with Id = {id} succesfully deleted.");
+        }
+
+        private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
+        {
+            List<WorkshopCard> workshopCards = new List<WorkshopCard>();
+            foreach (var item in source)
+            {
+                workshopCards.Add(item.ToCardDto());
+            }
+
+            return workshopCards;
         }
     }
 }

@@ -30,6 +30,14 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<FavoriteDto>> GetAllByUser(string userId);
 
         /// <summary>
+        /// Get all user's favorite workshops.
+        /// </summary>
+        /// <param name="userId">User Id.</param>
+        /// <param name="offsetFilter">Filter to get spesified portion of entities.</param>
+        /// <returns>List of all Favorites by User.</returns>
+        Task<SearchResult<WorkshopCard>> GetFavoriteWorkshopsByUser(string userId, OffsetFilter offsetFilter);
+
+        /// <summary>
         /// Add entity.
         /// </summary>
         /// <param name="dto">Favorite entity to add.</param>
