@@ -82,7 +82,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(10)]
+        [TestCase(100)]
         public async Task GetApplicationById_WhenIdIsNotValid_ShouldReturnNull(long id)
         {
             // Act
@@ -401,7 +401,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var application = new ApplicationDto
             {
-                Id = 10,
+                Id = 100,
                 Status = ApplicationStatus.Approved,
             };
 
@@ -433,7 +433,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(10)]
+        [TestCase(100)]
         public void DeleteApplication_WhenIdIsNotValid_ShouldThrowArgumentException(long id)
         {
             // Assert
