@@ -163,13 +163,13 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
-            services.AddTransient<IEntityRepository<Photo>, EntityRepository<Photo>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<IClassRepository, ClassRepository>();
             services.AddTransient<IDepartmentRepository, DepartmentRepository>();
             services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IProviderRepository, ProviderRepository>();
+            services.AddTransient<IPhotoRepository, PhotoRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
 

@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 {
     public class PhotoStorage : IPhotoStorage
     {
-        private readonly IEntityRepository<Photo> repository;
+        private readonly IPhotoRepository repository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly string basePhotoPath;
@@ -32,7 +32,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="config">Config.</param>
-        public PhotoStorage(IEntityRepository<Photo> repository, ILogger logger, IStringLocalizer<SharedResource> localizer, IConfiguration config)
+        public PhotoStorage(IPhotoRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer, IConfiguration config)
         {
             this.repository = repository;
             this.logger = logger;
@@ -58,19 +58,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-                using (var memoryStream = new MemoryStream())
-                {
-                    await photo.CopyToAsync(memoryStream).ConfigureAwait(false);
+                var requiredSize = GetSizeByEntity(photoInfo.EntityType);
 
-                    using (var img = Image.FromStream(memoryStream))
-                    {
-                        var scale = new Scale(new Size(img.Width, img.Height), GetSizeByEntity(photoInfo.EntityType));
-
-                        var bitmap = Scale.ResizeImage(img, scale.TargetRect.Width, scale.TargetRect.Height);
-
-                        await SaveImage(bitmap, filePath).ConfigureAwait(false);
-                    }
-                }
+                await CreatePhoto(photo, filePath, requiredSize).ConfigureAwait(false);
 
                 var createdPhoto = await repository.Create(photoInfo.ToDomain()).ConfigureAwait(false);
 
@@ -111,19 +101,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                     var filePath = Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName.TrimEnd());
 
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await photos[i].CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                        using (var img = Image.FromStream(memoryStream))
-                        {
-                            var scale = new Scale(new Size(img.Width, img.Height), imgSize);
-
-                            var bitmap = Scale.ResizeImage(img, scale.TargetRect.Width, scale.TargetRect.Height);
-
-                            await SaveImage(bitmap, filePath).ConfigureAwait(false);
-                        }
-                    }
+                    await CreatePhoto(photos[i], filePath, imgSize).ConfigureAwait(false);
 
                     var cratedPhotoInfo = await repository.Create(photoInfo.ToDomain()).ConfigureAwait(false);
 
@@ -157,7 +135,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var photo = photos.FirstOrDefault();
 
-                File.Delete(Path.Combine(basePhotoPath, photo.EntityType.ToString(), photo.FileName));
+                repository.DeletePhoto(Path.Combine(basePhotoPath, photo.EntityType.ToString(), photo.FileName));
 
                 await repository.Delete(photo).ConfigureAwait(false);
 
@@ -188,7 +166,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                     var photo = photos.FirstOrDefault();
 
-                    File.Delete(Path.Combine(basePhotoPath, photo.EntityType.ToString(), photo.FileName));
+                    repository.DeletePhoto(Path.Combine(basePhotoPath, photo.EntityType.ToString(), photo.FileName));
 
                     await repository.Delete(photo).ConfigureAwait(false);
                 }
@@ -287,19 +265,11 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photo can not be null!"]);
                 }
 
-                using (var memoryStream = new MemoryStream())
-                {
-                    await photo.CopyToAsync(memoryStream).ConfigureAwait(false);
+                var requiredSize = GetSizeByEntity(photoInfo.EntityType);
 
-                    using (var img = Image.FromStream(memoryStream))
-                    {
-                        var scale = new Scale(new Size(img.Width, img.Height), GetSizeByEntity(photoInfo.EntityType));
+                var filePath = Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName);
 
-                        var bitmap = Scale.ResizeImage(img, scale.TargetRect.Width, scale.TargetRect.Height);
-
-                        await SaveImage(bitmap, Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName)).ConfigureAwait(false);
-                    }
-                }
+                await CreatePhoto(photo, filePath, requiredSize).ConfigureAwait(false);
 
                 logger.Information($"Successfully update the photo.");
 
@@ -326,22 +296,21 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
             return await repository.GetByFilter(filter).ConfigureAwait(false);
         }
 
-        private async Task SaveImage(Bitmap image, string filePath)
+        private byte[] ImageToByte(Bitmap image)
         {
-            await Task.Run(() =>
+            using (var stream = new MemoryStream())
             {
-                using (var output = File.Open(filePath, FileMode.Create))
-                {
-                    long quality = 75;
-                    var qualityParamId = Encoder.Quality;
-                    var encoderParameters = new EncoderParameters(1);
-                    encoderParameters.Param[0] = new EncoderParameter(qualityParamId, quality);
-                    var codec = ImageCodecInfo.GetImageDecoders()
-                        .FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+                long quality = 75;
+                var qualityParamId = Encoder.Quality;
+                var encoderParameters = new EncoderParameters(1);
+                encoderParameters.Param[0] = new EncoderParameter(qualityParamId, quality);
+                var codec = ImageCodecInfo.GetImageDecoders()
+                    .FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
 
-                    image.Save(output, codec, encoderParameters);
-                }
-            }).ConfigureAwait(false);
+                image.Save(stream, codec, encoderParameters);
+
+                return stream.ToArray();
+            }
         }
 
         private Size GetSizeByEntity(EntityType entityType)
@@ -353,6 +322,23 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
             else
             {
                 return new Size(1280, 720);
+            }
+        }
+
+        private async Task CreatePhoto(IFormFile photo, string filePath, Size requiredSize)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                await photo.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                using (var img = Image.FromStream(memoryStream))
+                {
+                    var scale = new Scale(new Size(img.Width, img.Height), requiredSize);
+
+                    var bitmap = Scale.ResizeImage(img, scale.TargetRect.Width, scale.TargetRect.Height);
+
+                    repository.CreateUpdatePhoto(ImageToByte(bitmap), filePath);
+                }
             }
         }
     }
