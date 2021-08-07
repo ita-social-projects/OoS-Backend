@@ -1,11 +1,13 @@
-﻿using OutOfSchool.Services.Models;
+﻿using System.Threading.Tasks;
 
 namespace OutOfSchool.Services.Repository
 {
-    public interface IPhotoRepository : IEntityRepository<Photo>
+    public interface IPhotoRepository
     {
-        void CreateUpdatePhoto(byte[] photo, string filePath);
+        Task CreateUpdatePhoto(byte[] photo, string fileName);
 
-        void DeletePhoto(string filePath);
+        Task<byte[]> GetPhoto(string fileName);
+
+        void DeletePhoto(string fileName);
     }
 }

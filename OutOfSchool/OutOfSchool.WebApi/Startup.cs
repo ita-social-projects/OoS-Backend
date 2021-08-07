@@ -163,6 +163,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
+            services.AddTransient<IEntityRepository<Photo>, EntityRepository<Photo>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<IClassRepository, ClassRepository>();
@@ -226,7 +227,7 @@ namespace OutOfSchool.WebApi
 
             services.AddSignalR();
 
-            services.Configure<string>(Configuration.GetSection("BasePhotoPath"));
+            services.Configure<string>(Configuration.GetSection("PhotoSettings"));
         }
     }
 }

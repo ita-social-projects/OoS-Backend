@@ -7,7 +7,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -21,23 +20,23 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
     public class PhotoStorage : IPhotoStorage
     {
         private readonly IPhotoRepository repository;
+        private readonly IEntityRepository<Photo> repositoryDB;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
-        private readonly string basePhotoPath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhotoStorage"/> class.
         /// </summary>
-        /// <param name="repository">Repository.</param>
+        /// <param name="repository">Repository to work with Photo storage.</param>
+        /// <param name="repositoryDB">Repository to work with Photo Entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        /// <param name="config">Config.</param>
-        public PhotoStorage(IPhotoRepository repository, ILogger logger, IStringLocalizer<SharedResource> localizer, IConfiguration config)
+        public PhotoStorage(IPhotoRepository repository, IEntityRepository<Photo> repositoryDB, ILogger logger, IStringLocalizer<SharedResource> localizer)
         {
             this.repository = repository;
+            this.repositoryDB = repositoryDB;
             this.logger = logger;
             this.localizer = localizer;
-            this.basePhotoPath = config.GetValue<string>("PhotoSettings:BasePath");
         }
 
         /// <inheritdoc/>
@@ -54,15 +53,11 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 photoInfo.FileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}{Path.GetExtension(photo.FileName)}";
 
-                var filePath = Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName.TrimEnd());
-
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
                 var requiredSize = GetSizeByEntity(photoInfo.EntityType);
 
-                await CreatePhoto(photo, filePath, requiredSize).ConfigureAwait(false);
+                await CreateUpdatePhoto(photo, Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName), requiredSize).ConfigureAwait(false);
 
-                var createdPhoto = await repository.Create(photoInfo.ToDomain()).ConfigureAwait(false);
+                var createdPhoto = await repositoryDB.Create(photoInfo.ToDomain()).ConfigureAwait(false);
 
                 logger.Information($"Photo with Id = {photoInfo?.Id} created successfully.");
 
@@ -87,10 +82,6 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photos can not be null!."]);
                 }
 
-                var dirPath = Path.GetFullPath(Path.Combine(basePhotoPath, photoInfo.EntityType.ToString()));
-
-                Directory.CreateDirectory(dirPath);
-
                 var createdPhotos = new List<PhotoDto>();
 
                 var imgSize = GetSizeByEntity(photoInfo.EntityType);
@@ -99,11 +90,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                 {
                     photoInfo.FileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}_{i}{Path.GetExtension(photos[i].FileName)}";
 
-                    var filePath = Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName.TrimEnd());
+                    await CreateUpdatePhoto(photos[i], Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName), imgSize).ConfigureAwait(false);
 
-                    await CreatePhoto(photos[i], filePath, imgSize).ConfigureAwait(false);
-
-                    var cratedPhotoInfo = await repository.Create(photoInfo.ToDomain()).ConfigureAwait(false);
+                    var cratedPhotoInfo = await repositoryDB.Create(photoInfo.ToDomain()).ConfigureAwait(false);
 
                     logger.Information($"Photos created successfully.");
 
@@ -135,9 +124,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var photo = photos.FirstOrDefault();
 
-                repository.DeletePhoto(Path.Combine(basePhotoPath, photo.EntityType.ToString(), photo.FileName));
+                repository.DeletePhoto(Path.Combine(photo.EntityType.ToString(), photo.FileName));
 
-                await repository.Delete(photo).ConfigureAwait(false);
+                await repositoryDB.Delete(photo).ConfigureAwait(false);
 
                 logger.Information($"Photo deleted photo successfully.");
             }
@@ -166,9 +155,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                     var photo = photos.FirstOrDefault();
 
-                    repository.DeletePhoto(Path.Combine(basePhotoPath, photo.EntityType.ToString(), photo.FileName));
+                    repository.DeletePhoto(Path.Combine(photo.EntityType.ToString(), photo.FileName));
 
-                    await repository.Delete(photo).ConfigureAwait(false);
+                    await repositoryDB.Delete(photo).ConfigureAwait(false);
                 }
 
                 logger.Information($"Photo deleted photo successfully.");
@@ -193,7 +182,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 MimeTypeMap.GetMimeType(Path.GetExtension(photoInfo.FileName));
 
-                var file = await File.ReadAllBytesAsync(Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName)).ConfigureAwait(false);
+                var file = await repository.GetPhoto(Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName)).ConfigureAwait(false);
 
                 logger.Information($"Successfully got photo.");
 
@@ -267,9 +256,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var requiredSize = GetSizeByEntity(photoInfo.EntityType);
 
-                var filePath = Path.Combine(basePhotoPath, photoInfo.EntityType.ToString(), photoInfo.FileName);
+                var fileName = Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName);
 
-                await CreatePhoto(photo, filePath, requiredSize).ConfigureAwait(false);
+                await CreateUpdatePhoto(photo, fileName, requiredSize).ConfigureAwait(false);
 
                 logger.Information($"Successfully update the photo.");
 
@@ -286,14 +275,14 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         {
             Expression<Func<Photo, bool>> filter = p => p.EntityId == entityId && p.EntityType == entityType;
 
-            return await repository.GetByFilter(filter).ConfigureAwait(false);
+            return await repositoryDB.GetByFilter(filter).ConfigureAwait(false);
         }
 
         private async Task<IEnumerable<Photo>> GetFilesByName(string fileName)
         {
             Expression<Func<Photo, bool>> filter = p => p.FileName == fileName;
 
-            return await repository.GetByFilter(filter).ConfigureAwait(false);
+            return await repositoryDB.GetByFilter(filter).ConfigureAwait(false);
         }
 
         private byte[] ImageToByte(Bitmap image)
@@ -325,7 +314,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
             }
         }
 
-        private async Task CreatePhoto(IFormFile photo, string filePath, Size requiredSize)
+        private async Task CreateUpdatePhoto(IFormFile photo, string fileName, Size requiredSize)
         {
             using (var memoryStream = new MemoryStream())
             {
@@ -337,7 +326,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                     var bitmap = Scale.ResizeImage(img, scale.TargetRect.Width, scale.TargetRect.Height);
 
-                    repository.CreateUpdatePhoto(ImageToByte(bitmap), filePath);
+                    await repository.CreateUpdatePhoto(ImageToByte(bitmap), fileName).ConfigureAwait(false);
                 }
             }
         }
