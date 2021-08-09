@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<PhotoDto> AddFile(IFormFile photo, PhotoDto photoInfo)
+        public async Task<PhotoDto> AddFile(PhotoDto photo)
         {
             try
             {
@@ -51,15 +51,15 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photo can not be null!."]);
                 }
 
-                photoInfo.FileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}{Path.GetExtension(photo.FileName)}";
+                photo.FileName = $"{photo.EntityId}_{photo.EntityType}{Path.GetExtension(photo.File.FileName)}";
 
-                var requiredSize = GetSizeByEntity(photoInfo.EntityType);
+                var requiredSize = GetSizeByEntity(photo.EntityType);
 
-                await CreateUpdatePhoto(photo, Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName), requiredSize).ConfigureAwait(false);
+                await CreateUpdatePhoto(photo.File, Path.Combine(photo.EntityType.ToString(), photo.FileName), requiredSize).ConfigureAwait(false);
 
-                var createdPhoto = await repositoryDB.Create(photoInfo.ToDomain()).ConfigureAwait(false);
+                var createdPhoto = await repositoryDB.Create(photo.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Photo with Id = {photoInfo?.Id} created successfully.");
+                logger.Information($"Photo with Id = {photo?.Id} created successfully.");
 
                 return createdPhoto.ToModel();
             }
@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<List<PhotoDto>> AddFiles(IFormFileCollection photos, PhotoDto photoInfo)
+        public async Task<List<PhotoDto>> AddFiles(PhotosDto photos)
         {
             try
             {
@@ -84,15 +84,15 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var createdPhotos = new List<PhotoDto>();
 
-                var imgSize = GetSizeByEntity(photoInfo.EntityType);
+                var imgSize = GetSizeByEntity(photos.EntityType);
 
-                for (int i = 0; i < photos.Count; i++)
+                for (int i = 0; i < photos.Files.Count; i++)
                 {
-                    photoInfo.FileName = $"{photoInfo.EntityId}_{photoInfo.EntityType}_{i}{Path.GetExtension(photos[i].FileName)}";
+                    photos.FileName = $"{photos.EntityId}_{photos.EntityType}_{i}{Path.GetExtension(photos.Files[i].FileName)}";
 
-                    await CreateUpdatePhoto(photos[i], Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName), imgSize).ConfigureAwait(false);
+                    await CreateUpdatePhoto(photos.Files[i], Path.Combine(photos.EntityType.ToString(), photos.FileName), imgSize).ConfigureAwait(false);
 
-                    var cratedPhotoInfo = await repositoryDB.Create(photoInfo.ToDomain()).ConfigureAwait(false);
+                    var cratedPhotoInfo = await repositoryDB.Create(photos.ToDomain()).ConfigureAwait(false);
 
                     logger.Information($"Photos created successfully.");
 
@@ -243,7 +243,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<PhotoDto> UpdateFile(PhotoDto photoInfo, IFormFile photo)
+        public async Task UpdateFile(PhotoDto photo)
         {
             try
             {
@@ -254,15 +254,13 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photo can not be null!"]);
                 }
 
-                var requiredSize = GetSizeByEntity(photoInfo.EntityType);
+                var requiredSize = GetSizeByEntity(photo.EntityType);
 
-                var fileName = Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName);
+                var fileName = Path.Combine(photo.EntityType.ToString(), photo.FileName);
 
-                await CreateUpdatePhoto(photo, fileName, requiredSize).ConfigureAwait(false);
+                await CreateUpdatePhoto(photo.File, fileName, requiredSize).ConfigureAwait(false);
 
                 logger.Information($"Successfully update the photo.");
-
-                return photoInfo;
             }
             catch (ArgumentException ex)
             {

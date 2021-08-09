@@ -134,7 +134,12 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<Photo, PhotoDto>(photo, cfg =>
             {
-                cfg.CreateMap<Photo, PhotoDto>();
+                cfg.CreateMap<Photo, PhotoDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
+                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(c => c.EntityType))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.FileName))
+                .ForMember(dest => dest.File, opt => opt.Ignore());
             });
         }
 
@@ -281,7 +286,22 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<PhotoDto, Photo>(photoDto, cfg =>
             {
-                cfg.CreateMap<PhotoDto, Photo>();
+                cfg.CreateMap<PhotoDto, Photo>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
+                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(c => c.EntityType))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.FileName));
+            });
+        }
+
+        public static Photo ToDomain(this PhotosDto photosDto)
+        {
+            return Mapper<PhotosDto, Photo>(photosDto, cfg =>
+            {
+                cfg.CreateMap<PhotosDto, Photo>()
+                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(c => c.EntityType))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.FileName));
             });
         }
 

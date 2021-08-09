@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
-using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -95,45 +94,37 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Create new photo.
         /// </summary>
-        /// <param name="photoInfoJson">Json string of the Photo entity.</param>
         /// <param name="photo">File.</param>
         /// <returns>Created photo info.</returns>
         [HttpPost]
         [Authorize(Roles = "parent,provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PhotoDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateFile([FromForm] string photoInfoJson, [FromForm] IFormFile photo)
+        public async Task<IActionResult> CreateFile([FromForm] PhotoDto photo)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (photoInfoJson is null)
+            if (photo is null)
             {
-                return BadRequest("Json string of the Photo entity is null!");
+                return BadRequest("Photo object is null!");
             }
 
-            if (photo is null)
+            if (photo.File is null)
             {
                 return BadRequest("Photo is null!");
             }
 
-            if (!IsFileValid(photo))
+            if (!IsFileValid(photo.File))
             {
                 return BadRequest("The size or extension of the photo invalid!");
             }
 
-            var photoInfo = JsonConvert.DeserializeObject<PhotoDto>(photoInfoJson);
-
-            if (photoInfo is null)
-            {
-                return BadRequest("Photo Info is null!");
-            }
-
-            var result = await photoService.AddFile(photo, photoInfo).ConfigureAwait(false);
+            var result = await photoService.AddFile(photo).ConfigureAwait(false);
 
             return Ok(result);
         }
@@ -141,33 +132,32 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Create new photos.
         /// </summary>
-        /// <param name="photoInfoJson">Json string of the Photo entity.</param>
         /// <param name="photos">Files.</param>
         /// <returns>Created photos info.</returns>
         [HttpPost]
         [Authorize(Roles = "parent,provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PhotoDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateFiles([FromForm] string photoInfoJson, [FromForm] IFormFileCollection photos)
+        public async Task<IActionResult> CreateFiles([FromForm] PhotosDto photos)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (photoInfoJson is null)
-            {
-                return BadRequest("Json string of the Photo entity is null!");
-            }
-
             if (photos is null)
             {
-                return BadRequest("Photos is null!");
+                return BadRequest("Photos object are null!");
             }
 
-            foreach (var photo in photos)
+            if (photos.Files is null)
+            {
+                return BadRequest("Photos are null!");
+            }
+
+            foreach (var photo in photos.Files)
             {
                 if (!IsFileValid(photo))
                 {
@@ -175,14 +165,7 @@ namespace OutOfSchool.WebApi.Controllers
                 }
             }
 
-            var photoInfo = JsonConvert.DeserializeObject<PhotoDto>(photoInfoJson);
-
-            if (photoInfo is null)
-            {
-                return BadRequest("Photo Info is null!");
-            }
-
-            var result = await photoService.AddFiles(photos, photoInfo).ConfigureAwait(false);
+            var result = await photoService.AddFiles(photos).ConfigureAwait(false);
 
             return Ok(result);
         }
@@ -236,47 +219,39 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Update info about the Photo.
         /// </summary>
-        /// <param name="photoInfoJson">Json string of the Photo entity.</param>
         /// <param name="photo">New file.</param>
-        /// <returns>Updated Photo.</returns>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPut]
         [Authorize(Roles = "parent,provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateFile([FromForm] string photoInfoJson, [FromForm] IFormFile photo)
+        public async Task<IActionResult> UpdateFile([FromForm] PhotoDto photo)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (photoInfoJson is null)
+            if (photo is null)
             {
-                return BadRequest("Json string of the Photo entity is null!");
+                return BadRequest("Photo object is null!");
             }
 
-            if (photo is null)
+            if (photo.File is null)
             {
                 return BadRequest("Photo is null!");
             }
 
-            if (!IsFileValid(photo))
+            if (!IsFileValid(photo.File))
             {
                 return BadRequest("The size or extension of the photo invalid!");
             }
 
-            var photoInfo = JsonConvert.DeserializeObject<PhotoDto>(photoInfoJson);
+            await photoService.UpdateFile(photo).ConfigureAwait(false);
 
-            if (photoInfo is null)
-            {
-                return BadRequest("Photo Info is null!");
-            }
-
-            var result = await photoService.UpdateFile(photoInfo, photo).ConfigureAwait(false);
-
-            return Ok(result);
+            return NoContent();
         }
 
         private bool IsFileValid(IFormFile photo)
