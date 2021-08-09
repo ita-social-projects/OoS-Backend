@@ -23,7 +23,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 IsRead = true,
-                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
             };
 
             // Act
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 IsRead = true,
-                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
                 User = Mock.Of<User>(),
                 ChatRoom = Mock.Of<ChatRoom>(),
             };
@@ -88,7 +88,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 IsRead = true,
-                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
             };
             var chatMessage2 = new ChatMessageDto()
             {
@@ -97,7 +97,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 IsRead = false,
-                CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
+                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
             };
 
             var listOfUsers = new List<UserDto>() { user1, user2 };
@@ -147,7 +147,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 IsRead = true,
-                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
                 User = Mock.Of<User>(),
                 ChatRoom = Mock.Of<ChatRoom>(),
             };
@@ -158,7 +158,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 IsRead = false,
-                CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
+                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
                 User = Mock.Of<User>(),
                 ChatRoom = Mock.Of<ChatRoom>(),
             };
@@ -210,7 +210,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 IsRead = true,
-                CreatedTime = DateTime.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
                 User = Mock.Of<User>(),
                 ChatRoom = Mock.Of<ChatRoom>(),
             };
@@ -221,7 +221,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 IsRead = false,
-                CreatedTime = DateTime.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
+                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
                 User = Mock.Of<User>(),
                 ChatRoom = Mock.Of<ChatRoom>(),
             };

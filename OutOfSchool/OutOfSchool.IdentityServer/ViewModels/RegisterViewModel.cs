@@ -37,10 +37,10 @@ namespace OutOfSchool.IdentityServer.ViewModels
         public string PhoneNumber { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime CreatingTime { get; set; }
+        public DateTimeOffset CreatingTime { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime? LastLogin { get; set; }
+        public DateTimeOffset? LastLogin { get; set; }
 
         public string ReturnUrl { get; set; }
 

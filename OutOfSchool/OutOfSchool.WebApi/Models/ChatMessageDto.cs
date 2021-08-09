@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(200)]
         public string Text { get; set; }
 
-        public DateTime CreatedTime { get; set; }
+        public DateTimeOffset CreatedTime { get; set; }
 
         public bool IsRead { get; set; }
     }

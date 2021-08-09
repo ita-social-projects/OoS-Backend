@@ -133,22 +133,22 @@ INSERT INTO [dbo].[AspNetUsers]
            ,0) --is registered
 GO
 
---Change roles' Ids according to your data in [AspNetRoles].
+--Roles' Ids according to your data in [AspNetRoles].
 INSERT INTO [dbo].[AspNetUserRoles]
            ([UserId]
            ,[RoleId])
      VALUES
            ('16575ce5-38e3-4ae7-b991-4508ed488369' --UserId (test1)
-           ,'3022b015-a2e4-496d-92d1-ead5b41f7dba') --roleId (parent)
+           ,(SELECT TOP (1) [Id] FROM [AspNetRoles] WHERE [Name] LIKE('parent'))) --roleId (parent)
 
 		   ,('7604a851-66db-4236-9271-1f037ffe3a81' --UserId (test2)
-           ,'3022b015-a2e4-496d-92d1-ead5b41f7dba') --roleId (parent)
+           ,(SELECT TOP (1) [Id] FROM [AspNetRoles] WHERE [Name] LIKE('parent'))) --roleId (parent)
 
 		   ,('47802b21-2fb5-435e-9057-75c43d002cef' --UserId (test3)
-           ,'a9179c0c-e1c6-4d50-b1c8-1f3266cf4bba') --roleId (provider)
+           ,(SELECT TOP (1) [Id] FROM [AspNetRoles] WHERE [Name] LIKE('provider'))) --roleId (provider)
 
 		   ,('5bff5f95-1848-4c87-9846-a567aeb407ea' --UserId (test4)
-           ,'a9179c0c-e1c6-4d50-b1c8-1f3266cf4bba') --roleId (provider)
+           ,(SELECT TOP (1) [Id] FROM [AspNetRoles] WHERE [Name] LIKE('provider'))) --roleId (provider)
 GO
 
 --====================PARENTS AND CHILDREN================================

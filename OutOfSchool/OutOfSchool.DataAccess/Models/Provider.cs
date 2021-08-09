@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -54,6 +55,7 @@ namespace OutOfSchool.Services.Models
         public string Director { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
+        [Column(TypeName = "date")]
         public DateTime DirectorDateOfBirth { get; set; } = default;
 
         [DataType(DataType.PhoneNumber)]

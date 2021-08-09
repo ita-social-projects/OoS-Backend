@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace OutOfSchool.Services.Models
 {
@@ -32,6 +30,8 @@ namespace OutOfSchool.Services.Models
         /// <summary>
         /// Gets or sets date of issue of the birth certificate.
         /// </summary>
+        [DataType(DataType.Date)]
+        [Column(TypeName = "date")]
         public DateTime SvidDate { get; set; }
 
         public virtual Child Child { get; set; }

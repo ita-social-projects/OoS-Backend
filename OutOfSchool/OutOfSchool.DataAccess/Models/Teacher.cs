@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.Services.Models
 {
@@ -27,6 +28,7 @@ namespace OutOfSchool.Services.Models
 
         [Required(ErrorMessage = "Date of birth is required")]
         [DataType(DataType.Date)]
+        [Column(TypeName = "date")]
         public DateTime DateOfBirth { get; set; }
 
         [Required(ErrorMessage = "Description is required")]

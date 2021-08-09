@@ -161,7 +161,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 UserId = "user1",
                 Text = "newtext",
                 ChatRoomId = 1,
-                CreatedTime = DateTime.Now,
+                CreatedTime = DateTimeOffset.Now,
                 IsRead = true,
             };
 
@@ -186,7 +186,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 UserId = "user1",
                 Text = "newtext",
                 ChatRoomId = 1,
-                CreatedTime = DateTime.Now,
+                CreatedTime = DateTimeOffset.Now,
                 IsRead = true,
             };
 
@@ -294,7 +294,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 UserId = "user1",
                 Text = "text5",
                 ChatRoomId = 1,
-                CreatedTime = DateTime.Now,
+                CreatedTime = DateTimeOffset.Now,
                 IsRead = false,
             };
 
@@ -305,10 +305,10 @@ namespace OutOfSchool.WebApi.Tests.Services
 
                 var messages = new List<ChatMessage>()
                 {
-                    new ChatMessage() { Id = 1, UserId = "user1", ChatRoomId = 1, Text = "text1", CreatedTime = DateTime.Parse("2021-06-18 15:47"), IsRead = false },
-                    new ChatMessage() { Id = 2, UserId = "user2", ChatRoomId = 1, Text = "text2", CreatedTime = DateTime.Parse("2021-06-18 15:48"), IsRead = false },
-                    new ChatMessage() { Id = 3, UserId = "user1", ChatRoomId = 2, Text = "text3", CreatedTime = DateTime.Now, IsRead = false },
-                    new ChatMessage() { Id = 4, UserId = "user2", ChatRoomId = 2, Text = "text4", CreatedTime = DateTime.Now, IsRead = false },
+                    new ChatMessage() { Id = 1, UserId = "user1", ChatRoomId = 1, Text = "text1", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:47"), IsRead = false },
+                    new ChatMessage() { Id = 2, UserId = "user2", ChatRoomId = 1, Text = "text2", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:48"), IsRead = false },
+                    new ChatMessage() { Id = 3, UserId = "user1", ChatRoomId = 2, Text = "text3", CreatedTime = DateTimeOffset.Now, IsRead = false },
+                    new ChatMessage() { Id = 4, UserId = "user2", ChatRoomId = 2, Text = "text4", CreatedTime = DateTimeOffset.Now, IsRead = false },
                 };
                 context.ChatMessages.AddRangeAsync(messages);
 
