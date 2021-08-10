@@ -56,5 +56,22 @@ namespace OutOfSchool.Services.Repository
 
         /// <inheritdoc/>
         public bool ClassExists(long id) => db.Classes.Any(x => x.Id == id);
+
+        public async Task<IEnumerable<Workshop>> GetWorkshopsForUpdate()
+        {
+            var backupTrackerRecords = db.BackupTrackers;
+
+            var resultMaxDate = from r in backupTrackerRecords
+                                group r by r.RecordId into gr
+                                select new { RecordId = gr.Key, MaxOperationDate = gr.Max(r => r.OperationDate) };
+
+            var resultCreate = from rMaxDate in resultMaxDate
+                               join r in backupTrackerRecords on new { rMaxDate.RecordId, OperationDate = rMaxDate.MaxOperationDate } equals new { r.RecordId, r.OperationDate } into leftJoin
+                               from rg in leftJoin
+                               where rg.Operation == Enums.BackupOperation.Create
+                               select new { rg.RecordId, rg.OperationDate, rg.Operation };
+
+            return await db.Workshops.Join(resultCreate, u => u.Id, c => c.RecordId, (u, c) => u).ToListAsync();
+        }
     }
 }

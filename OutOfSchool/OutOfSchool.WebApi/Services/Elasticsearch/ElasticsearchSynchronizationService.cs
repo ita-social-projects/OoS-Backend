@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nest;
+using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -16,13 +18,15 @@ namespace OutOfSchool.WebApi.Services
         private readonly IBackupTrackerService backupTrackerService;
         private readonly IEntityRepository<BackupTracker> repository;
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
+        private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
 
-        public ElasticsearchSynchronizationService(IWorkshopService workshopService, IBackupTrackerService backupTrackerService, IEntityRepository<BackupTracker> repository, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService)
+        public ElasticsearchSynchronizationService(IWorkshopService workshopService, IBackupTrackerService backupTrackerService, IEntityRepository<BackupTracker> repository, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider)
         {
             this.databaseService = workshopService;
             this.backupTrackerService = backupTrackerService;
             this.repository = repository;
             this.elasticsearchService = elasticsearchService;
+            this.esProvider = esProvider;
         }
 
         public async Task<bool> Synchronize()
@@ -68,6 +72,26 @@ namespace OutOfSchool.WebApi.Services
             var backupTracker = await repository.GetAll().ConfigureAwait(false);
 
             return backupTracker.Select(backupTracker => backupTracker.ToModel());
+        }
+
+        public async Task<bool> Synchronize2()
+        {
+            var sourceDto = await databaseService.GetWorkshopsForUpdate().ConfigureAwait(false);
+
+            List<WorkshopES> source = new List<WorkshopES>();
+            foreach (var entity in sourceDto)
+            {
+                source.Add(entity.ToESModel());
+            }
+
+            var resp = await esProvider.ReIndexAll(source).ConfigureAwait(false);
+
+            if (resp == Result.Error)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

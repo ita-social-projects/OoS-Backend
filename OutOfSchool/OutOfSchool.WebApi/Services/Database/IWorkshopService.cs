@@ -41,5 +41,9 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains the <see cref="SearchResult{WorkshopCard}"/> that contains found elements.</returns>
         Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null);
+        Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null);
+        Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilterDto filter = null);
+
+        Task<IEnumerable<WorkshopDTO>> GetWorkshopsForUpdate();
     }
 }
