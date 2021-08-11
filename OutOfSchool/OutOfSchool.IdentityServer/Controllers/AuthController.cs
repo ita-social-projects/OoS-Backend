@@ -165,7 +165,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                MiddleName = model.MiddleName,
                Email = model.Email,
                PhoneNumber = model.PhoneNumber,
-               CreatingTime = DateTime.Now,
+               CreatingTime = DateTimeOffset.UtcNow,
                Role = model.Role,
                IsRegistered = false,
             };

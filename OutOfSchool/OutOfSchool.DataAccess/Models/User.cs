@@ -8,10 +8,10 @@ namespace OutOfSchool.Services.Models
     public class User : IdentityUser
     {
         [DataType(DataType.DateTime)]
-        public DateTime CreatingTime { get; set; }
+        public DateTimeOffset CreatingTime { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime LastLogin { get; set; }
+        public DateTimeOffset LastLogin { get; set; }
 
         [Required(ErrorMessage = "LastName is required")]
         [MaxLength(30)]

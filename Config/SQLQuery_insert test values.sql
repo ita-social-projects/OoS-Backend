@@ -41,8 +41,8 @@ INSERT INTO [dbo].[AspNetUsers]
            ,[IsRegistered])
      VALUES
            ('16575ce5-38e3-4ae7-b991-4508ed488369' --Id
-           ,'2021-06-04 10:06:32.9282504'
-           ,'0001-01-01 00:00:00.0000000'
+           ,'2021-06-04 10:06:32.9282504 +00:00' --[CreatingTime]
+           ,'0001-01-01 00:00:00.0000000 +00:00' --LastLogin
            ,'Батькоперший' --last name
            ,'Іванович' --middle name
            ,'Іван' --first name
@@ -64,8 +64,8 @@ INSERT INTO [dbo].[AspNetUsers]
            ,0) --is registered
 
 		   ,('7604a851-66db-4236-9271-1f037ffe3a81' --Id
-           ,'2021-06-04 10:24:40.8990089'
-           ,'0001-01-01 00:00:00.0000000'
+           ,'2021-06-04 10:24:40.8990089 +00:00' --[CreatingTime]
+           ,'0001-01-01 00:00:00.0000000 +00:00' --LastLogin
            ,'Батькодругий' --last name
            ,'Петрович' --middle name
            ,'Петро' --first name
@@ -87,8 +87,8 @@ INSERT INTO [dbo].[AspNetUsers]
            ,0) --is registered
 
 		   ,('47802b21-2fb5-435e-9057-75c43d002cef' --Id
-           ,'2021-06-04 10:29:56.7988521'
-           ,'0001-01-01 00:00:00.0000000'
+           ,'2021-06-04 10:29:56.7988521 +00:00' --[CreatingTime]
+           ,'0001-01-01 00:00:00.0000000 +00:00' --LastLogin
            ,'Провайдерперший' --last name
            ,'Семенович' --middle name
            ,'Семен' --first name
@@ -110,8 +110,8 @@ INSERT INTO [dbo].[AspNetUsers]
            ,0) --is registered
 		   
 		   ,('5bff5f95-1848-4c87-9846-a567aeb407ea' --Id
-           ,'2021-06-04 10:33:26.6295481'
-           ,'0001-01-01 00:00:00.0000000'
+           ,'2021-06-04 10:33:26.6295481 +00:00' --[CreatingTime]
+           ,'0001-01-01 00:00:00.0000000 +00:00' --LastLogin
            ,'Провайдердругий' --last name
            ,'Борисович' --middle name
            ,'Борис' --first name
@@ -133,22 +133,22 @@ INSERT INTO [dbo].[AspNetUsers]
            ,0) --is registered
 GO
 
---Change roles' Ids according to your data in [AspNetRoles].
+--Roles' Ids according to your data in [AspNetRoles].
 INSERT INTO [dbo].[AspNetUserRoles]
            ([UserId]
            ,[RoleId])
      VALUES
            ('16575ce5-38e3-4ae7-b991-4508ed488369' --UserId (test1)
-           ,'3022b015-a2e4-496d-92d1-ead5b41f7dba') --roleId (parent)
+           ,(SELECT TOP (1) [Id] FROM [AspNetRoles] WHERE [Name] LIKE('parent'))) --roleId (parent)
 
 		   ,('7604a851-66db-4236-9271-1f037ffe3a81' --UserId (test2)
-           ,'3022b015-a2e4-496d-92d1-ead5b41f7dba') --roleId (parent)
+           ,(SELECT TOP (1) [Id] FROM [AspNetRoles] WHERE [Name] LIKE('parent'))) --roleId (parent)
 
 		   ,('47802b21-2fb5-435e-9057-75c43d002cef' --UserId (test3)
-           ,'a9179c0c-e1c6-4d50-b1c8-1f3266cf4bba') --roleId (provider)
+           ,(SELECT TOP (1) [Id] FROM [AspNetRoles] WHERE [Name] LIKE('provider'))) --roleId (provider)
 
 		   ,('5bff5f95-1848-4c87-9846-a567aeb407ea' --UserId (test4)
-           ,'a9179c0c-e1c6-4d50-b1c8-1f3266cf4bba') --roleId (provider)
+           ,(SELECT TOP (1) [Id] FROM [AspNetRoles] WHERE [Name] LIKE('provider'))) --roleId (provider)
 GO
 
 --====================PARENTS AND CHILDREN================================

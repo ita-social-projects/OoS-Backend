@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -17,6 +15,7 @@ namespace OutOfSchool.WebApi.Models
 
         public string SvidWho { get; set; } = string.Empty;
 
+        [DataType(DataType.Date)]
         public DateTime SvidDate { get; set; } = default;
 
         public long ChildId { get; set; }

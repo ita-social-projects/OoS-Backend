@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
@@ -20,7 +19,7 @@ namespace OutOfSchool.Services.Models
         public string Text { get; set; }
 
         [Required]
-        public DateTime CreatedTime { get; set; }
+        public DateTimeOffset CreatedTime { get; set; }
 
         [Required]
         public bool IsRead { get; set; }

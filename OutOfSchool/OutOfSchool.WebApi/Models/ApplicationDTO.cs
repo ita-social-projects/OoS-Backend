@@ -11,7 +11,7 @@ namespace OutOfSchool.WebApi.Models
         [Range(1, 5, ErrorMessage = "Status should be from 1 to 5")]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
-        public DateTime CreationTime { get; set; }
+        public DateTimeOffset CreationTime { get; set; }
 
         [Required]
         [Range(1, long.MaxValue, ErrorMessage = "Workshop id should be grater than 0")]

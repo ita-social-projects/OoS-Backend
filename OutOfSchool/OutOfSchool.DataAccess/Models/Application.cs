@@ -12,7 +12,7 @@ namespace OutOfSchool.Services.Models
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
         [Required]
-        public DateTime CreationTime { get; set; }
+        public DateTimeOffset CreationTime { get; set; }
 
         [Required]
         [Range(1, long.MaxValue, ErrorMessage = "Workshop id should be grater than 0")]
