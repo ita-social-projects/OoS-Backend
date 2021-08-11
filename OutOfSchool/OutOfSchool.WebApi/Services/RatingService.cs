@@ -21,7 +21,6 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopRepository workshopRepository;
         private readonly IProviderRepository providerRepository;
         private readonly IParentRepository parentRepository;
-        private readonly IEntityRepository<User> userRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly int roundToDigits = 2;
@@ -33,7 +32,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopRepository">Repository for Workshop entity.</param>
         /// <param name="providerRepository">Repository for Provider entity.</param>
         /// <param name="parentRepository">Repository for Parent entity.</param>
-        /// <param name="userRepository">Repository for User entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         public RatingService(
@@ -41,7 +39,6 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopRepository workshopRepository,
             IProviderRepository providerRepository,
             IParentRepository parentRepository,
-            IEntityRepository<User> userRepository,
             ILogger logger,
             IStringLocalizer<SharedResource> localizer)
         {
@@ -49,7 +46,6 @@ namespace OutOfSchool.WebApi.Services
             this.workshopRepository = workshopRepository;
             this.providerRepository = providerRepository;
             this.parentRepository = parentRepository;
-            this.userRepository = userRepository;
             this.logger = logger;
             this.localizer = localizer;
         }
