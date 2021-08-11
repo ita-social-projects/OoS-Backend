@@ -35,6 +35,7 @@ namespace OutOfSchool.Services.Repository
             return db.Ratings
                 .Where(r => r.Type == type)
                 .AsEnumerable()
+                .Join(entities, o => o.EntityId, i => i, (o, i) => new { o.EntityId, o.Rate })
                 .GroupBy(g => g.EntityId)
                 .ToDictionary(g => g.Key, g => new Tuple<double, int>(g.Average(p => p.Rate), g.Count()));
         }
