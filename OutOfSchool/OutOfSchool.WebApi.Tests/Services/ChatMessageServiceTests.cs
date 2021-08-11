@@ -161,7 +161,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 UserId = "user1",
                 Text = "newtext",
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = true,
             };
 
@@ -186,7 +186,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 UserId = "user1",
                 Text = "newtext",
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = true,
             };
 
@@ -294,7 +294,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 UserId = "user1",
                 Text = "text5",
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
 
@@ -307,8 +307,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 {
                     new ChatMessage() { Id = 1, UserId = "user1", ChatRoomId = 1, Text = "text1", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:47"), IsRead = false },
                     new ChatMessage() { Id = 2, UserId = "user2", ChatRoomId = 1, Text = "text2", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:48"), IsRead = false },
-                    new ChatMessage() { Id = 3, UserId = "user1", ChatRoomId = 2, Text = "text3", CreatedTime = DateTimeOffset.Now, IsRead = false },
-                    new ChatMessage() { Id = 4, UserId = "user2", ChatRoomId = 2, Text = "text4", CreatedTime = DateTimeOffset.Now, IsRead = false },
+                    new ChatMessage() { Id = 3, UserId = "user1", ChatRoomId = 2, Text = "text3", CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
+                    new ChatMessage() { Id = 4, UserId = "user2", ChatRoomId = 2, Text = "text4", CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
                 };
                 context.ChatMessages.AddRangeAsync(messages);
 

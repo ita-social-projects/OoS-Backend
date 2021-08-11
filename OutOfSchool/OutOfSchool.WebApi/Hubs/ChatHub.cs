@@ -90,7 +90,7 @@ namespace OutOfSchool.WebApi.Hubs
                 UserId = senderUserId,
                 ChatRoomId = 0,
                 Text = chatNewMessageDto.Text,
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
 

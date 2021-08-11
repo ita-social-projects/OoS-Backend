@@ -306,7 +306,7 @@ namespace OutOfSchool.WebApi.Controllers
 
                 applicationDto.Id = default;
 
-                applicationDto.CreationTime = DateTimeOffset.Now;
+                applicationDto.CreationTime = DateTimeOffset.UtcNow;
 
                 applicationDto.Status = 0;
 
@@ -402,7 +402,7 @@ namespace OutOfSchool.WebApi.Controllers
             var applications = applicationApiModel.Children.Select(child => new ApplicationDto
             {
                 ChildId = child.Id,
-                CreationTime = DateTimeOffset.Now,
+                CreationTime = DateTimeOffset.UtcNow,
                 WorkshopId = applicationApiModel.WorkshopId,
             });
 

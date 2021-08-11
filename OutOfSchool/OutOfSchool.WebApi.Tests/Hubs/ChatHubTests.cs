@@ -116,7 +116,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 UserId = userId,
                 Text = "hi",
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
             messageServiceMoq.Setup(x => x.Create(It.IsAny<ChatMessageDto>()))
@@ -157,7 +157,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 UserId = userId,
                 Text = "hi",
                 ChatRoomId = 3,
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
             messageServiceMoq.Setup(x => x.Create(It.IsAny<ChatMessageDto>()))

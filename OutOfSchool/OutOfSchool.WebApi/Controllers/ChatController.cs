@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Controllers
                 UserId = senderUserId,
                 ChatRoomId = 0,
                 Text = chatNewMessageDto.Text,
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
 
@@ -282,7 +282,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             var whenMessageBecomesOld = new TimeSpan(0, 10, 0);
 
-            if (oldChatMessage.CreatedTime.CompareTo(DateTimeOffset.Now.Subtract(whenMessageBecomesOld)) < 0)
+            if (oldChatMessage.CreatedTime.CompareTo(DateTimeOffset.UtcNow.Subtract(whenMessageBecomesOld)) < 0)
             {
                 return StatusCode(403, "Forbidden to change old messages.");
             }
@@ -324,7 +324,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             var whenMessageBecomesOld = new TimeSpan(0, 10, 0);
 
-            if (oldChatMessage.CreatedTime.CompareTo(DateTimeOffset.Now.Subtract(whenMessageBecomesOld)) < 0)
+            if (oldChatMessage.CreatedTime.CompareTo(DateTimeOffset.UtcNow.Subtract(whenMessageBecomesOld)) < 0)
             {
                 return StatusCode(403, "Forbidden to delete old messages.");
             }

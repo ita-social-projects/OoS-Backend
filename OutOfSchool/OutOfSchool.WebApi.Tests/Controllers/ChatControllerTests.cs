@@ -209,7 +209,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 UserId = userId,
                 ChatRoomId = 1,
                 Text = "new text",
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
             messageServiceMoq.Setup(x => x.Create(It.IsAny<ChatMessageDto>()))
@@ -258,7 +258,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 UserId = userId,
                 ChatRoomId = 1,
                 Text = "new text",
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
             roomServiceMoq.Setup(x => x.UsersCanChatBetweenEachOther(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()))
@@ -548,7 +548,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = 1,
                     UserId = userId,
                     ChatRoomId = roomId,
-                    CreatedTime = DateTimeOffset.Now,
+                    CreatedTime = DateTimeOffset.UtcNow,
                     IsRead = false,
                     },
                 };
@@ -584,7 +584,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = 1,
                     UserId = userId,
                     ChatRoomId = roomId,
-                    CreatedTime = DateTimeOffset.Now,
+                    CreatedTime = DateTimeOffset.UtcNow,
                     IsRead = false,
                     },
                 };
@@ -727,7 +727,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = id,
                     UserId = userId,
                     ChatRoomId = 1,
-                    CreatedTime = DateTimeOffset.Now.Subtract(new TimeSpan(1, 0, 0)),
+                    CreatedTime = DateTimeOffset.UtcNow.Subtract(new TimeSpan(1, 0, 0)),
                 });
 
             // Act
@@ -750,7 +750,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Id = id,
                 UserId = userId,
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 Text = "new text",
             };
 
@@ -777,7 +777,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Id = id,
                 UserId = userId,
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.Now,
+                CreatedTime = DateTimeOffset.UtcNow,
                 Text = "new text",
             };
 
@@ -837,7 +837,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new ChatMessageDto()
                 {
                     UserId = "NotCurrentUserId",
-                    CreatedTime = DateTimeOffset.Now,
+                    CreatedTime = DateTimeOffset.UtcNow,
                 });
 
             // Act
@@ -861,7 +861,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = id,
                     UserId = userId,
                     ChatRoomId = 1,
-                    CreatedTime = DateTimeOffset.Now.Subtract(new TimeSpan(1, 0, 0)),
+                    CreatedTime = DateTimeOffset.UtcNow.Subtract(new TimeSpan(1, 0, 0)),
                 });
 
             // Act
@@ -883,7 +883,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new ChatMessageDto()
                 {
                     UserId = userId,
-                    CreatedTime = DateTimeOffset.Now,
+                    CreatedTime = DateTimeOffset.UtcNow,
                 });
 
             messageServiceMoq.Setup(x => x.Delete(id))
@@ -905,7 +905,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new ChatMessageDto()
                 {
                     UserId = userId,
-                    CreatedTime = DateTimeOffset.Now,
+                    CreatedTime = DateTimeOffset.UtcNow,
                 });
 
             messageServiceMoq.Setup(x => x.Delete(id))
@@ -927,7 +927,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new ChatMessageDto()
                 {
                     UserId = userId,
-                    CreatedTime = DateTimeOffset.Now,
+                    CreatedTime = DateTimeOffset.UtcNow,
                 });
 
             messageServiceMoq.Setup(x => x.Delete(id))
