@@ -8,8 +8,8 @@ namespace OutOfSchool.Services.Repository
         /// <summary>
         /// Find user information by parent Id.
         /// </summary>
-        /// <param name="parents">Parent Ids.</param>
+        /// <param name="parentIds">Parent Ids.</param>
         /// <returns>Tuple which contains part of user information (parentId, firstName and lastName.</returns>
-        public IEnumerable<(long parentId, string firstName, string lastName)> GetUsersByParents(IEnumerable<long> parents);
+        public IEnumerable<(long parentId, string firstName, string lastName)> GetUsersByParents(IEnumerable<long> parentIds);
     }
 }
