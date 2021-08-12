@@ -36,19 +36,16 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Tuple<long, string, string>> GetUsersByParents(IEnumerable<long> parents)
+        public IEnumerable<(long parentId, string firstName, string lastName)> GetUsersByParents(IEnumerable<long> parentIds)
         {
-            var parentWithUser = db.Parents.AsEnumerable().Join(parents, o => o.Id, i => i, (o, i) => new { o.Id, o.UserId });
-            var usersInfo = db.Users.AsEnumerable().Join(parentWithUser, o => o.Id, i => i.UserId, (o, i) => new { ParentId = i.Id, o.FirstName, o.LastName });
-
-            List<Tuple<long, string, string>> usersFinalInfo = new List<Tuple<long, string, string>>();
-
-            foreach (var user in usersInfo)
-            {
-                usersFinalInfo.Add(new Tuple<long, string, string>(user.ParentId, user.FirstName, user.LastName));
-            }
-
-            return usersFinalInfo;
+            return db.Parents
+                     .Where(parent => parentIds.Contains(parent.Id))
+                     .AsEnumerable()
+                     .Join(
+                         db.Users,
+                         parent => parent.UserId,
+                         user => user.Id,
+                         (parent, user) => (parent.Id, user.FirstName, user.LastName));
         }
     }
 }

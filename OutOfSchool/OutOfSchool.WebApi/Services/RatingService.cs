@@ -350,14 +350,15 @@ namespace OutOfSchool.WebApi.Services
 
         private IEnumerable<RatingDto> GetUsersAsync(IEnumerable<RatingDto> ratingDtos)
         {
-            var newUsers = parentRepository.GetUsersByParents(ratingDtos.GroupBy(r => r.ParentId).Select(r => r.First().ParentId));
-
             var ratingDtosList = ratingDtos.ToList();
+
+            var newUsers = parentRepository.GetUsersByParents(ratingDtosList.Select(r => r.ParentId).Distinct());
+
             for (int i = 0; i < ratingDtosList.Count; i++)
             {
-                var userInfo = newUsers.FirstOrDefault(p => p.Item1 == ratingDtosList[i].ParentId);
-                ratingDtosList[i].FirstName = userInfo?.Item2;
-                ratingDtosList[i].LastName = userInfo?.Item3;
+                var userInfo = newUsers.FirstOrDefault(p => p.parentId == ratingDtosList[i].ParentId);
+                ratingDtosList[i].FirstName = userInfo.firstName;
+                ratingDtosList[i].LastName = userInfo.lastName;
             }
 
             return ratingDtosList;

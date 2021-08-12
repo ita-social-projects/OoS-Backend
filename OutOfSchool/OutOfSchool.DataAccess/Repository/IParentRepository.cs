@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -7,10 +6,10 @@ namespace OutOfSchool.Services.Repository
     public interface IParentRepository : IEntityRepository<Parent>
     {
         /// <summary>
-        /// Find user onformation by parent Id.
+        /// Find user information by parent Id.
         /// </summary>
         /// <param name="parents">Parent Ids.</param>
-        /// <returns>Anonymous Type which contains part of user information.</returns>
-        public IEnumerable<Tuple<long, string, string>> GetUsersByParents(IEnumerable<long> parents);
+        /// <returns>Tuple which contains part of user information (parentId, firstName and lastName.</returns>
+        public IEnumerable<(long parentId, string firstName, string lastName)> GetUsersByParents(IEnumerable<long> parents);
     }
 }
