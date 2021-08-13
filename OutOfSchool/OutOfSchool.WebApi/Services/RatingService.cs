@@ -21,7 +21,6 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopRepository workshopRepository;
         private readonly IProviderRepository providerRepository;
         private readonly IParentRepository parentRepository;
-        private readonly IEntityRepository<User> userRepository;
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly int roundToDigits = 2;
@@ -33,7 +32,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopRepository">Repository for Workshop entity.</param>
         /// <param name="providerRepository">Repository for Provider entity.</param>
         /// <param name="parentRepository">Repository for Parent entity.</param>
-        /// <param name="userRepository">Repository for User entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         public RatingService(
@@ -41,7 +39,6 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopRepository workshopRepository,
             IProviderRepository providerRepository,
             IParentRepository parentRepository,
-            IEntityRepository<User> userRepository,
             ILogger logger,
             IStringLocalizer<SharedResource> localizer)
         {
@@ -49,7 +46,6 @@ namespace OutOfSchool.WebApi.Services
             this.workshopRepository = workshopRepository;
             this.providerRepository = providerRepository;
             this.parentRepository = parentRepository;
-            this.userRepository = userRepository;
             this.logger = logger;
             this.localizer = localizer;
         }
@@ -67,7 +63,7 @@ namespace OutOfSchool.WebApi.Services
 
             var ratingsDto = ratings.Select(r => r.ToModel());
 
-            return await GetUsersAsync(ratingsDto).ConfigureAwait(false);
+            return GetUsersAsync(ratingsDto);
         }
 
         /// <inheritdoc/>
@@ -103,7 +99,7 @@ namespace OutOfSchool.WebApi.Services
 
             var ratingsDto = ratings.Select(r => r.ToModel());
 
-            return await GetUsersAsync(ratingsDto).ConfigureAwait(false);
+            return GetUsersAsync(ratingsDto);
         }
 
         /// <inheritdoc/>
@@ -128,7 +124,7 @@ namespace OutOfSchool.WebApi.Services
 
             var ratingsDto = worshopsRating.Select(r => r.ToModel());
 
-            return await GetUsersAsync(ratingsDto).ConfigureAwait(false);
+            return GetUsersAsync(ratingsDto);
         }
 
         /// <inheritdoc/>
@@ -352,21 +348,17 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private async Task<IEnumerable<RatingDto>> GetUsersAsync(IEnumerable<RatingDto> ratingDtos)
+        private IEnumerable<RatingDto> GetUsersAsync(IEnumerable<RatingDto> ratingDtos)
         {
-            var parents = await parentRepository.GetAll().ConfigureAwait(false);
-            var users = await userRepository.GetAll().ConfigureAwait(false);
-
-            var parentWithUsers = parents.Join(ratingDtos, p => p.Id, r => r.ParentId, (p, r) => new { ParentId = p.Id, p.UserId });
-
-            var newUsers = users.Join(parentWithUsers, u => u.Id, r => r.UserId, (u, r) => new { u.FirstName, u.LastName, r.ParentId });
-
             var ratingDtosList = ratingDtos.ToList();
+
+            var newUsers = parentRepository.GetUsersByParents(ratingDtosList.Select(r => r.ParentId).Distinct());
+
             for (int i = 0; i < ratingDtosList.Count; i++)
             {
-                var userInfo = newUsers.FirstOrDefault(p => p.ParentId == ratingDtosList[i].ParentId);
-                ratingDtosList[i].FirstName = userInfo?.FirstName;
-                ratingDtosList[i].LastName = userInfo?.LastName;
+                var userInfo = newUsers.FirstOrDefault(p => p.parentId == ratingDtosList[i].ParentId);
+                ratingDtosList[i].FirstName = userInfo.firstName;
+                ratingDtosList[i].LastName = userInfo.lastName;
             }
 
             return ratingDtosList;

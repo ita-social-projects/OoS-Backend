@@ -9,6 +9,6 @@ namespace OutOfSchool.Services.Repository
     {
         Tuple<double, int> GetAverageRating(long entityId, RatingType type);
 
-        Dictionary<long, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<long> entities, RatingType type);
+        Dictionary<long, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<long> entityIds, RatingType type);
     }
 }
