@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.Services.Enums
 {
-    public enum BackupOperation
+    public enum ElasticsearchSyncOperation
     {
         Create,
         Update,

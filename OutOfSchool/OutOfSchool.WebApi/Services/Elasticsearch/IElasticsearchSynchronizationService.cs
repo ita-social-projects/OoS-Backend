@@ -8,8 +8,10 @@ namespace OutOfSchool.WebApi.Services
     {
         Task<bool> Synchronize();
 
-        Task<IEnumerable<BackupTrackerDto>> GetAll();
+        Task<IEnumerable<ElasticsearchSyncRecordDto>> GetAll();
 
         Task<bool> Synchronize2();
+
+        Task<ElasticsearchSyncRecordDto> Create(ElasticsearchSyncRecordDto dto);
     }
 }

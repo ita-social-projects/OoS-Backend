@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.WebApi.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Services
             this.workshopService = workshopService;
             this.elasticsearchService = elasticsearchService;
             this.logger = logger;
-            this.backupTrackerService = backupTrackerService;
+            this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
         }
 
         /// <inheritdoc/>
@@ -170,15 +170,15 @@ namespace OutOfSchool.WebApi.Services
         }
 
         private async void AddRecordToBackupTracker(long id, BackupOperation operation)
+        private async void AddNewRecordToElasticsearchSynchronizationTable(long id, ElasticsearchSyncOperation operation)
         {
-            BackupTrackerDto backupTrackerDto = new BackupTrackerDto()
+            ElasticsearchSyncRecordDto backupTrackerDto = new ElasticsearchSyncRecordDto()
             {
                 Operation = operation,
                 OperationDate = DateTime.UtcNow,
-                TableName = "workshop",
                 RecordId = id,
             };
-            await backupTrackerService.Create(backupTrackerDto).ConfigureAwait(false);
+            await elasticsearchSynchronizationService.Create(backupTrackerDto).ConfigureAwait(false);
         }
     }
 }

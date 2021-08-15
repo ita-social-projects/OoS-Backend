@@ -15,15 +15,15 @@ namespace OutOfSchool.WebApi.Services
     public class ElasticsearchSynchronizationService : IElasticsearchSynchronizationService
     {
         private readonly IWorkshopService databaseService;
-        private readonly IBackupTrackerService backupTrackerService;
-        private readonly IEntityRepository<BackupTracker> repository;
+        private readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService;
+        private readonly IEntityRepository<ElasticsearchSyncRecord> repository;
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
 
-        public ElasticsearchSynchronizationService(IWorkshopService workshopService, IBackupTrackerService backupTrackerService, IEntityRepository<BackupTracker> repository, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider)
+        public ElasticsearchSynchronizationService(IWorkshopService workshopService, IElasticsearchSynchronizationService elasticsearchSynchronizationService, IEntityRepository<ElasticsearchSyncRecord> repository, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider)
         {
             this.databaseService = workshopService;
-            this.backupTrackerService = backupTrackerService;
+            this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
             this.repository = repository;
             this.elasticsearchService = elasticsearchService;
             this.esProvider = esProvider;
@@ -50,15 +50,15 @@ namespace OutOfSchool.WebApi.Services
                 esResultIsValid = false;
                 switch (backupTrackerRecord.Operation)
                 {
-                    case BackupOperation.Create:
+                    case ElasticsearchSyncOperation.Create:
                         workshop = await databaseService.GetById(backupTrackerRecord.RecordId).ConfigureAwait(false);
                         esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
                         break;
-                    case BackupOperation.Update:
+                    case ElasticsearchSyncOperation.Update:
                         workshop = await databaseService.GetById(backupTrackerRecord.RecordId).ConfigureAwait(false);
                         esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
                         break;
-                    case BackupOperation.Delete:
+                    case ElasticsearchSyncOperation.Delete:
                         esResultIsValid = await elasticsearchService.Delete(backupTrackerRecord.RecordId).ConfigureAwait(false);
                         break;
                 }
@@ -67,7 +67,7 @@ namespace OutOfSchool.WebApi.Services
             return true;
         }
 
-        public async Task<IEnumerable<BackupTrackerDto>> GetAll()
+        public async Task<IEnumerable<ElasticsearchSyncRecordDto>> GetAll()
         {
             var backupTracker = await repository.GetAll().ConfigureAwait(false);
 
@@ -92,6 +92,13 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return true;
+        }
+
+        public async Task<ElasticsearchSyncRecordDto> Create(ElasticsearchSyncRecordDto dto)
+        {
+            var backupTracker = dto.ToDomain();
+            var newBackupTracker = await repository.Create(backupTracker).ConfigureAwait(false);
+            return newBackupTracker.ToModel();
         }
     }
 }

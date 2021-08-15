@@ -190,9 +190,9 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static BackupTrackerDto ToModel(this BackupTracker backupTracker)
+        public static ElasticsearchSyncRecordDto ToModel(this ElasticsearchSyncRecord elasticsearchSyncRecord)
         {
-            return Mapper<BackupTracker, BackupTrackerDto>(backupTracker, cfg => { cfg.CreateMap<BackupTracker, BackupTrackerDto>(); });
+            return Mapper<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>(elasticsearchSyncRecord, cfg => { cfg.CreateMap<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>(); });
         }
 
         #endregion
@@ -348,9 +348,9 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static BackupTracker ToDomain(this BackupTrackerDto backupTrackerDto)
+        public static ElasticsearchSyncRecord ToDomain(this ElasticsearchSyncRecordDto elasticsearchSyncRecordDto)
         {
-            return Mapper<BackupTrackerDto, BackupTracker>(backupTrackerDto, cfg => { cfg.CreateMap<BackupTrackerDto, BackupTracker>(); });
+            return Mapper<ElasticsearchSyncRecordDto, ElasticsearchSyncRecord>(elasticsearchSyncRecordDto, cfg => { cfg.CreateMap<ElasticsearchSyncRecordDto, ElasticsearchSyncRecord>(); });
         }
 
         #endregion

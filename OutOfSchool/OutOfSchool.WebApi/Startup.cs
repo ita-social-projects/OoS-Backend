@@ -179,6 +179,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IBackupOperationService, BackupOperationService>();
             services.AddTransient<IBackupTrackerService, BackupTrackerService>();
 
+            
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
@@ -195,6 +196,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
             services.AddTransient<IEntityRepository<BackupOperation>, EntityRepository<BackupOperation>>();
             services.AddTransient<IEntityRepository<BackupTracker>, EntityRepository<BackupTracker>>();
+            services.AddTransient<IEntityRepository<ElasticsearchSyncRecord>, EntityRepository<ElasticsearchSyncRecord>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository>();
