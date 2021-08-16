@@ -62,6 +62,17 @@ namespace OutOfSchool.ElasticsearchData
         Task<Result> ReIndexAll(IEnumerable<TEntity> source);
 
         /// <summary>
+        /// Use this method to add/update bulk of entities from the source.
+        /// The internal implementation is based on BulkAll-method.
+        /// </summary>
+        /// <param name="source">The source from which entities will be retrieved.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains the status of operation that was proceeded in Elasticsearch.
+        /// If successfull status will be <see cref="Result.Updated"/>.</returns>
+        /// <exception cref="Exception">If response from the Elasticsearch server was Invalid.</exception>
+        Task<Result> IndexAll(IEnumerable<TEntity> source);
+
+        /// <summary>
         /// Use this method to search entities that match the filter's parameters.
         /// If the filter is null, than filter with default values will be used.
         /// If the method is not overrided in the typed inheritor than all entites shoud be returned.

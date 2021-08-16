@@ -89,6 +89,41 @@ namespace OutOfSchool.ElasticsearchData
         }
 
         /// <inheritdoc/>
+        public virtual async Task<Result> IndexAll(IEnumerable<TEntity> source)
+        {
+            var bulkAllObservable = ElasticClient.BulkAll<TEntity>(source, b => b
+                .MaxDegreeOfParallelism(4)
+                .BackOffTime("10s")
+                .BackOffRetries(2)
+                .RefreshOnCompleted()
+                .Size(1000));
+
+            var waitHandle = new ManualResetEvent(false);
+            ExceptionDispatchInfo exceptionDispatchInfo = null;
+            Result result = Result.Error;
+
+            var observer = new BulkAllObserver(
+                onError: exception =>
+                {
+                    exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
+                    waitHandle.Set();
+                },
+                onCompleted: () =>
+                {
+                    result = Result.Updated;
+                    waitHandle.Set();
+                });
+
+            bulkAllObservable.Subscribe(observer);
+
+            waitHandle.WaitOne();
+
+            exceptionDispatchInfo?.Throw();
+
+            return result;
+        }
+
+        /// <inheritdoc/>
         public virtual async Task<SearchResultES<TEntity>> Search(TSearch filter = null)
         {
             var resp = await ElasticClient.SearchAsync<TEntity>(

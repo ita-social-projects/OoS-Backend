@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Services;
 
@@ -6,6 +7,8 @@ namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
+    //[Authorize(AuthenticationSchemes = "Bearer")]
+    //[Authorize(Roles = "admin")]
     public class ElasticsearchSynchronizationController : ControllerBase
     {
         private readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService;
@@ -19,21 +22,6 @@ namespace OutOfSchool.WebApi.Controllers
         public async Task<IActionResult> Synchronize()
         {
             var result = await elasticsearchSynchronizationService.Synchronize().ConfigureAwait(false);
-            return Ok(result);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var result = await elasticsearchSynchronizationService.GetAll().ConfigureAwait(false);
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Synchronize2()
-        {
-            var result = await elasticsearchSynchronizationService.Synchronize2().ConfigureAwait(false);
             return Ok(result);
         }
     }

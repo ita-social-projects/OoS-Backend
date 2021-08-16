@@ -171,14 +171,15 @@ namespace OutOfSchool.WebApi.Services
 
         private async void AddRecordToBackupTracker(long id, BackupOperation operation)
         private async void AddNewRecordToElasticsearchSynchronizationTable(long id, ElasticsearchSyncOperation operation)
+        private async Task<ElasticsearchSyncRecordDto> AddNewRecordToElasticsearchSynchronizationTable(long id, ElasticsearchSyncOperation operation)
         {
-            ElasticsearchSyncRecordDto backupTrackerDto = new ElasticsearchSyncRecordDto()
+            ElasticsearchSyncRecordDto elasticsearchSyncRecordDto = new ElasticsearchSyncRecordDto()
             {
                 Operation = operation,
                 OperationDate = DateTime.UtcNow,
                 RecordId = id,
             };
-            await elasticsearchSynchronizationService.Create(backupTrackerDto).ConfigureAwait(false);
+            return await elasticsearchSynchronizationService.Create(elasticsearchSyncRecordDto).ConfigureAwait(false);
         }
     }
 }
