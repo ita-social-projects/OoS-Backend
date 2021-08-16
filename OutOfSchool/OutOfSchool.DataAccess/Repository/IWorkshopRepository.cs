@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository

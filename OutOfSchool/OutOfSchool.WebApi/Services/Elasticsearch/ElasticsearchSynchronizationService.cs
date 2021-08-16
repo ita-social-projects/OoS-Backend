@@ -96,9 +96,9 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<ElasticsearchSyncRecordDto> Create(ElasticsearchSyncRecordDto dto)
         {
-            var backupTracker = dto.ToDomain();
-            var newBackupTracker = await repository.Create(backupTracker).ConfigureAwait(false);
-            return newBackupTracker.ToModel();
+            var elasticsearchSyncRecord = dto.ToDomain();
+            var newElasticsearchSyncRecord = await repository.Create(elasticsearchSyncRecord).ConfigureAwait(false);
+            return newElasticsearchSyncRecord.ToModel();
         }
     }
 }

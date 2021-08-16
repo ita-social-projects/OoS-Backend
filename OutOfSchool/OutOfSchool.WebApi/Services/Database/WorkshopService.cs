@@ -284,7 +284,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForUpdate()
         {
-            var workshops = await workshopRepository.GetWorkshopsForUpdate().ConfigureAwait(false);
+            var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation.Update).ConfigureAwait(false);
 
             return workshops.Select(x => x.ToModel()).ToList();
         }

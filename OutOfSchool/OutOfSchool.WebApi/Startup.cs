@@ -180,6 +180,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IBackupTrackerService, BackupTrackerService>();
 
             
+
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();

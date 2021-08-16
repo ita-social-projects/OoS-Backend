@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -57,21 +58,22 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public bool ClassExists(long id) => db.Classes.Any(x => x.Id == id);
 
-        public async Task<IEnumerable<Workshop>> GetWorkshopsForUpdate()
+        /// <inheritdoc/>
+        public async Task<IEnumerable<Workshop>> GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation operation)
         {
             var elasticsearchSyncRecords = db.ElasticsearchSyncRecords;
 
-            var resultMaxDate = from r in elasticsearchSyncRecords
-                                group r by r.RecordId into gr
-                                select new { RecordId = gr.Key, MaxOperationDate = gr.Max(r => r.OperationDate) };
+            var resultMaxDates = from record in elasticsearchSyncRecords
+                                 group record by record.RecordId into groupedRecords
+                                 select new { RecordId = groupedRecords.Key, MaxOperationDate = groupedRecords.Max(r => r.OperationDate) };
 
-            var resultCreate = from rMaxDate in resultMaxDate
-                               join r in elasticsearchSyncRecords on new { rMaxDate.RecordId, OperationDate = rMaxDate.MaxOperationDate } equals new { r.RecordId, r.OperationDate } into leftJoin
-                               from rg in leftJoin
-                               where rg.Operation == Enums.ElasticsearchSyncOperation.Create
-                               select new { rg.RecordId, rg.OperationDate, rg.Operation };
+            var result = from rMaxDate in resultMaxDates
+                         join record in elasticsearchSyncRecords on new { rMaxDate.RecordId, OperationDate = rMaxDate.MaxOperationDate } equals new { record.RecordId, record.OperationDate } into leftJoin
+                         from joinedRecord in leftJoin
+                         where joinedRecord.Operation == operation
+                         select new { joinedRecord.RecordId, joinedRecord.OperationDate, joinedRecord.Operation };
 
-            return await db.Workshops.Join(resultCreate, u => u.Id, c => c.RecordId, (u, c) => u).ToListAsync();
+            return await db.Workshops.Join(result, workshop => workshop.Id, result => result.RecordId, (workshop, result) => workshop).ToListAsync();
         }
     }
 }
