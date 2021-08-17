@@ -43,14 +43,11 @@ namespace OutOfSchool.WebApi.Tests.Services
             var directions = context.Directions;
 
             // Arrange
-            var expected = new WorkshopDTO
+            var expected = new WorkshopCard
             {
-                Id = 1,
+                WorkshopId = 1,
                 Title = "w1",
-                DirectionId = 1,
                 Direction = directions.First().Title,
-                Teachers = null,
-                Keywords = new List<string>() {string.Empty},
             };
 
             // Act

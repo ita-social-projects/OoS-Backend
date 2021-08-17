@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IStatisticService> service;
 
         private IEnumerable<DirectionStatistic> categories;
-        private IEnumerable<WorkshopDTO> workshops;
+        private IEnumerable<WorkshopCard> workshops;
 
         [SetUp]
         public void SetUp()
@@ -26,7 +26,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             controller = new StatisticController(service.Object);
 
             categories = FakeDirectionStatistics();
-            workshops = FakeWorkshops();
+            workshops = FakeWorkshopCards();
         }
 
         [Test]
@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetWorkshops_WhenCollectionIsEmpty_ShouldReturnNoContent(int limit)
         {
             // Arrange
-            service.Setup(s => s.GetPopularWorkshops(limit)).ReturnsAsync(new List<WorkshopDTO>());
+            service.Setup(s => s.GetPopularWorkshops(limit)).ReturnsAsync(new List<WorkshopCard>());
 
             // Act
             var result = await controller.GetWorkshops(limit).ConfigureAwait(false) as NoContentResult;
@@ -113,22 +113,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<WorkshopDTO> FakeWorkshops()
+        private IEnumerable<WorkshopCard> FakeWorkshopCards()
         {
-            return new List<WorkshopDTO>()
+            return new List<WorkshopCard>()
             {
-                new WorkshopDTO()
+                new WorkshopCard()
                 {
-                    Id = 1,
+                    WorkshopId = 1,
                     Title = "w1",
-                    DirectionId = 1,
                 },
 
-                new WorkshopDTO()
+                new WorkshopCard()
                 {
-                    Id = 2,
+                    WorkshopId = 2,
                     Title = "w2",
-                    DirectionId = 2,
                 },
             };
         }
