@@ -113,7 +113,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit)
+        public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshops(int limit)
         {
             logger.Information("Getting popular workshops started.");
 
@@ -133,7 +133,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.Information($"All {popularWorkshopsList.Count} records were successfully received");
 
-            return popularWorkshopsList.Select(w => w.ToModelSimple());
+            return popularWorkshopsList.Select(w => w.ToCard());
         }
     }
 }

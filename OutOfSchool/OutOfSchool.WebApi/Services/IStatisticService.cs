@@ -21,6 +21,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="limit">Number of entries.</param>
         /// <returns>List of popular workshops.</returns>
-        Task<IEnumerable<WorkshopDTO>> GetPopularWorkshops(int limit);
+        Task<IEnumerable<WorkshopCard>> GetPopularWorkshops(int limit);
     }
 }
