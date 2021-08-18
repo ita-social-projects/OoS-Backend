@@ -55,74 +55,48 @@ namespace OutOfSchool.WebApi.Tests.Services
             var messagesCount = dbContext.ChatMessages.Count();
 
             // Act
-            var result = await messageService.Create(newMessage).ConfigureAwait(false);
+            var result = await messageService.CreateAsync(newMessage).ConfigureAwait(false);
 
             // Assert
+            Assert.AreNotEqual(default(long), result.Id);
             Assert.AreEqual(dbContext.ChatMessages.Last().Id, result.Id);
-            Assert.AreEqual(5, result.Id);
             Assert.AreEqual(newMessage.Text, result.Text);
             Assert.AreEqual(messagesCount + 1, dbContext.ChatMessages.Count());
         }
         #endregion
 
-        #region GetAllByChatRoomId
+        #region GetMessagesForChatRoomAsync
         [Test]
-        [TestCase(1)]
-        public async Task GetAllByChatRoomId_WhenCalled_ShouldReturnFoundEntities(long id)
+        public async Task GetMessagesForChatRoomAsync_WhenCalled_ShouldReturnFoundEntities()
         {
             // Arrange
-            var expected = await messageRepository.GetByFilter(x => x.ChatRoomId == id);
+            var roomId = 1;
+            var offsetFilter = new OffsetFilter() { From = 1, Size = 2 };
 
             // Act
-            var result = await messageService.GetAllByChatRoomId(id).ConfigureAwait(false);
+            var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.Count(), result.Count());
-            Assert.Greater(result.Count(), 0);
-            Assert.AreEqual(id, result.First().ChatRoomId);
+            Assert.AreEqual(offsetFilter.Size, result.Count());
+            Assert.AreEqual(roomId, result.FirstOrDefault()?.ChatRoomId);
         }
 
         [Test]
-        [TestCase(5)]
-        public async Task GetAllByChatRoomId_WhenCalledWithUnexistedId_ShouldReturnEmptyList(long id)
+        public async Task GetMessagesForChatRoomAsync_WhenCalledWithUnexistedRoomId_ShouldReturnEmptyList()
         {
+            // Arrange
+            var roomId = 5;
+            var offsetFilter = new OffsetFilter() { From = 0, Size = 2 };
+
             // Act
-            var result = await messageService.GetAllByChatRoomId(id).ConfigureAwait(false);
+            var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(0, result.Count());
-        }
-        #endregion
-
-        #region GetAllNotReadByUserInChatRoom
-        [Test]
-        [TestCase(1, "user1")]
-        public async Task GetAllNotReadByUserInChatRoom_WhenCalled_ShouldReturnFoundEntities(long id, string userId)
-        {
-            // Act
-            var result = await messageService.GetAllNotReadByUserInChatRoom(id, userId).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual(id, result.First().ChatRoomId);
-            Assert.AreNotEqual(userId, result.First().UserId);
-            Assert.AreEqual(false, result.First().IsRead);
-        }
-
-        [Test]
-        [TestCase(99, "user1")]
-        public async Task GetAllNotReadByUserInChatRoom_WhenCalledWithUnexistedChatId_ShouldReturnEmptyList(long id, string userId)
-        {
-            // Act
-            var result = await messageService.GetAllNotReadByUserInChatRoom(id, userId).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(0, result.Count());
+            Assert.AreEqual(default(int), result.Count());
         }
         #endregion
 
         #region GetById
-        [Test]
         [TestCase(1)]
         public async Task GetById_WhenIdIsValid_ShouldReturnEntity(long id)
         {
@@ -130,19 +104,19 @@ namespace OutOfSchool.WebApi.Tests.Services
             var expected = await messageRepository.GetById(id);
 
             // Act
-            var result = await messageService.GetById(id).ConfigureAwait(false);
+            var result = await messageService.GetByIdAsync(id).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(expected.Id, result.Id);
+            Assert.AreEqual(expected.Text, result.Text);
         }
 
-        [Test]
         [TestCase(0)]
         [TestCase(99)]
         public async Task GetById_WhenThereIsNoEntityWithId_ShouldReturnNull(long id)
         {
             // Act
-            var result = await messageService.GetById(id).ConfigureAwait(false);
+            var result = await messageService.GetByIdAsync(id).ConfigureAwait(false);
 
             // Assert
             Assert.IsNull(result);
@@ -158,21 +132,21 @@ namespace OutOfSchool.WebApi.Tests.Services
             var updMessage = new ChatMessageDto()
             {
                 Id = 1,
-                UserId = "user1",
                 Text = "newtext",
+                SenderRoleIsProvider = true,
                 ChatRoomId = 1,
                 CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = true,
             };
 
             // Act
-            var result = await messageService.Update(updMessage).ConfigureAwait(false);
+            var result = await messageService.UpdateAsync(updMessage).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(updMessage.Id, result.Id);
             Assert.AreEqual(updMessage.Text, result.Text);
             Assert.AreEqual(messagesCount, dbContext.ChatMessages.Count());
-            Assert.AreEqual("newtext", dbContext.ChatMessages.Find(1L).Text);
+            Assert.AreEqual(updMessage.Text, dbContext.ChatMessages.Find(1L).Text);
         }
 
         [Test]
@@ -183,8 +157,8 @@ namespace OutOfSchool.WebApi.Tests.Services
             var updMessage = new ChatMessageDto()
             {
                 Id = 99,
-                UserId = "user1",
                 Text = "newtext",
+                SenderRoleIsProvider = true,
                 ChatRoomId = 1,
                 CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = true,
@@ -192,73 +166,48 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act and Assert
             Assert.That(
-                async () => await messageService.Update(updMessage).ConfigureAwait(false),
+                async () => await messageService.UpdateAsync(updMessage).ConfigureAwait(false),
                 Throws.Exception.TypeOf<DbUpdateConcurrencyException>());
         }
-
         #endregion
 
-        #region UpdateIsRead
+        #region UpdateIsReadByCurrentUserInChatRoomAsync
         [Test]
-        public async Task UpdateIsRead_WhenEntityIsValid_ShouldUpdateEntityAndSetIsReadTrue()
+        public async Task UpdateIsRead_WhenEntityIsValid_ShouldSetIsReadTrueAndReturnNumberOfFoundEntites()
         {
             // Arrange
             var messagesCount = dbContext.ChatMessages.Count();
-            var list = new List<ChatMessageDto>()
-            {
-                new ChatMessageDto()
-                {
-                    Id = 1,
-                },
-                new ChatMessageDto()
-                {
-                    Id = 2,
-                },
-            };
+            var chatRoomId = 1;
+            var currentUserRoleIsProvider = true;
 
             // Act
-            var result = await messageService.UpdateIsRead(list).ConfigureAwait(false);
+            var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(list.Count, result.Count());
             Assert.AreEqual(messagesCount, dbContext.ChatMessages.Count());
-            Assert.AreEqual(true, dbContext.ChatMessages.Find(1L).IsRead);
-            Assert.AreEqual(true, dbContext.ChatMessages.Find(2L).IsRead);
+            Assert.AreEqual(2, result);
+            Assert.AreEqual(true, dbContext.ChatMessages.Find(3L).IsRead);
+            Assert.AreEqual(true, dbContext.ChatMessages.Find(4L).IsRead);
         }
 
         [Test]
-        public void UpdateIsRead_WhenOneOfTheIdsIsInvalid_ShouldUpdateSomeEntitiesBeforeThroeException()
+        public async Task UpdateIsRead_WhenAllAreAlreadyRead_ShouldReturnNumberZero()
         {
             // Arrange
             var messagesCount = dbContext.ChatMessages.Count();
-            var list = new List<ChatMessageDto>()
-            {
-                new ChatMessageDto()
-                {
-                    Id = 3,
-                },
-                new ChatMessageDto()
-                {
-                    Id = 9,
-                },
-                new ChatMessageDto()
-                {
-                    Id = 4,
-                },
-            };
+            var chatRoomId = 2;
+            var currentUserRoleIsProvider = true;
 
-            // Act and Assert
-            Assert.That(
-                async () => await messageService.UpdateIsRead(list).ConfigureAwait(false),
-                Throws.Exception.TypeOf<DbUpdateConcurrencyException>());
+            // Act
+            var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
 
-            Assert.AreEqual(true, dbContext.ChatMessages.Find(3L).IsRead);
-            Assert.AreNotEqual(true, dbContext.ChatMessages.Find(4L).IsRead);
+            // Assert
+            Assert.AreEqual(messagesCount, dbContext.ChatMessages.Count());
+            Assert.AreEqual(default(int), result);
         }
         #endregion
 
         #region Delete
-        [Test]
         [TestCase(1)]
         public async Task Delete_WhenIdIsValid_ShouldDeleteEntity(long id)
         {
@@ -267,7 +216,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var item = await messageRepository.GetById(1).ConfigureAwait(false);
 
             // Act
-            await messageService.Delete(id).ConfigureAwait(false);
+            await messageService.DeleteAsync(id).ConfigureAwait(false);
 
             var countMessagesAfterDeleting = (await messageRepository.GetAll().ConfigureAwait(false)).Count();
 
@@ -276,13 +225,12 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.AreEqual(countMessagesBeforeDeleting - 1, countMessagesAfterDeleting);
         }
 
-        [Test]
         [TestCase(7)]
         public void Delete_WhenIdIsInvalid_ShouldThrowNullReferenceException(long id)
         {
             // Assert
             Assert.That(
-                async () => await messageService.Delete(id).ConfigureAwait(false),
+                async () => await messageService.DeleteAsync(id).ConfigureAwait(false),
                 Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
         }
         #endregion
@@ -291,9 +239,9 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             newMessage = new ChatMessageDto()
             {
-                UserId = "user1",
-                Text = "text5",
+                Text = "Привіт всім!",
                 ChatRoomId = 1,
+                SenderRoleIsProvider = true,
                 CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
@@ -305,10 +253,12 @@ namespace OutOfSchool.WebApi.Tests.Services
 
                 var messages = new List<ChatMessage>()
                 {
-                    new ChatMessage() { Id = 1, UserId = "user1", ChatRoomId = 1, Text = "text1", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:47"), IsRead = false },
-                    new ChatMessage() { Id = 2, UserId = "user2", ChatRoomId = 1, Text = "text2", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:48"), IsRead = false },
-                    new ChatMessage() { Id = 3, UserId = "user1", ChatRoomId = 2, Text = "text3", CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
-                    new ChatMessage() { Id = 4, UserId = "user2", ChatRoomId = 2, Text = "text4", CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
+                    new ChatMessage() { Id = 1, ChatRoomId = 1, Text = "text1", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.Parse("2021-06-18 15:47"), IsRead = true },
+                    new ChatMessage() { Id = 2, ChatRoomId = 1, Text = "text2", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.Parse("2021-06-18 15:48"), IsRead = true },
+                    new ChatMessage() { Id = 3, ChatRoomId = 1, Text = "text3", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
+                    new ChatMessage() { Id = 4, ChatRoomId = 1, Text = "text4", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
+                    new ChatMessage() { Id = 5, ChatRoomId = 2, Text = "text5", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = true },
+                    new ChatMessage() { Id = 6, ChatRoomId = 2, Text = "text6", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.UtcNow, IsRead = true },
                 };
                 context.ChatMessages.AddRangeAsync(messages);
 
