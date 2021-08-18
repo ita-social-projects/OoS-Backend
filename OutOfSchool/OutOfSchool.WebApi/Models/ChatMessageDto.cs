@@ -7,15 +7,14 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        [Required]
-        [MaxLength(450)]
-        public string UserId { get; set; }
-
         public long ChatRoomId { get; set; }
 
         [Required]
         [MaxLength(200)]
         public string Text { get; set; }
+
+        [Required]
+        public bool SenderRoleIsProvider { get; set; }
 
         public DateTimeOffset CreatedTime { get; set; }
 

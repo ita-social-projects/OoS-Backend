@@ -18,5 +18,8 @@ namespace OutOfSchool.Services.Models
         public string UserId { get; set; }
 
         public virtual User User { get; set; }
+
+        // These properties are only for navigation EF Core.
+        public virtual ICollection<ChatRoom> ChatRooms { get; set; }
     }
 }
