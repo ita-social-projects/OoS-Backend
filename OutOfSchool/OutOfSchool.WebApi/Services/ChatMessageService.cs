@@ -11,6 +11,9 @@ using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
 {
+    /// <summary>
+    /// Service works with repositories for CRUD operations for <see cref = "ChatMessage" />.
+    /// </summary>
     public class ChatMessageService : IChatMessageService
     {
         private readonly IEntityRepository<ChatMessage> repository;
@@ -28,7 +31,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageDto> Create(ChatMessageDto chatMessageDto)
+        public async Task<ChatMessageDto> CreateAsync(ChatMessageDto chatMessageDto)
         {
             if (chatMessageDto is null)
             {
@@ -51,7 +54,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task DeleteAsync(long id)
         {
             logger.LogInformation($"ChatMessage deleting was started. ChatMessage id:{id}");
 
@@ -65,7 +68,7 @@ namespace OutOfSchool.WebApi.Services
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException(nameof(id), $"ChatMessage with id:{id} was not found in the system.");
+                    throw new ArgumentOutOfRangeException(nameof(id), $"{nameof(ChatMessage)} with id:{id} was not found in the system.");
                 }
 
                 logger.LogInformation($"ChatMessage id:{id} was successfully deleted.");
@@ -78,14 +81,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatMessageDto>> GetAllByChatRoomId(long chatRoomId)
+        public async Task<ChatMessageDto> GetByIdAsync(long id)
         {
             logger.LogInformation($"Process of getting all ChatMessages with ChatRoomId:{chatRoomId} was started.");
 
             try
             {
-                var query = repository.Get<long>(where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.Id);
-                var chatMessages = await query.ToListAsync().ConfigureAwait(false);
+                var chatMessages = await repository.GetByFilterNoTracking(x => x.Id == id).ToListAsync().ConfigureAwait(false);
 
                 logger.LogInformation(!chatMessages.Any()
                 ? $"There are no ChatMessages in the system with ChatRoomId:{chatRoomId}"
@@ -107,16 +109,15 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var query = repository.Get<long>(where: x => x.ChatRoomId == chatRoomId && x.UserId != userId && !x.IsRead, orderBy: x => x.Id);
-                var chatMessages = await query.AsNoTracking().ToListAsync().ConfigureAwait(false);
+                var chatMessage = await repository.Update(chatMessageDto.ToDomain()).ConfigureAwait(false);
 
                 logger.LogInformation(!chatMessages.Any()
                 ? $"There are no ChatMessages that are not read in the system with ChatRoomId:{chatRoomId} and UserId:{userId}."
                 : $"Successfully got all {chatMessages.Count} records that are not read with ChatRoomId:{chatRoomId} and UserId:{userId}.");
 
-                return chatMessages.Select(item => item.ToModel()).ToList();
+                return chatMessage.ToModel();
             }
-            catch (Exception exception)
+            catch (DbUpdateConcurrencyException exception)
             {
                 logger.LogError($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {exception.Message}");
                 throw;
@@ -124,13 +125,18 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageDto> GetById(long id)
+        public async Task<IEnumerable<ChatMessageDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter)
         {
             logger.LogInformation($"ChatMessage getting was started. ChatMessage id:{id}");
 
             try
             {
-                var chatMessages = await repository.GetByFilterNoTracking(x => x.Id == id).ToListAsync().ConfigureAwait(false);
+                var query = repository.Get<DateTimeOffset>(skip: offsetFilter.From, take: offsetFilter.Size, where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.CreatedTime, ascending: false);
+                var chatMessages = await query.ToListAsync().ConfigureAwait(false);
+
+                logger.Information(!chatMessages.Any()
+                ? $"There are no records in the system with {nameof(chatRoomId)}:{chatRoomId}."
+                : $"Successfully got all {chatMessages.Count} records with {nameof(chatRoomId)}:{chatRoomId}.");
 
                 if (chatMessages.Count < 1)
                 {
@@ -151,18 +157,18 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageDto> Update(ChatMessageDto chatMessageDto)
+        public async Task<int> UpdateIsReadByCurrentUserInChatRoomAsync(long chatRoomId, bool currentUserRoleIsProvider)
         {
-            if (chatMessageDto is null)
-            {
-                throw new ArgumentNullException($"{nameof(chatMessageDto)}");
-            }
+            logger.Information($"Process of updating {nameof(ChatMessage)}s that are not read by current User started.");
 
             logger.LogInformation($"ChatMessage updating was started. ChatMessage id:{chatMessageDto.Id}");
 
             try
             {
-                var chatMessage = await repository.Update(chatMessageDto.ToDomain()).ConfigureAwait(false);
+                var chatMessages = await repository.Get<long>(where: x => x.ChatRoomId == chatRoomId
+                                                                && (x.SenderRoleIsProvider != currentUserRoleIsProvider)
+                                                                && !x.IsRead)
+                    .ToListAsync().ConfigureAwait(false);
 
                 logger.LogInformation($"ChatMessage id:{chatMessage.Id} was successfully updated.");
 
@@ -175,13 +181,8 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        /// <inheritdoc/>
-        public async Task<IEnumerable<ChatMessageDto>> UpdateIsRead(IEnumerable<ChatMessageDto> chatMessages)
-        {
-            if (chatMessages is null)
-            {
-                throw new ArgumentNullException($"{nameof(chatMessages)}");
-            }
+                    return chatMessages.Count;
+                }
 
             logger.LogInformation($"Process of updating ({chatMessages.Count()}) ChatMessages that are not read was started.");
 

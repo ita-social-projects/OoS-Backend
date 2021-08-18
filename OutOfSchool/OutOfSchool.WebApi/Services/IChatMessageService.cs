@@ -18,47 +18,7 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="ChatMessageDto"/> that was created.</returns>
         /// <exception cref="ArgumentNullException">If the parameter <see cref="ChatMessageDto"/> was not set to instance.</exception>
-        Task<ChatMessageDto> Create(ChatMessageDto chatMessageDto);
-
-        /// <summary>
-        /// Get ChatMessage by it's key.
-        /// </summary>
-        /// <param name="id">Key in the table.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatMessageDto"/> that was found, or null.</returns>
-        Task<ChatMessageDto> GetById(long id);
-
-        /// <summary>
-        /// Get ChatMessage with some ChatRoomId.
-        /// </summary>
-        /// <param name="chatRoomId">ChatRoom's key.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements from the input sequence.</returns>
-        Task<IEnumerable<ChatMessageDto>> GetAllByChatRoomId(long chatRoomId);
-
-        /// <summary>
-        /// Update the ChatMessage.
-        /// </summary>
-        /// <param name="chatMessageDto">The ChatMessage to update.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatMessageDto"/> that was updated.</returns>
-        /// <exception cref="ArgumentNullException">If the parameter <see cref="ChatMessageDto"/> was not set to instance.</exception>
-        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task<ChatMessageDto> Update(ChatMessageDto chatMessageDto);
-
-        /// <summary>
-        /// Update ChatMessages' property "IsRead".
-        /// </summary>
-        /// <param name="chatMessages">A List of ChatMessages that need to be updated.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements that were updated.</returns>
-        /// <exception cref="ArgumentNullException">If the parameter <see cref="IEnumerable{ChatMessageDTO}"/> was not set to instance.</exception>
-        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task<IEnumerable<ChatMessageDto>> UpdateIsRead(IEnumerable<ChatMessageDto> chatMessages);
-
-        /// <summary>
-        /// Get ChatMessages that are not read.
-        /// </summary>
-        /// <param name="chatRoomId">Identifier of ChatRoom where ChatMessages are not read.</param>
-        /// <param name="userId">Identifier of User who did not read ChatMessages.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements from the input sequence.</returns>
-        Task<IEnumerable<ChatMessageDto>> GetAllNotReadByUserInChatRoom(long chatRoomId, string userId);
+        Task<ChatMessageDto> CreateAsync(ChatMessageDto chatMessageDto);
 
         /// <summary>
         /// Delete the ChatMessage.
@@ -67,6 +27,39 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         /// <exception cref="ArgumentOutOfRangeException">If entity with id was not found in system.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task Delete(long id);
+        Task DeleteAsync(long id);
+
+        /// <summary>
+        /// Get ChatMessage by it's key.
+        /// </summary>
+        /// <param name="id">Key in the table.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatMessageDto"/> that was found, or null.</returns>
+        Task<ChatMessageDto> GetByIdAsync(long id);
+
+        /// <summary>
+        /// Update the ChatMessage.
+        /// </summary>
+        /// <param name="chatMessageDto">The ChatMessage to update.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatMessageDto"/> that was updated.</returns>
+        /// <exception cref="ArgumentNullException">If the parameter <see cref="ChatMessageDto"/> was not set to instance.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        Task<ChatMessageDto> UpdateAsync(ChatMessageDto chatMessageDto);
+
+        /// <summary>
+        /// Get a portion of all ChatMessages with specified ChatRoomId.
+        /// </summary>
+        /// <param name="chatRoomId">ChatRoom's key.</param>
+        /// <param name="offsetFilter">Filter to take specified part of entities.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements from the input sequence.</returns>
+        Task<IEnumerable<ChatMessageDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter);
+
+        /// <summary>
+        /// Update ChatMessages' property "IsRead" in specified ChatRoom and specified User.
+        /// </summary>
+        /// <param name="chatRoomId">The key of ChatRoom.</param>
+        /// <param name="currentUserRoleIsProvider">The role of current user.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a number of messages that were updated.</returns>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        Task<int> UpdateIsReadByCurrentUserInChatRoomAsync(long chatRoomId, bool currentUserRoleIsProvider);
     }
 }
