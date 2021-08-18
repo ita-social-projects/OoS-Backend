@@ -49,7 +49,12 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<ChatRoom, ChatRoomDto>();
                 cfg.CreateMap<ChatMessage, ChatMessageDto>();
-                cfg.CreateMap<User, UserDto>();
+                cfg.CreateMap<Workshop, WorkshopCard>()
+                    .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
+                    .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo))
+                    .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
+                cfg.CreateMap<Parent, ParentDtoWithShortUserInfo>();
+                cfg.CreateMap<User, ShortUserDto>();
             });
         }
 
@@ -58,8 +63,13 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ChatRoom, ChatRoomDto>(chatRoom, cfg =>
             {
                 cfg.CreateMap<ChatRoom, ChatRoomDto>()
-                .ForMember(cr => cr.ChatMessages, m => m.Ignore());
-                cfg.CreateMap<User, UserDto>();
+                    .ForMember(cr => cr.ChatMessages, m => m.Ignore());
+                cfg.CreateMap<Workshop, WorkshopCard>()
+                    .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
+                    .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo))
+                    .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
+                cfg.CreateMap<Parent, ParentDtoWithShortUserInfo>();
+                cfg.CreateMap<User, ShortUserDto>();
             });
         }
 
@@ -211,16 +221,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ChatMessageDto, ChatMessage>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageDto, ChatMessage>(); });
         }
 
-        public static ChatRoom ToDomain(this ChatRoomDto chatRoomDTO)
-        {
-            return Mapper<ChatRoomDto, ChatRoom>(chatRoomDTO, cfg =>
-            {
-                cfg.CreateMap<ChatRoomDto, ChatRoom>();
-                cfg.CreateMap<ChatMessageDto, ChatMessage>();
-                cfg.CreateMap<UserDto, User>();
-            });
-        }
-
         public static Child ToDomain(this ChildDto childDto)
         {
             return Mapper<ChildDto, Child>(childDto, cfg =>
@@ -367,6 +367,7 @@ namespace OutOfSchool.WebApi.Extensions
         }
 
         #endregion
+
         private static TDestination Mapper<TSource, TDestination>(
             this TSource source,
             Action<IMapperConfigurationExpression> configure)

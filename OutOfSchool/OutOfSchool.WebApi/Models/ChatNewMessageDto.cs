@@ -10,14 +10,17 @@ namespace OutOfSchool.WebApi.Models
         public long WorkshopId { get; set; }
 
         [Required]
+        [JsonProperty("ParentId")]
+        public long ParentId { get; set; }
+
+        [Required]
         [MaxLength(200)]
         [JsonProperty("Text")]
         public string Text { get; set; }
 
         [Required]
-        [MaxLength(450)]
-        [JsonProperty("ReceiverUserId")]
-        public string ReceiverUserId { get; set; }
+        [JsonProperty("SenderRoleIsProvider")]
+        public bool SenderRoleIsProvider { get; set; }
 
         [JsonProperty("ChatRoomId")]
         public long ChatRoomId { get; set; }

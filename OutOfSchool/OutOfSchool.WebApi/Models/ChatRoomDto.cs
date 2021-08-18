@@ -10,10 +10,15 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long WorkshopId { get; set; }
 
+        [Required]
+        public long ParentId { get; set; }
+
         public int NotReadMessagesCount { get; set; }
 
-        public IEnumerable<ChatMessageDto> ChatMessages { get; set; }
+        public WorkshopCard Workshop { get; set; }
 
-        public IEnumerable<UserDto> Users { get; set; }
+        public ParentDtoWithShortUserInfo Parent { get; set; }
+
+        public ICollection<ChatMessageDto> ChatMessages { get; set; }
     }
 }

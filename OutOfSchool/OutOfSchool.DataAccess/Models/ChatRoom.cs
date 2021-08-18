@@ -10,12 +10,13 @@ namespace OutOfSchool.Services.Models
         [Required]
         public long WorkshopId { get; set; }
 
+        [Required]
+        public long ParentId { get; set; }
+
         public virtual Workshop Workshop { get; set; }
 
-        public virtual IEnumerable<ChatMessage> ChatMessages { get; set; }
+        public virtual Parent Parent { get; set; }
 
-        public virtual IEnumerable<User> Users { get; set; }
-
-        public virtual List<ChatRoomUser> ChatRoomUsers { get; set; }
+        public virtual ICollection<ChatMessage> ChatMessages { get; set; }
     }
 }

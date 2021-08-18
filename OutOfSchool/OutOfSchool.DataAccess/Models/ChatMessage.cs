@@ -8,10 +8,6 @@ namespace OutOfSchool.Services.Models
         public long Id { get; set; }
 
         [Required]
-        [MaxLength(450)]
-        public string UserId { get; set; }
-
-        [Required]
         public long ChatRoomId { get; set; }
 
         [Required]
@@ -19,12 +15,13 @@ namespace OutOfSchool.Services.Models
         public string Text { get; set; }
 
         [Required]
+        public bool SenderRoleIsProvider { get; set; }
+
+        [Required]
         public DateTimeOffset CreatedTime { get; set; }
 
         [Required]
         public bool IsRead { get; set; }
-
-        public virtual User User { get; set; }
 
         public virtual ChatRoom ChatRoom { get; set; }
     }

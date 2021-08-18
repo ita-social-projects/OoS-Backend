@@ -18,8 +18,6 @@ namespace OutOfSchool.Services
 
         public DbSet<ChatRoom> ChatRooms { get; set; }
 
-        public DbSet<ChatRoomUser> ChatRoomUsers { get; set; }
-
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
         public DbSet<Child> Children { get; set; }
@@ -58,26 +56,11 @@ namespace OutOfSchool.Services
                 .HasForeignKey(r => r.ChatRoomId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<ChatMessage>()
-                .HasOne(m => m.User)
-                .WithMany(u => u.ChatMessages)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.Entity<ChatRoom>()
-                .HasMany(r => r.Users)
-                .WithMany(u => u.ChatRooms)
-                .UsingEntity<ChatRoomUser>(
-                j => j
-                    .HasOne(cru => cru.User)
-                    .WithMany(u => u.ChatRoomUsers)
-                    .HasForeignKey(cru => cru.UserId)
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j
-                    .HasOne(cru => cru.ChatRoom)
-                    .WithMany(r => r.ChatRoomUsers)
-                    .HasForeignKey(cru => cru.ChatRoomId)
-                    .OnDelete(DeleteBehavior.Cascade));
+                .HasOne(r => r.Parent)
+                .WithMany(p => p.ChatRooms)
+                .HasForeignKey(r => r.ParentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<ChatRoom>()
                 .HasOne(r => r.Workshop)
