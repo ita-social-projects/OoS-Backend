@@ -48,22 +48,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ChatRoom, ChatRoomDto>(chatRoom, cfg =>
             {
                 cfg.CreateMap<ChatRoom, ChatRoomDto>();
-                cfg.CreateMap<ChatMessage, ChatMessageDto>();
-                cfg.CreateMap<Workshop, WorkshopCard>()
-                    .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                    .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo))
-                    .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
-                cfg.CreateMap<Parent, ParentDtoWithShortUserInfo>();
-                cfg.CreateMap<User, ShortUserDto>();
-            });
-        }
-
-        public static ChatRoomDto ToModelWithoutChatMessages(this ChatRoom chatRoom)
-        {
-            return Mapper<ChatRoom, ChatRoomDto>(chatRoom, cfg =>
-            {
-                cfg.CreateMap<ChatRoom, ChatRoomDto>()
-                    .ForMember(cr => cr.ChatMessages, m => m.Ignore());
                 cfg.CreateMap<Workshop, WorkshopCard>()
                     .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                     .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo))
