@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -13,12 +12,8 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long ParentId { get; set; }
 
-        public int NotReadMessagesCount { get; set; }
-
         public WorkshopCard Workshop { get; set; }
 
         public ParentDtoWithShortUserInfo Parent { get; set; }
-
-        public ICollection<ChatMessageDto> ChatMessages { get; set; }
     }
 }
