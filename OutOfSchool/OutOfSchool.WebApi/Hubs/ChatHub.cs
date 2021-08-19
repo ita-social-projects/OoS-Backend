@@ -8,33 +8,48 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Hubs
 {
     [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Roles = "provider,parent")]
     public class ChatHub : Hub
     {
         // This collection tracks users with their connections.
-        private static readonly ConcurrentDictionary<string, HubUser> Users
-            = new ConcurrentDictionary<string, HubUser>(StringComparer.InvariantCultureIgnoreCase);
+        private static readonly ConcurrentDictionary<string, HashSet<string>> UsersConnections
+            = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.InvariantCultureIgnoreCase);
 
         private readonly ILogger<ChatHub> logger;
         private readonly IChatMessageService messageService;
         private readonly IChatRoomService roomService;
+        private readonly IProviderService providerService;
+        private readonly IParentService parentService;
+        private readonly IWorkshopService workshopService;
+
+        private ParentDTO parent;
+        private ProviderDto provider;
+        private WorkshopDTO workshop;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatHub"/> class.
         /// </summary>
-        /// <param name="chatMessageService">Service for ChatMessage model.</param>
-        /// <param name="chatRoomService">Service for ChatRoom model.</param>
+        /// <param name="chatMessageService">Service for ChatMessage entities.</param>
+        /// <param name="chatRoomService">Service for ChatRoom entities.</param>
+        /// <param name="providerService">Service for Provider entities.</param>
+        /// <param name="parentService">Service for Parent entities.</param>
+        /// <param name="workshopService">Service for Workshop entities.</param>
         /// <param name="logger">Logger.</param>
-        public ChatHub(ILogger<ChatHub> logger, IChatMessageService chatMessageService, IChatRoomService chatRoomService)
+        public ChatHub(ILogger<ChatHub> logger, IChatMessageService chatMessageService, IChatRoomService chatRoomService, IProviderService providerService, IParentService parentService, IWorkshopService workshopService)
         {
             this.logger = logger;
             this.messageService = chatMessageService;
             this.roomService = chatRoomService;
+            this.providerService = providerService;
+            this.parentService = parentService;
+            this.workshopService = workshopService;
         }
 
         public override async Task OnConnectedAsync()
@@ -45,10 +60,21 @@ namespace OutOfSchool.WebApi.Hubs
             this.AddUsersConnectionIdTracking(userId);
 
             // Add User to all Groups where he is a member.
-            var usersRooms = await roomService.GetByUserId(userId).ConfigureAwait(false);
+            IEnumerable<ChatRoomWithLastMessage> usersRooms;
+            if (Role.Provider.ToString().Equals(Context.User.FindFirst("role")?.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                var providerLocal = await providerService.GetByUserId(userId).ConfigureAwait(false);
+                usersRooms = await roomService.GetByProviderIdAsync(providerLocal.Id).ConfigureAwait(false);
+            }
+            else
+            {
+                var parentLocal = await parentService.GetByUserId(userId).ConfigureAwait(false);
+                usersRooms = await roomService.GetByParentIdAsync(parentLocal.Id).ConfigureAwait(false);
+            }
+
             foreach (var room in usersRooms)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, room.Id.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                await Groups.AddToGroupAsync(Context.ConnectionId, room.Id.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
             }
 
             await base.OnConnectedAsync().ConfigureAwait(false);
@@ -65,143 +91,198 @@ namespace OutOfSchool.WebApi.Hubs
         }
 
         /// <summary>
-        /// Creates a <see cref="ChatMessageDto"/>, saves it to DataBase and sends message to Others in Group.
+        /// Creates a <see cref="ChatMessageDto"/>, saves it to the DataBase and sends message to Others in Group.
         /// </summary>
         /// <param name="chatNewMessage">Entity (string format) that contains text of message, receiver and workshop info.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        public async Task SendMessageToOthersInGroup(string chatNewMessage)
+        public async Task SendMessageToOthersInGroupAsync(string chatNewMessage)
         {
-            ChatNewMessageDto chatNewMessageDto = null;
+            logger.LogInformation($"{nameof(SendMessageToOthersInGroupAsync)}.Invoked.");
+
             try
             {
-                chatNewMessageDto = JsonConvert.DeserializeObject<ChatNewMessageDto>(chatNewMessage);
-            }
-            catch (JsonReaderException exception)
-            {
-                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", exception.Message).ConfigureAwait(false);
-                throw;
-            }
+                // deserialize from string to Object
+                ChatNewMessageDto newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatNewMessageDto>(chatNewMessage);
 
-            var senderUserId = Context.User.FindFirst("sub")?.Value;
-            logger.LogInformation($"{nameof(SendMessageToOthersInGroup)}.Invoked.");
-
-            var chatMessageDto = new ChatMessageDto()
-            {
-                UserId = senderUserId,
-                ChatRoomId = 0,
-                Text = chatNewMessageDto.Text,
-                CreatedTime = DateTimeOffset.UtcNow,
-                IsRead = false,
-            };
-
-            bool roomIsNew = false;
-
-            // Validate chat between users and get chatRoom.
-            if (chatNewMessageDto.ChatRoomId > 0 &&
-                (await this.RoomExistAndSenderIsItsParticipant(chatNewMessageDto.ChatRoomId, senderUserId).ConfigureAwait(false)))
-            {
-                chatMessageDto.ChatRoomId = chatNewMessageDto.ChatRoomId;
-            }
-            else
-            {
-                var chatIsPossible = await roomService.UsersCanChatBetweenEachOther(senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId).ConfigureAwait(false);
-                if (!chatIsPossible)
+                // validate received parameters
+                var messageIsValid = await this.ValidateNewMessage(newReceivedAndDeserializedMessage).ConfigureAwait(false);
+                if (!messageIsValid)
                 {
-                    await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", "Chat is forbidden between these users.").ConfigureAwait(false);
+                    string message = "Some of the message parameters were wrong. There are no entities with such Ids or Ids do not belong to sender.";
+                    await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", message).ConfigureAwait(false);
                     return;
+                }
+
+                // create new dto object that will be saved to the database
+                var chatMessageDtoThatWillBeSaved = new ChatMessageDto()
+                {
+                    SenderRoleIsProvider = newReceivedAndDeserializedMessage.SenderRoleIsProvider,
+                    Text = newReceivedAndDeserializedMessage.Text,
+                    CreatedTime = DateTimeOffset.UtcNow,
+                    IsRead = false,
+                    ChatRoomId = 0,
+                };
+
+                bool roomIsNew = false;
+                var existingRoom = await roomService.GetUniqueChatRoomAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId)
+                    .ConfigureAwait(false);
+
+                // set the unique ChatRoomId property according to WorkshopId and ParentId
+                if (existingRoom is null)
+                {
+                    var newChatRoomDto = await roomService.CreateOrReturnExistingAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId)
+                        .ConfigureAwait(false);
+                    chatMessageDtoThatWillBeSaved.ChatRoomId = newChatRoomDto.Id;
+                    roomIsNew = true;
                 }
                 else
                 {
-                    var chatRoomDto = await roomService.CreateOrReturnExisting(
-                                        senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId)
-                                        .ConfigureAwait(false);
-
-                    chatMessageDto.ChatRoomId = chatRoomDto.Id;
-
-                    roomIsNew = true;
+                    chatMessageDtoThatWillBeSaved.ChatRoomId = existingRoom.Id;
                 }
+
+                // Save chatMessage in the system.
+                var createdMessageDto = await messageService.CreateAsync(chatMessageDtoThatWillBeSaved).ConfigureAwait(false);
+
+                if (roomIsNew)
+                {
+                    // Add Parent's connections to the Group if he is online.
+                    await AddConnectionsToGroupAsync(parent.UserId, createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
+
+                    // Add Provider's connections to the Group if he is online.
+                    if (provider is null)
+                    {
+                        provider = await providerService.GetById(workshop.ProviderId).ConfigureAwait(false);
+                        await AddConnectionsToGroupAsync(provider.UserId, createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await AddConnectionsToGroupAsync(provider.UserId, createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
+                    }
+                }
+
+                // Send chatMessage.
+                await Clients.OthersInGroup(createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture) + "WorkshopChat")
+                    .SendAsync("ReceiveMessageInChatGroup", JsonConvert.SerializeObject(createdMessageDto))
+                    .ConfigureAwait(false);
             }
-
-            // Save chatMessage in the system.
-            var createdMessageDto = await messageService.Create(chatMessageDto).ConfigureAwait(false);
-
-            if (roomIsNew)
+            catch (Exception exception)
             {
-                // Add Sender's connections to the Group.
-                await AddConnectionsToGroup(senderUserId, createdMessageDto.ChatRoomId).ConfigureAwait(false);
-
-                // Add Receiver's connections to the Group if he is online.
-                await AddConnectionsToGroup(chatNewMessageDto.ReceiverUserId, createdMessageDto.ChatRoomId).ConfigureAwait(false);
+                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", exception.Message).ConfigureAwait(false);
             }
-
-            // Send chatMessage.
-            await Clients.OthersInGroup(createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture))
-                .SendAsync("ReceiveMessageInChatGroup", JsonConvert.SerializeObject(createdMessageDto))
-                .ConfigureAwait(false);
         }
 
         private void AddUsersConnectionIdTracking(string userId)
         {
-            var hubUser = Users.GetOrAdd(userId, _ => new HubUser
-            {
-                UserId = userId,
-                ConnectionIds = new HashSet<string>(),
-            });
+            var connectionIds = UsersConnections.GetOrAdd(userId, _ => new HashSet<string>());
 
-            lock (hubUser.ConnectionIds)
+            lock (connectionIds)
             {
-                hubUser.ConnectionIds.Add(Context.ConnectionId);
+                connectionIds.Add(Context.ConnectionId);
             }
         }
 
         private void RemoveUsersConnectionIdTracking(string userId)
         {
-            Users.TryGetValue(userId, out HubUser user);
+            bool result = UsersConnections.TryGetValue(userId, out HashSet<string> connectionIds);
 
-            if (user != null)
+            if (result)
             {
-                lock (user.ConnectionIds)
+                lock (connectionIds)
                 {
-                    user.ConnectionIds.RemoveWhere(cid => cid.Equals(Context.ConnectionId, StringComparison.Ordinal));
+                    connectionIds.RemoveWhere(cid => cid.Equals(Context.ConnectionId, StringComparison.Ordinal));
 
-                    if (!user.ConnectionIds.Any())
+                    // if User has no more any ConnectionIds then delete it from dictionary
+                    if (!connectionIds.Any())
                     {
-                        Users.TryRemove(userId, out HubUser removedUser);
+                        UsersConnections.TryRemove(userId, out HashSet<string> removedConnectionIds);
                     }
                 }
             }
         }
 
-        private async Task AddConnectionsToGroup(string userId, long chatRoomId)
+        private async Task AddConnectionsToGroupAsync(string userId, string chatRoomUniqueName)
         {
-            if (Users.TryGetValue(userId, out HubUser user))
+            if (UsersConnections.TryGetValue(userId, out HashSet<string> connectionIds))
             {
-                foreach (var connection in user.ConnectionIds)
+                foreach (var connection in connectionIds)
                 {
-                    await Groups.AddToGroupAsync(connection, chatRoomId.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    await Groups.AddToGroupAsync(connection, chatRoomUniqueName).ConfigureAwait(false);
                 }
             }
         }
 
-        private async Task<bool> RoomExistAndSenderIsItsParticipant(long chatRoomId, string senderId)
+        private async Task SetProviderAndParentAndWorkshopFields(ChatNewMessageDto newMessage)
         {
-            var usersRooms = await roomService.GetByUserId(senderId).ConfigureAwait(false);
-            var room = usersRooms.Where(room => room.Id == chatRoomId).FirstOrDefault();
-            if (room is null)
+            if (newMessage is null)
             {
-                return false;
+                throw new ArgumentNullException($"{nameof(newMessage)}");
+            }
+
+            var userRole = Context.User.FindFirst("role")?.Value;
+            if (Role.Provider.ToString().Equals(userRole, StringComparison.OrdinalIgnoreCase))
+            {
+                // if Sender role is Provider
+                // so all fields need to be settled for future validation if provider is workshop's owner
+                provider = await providerService.GetByUserId(Context.User.FindFirst("sub")?.Value).ConfigureAwait(false);
+                workshop = await workshopService.GetById(newMessage.WorkshopId).ConfigureAwait(false);
+                parent = await parentService.GetById(newMessage.ParentId).ConfigureAwait(false);
+
+                if (provider is null || parent is null || workshop is null)
+                {
+                    throw new ArgumentException($"Some of entites were not found: {nameof(provider)}, {nameof(parent)}, {nameof(workshop)}");
+                }
             }
             else
             {
-                return true;
+                // if Sender role is Parent
+                // so only workshop and parent need to be checked if they exist in the system and Message.ParentId is right
+                parent = await parentService.GetByUserId(Context.User.FindFirst("sub")?.Value).ConfigureAwait(false);
+                workshop = await workshopService.GetById(newMessage.WorkshopId).ConfigureAwait(false);
+
+                if (parent is null || workshop is null)
+                {
+                    throw new ArgumentException($"Some of entites were not found: {nameof(parent)}, {nameof(workshop)}");
+                }
             }
         }
 
-        private class HubUser
+        private async Task<bool> ValidateNewMessage(ChatNewMessageDto newMessage)
         {
-            public string UserId { get; set; }
+            if (newMessage is null)
+            {
+                throw new ArgumentNullException($"{nameof(newMessage)}");
+            }
 
-            public HashSet<string> ConnectionIds { get; set; }
+            await this.SetProviderAndParentAndWorkshopFields(newMessage).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                // if provider is not set to instance, so the sender is Parent
+                // and we check if ParentId is equal to Sender Parent.Id
+                // and SenderRole must be Parent
+                if (newMessage.SenderRoleIsProvider || newMessage.ParentId != parent.Id)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                // if provider is set to instance, so the sender is Provider
+                // and we check if workshop is initialized and has ProviderId equal Sender Provider.Id
+                // and SenderRole must be Provider
+                if (workshop.ProviderId != provider.Id || !newMessage.SenderRoleIsProvider)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
         }
     }
 }

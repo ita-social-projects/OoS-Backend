@@ -15,6 +15,11 @@ namespace OutOfSchool.WebApi.Middlewares
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
+            if (httpContext is null)
+            {
+                throw new ArgumentNullException($"{nameof(httpContext)}");
+            }
+
             var request = httpContext.Request;
 
             // web sockets cannot pass headers so we must take the access token from query param and

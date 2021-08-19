@@ -21,8 +21,5 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         [JsonProperty("SenderRoleIsProvider")]
         public bool SenderRoleIsProvider { get; set; }
-
-        [JsonProperty("ChatRoomId")]
-        public long ChatRoomId { get; set; }
     }
 }
