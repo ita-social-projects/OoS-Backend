@@ -81,7 +81,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageDto> GetByIdAsync(long id)
+        public async Task<ChatMessageDto> GetByIdNoTrackingAsync(long id)
         {
             logger.Information($"Starting to get the {nameof(ChatMessage)} with id:{id}.");
 
@@ -126,6 +126,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChatMessageDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter)
         {
+            if (offsetFilter is null)
+            {
+                offsetFilter = new OffsetFilter() { From = 0, Size = 20 };
+            }
+
             logger.Information($"Process of getting a portion of {nameof(ChatMessage)}s with {nameof(chatRoomId)}:{chatRoomId} was started.");
 
             try
@@ -169,7 +174,7 @@ namespace OutOfSchool.WebApi.Services
                     return chatMessages.Count;
                 }
 
-                return default(int);
+                return default;
             }
             catch (Exception exception)
             {

@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatMessageDto"/> that was found, or null.</returns>
-        Task<ChatMessageDto> GetByIdAsync(long id);
+        Task<ChatMessageDto> GetByIdNoTrackingAsync(long id);
 
         /// <summary>
         /// Update the ChatMessage.
