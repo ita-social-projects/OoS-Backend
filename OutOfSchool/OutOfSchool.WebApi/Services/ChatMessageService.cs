@@ -38,17 +38,17 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException($"{nameof(chatMessageDto)}");
             }
 
-            logger.LogInformation("ChatMessage creating was started.");
+            logger.LogInformation($"{nameof(ChatMessage)} creating was started.");
 
             try
             {
                 var chatMessage = await repository.Create(chatMessageDto.ToDomain()).ConfigureAwait(false);
-                logger.LogInformation($"ChatMessage id:{chatMessage.Id} was saved to DB.");
+                logger.LogInformation($"{nameof(ChatMessage)} id:{chatMessage.Id} was saved to DB.");
                 return chatMessage.ToModel();
             }
             catch (DbUpdateException exception)
             {
-                logger.LogError($"ChatMessage was not created. Exception: {exception.Message}");
+                logger.LogError($"{nameof(ChatMessage)} was not created. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task DeleteAsync(long id)
         {
-            logger.LogInformation($"ChatMessage deleting was started. ChatMessage id:{id}");
+            logger.LogInformation($"{nameof(ChatMessage)} with {nameof(id)}:{id} deleting was started.");
 
             try
             {
@@ -71,55 +71,54 @@ namespace OutOfSchool.WebApi.Services
                     throw new ArgumentOutOfRangeException(nameof(id), $"{nameof(ChatMessage)} with id:{id} was not found in the system.");
                 }
 
-                logger.LogInformation($"ChatMessage id:{id} was successfully deleted.");
+                logger.LogInformation($"{nameof(ChatMessage)} id:{id} was successfully deleted.");
             }
             catch (DbUpdateConcurrencyException exception)
             {
-                logger.LogError($"Deleting ChatMessage id:{id} failed. Exception: {exception.Message}");
+                logger.LogError($"Deleting {nameof(ChatMessage)} id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageDto> GetByIdAsync(long id)
+        public async Task<ChatMessageDto> GetByIdNoTrackingAsync(long id)
         {
-            logger.LogInformation($"Process of getting all ChatMessages with ChatRoomId:{chatRoomId} was started.");
+            logger.LogInformation($"Starting to get the {nameof(ChatMessage)} with id:{id}.");
 
             try
             {
                 var chatMessages = await repository.GetByFilterNoTracking(x => x.Id == id).ToListAsync().ConfigureAwait(false);
 
-                logger.LogInformation(!chatMessages.Any()
-                ? $"There are no ChatMessages in the system with ChatRoomId:{chatRoomId}"
-                : $"Successfully got all {chatMessages.Count} records with ChatRoomId:{chatRoomId}.");
-
-                return chatMessages.Select(item => item.ToModel()).ToList();
+                return chatMessages.SingleOrDefault()?.ToModel();
             }
             catch (Exception exception)
             {
-                logger.LogError($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {exception.Message}");
+                logger.LogError($"Getting {nameof(ChatMessage)} with id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatMessageDto>> GetAllNotReadByUserInChatRoom(long chatRoomId, string userId)
+        public async Task<ChatMessageDto> UpdateAsync(ChatMessageDto chatMessageDto)
         {
-            logger.LogInformation($"Process of getting all ChatMessages that are not read with ChatRoomId:{chatRoomId} and UserId:{userId} was started.");
+            if (chatMessageDto is null)
+            {
+                throw new ArgumentNullException($"{nameof(chatMessageDto)}");
+            }
+
+            logger.LogInformation($"{nameof(ChatMessage)} with id:{chatMessageDto.Id} updating was started.");
 
             try
             {
                 var chatMessage = await repository.Update(chatMessageDto.ToDomain()).ConfigureAwait(false);
 
-                logger.LogInformation(!chatMessages.Any()
-                ? $"There are no ChatMessages that are not read in the system with ChatRoomId:{chatRoomId} and UserId:{userId}."
-                : $"Successfully got all {chatMessages.Count} records that are not read with ChatRoomId:{chatRoomId} and UserId:{userId}.");
+                logger.LogInformation($"{nameof(ChatMessage)} id:{chatMessage.Id} was successfully updated.");
 
                 return chatMessage.ToModel();
             }
             catch (DbUpdateConcurrencyException exception)
             {
-                logger.LogError($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {exception.Message}");
+                logger.LogError($"Updating {nameof(ChatMessage)} with id:{chatMessageDto.Id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -127,31 +126,27 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChatMessageDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter)
         {
-            logger.LogInformation($"ChatMessage getting was started. ChatMessage id:{id}");
+            if (offsetFilter is null)
+            {
+                offsetFilter = new OffsetFilter() { From = 0, Size = 20 };
+            }
+
+            logger.LogInformation($"Process of getting a portion of {nameof(ChatMessage)}s with {nameof(chatRoomId)}:{chatRoomId} was started.");
 
             try
             {
                 var query = repository.Get<DateTimeOffset>(skip: offsetFilter.From, take: offsetFilter.Size, where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.CreatedTime, ascending: false);
                 var chatMessages = await query.ToListAsync().ConfigureAwait(false);
 
-                logger.Information(!chatMessages.Any()
+                logger.LogInformation(!chatMessages.Any()
                 ? $"There are no records in the system with {nameof(chatRoomId)}:{chatRoomId}."
                 : $"Successfully got all {chatMessages.Count} records with {nameof(chatRoomId)}:{chatRoomId}.");
 
-                if (chatMessages.Count < 1)
-                {
-                    logger.LogInformation($"ChatMessage id:{id} was not found.");
-                    return null;
-                }
-                else
-                {
-                    logger.LogInformation($"ChatMessage id:{chatMessages.First().Id} was successfully found.");
-                    return chatMessages.First().ToModel();
-                }
+                return chatMessages.Select(item => item.ToModel()).ToList();
             }
             catch (Exception exception)
             {
-                logger.LogError($"Getting ChatMessage with id:{id} failed. Exception: {exception.Message}");
+                logger.LogError($"Getting all {nameof(ChatMessage)}s with {nameof(chatRoomId)}:{chatRoomId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -159,9 +154,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<int> UpdateIsReadByCurrentUserInChatRoomAsync(long chatRoomId, bool currentUserRoleIsProvider)
         {
-            logger.Information($"Process of updating {nameof(ChatMessage)}s that are not read by current User started.");
-
-            logger.LogInformation($"ChatMessage updating was started. ChatMessage id:{chatMessageDto.Id}");
+            logger.LogInformation($"Process of updating {nameof(ChatMessage)}s that are not read by current User started.");
 
             try
             {
@@ -170,42 +163,24 @@ namespace OutOfSchool.WebApi.Services
                                                                 && !x.IsRead)
                     .ToListAsync().ConfigureAwait(false);
 
-                logger.LogInformation($"ChatMessage id:{chatMessage.Id} was successfully updated.");
-
-                return chatMessage.ToModel();
-            }
-            catch (DbUpdateConcurrencyException exception)
-            {
-                logger.LogError($"Updating ChatMessage with id:{chatMessageDto.Id} failed. Exception: {exception.Message}");
-                throw;
-            }
-        }
+                if (chatMessages.Count > 0)
+                {
+                    foreach (var message in chatMessages)
+                    {
+                        message.IsRead = true;
+                        await repository.Update(message).ConfigureAwait(false);
+                    }
 
                     return chatMessages.Count;
                 }
 
-            logger.LogInformation($"Process of updating ({chatMessages.Count()}) ChatMessages that are not read was started.");
-
-            if (chatMessages.Any())
-            {
-                foreach (var item in chatMessages)
-                {
-                    item.IsRead = true;
-                    try
-                    {
-                        await repository.Update(item.ToDomain()).ConfigureAwait(false);
-                    }
-                    catch (DbUpdateConcurrencyException exception)
-                    {
-                        logger.LogError($"Updating ChatMessage with id:{item.Id} failed. Exception: {exception.Message}");
-                        throw;
-                    }
-                }
-
-                logger.LogInformation($"ChatMessages({chatMessages.Count()}) were successfully updated.");
+                return default;
             }
-
-            return chatMessages;
+            catch (Exception exception)
+            {
+                logger.LogError($"Updating {nameof(ChatMessage)}s' status in {nameof(chatRoomId)}:{chatRoomId} and {nameof(currentUserRoleIsProvider)}:{currentUserRoleIsProvider} failed. Exception: {exception.Message}");
+                throw;
+            }
         }
     }
 }

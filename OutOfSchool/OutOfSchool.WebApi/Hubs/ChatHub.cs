@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Hubs
             try
             {
                 // deserialize from string to Object
-                ChatNewMessageDto newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatNewMessageDto>(chatNewMessage);
+                ChatMessageCreateDto newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatMessageCreateDto>(chatNewMessage);
 
                 // validate received parameters
                 var messageIsValid = await this.ValidateNewMessage(newReceivedAndDeserializedMessage).ConfigureAwait(false);
@@ -211,7 +211,7 @@ namespace OutOfSchool.WebApi.Hubs
             }
         }
 
-        private async Task SetProviderAndParentAndWorkshopFields(ChatNewMessageDto newMessage)
+        private async Task SetProviderAndParentAndWorkshopFields(ChatMessageCreateDto newMessage)
         {
             if (newMessage is null)
             {
@@ -246,7 +246,7 @@ namespace OutOfSchool.WebApi.Hubs
             }
         }
 
-        private async Task<bool> ValidateNewMessage(ChatNewMessageDto newMessage)
+        private async Task<bool> ValidateNewMessage(ChatMessageCreateDto newMessage)
         {
             if (newMessage is null)
             {

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -20,23 +21,37 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Roles = "provider,parent")]
     public class ChatController : ControllerBase
     {
         private readonly IChatMessageService messageService;
         private readonly IChatRoomService roomService;
+        private readonly IProviderService providerService;
+        private readonly IParentService parentService;
+        private readonly IWorkshopService workshopService;
         private readonly IStringLocalizer<SharedResource> localizer;
+
+        private ParentDTO parent;
+        private ProviderDto provider;
+        private WorkshopDTO workshop;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatController"/> class.
         /// </summary>
-        /// <param name="messageService">Service for ChatMessage model.</param>
-        /// <param name="roomService">Service for ChatRoom model.</param>
+        /// <param name="messageService">Service for ChatMessage entities.</param>
+        /// <param name="roomService">Service for ChatRoom entities.</param>
+        /// <param name="providerService">Service for Provider entities.</param>
+        /// <param name="parentService">Service for Parent entities.</param>
+        /// <param name="workshopService">Service for Workshop entities.</param>
         /// <param name="localizer">Localizer.</param>
-        public ChatController(IChatMessageService messageService, IChatRoomService roomService, IStringLocalizer<SharedResource> localizer)
+        public ChatController(IChatMessageService messageService, IChatRoomService roomService, IProviderService providerService, IParentService parentService, IWorkshopService workshopService, IStringLocalizer<SharedResource> localizer)
         {
             this.messageService = messageService;
             this.roomService = roomService;
             this.localizer = localizer;
+            this.providerService = providerService;
+            this.parentService = parentService;
+            this.workshopService = workshopService;
         }
 
         /// <summary>
@@ -51,125 +66,96 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateMessage(ChatNewMessageDto chatNewMessageDto)
+        public async Task<IActionResult> CreateMessageAsync(ChatMessageCreateDto chatNewMessageDto)
         {
+            if (chatNewMessageDto is null)
+            {
+                throw new ArgumentNullException($"{nameof(chatNewMessageDto)}");
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var senderUserId = User.FindFirst("sub")?.Value;
-
-            var chatMessageDto = new ChatMessageDto()
+            // create new dto object that will be saved to the database
+            var chatMessageDtoThatWillBeSaved = new ChatMessageDto()
             {
-                UserId = senderUserId,
-                ChatRoomId = 0,
+                SenderRoleIsProvider = chatNewMessageDto.SenderRoleIsProvider,
                 Text = chatNewMessageDto.Text,
                 CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
+                ChatRoomId = 0,
             };
 
-            if (chatNewMessageDto.ChatRoomId > 0)
-            {
-                var existingChatRoom = await roomService.GetById(chatNewMessageDto.ChatRoomId).ConfigureAwait(false);
-                if (!(existingChatRoom is null) && existingChatRoom.Users.Any(u => u.Id == senderUserId))
-                {
-                    chatMessageDto.ChatRoomId = existingChatRoom.Id;
-                }
-                else
-                {
-                    return StatusCode(403, "Forbidden to write messages to a chat room you are not participating in.");
-                }
-            }
-            else
-            {
-                var chatIsPossible = await roomService.UsersCanChatBetweenEachOther(senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId).ConfigureAwait(false);
-                if (!chatIsPossible)
-                {
-                    return StatusCode(403, "Chat is forbidden between these users.");
-                }
-
-                var chatRoomDto = await roomService.CreateOrReturnExisting(
-                senderUserId, chatNewMessageDto.ReceiverUserId, chatNewMessageDto.WorkshopId)
+            var existingRoom = await roomService.GetUniqueChatRoomAsync(chatNewMessageDto.WorkshopId, chatNewMessageDto.ParentId)
                 .ConfigureAwait(false);
 
-                chatMessageDto.ChatRoomId = chatRoomDto.Id;
-            }
-
-            var createdMessageDto = await messageService.Create(chatMessageDto).ConfigureAwait(false);
-
-            return CreatedAtAction(
-                 nameof(GetMessageById),
-                 new { id = createdMessageDto.Id },
-                 createdMessageDto);
-        }
-
-        /// <summary>
-        /// Get ChatMessage by Id.
-        /// </summary>
-        /// <param name="id">ChatMessage's Id.</param>
-        /// <returns>ChatMessage that was found.</returns>
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatMessageDto))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMessageById(long id)
-        {
-            this.ValidateId(id, localizer);
-
-            var message = await messageService.GetById(id).ConfigureAwait(false);
-
-            if (message is null)
+            // set the unique ChatRoomId property according to WorkshopId and ParentId
+            if (existingRoom is null)
             {
-                return NoContent();
+                // validate received parameters
+                var messageIsValid = await this.ValidateNewMessageAsync(chatNewMessageDto).ConfigureAwait(false);
+                if (!messageIsValid)
+                {
+                    string message = "Some of the message parameters were wrong. There are no entities with such Ids or Ids do not belong to sender.";
+                    return StatusCode(403, message);
+                }
+
+                var newChatRoomDto = await roomService.CreateOrReturnExistingAsync(chatNewMessageDto.WorkshopId, chatNewMessageDto.ParentId)
+                    .ConfigureAwait(false);
+                chatMessageDtoThatWillBeSaved.ChatRoomId = newChatRoomDto.Id;
             }
             else
             {
-                var userId = User.FindFirst("sub")?.Value;
-                if (string.Equals(userId, message.UserId, StringComparison.Ordinal))
+                // validate received parameters
+                bool userHarRights = await this.UserHasRigtsForChatRoomAsync(existingRoom).ConfigureAwait(false);
+                bool userRoleIsProvider = string.Equals(HttpContext.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+                if (!userHarRights || chatNewMessageDto.SenderRoleIsProvider != userRoleIsProvider)
                 {
-                    return Ok(message);
+                    string message = "Some of the message parameters were wrong. User has no rights for this chat room or sender role is set invalid.";
+                    return StatusCode(403, message);
                 }
-                else
-                {
-                    return StatusCode(403, "Forbidden to get messages of another users.");
-                }
+
+                chatMessageDtoThatWillBeSaved.ChatRoomId = existingRoom.Id;
             }
+
+            // Save chatMessage in the system.
+            var createdMessageDto = await messageService.CreateAsync(chatMessageDtoThatWillBeSaved).ConfigureAwait(false);
+
+            return new CreatedResult(string.Empty, createdMessageDto);
         }
 
         /// <summary>
-        /// Get ChatRoom with ChatMessages by ChatRoomId.
+        /// Get ChatRoom without ChatMessages by ChatRoomId.
         /// </summary>
         /// <param name="id">ChatRoom's Id.</param>
-        /// <returns>ChatRoom that was found with its chat messages.</returns>
+        /// <returns>ChatRoom that was found.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetRoomById(long id)
+        public async Task<IActionResult> GetRoomByIdAsync(long id)
         {
             this.ValidateId(id, localizer);
 
-            var userId = User.FindFirst("sub")?.Value;
+            var chatRoom = await roomService.GetByIdAsync(id).ConfigureAwait(false);
 
-            var chatRoom = await roomService.GetById(id).ConfigureAwait(false);
             if (chatRoom is null)
             {
                 return NoContent();
             }
             else
             {
-                if (chatRoom.Users.Any(u => u.Id == userId))
+                if (await this.UserHasRigtsForChatRoomAsync(chatRoom).ConfigureAwait(false))
                 {
                     return Ok(chatRoom);
                 }
                 else
                 {
-                    return StatusCode(403, "Forbidden to read a chat room of another users.");
+                    return StatusCode(403, "Forbidden to get a chat room of another users.");
                 }
             }
         }
@@ -177,75 +163,83 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <summary>
         /// Get a list of ChatRooms for current user.
         /// </summary>
-        /// <returns>List of ChatRooms, messages are not loaded.</returns>
+        /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatRoomDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWithLastMessage>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetUsersRooms()
+        public async Task<IActionResult> GetUsersRoomsAsync()
         {
+            var userRole = User.FindFirst("role")?.Value;
             var userId = User.FindFirst("sub")?.Value;
 
-            var chatRooms = await roomService.GetByUserId(userId).ConfigureAwait(false);
+            IEnumerable<ChatRoomWithLastMessage> chatRooms;
 
-            var newChatRooms = new List<ChatRoomDto>();
-
-            foreach (var room in chatRooms)
+            if (string.Equals(userRole, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                var notReadMessages = await messageService.GetAllNotReadByUserInChatRoom(room.Id, userId).ConfigureAwait(false);
-                room.NotReadMessagesCount = notReadMessages.Count();
-                newChatRooms.Add(room);
+                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+                chatRooms = await roomService.GetByProviderIdAsync(provider.Id).ConfigureAwait(false);
+            }
+            else
+            {
+                var parent = await parentService.GetByUserId(userId).ConfigureAwait(false);
+                chatRooms = await roomService.GetByParentIdAsync(parent.Id).ConfigureAwait(false);
             }
 
-            return Ok(newChatRooms);
+            if (!chatRooms.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(chatRooms);
         }
 
         /// <summary>
         /// Set status IsRead on true for each user's ChatMessage in the ChatRoom.
         /// </summary>
         /// <param name="chatRoomId">ChatRoom's Id.</param>
-        /// <returns>List of successfully updated items.</returns>
+        /// <returns>Number of successfully updated items.</returns>
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatMessageDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMessagesStatus(long chatRoomId)
+        public async Task<IActionResult> UpdateMessagesStatusAsync(long chatRoomId)
         {
             this.ValidateId(chatRoomId, localizer);
 
-            var userId = User.FindFirst("sub")?.Value;
-
-            var room = await roomService.GetById(chatRoomId).ConfigureAwait(false);
+            var room = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
 
             if (room is null)
             {
                 return NoContent();
             }
 
-            if (!room.Users.Any(x => x.Id == userId))
+            if (!await this.UserHasRigtsForChatRoomAsync(room).ConfigureAwait(false))
             {
-                return BadRequest($"User is not a participant of chat:{chatRoomId}");
+                return BadRequest($"User is not a participant of the chat:{chatRoomId}");
             }
 
-            var chatMessages = await messageService.GetAllNotReadByUserInChatRoom(chatRoomId, userId).ConfigureAwait(false);
+            bool userRoleIsProvider = string.Equals(HttpContext.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
-            if (chatMessages.Any())
+            var numberOfUpdatedMessages = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, userRoleIsProvider).ConfigureAwait(false);
+
+            if (numberOfUpdatedMessages > 0)
             {
-                chatMessages = await messageService.UpdateIsRead(chatMessages).ConfigureAwait(false);
-                return Ok(chatMessages);
+                return Ok(numberOfUpdatedMessages);
             }
             else
             {
-                return Ok(chatMessages);
+                return NoContent();
             }
         }
 
         /// <summary>
         /// Update ChatMessage info.
         /// </summary>
-        /// <param name="chatMessageDto">Entity that will be updated.</param>
+        /// <param name="updatedChatMessage">Entity that will be updated.</param>
         /// <returns>Successfully updated item.</returns>
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatMessageDto))]
@@ -254,32 +248,35 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMessage(ChatMessageDto chatMessageDto)
+        public async Task<IActionResult> UpdateMessageAsync(ChatMessageUpdateDto updatedChatMessage)
         {
-            this.ValidateId(chatMessageDto.Id, localizer);
+            if (updatedChatMessage is null)
+            {
+                throw new ArgumentNullException($"{nameof(updatedChatMessage)}");
+            }
 
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var userId = User.FindFirst("sub")?.Value;
+            var oldChatMessage = await messageService.GetByIdNoTrackingAsync(updatedChatMessage.Id).ConfigureAwait(false);
 
-            var oldChatMessage = await messageService.GetById(chatMessageDto.Id).ConfigureAwait(false);
+            var chatRoom = await roomService.GetByIdAsync(oldChatMessage.ChatRoomId).ConfigureAwait(false);
 
-            if (oldChatMessage is null)
+            if (oldChatMessage is null
+                || chatRoom is null
+                || (oldChatMessage.Text == updatedChatMessage.Text))
             {
                 return NoContent();
             }
 
-            if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
-            {
-                return StatusCode(403, "Forbidden to change messages of another users.");
-            }
+            bool userRoleIsProvider = string.Equals(HttpContext.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
-            if (oldChatMessage.ChatRoomId != chatMessageDto.ChatRoomId)
+            if (!await this.UserHasRigtsForChatRoomAsync(chatRoom).ConfigureAwait(false)
+                || (oldChatMessage.SenderRoleIsProvider != userRoleIsProvider))
             {
-                return StatusCode(403, "Forbidden to change chat room.");
+                return StatusCode(403, "You can change only text of your messages only in chat rooms where you participate.");
             }
 
             var whenMessageBecomesOld = new TimeSpan(0, 10, 0);
@@ -289,9 +286,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return StatusCode(403, "Forbidden to change old messages.");
             }
 
-            oldChatMessage.Text = chatMessageDto.Text;
+            oldChatMessage.Text = updatedChatMessage.Text;
 
-            var updatedMessage = await messageService.Update(oldChatMessage).ConfigureAwait(false);
+            var updatedMessage = await messageService.UpdateAsync(oldChatMessage).ConfigureAwait(false);
 
             return Ok(updatedMessage);
         }
@@ -306,32 +303,34 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteMessage(long id)
+        public async Task<IActionResult> DeleteMessageAsync(long id)
         {
             this.ValidateId(id, localizer);
 
-            var userId = User.FindFirst("sub")?.Value;
+            var messageThatIsDeleting = await messageService.GetByIdNoTrackingAsync(id).ConfigureAwait(false);
+            var chatRoom = await roomService.GetByIdAsync(messageThatIsDeleting.ChatRoomId).ConfigureAwait(false);
 
-            var oldChatMessage = await messageService.GetById(id).ConfigureAwait(false);
-
-            if (oldChatMessage is null)
+            if (messageThatIsDeleting is null || chatRoom is null)
             {
                 return NoContent();
             }
 
-            if (!string.Equals(userId, oldChatMessage.UserId, StringComparison.Ordinal))
+            bool userRoleIsProvider = string.Equals(HttpContext.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            if (!await this.UserHasRigtsForChatRoomAsync(chatRoom).ConfigureAwait(false)
+                || (messageThatIsDeleting.SenderRoleIsProvider != userRoleIsProvider))
             {
-                return StatusCode(403, "Forbidden to delete messages of another users.");
+                return StatusCode(403, "You can delete only your messages only in chat rooms where you participate.");
             }
 
             var whenMessageBecomesOld = new TimeSpan(0, 10, 0);
 
-            if (oldChatMessage.CreatedTime.CompareTo(DateTimeOffset.UtcNow.Subtract(whenMessageBecomesOld)) < 0)
+            if (messageThatIsDeleting.CreatedTime.CompareTo(DateTimeOffset.UtcNow.Subtract(whenMessageBecomesOld)) < 0)
             {
                 return StatusCode(403, "Forbidden to delete old messages.");
             }
 
-            await messageService.Delete(id).ConfigureAwait(false);
+            await messageService.DeleteAsync(id).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -346,32 +345,173 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteRoom(long id)
+        public async Task<IActionResult> DeleteRoomAsync(long id)
         {
             this.ValidateId(id, localizer);
 
-            var userId = User.FindFirst("sub")?.Value;
-
-            var room = await roomService.GetById(id).ConfigureAwait(false);
+            var room = await roomService.GetByIdAsync(id).ConfigureAwait(false);
 
             if (room is null)
             {
                 return NoContent();
             }
 
-            if (room.ChatMessages.Any())
+            var roomMessages = await messageService.GetMessagesForChatRoomAsync(id, new OffsetFilter() { From = 0, Size = 1 }).ConfigureAwait(false);
+            if (roomMessages.Any())
             {
                 return StatusCode(403, "Forbidden to delete a chat room with chat messages.");
             }
 
-            if (!room.Users.Any(x => x.Id == userId))
+            if (!await this.UserHasRigtsForChatRoomAsync(room).ConfigureAwait(false))
             {
-                return StatusCode(403, "Forbidden to delete a chat room of another users.");
+                return StatusCode(403, "You can delete only chat rooms where you participate.");
             }
 
-            await roomService.Delete(id).ConfigureAwait(false);
+            await roomService.DeleteAsync(id).ConfigureAwait(false);
 
             return NoContent();
+        }
+
+        private async Task SetProviderParentAndWorkshopFieldsAccordingToSenderRoleAsync(long workshopId, long parentId)
+        {
+            var userRole = HttpContext.User.FindFirst("role")?.Value;
+            if (Role.Provider.ToString().Equals(userRole, StringComparison.OrdinalIgnoreCase))
+            {
+                // if Sender role is Provider
+                // so all fields need to be settled for future validation if provider is workshop's owner
+                provider = await providerService.GetByUserId(HttpContext.User.FindFirst("sub")?.Value).ConfigureAwait(false);
+                workshop = await workshopService.GetById(workshopId).ConfigureAwait(false);
+                parent = await parentService.GetById(parentId).ConfigureAwait(false);
+
+                if (provider is null || parent is null || workshop is null)
+                {
+                    throw new ArgumentException($"Some of entites were not found: {nameof(provider)}, {nameof(parent)}, {nameof(workshop)}");
+                }
+            }
+            else
+            {
+                // if Sender role is Parent
+                // so only workshop and parent need to be checked if they exist in the system and Message.ParentId is right
+                parent = await parentService.GetByUserId(HttpContext.User.FindFirst("sub")?.Value).ConfigureAwait(false);
+                workshop = await workshopService.GetById(workshopId).ConfigureAwait(false);
+
+                if (parent is null || workshop is null)
+                {
+                    throw new ArgumentException($"Some of entites were not found: {nameof(parent)}, {nameof(workshop)}");
+                }
+            }
+        }
+
+        private async Task<bool> ValidateNewMessageAsync(ChatMessageCreateDto newMessage)
+        {
+            if (newMessage is null)
+            {
+                throw new ArgumentNullException($"{nameof(newMessage)}");
+            }
+
+            try
+            {
+                await this.SetProviderParentAndWorkshopFieldsAccordingToSenderRoleAsync(newMessage.WorkshopId, newMessage.ParentId).ConfigureAwait(false);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (provider is null)
+            {
+                // if provider is not set to instance, so the sender is Parent
+                // and we check if ParentId is equal to Sender Parent.Id
+                // and SenderRole must be Parent
+                if (newMessage.SenderRoleIsProvider || newMessage.ParentId != parent.Id)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                // if provider is set to instance, so the sender is Provider
+                // and we check if workshop is initialized and has ProviderId equal Sender Provider.Id
+                // and SenderRole must be Provider
+                if (workshop.ProviderId != provider.Id || !newMessage.SenderRoleIsProvider)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
+        private async Task SetProviderAndWorkshopFieldsOrParentFieldAccordingToUserRoleAsync(long workshopId)
+        {
+            var userRole = HttpContext.User.FindFirst("role")?.Value;
+            if (Role.Provider.ToString().Equals(userRole, StringComparison.OrdinalIgnoreCase))
+            {
+                // if User role is Provider
+                // so provider and workshop fields need to be settled for future validation if provider is workshop's owner
+                provider = await providerService.GetByUserId(HttpContext.User.FindFirst("sub")?.Value).ConfigureAwait(false);
+                workshop = await workshopService.GetById(workshopId).ConfigureAwait(false);
+
+                if (provider is null || workshop is null)
+                {
+                    throw new ArgumentException($"Some of entites were not found: {nameof(provider)}, {nameof(workshop)}");
+                }
+            }
+            else
+            {
+                // if User role is Parent
+                // so only parent need to be checked if he has rights to get information
+                parent = await parentService.GetByUserId(HttpContext.User.FindFirst("sub")?.Value).ConfigureAwait(false);
+
+                if (parent is null)
+                {
+                    throw new ArgumentException($"Some of entites were not found: {nameof(parent)}");
+                }
+            }
+        }
+
+        private async Task<bool> UserHasRigtsForChatRoomAsync(ChatRoomDto chatRoomDto)
+        {
+            if (chatRoomDto is null)
+            {
+                throw new ArgumentNullException($"{nameof(chatRoomDto)}");
+            }
+
+            await this.SetProviderAndWorkshopFieldsOrParentFieldAccordingToUserRoleAsync(chatRoomDto.WorkshopId).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                // if provider is not set to instance, so the user is Parent
+                // and we check if ParentId is equal to Sender Parent.Id
+                // and SenderRole must be Parent
+                if (chatRoomDto.ParentId != parent.Id)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                // if provider is set to instance, so the user is Provider
+                // and we check if ProviderId equal user Provider.Id
+                if (workshop.ProviderId != provider.Id)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
         }
     }
 }

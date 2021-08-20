@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var expected = await messageRepository.GetById(id);
 
             // Act
-            var result = await messageService.GetByIdAsync(id).ConfigureAwait(false);
+            var result = await messageService.GetByIdNoTrackingAsync(id).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(expected.Id, result.Id);
@@ -116,7 +116,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetById_WhenThereIsNoEntityWithId_ShouldReturnNull(long id)
         {
             // Act
-            var result = await messageService.GetByIdAsync(id).ConfigureAwait(false);
+            var result = await messageService.GetByIdNoTrackingAsync(id).ConfigureAwait(false);
 
             // Assert
             Assert.IsNull(result);
