@@ -6,11 +6,12 @@ namespace OutOfSchool.Services.Repository
 {
     public class PhotoRepository : IPhotoRepository
     {
+        private const string Key = "PhotoSettings:BasePath";
         private readonly string basePhotoPath;
 
         public PhotoRepository(IConfiguration config)
         {
-            basePhotoPath = config.GetSection("PhotoSettings:BasePath").Value;
+            basePhotoPath = config.GetSection(Key).Value;
         }
 
         /// <summary>
@@ -19,13 +20,13 @@ namespace OutOfSchool.Services.Repository
         /// <param name="photo">Photo as byte array.</param>
         /// <param name="fileName">Photo name.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task CreateUpdatePhoto(byte[] photo, string fileName)
+        public Task CreateUpdatePhotoAsync(byte[] photo, string fileName)
         {
             var filePath = GenerateFilePath(fileName);
 
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-            await File.WriteAllBytesAsync(filePath, photo).ConfigureAwait(false);
+            return File.WriteAllBytesAsync(filePath, photo);
         }
 
         /// <summary>
@@ -42,9 +43,12 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="fileName">Photo name.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task<byte[]> GetPhoto(string fileName)
+        public async Task<Stream> GetPhotoAsync(string fileName)
         {
-            return await File.ReadAllBytesAsync(GenerateFilePath(fileName)).ConfigureAwait(false);
+            return await Task.Run(() =>
+            {
+                return new FileStream(GenerateFilePath(fileName), FileMode.Open);
+            });
         }
 
         private string GenerateFilePath(string fileName)

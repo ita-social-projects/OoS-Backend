@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
@@ -19,6 +20,7 @@ namespace OutOfSchool.WebApi.Controllers
     public class PhotoController : ControllerBase
     {
         private readonly IPhotoStorage photoService;
+        private readonly IContentTypeProvider contentTypeProvider;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly long maxSize;
 
@@ -26,13 +28,15 @@ namespace OutOfSchool.WebApi.Controllers
         /// Initializes a new instance of the <see cref="PhotoController"/> class.
         /// </summary>
         /// <param name="photoService">Service for Photo model.</param>
+        /// <param name="contentTypeProvider">Provides a mapping between file extensions and MIME types.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="config">Config.</param>
-        public PhotoController(IPhotoStorage photoService, IStringLocalizer<SharedResource> localizer, IConfiguration config)
+        public PhotoController(IPhotoStorage photoService, IContentTypeProvider contentTypeProvider, IStringLocalizer<SharedResource> localizer, IConfiguration config)
         {
             this.localizer = localizer;
             this.photoService = photoService;
-            this.maxSize = config.GetValue<long>("PhotoSettings:MaxSize");
+            this.contentTypeProvider = contentTypeProvider;
+            this.maxSize = config.GetValue<long>("PhotoSettings:MaxSizeBytes");
         }
 
         /// <summary>
@@ -41,68 +45,96 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="fileName">Name of the file.</param>
         /// <returns>Photo.</returns>
         [HttpGet]
-        [Authorize(Roles = "parent,provider,admin")]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetFile(string fileName)
         {
-            var bytes = await photoService.GetFile(fileName).ConfigureAwait(false);
+            var contentType = GetFormat(fileName);
 
-            return File(bytes, MimeTypeMap.CurentContentType);
+            var stream = await photoService.GetFile(fileName).ConfigureAwait(false);
+
+            return File(stream, contentType);
         }
 
         /// <summary>
-        /// Get names of the files by it's keys.
+        ///  Get names of the files of the provider entity by it's id.
         /// </summary>
-        /// <param name="entityId">Id of the some entity.</param>
-        /// <param name="entityType">Type of the some entity.</param>
+        /// <param name="entityId">Id of the provider entity.</param>
         /// <returns>List of paths.</returns>
-        [HttpGet("{entityId}/{entityType}")]
-        [Authorize(Roles = "parent,provider,admin")]
+        [HttpGet("{entityId}")]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetFilesNames(long entityId, EntityType entityType)
+        public async Task<IActionResult> Provider(long entityId)
         {
             this.ValidateId(entityId, localizer);
 
-            return Ok(await photoService.GetFilesNames(entityId, entityType).ConfigureAwait(false));
+            return Ok(await photoService.GetFilesNames(entityId, EntityType.Provider).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Get name of the file by it's keys.
+        /// Get names of the files of the workshop entity by it's id.
         /// </summary>
-        /// <param name="entityId">Id of the some entity.</param>
-        /// <param name="entityType">Type of the some entity.</param>
-        /// <returns>Path of file.</returns>
-        [HttpGet("{entityId}/{entityType}")]
-        [Authorize(Roles = "parent,provider,admin")]
+        /// <param name="entityId">Id of the workshop entity.</param>
+        /// <returns>List of paths.</returns>
+        [HttpGet("{entityId}")]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetFileName(long entityId, EntityType entityType)
+        public async Task<IActionResult> Workshop(long entityId)
         {
             this.ValidateId(entityId, localizer);
 
-            return Ok(await photoService.GetFileName(entityId, entityType).ConfigureAwait(false));
+            return Ok(await photoService.GetFilesNames(entityId, EntityType.Workshop).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Create new photo.
+        /// Get file name of the teacher entity by it's id.
+        /// </summary>
+        /// <param name="entityId">Id of the teacher entity.</param>
+        /// <returns>Path of file.</returns>
+        [HttpGet("{entityId}")]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Teacher(long entityId)
+        {
+            this.ValidateId(entityId, localizer);
+
+            return Ok(await photoService.GetFileName(entityId, EntityType.Teacher).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Create new photo for teacher.
         /// </summary>
         /// <param name="photo">File.</param>
         /// <returns>Created photo info.</returns>
         [HttpPost]
-        [Authorize(Roles = "parent,provider,admin")]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PhotoDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateFile([FromForm] PhotoDto photo)
+        public async Task<IActionResult> Teacher([FromForm] PhotoDto photo)
         {
             if (!ModelState.IsValid)
             {
@@ -111,36 +143,43 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (photo is null)
             {
-                return BadRequest("Photo object is null!");
+                return BadRequest("Photo object is null.");
             }
 
             if (photo.File is null)
             {
-                return BadRequest("Photo is null!");
+                return BadRequest("Photo is null.");
             }
 
-            if (!IsFileValid(photo.File))
+            if (!IsSizeValid(photo.File))
             {
-                return BadRequest("The size or extension of the photo invalid!");
+                return BadRequest("The size of the photo invalid.");
             }
 
-            var result = await photoService.AddFile(photo).ConfigureAwait(false);
+            if (!IsExtensionValid(photo.File))
+            {
+                return BadRequest("Extension of the photo invalid.");
+            }
+
+            var result = await photoService.AddFile(photo, EntityType.Teacher).ConfigureAwait(false);
 
             return Ok(result);
         }
 
         /// <summary>
-        /// Create new photos.
+        /// Create new photos for workshop.
         /// </summary>
         /// <param name="photos">Files.</param>
         /// <returns>Created photos info.</returns>
         [HttpPost]
-        [Authorize(Roles = "parent,provider,admin")]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PhotoDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateFiles([FromForm] PhotosDto photos)
+        public async Task<IActionResult> Workshop([FromForm] PhotosDto photos)
         {
             if (!ModelState.IsValid)
             {
@@ -149,23 +188,66 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (photos is null)
             {
-                return BadRequest("Photos object are null!");
-            }
-
-            if (photos.Files is null)
-            {
-                return BadRequest("Photos are null!");
+                return BadRequest("Photos object are null.");
             }
 
             foreach (var photo in photos.Files)
             {
-                if (!IsFileValid(photo))
+                if (!IsSizeValid(photo))
                 {
-                    return BadRequest("The size or extension of the photo invalid!");
+                    return BadRequest("The size of the photo invalid.");
+                }
+
+                if (!IsExtensionValid(photo))
+                {
+                    return BadRequest("Extension of the photo invalid.");
                 }
             }
 
-            var result = await photoService.AddFiles(photos).ConfigureAwait(false);
+            var result = await photoService.AddFiles(photos, EntityType.Workshop).ConfigureAwait(false);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Create new photos for provider.
+        /// </summary>
+        /// <param name="photos">Files.</param>
+        /// <returns>Created photos info.</returns>
+        [HttpPost]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PhotoDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Provider([FromForm] PhotosDto photos)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (photos is null)
+            {
+                return BadRequest("Photos object are null.");
+            }
+
+            foreach (var photo in photos.Files)
+            {
+                if (!IsSizeValid(photo))
+                {
+                    return BadRequest("The size of the photo invalid.");
+                }
+
+                if (!IsExtensionValid(photo))
+                {
+                    return BadRequest("Extension of the photo invalid.");
+                }
+            }
+
+            var result = await photoService.AddFiles(photos, EntityType.Provider).ConfigureAwait(false);
 
             return Ok(result);
         }
@@ -176,7 +258,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="fileName">Photo name.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpDelete]
-        [Authorize(Roles = "parent,provider,admin")]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -185,7 +269,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (fileName is null)
             {
-                return BadRequest("File Path can not be null!");
+                return BadRequest("File Path can not be null.");
             }
 
             await photoService.DeleteFile(fileName).ConfigureAwait(false);
@@ -199,7 +283,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="filesNames">Names of the photos.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpDelete]
-        [Authorize(Roles = "parent,provider,admin")]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -208,7 +294,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (filesNames is null)
             {
-                return BadRequest("Paths of the files can not be null!");
+                return BadRequest("Paths of the files can not be null.");
             }
 
             await photoService.DeleteFiles(filesNames).ConfigureAwait(false);
@@ -222,7 +308,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="photo">New file.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPut]
-        [Authorize(Roles = "parent,provider,admin")]
+        [Authorize(Roles = "parent")]
+        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -236,17 +324,22 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (photo is null)
             {
-                return BadRequest("Photo object is null!");
+                return BadRequest("Photo object is null.");
             }
 
             if (photo.File is null)
             {
-                return BadRequest("Photo is null!");
+                return BadRequest("Photo is null.");
             }
 
-            if (!IsFileValid(photo.File))
+            if (!IsSizeValid(photo.File))
             {
-                return BadRequest("The size or extension of the photo invalid!");
+                return BadRequest("The size of the photo invalid.");
+            }
+
+            if (!IsExtensionValid(photo.File))
+            {
+                return BadRequest("Extension of the photo invalid.");
             }
 
             await photoService.UpdateFile(photo).ConfigureAwait(false);
@@ -254,23 +347,49 @@ namespace OutOfSchool.WebApi.Controllers
             return NoContent();
         }
 
-        private bool IsFileValid(IFormFile photo)
+        private bool IsSizeValid(IFormFile photo)
         {
             if (photo.Length > maxSize)
             {
                 return false;
             }
-
-            try
+            else
             {
-                MimeTypeMap.GetExtension(photo.ContentType);
+                return true;
             }
-            catch (ArgumentException)
+        }
+
+        private bool IsExtensionValid(IFormFile photo)
+        {
+            var contentType = GetFormat(photo.FileName);
+
+            if (string.IsNullOrEmpty(contentType))
             {
                 return false;
             }
+            else
+            {
+                return true;
+            }
+        }
 
-            return true;
+        private string GetFormat(string fileName)
+        {
+            string contentType;
+
+            if (!contentTypeProvider.TryGetContentType(fileName, out contentType))
+            {
+                contentType = string.Empty;
+            }
+
+            if (contentType is ImageTypeNames.Jpeg || contentType is ImageTypeNames.Png)
+            {
+                return contentType;
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
     }
 }

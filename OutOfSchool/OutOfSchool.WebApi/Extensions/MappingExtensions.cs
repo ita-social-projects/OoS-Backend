@@ -136,7 +136,6 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<Photo, PhotoDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
-                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(c => c.EntityType))
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
                 .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.FileName))
                 .ForMember(dest => dest.File, opt => opt.Ignore());
@@ -288,7 +287,6 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<PhotoDto, Photo>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
-                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(c => c.EntityType))
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
                 .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.FileName));
             });
@@ -299,7 +297,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<PhotosDto, Photo>(photosDto, cfg =>
             {
                 cfg.CreateMap<PhotosDto, Photo>()
-                .ForMember(dest => dest.EntityType, opt => opt.MapFrom(c => c.EntityType))
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
                 .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.FileName));
             });

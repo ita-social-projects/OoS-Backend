@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
-using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -9,11 +8,9 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long EntityId { get; set; }
 
-        [Required]
-        public EntityType EntityType { get; set; }
-
         public string FileName { get; set; }
 
+        [Required]
         public IFormFileCollection Files { get; set; }
     }
 }

@@ -13,9 +13,6 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long EntityId { get; set; }
 
-        [Required]
-        public EntityType EntityType { get; set; }
-
         public IFormFile File { get; set; }
     }
 }

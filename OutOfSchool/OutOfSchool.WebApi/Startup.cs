@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -173,6 +174,9 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IPhotoRepository, PhotoRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
+
+            // photo services
+            services.AddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
             services.AddSingleton(Log.Logger);
 

@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<PhotoDto> AddFile(PhotoDto photo)
+        public async Task<PhotoDto> AddFile(PhotoDto photo, EntityType entityType)
         {
             try
             {
@@ -51,13 +51,17 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                     throw new ArgumentNullException(localizer["Photo can not be null!."]);
                 }
 
-                photo.FileName = $"{photo.EntityId}_{photo.EntityType}{Path.GetExtension(photo.File.FileName)}";
+                photo.FileName = $"{Guid.NewGuid()}{Path.GetExtension(photo.File.FileName)}";
 
-                var requiredSize = GetSizeByEntity(photo.EntityType);
+                var requiredSize = GetSizeByEntity(entityType);
 
-                await CreateUpdatePhoto(photo.File, Path.Combine(photo.EntityType.ToString(), photo.FileName), requiredSize).ConfigureAwait(false);
+                await CreateUpdatePhoto(photo.File, Path.Combine(entityType.ToString(), photo.FileName), requiredSize).ConfigureAwait(false);
 
-                var createdPhoto = await repositoryDB.Create(photo.ToDomain()).ConfigureAwait(false);
+                var photoInfo = photo.ToDomain();
+
+                photoInfo.EntityType = entityType;
+
+                var createdPhoto = await repositoryDB.Create(photoInfo).ConfigureAwait(false);
 
                 logger.Information($"Photo with Id = {photo?.Id} created successfully.");
 
@@ -71,7 +75,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<List<PhotoDto>> AddFiles(PhotosDto photos)
+        public async Task<List<PhotoDto>> AddFiles(PhotosDto photos, EntityType entityType)
         {
             try
             {
@@ -84,20 +88,24 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var createdPhotos = new List<PhotoDto>();
 
-                var imgSize = GetSizeByEntity(photos.EntityType);
+                var imgSize = GetSizeByEntity(entityType);
 
-                for (int i = 0; i < photos.Files.Count; i++)
+                foreach (var file in photos.Files)
                 {
-                    photos.FileName = $"{photos.EntityId}_{photos.EntityType}_{i}{Path.GetExtension(photos.Files[i].FileName)}";
+                    photos.FileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
 
-                    await CreateUpdatePhoto(photos.Files[i], Path.Combine(photos.EntityType.ToString(), photos.FileName), imgSize).ConfigureAwait(false);
+                    await CreateUpdatePhoto(file, Path.Combine(entityType.ToString(), photos.FileName), imgSize).ConfigureAwait(false);
 
-                    var cratedPhotoInfo = await repositoryDB.Create(photos.ToDomain()).ConfigureAwait(false);
+                    var photoInfo = photos.ToDomain();
 
-                    logger.Information($"Photos created successfully.");
+                    photoInfo.EntityType = entityType;
+
+                    var cratedPhotoInfo = await repositoryDB.Create(photoInfo).ConfigureAwait(false);
 
                     createdPhotos.Add(cratedPhotoInfo.ToModel());
                 }
+
+                logger.Information($"Photos created successfully.");
 
                 return createdPhotos;
             }
@@ -170,7 +178,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task<byte[]> GetFile(string fileName)
+        public async Task<Stream> GetFile(string fileName)
         {
             try
             {
@@ -180,9 +188,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var photoInfo = photosInfo.FirstOrDefault();
 
-                MimeTypeMap.GetMimeType(Path.GetExtension(photoInfo.FileName));
-
-                var file = await repository.GetPhoto(Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName)).ConfigureAwait(false);
+                var file = await repository.GetPhotoAsync(Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName)).ConfigureAwait(false);
 
                 logger.Information($"Successfully got photo.");
 
@@ -243,22 +249,26 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         }
 
         /// <inheritdoc/>
-        public async Task UpdateFile(PhotoDto photo)
+        public async Task UpdateFile(PhotoDto newPhoto)
         {
             try
             {
                 logger.Information($"Process of updating the photo started.");
 
-                if (photo is null)
+                if (newPhoto is null)
                 {
                     throw new ArgumentNullException(localizer["Photo can not be null!"]);
                 }
 
+                var photos = await GetFilesByName(newPhoto.FileName).ConfigureAwait(false);
+
+                var photo = photos.FirstOrDefault();
+
                 var requiredSize = GetSizeByEntity(photo.EntityType);
 
-                var fileName = Path.Combine(photo.EntityType.ToString(), photo.FileName);
+                var fileName = Path.Combine(photo.EntityType.ToString(), newPhoto.FileName);
 
-                await CreateUpdatePhoto(photo.File, fileName, requiredSize).ConfigureAwait(false);
+                await CreateUpdatePhoto(newPhoto.File, fileName, requiredSize).ConfigureAwait(false);
 
                 logger.Information($"Successfully update the photo.");
             }
@@ -283,23 +293,6 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
             return await repositoryDB.GetByFilter(filter).ConfigureAwait(false);
         }
 
-        private byte[] ImageToByte(Bitmap image)
-        {
-            using (var stream = new MemoryStream())
-            {
-                long quality = 75;
-                var qualityParamId = Encoder.Quality;
-                var encoderParameters = new EncoderParameters(1);
-                encoderParameters.Param[0] = new EncoderParameter(qualityParamId, quality);
-                var codec = ImageCodecInfo.GetImageDecoders()
-                    .FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
-
-                image.Save(stream, codec, encoderParameters);
-
-                return stream.ToArray();
-            }
-        }
-
         private Size GetSizeByEntity(EntityType entityType)
         {
             if (entityType is EntityType.Teacher)
@@ -320,11 +313,21 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 using (var img = Image.FromStream(memoryStream))
                 {
-                    var scale = new Scale(new Size(img.Width, img.Height), requiredSize);
+                    if (img.Width < requiredSize.Width)
+                    {
+                        throw new ArgumentException($"The width of the photo is less than {requiredSize.Width}px.");
+                    }
 
-                    var bitmap = Scale.ResizeImage(img, scale.TargetRect.Width, scale.TargetRect.Height);
+                    if (img.Height < requiredSize.Height)
+                    {
+                        throw new ArgumentException($"The height of the photo is less than {requiredSize.Height}px.");
+                    }
 
-                    await repository.CreateUpdatePhoto(ImageToByte(bitmap), fileName).ConfigureAwait(false);
+                    var imageManager = new ImageManager(img, requiredSize);
+
+                    var bytes = imageManager.GetImageInBytes();
+
+                    await repository.CreateUpdatePhotoAsync(bytes, fileName).ConfigureAwait(false);
                 }
             }
         }

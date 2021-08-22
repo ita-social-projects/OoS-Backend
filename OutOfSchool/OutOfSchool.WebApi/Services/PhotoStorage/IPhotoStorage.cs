@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
@@ -14,15 +15,17 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// Adds file to data storage.
         /// </summary>
         /// <param name="photo">Photo data.</param>
+        /// <param name="entityType">Entity type.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<PhotoDto> AddFile(PhotoDto photo);
+        Task<PhotoDto> AddFile(PhotoDto photo, EntityType entityType);
 
         /// <summary>
         /// Adds files to data storage.
         /// </summary>
         /// <param name="photos">Photos data.</param>
+        /// <param name="entityType">Entity type.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<List<PhotoDto>> AddFiles(PhotosDto photos);
+        Task<List<PhotoDto>> AddFiles(PhotosDto photos, EntityType entityType);
 
         /// <summary>
         /// Delete file from data storage.
@@ -43,7 +46,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
         /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
-        Task<byte[]> GetFile(string fileName);
+        Task<Stream> GetFile(string fileName);
 
         /// <summary>
         /// Gets names of the files from data storage.

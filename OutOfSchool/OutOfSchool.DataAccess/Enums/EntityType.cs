@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OutOfSchool.Services.Enums
+﻿namespace OutOfSchool.Services.Enums
 {
+    /// <summary>
+    ///  Entity type enum that is used in Photo entity.
+    /// </summary>
     public enum EntityType
     {
         Provider,

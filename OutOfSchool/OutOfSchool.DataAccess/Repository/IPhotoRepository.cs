@@ -1,12 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace OutOfSchool.Services.Repository
 {
     public interface IPhotoRepository
     {
-        Task CreateUpdatePhoto(byte[] photo, string fileName);
+        Task CreateUpdatePhotoAsync(byte[] photo, string fileName);
 
-        Task<byte[]> GetPhoto(string fileName);
+        Task<Stream> GetPhotoAsync(string fileName);
 
         void DeletePhoto(string fileName);
     }
