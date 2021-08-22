@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 
 namespace OutOfSchool.Services.Repository
 {
@@ -8,10 +9,12 @@ namespace OutOfSchool.Services.Repository
     {
         private const string Key = "PhotoSettings:BasePath";
         private readonly string basePhotoPath;
+        private readonly IFileProvider fileProvider;
 
-        public PhotoRepository(IConfiguration config)
+        public PhotoRepository(IConfiguration config, IFileProvider fileProvider)
         {
-            basePhotoPath = config.GetSection(Key).Value;
+            this.basePhotoPath = config.GetSection(Key).Value;
+            this.fileProvider = fileProvider;
         }
 
         /// <summary>
@@ -47,13 +50,17 @@ namespace OutOfSchool.Services.Repository
         {
             return await Task.Run(() =>
             {
-                return new FileStream(GenerateFilePath(fileName), FileMode.Open);
+                var fileInfo = fileProvider.GetFileInfo(Path.Combine(basePhotoPath, fileName));
+
+                return fileInfo.CreateReadStream();
             });
         }
 
         private string GenerateFilePath(string fileName)
         {
-            return Path.Combine(basePhotoPath, fileName);
+            var fileInfo = fileProvider.GetFileInfo(Path.Combine(basePhotoPath, fileName));
+
+            return fileInfo.PhysicalPath;
         }
     }
 }

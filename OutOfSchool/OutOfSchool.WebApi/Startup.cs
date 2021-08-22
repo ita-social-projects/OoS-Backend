@@ -12,10 +12,9 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using Nest;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
@@ -177,6 +176,7 @@ namespace OutOfSchool.WebApi
 
             // photo services
             services.AddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
+            services.AddSingleton<IFileProvider>(x => new PhysicalFileProvider(Directory.GetCurrentDirectory()));
 
             services.AddSingleton(Log.Logger);
 
