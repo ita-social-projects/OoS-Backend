@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -54,11 +55,18 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetFile(string fileName)
         {
-            var contentType = GetFormat(fileName);
+            try
+            {
+                var contentType = GetFormat(fileName);
 
-            var stream = await photoService.GetFile(fileName).ConfigureAwait(false);
+                var stream = await photoService.GetFile(fileName).ConfigureAwait(false);
 
-            return File(stream, contentType);
+                return File(stream, contentType);
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
+            {
+                return BadRequest("An error occured while receiving the photo.");
+            }
         }
 
         /// <summary>
@@ -76,9 +84,16 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Provider(long entityId)
         {
-            this.ValidateId(entityId, localizer);
+            try
+            {
+                this.ValidateId(entityId, localizer);
 
-            return Ok(await photoService.GetFilesNames(entityId, EntityType.Provider).ConfigureAwait(false));
+                return Ok(await photoService.GetFilesNames(entityId, EntityType.Provider).ConfigureAwait(false));
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
+            {
+                return BadRequest("An error occurred while getting names of the files.");
+            }
         }
 
         /// <summary>
@@ -96,9 +111,16 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Workshop(long entityId)
         {
-            this.ValidateId(entityId, localizer);
+            try
+            {
+                this.ValidateId(entityId, localizer);
 
-            return Ok(await photoService.GetFilesNames(entityId, EntityType.Workshop).ConfigureAwait(false));
+                return Ok(await photoService.GetFilesNames(entityId, EntityType.Workshop).ConfigureAwait(false));
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
+            {
+                return BadRequest("An error occurred while getting names of the files.");
+            }
         }
 
         /// <summary>
@@ -116,9 +138,16 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Teacher(long entityId)
         {
-            this.ValidateId(entityId, localizer);
+            try
+            {
+                this.ValidateId(entityId, localizer);
 
-            return Ok(await photoService.GetFileName(entityId, EntityType.Teacher).ConfigureAwait(false));
+                return Ok(await photoService.GetFileName(entityId, EntityType.Teacher).ConfigureAwait(false));
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
+            {
+                return BadRequest("An error occurred while getting name of the file.");
+            }
         }
 
         /// <summary>
@@ -143,12 +172,12 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (photo is null)
             {
-                return BadRequest("Photo object is null.");
+                return BadRequest("The information about the photo is missing.");
             }
 
             if (photo.File is null)
             {
-                return BadRequest("Photo is null.");
+                return BadRequest("Photo is missing.");
             }
 
             if (!IsSizeValid(photo.File))
@@ -161,9 +190,20 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest("Extension of the photo invalid.");
             }
 
-            var result = await photoService.AddFile(photo, EntityType.Teacher).ConfigureAwait(false);
+            try
+            {
+                var result = await photoService.AddFile(photo, EntityType.Teacher).ConfigureAwait(false);
 
-            return Ok(result);
+                return Ok(result);
+            }
+            catch (IOException)
+            {
+                return BadRequest("An error occurred while creating the photo.");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         /// <summary>
@@ -188,7 +228,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (photos is null)
             {
-                return BadRequest("Photos object are null.");
+                return BadRequest("The information about photos is missing.");
             }
 
             foreach (var photo in photos.Files)
@@ -204,9 +244,20 @@ namespace OutOfSchool.WebApi.Controllers
                 }
             }
 
-            var result = await photoService.AddFiles(photos, EntityType.Workshop).ConfigureAwait(false);
+            try
+            {
+                var result = await photoService.AddFiles(photos, EntityType.Workshop).ConfigureAwait(false);
 
-            return Ok(result);
+                return Ok(result);
+            }
+            catch (IOException)
+            {
+                return BadRequest("An error occurred while creating photos.");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         /// <summary>
@@ -231,7 +282,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (photos is null)
             {
-                return BadRequest("Photos object are null.");
+                return BadRequest("The information about photos is missing.");
             }
 
             foreach (var photo in photos.Files)
@@ -247,9 +298,20 @@ namespace OutOfSchool.WebApi.Controllers
                 }
             }
 
-            var result = await photoService.AddFiles(photos, EntityType.Provider).ConfigureAwait(false);
+            try
+            {
+                var result = await photoService.AddFiles(photos, EntityType.Provider).ConfigureAwait(false);
 
-            return Ok(result);
+                return Ok(result);
+            }
+            catch (IOException)
+            {
+                return BadRequest("An error occurred while creating photos.");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         /// <summary>
@@ -269,12 +331,19 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (fileName is null)
             {
-                return BadRequest("File Path can not be null.");
+                return BadRequest("File name is missing.");
             }
 
-            await photoService.DeleteFile(fileName).ConfigureAwait(false);
+            try
+            {
+                await photoService.DeleteFile(fileName).ConfigureAwait(false);
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
+            {
+                return BadRequest("An error occurred while deleting the photo.");
+            }
         }
 
         /// <summary>
@@ -294,12 +363,19 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (filesNames is null)
             {
-                return BadRequest("Paths of the files can not be null.");
+                return BadRequest("File names are missing.");
             }
 
-            await photoService.DeleteFiles(filesNames).ConfigureAwait(false);
+            try
+            {
+                await photoService.DeleteFiles(filesNames).ConfigureAwait(false);
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
+            {
+                return BadRequest("An error occurred while deleting photos.");
+            }
         }
 
         /// <summary>
@@ -324,12 +400,12 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (photo is null)
             {
-                return BadRequest("Photo object is null.");
+                return BadRequest("The information about the photo is missing.");
             }
 
             if (photo.File is null)
             {
-                return BadRequest("Photo is null.");
+                return BadRequest("Photo is missing.");
             }
 
             if (!IsSizeValid(photo.File))
@@ -342,9 +418,16 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest("Extension of the photo invalid.");
             }
 
-            await photoService.UpdateFile(photo).ConfigureAwait(false);
+            try
+            {
+                await photoService.UpdateFile(photo).ConfigureAwait(false);
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
+            {
+                return BadRequest("An error occurred while updating the photo.");
+            }
         }
 
         private bool IsSizeValid(IFormFile photo)

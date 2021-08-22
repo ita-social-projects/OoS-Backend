@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var createdPhoto = await repositoryDB.Create(photoInfo).ConfigureAwait(false);
 
-                logger.Information($"Photo with Id = {photo?.Id} created successfully.");
+                logger.Information($"Photo with Id = {photo.Id} created successfully.");
 
                 return createdPhoto.ToModel();
             }
@@ -130,7 +130,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var photos = await GetFilesByName(fileName).ConfigureAwait(false);
 
-                var photo = photos.FirstOrDefault();
+                var photo = photos.Single();
 
                 repository.DeletePhoto(Path.Combine(photo.EntityType.ToString(), photo.FileName));
 
@@ -138,7 +138,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 logger.Information($"Photo deleted photo successfully.");
             }
-            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
             {
                 logger.Error($"Process of deleting photo failed. {ex}");
                 throw;
@@ -161,7 +161,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
                 {
                     var photos = await GetFilesByName(name).ConfigureAwait(false);
 
-                    var photo = photos.FirstOrDefault();
+                    var photo = photos.Single();
 
                     repository.DeletePhoto(Path.Combine(photo.EntityType.ToString(), photo.FileName));
 
@@ -170,7 +170,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 logger.Information($"Photo deleted photo successfully.");
             }
-            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
             {
                 logger.Error($"Process of deleting photos failed. {ex}");
                 throw;
@@ -186,7 +186,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var photosInfo = await GetFilesByName(fileName).ConfigureAwait(false);
 
-                var photoInfo = photosInfo.FirstOrDefault();
+                var photoInfo = photosInfo.Single();
 
                 var file = await repository.GetPhotoAsync(Path.Combine(photoInfo.EntityType.ToString(), photoInfo.FileName)).ConfigureAwait(false);
 
@@ -194,7 +194,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 return file;
             }
-            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
             {
                 logger.Error($"Process of getting photo failed. {ex}");
                 throw;
@@ -239,9 +239,9 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 logger.Information($"Successfully got name of the photo.");
 
-                return photos.FirstOrDefault().FileName;
+                return photos.Single().FileName;
             }
-            catch (Exception ex) when (ex is ArgumentException || ex is IOException)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
             {
                 logger.Error($"Process of getting name of the photo failed. {ex}");
                 throw;
@@ -262,7 +262,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 var photos = await GetFilesByName(newPhoto.FileName).ConfigureAwait(false);
 
-                var photo = photos.FirstOrDefault();
+                var photo = photos.Single();
 
                 var requiredSize = GetSizeByEntity(photo.EntityType);
 
@@ -272,7 +272,7 @@ namespace OutOfSchool.WebApi.Services.PhotoStorage
 
                 logger.Information($"Successfully update the photo.");
             }
-            catch (ArgumentException ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is InvalidOperationException)
             {
                 logger.Error($"Process of updating the photo failed. {ex}");
                 throw;
