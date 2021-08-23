@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using OutOfSchool.Services.Models.ChatWorkshop;
 
 namespace OutOfSchool.Services.Models
 {
@@ -114,6 +115,6 @@ namespace OutOfSchool.Services.Models
         public virtual List<Application> Applications { get; set; }
 
         // These properties are only for navigation EF Core.
-        public virtual ICollection<ChatRoom> ChatRooms { get; set; }
+        public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
     }
 }

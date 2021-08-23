@@ -17,6 +17,7 @@ using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Hubs;
@@ -90,7 +91,7 @@ namespace OutOfSchool.WebApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<ChatHub>("/chathub");
+                endpoints.MapHub<ChatWorkshopHub>("/chathub/workshop");
             });
         }
 
@@ -128,8 +129,8 @@ namespace OutOfSchool.WebApi
             // entities services
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
-            services.AddTransient<IChatMessageService, ChatMessageService>();
-            services.AddTransient<IChatRoomService, ChatRoomService>();
+            services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
+            services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<ICityService, CityService>();
             services.AddTransient<IClassService, ClassService>();
@@ -149,8 +150,8 @@ namespace OutOfSchool.WebApi
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
-            services.AddTransient<IEntityRepository<ChatMessage>, EntityRepository<ChatMessage>>();
-            services.AddTransient<IEntityRepository<ChatRoom>, EntityRepository<ChatRoom>>();
+            services.AddTransient<IEntityRepository<ChatMessageWorkshop>, EntityRepository<ChatMessageWorkshop>>();
+            services.AddTransient<IEntityRepository<ChatRoomWorkshop>, EntityRepository<ChatRoomWorkshop>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
             services.AddTransient<IEntityRepository<Favorite>, EntityRepository<Favorite>>();

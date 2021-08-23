@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 
 namespace OutOfSchool.Services
 {
@@ -16,9 +17,9 @@ namespace OutOfSchool.Services
 
         public DbSet<Provider> Providers { get; set; }
 
-        public DbSet<ChatRoom> ChatRooms { get; set; }
+        public DbSet<ChatRoomWorkshop> ChatRoomWorkshops { get; set; }
 
-        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<ChatMessageWorkshop> ChatMessageWorkshops { get; set; }
 
         public DbSet<Child> Children { get; set; }
 
@@ -50,19 +51,19 @@ namespace OutOfSchool.Services
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<ChatMessage>()
+            builder.Entity<ChatMessageWorkshop>()
                 .HasOne(m => m.ChatRoom)
                 .WithMany(r => r.ChatMessages)
                 .HasForeignKey(r => r.ChatRoomId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<ChatRoom>()
+            builder.Entity<ChatRoomWorkshop>()
                 .HasOne(r => r.Parent)
                 .WithMany(p => p.ChatRooms)
                 .HasForeignKey(r => r.ParentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<ChatRoom>()
+            builder.Entity<ChatRoomWorkshop>()
                 .HasOne(r => r.Workshop)
                 .WithMany(w => w.ChatRooms)
                 .HasForeignKey(r => r.WorkshopId)

@@ -8,12 +8,13 @@ using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
     [TestFixture]
-    public class ChatControllerTests
+    public class ChatWorkshopControllerTests
     {
         private const int Ok = 200;
         private const int NoContent = 204;
@@ -21,9 +22,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private const int BadRequest = 400;
         private const int Forbidden = 403;
 
-        private ChatController controller;
-        private Mock<IChatMessageService> messageServiceMock;
-        private Mock<IChatRoomService> roomServiceMock;
+        private ChatWorkshopController controller;
+        private Mock<IChatMessageWorkshopService> messageServiceMock;
+        private Mock<IChatRoomWorkshopService> roomServiceMock;
         private Mock<IProviderService> providerServiceMock;
         private Mock<IParentService> parentServiceMock;
         private Mock<IWorkshopService> workshopServiceMock;
@@ -38,8 +39,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [SetUp]
         public void SetUp()
         {
-            messageServiceMock = new Mock<IChatMessageService>();
-            roomServiceMock = new Mock<IChatRoomService>();
+            messageServiceMock = new Mock<IChatMessageWorkshopService>();
+            roomServiceMock = new Mock<IChatRoomWorkshopService>();
             parentServiceMock = new Mock<IParentService>();
             providerServiceMock = new Mock<IProviderService>();
             workshopServiceMock = new Mock<IWorkshopService>();
@@ -56,7 +57,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             provider = new ProviderDto() { Id = 1, UserId = userId };
             workshop = new WorkshopDTO() { Id = 1, ProviderId = 1 };
 
-            controller = new ChatController(
+            controller = new ChatWorkshopController(
                 messageServiceMock.Object,
                 roomServiceMock.Object,
                 providerServiceMock.Object,
@@ -73,7 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task CreateMessage_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
-            var newMessage = new ChatMessageCreateDto()
+            var newMessage = new ChatMessageWorkshopCreateDto()
             {
                 ParentId = 1,
                 WorkshopId = 1,
@@ -86,7 +87,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.CreateMessageAsync(newMessage).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageDto>()), Times.Never);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
             Assert.IsNotNull(result);
             Assert.AreEqual(BadRequest, result.StatusCode);
             Assert.IsNotNull(result.Value);
@@ -98,7 +99,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             httpContextMoq.Setup(x => x.User.FindFirst("role"))
                             .Returns(new Claim(ClaimTypes.NameIdentifier, Role.Parent.ToString()));
-            var message = new ChatMessageCreateDto()
+            var message = new ChatMessageWorkshopCreateDto()
             {
                 ParentId = 1,
                 WorkshopId = 1,
@@ -107,11 +108,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
 
             roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(message.WorkshopId, message.ParentId))
-                .ReturnsAsync(() => new ChatRoomDto() { Id = 1, ParentId = message.ParentId, WorkshopId = message.WorkshopId });
+                .ReturnsAsync(() => new ChatRoomWorkshopDto() { Id = 1, ParentId = message.ParentId, WorkshopId = message.WorkshopId });
             parentServiceMock.Setup(x => x.GetByUserId(userId))
                 .ReturnsAsync(parent);
-            messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageDto>()))
-                .ReturnsAsync(new ChatMessageDto() { Text = message.Text, SenderRoleIsProvider = message.SenderRoleIsProvider });
+            messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()))
+                .ReturnsAsync(new ChatMessageWorkshopDto() { Text = message.Text, SenderRoleIsProvider = message.SenderRoleIsProvider });
 
             // Act
             var result = await controller.CreateMessageAsync(message).ConfigureAwait(false) as ObjectResult;
@@ -120,12 +121,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.IsNotNull(result);
             roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(message.WorkshopId, message.ParentId), Times.AtLeastOnce);
             roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageDto>()), Times.Once);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Once);
             Assert.AreEqual(Created, result.StatusCode);
             Assert.IsNotNull(result.Value);
-            Assert.IsInstanceOf<ChatMessageDto>(result.Value);
-            Assert.AreEqual(message.SenderRoleIsProvider, (result.Value as ChatMessageDto).SenderRoleIsProvider);
-            Assert.AreEqual(message.Text, (result.Value as ChatMessageDto).Text);
+            Assert.IsInstanceOf<ChatMessageWorkshopDto>(result.Value);
+            Assert.AreEqual(message.SenderRoleIsProvider, (result.Value as ChatMessageWorkshopDto).SenderRoleIsProvider);
+            Assert.AreEqual(message.Text, (result.Value as ChatMessageWorkshopDto).Text);
         }
 
         [Test]
@@ -134,7 +135,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             httpContextMoq.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, Role.Parent.ToString()));
-            var message = new ChatMessageCreateDto()
+            var message = new ChatMessageWorkshopCreateDto()
             {
                 ParentId = 1,
                 WorkshopId = 1,
@@ -143,15 +144,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
 
             roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(message.WorkshopId, message.ParentId))
-                .ReturnsAsync(default(ChatRoomDto));
+                .ReturnsAsync(default(ChatRoomWorkshopDto));
             roomServiceMock.Setup(x => x.CreateOrReturnExistingAsync(message.WorkshopId, message.ParentId))
-                .ReturnsAsync(new ChatRoomDto() { Id = 1, WorkshopId = message.WorkshopId, ParentId = message.ParentId });
+                .ReturnsAsync(new ChatRoomWorkshopDto() { Id = 1, WorkshopId = message.WorkshopId, ParentId = message.ParentId });
             parentServiceMock.Setup(x => x.GetByUserId(userId))
                 .ReturnsAsync(parent);
             workshopServiceMock.Setup(x => x.GetById(message.WorkshopId))
                 .ReturnsAsync(workshop);
-            messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageDto>()))
-                .ReturnsAsync(new ChatMessageDto() { Text = message.Text, SenderRoleIsProvider = message.SenderRoleIsProvider });
+            messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()))
+                .ReturnsAsync(new ChatMessageWorkshopDto() { Text = message.Text, SenderRoleIsProvider = message.SenderRoleIsProvider });
 
             // Act
             var result = await controller.CreateMessageAsync(message).ConfigureAwait(false) as ObjectResult;
@@ -160,12 +161,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.IsNotNull(result);
             roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(message.WorkshopId, message.ParentId), Times.AtLeastOnce);
             roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Once);
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageDto>()), Times.Once);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Once);
             Assert.AreEqual(Created, result.StatusCode);
             Assert.IsNotNull(result.Value);
-            Assert.IsInstanceOf<ChatMessageDto>(result.Value);
-            Assert.AreEqual(message.SenderRoleIsProvider, (result.Value as ChatMessageDto).SenderRoleIsProvider);
-            Assert.AreEqual(message.Text, (result.Value as ChatMessageDto).Text);
+            Assert.IsInstanceOf<ChatMessageWorkshopDto>(result.Value);
+            Assert.AreEqual(message.SenderRoleIsProvider, (result.Value as ChatMessageWorkshopDto).SenderRoleIsProvider);
+            Assert.AreEqual(message.Text, (result.Value as ChatMessageWorkshopDto).Text);
         }
 
         [Test]
@@ -174,7 +175,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             httpContextMoq.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, Role.Provider.ToString()));
-            var message = new ChatMessageCreateDto()
+            var message = new ChatMessageWorkshopCreateDto()
             {
                 ParentId = 1,
                 WorkshopId = 2,
@@ -183,7 +184,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
 
             roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(message.WorkshopId, message.ParentId))
-                .ReturnsAsync(() => new ChatRoomDto() { Id = 1, ParentId = message.ParentId, WorkshopId = message.WorkshopId });
+                .ReturnsAsync(() => new ChatRoomWorkshopDto() { Id = 1, ParentId = message.ParentId, WorkshopId = message.WorkshopId });
             providerServiceMock.Setup(x => x.GetByUserId(userId))
                 .ReturnsAsync(provider);
             parentServiceMock.Setup(x => x.GetById(message.ParentId))
@@ -198,7 +199,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.AtLeastOnce);
             roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageDto>()), Times.Never);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
             Assert.IsNotNull(result);
             Assert.AreEqual(Forbidden, result.StatusCode);
         }
@@ -209,7 +210,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             httpContextMoq.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, Role.Parent.ToString()));
-            var message = new ChatMessageCreateDto()
+            var message = new ChatMessageWorkshopCreateDto()
             {
                 ParentId = 2,
                 WorkshopId = 1,
@@ -218,9 +219,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
 
             roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(message.WorkshopId, message.ParentId))
-                .ReturnsAsync(default(ChatRoomDto));
+                .ReturnsAsync(default(ChatRoomWorkshopDto));
             roomServiceMock.Setup(x => x.CreateOrReturnExistingAsync(message.WorkshopId, message.ParentId))
-                .ReturnsAsync(new ChatRoomDto() { Id = 1, WorkshopId = message.WorkshopId, ParentId = message.ParentId });
+                .ReturnsAsync(new ChatRoomWorkshopDto() { Id = 1, WorkshopId = message.WorkshopId, ParentId = message.ParentId });
             parentServiceMock.Setup(x => x.GetByUserId(userId))
                 .ReturnsAsync(parent);
             workshopServiceMock.Setup(x => x.GetById(message.WorkshopId))
@@ -232,7 +233,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.AtLeastOnce);
             roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageDto>()), Times.Never);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
             Assert.IsNotNull(result);
             Assert.AreEqual(Forbidden, result.StatusCode);
         }
@@ -243,7 +244,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             httpContextMoq.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, Role.Provider.ToString()));
-            var message = new ChatMessageCreateDto()
+            var message = new ChatMessageWorkshopCreateDto()
             {
                 ParentId = 1,
                 WorkshopId = 1,
@@ -251,7 +252,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Text = "new text",
             };
             roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(message.WorkshopId, message.ParentId))
-                .ReturnsAsync(default(ChatRoomDto));
+                .ReturnsAsync(default(ChatRoomWorkshopDto));
             providerServiceMock.Setup(x => x.GetByUserId(userId))
                 .ReturnsAsync(provider);
             parentServiceMock.Setup(x => x.GetById(message.ParentId))
@@ -265,7 +266,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.AtLeastOnce);
             roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageDto>()), Times.Never);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
             Assert.IsNotNull(result);
             Assert.AreEqual(Forbidden, result.StatusCode);
         }

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
@@ -20,10 +21,10 @@ namespace OutOfSchool.WebApi.Controllers
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Authorize(Roles = "provider,parent")]
-    public class ChatController : ControllerBase
+    public class ChatWorkshopController : ControllerBase
     {
-        private readonly IChatMessageService messageService;
-        private readonly IChatRoomService roomService;
+        private readonly IChatMessageWorkshopService messageService;
+        private readonly IChatRoomWorkshopService roomService;
         private readonly IProviderService providerService;
         private readonly IParentService parentService;
         private readonly IWorkshopService workshopService;
@@ -34,7 +35,7 @@ namespace OutOfSchool.WebApi.Controllers
         private WorkshopDTO workshop;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChatController"/> class.
+        /// Initializes a new instance of the <see cref="ChatWorkshopController"/> class.
         /// </summary>
         /// <param name="messageService">Service for ChatMessage entities.</param>
         /// <param name="roomService">Service for ChatRoom entities.</param>
@@ -42,7 +43,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="parentService">Service for Parent entities.</param>
         /// <param name="workshopService">Service for Workshop entities.</param>
         /// <param name="localizer">Localizer.</param>
-        public ChatController(IChatMessageService messageService, IChatRoomService roomService, IProviderService providerService, IParentService parentService, IWorkshopService workshopService, IStringLocalizer<SharedResource> localizer)
+        public ChatWorkshopController(IChatMessageWorkshopService messageService, IChatRoomWorkshopService roomService, IProviderService providerService, IParentService parentService, IWorkshopService workshopService, IStringLocalizer<SharedResource> localizer)
         {
             this.messageService = messageService;
             this.roomService = roomService;
@@ -56,15 +57,15 @@ namespace OutOfSchool.WebApi.Controllers
         /// Create new ChatMessage.
         /// </summary>
         /// <param name="chatNewMessageDto">Entity that contains text of message, receiver and workshop info.</param>
-        /// <returns>Created <see cref="ChatMessageDto"/>.</returns>
+        /// <returns>Created <see cref="ChatMessageWorkshopDto"/>.</returns>
         [Obsolete("This method is for testing purposes.")]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChatMessageDto))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChatMessageWorkshopDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateMessageAsync(ChatMessageCreateDto chatNewMessageDto)
+        public async Task<IActionResult> CreateMessageAsync(ChatMessageWorkshopCreateDto chatNewMessageDto)
         {
             if (chatNewMessageDto is null)
             {
@@ -77,7 +78,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
 
             // create new dto object that will be saved to the database
-            var chatMessageDtoThatWillBeSaved = new ChatMessageDto()
+            var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshopDto()
             {
                 SenderRoleIsProvider = chatNewMessageDto.SenderRoleIsProvider,
                 Text = chatNewMessageDto.Text,
@@ -130,7 +131,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="id">ChatRoom's Id.</param>
         /// <returns>ChatRoom that was found.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -163,7 +164,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWithLastMessage>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -172,7 +173,7 @@ namespace OutOfSchool.WebApi.Controllers
             var userRole = User.FindFirst("role")?.Value;
             var userId = User.FindFirst("sub")?.Value;
 
-            IEnumerable<ChatRoomWithLastMessage> chatRooms;
+            IEnumerable<ChatRoomWorkshopDtoWithLastMessage> chatRooms;
 
             if (string.Equals(userRole, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase))
             {
@@ -240,13 +241,13 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="updatedChatMessage">Entity that will be updated.</param>
         /// <returns>Successfully updated item.</returns>
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatMessageDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatMessageWorkshopDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMessageAsync(ChatMessageUpdateDto updatedChatMessage)
+        public async Task<IActionResult> UpdateMessageAsync(ChatMessageWorkshopUpdateDto updatedChatMessage)
         {
             if (updatedChatMessage is null)
             {
@@ -400,7 +401,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
-        private async Task<bool> ValidateNewMessageAsync(ChatMessageCreateDto newMessage)
+        private async Task<bool> ValidateNewMessageAsync(ChatMessageWorkshopCreateDto newMessage)
         {
             if (newMessage is null)
             {
@@ -474,7 +475,7 @@ namespace OutOfSchool.WebApi.Controllers
             }
         }
 
-        private async Task<bool> UserHasRigtsForChatRoomAsync(ChatRoomDto chatRoomDto)
+        private async Task<bool> UserHasRigtsForChatRoomAsync(ChatRoomWorkshopDto chatRoomDto)
         {
             if (chatRoomDto is null)
             {

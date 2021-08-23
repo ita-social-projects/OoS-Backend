@@ -96,7 +96,7 @@ namespace OutOfSchool.WebApi.Tests.Middlewares
             httpContextMoq.Setup(x => x.Request.Headers)
                 .Returns(new HeaderDictionary(headers));
 
-            var path = new PathString("/chathub");
+            var path = new PathString("/chathub/workshop");
             httpContextMoq.Setup(x => x.Request.Path)
                 .Returns(new PathString(path));
 

@@ -3,29 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Service works with repositories for CRUD operations for <see cref = "ChatRoom" />.
+    /// Service works with repositories for CRUD operations for <see cref = "ChatRoomWorkshop" />.
     /// </summary>
-    public class ChatRoomService : IChatRoomService
+    public class ChatRoomWorkshopService : IChatRoomWorkshopService
     {
-        private readonly IEntityRepository<ChatRoom> roomRepository;
+        private readonly IEntityRepository<ChatRoomWorkshop> roomRepository;
         private readonly ILogger logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChatRoomService"/> class.
+        /// Initializes a new instance of the <see cref="ChatRoomWorkshopService"/> class.
         /// </summary>
         /// <param name="chatRoomRepository">Repository for the ChatRoom entity.</param>
         /// <param name="logger">Logger.</param>
-        public ChatRoomService(
-            IEntityRepository<ChatRoom> chatRoomRepository,
+        public ChatRoomWorkshopService(
+            IEntityRepository<ChatRoomWorkshop> chatRoomRepository,
             ILogger logger)
         {
             this.roomRepository = chatRoomRepository;
@@ -33,9 +33,9 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDto> CreateOrReturnExistingAsync(long workshopId, long parentId)
+        public async Task<ChatRoomWorkshopDto> CreateOrReturnExistingAsync(long workshopId, long parentId)
         {
-            logger.Information($"Checking a {nameof(ChatRoom)} with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} was started.");
+            logger.Information($"Checking a {nameof(ChatRoomWorkshop)} with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} was started.");
 
             try
             {
@@ -67,28 +67,28 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task DeleteAsync(long id)
         {
-            logger.Information($"{nameof(ChatRoom)} {nameof(id)}:{id} deleting was started.");
+            logger.Information($"{nameof(ChatRoomWorkshop)} {nameof(id)}:{id} deleting was started.");
 
             try
             {
-                var query = roomRepository.Get<long>(includeProperties: $"{nameof(ChatRoom.ChatMessages)}", where: x => x.Id == id);
+                var query = roomRepository.Get<long>(includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}", where: x => x.Id == id);
                 var chatRooms = await query.ToListAsync().ConfigureAwait(false);
                 var chatRoom = chatRooms.SingleOrDefault();
 
                 if (chatRoom is null)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(id), $"{nameof(ChatRoom)} {nameof(id)}:{id} was not found in the system.");
+                    throw new ArgumentOutOfRangeException(nameof(id), $"{nameof(ChatRoomWorkshop)} {nameof(id)}:{id} was not found in the system.");
                 }
                 else
                 {
                     await roomRepository.Delete(chatRoom).ConfigureAwait(false);
                 }
 
-                logger.Information($"{nameof(ChatRoom)} {nameof(id)}:{id} was successfully deleted.");
+                logger.Information($"{nameof(ChatRoomWorkshop)} {nameof(id)}:{id} was successfully deleted.");
             }
             catch (InvalidOperationException)
             {
-                logger.Error($"The logic of creating a {nameof(ChatRoom)} was compromised. There is more than one {nameof(ChatRoom)} with {nameof(ChatRoom.Id)}:{id} in the system.");
+                logger.Error($"The logic of creating a {nameof(ChatRoomWorkshop)} was compromised. There is more than one {nameof(ChatRoomWorkshop)} with {nameof(ChatRoomWorkshop.Id)}:{id} in the system.");
                 throw;
             }
             catch (DbUpdateConcurrencyException exception)
@@ -99,15 +99,15 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDto> GetByIdAsync(long id)
+        public async Task<ChatRoomWorkshopDto> GetByIdAsync(long id)
         {
-            logger.Information($"Process of getting {nameof(ChatRoom)} by Id:{id} was started.");
+            logger.Information($"Process of getting {nameof(ChatRoomWorkshop)} by Id:{id} was started.");
 
             try
             {
                 var chatRooms = await roomRepository.GetByFilter(
                     predicate: x => x.Id == id,
-                    includeProperties: $"{nameof(ChatRoom.Parent)},{nameof(ChatRoom.Workshop)}")
+                    includeProperties: $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)}")
                     .ConfigureAwait(false);
 
                 var chatRoom = chatRooms.SingleOrDefault();
@@ -116,13 +116,13 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (Exception exception)
             {
-                logger.Error($"Getting {nameof(ChatRoom)} with id:{id} failed. Exception: {exception.Message}");
+                logger.Error($"Getting {nameof(ChatRoomWorkshop)} with id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatRoomWithLastMessage>> GetByParentIdAsync(long parentId)
+        public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByParentIdAsync(long parentId)
         {
             throw new NotImplementedException();
 
@@ -144,35 +144,35 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatRoomWithLastMessage>> GetByProviderIdAsync(long providerId)
+        public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByProviderIdAsync(long providerId)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDto> GetUniqueChatRoomAsync(long workshopId, long parentId)
+        public async Task<ChatRoomWorkshopDto> GetUniqueChatRoomAsync(long workshopId, long parentId)
         {
-            logger.Information($"Process of getting unique {nameof(ChatRoom)} with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} was started.");
+            logger.Information($"Process of getting unique {nameof(ChatRoomWorkshop)} with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} was started.");
 
             try
             {
-                var chatRooms = await roomRepository.GetByFilter(r => r.WorkshopId == workshopId && r.ParentId == parentId, $"{nameof(ChatRoom.Parent)},{nameof(ChatRoom.Workshop)}").ConfigureAwait(false);
+                var chatRooms = await roomRepository.GetByFilter(r => r.WorkshopId == workshopId && r.ParentId == parentId, $"{nameof(ChatRoomWorkshop.Parent)},{nameof(ChatRoomWorkshop.Workshop)}").ConfigureAwait(false);
                 var chatRoom = chatRooms.SingleOrDefault();
 
                 logger.Information(chatRoom is null
-                    ? $"There is no {nameof(ChatRoom)} in the system with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId}."
-                    : $"Successfully got a {nameof(ChatRoom)} with {nameof(chatRoom.Id)}:{chatRoom.Id}.");
+                    ? $"There is no {nameof(ChatRoomWorkshop)} in the system with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId}."
+                    : $"Successfully got a {nameof(ChatRoomWorkshop)} with {nameof(chatRoom.Id)}:{chatRoom.Id}.");
 
                 return chatRoom?.ToModel();
             }
             catch (InvalidOperationException)
             {
-                logger.Error($"The logic of creating a {nameof(ChatRoom)} was compromised. There is more than one {nameof(ChatRoom)} with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} in the system.");
+                logger.Error($"The logic of creating a {nameof(ChatRoomWorkshop)} was compromised. There is more than one {nameof(ChatRoomWorkshop)} with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} in the system.");
                 throw;
             }
             catch (Exception exception)
             {
-                logger.Error($"Getting {nameof(ChatRoom)} with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} failed. Exception: {exception.Message}");
+                logger.Error($"Getting {nameof(ChatRoomWorkshop)} with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -182,13 +182,13 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="workshopId">Id of Workshop.</param>
         /// <param name="parentId">Id of Parent.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDto"/> that was created.</returns>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomWorkshopDto"/> that was created.</returns>
         /// <exception cref="DbUpdateException">If an error is encountered while saving to database.</exception>
-        private async Task<ChatRoomDto> CreateAsync(long workshopId, long parentId)
+        private async Task<ChatRoomWorkshopDto> CreateAsync(long workshopId, long parentId)
         {
-            logger.Information($"{nameof(ChatRoom)} creating with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} was started.");
+            logger.Information($"{nameof(ChatRoomWorkshop)} creating with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} was started.");
 
-            var chatRoom = new ChatRoom()
+            var chatRoom = new ChatRoomWorkshop()
             {
                 WorkshopId = workshopId,
                 ParentId = parentId,
@@ -197,7 +197,7 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var newChatRoom = await roomRepository.Create(chatRoom).ConfigureAwait(false);
-                logger.Information($"{nameof(ChatRoom)} id:{newChatRoom.Id} was saved to DB.");
+                logger.Information($"{nameof(ChatRoomWorkshop)} id:{newChatRoom.Id} was saved to DB.");
 
                 return chatRoom.ToModel();
             }

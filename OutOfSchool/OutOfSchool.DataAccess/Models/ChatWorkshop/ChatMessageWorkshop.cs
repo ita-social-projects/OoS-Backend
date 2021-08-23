@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.Services.Models.ChatWorkshop
 {
-    public class ChatMessage
+    public class ChatMessageWorkshop
     {
         public long Id { get; set; }
 
@@ -23,6 +23,6 @@ namespace OutOfSchool.Services.Models
         [Required]
         public bool IsRead { get; set; }
 
-        public virtual ChatRoom ChatRoom { get; set; }
+        public virtual ChatRoomWorkshop ChatRoom { get; set; }
     }
 }

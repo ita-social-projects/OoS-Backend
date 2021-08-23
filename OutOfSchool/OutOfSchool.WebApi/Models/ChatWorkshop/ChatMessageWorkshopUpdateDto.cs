@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models.ChatWorkshop
 {
-    public class ChatMessageUpdateDto
+    public class ChatMessageWorkshopUpdateDto
     {
+        [Required]
         public long Id { get; set; }
 
         [Required]

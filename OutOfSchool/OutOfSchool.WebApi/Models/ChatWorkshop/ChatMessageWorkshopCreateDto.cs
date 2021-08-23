@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models.ChatWorkshop
 {
-    public class ChatMessageCreateDto
+    public class ChatMessageWorkshopCreateDto
     {
         [Required]
         [JsonProperty("WorkshopId")]

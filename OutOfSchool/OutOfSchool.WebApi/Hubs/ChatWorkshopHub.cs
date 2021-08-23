@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 using Serilog;
 
@@ -16,15 +17,15 @@ namespace OutOfSchool.WebApi.Hubs
 {
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Authorize(Roles = "provider,parent")]
-    public class ChatHub : Hub
+    public class ChatWorkshopHub : Hub
     {
         // This collection tracks users with their connections.
         private static readonly ConcurrentDictionary<string, HashSet<string>> UsersConnections
             = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.InvariantCultureIgnoreCase);
 
         private readonly ILogger logger;
-        private readonly IChatMessageService messageService;
-        private readonly IChatRoomService roomService;
+        private readonly IChatMessageWorkshopService messageService;
+        private readonly IChatRoomWorkshopService roomService;
         private readonly IProviderService providerService;
         private readonly IParentService parentService;
         private readonly IWorkshopService workshopService;
@@ -34,7 +35,7 @@ namespace OutOfSchool.WebApi.Hubs
         private WorkshopDTO workshop;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChatHub"/> class.
+        /// Initializes a new instance of the <see cref="ChatWorkshopHub"/> class.
         /// </summary>
         /// <param name="chatMessageService">Service for ChatMessage entities.</param>
         /// <param name="chatRoomService">Service for ChatRoom entities.</param>
@@ -42,7 +43,7 @@ namespace OutOfSchool.WebApi.Hubs
         /// <param name="parentService">Service for Parent entities.</param>
         /// <param name="workshopService">Service for Workshop entities.</param>
         /// <param name="logger">Logger.</param>
-        public ChatHub(ILogger logger, IChatMessageService chatMessageService, IChatRoomService chatRoomService, IProviderService providerService, IParentService parentService, IWorkshopService workshopService)
+        public ChatWorkshopHub(ILogger logger, IChatMessageWorkshopService chatMessageService, IChatRoomWorkshopService chatRoomService, IProviderService providerService, IParentService parentService, IWorkshopService workshopService)
         {
             this.logger = logger;
             this.messageService = chatMessageService;
@@ -60,7 +61,7 @@ namespace OutOfSchool.WebApi.Hubs
             this.AddUsersConnectionIdTracking(userId);
 
             // Add User to all Groups where he is a member.
-            IEnumerable<ChatRoomWithLastMessage> usersRooms;
+            IEnumerable<ChatRoomWorkshopDtoWithLastMessage> usersRooms;
             if (Role.Provider.ToString().Equals(Context.User.FindFirst("role")?.Value, StringComparison.OrdinalIgnoreCase))
             {
                 var providerLocal = await providerService.GetByUserId(userId).ConfigureAwait(false);
@@ -91,7 +92,7 @@ namespace OutOfSchool.WebApi.Hubs
         }
 
         /// <summary>
-        /// Creates a <see cref="ChatMessageDto"/>, saves it to the DataBase and sends message to Others in Group.
+        /// Creates a <see cref="ChatMessageWorkshopDto"/>, saves it to the DataBase and sends message to Others in Group.
         /// </summary>
         /// <param name="chatNewMessage">Entity (string format) that contains text of message, receiver and workshop info.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -102,7 +103,7 @@ namespace OutOfSchool.WebApi.Hubs
             try
             {
                 // deserialize from string to Object
-                ChatMessageCreateDto newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatMessageCreateDto>(chatNewMessage);
+                ChatMessageWorkshopCreateDto newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatMessageWorkshopCreateDto>(chatNewMessage);
 
                 // validate received parameters
                 var messageIsValid = await this.ValidateNewMessage(newReceivedAndDeserializedMessage).ConfigureAwait(false);
@@ -114,7 +115,7 @@ namespace OutOfSchool.WebApi.Hubs
                 }
 
                 // create new dto object that will be saved to the database
-                var chatMessageDtoThatWillBeSaved = new ChatMessageDto()
+                var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshopDto()
                 {
                     SenderRoleIsProvider = newReceivedAndDeserializedMessage.SenderRoleIsProvider,
                     Text = newReceivedAndDeserializedMessage.Text,
@@ -211,7 +212,7 @@ namespace OutOfSchool.WebApi.Hubs
             }
         }
 
-        private async Task SetProviderAndParentAndWorkshopFields(ChatMessageCreateDto newMessage)
+        private async Task SetProviderAndParentAndWorkshopFields(ChatMessageWorkshopCreateDto newMessage)
         {
             if (newMessage is null)
             {
@@ -246,7 +247,7 @@ namespace OutOfSchool.WebApi.Hubs
             }
         }
 
-        private async Task<bool> ValidateNewMessage(ChatMessageCreateDto newMessage)
+        private async Task<bool> ValidateNewMessage(ChatMessageWorkshopCreateDto newMessage)
         {
             if (newMessage is null)
             {
