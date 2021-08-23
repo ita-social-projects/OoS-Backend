@@ -8,11 +8,11 @@ namespace OutOfSchool.Services.Models
     {
         public long Id { get; set; }
 
-        [Range(0, 2, ErrorMessage = "Status should be from 0 to 2")]
+        [Range(1, 5, ErrorMessage = "Status should be from 1 to 5")]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
         [Required]
-        public DateTime CreationTime { get; set; }
+        public DateTimeOffset CreationTime { get; set; }
 
         [Required]
         [Range(1, long.MaxValue, ErrorMessage = "Workshop id should be grater than 0")]

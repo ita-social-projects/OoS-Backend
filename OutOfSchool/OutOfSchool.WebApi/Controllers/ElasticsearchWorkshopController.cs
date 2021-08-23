@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
@@ -46,9 +44,9 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Search([FromQuery] WorkshopFilterDto filter)
+        public async Task<IActionResult> Search([FromQuery] WorkshopFilterES filter)
         {
-            var res = await esService.Search(filter.ToESModel()).ConfigureAwait(false);
+            var res = await esService.Search(filter).ConfigureAwait(false);
 
             return Ok(res);
         }

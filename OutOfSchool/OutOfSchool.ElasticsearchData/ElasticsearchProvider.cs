@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,7 +95,7 @@ namespace OutOfSchool.ElasticsearchData
                     s => s.Query(
                         q => q.MatchAll()));
 
-            return new SearchResultES<TEntity>() { TotalAmount = resp.Total, Entities = resp.Documents };
+            return new SearchResultES<TEntity>() { TotalAmount = (int)resp.Total, Entities = resp.Documents };
         }
 
         public async Task<bool> PingServerAsync()

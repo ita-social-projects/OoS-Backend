@@ -2,9 +2,11 @@
 {
     public enum OrderBy
     {
+        Id,
         Statistic,
         Rating,
-        Price,
+        PriceDesc,
+        PriceAsc,
         Alphabet,
         Nearest,
     }

@@ -23,7 +23,7 @@ namespace OutOfSchool.WebApi.Models
         [Range(1, long.MaxValue, ErrorMessage = "The ParentId field should be bigger than 0")]
         public long ParentId { get; set; }
 
-        public DateTime CreationTime { get; set; } = DateTime.Now;
+        public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.UtcNow;
 
         public string FirstName { get; set; }
 

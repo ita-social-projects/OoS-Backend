@@ -10,6 +10,14 @@ namespace OutOfSchool.WebApi.Services
     public interface IWorkshopService : ICRUDService<WorkshopDTO>
     {
         /// <summary>
+        /// Get all entities from the database.
+        /// </summary>
+        /// <param name="offsetFilter">Filter to get a certain portion of all entities.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the <see cref="IEnumerable{TEntity}"/> that contains found elements.</returns>
+        Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter offsetFilter);
+
+        /// <summary>
         /// Get all workshops by provider Id.
         /// </summary>
         /// <param name="id">Provider's key.</param>
@@ -23,6 +31,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="filter">Filter with specified searching parameters.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains the <see cref="SearchResult{WorkshopCard}"/> that contains found elements.</returns>
-        Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilterDto filter = null);
+        Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null);
     }
 }

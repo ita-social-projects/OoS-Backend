@@ -26,7 +26,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IWorkshopRepository workshopRepository;
         private IProviderRepository providerRepository;
         private IParentRepository parentRepository;
-        private IEntityRepository<User> userRepository;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
         private DbContextOptions<OutOfSchoolDbContext> options;
@@ -45,9 +44,8 @@ namespace OutOfSchool.WebApi.Tests.Services
             workshopRepository = new WorkshopRepository(context);
             providerRepository = new ProviderRepository(context);
             parentRepository = new ParentRepository(context);
-            userRepository = new EntityRepository<User>(context);
             logger = new Mock<ILogger>();
-            service = new RatingService(ratingRepository, workshopRepository, providerRepository, parentRepository, userRepository, logger.Object, localizer.Object);
+            service = new RatingService(ratingRepository, workshopRepository, providerRepository, parentRepository, logger.Object, localizer.Object);
 
             SeedDatabase();
         }

@@ -82,7 +82,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(10)]
+        [TestCase(100)]
         public async Task GetApplicationById_WhenIdIsNotValid_ShouldReturnNull(long id)
         {
             // Act
@@ -103,6 +103,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = ApplicationStatus.Pending,
                 WorkshopId = 2,
                 ParentId = 2,
+                CreationTime = new DateTime(2021, 7, 9),
             };
 
             // Act
@@ -125,7 +126,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void CreateApplication_WhenModelAlreadyExists_ShouldThrowArgumentException()
+        public void CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
         {
             // Arrange
             var toCreate = new ApplicationDto()
@@ -135,6 +136,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = ApplicationStatus.Pending,
                 WorkshopId = 1,
                 ParentId = 1,
+                CreationTime = new DateTime(2021, 7, 9),
             };
 
             // Act and Assert
@@ -153,6 +155,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = ApplicationStatus.Pending,
                 WorkshopId = 1,
                 ParentId = 1,
+                CreationTime = new DateTime(2021, 7, 9),
             };
 
             // Act and Assert
@@ -197,36 +200,24 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void CreateMultipleApplications_WhenModelAlreadyExists_ShouldThrowArgumentException()
-        {
-            // Arrange
-            IEnumerable<ApplicationDto> applications = new List<ApplicationDto>()
-            {
-                new ApplicationDto
-                {
-                    Id = 4,
-                    ChildId = 1,
-                    Status = ApplicationStatus.Pending,
-                    WorkshopId = 1,
-                    ParentId = 1,
-                },
-            };
-
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Create(applications).ConfigureAwait(false));
-        }
-
-        [Test]
         [TestCase(1)]
         public async Task GetAllByWokshop_WhenIdIsValid_ShouldReturnApplications(long id)
         {
             // Arrange
+            var applicationFilter = new ApplicationFilter
+            {
+                Status = 1,
+                OrderByAlphabetically = false,
+                OrderByDateAscending = false,
+                OrderByStatus = false,
+            };
+
             Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
             var expected = await applicationRepository.GetByFilter(filter);
+            expected = expected.Where(a => (int)a.Status == applicationFilter.Status);
 
             // Act
-            var result = await service.GetAllByWorkshop(id).ConfigureAwait(false);
+            var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
@@ -237,7 +228,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAllByWorkshop_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
         {
             // Act
-            var result = await service.GetAllByWorkshop(id).ConfigureAwait(false);
+            var applicationFilter = new ApplicationFilter { Status = 1 };
+            var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
 
             // Assert
             result.Count().Should().Be(0);
@@ -245,14 +237,34 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [TestCase(1)]
+        public void GetAllByWorkshop_WhenFilterIsNull_ShouldThrowArgumentException(long id)
+        {
+            // Arrange
+            ApplicationFilter filter = null;
+
+            // Act and Assert
+            service.Invoking(s => s.GetAllByWorkshop(id, filter)).Should().ThrowAsync<ArgumentException>();
+        }
+
+        [Test]
+        [TestCase(1)]
         public async Task GetAllByProvider_WhenIdIsValid_ShouldReturnApplications(long id)
         {
             // Arrange
+            var applicationFilter = new ApplicationFilter
+            {
+                Status = 0,
+                OrderByAlphabetically = false,
+                OrderByStatus = false,
+                OrderByDateAscending = false,
+            };
+
             Expression<Func<Application, bool>> filter = a => a.Workshop.ProviderId == id;
             var expected = await applicationRepository.GetByFilter(filter);
+            expected = expected.Where(a => (int)a.Status == applicationFilter.Status);
 
             // Act
-            var result = await service.GetAllByProvider(id).ConfigureAwait(false);
+            var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
@@ -263,10 +275,23 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAllByProvider_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
         {
             // Act
-            var result = await service.GetAllByProvider(id).ConfigureAwait(false);
+            var applicationFilter = new ApplicationFilter { Status = 1 };
+
+            var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
 
             // Assert
             result.Count().Should().Be(0);
+        }
+
+        [Test]
+        [TestCase(1)]
+        public void GetAllByProvider_WhenFilterIsNull_ShouldThrowArgumentException(long id)
+        {
+            // Arrange
+            ApplicationFilter filter = null;
+
+            // Act and Assert
+            service.Invoking(s => s.GetAllByProvider(id, filter)).Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -376,7 +401,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var application = new ApplicationDto
             {
-                Id = 10,
+                Id = 100,
                 Status = ApplicationStatus.Approved,
             };
 
@@ -408,7 +433,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(10)]
+        [TestCase(100)]
         public void DeleteApplication_WhenIdIsNotValid_ShouldThrowArgumentException(long id)
         {
             // Assert

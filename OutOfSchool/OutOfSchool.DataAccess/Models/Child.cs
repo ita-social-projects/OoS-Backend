@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -25,6 +26,8 @@ namespace OutOfSchool.Services.Models
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "Middle name cannot contains digits and special symbols")]
         public string MiddleName { get; set; } = string.Empty;
 
+        [DataType(DataType.Date)]
+        [Column(TypeName = "date")]
         public DateTime DateOfBirth { get; set; }
 
         public Gender Gender { get; set; }

@@ -239,17 +239,19 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenIdIsValid_ShouldReturnOkObjectResult(long id, string property)
         {
             // Arrange
+            var filter = new ApplicationFilter{ Status = 1 };
+
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
             workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.First());
-            applicationService.Setup(s => s.GetAllByProvider(id))
+            applicationService.Setup(s => s.GetAllByProvider(id, filter))
                 .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
-            applicationService.Setup(s => s.GetAllByWorkshop(id))
+            applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
                 .ReturnsAsync(applications.Where(a => a.WorkshopId == id));
 
             // Act
-            var result = await controller.GetByPropertyId(property, id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -262,7 +264,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenIdIsNotValid_ShouldReturnBadRequest(long id, string property)
         {
             // Act
-            var result = await controller.GetByPropertyId(property, id).ConfigureAwait(false) as BadRequestObjectResult;
+            var filter = new ApplicationFilter { Status = 1 };
+
+            var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -275,6 +279,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenProviderHasNoApplications_ShouldReturnNoContent(long id, string property)
         {
             // Arrange
+            var filter = new ApplicationFilter { Status = 1 };
+
             var newProvider = new ProviderDto { Id = 10, UserId = userId };
             var newWorkshop = new WorkshopDTO { Id = 10, ProviderId = 10 };
 
@@ -282,13 +288,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(newProvider);
             workshopService.Setup(s => s.GetById(id)).ReturnsAsync(newWorkshop);
-            applicationService.Setup(s => s.GetAllByProvider(id))
+            applicationService.Setup(s => s.GetAllByProvider(id, filter))
                 .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
-            applicationService.Setup(s => s.GetAllByWorkshop(id))
+            applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
                 .ReturnsAsync(applications.Where(a => a.WorkshopId == id));
 
             // Act
-            var result = await controller.GetByPropertyId(property, id).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -301,19 +307,21 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenProviderHasNoRights_ShouldReturnNoContent(long id, string property)
         {
             // Arrange
+            var filter = new ApplicationFilter { Status = 1 };
+
             var anotherProvider = new ProviderDto { Id = 2, UserId = userId };
 
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherProvider);
             workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.First());
-            applicationService.Setup(s => s.GetAllByProvider(id))
+            applicationService.Setup(s => s.GetAllByProvider(id, filter))
                 .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
-            applicationService.Setup(s => s.GetAllByWorkshop(id))
+            applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
                 .ReturnsAsync(applications.Where(a => a.WorkshopId == id));
 
             // Act
-            var result = await controller.GetByPropertyId(property, id).ConfigureAwait(false) as BadRequestObjectResult;
+            var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -325,10 +333,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenThereIsNoWorkshopWithId_ShouldReturnBadRequest(long id, string property)
         {
             // Arrange
+            var filter = new ApplicationFilter { Status = 1 };
+
             workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.Where(w => w.Id == id).FirstOrDefault());
 
             // Act
-            var result = await controller.GetByPropertyId(property, id).ConfigureAwait(false) as BadRequestObjectResult;
+            var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -336,7 +346,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(0)]
+        [TestCase(1)]
         public async Task GetByStatus_WhenStatusIsValid_ShouldReturnOkObjectResult(int status)
         {
             // Arrange
@@ -365,7 +375,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(1)]
+        [TestCase(0)]
         public async Task GetByStatus_WhenThereIsNoApplicationsWithStatus_ShoulReturnNoContent(int status)
         {
             // Arrange
@@ -540,7 +550,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
 
             applicationService.Setup(s => s.Update(applications.First())).ReturnsAsync(applications.First());
-            applicationService.Setup(s => s.GetByIdNoTracking(shortApplication.Id)).ReturnsAsync(applications.First());
+            applicationService.Setup(s => s.GetById(shortApplication.Id)).ReturnsAsync(applications.First());
 
             // Act
             var result = await controller.Update(shortApplication).ConfigureAwait(false) as OkObjectResult;

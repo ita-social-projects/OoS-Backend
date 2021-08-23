@@ -24,7 +24,7 @@ namespace OutOfSchool.Services.Models
         public long ParentId { get; set; }
 
         [Required]
-        public DateTime CreationTime { get; set; }
+        public DateTimeOffset CreationTime { get; set; }
 
         public virtual Parent Parent { get; set; }
     }

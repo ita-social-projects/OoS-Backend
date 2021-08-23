@@ -16,21 +16,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
         }
 
-        public static ApplicationDto ToShortModel(this Application application)
-        {
-            return Mapper<Application, ApplicationDto>(application, cfg =>
-            {
-                cfg.CreateMap<Workshop, WorkshopDTO>()
-                .ForMember(w => w.Address, m => m.Ignore())
-                .ForMember(w => w.Teachers, m => m.Ignore());
-                cfg.CreateMap<Child, ChildDto>()
-                .ForMember(c => c.BirthCertificate, m => m.Ignore())
-                .ForMember(c => c.Parent, m => m.Ignore());
-                cfg.CreateMap<Parent, ParentDTO>();
-                cfg.CreateMap<Application, ApplicationDto>();
-            });
-        }
-
         public static ApplicationDto ToModel(this Application application)
         {
             return Mapper<Application, ApplicationDto>(application, cfg =>
@@ -38,7 +23,8 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Teacher, TeacherDTO>();
                 cfg.CreateMap<Workshop, WorkshopDTO>()
-                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
+                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
+                .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)));
                 cfg.CreateMap<BirthCertificate, BirthCertificateDto>();
                 cfg.CreateMap<Child, ChildDto>()
                 .ForMember(c => c.Parent, m => m.Ignore());
@@ -187,6 +173,18 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static WorkshopDTO ToModelSimple(this Workshop workshop)
+        {
+            return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
+            {
+                cfg.CreateMap<Workshop, WorkshopDTO>()
+                   .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)))
+                   .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
+                   .ForMember(w => w.Address, m => m.Ignore())
+                   .ForMember(w => w.Teachers, m => m.Ignore());
+            });
+        }
+
         #endregion
 
         #region ToDomain
@@ -200,7 +198,12 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<ApplicationDto, Application>(applicationDTO, cfg =>
             {
-                cfg.CreateMap<WorkshopDTO, Workshop>();
+                cfg.CreateMap<AddressDto, Address>();
+                cfg.CreateMap<TeacherDTO, Teacher>();
+                cfg.CreateMap<WorkshopDTO, Workshop>()
+                .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())))
+                .ForMember(dest => dest.Direction, opt => opt.Ignore());
+                cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
                 cfg.CreateMap<ChildDto, Child>();
                 cfg.CreateMap<ParentDTO, Parent>();
                 cfg.CreateMap<ApplicationDto, Application>();
@@ -363,11 +366,11 @@ namespace OutOfSchool.WebApi.Extensions
 
         #region ToCard
 
-        public static ParentCardDto ToCard(this ApplicationDto applicationDTO)
+        public static ParentCard ToCard(this ApplicationDto applicationDTO)
         {
-            return Mapper<ApplicationDto, ParentCardDto>(applicationDTO, cfg =>
+            return Mapper<ApplicationDto, ParentCard>(applicationDTO, cfg =>
             {
-                cfg.CreateMap<ApplicationDto, ParentCardDto>()
+                cfg.CreateMap<ApplicationDto, ParentCard>()
                 .ForMember(dest => dest.ApplicationId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.ChildId, opt => opt.MapFrom(src => src.ChildId))
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.WorkshopId))

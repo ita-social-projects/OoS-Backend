@@ -7,6 +7,7 @@ using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -101,13 +102,20 @@ namespace OutOfSchool.WebApi.Services
         {
             try
             {
-                var sourceDto = await workshopService.GetAll().ConfigureAwait(false);
+                var filter = new OffsetFilter() { From = 0, Size = 500 };
+                var source = new List<WorkshopES>();
 
-                List<WorkshopES> source = new List<WorkshopES>();
-                foreach (var entity in sourceDto)
+                var data = await workshopService.GetAll(filter).ConfigureAwait(false);
+                while (data.Entities.Count > 0)
                 {
-                    entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop).Item1;
-                    source.Add(entity.ToESModel());
+                    foreach (var entity in data.Entities)
+                    {
+                        entity.Rating = ratingService.GetAverageRating(entity.Id, RatingType.Workshop).Item1;
+                        source.Add(entity.ToESModel());
+                    }
+
+                    filter.From += filter.Size;
+                    data = await workshopService.GetAll(filter).ConfigureAwait(false);
                 }
 
                 var resp = await esProvider.ReIndexAll(source).ConfigureAwait(false);
@@ -128,11 +136,6 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResultES<WorkshopES>> Search(WorkshopFilterES filter)
         {
-            if (filter is null)
-            {
-                filter = new WorkshopFilterES();
-            }
-
             try
             {
                 var res = await esProvider.Search(filter).ConfigureAwait(false);

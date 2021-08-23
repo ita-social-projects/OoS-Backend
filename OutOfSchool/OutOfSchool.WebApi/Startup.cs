@@ -126,7 +126,6 @@ namespace OutOfSchool.WebApi
             // Add Elasticsearch client
             services.AddElasticsearch(Configuration);
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
-
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
             // entities services
@@ -144,6 +143,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IProviderService, ProviderService>();
             services.AddTransient<IRatingService, RatingService>();
             services.AddTransient<ISocialGroupService, SocialGroupService>();
+            services.AddTransient<IStatisticService, StatisticService>();
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IWorkshopService, WorkshopService>();

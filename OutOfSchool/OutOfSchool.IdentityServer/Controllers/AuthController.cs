@@ -94,6 +94,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return View(new LoginViewModel
                 {
                     ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                    ReturnUrl = model.ReturnUrl,
                 });
             }
 
@@ -164,7 +165,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                MiddleName = model.MiddleName,
                Email = model.Email,
                PhoneNumber = model.PhoneNumber,
-               CreatingTime = DateTime.Now,
+               CreatingTime = DateTimeOffset.UtcNow,
                Role = model.Role,
                IsRegistered = false,
             };

@@ -34,7 +34,7 @@ namespace OutOfSchool.ElasticsearchData
                     Size = filter.Size,
                 });
 
-            return new SearchResultES<WorkshopES>() { TotalAmount = resp.Total, Entities = resp.Documents };
+            return new SearchResultES<WorkshopES>() { TotalAmount = (int)resp.Total, Entities = resp.Documents };
         }
 
         private QueryContainer CreateQueryFromFilter(WorkshopFilterES filter)
@@ -58,7 +58,7 @@ namespace OutOfSchool.ElasticsearchData
                 return queryContainer;
             }
 
-            if (!string.IsNullOrEmpty(filter.SearchText))
+            if (!string.IsNullOrWhiteSpace(filter.SearchText))
             {
                 queryContainer &= new MultiMatchQuery()
                 {
@@ -86,7 +86,15 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            if (filter.MinPrice >= 0 && filter.MaxPrice < int.MaxValue)
+            if (filter.IsFree && (filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
+            {
+                queryContainer &= new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.Price),
+                    Value = 0,
+                };
+            }
+            else if (!filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
                 queryContainer &= new NumericRangeQuery()
                 {
@@ -95,47 +103,62 @@ namespace OutOfSchool.ElasticsearchData
                     LessThanOrEqualTo = filter.MaxPrice,
                 };
             }
-
-            if (filter.MinPrice == 0 && filter.MaxPrice == 0)
+            else if (filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
-                queryContainer &= new TermQuery()
+                var tempQuery = new QueryContainer();
+
+                tempQuery = new NumericRangeQuery()
                 {
                     Field = Infer.Field<WorkshopES>(w => w.Price),
-                    Value = filter.MaxPrice,
+                    GreaterThanOrEqualTo = filter.MinPrice,
+                    LessThanOrEqualTo = filter.MaxPrice,
                 };
+
+                tempQuery |= new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.Price),
+                    Value = 0,
+                };
+
+                queryContainer &= tempQuery;
             }
 
-            if (filter.Ages[0].MinAge != 0 || filter.Ages[0].MaxAge != 100)
+            if (filter.MinAge != 0 || filter.MaxAge != 100)
             {
                 var ageQuery = new QueryContainer();
 
-                foreach (var age in filter.Ages)
+                ageQuery = new NumericRangeQuery()
                 {
-                    var ageQueryItem = new QueryContainer();
+                    Field = Infer.Field<WorkshopES>(w => w.MinAge),
+                    LessThanOrEqualTo = filter.MaxAge,
+                };
 
-                    ageQueryItem = new NumericRangeQuery()
-                    {
-                        Field = Infer.Field<WorkshopES>(w => w.MinAge),
-                        LessThanOrEqualTo = age.MaxAge,
-                    };
-
-                    ageQueryItem &= new NumericRangeQuery()
-                    {
-                        Field = Infer.Field<WorkshopES>(w => w.MaxAge),
-                        GreaterThanOrEqualTo = age.MinAge,
-                    };
-
-                    ageQuery |= ageQueryItem;
-                }
+                ageQuery &= new NumericRangeQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.MaxAge),
+                    GreaterThanOrEqualTo = filter.MinAge,
+                };
 
                 queryContainer &= ageQuery;
             }
 
-            queryContainer &= new MatchQuery()
+            if (filter.WithDisabilityOptions)
             {
-                Field = Infer.Field<WorkshopES>(w => w.Address.City),
-                Query = filter.City,
-            };
+                queryContainer &= new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.WithDisabilityOptions),
+                    Value = filter.WithDisabilityOptions,
+                };
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.City))
+            {
+                queryContainer &= new MatchQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.Address.City),
+                    Query = filter.City,
+                };
+            }
 
             return queryContainer;
         }
@@ -146,28 +169,32 @@ namespace OutOfSchool.ElasticsearchData
 
             switch (filter.OrderByField)
             {
-                case OrderBy.Rating:
+                case nameof(OrderBy.Rating):
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
                     break;
 
-                case OrderBy.Statistic:
+                case nameof(OrderBy.Statistic):
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
                     break;
 
-                case OrderBy.Price:
+                case nameof(OrderBy.PriceAsc):
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Ascending });
                     break;
 
-                case OrderBy.Alphabet:
+                case nameof(OrderBy.PriceDesc):
+                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Descending });
+                    break;
+
+                case nameof(OrderBy.Alphabet):
                     sorts.Add(new FieldSort() { Field = "title.keyword", Order = SortOrder.Ascending });
                     break;
 
-                case OrderBy.Nearest:
+                case nameof(OrderBy.Nearest):
                     sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
                     break;
 
                 default:
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
+                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Id), Order = SortOrder.Ascending });
                     break;
             }
 

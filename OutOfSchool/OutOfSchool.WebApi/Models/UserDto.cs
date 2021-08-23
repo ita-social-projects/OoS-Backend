@@ -7,10 +7,10 @@ namespace OutOfSchool.WebApi.Models
     public class UserDto : IdentityUser
     {
         [DataType(DataType.DateTime)]
-        public DateTime CreatingTime { get; set; }
+        public DateTimeOffset CreatingTime { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime LastLogin { get; set; }
+        public DateTimeOffset LastLogin { get; set; }
 
         [MaxLength(30)]
         public string LastName { get; set; }

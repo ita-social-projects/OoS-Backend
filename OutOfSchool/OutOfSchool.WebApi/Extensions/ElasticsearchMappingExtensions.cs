@@ -21,12 +21,11 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static WorkshopFilterES ToESModel(this WorkshopFilterDto workshopFilterDto)
+        public static WorkshopFilterES ToESModel(this WorkshopFilter workshopFilterDto)
         {
-            return Mapper<WorkshopFilterDto, WorkshopFilterES>(workshopFilterDto, cfg =>
+            return Mapper<WorkshopFilter, WorkshopFilterES>(workshopFilterDto, cfg =>
             {
-                cfg.CreateMap<WorkshopFilterDto, WorkshopFilterES>();
-                cfg.CreateMap<AgeRange, AgeRangeES>();
+                cfg.CreateMap<WorkshopFilter, WorkshopFilterES>();
             });
         }
 

@@ -9,9 +9,13 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string SearchText { get; set; } = string.Empty;
 
-        public OrderBy OrderByField { get; set; } = OrderBy.Rating;
+        public string OrderByField { get; set; } = OrderBy.Id.ToString();
 
-        public List<AgeRangeES> Ages { get; set; } = new List<AgeRangeES>() { new AgeRangeES() { MinAge = 0, MaxAge = 100 } };
+        public int MinAge { get; set; } = 0;
+
+        public int MaxAge { get; set; } = 100;
+
+        public bool IsFree { get; set; } = false;
 
         public int MinPrice { get; set; } = 0;
 
@@ -19,7 +23,9 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public List<long> DirectionIds { get; set; } = new List<long> { 0 };
 
-        public string City { get; set; } = "Київ";
+        public string City { get; set; } = string.Empty;
+
+        public bool WithDisabilityOptions { get; set; } = false;
 
         public int Size { get; set; } = 12;
 

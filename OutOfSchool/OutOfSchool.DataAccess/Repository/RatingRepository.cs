@@ -30,13 +30,13 @@ namespace OutOfSchool.Services.Repository
             }
         }
 
-        public Dictionary<long, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<long> entities, RatingType type)
+        public Dictionary<long, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<long> entityIds, RatingType type)
         {
             return db.Ratings
-                .Where(r => r.Type == type)
+                .Where(rating => rating.Type == type && entityIds.Contains(rating.EntityId))
                 .AsEnumerable()
-                .GroupBy(g => g.EntityId)
-                .ToDictionary(g => g.Key, g => new Tuple<double, int>(g.Average(p => p.Rate), g.Count()));
+                .GroupBy(rating => rating.EntityId)
+                .ToDictionary(g => g.Key, g => Tuple.Create(g.Average(p => p.Rate), g.Count()));
         }
     }
 }

@@ -6,8 +6,10 @@ namespace OutOfSchool.Services.Enums
 {
     public enum ApplicationStatus
     {
-        Pending,
+        Pending = 1,
+        AcceptedForSelection,
         Approved,
         Rejected,
+        Left,
     }
 }

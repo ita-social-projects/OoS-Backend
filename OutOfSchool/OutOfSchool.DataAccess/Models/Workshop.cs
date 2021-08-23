@@ -73,6 +73,7 @@ namespace OutOfSchool.Services.Models
 
         [Required(ErrorMessage = "Head's date of birth is required")]
         [DataType(DataType.Date)]
+        [Column(TypeName = "date")]
         public DateTime HeadDateOfBirth { get; set; }
 
         [Required]
