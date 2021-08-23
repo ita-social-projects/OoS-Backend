@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models.ChatWorkshop
 {
-    public class ChatMessageDto
+    public class ChatMessageWorkshopDto
     {
         public long Id { get; set; }
 

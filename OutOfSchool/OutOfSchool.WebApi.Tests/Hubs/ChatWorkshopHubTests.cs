@@ -6,26 +6,26 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Hubs
 {
     [TestFixture]
-    public class ChatHubTests
+    public class ChatWorkshopHubTests
     {
-        private Mock<ILogger<ChatHub>> loggerMock;
-        private Mock<IChatMessageService> messageServiceMock;
-        private Mock<IChatRoomService> roomServiceMock;
+        private Mock<ILogger<ChatWorkshopHub>> loggerMock;
+        private Mock<IChatMessageWorkshopService> messageServiceMock;
+        private Mock<IChatRoomWorkshopService> roomServiceMock;
         private Mock<IProviderService> providerServiceMock;
         private Mock<IParentService> parentServiceMock;
         private Mock<IWorkshopService> workshopServiceMock;
 
-        private ChatHub chatHub;
+        private ChatWorkshopHub chatHub;
 
         private Mock<IHubCallerClients> clientsMock;
         private Mock<IClientProxy> clientProxyMock;
@@ -34,8 +34,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
 
         private string userId;
         private string userRole;
-        private List<ChatRoomWithLastMessage> rooms;
-        private ChatRoomDto chatRoom;
+        private List<ChatRoomWorkshopDtoWithLastMessage> rooms;
+        private ChatRoomWorkshopDto chatRoom;
 
         private ParentDTO parent;
         private ProviderDto provider;
@@ -44,9 +44,9 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         [SetUp]
         public void SetUp()
         {
-            loggerMock = new Mock<ILogger<ChatHub>>();
-            messageServiceMock = new Mock<IChatMessageService>();
-            roomServiceMock = new Mock<IChatRoomService>();
+            loggerMock = new Mock<ILogger<ChatWorkshopHub>>();
+            messageServiceMock = new Mock<IChatMessageWorkshopService>();
+            roomServiceMock = new Mock<IChatRoomWorkshopService>();
             providerServiceMock = new Mock<IProviderService>();
             parentServiceMock = new Mock<IParentService>();
             workshopServiceMock = new Mock<IWorkshopService>();
@@ -58,19 +58,19 @@ namespace OutOfSchool.WebApi.Tests.Hubs
 
             userId = "someUserId";
             userRole = Role.Provider.ToString();
-            rooms = new List<ChatRoomWithLastMessage>()
+            rooms = new List<ChatRoomWorkshopDtoWithLastMessage>()
             {
-                new ChatRoomWithLastMessage() { Id = 1, WorkshopId = 1, ParentId = 1, },
-                new ChatRoomWithLastMessage() { Id = 2, WorkshopId = 2, ParentId = 1, },
+                new ChatRoomWorkshopDtoWithLastMessage() { Id = 1, WorkshopId = 1, ParentId = 1, },
+                new ChatRoomWorkshopDtoWithLastMessage() { Id = 2, WorkshopId = 2, ParentId = 1, },
             };
 
-            chatRoom = new ChatRoomDto() { Id = 1, WorkshopId = 1, ParentId = 1, };
+            chatRoom = new ChatRoomWorkshopDto() { Id = 1, WorkshopId = 1, ParentId = 1, };
 
             parent = new ParentDTO() { Id = 1, UserId = userId };
             provider = new ProviderDto() { Id = 1, UserId = userId };
             workshop = new WorkshopDTO() { Id = 1, ProviderId = 1 };
 
-            chatHub = new ChatHub(loggerMock.Object, messageServiceMock.Object, roomServiceMock.Object, providerServiceMock.Object, parentServiceMock.Object, workshopServiceMock.Object)
+            chatHub = new ChatWorkshopHub(loggerMock.Object, messageServiceMock.Object, roomServiceMock.Object, providerServiceMock.Object, parentServiceMock.Object, workshopServiceMock.Object)
             {
                 Clients = clientsMock.Object,
                 Context = hubCallerContextMock.Object,
@@ -208,7 +208,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()))
                 .ReturnsAsync(chatRoom);
 
-            var newMessage = new ChatMessageDto()
+            var newMessage = new ChatMessageWorkshopDto()
             {
                 Id = 1,
                 SenderRoleIsProvider = true,
@@ -217,7 +217,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
-            messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageDto>()))
+            messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()))
                 .ReturnsAsync(newMessage);
 
             clientsMock.Setup(clients => clients.OthersInGroup(It.IsAny<string>())).Returns(clientProxyMock.Object);
@@ -229,7 +229,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(1, 1), Times.Once);
             roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
 
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageDto>()), Times.Once);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Once);
             clientsMock.Verify(clients => clients.OthersInGroup("1WorkshopChat"), Times.Once);
         }
 
@@ -250,11 +250,11 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 .ReturnsAsync(workshop);
 
             roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()))
-                .ReturnsAsync(default(ChatRoomDto));
+                .ReturnsAsync(default(ChatRoomWorkshopDto));
             roomServiceMock.Setup(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()))
                 .ReturnsAsync(chatRoom);
 
-            var newMessage = new ChatMessageDto()
+            var newMessage = new ChatMessageWorkshopDto()
             {
                 Id = 1,
                 SenderRoleIsProvider = true,
@@ -263,7 +263,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
-            messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageDto>()))
+            messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()))
                 .ReturnsAsync(newMessage);
 
             clientsMock.Setup(clients => clients.OthersInGroup(It.IsAny<string>())).Returns(clientProxyMock.Object);
@@ -275,7 +275,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(1, 1), Times.AtLeastOnce);
             roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(1, 1), Times.Once);
 
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageDto>()), Times.Once);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Once);
             clientsMock.Verify(clients => clients.OthersInGroup("1WorkshopChat"), Times.Once);
         }
     }

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 
 namespace OutOfSchool.WebApi.Extensions
 {
@@ -32,16 +34,16 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static ChatMessageDto ToModel(this ChatMessage chatMessage)
+        public static ChatMessageWorkshopDto ToModel(this ChatMessageWorkshop chatMessage)
         {
-            return Mapper<ChatMessage, ChatMessageDto>(chatMessage, cfg => { cfg.CreateMap<ChatMessage, ChatMessageDto>(); });
+            return Mapper<ChatMessageWorkshop, ChatMessageWorkshopDto>(chatMessage, cfg => { cfg.CreateMap<ChatMessageWorkshop, ChatMessageWorkshopDto>(); });
         }
 
-        public static ChatRoomDto ToModel(this ChatRoom chatRoom)
+        public static ChatRoomWorkshopDto ToModel(this ChatRoomWorkshop chatRoom)
         {
-            return Mapper<ChatRoom, ChatRoomDto>(chatRoom, cfg =>
+            return Mapper<ChatRoomWorkshop, ChatRoomWorkshopDto>(chatRoom, cfg =>
             {
-                cfg.CreateMap<ChatRoom, ChatRoomDto>();
+                cfg.CreateMap<ChatRoomWorkshop, ChatRoomWorkshopDto>();
                 cfg.CreateMap<Workshop, WorkshopCard>()
                     .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                     .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo))
@@ -184,9 +186,9 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static ChatMessage ToDomain(this ChatMessageDto chatMessageDTO)
+        public static ChatMessageWorkshop ToDomain(this ChatMessageWorkshopDto chatMessageDTO)
         {
-            return Mapper<ChatMessageDto, ChatMessage>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageDto, ChatMessage>(); });
+            return Mapper<ChatMessageWorkshopDto, ChatMessageWorkshop>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageWorkshopDto, ChatMessageWorkshop>(); });
         }
 
         public static Child ToDomain(this ChildDto childDto)

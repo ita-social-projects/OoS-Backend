@@ -10,8 +10,9 @@ using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services
@@ -19,13 +20,13 @@ namespace OutOfSchool.WebApi.Tests.Services
     [TestFixture]
     public class ChatRoomServiceTests
     {
-        private IEntityRepository<ChatRoom> roomRepository;
+        private IEntityRepository<ChatRoomWorkshop> roomRepository;
         private Mock<ILogger<ChatRoomService>> loggerMoq;
 
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext dbContext;
 
-        private IChatRoomService roomService;
+        private IChatRoomWorkshopService roomService;
 
         [SetUp]
         public void SetUp()
@@ -38,10 +39,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             dbContext = new OutOfSchoolDbContext(options);
 
-            roomRepository = new EntityRepository<ChatRoom>(dbContext);
+            roomRepository = new EntityRepository<ChatRoomWorkshop>(dbContext);
             loggerMoq = new Mock<ILogger<ChatRoomService>>();
 
-            roomService = new ChatRoomService(roomRepository, loggerMoq.Object);
+            roomService = new ChatRoomWorkshopService(roomRepository, loggerMoq.Object);
 
             SeedDatabase();
         }
@@ -51,7 +52,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task CreateOrReturnExisting_WhenRoomExists_ShouldReturnExistingRoom()
         {
             // Arrange
-            var roomCount = dbContext.ChatRooms.Count();
+            var roomCount = dbContext.ChatRoomWorkshops.Count();
             var workshopId = 1;
             var parentId = 1;
 
@@ -59,17 +60,17 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await roomService.CreateOrReturnExistingAsync(workshopId, parentId).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<ChatRoomDto>(result);
+            Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
             Assert.AreNotEqual(default(int), roomCount);
-            Assert.AreEqual(roomCount, dbContext.ChatRooms.Count());
-            Assert.AreEqual(dbContext.ChatRooms.Where(x => x.ParentId == parentId && x.WorkshopId == workshopId).FirstOrDefault()?.Id, result.Id);
+            Assert.AreEqual(roomCount, dbContext.ChatRoomWorkshops.Count());
+            Assert.AreEqual(dbContext.ChatRoomWorkshops.Where(x => x.ParentId == parentId && x.WorkshopId == workshopId).FirstOrDefault()?.Id, result.Id);
         }
 
         [Test]
         public async Task CreateOrReturnExisting_WhenRoomDoesNotExist_ShouldCreateAndReturnNewRoom()
         {
             // Arrange
-            var roomCount = dbContext.ChatRooms.Count();
+            var roomCount = dbContext.ChatRoomWorkshops.Count();
             var workshopId = 3;
             var parentId = 1;
 
@@ -77,10 +78,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await roomService.CreateOrReturnExistingAsync(workshopId, parentId).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<ChatRoomDto>(result);
-            Assert.AreEqual(roomCount + 1, dbContext.ChatRooms.Count());
+            Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
+            Assert.AreEqual(roomCount + 1, dbContext.ChatRoomWorkshops.Count());
             Assert.AreNotEqual(default(int), result.Id);
-            Assert.AreEqual(dbContext.ChatRooms.LastOrDefault()?.Id, result.Id);
+            Assert.AreEqual(dbContext.ChatRoomWorkshops.LastOrDefault()?.Id, result.Id);
         }
         #endregion
 
@@ -89,26 +90,26 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Delete_WhenRoomExist_ShouldDeleteEntities(long id)
         {
             // Arrange
-            var roomCount = dbContext.ChatRooms.Count();
+            var roomCount = dbContext.ChatRoomWorkshops.Count();
 
             // Act
             await roomService.DeleteAsync(id).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(roomCount - 1, dbContext.ChatRooms.Count());
+            Assert.AreEqual(roomCount - 1, dbContext.ChatRoomWorkshops.Count());
         }
 
         [TestCase(99)]
         public void Delete_WhenRoomDoesNotExist_ShouldThrowArgumentOutOfRangeException(long id)
         {
             // Arrange
-            var roomCount = dbContext.ChatRooms.Count();
+            var roomCount = dbContext.ChatRoomWorkshops.Count();
 
             // Act and Assert
             Assert.That(
                 async () => await roomService.DeleteAsync(id).ConfigureAwait(false),
                 Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
-            Assert.AreEqual(roomCount, dbContext.ChatRooms.Count());
+            Assert.AreEqual(roomCount, dbContext.ChatRoomWorkshops.Count());
         }
         #endregion
 
@@ -120,7 +121,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await roomService.GetByIdAsync(id).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<ChatRoomDto>(result);
+            Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
             Assert.IsNotNull(result);
             Assert.AreEqual(id, result.Id);
         }
@@ -144,9 +145,9 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await roomService.GetUniqueChatRoomAsync(workshopId, parentId).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<ChatRoomDto>(result);
+            Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
             Assert.IsNotNull(result);
-            Assert.AreEqual(dbContext.ChatRooms.Where(x => x.ParentId == parentId && x.WorkshopId == workshopId).FirstOrDefault()?.Id, result.Id);
+            Assert.AreEqual(dbContext.ChatRoomWorkshops.Where(x => x.ParentId == parentId && x.WorkshopId == workshopId).FirstOrDefault()?.Id, result.Id);
             Assert.AreEqual(workshopId, result.WorkshopId);
             Assert.AreEqual(parentId, result.ParentId);
         }
@@ -201,14 +202,14 @@ namespace OutOfSchool.WebApi.Tests.Services
                 };
                 context.Workshops.AddRangeAsync(workshops);
 
-                var rooms = new List<ChatRoom>()
+                var rooms = new List<ChatRoomWorkshop>()
                 {
-                    new ChatRoom() { Id = 1, WorkshopId = workshops.ToArray()[0].Id, ParentId = parents.ToArray()[0].Id, },
-                    new ChatRoom() { Id = 2, WorkshopId = workshops.ToArray()[0].Id, ParentId = parents.ToArray()[1].Id, },
-                    new ChatRoom() { Id = 3, WorkshopId = workshops.ToArray()[1].Id, ParentId = parents.ToArray()[0].Id, },
-                    new ChatRoom() { Id = 4, WorkshopId = workshops.ToArray()[1].Id, ParentId = parents.ToArray()[1].Id, },
+                    new ChatRoomWorkshop() { Id = 1, WorkshopId = workshops.ToArray()[0].Id, ParentId = parents.ToArray()[0].Id, },
+                    new ChatRoomWorkshop() { Id = 2, WorkshopId = workshops.ToArray()[0].Id, ParentId = parents.ToArray()[1].Id, },
+                    new ChatRoomWorkshop() { Id = 3, WorkshopId = workshops.ToArray()[1].Id, ParentId = parents.ToArray()[0].Id, },
+                    new ChatRoomWorkshop() { Id = 4, WorkshopId = workshops.ToArray()[1].Id, ParentId = parents.ToArray()[1].Id, },
                 };
-                context.ChatRooms.AddRangeAsync(rooms);
+                context.ChatRoomWorkshops.AddRangeAsync(rooms);
 
                 context.SaveChangesAsync();
             }

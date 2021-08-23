@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models.ChatWorkshop
 {
-    public class ChatRoomDto
+    public class ChatRoomWorkshopShortDto
     {
         public long Id { get; set; }
 
@@ -11,9 +11,5 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         public long ParentId { get; set; }
-
-        public WorkshopCard Workshop { get; set; }
-
-        public ParentDtoWithShortUserInfo Parent { get; set; }
     }
 }

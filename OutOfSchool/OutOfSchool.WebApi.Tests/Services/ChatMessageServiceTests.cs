@@ -8,9 +8,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
-using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services
@@ -18,15 +19,15 @@ namespace OutOfSchool.WebApi.Tests.Services
     [TestFixture]
     public class ChatMessageServiceTests
     {
-        private IEntityRepository<ChatMessage> messageRepository;
+        private IEntityRepository<ChatMessageWorkshop> messageRepository;
         private Mock<ILogger<ChatMessageService>> loggerMoq;
 
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext dbContext;
 
-        private IChatMessageService messageService;
+        private IChatMessageWorkshopService messageService;
 
-        private ChatMessageDto newMessage;
+        private ChatMessageWorkshopDto newMessage;
 
         [SetUp]
         public void SetUp()
@@ -39,10 +40,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             dbContext = new OutOfSchoolDbContext(options);
 
-            messageRepository = new EntityRepository<ChatMessage>(dbContext);
+            messageRepository = new EntityRepository<ChatMessageWorkshop>(dbContext);
             loggerMoq = new Mock<ILogger<ChatMessageService>>();
 
-            messageService = new ChatMessageService(messageRepository, loggerMoq.Object);
+            messageService = new ChatMessageWorkshopService(messageRepository, loggerMoq.Object);
 
             SeedDatabase();
         }
@@ -52,16 +53,16 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ShouldCreateEntity()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessages.Count();
+            var messagesCount = dbContext.ChatMessageWorkshops.Count();
 
             // Act
             var result = await messageService.CreateAsync(newMessage).ConfigureAwait(false);
 
             // Assert
             Assert.AreNotEqual(default(long), result.Id);
-            Assert.AreEqual(dbContext.ChatMessages.Last().Id, result.Id);
+            Assert.AreEqual(dbContext.ChatMessageWorkshops.Last().Id, result.Id);
             Assert.AreEqual(newMessage.Text, result.Text);
-            Assert.AreEqual(messagesCount + 1, dbContext.ChatMessages.Count());
+            Assert.AreEqual(messagesCount + 1, dbContext.ChatMessageWorkshops.Count());
         }
         #endregion
 
@@ -128,8 +129,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Update_WhenEntityIsValid_ShouldUpdateEntity()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessages.Count();
-            var updMessage = new ChatMessageDto()
+            var messagesCount = dbContext.ChatMessageWorkshops.Count();
+            var updMessage = new ChatMessageWorkshopDto()
             {
                 Id = 1,
                 Text = "newtext",
@@ -145,16 +146,16 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Assert
             Assert.AreEqual(updMessage.Id, result.Id);
             Assert.AreEqual(updMessage.Text, result.Text);
-            Assert.AreEqual(messagesCount, dbContext.ChatMessages.Count());
-            Assert.AreEqual(updMessage.Text, dbContext.ChatMessages.Find(1L).Text);
+            Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
+            Assert.AreEqual(updMessage.Text, dbContext.ChatMessageWorkshops.Find(1L).Text);
         }
 
         [Test]
         public void Update_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessages.Count();
-            var updMessage = new ChatMessageDto()
+            var messagesCount = dbContext.ChatMessageWorkshops.Count();
+            var updMessage = new ChatMessageWorkshopDto()
             {
                 Id = 99,
                 Text = "newtext",
@@ -176,7 +177,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task UpdateIsRead_WhenEntityIsValid_ShouldSetIsReadTrueAndReturnNumberOfFoundEntites()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessages.Count();
+            var messagesCount = dbContext.ChatMessageWorkshops.Count();
             var chatRoomId = 1;
             var currentUserRoleIsProvider = true;
 
@@ -184,17 +185,17 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(messagesCount, dbContext.ChatMessages.Count());
+            Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
             Assert.AreEqual(2, result);
-            Assert.AreEqual(true, dbContext.ChatMessages.Find(3L).IsRead);
-            Assert.AreEqual(true, dbContext.ChatMessages.Find(4L).IsRead);
+            Assert.AreEqual(true, dbContext.ChatMessageWorkshops.Find(3L).IsRead);
+            Assert.AreEqual(true, dbContext.ChatMessageWorkshops.Find(4L).IsRead);
         }
 
         [Test]
         public async Task UpdateIsRead_WhenAllAreAlreadyRead_ShouldReturnNumberZero()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessages.Count();
+            var messagesCount = dbContext.ChatMessageWorkshops.Count();
             var chatRoomId = 2;
             var currentUserRoleIsProvider = true;
 
@@ -202,7 +203,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(messagesCount, dbContext.ChatMessages.Count());
+            Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
             Assert.AreEqual(default(int), result);
         }
         #endregion
@@ -237,7 +238,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private void SeedDatabase()
         {
-            newMessage = new ChatMessageDto()
+            newMessage = new ChatMessageWorkshopDto()
             {
                 Text = "Привіт всім!",
                 ChatRoomId = 1,
@@ -251,16 +252,16 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                var messages = new List<ChatMessage>()
+                var messages = new List<ChatMessageWorkshop>()
                 {
-                    new ChatMessage() { Id = 1, ChatRoomId = 1, Text = "text1", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.Parse("2021-06-18 15:47"), IsRead = true },
-                    new ChatMessage() { Id = 2, ChatRoomId = 1, Text = "text2", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.Parse("2021-06-18 15:48"), IsRead = true },
-                    new ChatMessage() { Id = 3, ChatRoomId = 1, Text = "text3", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
-                    new ChatMessage() { Id = 4, ChatRoomId = 1, Text = "text4", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
-                    new ChatMessage() { Id = 5, ChatRoomId = 2, Text = "text5", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = true },
-                    new ChatMessage() { Id = 6, ChatRoomId = 2, Text = "text6", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.UtcNow, IsRead = true },
+                    new ChatMessageWorkshop() { Id = 1, ChatRoomId = 1, Text = "text1", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.Parse("2021-06-18 15:47"), IsRead = true },
+                    new ChatMessageWorkshop() { Id = 2, ChatRoomId = 1, Text = "text2", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.Parse("2021-06-18 15:48"), IsRead = true },
+                    new ChatMessageWorkshop() { Id = 3, ChatRoomId = 1, Text = "text3", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
+                    new ChatMessageWorkshop() { Id = 4, ChatRoomId = 1, Text = "text4", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
+                    new ChatMessageWorkshop() { Id = 5, ChatRoomId = 2, Text = "text5", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = true },
+                    new ChatMessageWorkshop() { Id = 6, ChatRoomId = 2, Text = "text6", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.UtcNow, IsRead = true },
                 };
-                context.ChatMessages.AddRangeAsync(messages);
+                context.ChatMessageWorkshops.AddRangeAsync(messages);
 
                 context.SaveChangesAsync();
             }

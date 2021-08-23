@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.Services.Models.ChatWorkshop
 {
-    public class ChatRoom
+    public class ChatRoomWorkshop
     {
         public long Id { get; set; }
 
@@ -17,6 +17,6 @@ namespace OutOfSchool.Services.Models
 
         public virtual Parent Parent { get; set; }
 
-        public virtual ICollection<ChatMessage> ChatMessages { get; set; }
+        public virtual ICollection<ChatMessageWorkshop> ChatMessages { get; set; }
     }
 }
