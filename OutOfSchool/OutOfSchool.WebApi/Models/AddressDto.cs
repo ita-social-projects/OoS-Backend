@@ -29,5 +29,24 @@ namespace OutOfSchool.WebApi.Models
         public double Latitude { get; set; } = default;
 
         public double Longitude { get; set; } = default;
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            if (!(obj is AddressDto address))
+            {
+                return false;
+            }
+
+            return string.Equals(Region, address.Region, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(District, address.District, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(City, address.City, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(Street, address.Street, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(BuildingNumber, address.BuildingNumber, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

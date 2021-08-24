@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
@@ -37,7 +39,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             serviceProvider = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new ProviderController(serviceProvider.Object, localizer.Object);
+            controller = new ProviderController(serviceProvider.Object, localizer.Object, new Mock<ILogger<ProviderController>>().Object);
             user = new ClaimsPrincipal(new ClaimsIdentity(
                 new Claim[]
                 {
@@ -261,8 +263,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Ownership = OwnershipType.Private,
                 Type = ProviderType.TOV,
                 Status = false,
-                LegalAddressId = 11,
-                ActualAddressId = 12,
                 UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda67a6",
                 LegalAddress = new AddressDto
                 {
@@ -310,8 +310,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 1,
-                        ActualAddressId = 2,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
                         LegalAddress = new AddressDto
                         {
@@ -353,8 +351,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 3,
-                        ActualAddressId = 4,
                         UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
                         LegalAddress = new AddressDto
                         {
@@ -396,8 +392,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 5,
-                        ActualAddressId = 6,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
                         LegalAddress = new AddressDto
                         {
@@ -439,8 +433,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 7,
-                        ActualAddressId = 8,
                         UserId = "de909f35-5eb7-4BBa-bda8-40a5bfda96a6",
                         LegalAddress = new AddressDto
                         {
@@ -482,8 +474,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 9,
-                        ActualAddressId = 10,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
                         LegalAddress = new AddressDto
                         {

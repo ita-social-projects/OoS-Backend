@@ -28,6 +28,8 @@ namespace OutOfSchool.Services.Repository
             dbSet = this.dbContext.Set<T>();
         }
 
+        // TODO: make all public methods virtual
+
         /// <inheritdoc/>
         public async Task<T> Create(T entity)
         {

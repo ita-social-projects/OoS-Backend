@@ -25,45 +25,62 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
+        // TODO: It should be removed after models revision.
+        //       Temporary instance to fill 'Provider' model 'User' property
+        private readonly IEntityRepository<User> usersRepository;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderService"/> class.
         /// </summary>
         /// <param name="providerRepository">Provider repository.</param>
+        /// <param name="usersRepository"><see cref="IEntityRepository{User}"/> repository object.</param>
         /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         public ProviderService(
             IProviderRepository providerRepository,
+            IEntityRepository<User> usersRepository,
             IRatingService ratingService,
             ILogger logger,
             IStringLocalizer<SharedResource> localizer)
         {
-            this.localizer = localizer;
-            this.providerRepository = providerRepository;
-            this.ratingService = ratingService;
-            this.logger = logger;
+            this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+            this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
+            this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
+            this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDto> Create(ProviderDto dto)
+        public async Task<ProviderDto> Create(ProviderDto providerModel)
         {
-            logger.Information("Provider creating was started.");
+            logger.Debug("Provider creating was started.");
 
-            if (providerRepository.SameExists(dto.ToDomain()))
+            if (providerRepository.ExistsUserId(providerModel.UserId))
             {
-                throw new ArgumentException(localizer["There is already a provider with such a data."]);
+                throw new InvalidOperationException(localizer["You can not create more than one account."]);
             }
 
-            if (providerRepository.ExistsUserId(dto.UserId))
+            // TODO: Q: clear actual address if it is equal to the legal ?
+            if (providerModel.ActualAddress == null
+                || providerModel.ActualAddress.Equals(providerModel.LegalAddress))
             {
-                throw new ArgumentException(localizer["You can not create more than one account."]);
+                providerModel.ActualAddress = providerModel.LegalAddress;
             }
 
-            Func<Task<Provider>> operation = async () => await providerRepository.Create(dto.ToDomain()).ConfigureAwait(false);
+            var providerDomainModel = providerModel.ToDomain();
+            if (providerRepository.SameExists(providerDomainModel))
+            {
+                throw new InvalidOperationException(localizer["There is already a provider with such a data."]);
+            }
 
-            var newProvider = await providerRepository.RunInTransaction(operation).ConfigureAwait(false);
+            var users = await usersRepository.GetByFilter(u => string.Equals(u.Id, providerModel.UserId)).ConfigureAwait(false);
+            providerDomainModel.User = users.SingleOrDefault();
+            providerDomainModel.User.IsRegistered = true;
 
-            logger.Information($"Provider with Id = {newProvider?.Id} created successfully.");
+            var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
+
+            logger.Debug($"Provider with Id = {newProvider?.Id} created successfully.");
 
             return newProvider.ToModel();
         }
@@ -144,7 +161,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ProviderDto> Update(ProviderDto dto, string userId, string userRole)
         {
-            logger.Information($"Updating Provider with Id = {dto?.Id} started.");
+            logger.Debug($"Updating Provider with Id = {dto?.Id} started.");
 
             try
             {

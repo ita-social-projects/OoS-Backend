@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             ratingService = new Mock<IRatingService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger>();
-            service = new ProviderService(repoProvider, ratingService.Object, logger.Object, localizer.Object);
+            service = new ProviderService(repoProvider, new Mock<IEntityRepository<User>>().Object, ratingService.Object, logger.Object, localizer.Object);
 
             SeedDatabase();
         }
@@ -99,29 +99,30 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.Create(expected.ToModel()).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.FullTitle, result.FullTitle);
-            Assert.AreEqual(expected.ShortTitle, result.ShortTitle);
-            Assert.AreEqual(expected.Website, result.Website);
-            Assert.AreEqual(expected.Facebook, result.Facebook);
-            Assert.AreEqual(expected.Email, result.Email);
-            Assert.AreEqual(expected.Instagram, result.Instagram);
-            Assert.AreEqual(expected.Description, result.Description);
-            Assert.AreEqual(expected.DirectorDateOfBirth, result.DirectorDateOfBirth);
-            Assert.AreEqual(expected.EdrpouIpn, result.EdrpouIpn);
-            Assert.AreEqual(expected.PhoneNumber, result.PhoneNumber);
-            Assert.AreEqual(expected.Founder, result.Founder);
-            Assert.AreEqual(expected.Ownership, result.Ownership);
-            Assert.AreEqual(expected.Type, result.Type);
-            Assert.AreEqual(expected.Status, result.Status);
-            Assert.AreEqual(expected.LegalAddressId, result.LegalAddressId);
-            Assert.AreEqual(expected.ActualAddressId, result.ActualAddressId);
-            Assert.AreEqual(expected.UserId, result.UserId);
-            Assert.AreEqual(expected.LegalAddress.City, result.LegalAddress.City);
-            Assert.AreEqual(expected.LegalAddress.BuildingNumber, result.LegalAddress.BuildingNumber);
-            Assert.AreEqual(expected.LegalAddress.Street, result.LegalAddress.Street);
-            Assert.AreEqual(expected.ActualAddress.City, result.ActualAddress.City);
-            Assert.AreEqual(expected.ActualAddress.BuildingNumber, result.ActualAddress.BuildingNumber);
-            Assert.AreEqual(expected.ActualAddress.Street, result.ActualAddress.Street);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(expected.FullTitle, result.FullTitle);
+                Assert.AreEqual(expected.ShortTitle, result.ShortTitle);
+                Assert.AreEqual(expected.Website, result.Website);
+                Assert.AreEqual(expected.Facebook, result.Facebook);
+                Assert.AreEqual(expected.Email, result.Email);
+                Assert.AreEqual(expected.Instagram, result.Instagram);
+                Assert.AreEqual(expected.Description, result.Description);
+                Assert.AreEqual(expected.DirectorDateOfBirth, result.DirectorDateOfBirth);
+                Assert.AreEqual(expected.EdrpouIpn, result.EdrpouIpn);
+                Assert.AreEqual(expected.PhoneNumber, result.PhoneNumber);
+                Assert.AreEqual(expected.Founder, result.Founder);
+                Assert.AreEqual(expected.Ownership, result.Ownership);
+                Assert.AreEqual(expected.Type, result.Type);
+                Assert.AreEqual(expected.Status, result.Status);
+                Assert.AreEqual(expected.UserId, result.UserId);
+                Assert.AreEqual(expected.LegalAddress.City, result.LegalAddress.City);
+                Assert.AreEqual(expected.LegalAddress.BuildingNumber, result.LegalAddress.BuildingNumber);
+                Assert.AreEqual(expected.LegalAddress.Street, result.LegalAddress.Street);
+                Assert.AreEqual(expected.ActualAddress.City, result.ActualAddress.City);
+                Assert.AreEqual(expected.ActualAddress.BuildingNumber, result.ActualAddress.BuildingNumber);
+                Assert.AreEqual(expected.ActualAddress.Street, result.ActualAddress.Street);
+            });
         }
 
         [Test]
@@ -349,6 +350,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 async () => await service.Delete(id).ConfigureAwait(false));
         }
 
+        // TODO: randomize test data
         private void SeedDatabase()
         {
             using var context = new OutOfSchoolDbContext(options);

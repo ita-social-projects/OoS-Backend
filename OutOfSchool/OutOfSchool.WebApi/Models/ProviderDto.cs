@@ -6,6 +6,7 @@ namespace OutOfSchool.WebApi.Models
 {
     public class ProviderDto
     {
+        // TODO: change type to GUID.
         public long Id { get; set; }
 
         [Required(ErrorMessage = "Full Title is required")]
@@ -46,10 +47,12 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(
             @"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU/IPN code must contain 8 or 10 digits")]
+        // TODO: why it is set to 12 when the regex says 8 or 10 ?
         [MaxLength(12)]
         public string EdrpouIpn { get; set; }
 
         [MaxLength(50)]
+        // TODO: looks like it should be changed to person.
         public string Director { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
@@ -65,26 +68,26 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         [MaxLength(30)]
+        // TODO: looks like it should be changed to person.
         public string Founder { get; set; } = string.Empty;
 
+        // TODO: it will be always filled because of enum type
+        // TODO: validation of the enum fields ?
         [Required]
         public OwnershipType Ownership { get; set; }
 
+        // TODO: it will be always filled because of enum type
+        // TODO: validation of the enum fields ?
         [Required]
         public ProviderType Type { get; set; }
 
         public bool Status { get; set; } = default;
 
-        [Required]
-        public long LegalAddressId { get; set; }
-
-        [Required]
-        public long ActualAddressId { get; set; }
-
         public float Rating { get; set; }
 
         public int NumberOfRatings { get; set; }
 
+        // TODO: bad naming ?
         [Required]
         public string UserId { get; set; }
 
