@@ -136,8 +136,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Text = "newtext",
                 SenderRoleIsProvider = true,
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.UtcNow,
-                IsRead = true,
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                ReadDateTime = DateTimeOffset.UtcNow,
             };
 
             // Act
@@ -161,8 +161,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Text = "newtext",
                 SenderRoleIsProvider = true,
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.UtcNow,
-                IsRead = true,
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                ReadDateTime = DateTimeOffset.UtcNow,
             };
 
             // Act and Assert
@@ -187,8 +187,8 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Assert
             Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
             Assert.AreEqual(2, result);
-            Assert.AreEqual(true, dbContext.ChatMessageWorkshops.Find(3L).IsRead);
-            Assert.AreEqual(true, dbContext.ChatMessageWorkshops.Find(4L).IsRead);
+            Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(3L).ReadDateTime);
+            Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(4L).ReadDateTime);
         }
 
         [Test]
@@ -243,8 +243,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Text = "Привіт всім!",
                 ChatRoomId = 1,
                 SenderRoleIsProvider = true,
-                CreatedTime = DateTimeOffset.UtcNow,
-                IsRead = false,
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                ReadDateTime = null,
             };
 
             using var context = new OutOfSchoolDbContext(options);
@@ -254,12 +254,12 @@ namespace OutOfSchool.WebApi.Tests.Services
 
                 var messages = new List<ChatMessageWorkshop>()
                 {
-                    new ChatMessageWorkshop() { Id = 1, ChatRoomId = 1, Text = "text1", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.Parse("2021-06-18 15:47"), IsRead = true },
-                    new ChatMessageWorkshop() { Id = 2, ChatRoomId = 1, Text = "text2", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.Parse("2021-06-18 15:48"), IsRead = true },
-                    new ChatMessageWorkshop() { Id = 3, ChatRoomId = 1, Text = "text3", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
-                    new ChatMessageWorkshop() { Id = 4, ChatRoomId = 1, Text = "text4", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
-                    new ChatMessageWorkshop() { Id = 5, ChatRoomId = 2, Text = "text5", SenderRoleIsProvider = false, CreatedTime = DateTimeOffset.UtcNow, IsRead = true },
-                    new ChatMessageWorkshop() { Id = 6, ChatRoomId = 2, Text = "text6", SenderRoleIsProvider = true, CreatedTime = DateTimeOffset.UtcNow, IsRead = true },
+                    new ChatMessageWorkshop() { Id = 1, ChatRoomId = 1, Text = "text1", SenderRoleIsProvider = true, CreatedDateTime = DateTimeOffset.Parse("2021-06-18 15:47"), ReadDateTime = DateTimeOffset.Parse("2021-06-18 16:47") },
+                    new ChatMessageWorkshop() { Id = 2, ChatRoomId = 1, Text = "text2", SenderRoleIsProvider = true, CreatedDateTime = DateTimeOffset.Parse("2021-06-18 15:48"), ReadDateTime = DateTimeOffset.Parse("2021-06-18 16:47") },
+                    new ChatMessageWorkshop() { Id = 3, ChatRoomId = 1, Text = "text3", SenderRoleIsProvider = false, CreatedDateTime = DateTimeOffset.UtcNow, ReadDateTime = null },
+                    new ChatMessageWorkshop() { Id = 4, ChatRoomId = 1, Text = "text4", SenderRoleIsProvider = false, CreatedDateTime = DateTimeOffset.UtcNow, ReadDateTime = null },
+                    new ChatMessageWorkshop() { Id = 5, ChatRoomId = 2, Text = "text5", SenderRoleIsProvider = false, CreatedDateTime = DateTimeOffset.UtcNow, ReadDateTime = DateTimeOffset.UtcNow },
+                    new ChatMessageWorkshop() { Id = 6, ChatRoomId = 2, Text = "text6", SenderRoleIsProvider = true, CreatedDateTime = DateTimeOffset.UtcNow, ReadDateTime = DateTimeOffset.UtcNow },
                 };
                 context.ChatMessageWorkshops.AddRangeAsync(messages);
 

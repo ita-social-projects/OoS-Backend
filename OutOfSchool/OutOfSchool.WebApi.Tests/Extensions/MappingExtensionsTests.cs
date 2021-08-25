@@ -24,8 +24,8 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 SenderRoleIsProvider = true,
-                IsRead = true,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                ReadDateTime = null,
+                CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
             };
 
             // Act
@@ -39,8 +39,8 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             Assert.AreEqual(chatMessageDTO.ChatRoomId, result.ChatRoomId);
             Assert.AreEqual(chatMessageDTO.Text, result.Text);
             Assert.AreEqual(chatMessageDTO.SenderRoleIsProvider, result.SenderRoleIsProvider);
-            Assert.AreEqual(chatMessageDTO.CreatedTime, result.CreatedTime);
-            Assert.AreEqual(chatMessageDTO.IsRead, result.IsRead);
+            Assert.AreEqual(chatMessageDTO.CreatedDateTime, result.CreatedDateTime);
+            Assert.AreEqual(chatMessageDTO.ReadDateTime, result.ReadDateTime);
             Assert.IsNull(result.ChatRoom);
         }
 
@@ -54,8 +54,8 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 SenderRoleIsProvider = true,
-                IsRead = true,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                ReadDateTime = DateTimeOffset.Parse("2021-05-25T12:15:12", new CultureInfo("uk-UA", false)),
+                CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
                 ChatRoom = Mock.Of<ChatRoomWorkshop>(),
             };
 
@@ -70,8 +70,8 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             Assert.AreEqual(chatMessage.ChatRoomId, result.ChatRoomId);
             Assert.AreEqual(chatMessage.Text, result.Text);
             Assert.AreEqual(chatMessage.SenderRoleIsProvider, result.SenderRoleIsProvider);
-            Assert.AreEqual(chatMessage.CreatedTime, result.CreatedTime);
-            Assert.AreEqual(chatMessage.IsRead, result.IsRead);
+            Assert.AreEqual(chatMessage.CreatedDateTime, result.CreatedDateTime);
+            Assert.AreEqual(chatMessage.ReadDateTime, result.ReadDateTime);
         }
 
         [Test]
@@ -84,8 +84,8 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 SenderRoleIsProvider = true,
-                IsRead = true,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                ReadDateTime = DateTimeOffset.Parse("2021-05-25T12:15:12", new CultureInfo("uk-UA", false)),
+                CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
                 ChatRoom = Mock.Of<ChatRoomWorkshop>(),
             };
             var chatMessage2 = new ChatMessageWorkshop()
@@ -94,8 +94,8 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 ChatRoomId = 2,
                 Text = "test mess",
                 SenderRoleIsProvider = false,
-                IsRead = false,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
+                ReadDateTime = null,
+                CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
                 ChatRoom = Mock.Of<ChatRoomWorkshop>(),
             };
 
@@ -165,8 +165,8 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                     ChatRoomId = 2,
                     Text = "test mess",
                     SenderRoleIsProvider = true,
-                    IsRead = true,
-                    CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                    ReadDateTime = DateTimeOffset.Parse("2021-05-25T12:15:12", new CultureInfo("uk-UA", false)),
+                    CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
                 },
                 NotReadByCurrentUserMessagesCount = 2,
                 Parent = new ParentInfoForChatList()

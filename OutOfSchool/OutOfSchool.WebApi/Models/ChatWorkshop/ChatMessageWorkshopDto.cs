@@ -16,8 +16,8 @@ namespace OutOfSchool.WebApi.Models.ChatWorkshop
         [Required]
         public bool SenderRoleIsProvider { get; set; }
 
-        public DateTimeOffset CreatedTime { get; set; }
+        public DateTimeOffset CreatedDateTime { get; set; }
 
-        public bool IsRead { get; set; }
+        public DateTimeOffset? ReadDateTime { get; set; }
     }
 }

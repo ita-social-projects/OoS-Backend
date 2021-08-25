@@ -47,18 +47,18 @@ namespace OutOfSchool.Services.Repository
                         Email = item.Parent.User.Email,
                         PhoneNumber = item.Parent.User.PhoneNumber,
                     },
-                    LastMessage = item.ChatMessages.Where(mess => mess.CreatedTime == item.ChatMessages.Max(m => m.CreatedTime))
+                    LastMessage = item.ChatMessages.Where(mess => mess.CreatedDateTime == item.ChatMessages.Max(m => m.CreatedDateTime))
                     .Select(message => new ChatMessageInfoForChatList()
                     {
                         Id = message.Id,
                         ChatRoomId = message.ChatRoomId,
                         Text = message.Text,
-                        CreatedTime = message.CreatedTime,
+                        CreatedDateTime = message.CreatedDateTime,
                         SenderRoleIsProvider = message.SenderRoleIsProvider,
-                        IsRead = message.IsRead,
+                        ReadDateTime = message.ReadDateTime,
                     })
                     .FirstOrDefault(),
-                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Where(mess => !mess.IsRead).Count(),
+                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Where(mess => mess.ReadDateTime == null).Count(),
                 });
             var res = await query.SingleOrDefaultAsync();
             return res;
@@ -90,18 +90,18 @@ namespace OutOfSchool.Services.Repository
                         Email = item.Parent.User.Email,
                         PhoneNumber = item.Parent.User.PhoneNumber,
                     },
-                    LastMessage = item.ChatMessages.Where(mess => mess.CreatedTime == item.ChatMessages.Max(m => m.CreatedTime))
+                    LastMessage = item.ChatMessages.Where(mess => mess.CreatedDateTime == item.ChatMessages.Max(m => m.CreatedDateTime))
                     .Select(message => new ChatMessageInfoForChatList()
                     {
                         Id = message.Id,
                         ChatRoomId = message.ChatRoomId,
                         Text = message.Text,
-                        CreatedTime = message.CreatedTime,
+                        CreatedDateTime = message.CreatedDateTime,
                         SenderRoleIsProvider = message.SenderRoleIsProvider,
-                        IsRead = message.IsRead,
+                        ReadDateTime = message.ReadDateTime,
                     })
                     .FirstOrDefault(),
-                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Where(mess => !mess.IsRead && mess.SenderRoleIsProvider).Count(),
+                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Where(mess => mess.ReadDateTime == null && mess.SenderRoleIsProvider).Count(),
                 });
             var res = await query.ToListAsync();
             return res;
@@ -133,18 +133,18 @@ namespace OutOfSchool.Services.Repository
                         Email = item.Parent.User.Email,
                         PhoneNumber = item.Parent.User.PhoneNumber,
                     },
-                    LastMessage = item.ChatMessages.Where(mess => mess.CreatedTime == item.ChatMessages.Max(m => m.CreatedTime))
+                    LastMessage = item.ChatMessages.Where(mess => mess.CreatedDateTime == item.ChatMessages.Max(m => m.CreatedDateTime))
                     .Select(message => new ChatMessageInfoForChatList()
                     {
                         Id = message.Id,
                         ChatRoomId = message.ChatRoomId,
                         Text = message.Text,
-                        CreatedTime = message.CreatedTime,
+                        CreatedDateTime = message.CreatedDateTime,
                         SenderRoleIsProvider = message.SenderRoleIsProvider,
-                        IsRead = message.IsRead,
+                        ReadDateTime = message.ReadDateTime,
                     })
                     .FirstOrDefault(),
-                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Where(mess => !mess.IsRead && !mess.SenderRoleIsProvider).Count(),
+                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Where(mess => mess.ReadDateTime == null && !mess.SenderRoleIsProvider).Count(),
                 });
             var res = await query.ToListAsync();
             return res;
@@ -176,18 +176,18 @@ namespace OutOfSchool.Services.Repository
                         Email = item.Parent.User.Email,
                         PhoneNumber = item.Parent.User.PhoneNumber,
                     },
-                    LastMessage = item.ChatMessages.Where(mess => mess.CreatedTime == item.ChatMessages.Max(m => m.CreatedTime))
+                    LastMessage = item.ChatMessages.Where(mess => mess.CreatedDateTime == item.ChatMessages.Max(m => m.CreatedDateTime))
                     .Select(message => new ChatMessageInfoForChatList()
                     {
                         Id = message.Id,
                         ChatRoomId = message.ChatRoomId,
                         Text = message.Text,
-                        CreatedTime = message.CreatedTime,
+                        CreatedDateTime = message.CreatedDateTime,
                         SenderRoleIsProvider = message.SenderRoleIsProvider,
-                        IsRead = message.IsRead,
+                        ReadDateTime = message.ReadDateTime,
                     })
                     .FirstOrDefault(),
-                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Where(mess => !mess.IsRead && !mess.SenderRoleIsProvider).Count(),
+                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Where(mess => mess.ReadDateTime == null && !mess.SenderRoleIsProvider).Count(),
                 });
             var res = await query.ToListAsync();
             return res;
