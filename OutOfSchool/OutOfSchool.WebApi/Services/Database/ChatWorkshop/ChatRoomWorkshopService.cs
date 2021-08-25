@@ -17,19 +17,23 @@ namespace OutOfSchool.WebApi.Services
     public class ChatRoomWorkshopService : IChatRoomWorkshopService
     {
         private readonly IEntityRepository<ChatRoomWorkshop> roomRepository;
+        private readonly IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository;
         private readonly ILogger<ChatRoomWorkshopService> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatRoomWorkshopService"/> class.
         /// </summary>
         /// <param name="chatRoomRepository">Repository for the ChatRoom entity.</param>
+        /// <param name="roomWorkshopWithLastMessageRepository">Repository for the ChatRoom entity with special model.</param>
         /// <param name="logger">Logger.</param>
         public ChatRoomWorkshopService(
             IEntityRepository<ChatRoomWorkshop> chatRoomRepository,
-            ILogger<ChatRoomWorkshopService> logger)
+            ILogger<ChatRoomWorkshopService> logger,
+            IChatRoomWorkshopModelForChatListRepository roomWorkshopWithLastMessageRepository)
         {
             this.roomRepository = chatRoomRepository;
             this.logger = logger;
+            this.roomWorkshopWithLastMessageRepository = roomWorkshopWithLastMessageRepository;
         }
 
         /// <inheritdoc/>
@@ -124,29 +128,61 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByParentIdAsync(long parentId)
         {
-            throw new NotImplementedException();
+            logger.LogInformation($"Process of getting  {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {nameof(parentId)}:{parentId} was started.");
 
-            // logger.Information($"Process of getting all {nameof(ChatRoom)}(s/es) with {nameof(parentId)}:{parentId} was started.");
-            // try
-            // {
-            //    var query = roomRepository.GetByFilterNoTracking(x => x.Users.Any(u => u.Id == parentId), includeProperties: "Users");
-            //    var chatRooms = await query.AsNoTracking().ToListAsync().ConfigureAwait(false);
-            //    logger.Information(!chatRooms.Any()
-            //    ? $"There is no ChatRoom in the system with userId:{parentId}."
-            //    : $"Successfully got all {chatRooms.Count} records with userId:{parentId}.");
-            //    return chatRooms.Select(x => x.ToModelWithChatMessages());
-            // }
-            // catch (Exception exception)
-            // {
-            //    logger.Error($"Getting all ChatMessages with userId:{parentId} failed. Exception: {exception.Message}");
-            //    throw;
-            // }
+            try
+            {
+                var rooms = await roomWorkshopWithLastMessageRepository.GetByParentIdAsync(parentId).ConfigureAwait(false);
+                logger.LogInformation(!rooms.Any()
+                ? $"There is no Chat rooms in the system with userId:{parentId}."
+                : $"Successfully got all {rooms.Count} records with userId:{parentId}.");
+                return rooms.Select(x => x.ToModel());
+            }
+            catch (Exception exception)
+            {
+                logger.Error($"Getting all {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {nameof(parentId)}:{parentId}. Exception: {exception.Message}");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByProviderIdAsync(long providerId)
         {
-            throw new NotImplementedException();
+            logger.LogInformation($"Process of getting  {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {nameof(providerId)}:{providerId} was started.");
+
+            try
+            {
+                var rooms = await roomWorkshopWithLastMessageRepository.GetByProviderIdAsync(providerId).ConfigureAwait(false);
+                logger.LogInformation(!rooms.Any()
+                ? $"There is no Chat rooms in the system with userId:{providerId}."
+                : $"Successfully got all {rooms.Count} records with userId:{providerId}.");
+                return rooms.Select(x => x.ToModel());
+            }
+            catch (Exception exception)
+            {
+                logger.LogError($"Getting all {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {nameof(providerId)}:{providerId}. Exception: {exception.Message}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByWorkshopIdAsync(long workshopId)
+        {
+            logger.LogInformation($"Process of getting  {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {nameof(workshopId)}:{workshopId} was started.");
+
+            try
+            {
+                var rooms = await roomWorkshopWithLastMessageRepository.GetByWorkshopIdAsync(workshopId).ConfigureAwait(false);
+                logger.LogInformation(!rooms.Any()
+                ? $"There is no Chat rooms in the system with userId:{workshopId}."
+                : $"Successfully got all {rooms.Count} records with userId:{workshopId}.");
+                return rooms.Select(x => x.ToModel());
+            }
+            catch (Exception exception)
+            {
+                logger.LogError($"Getting all {nameof(ChatRoomWorkshopDtoWithLastMessage)}(s/es) with {nameof(workshopId)}:{workshopId}. Exception: {exception.Message}");
+                throw;
+            }
         }
 
         /// <inheritdoc/>

@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.Services.Models.ChatWorkshop
 {
-    public class ChatRoomWorkshopWithLastMessage
+    public class ChatRoomWorkshopForChatList
     {
         public long Id { get; set; }
 
@@ -8,12 +8,12 @@
 
         public long ParentId { get; set; }
 
-        public Workshop Workshop { get; set; }
+        public ParentInfoForChatList Parent { get; set; }
 
-        public Parent Parent { get; set; }
+        public WorkshopInfoForChatList Workshop { get; set; }
 
         public int NotReadByCurrentUserMessagesCount { get; set; }
 
-        public ChatMessageWorkshop LastMessage { get; set; }
+        public ChatMessageInfoForChatList LastMessage { get; set; }
     }
 }

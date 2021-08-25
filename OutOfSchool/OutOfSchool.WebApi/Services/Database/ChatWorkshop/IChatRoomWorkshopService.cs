@@ -43,6 +43,13 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByProviderIdAsync(long providerId);
 
         /// <summary>
+        /// Get ChatRooms with last message and count of not read messages by specified Workshop.
+        /// </summary>
+        /// <param name="workshopId">Workshop's identifier.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatRoomWithLastMessage}"/> that contains elements from the input sequence.</returns>
+        Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>> GetByWorkshopIdAsync(long workshopId);
+
+        /// <summary>
         /// Delete the ChatRoom including its messages.
         /// </summary>
         /// <param name="id">ChatRoom's key.</param>

@@ -44,12 +44,26 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ChatRoomWorkshop, ChatRoomWorkshopDto>(chatRoom, cfg =>
             {
                 cfg.CreateMap<ChatRoomWorkshop, ChatRoomWorkshopDto>();
-                cfg.CreateMap<Workshop, WorkshopCard>()
-                    .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                    .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo))
-                    .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
-                cfg.CreateMap<Parent, ParentDtoWithShortUserInfo>();
-                cfg.CreateMap<User, ShortUserDto>();
+                cfg.CreateMap<Workshop, WorkshopInfoForChatListDto>();
+                cfg.CreateMap<Parent, ParentDtoWithContactInfo>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(p => p.Id))
+                    .ForMember(dest => dest.UserId, opt => opt.MapFrom(p => p.UserId))
+                    .ForMember(dest => dest.Email, opt => opt.MapFrom(p => p.User.Email))
+                    .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(p => p.User.PhoneNumber))
+                    .ForMember(dest => dest.LastName, opt => opt.MapFrom(p => p.User.LastName))
+                    .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(p => p.User.MiddleName))
+                    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(p => p.User.FirstName));
+            });
+        }
+
+        public static ChatRoomWorkshopDtoWithLastMessage ToModel(this ChatRoomWorkshopForChatList chatRoom)
+        {
+            return Mapper<ChatRoomWorkshopForChatList, ChatRoomWorkshopDtoWithLastMessage>(chatRoom, cfg =>
+            {
+                cfg.CreateMap<ChatRoomWorkshopForChatList, ChatRoomWorkshopDtoWithLastMessage>();
+                cfg.CreateMap<WorkshopInfoForChatList, WorkshopInfoForChatListDto>();
+                cfg.CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>();
+                cfg.CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
             });
         }
 

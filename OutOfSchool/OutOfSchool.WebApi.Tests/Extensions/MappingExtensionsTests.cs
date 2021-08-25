@@ -107,7 +107,20 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 WorkshopId = 1,
                 ParentId = 1,
                 ChatMessages = listOfMessages,
-                Parent = new Parent() { Id = 1, UserId = "userParent", User = new User() { Id = "userParent" } },
+                Parent = new Parent()
+                {
+                    Id = 1,
+                    UserId = "userParent",
+                    User = new User()
+                    {
+                        Id = "userParent",
+                        PhoneNumber = "123456734",
+                        Email = "email",
+                        FirstName = "Jack",
+                        MiddleName = "Pirate",
+                        LastName = "Sparrow",
+                    },
+                },
                 Workshop = new Workshop() { Id = 1 },
             };
 
@@ -119,16 +132,88 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
             Assert.IsNotNull(result.Parent);
             Assert.IsNotNull(result.Workshop);
-            Assert.IsNotNull(result.Parent.User);
-            Assert.IsInstanceOf<ParentDtoWithShortUserInfo>(result.Parent);
-            Assert.IsInstanceOf<WorkshopCard>(result.Workshop);
-            Assert.IsInstanceOf<ShortUserDto>(result.Parent.User);
+            Assert.IsInstanceOf<ParentDtoWithContactInfo>(result.Parent);
+            Assert.IsInstanceOf<WorkshopInfoForChatListDto>(result.Workshop);
             Assert.AreEqual(chatRoom.Id, result.Id);
             Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
+            Assert.AreEqual(chatRoom.Workshop.Id, result.Workshop.Id);
+            Assert.AreEqual(chatRoom.Workshop.ProviderId, result.Workshop.ProviderId);
+            Assert.AreEqual(chatRoom.Workshop.Title, result.Workshop.Title);
+            Assert.AreEqual(chatRoom.Workshop.ProviderTitle, result.Workshop.ProviderTitle);
             Assert.AreEqual(chatRoom.ParentId, result.ParentId);
+            Assert.AreEqual(chatRoom.Parent.UserId, result.Parent.UserId);
             Assert.AreEqual(chatRoom.Parent.Id, result.Parent.Id);
-            Assert.AreEqual(chatRoom.Parent.User.Id, result.Parent.User.Id);
-            Assert.AreEqual(chatRoom.Workshop.Id, result.Workshop.WorkshopId);
+            Assert.AreEqual(chatRoom.Parent.User.LastName, result.Parent.LastName);
+            Assert.AreEqual(chatRoom.Parent.User.MiddleName, result.Parent.MiddleName);
+            Assert.AreEqual(chatRoom.Parent.User.FirstName, result.Parent.FirstName);
+            Assert.AreEqual(chatRoom.Parent.User.Email, result.Parent.Email);
+            Assert.AreEqual(chatRoom.Parent.User.PhoneNumber, result.Parent.PhoneNumber);
+        }
+
+        [Test]
+        public void Mapping_ChatRoomWorkshopForChatList_IsCorrect()
+        {
+            // Arrange
+            var chatRoom = new ChatRoomWorkshopForChatList()
+            {
+                Id = 1,
+                WorkshopId = 1,
+                ParentId = 1,
+                LastMessage = new ChatMessageInfoForChatList()
+                {
+                    Id = 1,
+                    ChatRoomId = 2,
+                    Text = "test mess",
+                    SenderRoleIsProvider = true,
+                    IsRead = true,
+                    CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                },
+                NotReadByCurrentUserMessagesCount = 2,
+                Parent = new ParentInfoForChatList()
+                {
+                    Id = 1,
+                    UserId = "userId",
+                    PhoneNumber = "123456734",
+                    Email = "email",
+                    FirstName = "Jack",
+                    MiddleName = "Pirate",
+                    LastName = "Sparrow",
+                },
+                Workshop = new WorkshopInfoForChatList()
+                {
+                    Id = 1,
+                    Title = "workshop",
+                    ProviderId = 1,
+                    ProviderTitle = "provider",
+                },
+            };
+
+            // Act
+            var result = chatRoom.ToModel();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
+            Assert.IsNotNull(result.Parent);
+            Assert.IsNotNull(result.Workshop);
+            Assert.IsInstanceOf<ParentDtoWithContactInfo>(result.Parent);
+            Assert.IsInstanceOf<WorkshopInfoForChatListDto>(result.Workshop);
+            Assert.AreEqual(chatRoom.Id, result.Id);
+            Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
+            Assert.AreEqual(chatRoom.Workshop.Id, result.Workshop.Id);
+            Assert.AreEqual(chatRoom.Workshop.ProviderId, result.Workshop.ProviderId);
+            Assert.AreEqual(chatRoom.Workshop.Title, result.Workshop.Title);
+            Assert.AreEqual(chatRoom.Workshop.ProviderTitle, result.Workshop.ProviderTitle);
+            Assert.AreEqual(chatRoom.ParentId, result.ParentId);
+            Assert.AreEqual(chatRoom.Parent.UserId, result.Parent.UserId);
+            Assert.AreEqual(chatRoom.Parent.Id, result.Parent.Id);
+            Assert.AreEqual(chatRoom.Parent.LastName, result.Parent.LastName);
+            Assert.AreEqual(chatRoom.Parent.MiddleName, result.Parent.MiddleName);
+            Assert.AreEqual(chatRoom.Parent.FirstName, result.Parent.FirstName);
+            Assert.AreEqual(chatRoom.Parent.Email, result.Parent.Email);
+            Assert.AreEqual(chatRoom.Parent.PhoneNumber, result.Parent.PhoneNumber);
+            Assert.AreEqual(chatRoom.NotReadByCurrentUserMessagesCount, result.NotReadByCurrentUserMessagesCount);
+            Assert.AreEqual(chatRoom.LastMessage.Text, result.LastMessage.Text);
         }
 
         [Test]
