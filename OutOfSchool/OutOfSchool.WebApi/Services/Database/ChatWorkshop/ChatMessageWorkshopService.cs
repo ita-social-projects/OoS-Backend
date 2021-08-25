@@ -136,7 +136,7 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var query = repository.Get<DateTimeOffset>(skip: offsetFilter.From, take: offsetFilter.Size, where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.CreatedTime, ascending: false);
+                var query = repository.Get<DateTimeOffset>(skip: offsetFilter.From, take: offsetFilter.Size, where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.CreatedDateTime, ascending: false);
                 var chatMessages = await query.ToListAsync().ConfigureAwait(false);
 
                 logger.LogInformation(!chatMessages.Any()
@@ -161,14 +161,14 @@ namespace OutOfSchool.WebApi.Services
             {
                 var chatMessages = await repository.Get<long>(where: x => x.ChatRoomId == chatRoomId
                                                                 && (x.SenderRoleIsProvider != currentUserRoleIsProvider)
-                                                                && !x.IsRead)
+                                                                && x.ReadDateTime == null)
                     .ToListAsync().ConfigureAwait(false);
 
                 if (chatMessages.Count > 0)
                 {
                     foreach (var message in chatMessages)
                     {
-                        message.IsRead = true;
+                        message.ReadDateTime = DateTimeOffset.UtcNow;
                         await repository.Update(message).ConfigureAwait(false);
                     }
 

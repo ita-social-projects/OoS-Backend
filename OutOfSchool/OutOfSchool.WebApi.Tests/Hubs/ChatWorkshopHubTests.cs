@@ -214,8 +214,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 SenderRoleIsProvider = true,
                 Text = "hi",
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.UtcNow,
-                IsRead = false,
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                ReadDateTime = null,
             };
             messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()))
                 .ReturnsAsync(newMessage);
@@ -260,8 +260,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 SenderRoleIsProvider = true,
                 Text = "hi",
                 ChatRoomId = 1,
-                CreatedTime = DateTimeOffset.UtcNow,
-                IsRead = false,
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                ReadDateTime = null,
             };
             messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()))
                 .ReturnsAsync(newMessage);

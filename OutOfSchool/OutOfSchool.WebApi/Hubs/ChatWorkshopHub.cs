@@ -119,8 +119,8 @@ namespace OutOfSchool.WebApi.Hubs
                 {
                     SenderRoleIsProvider = newReceivedAndDeserializedMessage.SenderRoleIsProvider,
                     Text = newReceivedAndDeserializedMessage.Text,
-                    CreatedTime = DateTimeOffset.UtcNow,
-                    IsRead = false,
+                    CreatedDateTime = DateTimeOffset.UtcNow,
+                    ReadDateTime = null,
                     ChatRoomId = 0,
                 };
 
