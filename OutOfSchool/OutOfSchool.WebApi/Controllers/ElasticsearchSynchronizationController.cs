@@ -7,6 +7,7 @@ namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
+    //TODO: Commented only for testing purpose
     //[Authorize(AuthenticationSchemes = "Bearer")]
     //[Authorize(Roles = "admin")]
     public class ElasticsearchSynchronizationController : ControllerBase

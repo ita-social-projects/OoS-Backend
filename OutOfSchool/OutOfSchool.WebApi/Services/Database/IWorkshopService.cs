@@ -43,6 +43,10 @@ namespace OutOfSchool.WebApi.Services
         Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null);
         Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null);
 
+        Task<IEnumerable<WorkshopDTO>> GetWorkshopsForCreate();
+
         Task<IEnumerable<WorkshopDTO>> GetWorkshopsForUpdate();
+
+        Task<IEnumerable<long>> GetWorkshopsForDelete();
     }
 }

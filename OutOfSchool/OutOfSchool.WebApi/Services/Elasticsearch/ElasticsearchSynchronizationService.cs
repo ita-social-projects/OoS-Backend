@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Nest;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
@@ -9,6 +10,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -17,18 +19,29 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopService databaseService;
         private readonly IEntityRepository<ElasticsearchSyncRecord> repository;
         private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
+        private readonly ILogger logger;
 
-        public ElasticsearchSynchronizationService(IWorkshopService workshopService, IEntityRepository<ElasticsearchSyncRecord> repository, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider)
+        public ElasticsearchSynchronizationService(
+            IWorkshopService workshopService,
+            IEntityRepository<ElasticsearchSyncRecord> repository,
+            IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
+            ILogger logger)
         {
             this.databaseService = workshopService;
             this.repository = repository;
             this.esProvider = esProvider;
+            this.logger = logger;
         }
 
         public async Task<bool> Synchronize()
         {
             {
-                var sourceDto = await databaseService.GetWorkshopsForUpdate().ConfigureAwait(false);
+                var sourceDtoForCreate = await databaseService.GetWorkshopsForCreate().ConfigureAwait(false);
+                var sourceDtoForUpdate = await databaseService.GetWorkshopsForUpdate().ConfigureAwait(false);
+
+                var sourceDto = new List<WorkshopDTO>();
+                sourceDto.AddRange(sourceDtoForCreate);
+                sourceDto.AddRange(sourceDtoForUpdate);
 
                 List<WorkshopES> source = new List<WorkshopES>();
                 foreach (var entity in sourceDto)
@@ -47,11 +60,20 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        public async Task<ElasticsearchSyncRecordDto> Create(ElasticsearchSyncRecordDto dto)
+        public async Task Create(ElasticsearchSyncRecordDto dto)
         {
             var elasticsearchSyncRecord = dto.ToDomain();
-            var newElasticsearchSyncRecord = await repository.Create(elasticsearchSyncRecord).ConfigureAwait(false);
-            return newElasticsearchSyncRecord.ToModel();
+            try
+            {
+                await repository.Create(elasticsearchSyncRecord).ConfigureAwait(false);
+
+                logger.Information("ElasticsearchSyncRecord created successfully.");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.Error($"Creating new record to ElasticserchSyncRecord failed.");
+                throw;
+            }
         }
     }
 }

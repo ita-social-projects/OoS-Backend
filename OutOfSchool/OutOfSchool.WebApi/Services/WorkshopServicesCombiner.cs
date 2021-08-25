@@ -63,8 +63,8 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
-            //var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
-
+            // TODO: For emulate situation when Elasticsearch is not accessible.
+            // var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
             var esResultIsValid = false;
 
             if (!esResultIsValid)
@@ -80,8 +80,8 @@ namespace OutOfSchool.WebApi.Services
         {
             await workshopService.Delete(id).ConfigureAwait(false);
 
-            //var esResultIsValid = await elasticsearchService.Delete(id).ConfigureAwait(false);
-
+            // TODO: For emulate situation when Elasticsearch is not accessible.
+            // var esResultIsValid = await elasticsearchService.Delete(id).ConfigureAwait(false);
             var esResultIsValid = false;
 
             if (!esResultIsValid)
@@ -172,6 +172,7 @@ namespace OutOfSchool.WebApi.Services
         private async void AddRecordToBackupTracker(long id, BackupOperation operation)
         private async void AddNewRecordToElasticsearchSynchronizationTable(long id, ElasticsearchSyncOperation operation)
         private async Task<ElasticsearchSyncRecordDto> AddNewRecordToElasticsearchSynchronizationTable(long id, ElasticsearchSyncOperation operation)
+        private async Task AddNewRecordToElasticsearchSynchronizationTable(long id, ElasticsearchSyncOperation operation)
         {
             ElasticsearchSyncRecordDto elasticsearchSyncRecordDto = new ElasticsearchSyncRecordDto()
             {
@@ -179,7 +180,7 @@ namespace OutOfSchool.WebApi.Services
                 OperationDate = DateTime.UtcNow,
                 RecordId = id,
             };
-            return await elasticsearchSynchronizationService.Create(elasticsearchSyncRecordDto).ConfigureAwait(false);
+            await elasticsearchSynchronizationService.Create(elasticsearchSyncRecordDto).ConfigureAwait(false);
         }
     }
 }

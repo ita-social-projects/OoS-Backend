@@ -8,6 +8,6 @@ namespace OutOfSchool.WebApi.Services
     {
         Task<bool> Synchronize();
 
-        Task<ElasticsearchSyncRecordDto> Create(ElasticsearchSyncRecordDto dto);
+        Task Create(ElasticsearchSyncRecordDto dto);
     }
 }

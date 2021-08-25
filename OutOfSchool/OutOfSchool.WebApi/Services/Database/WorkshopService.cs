@@ -282,11 +282,25 @@ namespace OutOfSchool.WebApi.Services
             return result;
         }
 
+        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForCreate()
+        {
+            var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation.Create).ConfigureAwait(false);
+
+            return workshops.Select(x => x.ToModel()).ToList();
+        }
+
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForUpdate()
         {
             var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation.Update).ConfigureAwait(false);
 
             return workshops.Select(x => x.ToModel()).ToList();
+        }
+
+        public async Task<IEnumerable<long>> GetWorkshopsForDelete()
+        {
+            var workshopIds = await workshopRepository.GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation.Delete).ConfigureAwait(false);
+
+            return workshopIds;
         }
 
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
