@@ -43,16 +43,15 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "Description is required")]
         public string Description { get; set; }
 
+        // TODO: validate regex with unit tests
         [Required(ErrorMessage = "EDRPOU/INP code is required")]
         [RegularExpression(
             @"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU/IPN code must contain 8 or 10 digits")]
-        // TODO: why it is set to 12 when the regex says 8 or 10 ?
         [MaxLength(12)]
         public string EdrpouIpn { get; set; }
 
         [MaxLength(50)]
-        // TODO: looks like it should be changed to person.
         public string Director { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
@@ -68,15 +67,12 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         [MaxLength(30)]
-        // TODO: looks like it should be changed to person.
         public string Founder { get; set; } = string.Empty;
 
-        // TODO: it will be always filled because of enum type
         // TODO: validation of the enum fields ?
         [Required]
         public OwnershipType Ownership { get; set; }
 
-        // TODO: it will be always filled because of enum type
         // TODO: validation of the enum fields ?
         [Required]
         public ProviderType Type { get; set; }
@@ -87,7 +83,8 @@ namespace OutOfSchool.WebApi.Models
 
         public int NumberOfRatings { get; set; }
 
-        // TODO: bad naming ?
+        // TODO: Does not used by front-end, can be removed.
+        //       Unit test should be updated
         [Required]
         public string UserId { get; set; }
 

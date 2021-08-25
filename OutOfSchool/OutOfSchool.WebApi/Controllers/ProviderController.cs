@@ -131,6 +131,11 @@ namespace OutOfSchool.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(ProviderDto providerModel)
         {
+            if (providerModel == null)
+            {
+                throw new ArgumentNullException(nameof(providerModel));
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

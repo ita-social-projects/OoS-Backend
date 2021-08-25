@@ -52,29 +52,34 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDto> Create(ProviderDto providerModel)
+        public async Task<ProviderDto> Create(ProviderDto providerDto)
         {
             logger.Debug("Provider creating was started.");
 
-            if (providerRepository.ExistsUserId(providerModel.UserId))
+            if (providerDto == null)
+            {
+                throw new ArgumentNullException(nameof(providerDto));
+            }
+
+            if (providerRepository.ExistsUserId(providerDto.UserId))
             {
                 throw new InvalidOperationException(localizer["You can not create more than one account."]);
             }
 
             // TODO: Q: clear actual address if it is equal to the legal ?
-            if (providerModel.ActualAddress == null
-                || providerModel.ActualAddress.Equals(providerModel.LegalAddress))
+            if (providerDto.ActualAddress == null
+                || providerDto.ActualAddress.Equals(providerDto.LegalAddress))
             {
-                providerModel.ActualAddress = providerModel.LegalAddress;
+                providerDto.ActualAddress = providerDto.LegalAddress;
             }
 
-            var providerDomainModel = providerModel.ToDomain();
+            var providerDomainModel = providerDto.ToDomain();
             if (providerRepository.SameExists(providerDomainModel))
             {
                 throw new InvalidOperationException(localizer["There is already a provider with such a data."]);
             }
 
-            var users = await usersRepository.GetByFilter(u => string.Equals(u.Id, providerModel.UserId)).ConfigureAwait(false);
+            var users = await usersRepository.GetByFilter(u => string.Equals(u.Id, providerDto.UserId, StringComparison.Ordinal)).ConfigureAwait(false);
             providerDomainModel.User = users.SingleOrDefault();
             providerDomainModel.User.IsRegistered = true;
 
@@ -159,17 +164,17 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDto> Update(ProviderDto dto, string userId, string userRole)
+        public async Task<ProviderDto> Update(ProviderDto providerDto, string userId, string userRole)
         {
-            logger.Debug($"Updating Provider with Id = {dto?.Id} started.");
+            logger.Debug($"Updating Provider with Id = {providerDto?.Id} started.");
 
             try
             {
-                var checkProvider = providerRepository.GetByFilterNoTracking(p => p.Id == dto.Id).FirstOrDefault();
+                var checkProvider = providerRepository.GetByFilterNoTracking(p => p.Id == providerDto.Id).FirstOrDefault();
 
                 if (checkProvider?.UserId == userId || userRole == AdminRole)
                 {
-                    var provider = await providerRepository.Update(dto.ToDomain()).ConfigureAwait(false);
+                    var provider = await providerRepository.Update(providerDto.ToDomain()).ConfigureAwait(false);
 
                     logger.Information($"Provider with Id = {provider?.Id} updated succesfully.");
 
@@ -182,7 +187,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Provider with Id = {dto?.Id} doesn't exist in the system.");
+                logger.Error($"Updating failed. Provider with Id = {providerDto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

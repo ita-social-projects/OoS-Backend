@@ -30,6 +30,21 @@ namespace OutOfSchool.WebApi.Models
 
         public double Longitude { get; set; } = default;
 
+        // Note: implementation taken from the OutOfSchool.Services.Models.Address
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 13;
+                hash = (hash * 7) + (!ReferenceEquals(null, Region) ? Region.GetHashCode(StringComparison.OrdinalIgnoreCase) : 0);
+                hash = (hash * 7) + (!ReferenceEquals(null, District) ? District.GetHashCode(StringComparison.OrdinalIgnoreCase) : 0);
+                hash = (hash * 7) + (!ReferenceEquals(null, City) ? City.GetHashCode(StringComparison.OrdinalIgnoreCase) : 0);
+                hash = (hash * 7) + (!ReferenceEquals(null, Street) ? Street.GetHashCode(StringComparison.OrdinalIgnoreCase) : 0);
+                hash = (hash * 7) + (!ReferenceEquals(null, BuildingNumber) ? BuildingNumber.GetHashCode(StringComparison.OrdinalIgnoreCase) : 0);
+                return hash;
+            }
+        }
+
         public override bool Equals(object obj)
         {
             if (obj == null)
