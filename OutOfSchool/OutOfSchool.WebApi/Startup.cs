@@ -161,6 +161,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
+            services.AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository>();
             services.AddTransient<IClassRepository, ClassRepository>();
             services.AddTransient<IDepartmentRepository, DepartmentRepository>();
             services.AddTransient<IParentRepository, ParentRepository>();

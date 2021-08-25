@@ -1,9 +1,19 @@
-﻿namespace OutOfSchool.WebApi.Models.ChatWorkshop
-{
-    public class ChatRoomWorkshopDto : ChatRoomWorkshopShortDto
-    {
-        public WorkshopCard Workshop { get; set; }
+﻿using System.ComponentModel.DataAnnotations;
 
-        public ParentDtoWithShortUserInfo Parent { get; set; }
+namespace OutOfSchool.WebApi.Models.ChatWorkshop
+{
+    public class ChatRoomWorkshopDto
+    {
+        public long Id { get; set; }
+
+        [Required]
+        public long WorkshopId { get; set; }
+
+        [Required]
+        public long ParentId { get; set; }
+
+        public WorkshopInfoForChatListDto Workshop { get; set; }
+
+        public ParentDtoWithContactInfo Parent { get; set; }
     }
 }
