@@ -186,6 +186,46 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<long>> GetChatRoomIdsByParentIdAsync(long parentId)
+        {
+            logger.Debug($"Process of getting {nameof(ChatRoomWorkshop)} Ids with {nameof(parentId)}:{parentId} was started.");
+
+            try
+            {
+                var rooms = await roomRepository.GetByFilter(r => r.ParentId == parentId).ConfigureAwait(false);
+                logger.Debug(!rooms.Any()
+                ? $"There is no Chat rooms in the system with userId:{parentId}."
+                : $"Successfully got all {rooms.Count()} records with userId:{parentId}.");
+                return rooms.Select(x => x.Id);
+            }
+            catch (Exception exception)
+            {
+                logger.Error($"Getting all {nameof(ChatRoomWorkshop)} Ids with {nameof(parentId)}:{parentId}. Exception: {exception.Message}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<long>> GetChatRoomIdsByProviderIdAsync(long providerId)
+        {
+            logger.Debug($"Process of getting {nameof(ChatRoomWorkshop)} Ids with {nameof(providerId)}:{providerId} was started.");
+
+            try
+            {
+                var rooms = await roomRepository.GetByFilter(r => r.Workshop.ProviderId == providerId).ConfigureAwait(false);
+                logger.Debug(!rooms.Any()
+                ? $"There is no Chat rooms in the system with userId:{providerId}."
+                : $"Successfully got all {rooms.Count()} records with userId:{providerId}.");
+                return rooms.Select(x => x.Id);
+            }
+            catch (Exception exception)
+            {
+                logger.Error($"Getting all {nameof(ChatRoomWorkshop)} Ids with {nameof(providerId)}:{providerId}. Exception: {exception.Message}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
         public async Task<ChatRoomWorkshopDto> GetUniqueChatRoomAsync(long workshopId, long parentId)
         {
             logger.LogInformation($"Process of getting unique {nameof(ChatRoomWorkshop)} with {nameof(workshopId)}:{workshopId} and {nameof(parentId)}:{parentId} was started.");

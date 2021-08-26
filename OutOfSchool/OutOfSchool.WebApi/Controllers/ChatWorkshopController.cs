@@ -97,7 +97,7 @@ namespace OutOfSchool.WebApi.Controllers
                 var messageIsValid = await this.ValidateNewMessageAsync(chatNewMessageDto).ConfigureAwait(false);
                 if (!messageIsValid)
                 {
-                    string message = "Some of the message parameters were wrong. There are no entities with such Ids or Ids do not belong to sender.";
+                    string message = "Some of the message parameters were wrong. There are no entities with such Ids or Ids do not belong to sender, or sender role is set invalid.";
                     return StatusCode(403, message);
                 }
 
