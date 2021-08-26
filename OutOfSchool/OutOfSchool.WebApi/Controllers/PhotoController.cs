@@ -46,10 +46,8 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="fileName">Name of the file.</param>
         /// <returns>Photo.</returns>
         [HttpGet]
-        [Authorize(Roles = "parent")]
-        [Authorize(Roles = "provider")]
-        [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileStreamResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -58,6 +56,11 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 var contentType = GetFormat(fileName);
+
+                if (string.IsNullOrEmpty(contentType))
+                {
+                    return BadRequest("Invalid file format");
+                }
 
                 var stream = await photoService.GetFile(fileName).ConfigureAwait(false);
 
@@ -75,10 +78,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="entityId">Id of the provider entity.</param>
         /// <returns>List of paths.</returns>
         [HttpGet("{entityId}")]
-        [Authorize(Roles = "parent")]
         [Authorize(Roles = "provider")]
         [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Task<List<string>>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -102,10 +104,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="entityId">Id of the workshop entity.</param>
         /// <returns>List of paths.</returns>
         [HttpGet("{entityId}")]
-        [Authorize(Roles = "parent")]
         [Authorize(Roles = "provider")]
         [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK,  Type = typeof(Task<List<string>>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -129,10 +130,9 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="entityId">Id of the teacher entity.</param>
         /// <returns>Path of file.</returns>
         [HttpGet("{entityId}")]
-        [Authorize(Roles = "parent")]
         [Authorize(Roles = "provider")]
         [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Task<string>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -156,7 +156,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="photo">File.</param>
         /// <returns>Created photo info.</returns>
         [HttpPost]
-        [Authorize(Roles = "parent")]
         [Authorize(Roles = "provider")]
         [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PhotoDto))]
@@ -212,7 +211,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="photos">Files.</param>
         /// <returns>Created photos info.</returns>
         [HttpPost]
-        [Authorize(Roles = "parent")]
         [Authorize(Roles = "provider")]
         [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PhotoDto>))]
@@ -266,7 +264,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="photos">Files.</param>
         /// <returns>Created photos info.</returns>
         [HttpPost]
-        [Authorize(Roles = "parent")]
         [Authorize(Roles = "provider")]
         [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PhotoDto>))]
@@ -320,7 +317,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="fileName">Photo name.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpDelete]
-        [Authorize(Roles = "parent")]
         [Authorize(Roles = "provider")]
         [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -352,7 +348,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="filesNames">Names of the photos.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpDelete]
-        [Authorize(Roles = "parent")]
         [Authorize(Roles = "provider")]
         [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -384,7 +379,6 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="photo">New file.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPut]
-        [Authorize(Roles = "parent")]
         [Authorize(Roles = "provider")]
         [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -432,28 +426,14 @@ namespace OutOfSchool.WebApi.Controllers
 
         private bool IsSizeValid(IFormFile photo)
         {
-            if (photo.Length > maxSize)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return photo.Length > maxSize ? false : true;
         }
 
         private bool IsExtensionValid(IFormFile photo)
         {
             var contentType = GetFormat(photo.FileName);
 
-            if (string.IsNullOrEmpty(contentType))
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return string.IsNullOrEmpty(contentType) ? false : true;
         }
 
         private string GetFormat(string fileName)
@@ -462,17 +442,10 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (!contentTypeProvider.TryGetContentType(fileName, out contentType))
             {
-                contentType = string.Empty;
-            }
-
-            if (contentType is ImageTypeNames.Jpeg || contentType is ImageTypeNames.Png)
-            {
-                return contentType;
-            }
-            else
-            {
                 return string.Empty;
             }
+
+            return contentType == string.Intern(ImageTypeNames.Jpeg) || contentType == string.Intern(ImageTypeNames.Png) ? contentType : string.Empty;
         }
     }
 }
