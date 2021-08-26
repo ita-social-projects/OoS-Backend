@@ -160,6 +160,50 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
+        /// Get ChatRoom without ChatMessages by ChatRoomId.
+        /// </summary>
+        /// <param name="id">ChatRoom's Id.</param>
+        /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
+        /// <returns>ChatRoom that was found.</returns>
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMessagesByRoomIdAsync(long id, [FromQuery] OffsetFilter offsetFilter)
+        {
+            this.ValidateId(id, localizer);
+
+            var chatRoom = await roomService.GetByIdAsync(id).ConfigureAwait(false);
+
+            if (chatRoom is null)
+            {
+                return NoContent();
+            }
+            else
+            {
+                if (await this.UserHasRigtsForChatRoomAsync(chatRoom).ConfigureAwait(false))
+                {
+                    var messages = await messageService.GetMessagesForChatRoomAsync(id, offsetFilter).ConfigureAwait(false);
+
+                    if (messages.Any())
+                    {
+                        return Ok(messages);
+                    }
+                    else
+                    {
+                        return NoContent();
+                    }
+                }
+                else
+                {
+                    return StatusCode(403, "Forbidden to get a chat room of another users.");
+                }
+            }
+        }
+
+        /// <summary>
         /// Get a list of ChatRooms for current user.
         /// </summary>
         /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
