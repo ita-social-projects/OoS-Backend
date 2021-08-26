@@ -61,21 +61,21 @@ namespace OutOfSchool.WebApi.Hubs
             this.AddUsersConnectionIdTracking(userId);
 
             // Add User to all Groups where he is a member.
-            IEnumerable<ChatRoomWorkshopDtoWithLastMessage> usersRooms;
+            IEnumerable<long> usersRoomIds;
             if (Role.Provider.ToString().Equals(Context.User.FindFirst("role")?.Value, StringComparison.OrdinalIgnoreCase))
             {
                 var providerLocal = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                usersRooms = await roomService.GetByProviderIdAsync(providerLocal.Id).ConfigureAwait(false);
+                usersRoomIds = await roomService.GetChatRoomIdsByProviderIdAsync(providerLocal.Id).ConfigureAwait(false);
             }
             else
             {
                 var parentLocal = await parentService.GetByUserId(userId).ConfigureAwait(false);
-                usersRooms = await roomService.GetByParentIdAsync(parentLocal.Id).ConfigureAwait(false);
+                usersRoomIds = await roomService.GetChatRoomIdsByParentIdAsync(parentLocal.Id).ConfigureAwait(false);
             }
 
-            foreach (var room in usersRooms)
+            foreach (var id in usersRoomIds)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, room.Id.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
+                await Groups.AddToGroupAsync(Context.ConnectionId, id.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
             }
 
             await base.OnConnectedAsync().ConfigureAwait(false);
@@ -105,15 +105,6 @@ namespace OutOfSchool.WebApi.Hubs
                 // deserialize from string to Object
                 ChatMessageWorkshopCreateDto newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatMessageWorkshopCreateDto>(chatNewMessage);
 
-                // validate received parameters
-                var messageIsValid = await this.ValidateNewMessage(newReceivedAndDeserializedMessage).ConfigureAwait(false);
-                if (!messageIsValid)
-                {
-                    string message = "Some of the message parameters were wrong. There are no entities with such Ids or Ids do not belong to sender.";
-                    await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", message).ConfigureAwait(false);
-                    return;
-                }
-
                 // create new dto object that will be saved to the database
                 var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshopDto()
                 {
@@ -131,6 +122,15 @@ namespace OutOfSchool.WebApi.Hubs
                 // set the unique ChatRoomId property according to WorkshopId and ParentId
                 if (existingRoom is null)
                 {
+                    // validate received parameters
+                    var messageIsValid = await this.ValidateNewMessageAsync(newReceivedAndDeserializedMessage).ConfigureAwait(false);
+                    if (!messageIsValid)
+                    {
+                        string message = "Some of the message parameters were wrong. There are no entities with such Ids or Ids do not belong to sender.";
+                        await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", message).ConfigureAwait(false);
+                        return;
+                    }
+
                     var newChatRoomDto = await roomService.CreateOrReturnExistingAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId)
                         .ConfigureAwait(false);
                     chatMessageDtoThatWillBeSaved.ChatRoomId = newChatRoomDto.Id;
@@ -138,6 +138,16 @@ namespace OutOfSchool.WebApi.Hubs
                 }
                 else
                 {
+                    // validate received parameters
+                    bool userHarRights = await this.UserHasRigtsForChatRoomAsync(existingRoom).ConfigureAwait(false);
+                    bool userRoleIsProvider = string.Equals(Context.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+                    if (!userHarRights || chatMessageDtoThatWillBeSaved.SenderRoleIsProvider != userRoleIsProvider)
+                    {
+                        string message = "Some of the message parameters were wrong. User has no rights for this chat room or sender role is set invalid.";
+                        await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", message).ConfigureAwait(false);
+                        return;
+                    }
+
                     chatMessageDtoThatWillBeSaved.ChatRoomId = existingRoom.Id;
                 }
 
@@ -212,7 +222,7 @@ namespace OutOfSchool.WebApi.Hubs
             }
         }
 
-        private async Task SetProviderAndParentAndWorkshopFields(ChatMessageWorkshopCreateDto newMessage)
+        private async Task SetProviderAndParentAndWorkshopFieldsAsync(ChatMessageWorkshopCreateDto newMessage)
         {
             if (newMessage is null)
             {
@@ -247,14 +257,14 @@ namespace OutOfSchool.WebApi.Hubs
             }
         }
 
-        private async Task<bool> ValidateNewMessage(ChatMessageWorkshopCreateDto newMessage)
+        private async Task<bool> ValidateNewMessageAsync(ChatMessageWorkshopCreateDto newMessage)
         {
             if (newMessage is null)
             {
                 throw new ArgumentNullException($"{nameof(newMessage)}");
             }
 
-            await this.SetProviderAndParentAndWorkshopFields(newMessage).ConfigureAwait(false);
+            await this.SetProviderAndParentAndWorkshopFieldsAsync(newMessage).ConfigureAwait(false);
 
             if (provider is null)
             {
@@ -276,6 +286,72 @@ namespace OutOfSchool.WebApi.Hubs
                 // and we check if workshop is initialized and has ProviderId equal Sender Provider.Id
                 // and SenderRole must be Provider
                 if (workshop.ProviderId != provider.Id || !newMessage.SenderRoleIsProvider)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
+        private async Task SetProviderAndWorkshopFieldsOrParentFieldAccordingToUserRoleAsync(long workshopId)
+        {
+            var userRole = Context.User.FindFirst("role")?.Value;
+            if (Role.Provider.ToString().Equals(userRole, StringComparison.OrdinalIgnoreCase))
+            {
+                // if User role is Provider
+                // so provider and workshop fields need to be settled for future validation if provider is workshop's owner
+                provider = await providerService.GetByUserId(Context.User.FindFirst("sub")?.Value).ConfigureAwait(false);
+                workshop = await workshopService.GetById(workshopId).ConfigureAwait(false);
+
+                if (provider is null || workshop is null)
+                {
+                    throw new ArgumentException($"Some of entites were not found: {nameof(provider)}, {nameof(workshop)}");
+                }
+            }
+            else
+            {
+                // if User role is Parent
+                // so only parent need to be checked if he has rights to get information
+                parent = await parentService.GetByUserId(Context.User.FindFirst("sub")?.Value).ConfigureAwait(false);
+
+                if (parent is null)
+                {
+                    throw new ArgumentException($"Some of entites were not found: {nameof(parent)}");
+                }
+            }
+        }
+
+        private async Task<bool> UserHasRigtsForChatRoomAsync(ChatRoomWorkshopDto chatRoomDto)
+        {
+            if (chatRoomDto is null)
+            {
+                throw new ArgumentNullException($"{nameof(chatRoomDto)}");
+            }
+
+            await this.SetProviderAndWorkshopFieldsOrParentFieldAccordingToUserRoleAsync(chatRoomDto.WorkshopId).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                // if provider is not set to instance, so the user is Parent
+                // and we check if ParentId is equal to Sender Parent.Id
+                // and SenderRole must be Parent
+                if (chatRoomDto.ParentId != parent.Id)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                // if provider is set to instance, so the user is Provider
+                // and we check if ProviderId equal user Provider.Id
+                if (workshop.ProviderId != provider.Id)
                 {
                     return false;
                 }

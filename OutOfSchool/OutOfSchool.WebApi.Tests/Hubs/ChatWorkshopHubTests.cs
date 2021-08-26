@@ -88,11 +88,11 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             userRole = Role.Provider.ToString();
             hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
-
+            List<long> ids = new List<long>() { 1, 2 };
             providerServiceMock.Setup(x => x.GetByUserId(It.IsAny<string>()))
                 .ReturnsAsync(provider);
-            roomServiceMock.Setup(x => x.GetByProviderIdAsync(It.IsAny<long>()))
-                .ReturnsAsync(rooms);
+            roomServiceMock.Setup(x => x.GetChatRoomIdsByProviderIdAsync(It.IsAny<long>()))
+                .ReturnsAsync(ids);
 
             groupsMock.Setup(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
@@ -103,8 +103,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             // Assert
             hubCallerContextMock.Verify(x => x.User.FindFirst(It.IsAny<string>()), Times.AtLeastOnce);
             providerServiceMock.Verify(x => x.GetByUserId(It.IsAny<string>()), Times.Once);
-            roomServiceMock.Verify(x => x.GetByProviderIdAsync(It.IsAny<long>()), Times.Once);
-            groupsMock.Verify(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(rooms.Count));
+            roomServiceMock.Verify(x => x.GetChatRoomIdsByProviderIdAsync(It.IsAny<long>()), Times.Once);
+            groupsMock.Verify(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(ids.Count));
         }
 
         [Test]
@@ -122,18 +122,21 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         }
 
         [Test]
-        public async Task SendMessageToOthersInGroup_WhenSenderIsParentAndParentIdNotHisOwne_ShouldSendForbiddenMessage()
+        public async Task SendMessageToOthersInGroup_WhenMessageIsInvalidAndRoomExists_ShouldSendForbiddenMessage()
         {
             // Arrange
             userRole = Role.Parent.ToString();
             hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
-            var chatNewMessage = "{'workshopId':1, 'parentId':2, 'text':'hi', 'senderRoleIsProvider':false }";
 
+            var chatNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':false }";
+
+            roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(1, 1))
+                .ReturnsAsync(chatRoom);
+
+            parent.Id = 2;
             parentServiceMock.Setup(x => x.GetByUserId(userId))
                 .ReturnsAsync(parent);
-            workshopServiceMock.Setup(x => x.GetById(1))
-                .ReturnsAsync(workshop);
 
             clientsMock.Setup(clients => clients.Caller).Returns(clientProxyMock.Object);
 
@@ -141,20 +144,16 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
 
             // Assert
-            hubCallerContextMock.Verify(x => x.User.FindFirst("sub"), Times.Once);
-            hubCallerContextMock.Verify(x => x.User.FindFirst("role"), Times.Once);
-
             providerServiceMock.Verify(x => x.GetByUserId(It.IsAny<string>()), Times.Never);
             parentServiceMock.Verify(x => x.GetByUserId(userId), Times.Once);
-            workshopServiceMock.Verify(x => x.GetById(1), Times.Once);
+            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Once);
 
             clientsMock.Verify(clients => clients.Caller, Times.Once);
-
-            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
         }
 
         [Test]
-        public async Task SendMessageToOthersInGroup_WhenSenderIsProviderAndWorkshopIdIsNotHisOwne_ShouldSendForbiddenMessage()
+        public async Task SendMessageToOthersInGroup_WhenChatRoomDoesNotExistMessageIsInvalid_ShouldSendForbiddenMessage()
         {
             // Arrange
             userRole = Role.Provider.ToString();
@@ -162,12 +161,16 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
             var chatNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':true }";
 
+            roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(1, 1))
+                .ReturnsAsync(default(ChatRoomWorkshopDto));
+
+            provider.Id = 2;
             providerServiceMock.Setup(x => x.GetByUserId(userId))
                 .ReturnsAsync(provider);
+
             parentServiceMock.Setup(x => x.GetById(1))
                 .ReturnsAsync(parent);
 
-            workshop.ProviderId = 2;
             workshopServiceMock.Setup(x => x.GetById(1))
                 .ReturnsAsync(workshop);
 
@@ -177,16 +180,13 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
 
             // Assert
-            hubCallerContextMock.Verify(x => x.User.FindFirst("sub"), Times.Once);
-            hubCallerContextMock.Verify(x => x.User.FindFirst("role"), Times.Once);
-
             providerServiceMock.Verify(x => x.GetByUserId(userId), Times.Once);
             parentServiceMock.Verify(x => x.GetById(1), Times.Once);
             workshopServiceMock.Verify(x => x.GetById(1), Times.Once);
+            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Once);
 
             clientsMock.Verify(clients => clients.Caller, Times.Once);
-
-            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
         }
 
         [Test]
@@ -234,7 +234,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         }
 
         [Test]
-        public async Task SendMessageToOthersInGroup_WhenChatRoomDoesNotExist_ShouldCreateRoomAndSaveMessage()
+        public async Task SendMessageToOthersInGroup_WhenChatRoomDoesNotExistMessageIsValid_ShouldCreateRoomAndSaveMessage()
         {
             // Arrange
             userRole = Role.Provider.ToString();
