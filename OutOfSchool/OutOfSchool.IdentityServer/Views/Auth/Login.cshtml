@@ -34,7 +34,7 @@
             @*     } *@
             @* </form> *@
 
-            <form asp-controller="Auth" asp-action="Login" method="post" asp-route-returnUrl="@Model.ReturnUrl ?? ">
+            <form asp-controller="Auth" asp-action="Login" method="post" asp-route-returnUrl="@Model.ReturnUrl">
                 <input type="hidden" asp-for="ReturnUrl"/>
                 <div asp-validation-summary="ModelOnly"></div>
                 <label class="registration_label">@SharedLocalizer["Email"]</label>
