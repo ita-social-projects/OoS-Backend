@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
@@ -18,12 +21,14 @@ namespace OutOfSchool.WebApi.Tests.Hubs
     [TestFixture]
     public class ChatWorkshopHubTests
     {
+        private const string UserId = "someUserId";
+
         private Mock<ILogger<ChatWorkshopHub>> loggerMock;
         private Mock<IChatMessageWorkshopService> messageServiceMock;
         private Mock<IChatRoomWorkshopService> roomServiceMock;
-        private Mock<IProviderService> providerServiceMock;
-        private Mock<IParentService> parentServiceMock;
-        private Mock<IWorkshopService> workshopServiceMock;
+        private Mock<IValidationService> validationServiceMock;
+        private Mock<IWorkshopRepository> workshopRepositoryMock;
+        private Mock<IParentRepository> parentRepositoryMock;
 
         private ChatWorkshopHub chatHub;
 
@@ -32,45 +37,28 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         private Mock<HubCallerContext> hubCallerContextMock;
         private Mock<IGroupManager> groupsMock;
 
-        private string userId;
-        private string userRole;
-        private List<ChatRoomWorkshopDtoWithLastMessage> rooms;
-        private ChatRoomWorkshopDto chatRoom;
-
-        private ParentDTO parent;
-        private ProviderDto provider;
-        private WorkshopDTO workshop;
-
         [SetUp]
         public void SetUp()
         {
             loggerMock = new Mock<ILogger<ChatWorkshopHub>>();
             messageServiceMock = new Mock<IChatMessageWorkshopService>();
             roomServiceMock = new Mock<IChatRoomWorkshopService>();
-            providerServiceMock = new Mock<IProviderService>();
-            parentServiceMock = new Mock<IParentService>();
-            workshopServiceMock = new Mock<IWorkshopService>();
+            validationServiceMock = new Mock<IValidationService>();
+            workshopRepositoryMock = new Mock<IWorkshopRepository>();
+            parentRepositoryMock = new Mock<IParentRepository>();
 
             clientsMock = new Mock<IHubCallerClients>();
             clientProxyMock = new Mock<IClientProxy>();
             hubCallerContextMock = new Mock<HubCallerContext>();
             groupsMock = new Mock<IGroupManager>();
 
-            userId = "someUserId";
-            userRole = Role.Provider.ToString();
-            rooms = new List<ChatRoomWorkshopDtoWithLastMessage>()
-            {
-                new ChatRoomWorkshopDtoWithLastMessage() { Id = 1, WorkshopId = 1, ParentId = 1, },
-                new ChatRoomWorkshopDtoWithLastMessage() { Id = 2, WorkshopId = 2, ParentId = 1, },
-            };
-
-            chatRoom = new ChatRoomWorkshopDto() { Id = 1, WorkshopId = 1, ParentId = 1, };
-
-            parent = new ParentDTO() { Id = 1, UserId = userId };
-            provider = new ProviderDto() { Id = 1, UserId = userId };
-            workshop = new WorkshopDTO() { Id = 1, ProviderId = 1 };
-
-            chatHub = new ChatWorkshopHub(loggerMock.Object, messageServiceMock.Object, roomServiceMock.Object, providerServiceMock.Object, parentServiceMock.Object, workshopServiceMock.Object)
+            chatHub = new ChatWorkshopHub(
+                loggerMock.Object,
+                messageServiceMock.Object,
+                roomServiceMock.Object,
+                validationServiceMock.Object,
+                workshopRepositoryMock.Object,
+                parentRepositoryMock.Object)
             {
                 Clients = clientsMock.Object,
                 Context = hubCallerContextMock.Object,
@@ -78,21 +66,23 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             };
 
             hubCallerContextMock.Setup(x => x.User.FindFirst("sub"))
-                .Returns(new Claim(ClaimTypes.NameIdentifier, userId));
+                .Returns(new Claim(ClaimTypes.NameIdentifier, UserId));
         }
 
         [Test]
         public async Task OnConnectedAsync_ShouldAddConnectionToGroups()
         {
             // Arrange
-            userRole = Role.Provider.ToString();
+            var userRole = Role.Provider.ToString();
             hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
-            List<long> ids = new List<long>() { 1, 2 };
-            providerServiceMock.Setup(x => x.GetByUserId(It.IsAny<string>()))
-                .ReturnsAsync(provider);
-            roomServiceMock.Setup(x => x.GetChatRoomIdsByProviderIdAsync(It.IsAny<long>()))
-                .ReturnsAsync(ids);
+
+            var validProviderId = 1L;
+            validationServiceMock.Setup(x => x.GetEntityIdAccordingToUserRole(UserId, userRole)).ReturnsAsync(validProviderId);
+
+            var validChatRoomIds = new List<long>() { 1, 2 };
+            roomServiceMock.Setup(x => x.GetChatRoomIdsByProviderIdAsync(validProviderId))
+                .ReturnsAsync(validChatRoomIds);
 
             groupsMock.Setup(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
@@ -101,10 +91,9 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             await chatHub.OnConnectedAsync();
 
             // Assert
-            hubCallerContextMock.Verify(x => x.User.FindFirst(It.IsAny<string>()), Times.AtLeastOnce);
-            providerServiceMock.Verify(x => x.GetByUserId(It.IsAny<string>()), Times.Once);
-            roomServiceMock.Verify(x => x.GetChatRoomIdsByProviderIdAsync(It.IsAny<long>()), Times.Once);
-            groupsMock.Verify(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(ids.Count));
+            validationServiceMock.Verify(x => x.GetEntityIdAccordingToUserRole(UserId, userRole), Times.Once);
+            roomServiceMock.Verify(x => x.GetChatRoomIdsByProviderIdAsync(validProviderId), Times.Once);
+            groupsMock.Verify(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(validChatRoomIds.Count));
         }
 
         [Test]
@@ -119,24 +108,22 @@ namespace OutOfSchool.WebApi.Tests.Hubs
 
             // Assert
             clientsMock.Verify(clients => clients.Caller, Times.Once);
+            clientsMock.Verify(clients => clients.OthersInGroup(It.IsAny<string>()), Times.Never);
         }
 
         [Test]
-        public async Task SendMessageToOthersInGroup_WhenMessageIsInvalidAndRoomExists_ShouldSendForbiddenMessage()
+        public async Task SendMessageToOthersInGroup_WhenUserSetsNotOwnParentId_ShouldSendForbiddenMessage()
         {
             // Arrange
-            userRole = Role.Parent.ToString();
+            var userRole = Role.Parent.ToString();
             hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
+
+            var invalidParentId = 1;
 
             var chatNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':false }";
 
-            roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(1, 1))
-                .ReturnsAsync(chatRoom);
-
-            parent.Id = 2;
-            parentServiceMock.Setup(x => x.GetByUserId(userId))
-                .ReturnsAsync(parent);
+            validationServiceMock.Setup(x => x.UserIsParentOwnerAsync(UserId, invalidParentId)).ReturnsAsync(false);
 
             clientsMock.Setup(clients => clients.Caller).Returns(clientProxyMock.Object);
 
@@ -144,35 +131,29 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
 
             // Assert
-            providerServiceMock.Verify(x => x.GetByUserId(It.IsAny<string>()), Times.Never);
-            parentServiceMock.Verify(x => x.GetByUserId(userId), Times.Once);
-            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Once);
+            validationServiceMock.Verify(x => x.UserIsParentOwnerAsync(UserId, invalidParentId), Times.Once);
+
+            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
+            roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
 
             clientsMock.Verify(clients => clients.Caller, Times.Once);
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
+            clientsMock.Verify(clients => clients.OthersInGroup(It.IsAny<string>()), Times.Never);
         }
 
         [Test]
-        public async Task SendMessageToOthersInGroup_WhenChatRoomDoesNotExistMessageIsInvalid_ShouldSendForbiddenMessage()
+        public async Task SendMessageToOthersInGroup_WhenWhenUserSetsInvalidSenderRole_ShouldSendForbiddenMessage()
         {
             // Arrange
-            userRole = Role.Provider.ToString();
+            var userRole = Role.Provider.ToString();
             hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
-            var chatNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':true }";
 
-            roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(1, 1))
-                .ReturnsAsync(default(ChatRoomWorkshopDto));
+            var validWorkshopId = 1;
 
-            provider.Id = 2;
-            providerServiceMock.Setup(x => x.GetByUserId(userId))
-                .ReturnsAsync(provider);
+            var chatNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':false }";
 
-            parentServiceMock.Setup(x => x.GetById(1))
-                .ReturnsAsync(parent);
-
-            workshopServiceMock.Setup(x => x.GetById(1))
-                .ReturnsAsync(workshop);
+            validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId)).ReturnsAsync(true);
 
             clientsMock.Setup(clients => clients.Caller).Returns(clientProxyMock.Object);
 
@@ -180,103 +161,114 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
 
             // Assert
-            providerServiceMock.Verify(x => x.GetByUserId(userId), Times.Once);
-            parentServiceMock.Verify(x => x.GetById(1), Times.Once);
-            workshopServiceMock.Verify(x => x.GetById(1), Times.Once);
-            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Once);
+            validationServiceMock.Verify(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId), Times.Once);
+
+            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
+            roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
+            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
 
             clientsMock.Verify(clients => clients.Caller, Times.Once);
-            messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Never);
+            clientsMock.Verify(clients => clients.OthersInGroup(It.IsAny<string>()), Times.Never);
         }
 
         [Test]
-        public async Task SendMessageToOthersInGroup_WhenMessageIsValidAndRoomExists_ShouldNotCreateNewChatRoomButSaveMessage()
+        public async Task SendMessageToOthersInGroup_WhenParamsAreValidAndChatRoomExists_ShouldNotCreateNewChatRoomButSaveMessageAndSendMessageToGroup()
         {
             // Arrange
-            userRole = Role.Provider.ToString();
+            var userRole = Role.Provider.ToString();
             hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
-            var chatNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':true }";
 
-            providerServiceMock.Setup(x => x.GetByUserId(userId))
-                .ReturnsAsync(provider);
-            parentServiceMock.Setup(x => x.GetById(1))
-                .ReturnsAsync(parent);
-            workshopServiceMock.Setup(x => x.GetById(1))
-                .ReturnsAsync(workshop);
+            var validWorkshopId = 1;
+            var validNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':true }";
 
+            validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId)).ReturnsAsync(true);
+
+            var validChatRoom = new ChatRoomWorkshopDto() { Id = 1, WorkshopId = 1, ParentId = 1, };
             roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()))
-                .ReturnsAsync(chatRoom);
+                .ReturnsAsync(validChatRoom);
 
-            var newMessage = new ChatMessageWorkshopDto()
+            var validCreatedMessage = new ChatMessageWorkshopDto()
             {
                 Id = 1,
                 SenderRoleIsProvider = true,
                 Text = "hi",
-                ChatRoomId = 1,
+                ChatRoomId = validChatRoom.Id,
                 CreatedDateTime = DateTimeOffset.UtcNow,
                 ReadDateTime = null,
             };
             messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()))
-                .ReturnsAsync(newMessage);
+                .ReturnsAsync(validCreatedMessage);
 
             clientsMock.Setup(clients => clients.OthersInGroup(It.IsAny<string>())).Returns(clientProxyMock.Object);
 
             // Act
-            await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
+            await chatHub.SendMessageToOthersInGroupAsync(validNewMessage).ConfigureAwait(false);
 
             // Assert
-            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(1, 1), Times.Once);
+            validationServiceMock.Verify(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId), Times.Once);
+
+            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(validWorkshopId, It.IsAny<long>()), Times.Once);
             roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Never);
 
             messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Once);
-            clientsMock.Verify(clients => clients.OthersInGroup("1WorkshopChat"), Times.Once);
+            clientsMock.Verify(clients => clients.OthersInGroup(validChatRoom.Id + "WorkshopChat"), Times.Once);
         }
 
         [Test]
-        public async Task SendMessageToOthersInGroup_WhenChatRoomDoesNotExistMessageIsValid_ShouldCreateRoomAndSaveMessage()
+        public async Task SendMessageToOthersInGroup_WhenParamsAreValidAndChatRoomDoesNotExists_ShouldCreateNewChatRoomAndSaveMessageAndSendMessageToGroup()
         {
             // Arrange
-            userRole = Role.Provider.ToString();
+            var userRole = Role.Parent.ToString();
             hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
-            var chatNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':true }";
 
-            providerServiceMock.Setup(x => x.GetByUserId(userId))
-                .ReturnsAsync(provider);
-            parentServiceMock.Setup(x => x.GetById(1))
-                .ReturnsAsync(parent);
-            workshopServiceMock.Setup(x => x.GetById(1))
-                .ReturnsAsync(workshop);
+            var validParentId = 1;
+            var validNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':false }";
 
+            validationServiceMock.Setup(x => x.UserIsParentOwnerAsync(UserId, validParentId)).ReturnsAsync(true);
+
+            var validChatRoom = new ChatRoomWorkshopDto() { Id = 1, WorkshopId = 1, ParentId = 1, };
             roomServiceMock.Setup(x => x.GetUniqueChatRoomAsync(It.IsAny<long>(), It.IsAny<long>()))
                 .ReturnsAsync(default(ChatRoomWorkshopDto));
             roomServiceMock.Setup(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()))
-                .ReturnsAsync(chatRoom);
+                .ReturnsAsync(validChatRoom);
 
-            var newMessage = new ChatMessageWorkshopDto()
+            var validCreatedMessage = new ChatMessageWorkshopDto()
             {
                 Id = 1,
-                SenderRoleIsProvider = true,
+                SenderRoleIsProvider = false,
                 Text = "hi",
-                ChatRoomId = 1,
+                ChatRoomId = validChatRoom.Id,
                 CreatedDateTime = DateTimeOffset.UtcNow,
                 ReadDateTime = null,
             };
             messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()))
-                .ReturnsAsync(newMessage);
+                .ReturnsAsync(validCreatedMessage);
+
+            var validParent = new Parent() { Id = 1, UserId = UserId };
+            parentRepositoryMock.Setup(x => x.GetById(validParentId)).ReturnsAsync(validParent);
+
+            var validWorkshops = new List<Workshop>() { new Workshop() { Id = 1, Provider = new Provider() { UserId = "someId" } } };
+            workshopRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>())).ReturnsAsync(validWorkshops);
+
+            groupsMock.Setup(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             clientsMock.Setup(clients => clients.OthersInGroup(It.IsAny<string>())).Returns(clientProxyMock.Object);
 
             // Act
-            await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
+            await chatHub.SendMessageToOthersInGroupAsync(validNewMessage).ConfigureAwait(false);
 
             // Assert
-            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(1, 1), Times.AtLeastOnce);
-            roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(1, 1), Times.Once);
+            validationServiceMock.Verify(x => x.UserIsParentOwnerAsync(UserId, validParentId), Times.Once);
+
+            roomServiceMock.Verify(x => x.GetUniqueChatRoomAsync(validParentId, It.IsAny<long>()), Times.AtLeastOnce);
+            roomServiceMock.Verify(x => x.CreateOrReturnExistingAsync(It.IsAny<long>(), It.IsAny<long>()), Times.Once);
 
             messageServiceMock.Verify(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopDto>()), Times.Once);
-            clientsMock.Verify(clients => clients.OthersInGroup("1WorkshopChat"), Times.Once);
+
+            clientsMock.Verify(clients => clients.OthersInGroup(validChatRoom.Id + "WorkshopChat"), Times.Once);
         }
     }
 }

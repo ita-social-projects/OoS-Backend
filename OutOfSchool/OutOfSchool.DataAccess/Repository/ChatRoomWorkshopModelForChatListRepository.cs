@@ -10,7 +10,6 @@ namespace OutOfSchool.Services.Repository
 {
     public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModelForChatListRepository
     {
-        private readonly OutOfSchoolDbContext dbContext;
         private readonly DbSet<ChatRoomWorkshop> dbSet;
 
         /// <summary>
@@ -19,8 +18,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="dbContext">OutOfSchoolDbContext.</param>
         public ChatRoomWorkshopModelForChatListRepository(OutOfSchoolDbContext dbContext)
         {
-            this.dbContext = dbContext;
-            dbSet = this.dbContext.Set<ChatRoomWorkshop>();
+            dbSet = dbContext.Set<ChatRoomWorkshop>();
         }
 
         public async Task<ChatRoomWorkshopForChatList> GetByChatRoomIdAsync(long chatRoomId)
@@ -98,7 +96,7 @@ namespace OutOfSchool.Services.Repository
                         ReadDateTime = message.ReadDateTime,
                     })
                     .FirstOrDefault(),
-                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Where(mess => mess.ReadDateTime == null && (mess.SenderRoleIsProvider != searchMessagesForProvider)).Count(),
+                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Count(mess => mess.ReadDateTime == null && (mess.SenderRoleIsProvider != searchMessagesForProvider)),
                 });
             var res = await query.ToListAsync();
             return res;
