@@ -256,4 +256,40 @@
   <data name="Confirm email" xml:space="preserve">
     <value>Підтвердження емейлу</value>
   </data>
+  <data name="Error! Something happened on the server!" xml:space="preserve">
+    <value>Помилка! Щось сталося на сервері!</value>
+  </data>
+  <data name="is already taken" xml:space="preserve">
+    <value>вже зайнятий</value>
+  </data>
+  <data name="Login or password is wrong" xml:space="preserve">
+    <value>Логін або пароль неправильні</value>
+  </data>
+  <data name="Password is required" xml:space="preserve">
+    <value>Необхідний пароль</value>
+  </data>
+  <data name="Email is required" xml:space="preserve">
+    <value>Потрібна електронна адреса</value>
+  </data>
+  <data name="FirstName is required" xml:space="preserve">
+    <value>Обов'язкове ім'я</value>
+  </data>
+  <data name="LastName is required" xml:space="preserve">
+    <value>Потрібно прізвище</value>
+  </data>
+  <data name="Password confirmation is required" xml:space="preserve">
+    <value>Потрібно підтвердження пароля</value>
+  </data>
+  <data name="Password must contain at least one capital, number and symbol(@$!%*?&amp;)." xml:space="preserve">
+    <value>Пароль повинен містити принаймні одну велику літеру, число та символ (@$!%*? &amp;).</value>
+  </data>
+  <data name="Passwords doesn't match" xml:space="preserve">
+    <value>Паролі не збігаються</value>
+  </data>
+  <data name="Phone number format is incorrect. Example: +38XXX-XXX-XX-XX" xml:space="preserve">
+    <value>Формат номера телефону неправильний. Приклад: +38XXX-XXX-XX-XX</value>
+  </data>
+  <data name="Phone number is required" xml:space="preserve">
+    <value>Номер телефону обов’язковий</value>
+  </data>
 </root>

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Enums;
@@ -22,6 +23,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly IIdentityServerInteractionService interactionService;
         private readonly ILogger<AuthController> logger;
         private readonly IParentRepository parentRepository;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -31,18 +33,21 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="interactionService"> Identity Server 4 interaction service.</param>
         /// <param name="parentRepository">Repository for Parent model.</param>
         /// <param name="logger"> ILogger class.</param>
+        /// <param name="localizer"> Localizer.</param>
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IIdentityServerInteractionService interactionService,
             ILogger<AuthController> logger,
-            IParentRepository parentRepository)
+            IParentRepository parentRepository,
+            IStringLocalizer<SharedResource> localizer)
         {
             this.logger = logger;
             this.parentRepository = parentRepository;
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.interactionService = interactionService;
+            this.localizer = localizer;
         }
 
         /// <summary>
@@ -110,7 +115,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return BadRequest();
             }
 
-            ModelState.AddModelError(string.Empty, "Login or password is wrong");
+            ModelState.AddModelError(string.Empty, localizer["Login or password is wrong"]);
             return View(new LoginViewModel
             {
                 ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
@@ -159,15 +164,15 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = new User()
             {
-               UserName = model.Email,
-               FirstName = model.FirstName,
-               LastName = model.LastName,
-               MiddleName = model.MiddleName,
-               Email = model.Email,
-               PhoneNumber = model.PhoneNumber,
-               CreatingTime = DateTimeOffset.UtcNow,
-               Role = model.Role,
-               IsRegistered = false,
+                UserName = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                MiddleName = model.MiddleName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                CreatingTime = DateTimeOffset.UtcNow,
+                Role = model.Role,
+                IsRegistered = false,
             };
 
             try
@@ -216,7 +221,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                     {
                         if (error.Code == "DuplicateUserName")
                         {
-                            error.Description = $"Email {error.Description.Substring(10).Split('\'')[0]} is alredy taken";
+                            error.Description = $"{localizer["Email"]} {error.Description.Substring(10).Split('\'')[0]} {localizer["is already taken"]}";
                         }
 
                         ModelState.AddModelError(string.Empty, error.Description);
@@ -230,7 +235,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 await userManager.RemoveFromRoleAsync(user, user.Role);
                 await userManager.DeleteAsync(user);
 
-                ModelState.AddModelError(string.Empty, "Error! Something happened on the server!");
+                ModelState.AddModelError(string.Empty, localizer["Error! Something happened on the server!"]);
 
                 logger.Log(LogLevel.Error, "Error happened while creating Parent entity! " + ex.Message);
 

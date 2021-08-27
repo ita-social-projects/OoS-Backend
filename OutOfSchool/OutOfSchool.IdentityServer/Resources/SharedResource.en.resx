@@ -258,4 +258,40 @@
   <data name="Confirm email" xml:space="preserve">
     <value>Підтвердження емейлу</value>
   </data>
+  <data name="Error! Something happened on the server!" xml:space="preserve">
+    <value>Error! Something happened on the server!</value>
+  </data>
+  <data name="is already taken" xml:space="preserve">
+    <value>is already taken</value>
+  </data>
+  <data name="Login or password is wrong" xml:space="preserve">
+    <value>Login or password is wrong</value>
+  </data>
+  <data name="Password is required" xml:space="preserve">
+    <value>Password is required</value>
+  </data>
+  <data name="Email is required" xml:space="preserve">
+    <value>Email is required</value>
+  </data>
+  <data name="FirstName is required" xml:space="preserve">
+    <value>FirstName is required</value>
+  </data>
+  <data name="LastName is required" xml:space="preserve">
+    <value>LastName is required</value>
+  </data>
+  <data name="Password confirmation is required" xml:space="preserve">
+    <value>Password confirmation is required</value>
+  </data>
+  <data name="Password must contain at least one capital, number and symbol(@$!%*?&amp;)." xml:space="preserve">
+    <value>Password must contain at least one capital, number and symbol(@$!%*?&amp;).</value>
+  </data>
+  <data name="Passwords doesn't match" xml:space="preserve">
+    <value>Passwords doesn't match</value>
+  </data>
+  <data name="Phone number format is incorrect. Example: +38XXX-XXX-XX-XX" xml:space="preserve">
+    <value>Phone number format is incorrect. Example: +38XXX-XXX-XX-XX</value>
+  </data>
+  <data name="Phone number is required" xml:space="preserve">
+    <value>Phone number is required</value>
+  </data>
 </root>

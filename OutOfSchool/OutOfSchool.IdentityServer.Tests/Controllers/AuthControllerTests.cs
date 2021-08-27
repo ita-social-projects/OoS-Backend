@@ -21,6 +21,7 @@ using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+using Microsoft.Extensions.Localization;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers
 {
@@ -33,6 +34,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         private readonly Mock<ILogger<AuthController>> fakeLogger;
         private readonly Mock<IParentRepository> fakeparentRepository;
         private AuthController authController;
+        private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalazier;
 
         public AuthControllerTests()
         {
@@ -41,6 +43,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             fakeSignInManager = new Mock<FakeSignInManager>();
             fakeLogger = new Mock<ILogger<AuthController>>();
             fakeparentRepository = new Mock<IParentRepository>();
+            fakeLocalazier = new Mock<IStringLocalizer<SharedResource>>();
         }
 
         [SetUp]
@@ -51,7 +54,8 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
                 fakeSignInManager.Object,
                 fakeInteractionService.Object, 
                 fakeLogger.Object,
-                fakeparentRepository.Object
+                fakeparentRepository.Object,
+                fakeLocalazier.Object
                 );
         }
 
