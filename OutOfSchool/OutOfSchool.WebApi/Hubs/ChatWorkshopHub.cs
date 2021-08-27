@@ -68,12 +68,12 @@ namespace OutOfSchool.WebApi.Hubs
             bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
             if (userRoleIsProvider)
             {
-                var providerId = await validationService.GetEntityIdAccordingToUserRole(userId, userRole).ConfigureAwait(false);
+                var providerId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
                 usersRoomIds = await roomService.GetChatRoomIdsByProviderIdAsync(providerId).ConfigureAwait(false);
             }
             else
             {
-                var parentId = await validationService.GetEntityIdAccordingToUserRole(userId, userRole).ConfigureAwait(false);
+                var parentId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
                 usersRoomIds = await roomService.GetChatRoomIdsByParentIdAsync(parentId).ConfigureAwait(false);
             }
 

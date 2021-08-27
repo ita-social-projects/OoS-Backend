@@ -43,17 +43,33 @@ namespace OutOfSchool.WebApi.Services
             return string.Equals(userId, parent.UserId, StringComparison.Ordinal);
         }
 
-        public async Task<long> GetEntityIdAccordingToUserRole(string userId, string userRole)
+        public async Task<long> GetEntityIdAccordingToUserRoleAsync(string userId, string userRole)
         {
             if (string.Equals(userRole, Role.Parent.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 var parents = await parentRepository.GetByFilter(item => item.UserId == userId).ConfigureAwait(false);
-                return parents.SingleOrDefault().Id;
+                var parent = parents.SingleOrDefault();
+                if (parent is null)
+                {
+                    return default;
+                }
+                else
+                {
+                    return parent.Id;
+                }
             }
             else if (string.Equals(userRole, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 var providers = await providerRepository.GetByFilter(item => item.UserId == userId).ConfigureAwait(false);
-                return providers.SingleOrDefault().Id;
+                var provider = providers.SingleOrDefault();
+                if (provider is null)
+                {
+                    return default;
+                }
+                else
+                {
+                    return provider.Id;
+                }
             }
             else
             {

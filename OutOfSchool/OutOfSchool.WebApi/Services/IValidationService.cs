@@ -10,6 +10,6 @@ namespace OutOfSchool.WebApi.Services
 
         Task<bool> UserIsParentOwnerAsync(string userId, long parentId);
 
-        Task<long> GetEntityIdAccordingToUserRole(string userId, string userRole);
+        Task<long> GetEntityIdAccordingToUserRoleAsync(string userId, string userRole);
     }
 }

@@ -218,12 +218,12 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (string.Equals(userRole, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                var providerId = await validationService.GetEntityIdAccordingToUserRole(userId, userRole).ConfigureAwait(false);
+                var providerId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
                 chatRooms = await roomService.GetByProviderIdAsync(providerId).ConfigureAwait(false);
             }
             else
             {
-                var parentId = await validationService.GetEntityIdAccordingToUserRole(userId, userRole).ConfigureAwait(false);
+                var parentId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
                 chatRooms = await roomService.GetByParentIdAsync(parentId).ConfigureAwait(false);
             }
 
