@@ -78,7 +78,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
 
             var validProviderId = 1L;
-            validationServiceMock.Setup(x => x.GetEntityIdAccordingToUserRole(UserId, userRole)).ReturnsAsync(validProviderId);
+            validationServiceMock.Setup(x => x.GetEntityIdAccordingToUserRoleAsync(UserId, userRole)).ReturnsAsync(validProviderId);
 
             var validChatRoomIds = new List<long>() { 1, 2 };
             roomServiceMock.Setup(x => x.GetChatRoomIdsByProviderIdAsync(validProviderId))
@@ -91,7 +91,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             await chatHub.OnConnectedAsync();
 
             // Assert
-            validationServiceMock.Verify(x => x.GetEntityIdAccordingToUserRole(UserId, userRole), Times.Once);
+            validationServiceMock.Verify(x => x.GetEntityIdAccordingToUserRoleAsync(UserId, userRole), Times.Once);
             roomServiceMock.Verify(x => x.GetChatRoomIdsByProviderIdAsync(validProviderId), Times.Once);
             groupsMock.Verify(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(validChatRoomIds.Count));
         }
