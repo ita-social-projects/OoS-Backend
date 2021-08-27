@@ -53,14 +53,16 @@ namespace OutOfSchool.WebApi.Services
         /// Get a list of ChatRoom's Ids by specified Parent.
         /// </summary>
         /// <param name="parentId">Parent's identifier.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{long}"/> that contains elements from the input sequence.</returns>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="IEnumerable{Int64}"/> that contains elements from the input sequence.</returns>
         Task<IEnumerable<long>> GetChatRoomIdsByParentIdAsync(long parentId);
 
         /// <summary>
         /// Get a list of ChatRoom's Ids by specified Provider.
         /// </summary>
         /// <param name="providerId">Provider's identifier.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{long}"/> that contains elements from the input sequence.</returns>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="IEnumerable{Int64}"/> that contains elements from the input sequence.</returns>
         Task<IEnumerable<long>> GetChatRoomIdsByProviderIdAsync(long providerId);
 
         /// <summary>

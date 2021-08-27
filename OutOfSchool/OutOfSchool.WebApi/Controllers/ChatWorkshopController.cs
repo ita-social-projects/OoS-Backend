@@ -77,7 +77,14 @@ namespace OutOfSchool.WebApi.Controllers
                 ChatRoomId = 0,
             };
 
-            bool userRoleIsProvider = string.Equals(HttpContext.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+            var userRole = HttpContext.User.FindFirst("role")?.Value;
+
+            if (userRole is null)
+            {
+                throw new ArgumentException($"{nameof(userRole)}");
+            }
+
+            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
             bool userHarRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
 
@@ -199,8 +206,13 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetUsersRoomsAsync()
         {
-            var userRole = User.FindFirst("role")?.Value;
-            var userId = User.FindFirst("sub")?.Value;
+            var userId = HttpContext.User.FindFirst("sub")?.Value;
+            var userRole = HttpContext.User.FindFirst("role")?.Value;
+
+            if (userId is null || userRole is null)
+            {
+                throw new ArgumentException($"{nameof(userId)} or {nameof(userRole)}");
+            }
 
             IEnumerable<ChatRoomWorkshopDtoWithLastMessage> chatRooms;
 
@@ -250,7 +262,13 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest($"User is not a participant of the chat:{chatRoomId}");
             }
 
-            bool userRoleIsProvider = string.Equals(HttpContext.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+            var userRole = HttpContext.User.FindFirst("role")?.Value;
+            if (userRole is null)
+            {
+                throw new ArgumentException($"{nameof(userRole)}");
+            }
+
+            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
             var numberOfUpdatedMessages = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, userRoleIsProvider).ConfigureAwait(false);
 
@@ -299,7 +317,14 @@ namespace OutOfSchool.WebApi.Controllers
                 return NoContent();
             }
 
-            bool userRoleIsProvider = string.Equals(HttpContext.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+            var userRole = HttpContext.User.FindFirst("role")?.Value;
+
+            if (userRole is null)
+            {
+                throw new ArgumentException($"{nameof(userRole)}");
+            }
+
+            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
             if (!await this.UserHasRigtsForChatRoomAsync(chatRoom.WorkshopId, chatRoom.ParentId).ConfigureAwait(false)
                 || (oldChatMessage.SenderRoleIsProvider != userRoleIsProvider))
@@ -343,7 +368,14 @@ namespace OutOfSchool.WebApi.Controllers
                 return NoContent();
             }
 
-            bool userRoleIsProvider = string.Equals(HttpContext.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+            var userRole = HttpContext.User.FindFirst("role")?.Value;
+
+            if (userRole is null)
+            {
+                throw new ArgumentException($"{nameof(userRole)}");
+            }
+
+            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
             if (!await this.UserHasRigtsForChatRoomAsync(chatRoom.WorkshopId, chatRoom.ParentId).ConfigureAwait(false)
                 || (messageThatIsDeleting.SenderRoleIsProvider != userRoleIsProvider))
@@ -405,7 +437,14 @@ namespace OutOfSchool.WebApi.Controllers
             try
             {
                 var userId = HttpContext.User.FindFirst("sub")?.Value;
-                bool userRoleIsProvider = string.Equals(HttpContext.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+                var userRole = HttpContext.User.FindFirst("role")?.Value;
+
+                if (userId is null || userRole is null)
+                {
+                    throw new ArgumentException($"{nameof(userId)} or {nameof(userRole)}");
+                }
+
+                bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
                 if (userRoleIsProvider)
                 {

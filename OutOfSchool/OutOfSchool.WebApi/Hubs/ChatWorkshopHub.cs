@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
@@ -54,6 +53,11 @@ namespace OutOfSchool.WebApi.Hubs
         {
             var userId = Context.User.FindFirst("sub")?.Value;
             var userRole = Context.User.FindFirst("role")?.Value;
+
+            if (userId is null || userRole is null)
+            {
+                throw new ArgumentException($"{nameof(userId)} or {nameof(userRole)}");
+            }
 
             logger.LogInformation($"New Hub-connection established. UserId: {userId}");
 
@@ -217,7 +221,14 @@ namespace OutOfSchool.WebApi.Hubs
             try
             {
                 var userId = Context.User.FindFirst("sub")?.Value;
-                bool userRoleIsProvider = string.Equals(Context.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+                var userRole = Context.User.FindFirst("role")?.Value;
+
+                if (userId is null || userRole is null)
+                {
+                    throw new ArgumentException($"{nameof(userId)} or {nameof(userRole)}");
+                }
+
+                bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
                 if (userRoleIsProvider)
                 {
