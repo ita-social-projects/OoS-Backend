@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -27,6 +28,15 @@ namespace OutOfSchool.WebApi.Tests.Middlewares
         }
 
         [Test]
+        public void ThrowsException_WhenParameterContextIsNull()
+        {
+            // Arrange
+            var middleware = new AuthorizationTokenMiddleware(requestDelegate.Object);
+
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await middleware.InvokeAsync(default));
+        }
+
         [TestCase("")]
         [TestCase("chat")]
         [TestCase("provider")]
@@ -56,7 +66,6 @@ namespace OutOfSchool.WebApi.Tests.Middlewares
             requestDelegate.Verify(x => x.Invoke(context), Times.Once);
         }
 
-        [Test]
         [TestCase("")]
         [TestCase("token")]
         [TestCase("access_tokan")]
@@ -86,7 +95,6 @@ namespace OutOfSchool.WebApi.Tests.Middlewares
             requestDelegate.Verify(x => x.Invoke(context), Times.Once);
         }
 
-        [Test]
         [TestCase("token")]
         [TestCase("enJdf34_56")]
         public async Task SetsJWTtoHeader_WhenQueryIsCorrect(string tokenValue)

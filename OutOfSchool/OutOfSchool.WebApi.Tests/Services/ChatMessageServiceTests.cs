@@ -50,6 +50,13 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         #region Create
         [Test]
+        public void Create_WhenParameterIsNull_ShouldThrowArgumentNullException()
+        {
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await messageService.CreateAsync(default));
+        }
+
+        [Test]
         public async Task Create_WhenEntityIsValid_ShouldCreateEntity()
         {
             // Arrange
@@ -67,6 +74,20 @@ namespace OutOfSchool.WebApi.Tests.Services
         #endregion
 
         #region GetMessagesForChatRoomAsync
+        [Test]
+        public async Task GetMessagesForChatRoomAsync_WhenIfOffsetfilterIsNull_ShouldReturnFoundEntitiesByDefaultFilterValues()
+        {
+            // Arrange
+            var roomId = 1;
+            OffsetFilter offsetFilter = null;
+
+            // Act
+            var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(roomId, result.FirstOrDefault()?.ChatRoomId);
+        }
+
         [Test]
         public async Task GetMessagesForChatRoomAsync_WhenCalled_ShouldReturnFoundEntities()
         {
@@ -125,6 +146,13 @@ namespace OutOfSchool.WebApi.Tests.Services
         #endregion
 
         #region Update
+        [Test]
+        public void Update_WhenParameterIsNull_ShouldThrowArgumentNullException()
+        {
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await messageService.UpdateAsync(default));
+        }
+
         [Test]
         public async Task Update_WhenEntityIsValid_ShouldUpdateEntity()
         {

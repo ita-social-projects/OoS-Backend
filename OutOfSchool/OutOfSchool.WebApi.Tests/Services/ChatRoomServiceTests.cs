@@ -21,8 +21,8 @@ namespace OutOfSchool.WebApi.Tests.Services
     public class ChatRoomServiceTests
     {
         private IEntityRepository<ChatRoomWorkshop> roomRepository;
-        private IChatRoomWorkshopModelForChatListRepository roomWithSpecialModelRepository;
-        private Mock<ILogger> loggerMoq;
+        private Mock<IChatRoomWorkshopModelForChatListRepository> roomWithSpecialModelRepositoryMock;
+        private Mock<ILogger> loggerMock;
 
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext dbContext;
@@ -41,10 +41,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             dbContext = new OutOfSchoolDbContext(options);
 
             roomRepository = new EntityRepository<ChatRoomWorkshop>(dbContext);
-            roomWithSpecialModelRepository = new ChatRoomWorkshopModelForChatListRepository(dbContext);
-            loggerMoq = new Mock<ILogger>();
+            roomWithSpecialModelRepositoryMock = new Mock<IChatRoomWorkshopModelForChatListRepository>();
+            loggerMock = new Mock<ILogger>();
 
-            roomService = new ChatRoomWorkshopService(roomRepository, loggerMoq.Object, roomWithSpecialModelRepository);
+            roomService = new ChatRoomWorkshopService(roomRepository, loggerMock.Object, roomWithSpecialModelRepositoryMock.Object);
 
             SeedDatabase();
         }
@@ -136,6 +136,190 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Assert
             Assert.IsNull(result);
+        }
+        #endregion
+
+        #region GetByParentIdAsync
+        [Test]
+        public async Task GetByParentIdAsync_WhenRoomExist_ShouldReturnFoundEntity()
+        {
+            // Arrange
+            long existingParentId = 1;
+            var validRooms = new List<ChatRoomWorkshopForChatList>()
+            {
+                new ChatRoomWorkshopForChatList() { Id = 1, ParentId = existingParentId },
+            };
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(existingParentId)).ReturnsAsync(validRooms);
+
+            // Act
+            var result = await roomService.GetByParentIdAsync(existingParentId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>(result);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(existingParentId, result.First().ParentId);
+        }
+
+        [Test]
+        public async Task GetByParentIdAsync_WhenRoomDoesNotExist_ShouldReturnNull()
+        {
+            // Arrange
+            long notExistingParentId = 99;
+            var validRooms = new List<ChatRoomWorkshopForChatList>();
+
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(notExistingParentId)).ReturnsAsync(validRooms);
+
+            // Act
+            var result = await roomService.GetByParentIdAsync(notExistingParentId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>(result);
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.Any());
+        }
+        #endregion
+
+        #region GetByProviderIdAsync
+        [Test]
+        public async Task GetByProviderIdAsync_WhenRoomExist_ShouldReturnFoundEntity()
+        {
+            // Arrange
+            long existingProviderId = 1;
+            var validRooms = new List<ChatRoomWorkshopForChatList>()
+            {
+                new ChatRoomWorkshopForChatList() { Id = 1, Workshop = new WorkshopInfoForChatList() { Id = 1, ProviderId = existingProviderId } },
+            };
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByProviderIdAsync(existingProviderId)).ReturnsAsync(validRooms);
+
+            // Act
+            var result = await roomService.GetByProviderIdAsync(existingProviderId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>(result);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(existingProviderId, result.First().Workshop.ProviderId);
+        }
+
+        [Test]
+        public async Task GetByProviderIdAsync_WhenRoomDoesNotExist_ShouldReturnNull()
+        {
+            // Arrange
+            long notExistingProviderId = 99;
+            var validRooms = new List<ChatRoomWorkshopForChatList>();
+
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByProviderIdAsync(notExistingProviderId)).ReturnsAsync(validRooms);
+
+            // Act
+            var result = await roomService.GetByProviderIdAsync(notExistingProviderId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>(result);
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.Any());
+        }
+        #endregion
+
+        #region GetByWorkshopIdAsync
+        [Test]
+        public async Task GetByWorkshopIdAsync_WhenRoomExist_ShouldReturnFoundEntity()
+        {
+            // Arrange
+            long existingWorkshopId = 1;
+            var validRooms = new List<ChatRoomWorkshopForChatList>()
+            {
+                new ChatRoomWorkshopForChatList() { Id = 1, WorkshopId = existingWorkshopId, Workshop = new WorkshopInfoForChatList() { Id = existingWorkshopId } },
+            };
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(existingWorkshopId)).ReturnsAsync(validRooms);
+
+            // Act
+            var result = await roomService.GetByWorkshopIdAsync(existingWorkshopId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>(result);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(existingWorkshopId, result.First().WorkshopId);
+        }
+
+        [Test]
+        public async Task GetByWorkshopIdAsync_WhenRoomDoesNotExist_ShouldReturnNull()
+        {
+            // Arrange
+            long notExistingWorkshopId = 99;
+            var validRooms = new List<ChatRoomWorkshopForChatList>();
+
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(notExistingWorkshopId)).ReturnsAsync(validRooms);
+
+            // Act
+            var result = await roomService.GetByWorkshopIdAsync(notExistingWorkshopId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>(result);
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.Any());
+        }
+        #endregion
+
+        #region GetChatRoomIdsByParentIdAsync
+        [Test]
+        public async Task GetChatRoomIdsByParentIdAsync_WhenRoomExist_ShouldReturnFoundEntity()
+        {
+            // Arrange
+            long existingParentId = 1;
+
+            // Act
+            var result = await roomService.GetChatRoomIdsByParentIdAsync(existingParentId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<long>>(result);
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Any());
+        }
+
+        [Test]
+        public async Task GetChatRoomIdsByParentIdAsync_WhenRoomDoesNotExist_ShouldReturnNull()
+        {
+            // Arrange
+            long notExistingParentId = 99;
+
+            // Act
+            var result = await roomService.GetChatRoomIdsByParentIdAsync(notExistingParentId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<long>>(result);
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.Any());
+        }
+        #endregion
+
+        #region GetChatRoomIdsByProviderIdAsync
+        [Test]
+        public async Task GetChatRoomIdsByProviderIdAsync_WhenRoomExist_ShouldReturnFoundEntity()
+        {
+            // Arrange
+            long existingProviderId = 1;
+
+            // Act
+            var result = await roomService.GetChatRoomIdsByProviderIdAsync(existingProviderId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<long>>(result);
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Any());
+        }
+
+        [Test]
+        public async Task GetChatRoomIdsByProviderIdAsync_WhenRoomDoesNotExist_ShouldReturnNull()
+        {
+            // Arrange
+            long notExistingProvidertId = 99;
+
+            // Act
+            var result = await roomService.GetChatRoomIdsByProviderIdAsync(notExistingProvidertId).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<IEnumerable<long>>(result);
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.Any());
         }
         #endregion
 

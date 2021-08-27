@@ -97,6 +97,39 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         }
 
         [Test]
+        public void OnConnectedAsync_IfOneOfTheClaimsIsNotFoundInJWT_ThrowsArgumentException()
+        {
+            // Arrange
+            var userRole = Role.Provider.ToString();
+            hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
+                .Returns(default(Claim));
+
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(async () => await chatHub.OnConnectedAsync());
+        }
+
+        [Test]
+        public async Task SendMessageToOthersInGroup_IfOneOfTheClaimsIsNotFoundInJWT_ShouldWriteMessageToCallerWithException()
+        {
+            // Arrange
+            var userRole = Role.Provider.ToString();
+            hubCallerContextMock.Setup(x => x.User.FindFirst("role"))
+                .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
+            hubCallerContextMock.Setup(x => x.User.FindFirst("sub"))
+                .Returns(default(Claim));
+
+            var chatNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':false }";
+            clientsMock.Setup(clients => clients.Caller).Returns(clientProxyMock.Object);
+
+            // Act
+            await chatHub.SendMessageToOthersInGroupAsync(chatNewMessage).ConfigureAwait(false);
+
+            // Assert
+            clientsMock.Verify(clients => clients.Caller, Times.Once);
+            clientsMock.Verify(clients => clients.OthersInGroup(It.IsAny<string>()), Times.Never);
+        }
+
+        [Test]
         public async Task SendMessageToOthersInGroup_WhenStringIsInvalid_ShouldWriteMessageToCallerWithException()
         {
             // Arrange
