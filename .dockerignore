@@ -1,2 +1,12 @@
-﻿bin/
-obj/
+﻿**/bin
+**/obj
+**/.vs
+**/.vscode
+**/.idea
+**/.dockerignore
+**/.env
+**/.git
+**/.gitignore
+**/docker-compose*
+LICENSE
+README.md
