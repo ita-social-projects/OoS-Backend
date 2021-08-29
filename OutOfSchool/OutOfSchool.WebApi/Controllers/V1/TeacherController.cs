@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -8,55 +8,57 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Controllers
+namespace OutOfSchool.WebApi.Controllers.V1
 {
+    /// <summary>
+    /// Controller with CRUD operations for a Teacher entity.
+    /// </summary>
     [ApiController]
-    [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
-    public class SocialGroupController : ControllerBase
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]/[action]")]
+    public class TeacherController : ControllerBase
     {
-        private readonly ISocialGroupService service;
+        private readonly ITeacherService service;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SocialGroupController"/> class.
+        /// Initializes a new instance of the <see cref="TeacherController"/> class.
         /// </summary>
-        /// <param name="service">Service for SocialGroup model.</param>
+        /// <param name="service">Service for Teacher model.</param>
         /// <param name="localizer">Localizer.</param>
-        public SocialGroupController(ISocialGroupService service, IStringLocalizer<SharedResource> localizer)
+        public TeacherController(ITeacherService service, IStringLocalizer<SharedResource> localizer)
         {
-            this.service = service;
             this.localizer = localizer;
+            this.service = service;
         }
 
         /// <summary>
-        /// Get all Social Groups from the database.
+        /// Get all teachers from the database.
         /// </summary>
-        /// <returns>List of all Social Groups.</returns>
+        /// <returns>List of teachers.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var socialGroup = await service.GetAll().ConfigureAwait(false);
+            var teachers = await service.GetAll().ConfigureAwait(false);
 
-            if (!socialGroup.Any())
+            if (!teachers.Any())
             {
                 return NoContent();
             }
 
-            return Ok(socialGroup);
+            return Ok(teachers);
         }
 
         /// <summary>
-        /// Get Social Group by it's id.
+        /// Get teacher by it's id.
         /// </summary>
-        /// <param name="id">Social Group id.</param>
-        /// <returns>Social Group.</returns>
+        /// <param name="id">Teacher's id.</param>
+        /// <returns>Teacher.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
@@ -67,50 +69,60 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Add a new Social Group to the database.
+        /// Add a new teacher to the database.
         /// </summary>
-        /// <param name="dto">Social Group entity to add.</param>
+        /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(SocialGroupDto dto)
+        public async Task<IActionResult> Create(TeacherDTO dto)
         {
-            var socialGroup = await service.Create(dto).ConfigureAwait(false);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var teacher = await service.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = socialGroup.Id, },
-                socialGroup);
+                new { id = teacher.Id, },
+                teacher);
         }
 
         /// <summary>
-        /// Update info about a Social Group in the database.
+        /// Update info about a specific teacher in the database.
         /// </summary>
-        /// <param name="dto">Social Group to update.</param>
-        /// <returns>Social Group.</returns>
-        [Authorize(Roles = "admin")]
+        /// <param name="dto">Teacher to update.</param>
+        /// <returns>Teacher.</returns>
+        [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(SocialGroupDto dto)
+        public async Task<IActionResult> Update(TeacherDTO dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             return Ok(await service.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Delete a specific Social Group from the database.
+        /// Delete a specific Teacher entity from the database.
         /// </summary>
-        /// <param name="id">Social Group id.</param>
+        /// <param name="id">Teacher's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "provider,admin")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)

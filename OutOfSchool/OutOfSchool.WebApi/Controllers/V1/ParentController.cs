@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -11,13 +10,14 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Controllers
+namespace OutOfSchool.WebApi.Controllers.V1
 {
     /// <summary>
     /// Controller with CRUD operations for parent entity.
     /// </summary>
     [ApiController]
-    [Route("[controller]/[action]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ParentController : ControllerBase
     {

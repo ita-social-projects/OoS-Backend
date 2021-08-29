@@ -9,13 +9,14 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Controllers
+namespace OutOfSchool.WebApi.Controllers.V1
 {
     /// <summary>
     /// Controller with CRUD operations for Workshop entity.
     /// </summary>
     [ApiController]
-    [Route("[controller]/[action]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class WorkshopController : ControllerBase
     {
@@ -107,7 +108,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             if (string.IsNullOrWhiteSpace(filter.City))
             {
-                filter.City = "Êè¿â";
+                filter.City = "ï¿½ï¿½ï¿½";
             }
 
             var result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);

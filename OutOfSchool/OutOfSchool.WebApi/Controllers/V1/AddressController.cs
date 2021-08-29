@@ -8,10 +8,11 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Controllers
+namespace OutOfSchool.WebApi.Controllers.V1
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class AddressController : ControllerBase
     {

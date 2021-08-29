@@ -11,65 +11,65 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Controllers
+namespace OutOfSchool.WebApi.Controllers.V1
 {
     /// <summary>
-    /// Controller with CRUD operations for Direction entity.
+    /// Controller with CRUD operations for Department entity.
     /// </summary>
     [ApiController]
-    [ApiExplorerSettings(GroupName = "Direction")]
-    [Route("[controller]/[action]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class DirectionController : ControllerBase
+    public class DepartmentController : ControllerBase
     {
-        private readonly IDirectionService service;
+        private readonly IDepartmentService service;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DirectionController"/> class.
+        /// Initializes a new instance of the <see cref="DepartmentController"/> class.
         /// </summary>
-        /// <param name="service">Service for Direction entity.</param>
+        /// <param name="service">Service for Department entity.</param>
         /// <param name="localizer">Localizer.</param>
-        public DirectionController(IDirectionService service, IStringLocalizer<SharedResource> localizer)
+        public DepartmentController(IDepartmentService service, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.service = service;
         }
 
         /// <summary>
-        /// To get all Directions from DB.
+        /// To get all Departments from DB.
         /// </summary>
-        /// <returns>List of all directions, or no content.</returns>
-        /// <response code="200">One or more directions were found.</response>
-        /// <response code="204">No direction was found.</response>
+        /// <returns>List of all departments, or no content.</returns>
+        /// <response code="200">One or more deparments were found.</response>
+        /// <response code="204">No department was found.</response>
         /// <response code="500">If any server error occures.</response>
         [AllowAnonymous]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DepartmentDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-            var directions = await service.GetAll().ConfigureAwait(false);
+            var departments = await service.GetAll().ConfigureAwait(false);
 
-            if (!directions.Any())
+            if (!departments.Any())
             {
                 return NoContent();
             }
 
-            return Ok(directions);
+            return Ok(departments);
         }
 
         /// <summary>
-        /// To recieve the direction with the defined id.
+        /// To recieve the department with the defined id.
         /// </summary>
-        /// <param name="id">Key of the direction in the table.</param>
-        /// <returns><see cref="DirectionDto"/>.</returns>
+        /// <param name="id">Key of the department in the table.</param>
+        /// <returns><see cref="DepartmentDto"/>.</returns>
         /// <response code="200">The entity was found by given Id.</response>
         /// <response code="500">If any server error occures. For example: Id was wrong.</response>
         [AllowAnonymous]
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DirectionDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DepartmentDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(long id)
         {
@@ -79,11 +79,45 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To create a new direction and add it to the DB.
+        /// To get all Departments from DB with some DirectionId.
         /// </summary>
-        /// <param name="directionDto">DirectionDto object that will be added.</param>
-        /// <returns>Direction that was created.</returns>
-        /// <response code="201">Direction was successfully created.</response>
+        /// <param name="id">The direction's Id.</param>
+        /// <returns>List of found departments, or no content.</returns>
+        /// <response code="200">One or more departments were found.</response>
+        /// <response code="204">No department was found.</response>
+        /// <response code="400">Id was wrong.</response>
+        /// <response code="500">If any server error occures.</response>
+        [AllowAnonymous]
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DepartmentDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByDirectionId(long id)
+        {
+            try
+            {
+                var departments = await service.GetByDirectionId(id).ConfigureAwait(false);
+
+                if (!departments.Any())
+                {
+                    return NoContent();
+                }
+
+                return Ok(departments);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// To create a new Department and add it to the DB.
+        /// </summary>
+        /// <param name="departmentDto">DepartmentDto object that will be added.</param>
+        /// <returns>Department that was created.</returns>
+        /// <response code="201">Department was successfully created.</response>
         /// <response code="400">Model is invalid.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
@@ -96,7 +130,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create(DirectionDto directionDto)
+        public async Task<IActionResult> Create(DepartmentDto departmentDto)
         {
             if (!ModelState.IsValid)
             {
@@ -105,14 +139,14 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                directionDto.Id = default;
+                departmentDto.Id = default;
 
-                var direction = await service.Create(directionDto).ConfigureAwait(false);
+                var department = await service.Create(departmentDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                      nameof(GetById),
-                     new { id = direction.Id, },
-                     direction);
+                     new { id = department.Id, },
+                     department);
             }
             catch (ArgumentException ex)
             {
@@ -121,38 +155,38 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To update Direction entity that already exists.
+        /// To update Department entity that already exists.
         /// </summary>
-        /// <param name="directionDto">DirectionDto object with new properties.</param>
-        /// <returns>Direction that was updated.</returns>
-        /// <response code="200">Direction was successfully updated.</response>
+        /// <param name="departmentDto">DepartmentDto object with new properties.</param>
+        /// <returns>Department that was updated.</returns>
+        /// <response code="200">Department was successfully updated.</response>
         /// <response code="400">Model is invalid.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "admin")]
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DirectionDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DepartmentDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Update(DirectionDto directionDto)
+        public async Task<ActionResult> Update(DepartmentDto departmentDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(directionDto).ConfigureAwait(false));
+            return Ok(await service.Update(departmentDto).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Delete the Direction entity from DB.
+        /// Delete the Department entity from DB.
         /// </summary>
-        /// <param name="id">The key of the Direction in table.</param>
+        /// <param name="id">The key of the Department in table.</param>
         /// <returns>Status Code.</returns>
-        /// <response code="204">Direction was successfully deleted.</response>
+        /// <response code="204">Department was successfully deleted.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>

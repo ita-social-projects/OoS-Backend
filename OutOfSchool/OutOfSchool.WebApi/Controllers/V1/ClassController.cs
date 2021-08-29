@@ -11,65 +11,65 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Controllers
+namespace OutOfSchool.WebApi.Controllers.V1
 {
     /// <summary>
-    /// Controller with CRUD operations for Department entity.
+    /// Controller with CRUD operations for Class entity.
     /// </summary>
     [ApiController]
-    [ApiExplorerSettings(GroupName = "Direction")]
-    [Route("[controller]/[action]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class DepartmentController : ControllerBase
+    public class ClassController : ControllerBase
     {
-        private readonly IDepartmentService service;
+        private readonly IClassService service;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DepartmentController"/> class.
+        /// Initializes a new instance of the <see cref="ClassController"/> class.
         /// </summary>
-        /// <param name="service">Service for Department entity.</param>
+        /// <param name="service">Service for Class entity.</param>
         /// <param name="localizer">Localizer.</param>
-        public DepartmentController(IDepartmentService service, IStringLocalizer<SharedResource> localizer)
+        public ClassController(IClassService service, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.service = service;
         }
 
         /// <summary>
-        /// To get all Departments from DB.
+        /// To get all Classes from DB.
         /// </summary>
-        /// <returns>List of all departments, or no content.</returns>
-        /// <response code="200">One or more deparments were found.</response>
-        /// <response code="204">No department was found.</response>
+        /// <returns>List of all classes, or no content.</returns>
+        /// <response code="200">One or more classes were found.</response>
+        /// <response code="204">No class was found.</response>
         /// <response code="500">If any server error occures.</response>
         [AllowAnonymous]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DepartmentDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClassDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-            var departments = await service.GetAll().ConfigureAwait(false);
+            var classes = await service.GetAll().ConfigureAwait(false);
 
-            if (!departments.Any())
+            if (!classes.Any())
             {
                 return NoContent();
             }
 
-            return Ok(departments);
+            return Ok(classes);
         }
 
         /// <summary>
-        /// To recieve the department with the defined id.
+        /// To recieve the class with the defined id.
         /// </summary>
-        /// <param name="id">Key of the department in the table.</param>
-        /// <returns><see cref="DepartmentDto"/>.</returns>
+        /// <param name="id">Key of the class in table.</param>
+        /// <returns><see cref="ClassDto"/>.</returns>
         /// <response code="200">The entity was found by given Id.</response>
         /// <response code="500">If any server error occures. For example: Id was wrong.</response>
         [AllowAnonymous]
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DepartmentDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClassDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(long id)
         {
@@ -79,32 +79,32 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To get all Departments from DB with some DirectionId.
+        /// To get Classes from DB with some Deprtment id.
         /// </summary>
-        /// <param name="id">The direction's Id.</param>
-        /// <returns>List of found departments, or no content.</returns>
-        /// <response code="200">One or more departments were found.</response>
-        /// <response code="204">No department was found.</response>
+        /// <param name="id">Department ID.</param>
+        /// <returns>List of found classes, or no content.</returns>
+        /// <response code="200">One or more classes were found.</response>
+        /// <response code="204">No class was found.</response>
         /// <response code="400">Id was wrong.</response>
         /// <response code="500">If any server error occures.</response>
         [AllowAnonymous]
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DepartmentDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClassDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetByDirectionId(long id)
+        public async Task<IActionResult> GetByDepartmentId(long id)
         {
             try
             {
-                var departments = await service.GetByDirectionId(id).ConfigureAwait(false);
+                var classes = await service.GetByDepartmentId(id).ConfigureAwait(false);
 
-                if (!departments.Any())
+                if (!classes.Any())
                 {
                     return NoContent();
                 }
 
-                return Ok(departments);
+                return Ok(classes);
             }
             catch (ArgumentException ex)
             {
@@ -113,11 +113,11 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To create a new Department and add it to the DB.
+        /// To create a new Class and add it to the DB.
         /// </summary>
-        /// <param name="departmentDto">DepartmentDto object that will be added.</param>
-        /// <returns>Department that was created.</returns>
-        /// <response code="201">Department was successfully created.</response>
+        /// <param name="classDto">ClassDto object that will be added.</param>
+        /// <returns>Class that was created.</returns>
+        /// <response code="201">Class was successfully created.</response>
         /// <response code="400">Model is invalid.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
@@ -130,7 +130,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create(DepartmentDto departmentDto)
+        public async Task<IActionResult> Create(ClassDto classDto)
         {
             if (!ModelState.IsValid)
             {
@@ -139,14 +139,14 @@ namespace OutOfSchool.WebApi.Controllers
 
             try
             {
-                departmentDto.Id = default;
+                classDto.Id = default;
 
-                var department = await service.Create(departmentDto).ConfigureAwait(false);
+                var classEntity = await service.Create(classDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                      nameof(GetById),
-                     new { id = department.Id, },
-                     department);
+                     new { id = classEntity.Id, },
+                     classEntity);
             }
             catch (ArgumentException ex)
             {
@@ -155,38 +155,38 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// To update Department entity that already exists.
+        /// To update Class entity that already exists.
         /// </summary>
-        /// <param name="departmentDto">DepartmentDto object with new properties.</param>
-        /// <returns>Department that was updated.</returns>
-        /// <response code="200">Department was successfully updated.</response>
+        /// <param name="classDto">ClassDto object with new properties.</param>
+        /// <returns>Class that was updated.</returns>
+        /// <response code="200">Class was successfully updated.</response>
         /// <response code="400">Model is invalid.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize(Roles = "admin")]
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DepartmentDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClassDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Update(DepartmentDto departmentDto)
+        public async Task<ActionResult> Update(ClassDto classDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(departmentDto).ConfigureAwait(false));
+            return Ok(await service.Update(classDto).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Delete the Department entity from DB.
+        /// Delete the Class entity from DB.
         /// </summary>
-        /// <param name="id">The key of the Department in table.</param>
+        /// <param name="id">The key of the class in table.</param>
         /// <returns>Status Code.</returns>
-        /// <response code="204">Department was successfully deleted.</response>
+        /// <response code="204">Class was successfully deleted.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
