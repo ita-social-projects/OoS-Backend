@@ -1,0 +1,54 @@
+﻿version: '3.4'
+services:
+  sql-server:
+    environment:
+      SA_PASSWORD: Oos-password1
+  elasticsearch:
+    # Expose ports directly for local debug
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+  kibana:
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  identity-server:
+    # Expose ports directly for local debug
+    ports: 
+      - 5443:5443
+    environment:
+      ASPNETCORE_ENVIRONMENT: Compose
+      Email__Enabled: "false"
+  webapi-server:
+    # Expose ports directly for local debug
+    ports:
+      - 5000:5000
+    environment:
+      ASPNETCORE_ENVIRONMENT: Compose
+      Elasticsearch__Url: "http://elasticsearch:9200/"
+      Elasticsearch__User: user
+      Elasticsearch__Password: pass
+    depends_on:
+      - "identity-server"
+  nginx:
+    environment:
+      DOMAIN_NAME: oos.local
+    volumes:
+      - ./https/oos.local.crt:/etc/pki/nginx/oos.local.crt:ro
+      - ./https/oos.local.key:/etc/pki/nginx/oos.local.key:ro
+      - ./https/dhparam.pem:/etc/pki/nginx/dhparam.pem:ro
+    ports:
+      - "80:80"
+      - "443:443"

@@ -1,0 +1,4 @@
+﻿version: '3.4'
+services:
+  sql-server:
+    image: mcr.microsoft.com/azure-sql-edge

@@ -1,0 +1,1 @@
+Get-Content -Path $env:windir\System32\drivers\etc\hosts | Where-Object {$_ -notmatch 'oos.local'} | Set-Content -Path $env:windir\System32\drivers\etc\hosts -Force
