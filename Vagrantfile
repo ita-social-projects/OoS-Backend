@@ -46,7 +46,7 @@ Vagrant.configure("2") do |config|
   config.trigger.before :up do |trigger|
     trigger.name = "Configure SSL"
     if windows_host?
-      trigger.run = {path: "create-local-ssl.ps1"}
+      trigger.run = {path: "create-local-ssl.ps1", args: ["-Domain oos.local"]}
     else
       trigger.run = {path: "create-local-ssl.sh", args: ["oos.local"]}
     end
@@ -56,6 +56,12 @@ Vagrant.configure("2") do |config|
     trigger.name = "Configure hosts"
     trigger.run = {path: windows_host? ? "add-hosts.ps1" : "add-hosts.sh"}
   end
+
+  config.trigger.after :up do |trigger|
+    # Restart services after VM was stopped
+    trigger.name = "Launch Services"
+    trigger.run_remote = {inline: "bash -c 'cd /vagrant; TAG=$(git rev-parse --short HEAD) docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d'"}
+  end
   
   config.trigger.after :destroy do |trigger|
     trigger.name = "Clear hosts"
@@ -64,6 +70,6 @@ Vagrant.configure("2") do |config|
 
   config.trigger.before [:halt, :provision] do |trigger|
     trigger.name = "Stop Services"
-    trigger.run_remote = {inline: "bash -c 'cd /vagrant; docker-compose down --remove-orphans'"}
+    trigger.run_remote = {inline: "bash -c 'cd /vagrant; TAG=$(git rev-parse --short HEAD) docker-compose down --remove-orphans'"}
   end
 end
