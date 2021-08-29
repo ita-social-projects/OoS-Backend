@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -79,20 +80,20 @@ namespace OutOfSchool.Services.Models
         public bool Status { get; set; } = default;
 
         [Required]
-        public long LegalAddressId { get; set; }
-
-        [Required]
-        public long ActualAddressId { get; set; }
-
-        [Required]
         public string UserId { get; set; }
 
         public virtual List<Workshop> Workshops { get; set; }
 
         public virtual User User { get; set; }
 
+        public long? ActualAddressId { get; set; }
+
         public virtual Address ActualAddress { get; set; }
 
+        [Required]
+        public long LegalAddressId { get; set; }
+
+        [Required]
         public virtual Address LegalAddress { get; set; }
     }
 }

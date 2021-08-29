@@ -58,14 +58,13 @@ namespace OutOfSchool.Services.Repository
         {
             db.Entry(entity).State = EntityState.Deleted;
 
-            if (entity.LegalAddressId == entity.ActualAddressId)
+            // TODO: Q: why we are using new entity instead of Provider.LegalAddress here and belowe ?
+            db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
+
+            if (entity.ActualAddressId.HasValue
+                && entity.ActualAddressId.Value == entity.LegalAddressId)
             {
-                db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
-            }
-            else
-            {
-                db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
-                db.Entry(new Address { Id = entity.ActualAddressId }).State = EntityState.Deleted;
+                db.Entry(new Address { Id = entity.ActualAddressId.Value }).State = EntityState.Deleted;
             }
 
             await db.SaveChangesAsync();

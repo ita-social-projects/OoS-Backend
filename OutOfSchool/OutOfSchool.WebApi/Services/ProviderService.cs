@@ -66,21 +66,23 @@ namespace OutOfSchool.WebApi.Services
                 throw new InvalidOperationException(localizer["You can not create more than one account."]);
             }
 
-            // TODO: Q: clear actual address if it is equal to the legal ?
-            if (providerDto.ActualAddress == null
-                || providerDto.ActualAddress.Equals(providerDto.LegalAddress))
+            // Note: clear the actual address if it is equal to the legal to avoid data duplication in the database
+            if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
             {
-                providerDto.ActualAddress = providerDto.LegalAddress;
+                providerDto.ActualAddress = null;
             }
 
             var providerDomainModel = providerDto.ToDomain();
+
+            // BUG: concurrency issue:
+            //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
             if (providerRepository.SameExists(providerDomainModel))
             {
                 throw new InvalidOperationException(localizer["There is already a provider with such a data."]);
             }
 
-            var users = await usersRepository.GetByFilter(u => string.Equals(u.Id, providerDto.UserId, StringComparison.Ordinal)).ConfigureAwait(false);
-            providerDomainModel.User = users.SingleOrDefault();
+            var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
+            providerDomainModel.User = users.Single();
             providerDomainModel.User.IsRegistered = true;
 
             var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
@@ -93,7 +95,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ProviderDto>> GetAll()
         {
-            logger.Information("Getting all Providers started.");
+            logger.Debug("Getting all Providers started.");
 
             var providers = await providerRepository.GetAll().ConfigureAwait(false);
 
@@ -103,16 +105,14 @@ namespace OutOfSchool.WebApi.Services
 
             var providersDTO = providers.Select(provider => provider.ToModel()).ToList();
 
+            // TODO: move ratings calculations out of getting all providers.
             var averageRatings = ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
 
-            if (averageRatings != null)
+            foreach (var provider in providersDTO)
             {
-                foreach (var provider in providersDTO)
-                {
-                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
-                    provider.Rating = ratingTuple.Value?.Item1 ?? default;
-                    provider.NumberOfRatings = ratingTuple.Value?.Item2 ?? default;
-                }
+                var (_, (rating, numberOfVotes)) = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
+                provider.Rating = rating;
+                provider.NumberOfRatings = numberOfVotes;
             }
 
             return providersDTO;
@@ -195,6 +195,9 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
+            // BUG: Possible bug with deleting provider not owned by the user itself.
+            // TODO: add unit tests to check ownership functionality
+
             logger.Information($"Deleting Provider with Id = {id} started.");
 
             try
