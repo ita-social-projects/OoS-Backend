@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OutOfSchool.EmailSender;
+using OutOfSchool.IdentityServer.Extensions.Startup;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -100,6 +101,8 @@ namespace OutOfSchool.IdentityServer
             services.AddControllersWithViews()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
 
+            services.AddProxy();
+
             services.AddTransient<IParentRepository, ParentRepository>();
         }
 
@@ -109,6 +112,8 @@ namespace OutOfSchool.IdentityServer
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseProxy(config);
 
             var supportedCultures = new[]
             {
