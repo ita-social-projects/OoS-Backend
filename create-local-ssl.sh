@@ -61,7 +61,11 @@ if [ ! -d "./https" ]; then
     fail_if_error $?
 
     if [[ $OSTYPE == 'darwin'* ]]; then
-        echo "TODO:"
+        sudo security find-certificate -a /Library/Keychains/System.keychain | awk -F'"' '/alis/{print $4}' | grep ${DOMAIN}
+        if [ $? -eq 0 ];then
+            sudo security delete-certificate -c ${DOMAIN} -t /Library/Keychains/System.keychain
+        fi
+        sudo security add-trusted-cert -r trustRoot -k /Library/Keychains/System.keychain ./https/${DOMAIN}.crt
     else
         if [[ -f "/usr/local/share/ca-certificates/${DOMAIN}.crt" ]]; then
             sudo rm /usr/local/share/ca-certificates/${DOMAIN}.crt
