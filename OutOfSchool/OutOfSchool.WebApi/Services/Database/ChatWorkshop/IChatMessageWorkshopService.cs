@@ -52,7 +52,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="chatRoomId">ChatRoom's key.</param>
         /// <param name="offsetFilter">Filter to take specified part of entities.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements from the input sequence.</returns>
-        Task<IEnumerable<ChatMessageWorkshopDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter);
+        Task<List<ChatMessageWorkshopDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter);
 
         /// <summary>
         /// Update ChatMessages' property "IsRead" in specified ChatRoom and specified User.

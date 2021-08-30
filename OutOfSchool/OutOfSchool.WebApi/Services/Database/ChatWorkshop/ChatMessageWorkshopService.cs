@@ -17,18 +17,18 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ChatMessageWorkshopService : IChatMessageWorkshopService
     {
-        private readonly IEntityRepository<ChatMessageWorkshop> repository;
+        private readonly IEntityRepository<ChatMessageWorkshop> chatMessageRepository;
         private readonly ILogger<ChatMessageWorkshopService> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatMessageWorkshopService"/> class.
         /// </summary>
-        /// <param name="repository">Repository for the ChatMessage entity.</param>
+        /// <param name="chatMessageRepository">Repository for the ChatMessage entity.</param>
         /// <param name="logger">Logger.</param>
-        public ChatMessageWorkshopService(IEntityRepository<ChatMessageWorkshop> repository, ILogger<ChatMessageWorkshopService> logger)
+        public ChatMessageWorkshopService(IEntityRepository<ChatMessageWorkshop> chatMessageRepository, ILogger<ChatMessageWorkshopService> logger)
         {
-            this.repository = repository;
-            this.logger = logger;
+            this.chatMessageRepository = chatMessageRepository ?? throw new ArgumentNullException(nameof(chatMessageRepository));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <inheritdoc/>
@@ -39,12 +39,12 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException($"{nameof(chatMessageDto)}");
             }
 
-            logger.LogInformation($"{nameof(ChatMessageWorkshop)} creating was started.");
+            logger.LogDebug($"{nameof(ChatMessageWorkshop)} creating was started.");
 
             try
             {
-                var chatMessage = await repository.Create(chatMessageDto.ToDomain()).ConfigureAwait(false);
-                logger.LogInformation($"{nameof(ChatMessageWorkshop)} id:{chatMessage.Id} was saved to DB.");
+                var chatMessage = await chatMessageRepository.Create(chatMessageDto.ToDomain()).ConfigureAwait(false);
+                logger.LogDebug($"{nameof(ChatMessageWorkshop)} id:{chatMessage.Id} was saved to DB.");
                 return chatMessage.ToModel();
             }
             catch (DbUpdateException exception)
@@ -57,22 +57,16 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task DeleteAsync(long id)
         {
-            logger.LogInformation($"{nameof(ChatMessageWorkshop)} with {nameof(id)}:{id} deleting was started.");
+            logger.LogDebug($"{nameof(ChatMessageWorkshop)} with {nameof(id)}:{id} deleting was started.");
 
             try
             {
-                var chatMessage = await repository.GetById(id).ConfigureAwait(false);
+                var chatMessage = (await chatMessageRepository.GetById(id).ConfigureAwait(false))
+                    ?? throw new ArgumentOutOfRangeException(nameof(id), $"{nameof(ChatMessageWorkshop)} with id:{id} was not found in the system.");
 
-                if (!(chatMessage is null))
-                {
-                    await repository.Delete(chatMessage).ConfigureAwait(false);
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException(nameof(id), $"{nameof(ChatMessageWorkshop)} with id:{id} was not found in the system.");
-                }
+                await chatMessageRepository.Delete(chatMessage).ConfigureAwait(false);
 
-                logger.LogInformation($"{nameof(ChatMessageWorkshop)} id:{id} was successfully deleted.");
+                logger.LogDebug($"{nameof(ChatMessageWorkshop)} id:{id} was successfully deleted.");
             }
             catch (DbUpdateConcurrencyException exception)
             {
@@ -84,11 +78,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChatMessageWorkshopDto> GetByIdNoTrackingAsync(long id)
         {
-            logger.LogInformation($"Starting to get the {nameof(ChatMessageWorkshop)} with id:{id}.");
+            logger.LogDebug($"Starting to get the {nameof(ChatMessageWorkshop)} with id:{id}.");
 
             try
             {
-                var chatMessages = await repository.GetByFilterNoTracking(x => x.Id == id).ToListAsync().ConfigureAwait(false);
+                var chatMessages = await chatMessageRepository.GetByFilterNoTracking(x => x.Id == id).ToListAsync().ConfigureAwait(false);
 
                 return chatMessages.SingleOrDefault()?.ToModel();
             }
@@ -107,13 +101,13 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException($"{nameof(chatMessageDto)}");
             }
 
-            logger.LogInformation($"{nameof(ChatMessageWorkshop)} with id:{chatMessageDto.Id} updating was started.");
+            logger.LogDebug($"{nameof(ChatMessageWorkshop)} with id:{chatMessageDto.Id} updating was started.");
 
             try
             {
-                var chatMessage = await repository.Update(chatMessageDto.ToDomain()).ConfigureAwait(false);
+                var chatMessage = await chatMessageRepository.Update(chatMessageDto.ToDomain()).ConfigureAwait(false);
 
-                logger.LogInformation($"{nameof(ChatMessageWorkshop)} id:{chatMessage.Id} was successfully updated.");
+                logger.LogDebug($"{nameof(ChatMessageWorkshop)} id:{chatMessage.Id} was successfully updated.");
 
                 return chatMessage.ToModel();
             }
@@ -125,23 +119,23 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatMessageWorkshopDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter)
+        public async Task<List<ChatMessageWorkshopDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter)
         {
             if (offsetFilter is null)
             {
-                offsetFilter = new OffsetFilter() { From = 0, Size = 20 };
+                offsetFilter = new OffsetFilter();
             }
 
-            logger.LogInformation($"Process of getting a portion of {nameof(ChatMessageWorkshop)}s with {nameof(chatRoomId)}:{chatRoomId} was started.");
+            logger.LogDebug($"Process of getting a portion of {nameof(ChatMessageWorkshop)}s with {nameof(chatRoomId)}:{chatRoomId} was started.");
 
             try
             {
-                var query = repository.Get<DateTimeOffset>(skip: offsetFilter.From, take: offsetFilter.Size, where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.CreatedDateTime, ascending: false);
+                var query = chatMessageRepository.Get<DateTimeOffset>(skip: offsetFilter.From, take: offsetFilter.Size, where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.CreatedDateTime, ascending: false);
                 var chatMessages = await query.ToListAsync().ConfigureAwait(false);
 
-                logger.LogInformation(!chatMessages.Any()
-                ? $"There are no records in the system with {nameof(chatRoomId)}:{chatRoomId}."
-                : $"Successfully got all {chatMessages.Count} records with {nameof(chatRoomId)}:{chatRoomId}.");
+                logger.LogDebug(chatMessages.Count > 0
+                    ? $"There are no records in the system with {nameof(chatRoomId)}:{chatRoomId}."
+                    : $"Successfully got all {chatMessages.Count} records with {nameof(chatRoomId)}:{chatRoomId}.");
 
                 return chatMessages.Select(item => item.ToModel()).ToList();
             }
@@ -155,11 +149,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<int> UpdateIsReadByCurrentUserInChatRoomAsync(long chatRoomId, bool currentUserRoleIsProvider)
         {
-            logger.LogInformation($"Process of updating {nameof(ChatMessageWorkshop)}s that are not read by current User started.");
+            logger.LogDebug($"Process of updating {nameof(ChatMessageWorkshop)}s that are not read by current User started.");
 
             try
             {
-                var chatMessages = await repository.Get<long>(where: x => x.ChatRoomId == chatRoomId
+                var chatMessages = await chatMessageRepository.Get<long>(where: x => x.ChatRoomId == chatRoomId
                                                                 && (x.SenderRoleIsProvider != currentUserRoleIsProvider)
                                                                 && x.ReadDateTime == null)
                     .ToListAsync().ConfigureAwait(false);
@@ -169,7 +163,7 @@ namespace OutOfSchool.WebApi.Services
                     foreach (var message in chatMessages)
                     {
                         message.ReadDateTime = DateTimeOffset.UtcNow;
-                        await repository.Update(message).ConfigureAwait(false);
+                        await chatMessageRepository.Update(message).ConfigureAwait(false);
                     }
 
                     return chatMessages.Count;
