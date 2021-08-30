@@ -68,6 +68,15 @@ Vagrant.configure("2") do |config|
     trigger.run = {path: windows_host? ? "clear-hosts.ps1" : "clear-hosts.sh"}
   end
 
+  config.trigger.after :destroy do |trigger|
+    trigger.name = "Remove SSL"
+    if windows_host?
+      trigger.run = {path: "remove-local-ssl.ps1", args: ["-Domain oos.local"]}
+    else
+      trigger.run = {path: "remove-local-ssl.sh", args: ["oos.local"]}
+    end
+  end
+
   config.trigger.before [:halt, :provision] do |trigger|
     trigger.name = "Stop Services"
     trigger.run_remote = {inline: "bash -c 'cd /vagrant; TAG=$(git rev-parse --short HEAD) docker-compose down --remove-orphans'"}
