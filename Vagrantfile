@@ -15,13 +15,12 @@ SHELL
 
 Vagrant.configure("2") do |config|
 
-  config.vbguest.auto_update = true
-
   config.vm.box = "ubuntu/focal64"
 
   config.vm.network "private_network", ip: "192.168.100.100"
 
-  config.vm.provider "virtualbox" do |vb|
+  config.vm.provider "virtualbox" do |vb, override|
+    override.vbguest.auto_update = true
     # Change to true if you want to display the VirtualBox GUI when booting the machine
     # If you don't have SSH or want to use GUI for some other reason
     # login: vagrant
