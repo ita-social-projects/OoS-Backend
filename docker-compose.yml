@@ -52,7 +52,6 @@ services:
     image: ${OOS_API_IMAGE}:${TAG}
     environment:
       PORT: "5000"
-      # TODO: Configure basepath for swagger
       REVERSE_PROXY_BASEPATH: /webapi
       Logging__FilePath: /var/log/oos/api.log
     volumes:

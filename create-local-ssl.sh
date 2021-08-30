@@ -49,7 +49,7 @@ if [ ! -d "./https" ]; then
         -reqexts SAN \
         -extensions SAN \
         -config <(cat /etc/ssl/openssl.cnf \
-            <(printf "[SAN]\nsubjectAltName=DNS:${DOMAIN}")) \
+            <(printf "[SAN]\nsubjectAltName=DNS:${DOMAIN},DNS:*.${DOMAIN}")) \
         -passout env:PASSPHRASE
 
     fail_if_error $?
