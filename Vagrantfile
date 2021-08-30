@@ -54,7 +54,7 @@ Vagrant.configure("2") do |config|
 
   config.trigger.after :up do |trigger|
     trigger.name = "Configure hosts"
-    trigger.run = {path: windows_host? ? "add-hosts.ps1" : "add-hosts.sh"}
+    trigger.run = {path: windows_host? ? "add-hosts.ps1" : "add-hosts.sh", args: ["192.168.100.100"]}
   end
 
   config.trigger.after :up do |trigger|

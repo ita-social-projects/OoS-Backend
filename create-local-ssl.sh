@@ -46,6 +46,10 @@ if [ ! -d "./https" ]; then
         -out ./https/${DOMAIN}.crt \
         -days 365 \
         -subj "$(echo -n "$subj" | sed -e 's/^[[:space:]]*//' | tr "\n" "/")" \
+        -reqexts SAN \
+        -extensions SAN \
+        -config <(cat /etc/ssl/openssl.cnf \
+            <(printf "[SAN]\nsubjectAltName=DNS:${DOMAIN}")) \
         -passout env:PASSPHRASE
 
     fail_if_error $?
@@ -61,11 +65,11 @@ if [ ! -d "./https" ]; then
     fail_if_error $?
 
     if [[ $OSTYPE == 'darwin'* ]]; then
-        sudo security find-certificate -a /Library/Keychains/System.keychain | awk -F'"' '/alis/{print $4}' | grep ${DOMAIN}
+        sudo security find-certificate -a /Library/Keychains/System.keychain | awk -F'"' '/alis/{print $4}' | grep ${DOMAIN} -q
         if [ $? -eq 0 ];then
             sudo security delete-certificate -c ${DOMAIN} -t /Library/Keychains/System.keychain
         fi
-        sudo security add-trusted-cert -r trustRoot -k /Library/Keychains/System.keychain ./https/${DOMAIN}.crt
+        sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ./https/${DOMAIN}.crt
     else
         if [[ -f "/usr/local/share/ca-certificates/${DOMAIN}.crt" ]]; then
             sudo rm /usr/local/share/ca-certificates/${DOMAIN}.crt

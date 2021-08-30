@@ -9,7 +9,7 @@ fi
 
 
 if [[ $OSTYPE == 'darwin'* ]]; then
-    sudo security find-certificate -a /Library/Keychains/System.keychain | awk -F'"' '/alis/{print $4}' | grep ${DOMAIN}
+    sudo security find-certificate -a /Library/Keychains/System.keychain | awk -F'"' '/alis/{print $4}' | grep ${DOMAIN} -q
     if [ $? -eq 0 ];then
         sudo security delete-certificate -c ${DOMAIN} -t /Library/Keychains/System.keychain
     fi
