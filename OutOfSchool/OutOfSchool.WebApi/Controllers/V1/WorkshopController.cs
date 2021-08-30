@@ -108,7 +108,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             if (string.IsNullOrWhiteSpace(filter.City))
             {
-                filter.City = "���";
+                filter.City = "Київ";
             }
 
             var result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
