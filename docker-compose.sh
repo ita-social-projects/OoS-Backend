@@ -16,7 +16,6 @@ if ! [ -x "$COMPOSE" ]; then
     exit 1
 fi
 
-# TODO: Figure out the reason for extra SIGINT/SIGTERM on OSX
 TAG=$(git rev-parse --short HEAD) $COMPOSE \
     -f docker-compose.yml \
     -f docker-compose.local.yml \
