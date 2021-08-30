@@ -9,4 +9,6 @@ $LocalCert = Get-ChildItem -Path Cert:\LocalMachine\Root | Where-Object { $_.Sub
 if ($LocalCert) {
     certutil -delstore -f "ROOT" ${LocalCert}.Thumbprint
 }
-Remove-Item -Path $Https -Recurse
+if (Test-Path -Path $Https) {
+    Remove-Item -Path $Https -Recurse
+}

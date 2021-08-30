@@ -59,8 +59,15 @@ if [ ! -d "./https" ]; then
         -out ./https/${DOMAIN}.key \
         -passin env:PASSPHRASE
     fail_if_error $?
-    # TODO: Figure out why exit code is 1 in Vagrant trigger
-    if [ $? -eq 1 ];then exit 0;fi
-fi
 
-# TODO: add check if certificate exists in trusted store, if it doesn't - add.
+    if [[ $OSTYPE == 'darwin'* ]]; then
+        echo "TODO:"
+    else
+        if [[ -f "/usr/local/share/ca-certificates/${DOMAIN}.crt" ]]; then
+            sudo rm /usr/local/share/ca-certificates/${DOMAIN}.crt
+            sudo update-ca-certificates -f
+        fi
+        sudo cp ./https/${DOMAIN}.crt /usr/local/share/ca-certificates/
+        sudo update-ca-certificates
+    fi
+fi
