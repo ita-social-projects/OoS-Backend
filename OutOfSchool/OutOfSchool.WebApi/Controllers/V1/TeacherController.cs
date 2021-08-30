@@ -16,6 +16,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
+    [Route("[controller]/[action]")]
     public class TeacherController : ControllerBase
     {
         private readonly ITeacherService service;
