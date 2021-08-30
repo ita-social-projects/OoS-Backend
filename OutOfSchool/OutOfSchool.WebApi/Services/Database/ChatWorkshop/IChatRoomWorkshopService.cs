@@ -70,8 +70,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">ChatRoom's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">If entity with specified id was not found in system.</exception>
-        /// <exception cref="InvalidOperationException">If there was more then one entity found.</exception>
+        /// <exception cref="InvalidOperationException">If there was no one entity or more then one entity found.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         Task DeleteAsync(long id);
 

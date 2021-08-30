@@ -99,7 +99,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(offsetFilter.Size, result.Count());
+            Assert.AreEqual(offsetFilter.Size, result.Count);
             Assert.AreEqual(roomId, result.FirstOrDefault()?.ChatRoomId);
         }
 
@@ -114,7 +114,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(default(int), result.Count());
+            Assert.AreEqual(default(int), result.Count);
         }
         #endregion
 

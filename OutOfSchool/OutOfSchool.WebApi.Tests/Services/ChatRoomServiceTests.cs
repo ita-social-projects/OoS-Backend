@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [TestCase(99)]
-        public void Delete_WhenRoomDoesNotExist_ShouldThrowArgumentOutOfRangeException(long id)
+        public void Delete_WhenRoomDoesNotExist_ShouldThrowInvalidOperationException(long id)
         {
             // Arrange
             var roomCount = dbContext.ChatRoomWorkshops.Count();
@@ -110,7 +110,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act and Assert
             Assert.That(
                 async () => await roomService.DeleteAsync(id).ConfigureAwait(false),
-                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
+                Throws.Exception.TypeOf<InvalidOperationException>());
             Assert.AreEqual(roomCount, dbContext.ChatRoomWorkshops.Count());
         }
         #endregion
