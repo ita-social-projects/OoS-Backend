@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Hubs;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 using Serilog;
@@ -97,7 +97,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         }
 
         [Test]
-        public void OnConnectedAsync_IfOneOfTheClaimsIsNotFoundInJWT_ThrowsArgumentException()
+        public void OnConnectedAsync_IfOneOfTheClaimsIsNotFoundInJWT_ThrowsAuthenticationException()
         {
             // Arrange
             var userRole = Role.Provider.ToString();
@@ -105,7 +105,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 .Returns(default(Claim));
 
             // Act and Assert
-            Assert.ThrowsAsync<ArgumentException>(async () => await chatHub.OnConnectedAsync());
+            Assert.ThrowsAsync<AuthenticationException>(async () => await chatHub.OnConnectedAsync());
         }
 
         [Test]
