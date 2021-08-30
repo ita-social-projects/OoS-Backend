@@ -19,23 +19,23 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="parentId">Parent key in the system.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="ICollection{ChatRoomWorkshopForChatList}"/> that contains faund elements.</returns>
-        Task<ICollection<ChatRoomWorkshopForChatList>> GetByParentIdAsync(long parentId);
+        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains faund elements.</returns>
+        Task<List<ChatRoomWorkshopForChatList>> GetByParentIdAsync(long parentId);
 
         /// <summary>
         /// Get a List of chat rooms for workshops by specified Provider key.
         /// </summary>
         /// <param name="providerId">Provider key in the system.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="ICollection{ChatRoomWorkshopForChatList}"/> that contains faund elements.</returns>
-        Task<ICollection<ChatRoomWorkshopForChatList>> GetByProviderIdAsync(long providerId);
+        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains faund elements.</returns>
+        Task<List<ChatRoomWorkshopForChatList>> GetByProviderIdAsync(long providerId);
 
         /// <summary>
         /// Get a List of chat rooms for workshops by specified Workshop key.
         /// </summary>
         /// <param name="workshopId">Workshop key in the system.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="ICollection{ChatRoomWorkshopForChatList}"/> that contains faund elements.</returns>
-        Task<ICollection<ChatRoomWorkshopForChatList>> GetByWorkshopIdAsync(long workshopId);
+        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains faund elements.</returns>
+        Task<List<ChatRoomWorkshopForChatList>> GetByWorkshopIdAsync(long workshopId);
     }
 }
