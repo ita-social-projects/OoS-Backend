@@ -7,6 +7,7 @@ namespace OutOfSchool.Services.Models.ChatWorkshop
     {
         public long Id { get; set; }
 
+        // TODO: consider to remove this property as we already have a navigation property 'ChatRoom'.
         [Required]
         public long ChatRoomId { get; set; }
 

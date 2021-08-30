@@ -23,6 +23,8 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(Roles = "provider,parent")]
     public class ChatWorkshopController : ControllerBase
     {
+        // TODO: consider to return 404 instead of 403
+        // TODO: remove validation to service
         private readonly IChatMessageWorkshopService messageService;
         private readonly IChatRoomWorkshopService roomService;
         private readonly IValidationService validationService;
@@ -37,6 +39,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="localizer">Localizer.</param>
         public ChatWorkshopController(IChatMessageWorkshopService messageService, IChatRoomWorkshopService roomService, IValidationService validationService, IStringLocalizer<SharedResource> localizer)
         {
+            // TODO: add check for null
             this.messageService = messageService;
             this.roomService = roomService;
             this.validationService = validationService;
@@ -57,6 +60,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateMessageAsync(ChatMessageWorkshopCreateDto chatMessageWorkshopCreateDto)
         {
+            // TODO: delete exception, add BadRequest
             if (chatMessageWorkshopCreateDto is null)
             {
                 throw new ArgumentNullException($"{nameof(chatMessageWorkshopCreateDto)}");
@@ -84,13 +88,15 @@ namespace OutOfSchool.WebApi.Controllers
                 throw new ArgumentException($"{nameof(userRole)}");
             }
 
-            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+            var userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
-            bool userHarRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
+            var userHasRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
 
-            if (userHarRights && (chatMessageDtoThatWillBeSaved.SenderRoleIsProvider == userRoleIsProvider))
+            if ((chatMessageDtoThatWillBeSaved.SenderRoleIsProvider == userRoleIsProvider)
+                && userHasRights)
             {
                 // set the unique ChatRoomId property according to WorkshopId and ParentId
+                // TODO: delete check for unique chat room as we don't need it here
                 var existingRoom = await roomService.GetUniqueChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId)
                     .ConfigureAwait(false);
 
@@ -105,7 +111,6 @@ namespace OutOfSchool.WebApi.Controllers
                     chatMessageDtoThatWillBeSaved.ChatRoomId = existingRoom.Id;
                 }
 
-                // Save chatMessage in the system.
                 var createdMessageDto = await messageService.CreateAsync(chatMessageDtoThatWillBeSaved).ConfigureAwait(false);
 
                 return new CreatedResult(string.Empty, createdMessageDto);
@@ -138,27 +143,25 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 return NoContent();
             }
+
+            if (await this.UserHasRigtsForChatRoomAsync(chatRoom.WorkshopId, chatRoom.ParentId).ConfigureAwait(false))
+            {
+                return Ok(chatRoom);
+            }
             else
             {
-                if (await this.UserHasRigtsForChatRoomAsync(chatRoom.WorkshopId, chatRoom.ParentId).ConfigureAwait(false))
-                {
-                    return Ok(chatRoom);
-                }
-                else
-                {
-                    return StatusCode(403, "Forbidden to get a chat room of another users.");
-                }
+                return StatusCode(403, "Forbidden to get a chat room of another users.");
             }
         }
 
         /// <summary>
-        /// Get ChatRoom without ChatMessages by ChatRoomId.
+        /// Get a portion of chat messages for specified ChatRoom.
         /// </summary>
         /// <param name="id">ChatRoom's Id.</param>
         /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
         /// <returns>ChatRoom that was found.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -216,6 +219,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             IEnumerable<ChatRoomWorkshopDtoWithLastMessage> chatRooms;
 
+            // TODO: simplify this like in Hub
             if (string.Equals(userRole, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 var providerId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
@@ -234,6 +238,8 @@ namespace OutOfSchool.WebApi.Controllers
 
             return Ok(chatRooms);
         }
+
+        // TODO: consider to change method logic, if user gets only part of unread messages
 
         /// <summary>
         /// Set status IsRead on true for each user's ChatMessage in the ChatRoom.
