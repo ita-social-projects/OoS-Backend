@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -19,6 +20,9 @@ namespace OutOfSchool.WebApi.Hubs
     [Authorize(Roles = "provider,parent")]
     public class ChatWorkshopHub : Hub
     {
+        // TODO: add logging of all exceptions
+        // TODO: split method SendMessageToOthersInGroupAsync into two separate for parent and provider
+
         // This collection tracks users with their connections.
         private static readonly ConcurrentDictionary<string, HashSet<string>> UsersConnections
             = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.InvariantCultureIgnoreCase);
@@ -41,58 +45,50 @@ namespace OutOfSchool.WebApi.Hubs
         /// <param name="logger">Logger.</param>
         public ChatWorkshopHub(ILogger<ChatWorkshopHub> logger, IChatMessageWorkshopService chatMessageService, IChatRoomWorkshopService chatRoomService, IValidationService validationService, IWorkshopRepository workshopRepository, IParentRepository parentRepository)
         {
-            this.logger = logger;
-            this.messageService = chatMessageService;
-            this.roomService = chatRoomService;
-            this.validationService = validationService;
-            this.workshopRepository = workshopRepository;
-            this.parentRepository = parentRepository;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.messageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
+            this.roomService = chatRoomService ?? throw new ArgumentNullException(nameof(chatRoomService));
+            this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
+            this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
+            this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
         }
 
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.User.FindFirst("sub")?.Value;
-            var userRole = Context.User.FindFirst("role")?.Value;
+            var userId = Context.User.FindFirst("sub")?.Value
+                ?? throw new AuthenticationException("The claim type of user Id was not found.");
 
-            if (userId is null || userRole is null)
-            {
-                throw new ArgumentException($"{nameof(userId)} or {nameof(userRole)}");
-            }
+            var userRole = Context.User.FindFirst("role")?.Value
+                ?? throw new AuthenticationException("The claim type of user role was not found.");
 
-            logger.LogInformation($"New Hub-connection established. UserId: {userId}");
+            logger.LogDebug($"New Hub-connection established. {nameof(userId)}: {userId}, {nameof(userRole)}: {userRole}");
 
             this.AddUsersConnectionIdTracking(userId);
 
             // Add User to all Groups where he is a member.
             IEnumerable<long> usersRoomIds;
-            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
-            if (userRoleIsProvider)
-            {
-                var providerId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
-                usersRoomIds = await roomService.GetChatRoomIdsByProviderIdAsync(providerId).ConfigureAwait(false);
-            }
-            else
-            {
-                var parentId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
-                usersRoomIds = await roomService.GetChatRoomIdsByParentIdAsync(parentId).ConfigureAwait(false);
-            }
 
+            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            var userRoleId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+            usersRoomIds = userRoleIsProvider
+                ? await roomService.GetChatRoomIdsByProviderIdAsync(userRoleId).ConfigureAwait(false)
+                : await roomService.GetChatRoomIdsByParentIdAsync(userRoleId).ConfigureAwait(false);
+
+            // TODO: add parallel execution (Task.WhenAll(tasks))
             foreach (var id in usersRoomIds)
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, id.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
             }
-
-            await base.OnConnectedAsync().ConfigureAwait(false);
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var userId = Context.User.FindFirst("sub")?.Value;
-            logger.LogInformation($"UserId: {userId} connection:{Context.ConnectionId} disconnected.");
+            logger.LogDebug($"UserId: {userId} connection:{Context.ConnectionId} disconnected.");
 
             this.RemoveUsersConnectionIdTracking(userId);
-
-            await base.OnDisconnectedAsync(exception).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -102,14 +98,14 @@ namespace OutOfSchool.WebApi.Hubs
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         public async Task SendMessageToOthersInGroupAsync(string chatNewMessage)
         {
-            logger.LogInformation($"{nameof(SendMessageToOthersInGroupAsync)}.Invoked.");
+            logger.LogDebug($"{nameof(SendMessageToOthersInGroupAsync)}.Invoked.");
 
             try
             {
                 // deserialize from string to Object
-                ChatMessageWorkshopCreateDto newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatMessageWorkshopCreateDto>(chatNewMessage);
+                var newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatMessageWorkshopCreateDto>(chatNewMessage);
 
-                // create new dto object that will be saved to the database
+                // create new dto object that will be saved to the database later
                 var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshopDto()
                 {
                     SenderRoleIsProvider = newReceivedAndDeserializedMessage.SenderRoleIsProvider,
@@ -119,13 +115,14 @@ namespace OutOfSchool.WebApi.Hubs
                     ChatRoomId = 0,
                 };
 
-                bool userRoleIsProvider = string.Equals(Context.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+                var userRoleIsProvider = string.Equals(Context.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
-                bool userHarRights = await this.UserHasRigtsForChatRoomAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId).ConfigureAwait(false);
+                var userHarRights = await this.UserHasRigtsForChatRoomAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId).ConfigureAwait(false);
 
                 bool roomIsNew = false;
 
-                if (userHarRights && (chatMessageDtoThatWillBeSaved.SenderRoleIsProvider == userRoleIsProvider))
+                if ((chatMessageDtoThatWillBeSaved.SenderRoleIsProvider == userRoleIsProvider)
+                    && userHarRights)
                 {
                     // set the unique ChatRoomId property according to WorkshopId and ParentId
                     var existingRoom = await roomService.GetUniqueChatRoomAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId)
@@ -216,36 +213,33 @@ namespace OutOfSchool.WebApi.Hubs
             }
         }
 
-        private async Task<bool> UserHasRigtsForChatRoomAsync(long workshopId, long parentId)
+        private Task<bool> UserHasRigtsForChatRoomAsync(long workshopId, long parentId)
         {
             try
             {
-                var userId = Context.User.FindFirst("sub")?.Value;
-                var userRole = Context.User.FindFirst("role")?.Value;
+                var userId = Context.User.FindFirst("sub")?.Value
+                    ?? throw new AuthenticationException("The claim type of user Id was not found.");
 
-                if (userId is null || userRole is null)
-                {
-                    throw new ArgumentException($"{nameof(userId)} or {nameof(userRole)}");
-                }
+                var userRole = Context.User.FindFirst("role")?.Value
+                    ?? throw new AuthenticationException("The claim type of user role was not found.");
 
-                bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+                var userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
                 if (userRoleIsProvider)
                 {
                     // the user is Provider
                     // and we check if user is owner of workshop
-                    return await validationService.UserIsWorkshopOwnerAsync(userId, workshopId).ConfigureAwait(false);
+                    return validationService.UserIsWorkshopOwnerAsync(userId, workshopId);
                 }
-                else
-                {
-                    // the user is Parent
-                    // and we check if user is owner of parent
-                    return await validationService.UserIsParentOwnerAsync(userId, parentId).ConfigureAwait(false);
-                }
+
+                // the user is Parent
+                // and we check if user is owner of parent
+                return validationService.UserIsParentOwnerAsync(userId, parentId);
             }
             catch
             {
-                return false;
+                // TODO: log exception
+                return Task.FromResult(false);
             }
         }
     }
