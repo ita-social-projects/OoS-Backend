@@ -26,6 +26,7 @@
     - [Linux](#Linux)
     - [Linux Alternative](#Linux-Alternative)
     - [MacOS](#MacOS)
+    - [MacOS Alternative](#MacOS-Alternative)
 <!-- - [Usage](#Usage)
   - [How to work with swagger UI](#How-to-work-with-swagger-UI)
   - [How to run tests](#How-to-run-tests)
@@ -542,6 +543,9 @@ vagrant destroy
 > Note: Sometimes the certificate trust is not remove completely. Launch `Keychain Access` app ans go to `System` -> `Certificates` (on screenshot). And delete any certificate named `oos.local`.
 
 ![Cert](/img/keychain.png)
+
+#### MacOS Alternative
+TODO:
 <!-- ---
 
 ## Usage
