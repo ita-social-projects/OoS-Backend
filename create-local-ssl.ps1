@@ -15,7 +15,6 @@ if (-Not (Test-Path -Path $Https)) {
     mkdir $Https
     $Env:Passphrase=-join ((0x30..0x39) + ( 0x41..0x5A) + ( 0x61..0x7A) | Get-Random -Count 128  | ForEach-Object {[char]$_})
     $subj="/C=UA/ST=Kyiv/L=Kyiv/O=SS/OU=ITA/CN=$Domain/emailAddress=admin@$Domain/"
-    # TODO: Check if SAN is set
     openssl req `
         -x509 `
         -newkey rsa:2048 `
