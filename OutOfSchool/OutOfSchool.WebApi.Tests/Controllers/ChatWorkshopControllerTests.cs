@@ -16,6 +16,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class ChatWorkshopControllerTests
     {
+        // TODO: refactor tests to make more specific asserts, wrap it into Assert.Multiple
+
+        // TODO: use HttpStatusCode enum instead
         private const int Ok = 200;
         private const int NoContent = 204;
         private const int Created = 201;
@@ -59,6 +62,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task CreateMessage_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
+            // TODO: add methods e.g.: CreateFakeChatMessageWorkshop()
             var testMessage = new ChatMessageWorkshopCreateDto()
             {
                 ParentId = 1,
