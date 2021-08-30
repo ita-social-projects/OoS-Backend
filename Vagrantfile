@@ -27,7 +27,7 @@ Vagrant.configure("2") do |config|
     # login: vagrant
     # password: vagrant
     vb.gui = false
-    vb.cpus = 2
+    vb.cpus = 4
     # TODO: Probably can lower to 3Gb
     vb.memory = 4096
     vb.name = "OutOfSchool"
