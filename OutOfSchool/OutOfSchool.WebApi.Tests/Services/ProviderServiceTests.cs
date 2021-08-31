@@ -36,13 +36,13 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger> logger;
 
-        private List<Provider> fakeProviders = ProvidersGenerator.Generate(10);
+        private List<Provider> fakeProviders;
         private User fakeUser;
 
         [SetUp]
         public void SetUp()
         {
-            //fakeProviders = CreateFakeProviders();
+            fakeProviders = ProvidersGenerator.Generate(10);
             fakeUser = CreateFakeUser();
 
             providersRepositoryMock = CreateProvidersRepositoryMock(fakeProviders);
