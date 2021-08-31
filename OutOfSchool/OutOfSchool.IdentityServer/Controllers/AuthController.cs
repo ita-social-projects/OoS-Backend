@@ -221,7 +221,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                     {
                         if (error.Code == "DuplicateUserName")
                         {
-                            error.Description = $"{localizer["Email"]} {error.Description.Substring(10).Split('\'')[0]} {localizer["is already taken"]}";
+                            error.Description = localizer["Email {0} is already taken", error.Description.Substring(10).Split('\'')[0]];
                         }
 
                         ModelState.AddModelError(string.Empty, error.Description);

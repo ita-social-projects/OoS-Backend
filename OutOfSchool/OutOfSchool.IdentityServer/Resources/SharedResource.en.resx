@@ -294,4 +294,7 @@
   <data name="Phone number is required" xml:space="preserve">
     <value>Phone number is required</value>
   </data>
+  <data name="Email {0} is already taken" xml:space="preserve">
+    <value>Email {0} is already taken</value>
+  </data>
 </root>
