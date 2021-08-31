@@ -1148,7 +1148,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Address", "ActualAddress")
                         .WithMany()
-                        .HasForeignKey("ActualAddressId");
+                        .HasForeignKey("ActualAddressId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("OutOfSchool.Services.Models.Address", "LegalAddress")
                         .WithMany()

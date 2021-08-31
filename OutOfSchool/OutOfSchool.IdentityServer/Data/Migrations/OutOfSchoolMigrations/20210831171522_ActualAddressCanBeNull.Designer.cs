@@ -10,7 +10,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210828133338_ActualAddressCanBeNull")]
+    [Migration("20210831171522_ActualAddressCanBeNull")]
     partial class ActualAddressCanBeNull
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1150,7 +1150,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Address", "ActualAddress")
                         .WithMany()
-                        .HasForeignKey("ActualAddressId");
+                        .HasForeignKey("ActualAddressId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("OutOfSchool.Services.Models.Address", "LegalAddress")
                         .WithMany()
