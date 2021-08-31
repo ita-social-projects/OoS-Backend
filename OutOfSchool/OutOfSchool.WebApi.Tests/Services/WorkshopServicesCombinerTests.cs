@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.GetByProviderId(id).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<IEnumerable<WorkshopDTO>>(result);
+            Assert.IsInstanceOf<IEnumerable<WorkshopCard>>(result);
 
             mockDatabaseService.Verify(x => x.GetByProviderId(id), Times.Once);
             mockElasticsearchService.Verify(x => x.Search(It.IsAny<WorkshopFilterES>()), Times.Never);

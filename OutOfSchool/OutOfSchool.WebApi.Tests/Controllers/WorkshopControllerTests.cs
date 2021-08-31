@@ -125,7 +125,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void GetByProviderId_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException(long id)
         {
             // Arrange
-            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshops.Where(x => x.ProviderId == id));
+            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshopCards.Where(x => x.ProviderId == id));
 
             // Assert
             Assert.That(
@@ -138,7 +138,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject(long id)
         {
             // Arrange
-            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshops.Where(x => x.ProviderId == id));
+            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshopCards.Where(x => x.ProviderId == id));
 
             // Act
             var result = await controller.GetByProviderId(id).ConfigureAwait(false) as OkObjectResult;
@@ -146,7 +146,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(Ok, result.StatusCode);
-            Assert.AreEqual(2, (result.Value as IEnumerable<WorkshopDTO>).Count());
+            Assert.AreEqual(2, (result.Value as IEnumerable<WorkshopCard>).Count());
         }
 
         [Test]
@@ -154,7 +154,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetWorkshops_WhenThereIsNoAnyWorkshop_ShouldReturnNoConterntResult(long id)
         {
             // Arrange
-            var emptyList = new List<WorkshopDTO>();
+            var emptyList = new List<WorkshopCard>();
             workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(emptyList);
 
             // Act

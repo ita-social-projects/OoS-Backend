@@ -119,20 +119,23 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id)
+        public async Task<IEnumerable<WorkshopCard>> GetByProviderId(long id)
         {
-            var workshop = await databaseService.GetByProviderId(id).ConfigureAwait(false);
+            var workshops = await databaseService.GetByProviderId(id).ConfigureAwait(false);
 
-            return workshop;
+            var workshopCards = DtoModelsToWorkshopCards(workshops);
+
+            return workshopCards;
         }
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {
             List<WorkshopCard> workshopCards = new List<WorkshopCard>();
-            foreach (var item in source)
+
+            Parallel.ForEach(source, currentElement =>
             {
-                workshopCards.Add(item.ToCardDto());
-            }
+                workshopCards.Add(currentElement.ToCardDto());
+            });
 
             return workshopCards;
         }
