@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OutOfSchool.Common.Config;
 
-namespace OutOfSchool.IdentityServer.Extensions.Startup
+namespace OutOfSchool.Common.Extensions.Startup
 {
     /// <summary>
     ///     Reverse Proxy Extensions.
@@ -27,9 +27,10 @@ namespace OutOfSchool.IdentityServer.Extensions.Startup
         /// <summary>
         ///     Use Proxy.
         /// </summary>
-        public static IApplicationBuilder UseProxy(this IApplicationBuilder app, IConfiguration configuration)
+        public static IApplicationBuilder UseProxy(this IApplicationBuilder app, ReverseProxyOptions options)
         {
-            string basePath = configuration["REVERSE_PROXY_BASEPATH"];
+            var basePath = options.BasePath;
+
             if (!string.IsNullOrEmpty(basePath))
             {
                 app.Use(async (context, next) =>

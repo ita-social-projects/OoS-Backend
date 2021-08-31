@@ -8,11 +8,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Extensions.Startup;
 using OutOfSchool.WebApi.Hubs;
@@ -52,7 +55,9 @@ namespace OutOfSchool.WebApi
                 SupportedUICultures = supportedCultures,
             };
 
-            app.UseProxy(Configuration);
+            var proxyOptions = new ReverseProxyOptions();
+            Configuration.GetSection(ReverseProxyOptions.Name).Bind(proxyOptions);
+            app.UseProxy(proxyOptions);
 
             app.UseRequestLocalization(requestLocalization);
 
@@ -60,7 +65,7 @@ namespace OutOfSchool.WebApi
 
             app.UseMiddleware<ExceptionMiddlewareExtension>();
 
-            app.UseSwaggerWithVersioning(provider, Configuration);
+            app.UseSwaggerWithVersioning(provider, proxyOptions);
 
             app.UseHttpsRedirection();
 
@@ -157,7 +162,11 @@ namespace OutOfSchool.WebApi
 
             services.AddSingleton(Log.Logger);
             services.AddVersioning();
-            services.AddSwagger(Configuration["SwaggerIdentityAccess:BaseUrl"]);
+            var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
+
+            // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
+            services.AddSingleton(swaggerConfig);
+            services.AddSwagger(swaggerConfig);
 
             services.AddProxy();
 

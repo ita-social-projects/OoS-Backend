@@ -16,8 +16,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.EmailSender;
-using OutOfSchool.IdentityServer.Extensions.Startup;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -113,7 +114,8 @@ namespace OutOfSchool.IdentityServer
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseProxy(config);
+            var proxyOptions = config.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
+            app.UseProxy(proxyOptions);
 
             var supportedCultures = new[]
             {

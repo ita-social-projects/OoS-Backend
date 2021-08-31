@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using OutOfSchool.Common.Config;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Extensions.Startup
@@ -29,8 +31,10 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         /// <summary>
         ///     Add Swagger Configuration dependencies.
         /// </summary>
-        public static IServiceCollection AddSwagger(this IServiceCollection services, string identityBaseUrl)
+        public static IServiceCollection AddSwagger(this IServiceCollection services, SwaggerConfig config)
         {
+            var identityBaseUrl = config.IdentityAccess.BaseUrl;
+
             services
                 .ConfigureOptions<CustomSwaggerOptions>()
                 .AddSwaggerGen(c =>
@@ -67,7 +71,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         public static IApplicationBuilder UseSwaggerWithVersioning(
             this IApplicationBuilder app,
             IApiVersionDescriptionProvider provider,
-            IConfiguration configuration)
+            ReverseProxyOptions options)
         {
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
@@ -78,11 +82,9 @@ namespace OutOfSchool.WebApi.Extensions.Startup
             {
                 foreach (ApiVersionDescription description in provider.ApiVersionDescriptions)
                 {
-                    string swaggerEndpoint;
+                    var basePath = options.BasePath;
 
-                    string basePath = configuration["REVERSE_PROXY_BASEPATH"];
-
-                    swaggerEndpoint = string.IsNullOrEmpty(basePath)
+                    var swaggerEndpoint = string.IsNullOrEmpty(basePath)
                         ? $"/swagger/{description.GroupName}/swagger.json"
                         : $"{basePath}/swagger/{description.GroupName}/swagger.json";
 

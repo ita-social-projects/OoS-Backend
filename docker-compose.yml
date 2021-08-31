@@ -41,7 +41,7 @@ services:
     image: ${OOS_AUTH_IMAGE}:${TAG}
     environment:
       PORT: "5443"
-      REVERSE_PROXY_BASEPATH: /identity
+      ReverseProxy__BasePath: /identity
     depends_on:
       - sql-server
     networks:
@@ -52,7 +52,7 @@ services:
     image: ${OOS_API_IMAGE}:${TAG}
     environment:
       PORT: "5000"
-      REVERSE_PROXY_BASEPATH: /webapi
+      ReverseProxy__BasePath: /webapi
       Logging__FilePath: /var/log/oos/api.log
     volumes:
       - api-logs:/var/log/oos:rw

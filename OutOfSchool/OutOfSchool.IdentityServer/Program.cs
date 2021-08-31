@@ -17,7 +17,7 @@ namespace OutOfSchool.IdentityServer
 {
     public class Program
     {
-        private static readonly int CHECK_CONNECTIVITY_DELAY = 5000;
+        private const int CheckConnectivityDelay = 5000;
 
         public static void Main(string[] args)
         {
@@ -30,7 +30,7 @@ namespace OutOfSchool.IdentityServer
                 while (!context.Database.CanConnect())
                 {
                     Console.WriteLine("Waiting for db connection");
-                    Task.Delay(CHECK_CONNECTIVITY_DELAY).Wait();
+                    Task.Delay(CheckConnectivityDelay).Wait();
                 }
 
                 scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()

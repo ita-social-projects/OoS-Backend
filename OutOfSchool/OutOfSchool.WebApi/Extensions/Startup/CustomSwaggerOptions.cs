@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using OutOfSchool.WebApi.Config;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace OutOfSchool.WebApi.Extensions.Startup
@@ -16,6 +17,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
     public class CustomSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
     {
         private readonly IApiVersionDescriptionProvider provider;
+        private readonly SwaggerConfig swaggerConfig;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CustomSwaggerOptions" /> class.
@@ -24,7 +26,11 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         ///     The <see cref="IApiVersionDescriptionProvider">provider</see> used to generate Swagger
         ///     documents.
         /// </param>
-        public CustomSwaggerOptions(IApiVersionDescriptionProvider provider) => this.provider = provider;
+        public CustomSwaggerOptions(IApiVersionDescriptionProvider provider, SwaggerConfig swaggerConfig)
+        {
+            this.provider = provider;
+            this.swaggerConfig = swaggerConfig;
+        }
 
         /// <inheritdoc />
         public void Configure(SwaggerGenOptions options)
@@ -32,7 +38,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
             // add a swagger document for each discovered API version
             foreach (ApiVersionDescription description in provider.ApiVersionDescriptions)
             {
-                options.SwaggerDoc(description.GroupName, ApiInfo(description));
+                options.SwaggerDoc(description.GroupName, ApiInfo(description, swaggerConfig.ApiInfo));
             }
         }
 
@@ -41,19 +47,19 @@ namespace OutOfSchool.WebApi.Extensions.Startup
             Configure(options);
         }
 
-        private static OpenApiInfo ApiInfo(ApiVersionDescription description)
+        private static OpenApiInfo ApiInfo(ApiVersionDescription description, ApiInfoConfig config)
         {
             OpenApiInfo info = new OpenApiInfo
             {
-                Title = "Out of School API",
+                Title = config.Title,
                 Version = description.ApiVersion.ToString(),
-                Description = "Out of School API",
-                Contact = new OpenApiContact {Name = "Admin", Email = "PozashkilliaUA@gmail.com"},
+                Description = config.Description,
+                Contact = new OpenApiContact {Name = config.Contact.FullName, Email = config.Contact.Email},
             };
 
             if (description.IsDeprecated)
             {
-                info.Description += " This API version has been deprecated.";
+                info.Description += config.DeprecationMessage;
             }
 
             return info;
