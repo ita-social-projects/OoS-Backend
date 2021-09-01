@@ -13,9 +13,6 @@ using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Extensions.Startup
 {
-    /// <summary>
-    ///     Swagger Extensions.
-    /// </summary>
     public static class SwaggerExtensions
     {
         private static string XmlCommentsFilePath
@@ -27,9 +24,6 @@ namespace OutOfSchool.WebApi.Extensions.Startup
             }
         }
 
-        /// <summary>
-        ///     Add Swagger Configuration dependencies.
-        /// </summary>
         public static IServiceCollection AddSwagger(this IServiceCollection services, SwaggerConfig config)
         {
             var identityBaseUrl = config.IdentityAccess.BaseUrl;
@@ -64,9 +58,6 @@ namespace OutOfSchool.WebApi.Extensions.Startup
             return services;
         }
 
-        /// <summary>
-        ///     Add Swagger dependencies.
-        /// </summary>
         public static IApplicationBuilder UseSwaggerWithVersioning(
             this IApplicationBuilder app,
             IApiVersionDescriptionProvider provider,

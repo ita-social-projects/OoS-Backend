@@ -26,6 +26,10 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         ///     The <see cref="IApiVersionDescriptionProvider">provider</see> used to generate Swagger
         ///     documents.
         /// </param>
+        /// <param name="swaggerConfig">
+        ///     App settings from <see cref="swaggerConfig"/> used to populate <see cref="OpenApiInfo"/>
+        ///     documentation.
+        /// </param>
         public CustomSwaggerOptions(IApiVersionDescriptionProvider provider, SwaggerConfig swaggerConfig)
         {
             this.provider = provider;
@@ -59,7 +63,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
 
             if (description.IsDeprecated)
             {
-                info.Description += config.DeprecationMessage;
+                info.Description += $" {config.DeprecationMessage}";
             }
 
             return info;

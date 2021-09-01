@@ -3,14 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace OutOfSchool.WebApi.Extensions.Startup
 {
-    /// <summary>
-    ///     Versioning Extensions.
-    /// </summary>
     public static class ApiVersioningExtensions
     {
-        /// <summary>
-        ///     Method that adds versioning to the api.
-        /// </summary>
         public static IServiceCollection AddVersioning(this IServiceCollection services)
         {
             services.AddApiVersioning(
@@ -20,6 +14,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                     options.ReportApiVersions = true;
                     options.ApiVersionReader = new UrlSegmentApiVersionReader();
                 });
+
             services.AddVersionedApiExplorer(
                 options =>
                 {
