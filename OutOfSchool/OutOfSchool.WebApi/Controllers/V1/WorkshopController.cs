@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -24,6 +26,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private readonly IWorkshopServicesCombiner combinedWorkshopService;
         private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly AppDefaultsConfig options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
@@ -31,11 +34,17 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
-        public WorkshopController(IWorkshopServicesCombiner combinedWorkshopService, IProviderService providerService, IStringLocalizer<SharedResource> localizer)
+        /// <param name="options">Application default values.</param>
+        public WorkshopController(
+            IWorkshopServicesCombiner combinedWorkshopService,
+            IProviderService providerService,
+            IStringLocalizer<SharedResource> localizer,
+            IOptions<AppDefaultsConfig> options)
         {
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
+            this.options = options.Value;
         }
 
         /// <summary>
@@ -109,7 +118,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             if (string.IsNullOrWhiteSpace(filter.City))
             {
-                filter.City = "Київ";
+                filter.City = options.City;
             }
 
             var result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);

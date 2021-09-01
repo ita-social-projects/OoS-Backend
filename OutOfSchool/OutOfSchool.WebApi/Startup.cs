@@ -89,6 +89,7 @@ namespace OutOfSchool.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<AppDefaultsConfig>(Configuration.GetSection(AppDefaultsConfig.Name));
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
