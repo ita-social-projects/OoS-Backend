@@ -1,10 +1,14 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -18,16 +22,22 @@ namespace OutOfSchool.WebApi.Controllers
     {
         private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly ILogger<ProviderController> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderController"/> class.
         /// </summary>
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
-        public ProviderController(IProviderService providerService, IStringLocalizer<SharedResource> localizer)
+        /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
+        public ProviderController(
+            IProviderService providerService,
+            IStringLocalizer<SharedResource> localizer,
+            ILogger<ProviderController> logger)
         {
-            this.localizer = localizer;
-            this.providerService = providerService;
+            this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+            this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -54,17 +64,33 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Get Provider by it's Id.
         /// </summary>
-        /// <param name="id">Provider's id.</param>
+        /// <param name="providerId">Provider's id.</param>
         /// <returns>Provider.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetById(long providerId)
         {
-            this.ValidateId(id, localizer);
+            try
+            {
+                this.ValidateId(providerId, localizer);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                logger.LogError(ex, $"Validation failed for provider ID: {providerId}");
 
-            return Ok(await providerService.GetById(id).ConfigureAwait(false));
+                return BadRequest("Provider data is missing or invalid.");
+            }
+
+            var provider = await providerService.GetById(providerId).ConfigureAwait(false);
+
+            if (provider == null)
+            {
+                return NoContent();
+            }
+
+            return Ok(provider);
         }
 
         /// <summary>
@@ -77,57 +103,78 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProfile()
         {
-            string userId = User.FindFirst("sub")?.Value;
+            // TODO: localize messages from the conrollers.
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            if (userId == null)
+            {
+                BadRequest("Invalid user information.");
+            }
 
-            var providers = await providerService.GetAll().ConfigureAwait(false);
+            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+            if (provider == null)
+            {
+                return NoContent();
+            }
 
-            var providerDTO = providers.FirstOrDefault(x => x.UserId == userId);
-
-            return Ok(providerDTO);
+            return Ok(provider);
         }
 
         /// <summary>
         /// Method for creating new Provider.
         /// </summary>
-        /// <param name="dto">Entity to add.</param>
+        /// <param name="providerModel">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(ProviderDto dto)
+        public async Task<IActionResult> Create(ProviderDto providerModel)
         {
+            if (providerModel == null)
+            {
+                throw new ArgumentNullException(nameof(providerModel));
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            providerModel.Id = default;
+            providerModel.LegalAddress.Id = default;
+
+            if (providerModel.ActualAddress != null)
+            {
+                providerModel.ActualAddress.Id = default;
+            }
+
+            // TODO: find out if we need this field in the model
+            providerModel.UserId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+
             try
             {
-                dto.Id = default;
-                dto.LegalAddress.Id = default;
-
-                dto.UserId = User.FindFirst("sub")?.Value;
-
-                var provider = await providerService.Create(dto).ConfigureAwait(false);
+                var createdProvider = await providerService.Create(providerModel).ConfigureAwait(false);
 
                 return CreatedAtAction(
                     nameof(GetById),
-                    new { id = provider.Id, },
-                    provider);
+                    new { id = createdProvider.Id, },
+                    createdProvider);
             }
-            catch (ArgumentException ex)
+            catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                var errorMessage = $"Unable to create a new provider: {ex.Message}";
+                logger.LogError(ex, errorMessage);
+
+                // TODO: think about filtering of exception message.
+                return BadRequest(errorMessage);
             }
         }
 
         /// <summary>
         /// Update info about the Provider.
         /// </summary>
-        /// <param name="dto">Entity to update.</param>
+        /// <param name="providerModel">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
         [Authorize(Roles = "provider,admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -135,18 +182,18 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(ProviderDto dto)
+        public async Task<IActionResult> Update(ProviderDto providerModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            string userId = User.FindFirst("sub")?.Value;
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
-            string userRole = User.FindFirst("role")?.Value;
+            var userRole = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
 
-            var provider = await providerService.Update(dto, userId, userRole).ConfigureAwait(false);
+            var provider = await providerService.Update(providerModel, userId, userRole).ConfigureAwait(false);
 
             if (provider == null)
             {

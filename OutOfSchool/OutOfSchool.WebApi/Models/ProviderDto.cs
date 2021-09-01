@@ -6,6 +6,7 @@ namespace OutOfSchool.WebApi.Models
 {
     public class ProviderDto
     {
+        // TODO: change type to GUID.
         public long Id { get; set; }
 
         [Required(ErrorMessage = "Full Title is required")]
@@ -42,6 +43,7 @@ namespace OutOfSchool.WebApi.Models
         [Required(ErrorMessage = "Description is required")]
         public string Description { get; set; }
 
+        // TODO: validate regex with unit tests
         [Required(ErrorMessage = "EDRPOU/INP code is required")]
         [RegularExpression(
             @"^(\d{8}|\d{10})$",
@@ -67,24 +69,22 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(30)]
         public string Founder { get; set; } = string.Empty;
 
+        // TODO: validation of the enum fields ?
         [Required]
         public OwnershipType Ownership { get; set; }
 
+        // TODO: validation of the enum fields ?
         [Required]
         public ProviderType Type { get; set; }
 
         public bool Status { get; set; } = default;
 
-        [Required]
-        public long LegalAddressId { get; set; }
-
-        [Required]
-        public long ActualAddressId { get; set; }
-
         public float Rating { get; set; }
 
         public int NumberOfRatings { get; set; }
 
+        // TODO: Does not used by front-end, can be removed.
+        //       Unit test should be updated
         [Required]
         public string UserId { get; set; }
 

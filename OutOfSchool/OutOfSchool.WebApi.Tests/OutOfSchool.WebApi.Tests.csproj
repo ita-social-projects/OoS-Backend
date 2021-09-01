@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.WebApi\OutOfSchool.WebApi.csproj" />
+    <ProjectReference Include="..\Tests\OutOfSchool.Tests.Common\OutOfSchool.Tests.Common.csproj" />
   </ItemGroup>
 
 </Project>

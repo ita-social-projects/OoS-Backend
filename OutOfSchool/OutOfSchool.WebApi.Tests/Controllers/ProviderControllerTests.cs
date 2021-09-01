@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+
 using Moq;
 using NUnit.Framework;
+
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Controllers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -22,13 +27,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private const int CreateStatusCode = 201;
         private const int NoContentStatusCode = 204;
         private const int BadRequestStatusCode = 400;
-
+        private const string FakeUserId = "de909f35-5eb7-4b7a-bda8-40a5bfda67a6";
         private ProviderController controller;
         private Mock<IProviderService> serviceProvider;
         private ClaimsPrincipal user;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
-        private IEnumerable<ProviderDto> providers;
+        private List<ProviderDto> providers;
         private ProviderDto provider;
 
         [SetUp]
@@ -37,11 +42,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             serviceProvider = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new ProviderController(serviceProvider.Object, localizer.Object);
+            controller = new ProviderController(serviceProvider.Object, localizer.Object, new Mock<ILogger<ProviderController>>().Object);
             user = new ClaimsPrincipal(new ClaimsIdentity(
                 new Claim[]
                 {
-                    new Claim("sub", "de909f35-5eb7-4b7a-bda8-40a5bfda67a6"),
+                    new Claim("sub", FakeUserId),
                     new Claim("role", "provider"),
                 }, "sub"));
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
@@ -51,17 +56,29 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetProfile_WhenCalled_ReturnsOkResultObject()
+        public async Task GetProfile_WhenCalledForEmptyRepository_ReturnsNoContent()
+        {
+            // Arrange
+            serviceProvider.Setup(x => x.GetAll()).ReturnsAsync(Enumerable.Empty<ProviderDto>());
+
+            // Act
+            var result = await controller.GetProfile().ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
+        }
+
+        [Test]
+        public async Task GetProfile_NoRepositoryForUser_ReturnsNoContent()
         {
             // Arrange
             serviceProvider.Setup(x => x.GetAll()).ReturnsAsync(providers);
 
             // Act
-            var result = await controller.GetProfile().ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetProfile().ConfigureAwait(false);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
         }
 
         [Test]
@@ -94,30 +111,30 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(0)]
-        public void GetProvidersById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
+        public async Task GetProvidersById_WhenIdIsInvalid_ReturnsBadRequest()
         {
             // Arrange
-            serviceProvider.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
+            const int invalidUserId = 0;
 
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await controller.GetById(id).ConfigureAwait(false));
+            // Act
+            var result = await controller.GetById(invalidUserId).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
-        [TestCase(10)]
-        public async Task GetProvidersById_WhenIdIsInvalid_ReturnsNull(long id)
+        public async Task GetProvidersById_WhenIdIsValid_ReturnsOkResult()
         {
             // Arrange
-            serviceProvider.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
+            var existingProvider = providers.RandomItem();
+            serviceProvider.Setup(x => x.GetById(existingProvider.Id)).ReturnsAsync(existingProvider);
 
             // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetById(existingProvider.Id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.NotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
         }
 
         [Test]
@@ -156,7 +173,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             {
                 Id = 1,
                 FullTitle = "ChangedTitle",
-                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda67a6",
+                UserId = FakeUserId,
             };
             serviceProvider.Setup(x => x.Update(changedProvider, changedProvider.UserId, "provider")).ReturnsAsync(changedProvider);
 
@@ -261,9 +278,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Ownership = OwnershipType.Private,
                 Type = ProviderType.TOV,
                 Status = false,
-                LegalAddressId = 11,
-                ActualAddressId = 12,
-                UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda67a6",
+                UserId = FakeUserId,
                 LegalAddress = new AddressDto
                 {
                     Id = 11,
@@ -289,7 +304,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<ProviderDto> FakeProviders()
+        private List<ProviderDto> FakeProviders()
         {
             return new List<ProviderDto>()
             {
@@ -310,8 +325,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 1,
-                        ActualAddressId = 2,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
                         LegalAddress = new AddressDto
                         {
@@ -353,8 +366,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 3,
-                        ActualAddressId = 4,
                         UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
                         LegalAddress = new AddressDto
                         {
@@ -396,8 +407,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 5,
-                        ActualAddressId = 6,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
                         LegalAddress = new AddressDto
                         {
@@ -439,8 +448,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 7,
-                        ActualAddressId = 8,
                         UserId = "de909f35-5eb7-4BBa-bda8-40a5bfda96a6",
                         LegalAddress = new AddressDto
                         {
@@ -482,8 +489,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Ownership = OwnershipType.Private,
                         Type = ProviderType.TOV,
                         Status = false,
-                        LegalAddressId = 9,
-                        ActualAddressId = 10,
                         UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
                         LegalAddress = new AddressDto
                         {

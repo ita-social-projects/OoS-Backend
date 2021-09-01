@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
@@ -30,41 +31,22 @@ namespace OutOfSchool.Services.Repository
         public bool ExistsUserId(string id) => db.Providers.Any(x => x.UserId == id);
 
         /// <summary>
-        /// Add new element.
+        /// Tries to insert a new <see cref="Provider"/> entity with all related objects into the database.
+        /// Runs insert operation inside a transaction.
         /// </summary>
-        /// <param name="entity">Entity to create.</param>
+        /// <param name="providerEntity"><see cref="Provider"/> entity to insert into database.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        public new async Task<Provider> Create(Provider entity)
+        public new async Task<Provider> Create(Provider providerEntity)
         {
-            var legalAddress = await db.Addresses.AddAsync(entity.LegalAddress).ConfigureAwait(false);
-            await db.SaveChangesAsync();
+            return await RunInTransaction(
+                () =>
+                {
+                    var provider = db.Providers.Add(providerEntity);
+                    db.SaveChanges();
 
-            entity.LegalAddressId = legalAddress.Entity.Id;
-
-            if (entity.ActualAddress == null || entity.ActualAddress.Equals(entity.LegalAddress))
-            {
-                entity.ActualAddressId = legalAddress.Entity.Id;
-            }
-            else
-            {
-                entity.ActualAddress.Id = default;
-                var actualAddress = await db.Addresses.AddAsync(entity.ActualAddress).ConfigureAwait(false);
-                await db.SaveChangesAsync();
-                entity.ActualAddressId = actualAddress.Entity.Id;
-            }
-
-            entity.ActualAddress = default;
-            entity.LegalAddress = default;
-
-            await db.Providers.AddAsync(entity);
-            await db.SaveChangesAsync();
-
-            var user = await db.Users.FirstOrDefaultAsync(x => x.Id == entity.UserId).ConfigureAwait(false);
-            user.IsRegistered = true;
-            db.Entry(user).State = EntityState.Modified;
-            await db.SaveChangesAsync();
-
-            return await Task.FromResult(entity);
+                    return Task.FromResult(provider.Entity);
+                })
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -76,14 +58,13 @@ namespace OutOfSchool.Services.Repository
         {
             db.Entry(entity).State = EntityState.Deleted;
 
-            if (entity.LegalAddressId == entity.ActualAddressId)
+            // TODO: Q: why we are using new entity instead of Provider.LegalAddress here and belowe ?
+            db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
+
+            if (entity.ActualAddressId.HasValue
+                && entity.ActualAddressId.Value != entity.LegalAddressId)
             {
-                db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
-            }
-            else
-            {
-                db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
-                db.Entry(new Address { Id = entity.ActualAddressId }).State = EntityState.Deleted;
+                db.Entry(new Address { Id = entity.ActualAddressId.Value }).State = EntityState.Deleted;
             }
 
             await db.SaveChangesAsync();

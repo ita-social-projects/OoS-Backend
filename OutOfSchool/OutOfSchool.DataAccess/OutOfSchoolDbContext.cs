@@ -85,6 +85,29 @@ namespace OutOfSchool.Services
                 .HasForeignKey(r => r.WorkshopId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<Provider>()
+                .HasKey(x => x.Id);
+
+            builder.Entity<Provider>()
+                .HasOne(x => x.User);
+
+            builder.Entity<Provider>()
+                .HasMany(x => x.Workshops)
+                .WithOne(w => w.Provider);
+
+            builder.Entity<Provider>()
+                .HasOne(x => x.LegalAddress)
+                .WithMany()
+                .HasForeignKey(x => x.LegalAddressId)
+                .IsRequired();
+
+            builder.Entity<Provider>()
+                .HasOne(x => x.ActualAddress)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasForeignKey(x => x.ActualAddressId)
+                .IsRequired(false);
+
             builder.Seed();
             builder.UpdateIdentityTables();
         }
