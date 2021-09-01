@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Bogus;
 
@@ -11,7 +10,6 @@ namespace OutOfSchool.Tests.Common
     /// </summary>
     public static class TestDataHelper
     {
-        private static Random random = new Random((int)DateTime.Now.Ticks);
         private static Faker faker = new Faker();
 
         /// <summary>
