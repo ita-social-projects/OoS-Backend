@@ -55,8 +55,7 @@ namespace OutOfSchool.WebApi
                 SupportedUICultures = supportedCultures,
             };
 
-            var proxyOptions = new ReverseProxyOptions();
-            Configuration.GetSection(ReverseProxyOptions.Name).Bind(proxyOptions);
+            var proxyOptions = Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
             app.UseProxy(proxyOptions);
 
             app.UseRequestLocalization(requestLocalization);

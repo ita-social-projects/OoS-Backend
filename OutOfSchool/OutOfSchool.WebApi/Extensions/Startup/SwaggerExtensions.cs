@@ -4,7 +4,6 @@ using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using OutOfSchool.Common.Config;
@@ -36,9 +35,9 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                     c.IncludeXmlComments(XmlCommentsFilePath);
 
                     c.OperationFilter<AuthorizeCheckOperationFilter>();
-                    c.AddSecurityDefinition("Identity server", new OpenApiSecurityScheme
+                    c.AddSecurityDefinition(config.SecurityDefinitions.Title, new OpenApiSecurityScheme
                     {
-                        Description = "Identity server",
+                        Description = config.SecurityDefinitions.Description,
                         Type = SecuritySchemeType.OAuth2,
                         Flows = new OpenApiOAuthFlows
                         {
@@ -48,7 +47,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                                 TokenUrl = new Uri($"{identityBaseUrl}/connect/token", UriKind.Absolute),
                                 Scopes = new Dictionary<string, string>
                                 {
-                                    {"openid outofschoolapi.read offline_access", "Scopes"},
+                                    {string.Join(" ", config.SecurityDefinitions.AccessScopes), "Scopes"},
                                 },
                             },
                         },

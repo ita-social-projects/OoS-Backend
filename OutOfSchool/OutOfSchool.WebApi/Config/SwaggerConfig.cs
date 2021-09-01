@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace OutOfSchool.WebApi.Config
 {
     public class SwaggerConfig
@@ -7,6 +9,8 @@ namespace OutOfSchool.WebApi.Config
         public IdentityAccessConfig IdentityAccess { get; set; }
 
         public ApiInfoConfig ApiInfo { get; set; }
+
+        public SecurityDefinitionsConfig SecurityDefinitions { get; set; }
     }
 
     public class IdentityAccessConfig
@@ -36,5 +40,16 @@ namespace OutOfSchool.WebApi.Config
         public string FullName { get; set; }
 
         public string Email { get; set; }
+    }
+
+    public class SecurityDefinitionsConfig
+    {
+        public const string Name = "SecurityDefinitions";
+
+        public string Title { get; set; }
+
+        public string Description { get; set; }
+
+        public List<string> AccessScopes { get; set; }
     }
 }
