@@ -27,7 +27,6 @@ namespace OutOfSchool.WebApi.Extensions.Startup
             }
         }
 
-
         /// <summary>
         ///     Add Swagger Configuration dependencies.
         /// </summary>
