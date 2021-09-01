@@ -342,21 +342,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             });
         }
 
-        private static bool AdressesAreEqual(Address expected, Address actual)
-        {
-            try
-            {
-                AssertAdressesAreEqual(expected, actual);
-                return true;
-            }
-            catch
-            {
-
-            }
-            return false;
-        }
-
-
         private static void AssertAdressesAreEqual(Address expected, Address actual)
         {
             Assert.Multiple(() =>
