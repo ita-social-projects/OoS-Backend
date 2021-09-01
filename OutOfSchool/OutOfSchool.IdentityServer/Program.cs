@@ -60,7 +60,6 @@ namespace OutOfSchool.IdentityServer
 
                 context.SaveChanges();
 
-
                 foreach (var resource in StaticConfig.IdentityResources)
                 {
                     context.IdentityResources.AddIfNotExists(resource.ToEntity(), ir => resource.Name == ir.Name);
