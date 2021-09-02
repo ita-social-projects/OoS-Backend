@@ -22,8 +22,8 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task{WorkshopCard}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="IEnumerable{WorkshopCard}"/> that contains elements from the input sequence.</returns>
-        Task<IEnumerable<WorkshopCard>> GetByProviderId(long id);
+        /// The task result contains a <see cref="List{WorkshopCard}"/> that contains elements from the input sequence.</returns>
+        Task<List<WorkshopCard>> GetByProviderId(long id);
 
         /// <summary>
         /// Get all entities that matches filter's parameters.

@@ -125,7 +125,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void GetByProviderId_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException(long id)
         {
             // Arrange
-            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshopCards.Where(x => x.ProviderId == id));
+            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshopCards.Where(x => x.ProviderId == id).ToList());
 
             // Assert
             Assert.That(
@@ -134,35 +134,64 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
+        [TestCase(-1)]
+        public void GetByProviderId_WhenIdIsLessThanZero_ShouldThrowArgumentOutOfRangeException(long id)
+        {
+            // Arrange
+            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshopCards.Where(x => x.ProviderId == id).ToList());
+
+            // Assert
+            Assert.That(
+                async () => await controller.GetByProviderId(id),
+                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        [TestCase(long.MaxValue)]
+        public async Task GetByProviderId_WhenIdMaxValue_ShouldReturnNoConterntResult(long id)
+        {
+            // Arrange
+            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshopCards.Where(x => x.ProviderId == id).ToList());
+
+            // Act
+            var result = await controller.GetByProviderId(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
+        }
+
+        [Test]
         [TestCase(1)]
         public async Task GetByProviderId_WhenThereAreWorkshops_ShouldReturnOkResultObject(long id)
         {
             // Arrange
-            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshopCards.Where(x => x.ProviderId == id));
+            workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(workshopCards.Where(x => x.ProviderId == id).ToList());
 
             // Act
-            var result = await controller.GetByProviderId(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByProviderId(id).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(Ok, result.StatusCode);
-            Assert.AreEqual(2, (result.Value as IEnumerable<WorkshopCard>).Count());
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            Assert.AreEqual(Ok, (result as OkObjectResult).StatusCode);
+            Assert.AreEqual(2, ((result as OkObjectResult).Value as List<WorkshopCard>).Count());
         }
 
         [Test]
-        [TestCase(3)]
-        public async Task GetWorkshops_WhenThereIsNoAnyWorkshop_ShouldReturnNoConterntResult(long id)
+        public async Task GetWorkshops_WhenThereIsNoWorkshop_ShouldReturnNoConterntResult([Random(uint.MinValue, uint.MaxValue, 1)] long randomNumber)
         {
             // Arrange
             var emptyList = new List<WorkshopCard>();
+            var id = workshops.Select(w => w.Id).Max() + randomNumber + 1;
             workshopServiceMoq.Setup(x => x.GetByProviderId(id)).ReturnsAsync(emptyList);
 
             // Act
-            var result = await controller.GetByProviderId(id).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetByProviderId(id).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(NoContent, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
         }
         #endregion
 
