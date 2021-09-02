@@ -71,16 +71,6 @@ namespace OutOfSchool.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            // create new dto object that will be saved to the database
-            var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshopDto()
-            {
-                SenderRoleIsProvider = chatMessageWorkshopCreateDto.SenderRoleIsProvider,
-                Text = chatMessageWorkshopCreateDto.Text,
-                CreatedDateTime = DateTimeOffset.UtcNow,
-                ReadDateTime = null,
-                ChatRoomId = 0,
-            };
-
             var userRole = HttpContext.User.FindFirst("role")?.Value;
 
             if (userRole is null)
@@ -90,10 +80,19 @@ namespace OutOfSchool.WebApi.Controllers
 
             var userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
+            // create new dto object that will be saved to the database
+            var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshopDto()
+            {
+                SenderRoleIsProvider = userRoleIsProvider,
+                Text = chatMessageWorkshopCreateDto.Text,
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                ReadDateTime = null,
+                ChatRoomId = 0,
+            };
+
             var userHasRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
 
-            if ((chatMessageDtoThatWillBeSaved.SenderRoleIsProvider == userRoleIsProvider)
-                && userHasRights)
+            if (userHasRights)
             {
                 // set the unique ChatRoomId property according to WorkshopId and ParentId
                 // TODO: delete check for unique chat room as we don't need it here

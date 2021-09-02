@@ -105,24 +105,23 @@ namespace OutOfSchool.WebApi.Hubs
                 // deserialize from string to Object
                 var newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatMessageWorkshopCreateDto>(chatNewMessage);
 
+                var userRoleIsProvider = string.Equals(Context.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+
                 // create new dto object that will be saved to the database later
                 var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshopDto()
                 {
-                    SenderRoleIsProvider = newReceivedAndDeserializedMessage.SenderRoleIsProvider,
+                    SenderRoleIsProvider = userRoleIsProvider,
                     Text = newReceivedAndDeserializedMessage.Text,
                     CreatedDateTime = DateTimeOffset.UtcNow,
                     ReadDateTime = null,
                     ChatRoomId = 0,
                 };
 
-                var userRoleIsProvider = string.Equals(Context.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
-
                 var userHarRights = await this.UserHasRigtsForChatRoomAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId).ConfigureAwait(false);
 
                 bool roomIsNew = false;
 
-                if ((chatMessageDtoThatWillBeSaved.SenderRoleIsProvider == userRoleIsProvider)
-                    && userHarRights)
+                if (userHarRights)
                 {
                     // set the unique ChatRoomId property according to WorkshopId and ParentId
                     var existingRoom = await roomService.GetUniqueChatRoomAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId)

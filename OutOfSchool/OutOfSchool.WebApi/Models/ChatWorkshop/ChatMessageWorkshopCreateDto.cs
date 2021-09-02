@@ -6,20 +6,19 @@ namespace OutOfSchool.WebApi.Models.ChatWorkshop
     public class ChatMessageWorkshopCreateDto
     {
         [Required]
-        [JsonProperty("WorkshopId")]
+        [Range(1, long.MaxValue)]
+        [JsonProperty("WorkshopId", Required = Required.Always)]
         public long WorkshopId { get; set; }
 
         [Required]
-        [JsonProperty("ParentId")]
+        [Range(1, long.MaxValue)]
+        [JsonProperty("ParentId", Required = Required.Always)]
         public long ParentId { get; set; }
 
+        // TODO: max length to const in Common
         [Required]
         [MaxLength(200)]
-        [JsonProperty("Text")]
+        [JsonProperty("Text", Required = Required.Always)]
         public string Text { get; set; }
-
-        [Required]
-        [JsonProperty("SenderRoleIsProvider")]
-        public bool SenderRoleIsProvider { get; set; }
     }
 }
