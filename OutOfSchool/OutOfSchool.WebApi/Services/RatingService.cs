@@ -63,7 +63,9 @@ namespace OutOfSchool.WebApi.Services
 
             var ratingsDto = ratings.Select(r => r.ToModel());
 
-            return GetUsersAsync(ratingsDto);
+            ratingsDto = await AddUserInformation(ratingsDto).ConfigureAwait(false);
+
+            return ratingsDto;
         }
 
         /// <inheritdoc/>
@@ -99,7 +101,9 @@ namespace OutOfSchool.WebApi.Services
 
             var ratingsDto = ratings.Select(r => r.ToModel());
 
-            return GetUsersAsync(ratingsDto);
+            ratingsDto = await AddUserInformation(ratingsDto).ConfigureAwait(false);
+
+            return ratingsDto;
         }
 
         /// <inheritdoc/>
@@ -124,7 +128,9 @@ namespace OutOfSchool.WebApi.Services
 
             var ratingsDto = worshopsRating.Select(r => r.ToModel());
 
-            return GetUsersAsync(ratingsDto);
+            ratingsDto = await AddUserInformation(ratingsDto).ConfigureAwait(false);
+
+            return ratingsDto;
         }
 
         /// <inheritdoc/>
@@ -348,17 +354,17 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private IEnumerable<RatingDto> GetUsersAsync(IEnumerable<RatingDto> ratingDtos)
+        private async Task<IEnumerable<RatingDto>> AddUserInformation(IEnumerable<RatingDto> ratingDtos)
         {
             var ratingDtosList = ratingDtos.ToList();
 
-            var newUsers = parentRepository.GetUsersByParents(ratingDtosList.Select(r => r.ParentId).Distinct());
+            var parents = await parentRepository.GetParentsByIds(ratingDtos.Select(rating => rating.ParentId).Distinct()).ConfigureAwait(false);
 
             for (int i = 0; i < ratingDtosList.Count; i++)
             {
-                var userInfo = newUsers.FirstOrDefault(p => p.parentId == ratingDtosList[i].ParentId);
-                ratingDtosList[i].FirstName = userInfo.firstName;
-                ratingDtosList[i].LastName = userInfo.lastName;
+                var parent = parents.FirstOrDefault(p => p.Id == ratingDtosList[i].ParentId);
+                ratingDtosList[i].FirstName = parent.User.FirstName;
+                ratingDtosList[i].LastName = parent.User.LastName;
             }
 
             return ratingDtosList;

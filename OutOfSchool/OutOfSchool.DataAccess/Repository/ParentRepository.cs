@@ -36,16 +36,13 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public IEnumerable<(long parentId, string firstName, string lastName)> GetUsersByParents(IEnumerable<long> parentIds)
+        public async Task<IReadOnlyList<Parent>> GetParentsByIds(IEnumerable<long> parentIds)
         {
-            return db.Parents
-                     .Where(parent => parentIds.Contains(parent.Id))
-                     .AsEnumerable()
-                     .Join(
-                         db.Users,
-                         parent => parent.UserId,
-                         user => user.Id,
-                         (parent, user) => (parent.Id, user.FirstName, user.LastName));
+            var parents = await db.Parents
+                .Where(parent => parentIds.Contains(parent.Id))
+                .ToListAsync();
+
+            return parents;
         }
     }
 }
