@@ -117,7 +117,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Information("Getting popular workshops started.");
 
-            var workshops = workshopRepository.Get<int>(includeProperties: "Address,Direction");
+            var workshops = workshopRepository.Get<int>(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
 
             var workshopsWithApplications = workshops.Select(w => new
             {

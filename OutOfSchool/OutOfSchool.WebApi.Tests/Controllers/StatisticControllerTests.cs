@@ -16,8 +16,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private StatisticController controller;
         private Mock<IStatisticService> service;
 
-        private IEnumerable<DirectionStatistic> categories;
-        private IEnumerable<WorkshopCard> workshops;
+        private List<DirectionStatistic> categories;
+        private List<WorkshopCard> workshops;
 
         [SetUp]
         public void SetUp()
@@ -93,7 +93,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             result.StatusCode.Should().Be(204);
         }
 
-        private IEnumerable<DirectionStatistic> FakeDirectionStatistics()
+        private List<DirectionStatistic> FakeDirectionStatistics()
         {
             return new List<DirectionStatistic>()
             {
@@ -113,7 +113,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<WorkshopCard> FakeWorkshopCards()
+        private List<WorkshopCard> FakeWorkshopCards()
         {
             return new List<WorkshopCard>()
             {

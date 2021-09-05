@@ -30,6 +30,9 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IEnumerable<Application> applications;
         private IEnumerable<Direction> directions;
 
+        private List<WorkshopCard> workshopCards;
+        private List<DirectionStatistic> directionStatistics;
+
         [SetUp]
         public void SetUp()
         {
@@ -48,93 +51,34 @@ namespace OutOfSchool.WebApi.Tests.Services
             workshops = FakeWorkshops();
             applications = FakeApplications();
             directions = FakeDirections();
+
+            workshopCards = ExpectedWorkshopCards();
+            directionStatistics = ExpectedDirectionStatistics();
+
+            SetupMocks();
         }
 
         [Test]
         public async Task GetPopularWorkshops_ShouldReturnWorkshops()
         {
-            // Arrange
-            var expected = new List<WorkshopCard>
-            {
-                new WorkshopCard()
-                {
-                    WorkshopId = 3,
-                    Title = "w3",
-                },
-                new WorkshopCard()
-                {
-                    WorkshopId = 2,
-                    Title = "w2",
-                },
-            };
-
-            var workshopsMock = workshops.AsQueryable().BuildMock();
-
-            workshopRepository.Setup(w => w.Get<It.IsAnyType>(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
-                It.IsAny<bool>()))
-                .Returns(workshopsMock.Object);
-
             // Act
             var result = await service.GetPopularWorkshops(2).ConfigureAwait(false);
 
             // Assert
             result.Should().HaveCount(2);
-            result.Should().BeEquivalentTo(expected);
+            result.Should().BeEquivalentTo(workshopCards, options => options.WithStrictOrdering());
         }
 
         [Test]
         [Ignore("Test must be fixed")]
-        public async Task GetPopularCategories_ShouldReturnCategories()
+        public async Task GetPopularDirections_ShouldReturnDirections()
         {
-            // Arrange
-            var expected = new DirectionStatistic
-            {
-                WorkshopsCount = 2,
-                ApplicationsCount = 2,
-            };
-
-            var workshopsMock = workshops.AsQueryable().BuildMock();
-            var applicationsMock = applications.AsQueryable().BuildMock();
-            var directionsMock = directions.AsQueryable().BuildMock();
-
-            workshopRepository.Setup(w => w.Get<It.IsAnyType>(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
-                It.IsAny<bool>()))
-                .Returns(workshopsMock.Object);
-
-            applicationRepository.Setup(w => w.Get<It.IsAnyType>(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
-                It.IsAny<bool>()))
-                .Returns(applicationsMock.Object);
-
-            directionRepository.Setup(w => w.Get<It.IsAnyType>(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Direction, bool>>>(),
-                It.IsAny<Expression<Func<Direction, It.IsAnyType>>>(),
-                It.IsAny<bool>()))
-                .Returns(directionsMock.Object);
-
             // Act
             var result = await service.GetPopularDirections(2).ConfigureAwait(false);
 
             // Assert
             result.Should().HaveCount(2);
-            result.Should().ContainEquivalentOf(expected);
+            result.Should().BeEquivalentTo(directionStatistics, options => options.WithStrictOrdering());
         }
 
         private IEnumerable<Workshop> FakeWorkshops()
@@ -195,6 +139,58 @@ namespace OutOfSchool.WebApi.Tests.Services
                 new Application { Id = 2, WorkshopId = 2, Workshop = new Workshop { Id = 2 } },
                 new Application { Id = 3, WorkshopId = 2, Workshop = new Workshop { Id = 2 } },
             };
+        }
+
+        private List<WorkshopCard> ExpectedWorkshopCards()
+        {
+            return new List<WorkshopCard>()
+            {
+                new WorkshopCard { WorkshopId = 3, Title = "w3" },
+                new WorkshopCard { WorkshopId = 2, Title = "w2" },
+            };
+        }
+
+        private List<DirectionStatistic> ExpectedDirectionStatistics()
+        {
+            return new List<DirectionStatistic>()
+            {
+                new DirectionStatistic {ApplicationsCount = 3, Direction = new DirectionDto { Id = 3 }, WorkshopsCount = 1 },
+                new DirectionStatistic {ApplicationsCount = 2, Direction = new DirectionDto { Id = 2 }, WorkshopsCount = 1 },
+            };
+        }
+
+        private void SetupMocks()
+        {
+            var workshopsMock = workshops.AsQueryable().BuildMock();
+            var applicationsMock = applications.AsQueryable().BuildMock();
+            var directionsMock = directions.AsQueryable().BuildMock();
+
+            workshopRepository.Setup(w => w.Get<It.IsAnyType>(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Workshop, bool>>>(),
+                It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
+                It.IsAny<bool>()))
+                .Returns(workshopsMock.Object);
+
+            applicationRepository.Setup(w => w.Get<It.IsAnyType>(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                It.IsAny<bool>()))
+                .Returns(applicationsMock.Object);
+
+            directionRepository.Setup(w => w.Get<It.IsAnyType>(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Direction, bool>>>(),
+                It.IsAny<Expression<Func<Direction, It.IsAnyType>>>(),
+                It.IsAny<bool>()))
+                .Returns(directionsMock.Object);
         }
     }
 }
