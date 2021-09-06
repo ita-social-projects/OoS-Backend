@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
@@ -20,14 +21,15 @@ namespace OutOfSchool.WebApi.Tests.Services
     public class ChatMessageServiceTests
     {
         private IEntityRepository<ChatMessageWorkshop> messageRepository;
-        private Mock<ILogger> loggerMoq;
+        private Mock<IChatRoomWorkshopService> roomServiceMock;
+        private Mock<ILogger> loggerMock;
 
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext dbContext;
 
         private IChatMessageWorkshopService messageService;
 
-        private ChatMessageWorkshopDto newMessage;
+        private ChatMessageWorkshopCreateDto newMessage;
 
         [SetUp]
         public void SetUp()
@@ -41,9 +43,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             dbContext = new OutOfSchoolDbContext(options);
 
             messageRepository = new EntityRepository<ChatMessageWorkshop>(dbContext);
-            loggerMoq = new Mock<ILogger>();
+            roomServiceMock = new Mock<IChatRoomWorkshopService>();
+            loggerMock = new Mock<ILogger>();
 
-            messageService = new ChatMessageWorkshopService(messageRepository, loggerMoq.Object);
+            messageService = new ChatMessageWorkshopService(messageRepository, roomServiceMock.Object, loggerMock.Object);
 
             SeedDatabase();
         }
@@ -53,7 +56,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Create_WhenParameterIsNull_ShouldThrowArgumentNullException()
         {
             // Act and Assert
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await messageService.CreateAsync(default));
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await messageService.CreateAsync(default, Role.Provider));
         }
 
         [Test]
@@ -61,9 +64,11 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var messagesCount = dbContext.ChatMessageWorkshops.Count();
+            var chatRoom = new ChatRoomWorkshopDto() { Id = 1 };
+            roomServiceMock.Setup(x => x.CreateOrReturnExistingAsync(newMessage.WorkshopId, newMessage.ParentId)).ReturnsAsync(chatRoom);
 
             // Act
-            var result = await messageService.CreateAsync(newMessage).ConfigureAwait(false);
+            var result = await messageService.CreateAsync(newMessage, Role.Provider).ConfigureAwait(false);
 
             // Assert
             Assert.AreNotEqual(default(long), result.Id);
@@ -118,88 +123,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
         #endregion
 
-        #region GetById
-        [TestCase(1)]
-        public async Task GetById_WhenIdIsValid_ShouldReturnEntity(long id)
-        {
-            // Arrange
-            var expected = await messageRepository.GetById(id);
-
-            // Act
-            var result = await messageService.GetByIdNoTrackingAsync(id).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(expected.Id, result.Id);
-            Assert.AreEqual(expected.Text, result.Text);
-        }
-
-        [TestCase(0)]
-        [TestCase(99)]
-        public async Task GetById_WhenThereIsNoEntityWithId_ShouldReturnNull(long id)
-        {
-            // Act
-            var result = await messageService.GetByIdNoTrackingAsync(id).ConfigureAwait(false);
-
-            // Assert
-            Assert.IsNull(result);
-        }
-        #endregion
-
-        #region Update
-        [Test]
-        public void Update_WhenParameterIsNull_ShouldThrowArgumentNullException()
-        {
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await messageService.UpdateAsync(default));
-        }
-
-        [Test]
-        public async Task Update_WhenEntityIsValid_ShouldUpdateEntity()
-        {
-            // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
-            var updMessage = new ChatMessageWorkshopDto()
-            {
-                Id = 1,
-                Text = "newtext",
-                SenderRoleIsProvider = true,
-                ChatRoomId = 1,
-                CreatedDateTime = DateTimeOffset.UtcNow,
-                ReadDateTime = DateTimeOffset.UtcNow,
-            };
-
-            // Act
-            var result = await messageService.UpdateAsync(updMessage).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(updMessage.Id, result.Id);
-            Assert.AreEqual(updMessage.Text, result.Text);
-            Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
-            Assert.AreEqual(updMessage.Text, dbContext.ChatMessageWorkshops.Find(1L).Text);
-        }
-
-        [Test]
-        public void Update_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException()
-        {
-            // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
-            var updMessage = new ChatMessageWorkshopDto()
-            {
-                Id = 99,
-                Text = "newtext",
-                SenderRoleIsProvider = true,
-                ChatRoomId = 1,
-                CreatedDateTime = DateTimeOffset.UtcNow,
-                ReadDateTime = DateTimeOffset.UtcNow,
-            };
-
-            // Act and Assert
-            Assert.That(
-                async () => await messageService.UpdateAsync(updMessage).ConfigureAwait(false),
-                Throws.Exception.TypeOf<DbUpdateConcurrencyException>());
-        }
-        #endregion
-
         #region UpdateIsReadByCurrentUserInChatRoomAsync
         [Test]
         public async Task UpdateIsRead_WhenEntityIsValid_ShouldSetIsReadTrueAndReturnNumberOfFoundEntites()
@@ -207,7 +130,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var messagesCount = dbContext.ChatMessageWorkshops.Count();
             var chatRoomId = 1;
-            var currentUserRoleIsProvider = true;
+            var currentUserRoleIsProvider = Role.Provider;
 
             // Act
             var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
@@ -225,7 +148,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var messagesCount = dbContext.ChatMessageWorkshops.Count();
             var chatRoomId = 2;
-            var currentUserRoleIsProvider = true;
+            var currentUserRoleIsProvider = Role.Provider;
 
             // Act
             var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
@@ -236,43 +159,13 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
         #endregion
 
-        #region Delete
-        [TestCase(1)]
-        public async Task Delete_WhenIdIsValid_ShouldDeleteEntity(long id)
-        {
-            // Arrange
-            var countMessagesBeforeDeleting = (await messageRepository.GetAll().ConfigureAwait(false)).Count();
-            var item = await messageRepository.GetById(1).ConfigureAwait(false);
-
-            // Act
-            await messageService.DeleteAsync(id).ConfigureAwait(false);
-
-            var countMessagesAfterDeleting = (await messageRepository.GetAll().ConfigureAwait(false)).Count();
-
-            // Assert
-            Assert.IsNotNull(item);
-            Assert.AreEqual(countMessagesBeforeDeleting - 1, countMessagesAfterDeleting);
-        }
-
-        [TestCase(7)]
-        public void Delete_WhenIdIsInvalid_ShouldThrowNullReferenceException(long id)
-        {
-            // Assert
-            Assert.That(
-                async () => await messageService.DeleteAsync(id).ConfigureAwait(false),
-                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
-        }
-        #endregion
-
         private void SeedDatabase()
         {
-            newMessage = new ChatMessageWorkshopDto()
+            newMessage = new ChatMessageWorkshopCreateDto()
             {
                 Text = "Привіт всім!",
-                ChatRoomId = 1,
-                SenderRoleIsProvider = true,
-                CreatedDateTime = DateTimeOffset.UtcNow,
-                ReadDateTime = null,
+                ParentId = 1,
+                WorkshopId = 1,
             };
 
             using var context = new OutOfSchoolDbContext(options);
