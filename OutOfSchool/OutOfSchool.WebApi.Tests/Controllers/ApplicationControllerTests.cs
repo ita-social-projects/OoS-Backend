@@ -11,7 +11,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.ApiModels;
-using OutOfSchool.WebApi.Controllers;
+using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 

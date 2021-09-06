@@ -1,28 +1,26 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Reflection;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Extensions.Startup;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -37,7 +35,7 @@ namespace OutOfSchool.WebApi
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
             if (env.IsDevelopment())
             {
@@ -57,23 +55,16 @@ namespace OutOfSchool.WebApi
                 SupportedUICultures = supportedCultures,
             };
 
+            var proxyOptions = Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
+            app.UseProxy(proxyOptions);
+
             app.UseRequestLocalization(requestLocalization);
 
             app.UseCors("AllowAll");
 
             app.UseMiddleware<ExceptionMiddlewareExtension>();
 
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Out Of School API");
-                c.OAuthClientId("Swagger");
-                c.OAuthUsePkce();
-            });
+            app.UseSwaggerWithVersioning(provider, proxyOptions);
 
             app.UseHttpsRedirection();
 
@@ -97,6 +88,7 @@ namespace OutOfSchool.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<AppDefaultsConfig>(Configuration.GetSection(AppDefaultsConfig.Name));
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
@@ -169,53 +161,14 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
 
             services.AddSingleton(Log.Logger);
+            services.AddVersioning();
+            var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
 
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
-            {
-                // Set the comments path for the Swagger JSON and UI.
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
+            // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
+            services.AddSingleton(swaggerConfig);
+            services.AddSwagger(swaggerConfig);
 
-                // Set grouping for elements.
-                c.TagActionsBy(api =>
-                {
-                    // If there is a groupName that is specified, then use it.
-                    if (api.GroupName != null)
-                    {
-                        return new[] { api.GroupName };
-                    }
-
-                    // else use the controller name which is the default used by Swashbuckle.
-                    if (api.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
-                    {
-                        return new[] { controllerActionDescriptor.ControllerName };
-                    }
-
-                    throw new InvalidOperationException("Unable to determine tag for endpoint.");
-                });
-                c.OperationFilter<AuthorizeCheckOperationFilter>();
-                var baseUrl = Configuration["SwaggerIdentityAccess:BaseUrl"];
-                c.AddSecurityDefinition("Identity server", new OpenApiSecurityScheme
-                {
-                    Description = "Identity server",
-                    Type = SecuritySchemeType.OAuth2,
-                    Flows = new OpenApiOAuthFlows
-                    {
-                        AuthorizationCode = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri($"{baseUrl}/connect/authorize", UriKind.Absolute),
-                            TokenUrl = new Uri($"{baseUrl}/connect/token", UriKind.Absolute),
-                            Scopes = new Dictionary<string, string>
-                            {
-                                { "openid outofschoolapi.read offline_access", "Scopes" },
-                            },
-                        },
-                    },
-                });
-                c.DocInclusionPredicate((name, api) => true);
-            });
+            services.AddProxy();
 
             services.AddAutoMapper(typeof(Startup));
 

@@ -1,23 +1,93 @@
-﻿version: '3.4'
+version: '3.4'
 services:
+# === SQL SERVER ===
+# TODO: Configure volumes
   sql-server:
-    image: 'mcr.microsoft.com/mssql/server:2019-latest'
+    image: mcr.microsoft.com/mssql/server:${SQL_VERSION}
     environment:
-        ACCEPT_EULA: Y
-        SA_PASSWORD: Oos-password1
+      ACCEPT_EULA: Y
+      TZ: Europe/Kiev
+      MSSQL_COLLATION: Ukrainian_100_CI_AS
     ports:
-        - "1433:1433"
-  webapi-server:
-    build: .
+      - 1433:1433
+    networks:
+      - db
+# === ELASTICSEARCH ===
+# TODO: Use Opensearch due to Elastic licence change
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
+    container_name: elasticsearch
+    command: >
+      /bin/sh -c "./bin/elasticsearch-plugin list | grep -q analysis-ukrainian 
+      || ./bin/elasticsearch-plugin install analysis-icu analysis-ukrainian mapper-murmur3 mapper-size; 
+      /usr/local/bin/docker-entrypoint.sh"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - db
+# === KIBANA ===
+# TODO: Use Opensearch due to Elastic licence change
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:${ES_VERSION}
     ports:
-        - "5000:5000"
-  identity-server:
-    build:
-        context: .
-        dockerfile: OutOfSchool/OutOfSchool.IdentityServer/Dockerfile
-    environment:
-        ConnectionStrings__DefaultConnection: "Server=sql-server; Database=Master;User Id=SA;Password=Oos-password1;"
+      - 5601:5601
     depends_on:
-        - "sql-server"
-    ports: 
-        - "5443:5443"
+      - elasticsearch
+    networks:
+      - db
+# === IDENTITY SERVER ===
+  identity-server:
+    image: ${OOS_AUTH_IMAGE}:${TAG}
+    environment:
+      PORT: "5443"
+      ReverseProxy__BasePath: /identity
+    depends_on:
+      - sql-server
+    networks:
+      - db
+      - web
+# === WEB API ===
+  webapi-server:
+    image: ${OOS_API_IMAGE}:${TAG}
+    environment:
+      PORT: "5000"
+      ReverseProxy__BasePath: /webapi
+      Logging__FilePath: /var/log/oos/api.log
+    volumes:
+      - api-logs:/var/log/oos:rw
+    depends_on:
+      - identity-server
+    networks:
+      - db
+      - web
+# === REVERSE PROXY ===
+  nginx:
+    image: ${OOS_NGINX_IMAGE}:${TAG}
+    container_name: oos.local
+    environment:
+      PORT: "80"
+      SSL_PORT: "443"
+    depends_on:
+      - identity-server
+      - webapi-server
+    networks:
+      - web
+# === FRONTEND ===
+  frontend:
+    image: nginx:latest
+    container_name: frontend
+    networks:
+      - web
+# === VOLUMES ===
+volumes:
+  es-data:
+    driver: local
+  api-logs:
+    driver: local
+# === NETWORKS ===
+networks:
+  db:
+    driver: bridge
+  web:
+    driver: bridge

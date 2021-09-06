@@ -14,6 +14,7 @@ namespace OutOfSchool.WebApi
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile($"appsettings.{environment}.json")
+                .AddEnvironmentVariables()
                 .Build();
 
             var loggerConfigBuilder = new LoggerConfiguration()

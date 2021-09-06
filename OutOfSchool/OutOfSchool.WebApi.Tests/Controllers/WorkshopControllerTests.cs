@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.WebApi.Controllers;
+using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -28,6 +30,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private static List<WorkshopCard> workshopCards;
         private static WorkshopDTO workshop;
         private static ProviderDto provider;
+        private static Mock<IOptions<AppDefaultsConfig>> options;
 
         private WorkshopController controller;
         private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
@@ -51,6 +54,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             workshop = FakeWorkshop();
             provider = FakeProvider();
             workshopCards = FakeWorkshopCards();
+
+            var config = new AppDefaultsConfig();
+            config.City = "Київ";
+            options = new Mock<IOptions<AppDefaultsConfig>>();
+            options.Setup(x => x.Value).Returns(config);
         }
 
         [SetUp]
@@ -60,7 +68,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerServiceMoq = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object)
+            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object, options.Object)
             {
                 ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
             };

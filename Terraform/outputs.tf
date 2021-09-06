@@ -12,14 +12,17 @@ output "db_admin" {
 
 output "db_pass" {
   value = module.sql.db_pass
+  sensitive = true
 }
 
 output "connection_string" {
   value = module.webapp.connection_string
+  sensitive = true
 }
 
 output "image_blob_connection_string" {
   value = module.storage.image_connection_string
+  sensitive = true
 }
 
 output "image_blob_container_name" {

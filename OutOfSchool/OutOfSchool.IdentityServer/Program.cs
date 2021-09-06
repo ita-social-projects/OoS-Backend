@@ -17,6 +17,8 @@ namespace OutOfSchool.IdentityServer
 {
     public class Program
     {
+        private const int CheckConnectivityDelay = 5000;
+
         public static void Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
@@ -27,8 +29,8 @@ namespace OutOfSchool.IdentityServer
 
                 while (!context.Database.CanConnect())
                 {
-                    Task.Delay(500).Wait();
                     Console.WriteLine("Waiting for db connection");
+                    Task.Delay(CheckConnectivityDelay).Wait();
                 }
 
                 scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
@@ -57,7 +59,6 @@ namespace OutOfSchool.IdentityServer
                 }
 
                 context.SaveChanges();
-
 
                 foreach (var resource in StaticConfig.IdentityResources)
                 {
