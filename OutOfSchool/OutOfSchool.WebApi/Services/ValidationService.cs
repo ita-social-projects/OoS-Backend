@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.WebApi.Services
@@ -19,62 +20,53 @@ namespace OutOfSchool.WebApi.Services
             this.workshopRepository = workshopRepository;
         }
 
+        /// <inheritdoc/>>
         public async Task<bool> UserIsProviderOwnerAsync(string userId, long providerId)
         {
             var providers = await providerRepository.GetByFilter(item => item.Id == providerId).ConfigureAwait(false);
-            var provider = providers.Single();
+            var provider = providers.SingleOrDefault();
 
-            return string.Equals(userId, provider.UserId, StringComparison.Ordinal);
+            return provider is null ? false : userId.Equals(provider.UserId, StringComparison.Ordinal);
         }
 
+        /// <inheritdoc/>>
         public async Task<bool> UserIsWorkshopOwnerAsync(string userId, long workshopId)
         {
-            var workshops = await workshopRepository.GetByFilter(item => item.Id == workshopId, "Provider").ConfigureAwait(false);
-            var workshop = workshops.Single();
+            var workshops = await workshopRepository.GetByFilter(item => item.Id == workshopId, nameof(Workshop.Provider)).ConfigureAwait(false);
+            var workshop = workshops.SingleOrDefault();
 
-            return string.Equals(userId, workshop.Provider.UserId, StringComparison.Ordinal);
+            return workshop is null ? false : userId.Equals(workshop.Provider.UserId, StringComparison.Ordinal);
         }
 
+        /// <inheritdoc/>>
         public async Task<bool> UserIsParentOwnerAsync(string userId, long parentId)
         {
             var parents = await parentRepository.GetByFilter(item => item.Id == parentId).ConfigureAwait(false);
-            var parent = parents.Single();
+            var parent = parents.SingleOrDefault();
 
-            return string.Equals(userId, parent.UserId, StringComparison.Ordinal);
+            return parent is null ? false : userId.Equals(parent.UserId, StringComparison.Ordinal);
         }
 
-        public async Task<long> GetEntityIdAccordingToUserRoleAsync(string userId, string userRole)
+        /// <inheritdoc/>>
+        public async Task<long> GetParentOrProviderIdByUserRoleAsync(string userId, Role userRole)
         {
-            if (string.Equals(userRole, Role.Parent.ToString(), StringComparison.OrdinalIgnoreCase))
+            if (userRole == Role.Parent)
             {
                 var parents = await parentRepository.GetByFilter(item => item.UserId == userId).ConfigureAwait(false);
                 var parent = parents.SingleOrDefault();
-                if (parent is null)
-                {
-                    return default;
-                }
-                else
-                {
-                    return parent.Id;
-                }
+
+                return parent is null ? default : parent.Id;
             }
-            else if (string.Equals(userRole, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase))
+
+            if (userRole == Role.Provider)
             {
                 var providers = await providerRepository.GetByFilter(item => item.UserId == userId).ConfigureAwait(false);
                 var provider = providers.SingleOrDefault();
-                if (provider is null)
-                {
-                    return default;
-                }
-                else
-                {
-                    return provider.Id;
-                }
+
+                return provider is null ? default : provider.Id;
             }
-            else
-            {
-                return default;
-            }
+
+            return default;
         }
     }
 }

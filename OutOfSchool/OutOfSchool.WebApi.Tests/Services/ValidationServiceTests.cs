@@ -72,15 +72,18 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void UserIsProviderOwnerAsync_WhenEntityWasNotFaund_ThrowsException()
+        public async Task UserIsProviderOwnerAsync_WhenEntityWasNotFaund_ReturnsFalse()
         {
             // Arrange
             var validUserId = "someUserId";
             providerRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>()))
                 .ReturnsAsync(new List<Provider>() { });
 
-            // Act and Assert
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await validationService.UserIsProviderOwnerAsync(validUserId, 1).ConfigureAwait(false));
+            // Act
+            var result = await validationService.UserIsProviderOwnerAsync(validUserId, 1).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsFalse(result);
         }
         #endregion
 
@@ -134,15 +137,18 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void UserIsWorkshopOwnerAsync_WhenEntityWasNotFaund_ThrowsException()
+        public async Task UserIsWorkshopOwnerAsync_WhenEntityWasNotFaund_ReturnsFalse()
         {
             // Arrange
             var validUserId = "someUserId";
             workshopRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
                 .ReturnsAsync(new List<Workshop>());
 
-            // Act and Assert
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await validationService.UserIsWorkshopOwnerAsync(validUserId, 1).ConfigureAwait(false));
+            // Act
+            var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, 1).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsFalse(result);
         }
         #endregion
 
@@ -188,25 +194,28 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void UserIsParentOwnerAsync_WhenEntityWasNotFaund_ThrowsException()
+        public async Task UserIsParentOwnerAsync_WhenEntityWasNotFaund_ReturnsFalse()
         {
             // Arrange
             var validUserId = "someUserId";
             parentRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Parent, bool>>>(), It.IsAny<string>()))
                 .ReturnsAsync(new List<Parent>());
 
-            // Act and Assert
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await validationService.UserIsParentOwnerAsync(validUserId, 1).ConfigureAwait(false));
+            // Act
+            var result = await validationService.UserIsParentOwnerAsync(validUserId, 1).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsFalse(result);
         }
         #endregion
 
-        #region GetEntityIdAccordingToUserRole
+        #region GetParentOrProviderIdByUserRoleAsync
         [Test]
-        public async Task GetEntityIdAccordingToUserRole_RoleIsParentAndParentExists_ReturnsId()
+        public async Task GetParentOrProviderIdByUserRoleAsync_RoleIsParentAndParentExists_ReturnsId()
         {
             // Arrange
             var validUserId = "someUserId";
-            var userRole = Role.Parent.ToString();
+            var userRole = Role.Parent;
 
             var parentWithValidUserId = new Parent()
             {
@@ -217,35 +226,35 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .ReturnsAsync(new List<Parent>() { parentWithValidUserId });
 
             // Act
-            var result = await validationService.GetEntityIdAccordingToUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
+            var result = await validationService.GetParentOrProviderIdByUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(parentWithValidUserId.Id, result);
         }
 
         [Test]
-        public async Task GetEntityIdAccordingToUserRole_RoleIsParentAndParentDoesNotExist_ReturnsZero()
+        public async Task GetParentOrProviderIdByUserRoleAsync_RoleIsParentAndParentDoesNotExist_ReturnsZero()
         {
             // Arrange
             var validUserId = "someUserId";
-            var userRole = Role.Parent.ToString();
+            var userRole = Role.Parent;
 
             parentRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Parent, bool>>>(), It.IsAny<string>()))
                 .ReturnsAsync(new List<Parent>() { });
 
             // Act
-            var result = await validationService.GetEntityIdAccordingToUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
+            var result = await validationService.GetParentOrProviderIdByUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(default(long), result);
         }
 
         [Test]
-        public async Task GetEntityIdAccordingToUserRole_RoleIsProviderAndProviderExists_ReturnsId()
+        public async Task GetParentOrProviderIdByUserRoleAsync_RoleIsProviderAndProviderExists_ReturnsId()
         {
             // Arrange
             var validUserId = "someUserId";
-            var userRole = Role.Provider.ToString();
+            var userRole = Role.Provider;
 
             var providerWithValidUserId = new Provider()
             {
@@ -256,38 +265,38 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .ReturnsAsync(new List<Provider>() { providerWithValidUserId });
 
             // Act
-            var result = await validationService.GetEntityIdAccordingToUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
+            var result = await validationService.GetParentOrProviderIdByUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(providerWithValidUserId.Id, result);
         }
 
         [Test]
-        public async Task GetEntityIdAccordingToUserRole_RoleIsProviderAndProviderDoesNotExist_ReturnsZero()
+        public async Task GetParentOrProviderIdByUserRoleAsync_RoleIsProviderAndProviderDoesNotExist_ReturnsZero()
         {
             // Arrange
             var validUserId = "someUserId";
-            var userRole = Role.Provider.ToString();
+            var userRole = Role.Provider;
 
             providerRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), It.IsAny<string>()))
                 .ReturnsAsync(new List<Provider>());
 
             // Act
-            var result = await validationService.GetEntityIdAccordingToUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
+            var result = await validationService.GetParentOrProviderIdByUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(default(long), result);
         }
 
         [Test]
-        public async Task GetEntityIdAccordingToUserRole_RoleIsNotParentNotProvider_ReturnsZero()
+        public async Task GetParentOrProviderIdByUserRoleAsync_RoleIsNotParentNotProvider_ReturnsZero()
         {
             // Arrange
             var validUserId = "someUserId";
-            var userRole = Role.Admin.ToString();
+            var userRole = Role.Admin;
 
             // Act
-            var result = await validationService.GetEntityIdAccordingToUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
+            var result = await validationService.GetParentOrProviderIdByUserRoleAsync(validUserId, userRole).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(default(long), result);
