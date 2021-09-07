@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     public class DepartmentService : IDepartmentService
     {
         private readonly IDepartmentRepository repository;
-        private readonly ILogger logger;
+        private readonly ILogger<DepartmentService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityRepository">Repository for some entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public DepartmentService(IDepartmentRepository entityRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public DepartmentService(IDepartmentRepository entityRepository, ILogger<DepartmentService> logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = entityRepository;
@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<DepartmentDto> Create(DepartmentDto dto)
         {
-            logger.Information("Department creating was started.");
+            logger.LogInformation("Department creating was started.");
 
             var department = dto.ToDomain();
 
@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newDepartment = await repository.Create(department).ConfigureAwait(false);
 
-            logger.Information($"Department with Id = {newDepartment?.Id} created successfully.");
+            logger.LogInformation($"Department with Id = {newDepartment?.Id} created successfully.");
 
             return newDepartment.ToModel();
         }
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting Department with Id = {id} started.");
+            logger.LogInformation($"Deleting Department with Id = {id} started.");
 
             var entity = new Department() { Id = id };
 
@@ -61,11 +61,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information($"Department with Id = {id} succesfully deleted.");
+                logger.LogInformation($"Department with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Department with Id = {id} doesn't exist in the system.");
+                logger.LogError($"Deleting failed. Department with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -73,11 +73,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<DepartmentDto>> GetAll()
         {
-            logger.Information("Getting all Departments started.");
+            logger.LogInformation("Getting all Departments started.");
 
             var departments = await this.repository.GetAll().ConfigureAwait(false);
 
-            logger.Information(!departments.Any()
+            logger.LogInformation(!departments.Any()
                 ? "Department table is empty."
                 : $"All {departments.Count()} records were successfully received from the Department table");
 
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<DepartmentDto> GetById(long id)
         {
-            logger.Information($"Getting Department by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting Department by Id started. Looking Id = {id}.");
 
             var department = await repository.GetById((int)id).ConfigureAwait(false);
 
@@ -98,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Department with Id = {id}.");
+            logger.LogInformation($"Successfully got a Department with Id = {id}.");
 
             return department.ToModel();
         }
@@ -106,13 +106,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<DepartmentDto>> GetByDirectionId(long id)
         {
-            logger.Information($"Getting Department by DirectionId started. Looking DirectionId = {id}.");
+            logger.LogInformation($"Getting Department by DirectionId started. Looking DirectionId = {id}.");
 
             IdValidation(id);
 
             var departments = await this.repository.Get<int>(where: x => x.DirectionId == id).ToListAsync().ConfigureAwait(false);
 
-            logger.Information(!departments.Any()
+            logger.LogInformation(!departments.Any()
                 ? $"There is no Deparment with DirectionId = {id}."
                 : $"All {departments.Count} records were successfully received from the Department table");
 
@@ -122,7 +122,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<DepartmentDto> Update(DepartmentDto dto)
         {
-            logger.Information($"Updating the Department with Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating the Department with Id = {dto?.Id} started.");
 
             ModelValidation(dto);
 
@@ -130,13 +130,13 @@ namespace OutOfSchool.WebApi.Services
             {
                 var department = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Department with Id = {department?.Id} updated succesfully.");
+                logger.LogInformation($"Department with Id = {department?.Id} updated succesfully.");
 
                 return department.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Department with Id = {dto?.Id} doesn't exist in the system.");
+                logger.LogError($"Updating failed. Department with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

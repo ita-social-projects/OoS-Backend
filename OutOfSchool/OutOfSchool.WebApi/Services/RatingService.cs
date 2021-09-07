@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopRepository workshopRepository;
         private readonly IProviderRepository providerRepository;
         private readonly IParentRepository parentRepository;
-        private readonly ILogger logger;
+        private readonly ILogger<RatingService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly int roundToDigits = 2;
 
@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopRepository workshopRepository,
             IProviderRepository providerRepository,
             IParentRepository parentRepository,
-            ILogger logger,
+            ILogger<RatingService> logger,
             IStringLocalizer<SharedResource> localizer)
         {
             this.ratingRepository = ratingRepository;
@@ -53,11 +53,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<RatingDto>> GetAll()
         {
-            logger.Information("Getting all Ratings started.");
+            logger.LogInformation("Getting all Ratings started.");
 
             var ratings = await ratingRepository.GetAll().ConfigureAwait(false);
 
-            logger.Information(!ratings.Any()
+            logger.LogInformation(!ratings.Any()
                 ? "Rating table is empty."
                 : $"All {ratings.Count()} records were successfully received from the Rating table");
 
@@ -69,7 +69,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<RatingDto> GetById(long id)
         {
-            logger.Information($"Getting Rating by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting Rating by Id started. Looking Id = {id}.");
 
             var rating = await ratingRepository.GetById(id).ConfigureAwait(false);
 
@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer[$"Record with such Id = {id} don't exist in the system"]);
             }
 
-            logger.Information($"Successfully got a Rating with Id = {id}.");
+            logger.LogInformation($"Successfully got a Rating with Id = {id}.");
 
             return rating.ToModel();
         }
@@ -88,11 +88,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<RatingDto>> GetAllByEntityId(long entityId, RatingType type)
         {
-            logger.Information($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
+            logger.LogInformation($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
 
             var ratings = await ratingRepository.GetByFilter(r => r.EntityId == entityId && r.Type == type).ConfigureAwait(false);
 
-            logger.Information(!ratings.Any()
+            logger.LogInformation(!ratings.Any()
                 ? "Rating table is empty."
                 : $"All {ratings.Count()} records with EntityId = {entityId} and RatingType = {type} " +
                         $"were successfully received from the Rating table");
@@ -105,7 +105,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<RatingDto>> GetAllWorshopsRatingByProvider(long id)
         {
-            logger.Information($"Getting all Worshops Ratings by ProviderId = {id} started.");
+            logger.LogInformation($"Getting all Worshops Ratings by ProviderId = {id} started.");
 
             var worshops = await workshopRepository.GetByFilter(x => x.Provider.Id == id).ConfigureAwait(false);
 
@@ -117,7 +117,7 @@ namespace OutOfSchool.WebApi.Services
                                                    && r.Type == RatingType.Workshop).ConfigureAwait(false));
             }
 
-            logger.Information(!worshopsRating.Any()
+            logger.LogInformation(!worshopsRating.Any()
                 ? "Rating table is empty."
                 : $"All {worshopsRating.Count} records with ProviderId = {id} " +
                         $"were successfully received from the Rating table");
@@ -130,7 +130,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<RatingDto> GetParentRating(long parentId, long entityId, RatingType type)
         {
-            logger.Information($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId} and type = {type}.");
+            logger.LogInformation($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId} and type = {type}.");
 
             var rating = await ratingRepository
                 .GetByFilter(r => r.ParentId == parentId
@@ -138,7 +138,7 @@ namespace OutOfSchool.WebApi.Services
                                && r.Type == type)
                 .ConfigureAwait(false);
 
-            logger.Information($"Successfully got a Rating for Parent with Id = {parentId}");
+            logger.LogInformation($"Successfully got a Rating for Parent with Id = {parentId}");
 
             return rating.FirstOrDefault().ToModel();
         }
@@ -168,19 +168,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<RatingDto> Create(RatingDto dto)
         {
-            logger.Information("Rating creating was started.");
+            logger.LogInformation("Rating creating was started.");
 
             if (await CheckRatingCreation(dto).ConfigureAwait(false))
             {
                 var rating = await ratingRepository.Create(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Rating with Id = {rating?.Id} created successfully.");
+                logger.LogInformation($"Rating with Id = {rating?.Id} created successfully.");
 
                 return rating.ToModel();
             }
             else
             {
-                logger.Information($"Rating already exists or entityId = {dto?.EntityId} isn't correct.");
+                logger.LogInformation($"Rating already exists or entityId = {dto?.EntityId} isn't correct.");
 
                 return null;
             }
@@ -189,19 +189,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<RatingDto> Update(RatingDto dto)
         {
-            logger.Information($"Updating Rating with Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating Rating with Id = {dto?.Id} started.");
 
             if (await CheckRatingUpdate(dto).ConfigureAwait(false))
             {
                 var rating = await ratingRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Rating with Id = {rating?.Id} updated succesfully.");
+                logger.LogInformation($"Rating with Id = {rating?.Id} updated succesfully.");
 
                 return rating.ToModel();
             }
             else
             {
-                logger.Information("Rating doesn't exist or couldn't change EntityId, Parent and Type.");
+                logger.LogInformation("Rating doesn't exist or couldn't change EntityId, Parent and Type.");
 
                 return null;
             }
@@ -210,7 +210,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting Rating with Id = {id} started.");
+            logger.LogInformation($"Deleting Rating with Id = {id} started.");
 
             var rating = await ratingRepository.GetById(id).ConfigureAwait(false);
 
@@ -223,7 +223,7 @@ namespace OutOfSchool.WebApi.Services
 
             await ratingRepository.Delete(rating).ConfigureAwait(false);
 
-            logger.Information($"Rating with Id = {id} succesfully deleted.");
+            logger.LogInformation($"Rating with Id = {id} succesfully deleted.");
         }
 
         /// <summary>
@@ -234,7 +234,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (dto == null)
             {
-                logger.Information("Rating creating failed. Rating is null.");
+                logger.LogInformation("Rating creating failed. Rating is null.");
                 throw new ArgumentNullException(nameof(dto), localizer["Rating is null."]);
             }
         }
@@ -250,14 +250,14 @@ namespace OutOfSchool.WebApi.Services
 
             if (await RatingExists(dto).ConfigureAwait(false))
             {
-                logger.Information("Rating already exists");
+                logger.LogInformation("Rating already exists");
 
                 return false;
             }
 
             if (!await EntityExists(dto.EntityId, dto.Type).ConfigureAwait(false))
             {
-                logger.Information($"Record with entityId { dto.EntityId } " +
+                logger.LogInformation($"Record with entityId { dto.EntityId } " +
                     $"and Type { dto.Type } don't exist in the system.");
 
                 return false;
@@ -277,7 +277,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!await EntityExists(dto.EntityId, dto.Type).ConfigureAwait(false))
             {
-                logger.Information($"Record with entityId { dto.EntityId } " +
+                logger.LogInformation($"Record with entityId { dto.EntityId } " +
                     $"and Type { dto.Type } don't exist in the system.");
 
                 return false;
@@ -285,7 +285,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!RatingExistsWithId(dto))
             {
-                logger.Information($"Rating with Id = {dto.Id} doesn't exist.");
+                logger.LogInformation($"Rating with Id = {dto.Id} doesn't exist.");
 
                 return false;
             }

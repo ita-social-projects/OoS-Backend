@@ -5,13 +5,13 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IEntityRepository<Child> childRepository;
-        private readonly ILogger logger;
+        private readonly ILogger<ApplicationService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="childRepository">Child repository.</param>
         public ApplicationService(
             IApplicationRepository repository,
-            ILogger logger,
+            ILogger<ApplicationService> logger,
             IStringLocalizer<SharedResource> localizer,
             IWorkshopRepository workshopRepository,
             IEntityRepository<Child> childRepository)
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ApplicationDto> Create(ApplicationDto applicationDto)
         {
-            logger.Information("Application creating started.");
+            logger.LogInformation("Application creating started.");
 
             ModelNullValidation(applicationDto);
 
@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!isChildParent)
             {
-                logger.Information("Operation failed. Unable to create application for another parent`s child.");
+                logger.LogInformation("Operation failed. Unable to create application for another parent`s child.");
                 throw new ArgumentException(localizer["Unable to create application for another parent`s child."]);
             }
 
@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newApplication = await applicationRepository.Create(application).ConfigureAwait(false);
 
-            logger.Information($"Application with Id = {newApplication?.Id} created successfully.");
+            logger.LogInformation($"Application with Id = {newApplication?.Id} created successfully.");
 
             return newApplication.ToModel();
         }
@@ -79,7 +79,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> Create(IEnumerable<ApplicationDto> applicationDtos)
         {
-            logger.Information("Multiple applications creating started.");
+            logger.LogInformation("Multiple applications creating started.");
 
             MultipleModelCreationValidation(applicationDtos);
 
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newApplications = await applicationRepository.Create(applications).ConfigureAwait(false);
 
-            logger.Information("Applications created successfully.");
+            logger.LogInformation("Applications created successfully.");
 
             return newApplications.Select(a => a.ToModel());
         }
@@ -95,7 +95,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting Application with Id = {id} started.");
+            logger.LogInformation($"Deleting Application with Id = {id} started.");
 
             CheckApplicationExists(id);
 
@@ -105,11 +105,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await applicationRepository.Delete(application).ConfigureAwait(false);
 
-                logger.Information($"Application with Id = {id} succesfully deleted.");
+                logger.LogInformation($"Application with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                logger.Error($"Deleting failed. Exception: {ex.Message}.");
+                logger.LogError($"Deleting failed. Exception: {ex.Message}.");
                 throw;
             }
         }
@@ -117,11 +117,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAll()
         {
-            logger.Information("Getting all Applications started.");
+            logger.LogInformation("Getting all Applications started.");
 
             var applications = await applicationRepository.GetAllWithDetails("Workshop,Child,Parent").ConfigureAwait(false);
 
-            logger.Information(!applications.Any()
+            logger.LogInformation(!applications.Any()
                 ? "Application table is empty."
                 : $"All {applications.Count()} records were successfully received from the Application table");
 
@@ -131,13 +131,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByParent(long id)
         {
-            logger.Information($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
+            logger.LogInformation($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
 
             Expression<Func<Application, bool>> filter = a => a.ParentId == id;
 
             var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
-            logger.Information(!applications.Any()
+            logger.LogInformation(!applications.Any()
                 ? $"There is no applications in the Db with Parent Id = {id}."
                 : $"Successfully got Applications with Parent Id = {id}.");
 
@@ -147,13 +147,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByChild(long id)
         {
-            logger.Information($"Getting Applications by Child Id started. Looking Child Id = {id}.");
+            logger.LogInformation($"Getting Applications by Child Id started. Looking Child Id = {id}.");
 
             Expression<Func<Application, bool>> filter = a => a.ChildId == id;
 
             var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
-            logger.Information(!applications.Any()
+            logger.LogInformation(!applications.Any()
                 ? $"There is no applications in the Db with Child Id = {id}."
                 : $"Successfully got Applications with Child Id = {id}.");
 
@@ -163,7 +163,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id, ApplicationFilter filter)
         {
-            logger.Information($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
+            logger.LogInformation($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
 
             FilterNullValidation(filter);
 
@@ -172,7 +172,7 @@ namespace OutOfSchool.WebApi.Services
 
             var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
 
-            logger.Information(!filteredApplications.Any()
+            logger.LogInformation(!filteredApplications.Any()
                 ? $"There is no applications in the Db with Workshop Id = {id}."
                 : $"Successfully got Applications with Workshop Id = {id}.");
 
@@ -182,7 +182,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id, ApplicationFilter filter)
         {
-            logger.Information($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
+            logger.LogInformation($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
 
             FilterNullValidation(filter);
 
@@ -194,7 +194,7 @@ namespace OutOfSchool.WebApi.Services
 
             var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
 
-            logger.Information(!filteredApplications.Any()
+            logger.LogInformation(!filteredApplications.Any()
                 ? $"There is no applications in the Db with Provider Id = {id}."
                 : $"Successfully got Applications with Provider Id = {id}.");
 
@@ -204,13 +204,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status)
         {
-            logger.Information($"Getting Applications by Status started. Looking Status = {status}.");
+            logger.LogInformation($"Getting Applications by Status started. Looking Status = {status}.");
 
             Expression<Func<Application, bool>> filter = a => (int)a.Status == status;
 
             var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
 
-            logger.Information(!applications.Any()
+            logger.LogInformation(!applications.Any()
                 ? $"There is no applications in the Db with Status = {status}."
                 : $"Successfully got Applications with Status = {status}.");
 
@@ -220,7 +220,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ApplicationDto> GetById(long id)
         {
-            logger.Information($"Getting Application by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting Application by Id started. Looking Id = {id}.");
 
             Expression<Func<Application, bool>> filter = a => a.Id == id;
 
@@ -229,18 +229,18 @@ namespace OutOfSchool.WebApi.Services
 
             if (application is null)
             {
-                logger.Information($"There is no application in the Db with Id = {id}.");
+                logger.LogInformation($"There is no application in the Db with Id = {id}.");
                 return null;
             }
 
-            logger.Information($"Successfully got an Application with Id = {id}.");
+            logger.LogInformation($"Successfully got an Application with Id = {id}.");
 
             return application.ToModel();
         }
 
         public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
         {
-            logger.Information($"Updating Application with Id = {applicationDto?.Id} started.");
+            logger.LogInformation($"Updating Application with Id = {applicationDto?.Id} started.");
 
             ModelNullValidation(applicationDto);
 
@@ -251,13 +251,13 @@ namespace OutOfSchool.WebApi.Services
                 var updatedApplication = await applicationRepository.Update(applicationDto.ToDomain())
                     .ConfigureAwait(false);
 
-                logger.Information($"Application with Id = {applicationDto?.Id} updated succesfully.");
+                logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");
 
                 return updatedApplication.ToModel();
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                logger.Error($"Updating failed. Exception = {ex.Message}.");
+                logger.LogError($"Updating failed. Exception = {ex.Message}.");
                 throw;
             }
         }
@@ -266,7 +266,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (applicationDto is null)
             {
-                logger.Information("Operation failed. ApplicationDto is null");
+                logger.LogInformation("Operation failed. ApplicationDto is null");
                 throw new ArgumentException(localizer["Application dto is null."], nameof(applicationDto));
             }
         }
@@ -275,7 +275,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (filter is null)
             {
-                logger.Information("Operation failed. Application filter is null.");
+                logger.LogInformation("Operation failed. Application filter is null.");
                 throw new ArgumentException(localizer["Application filter is null."], nameof(filter));
             }
         }
@@ -284,7 +284,7 @@ namespace OutOfSchool.WebApi.Services
         {
             if (!applicationDtos.Any())
             {
-                logger.Information("Operation failed. There is no application to create.");
+                logger.LogInformation("Operation failed. There is no application to create.");
                 throw new ArgumentException(localizer["There is no application to create."]);
             }
 
@@ -300,7 +300,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!applications.Any())
             {
-                logger.Information($"Operation failed. Application with Id = {id} doesn't exist in the system.");
+                logger.LogInformation($"Operation failed. Application with Id = {id} doesn't exist in the system.");
                 throw new ArgumentException(localizer[$"Application with Id = {id} doesn't exist in the system."]);
             }
         }
@@ -329,7 +329,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (applications.Count() >= ApplicationsLimit)
             {
-                logger.Information($"Operation failed. Limit of applications per week is exceeded.");
+                logger.LogInformation($"Operation failed. Limit of applications per week is exceeded.");
                 throw new ArgumentException(localizer["Limit of applications per week is exceeded."]);
             }
         }

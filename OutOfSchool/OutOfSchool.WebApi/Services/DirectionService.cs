@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     public class DirectionService : IDirectionService
     {
         private readonly IEntityRepository<Direction> repository;
-        private readonly ILogger logger;
+        private readonly ILogger<DirectionService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityRepository">Repository for Direction entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public DirectionService(IEntityRepository<Direction> entityRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public DirectionService(IEntityRepository<Direction> entityRepository, ILogger<DirectionService> logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = entityRepository;
@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<DirectionDto> Create(DirectionDto dto)
         {
-            logger.Information("Direction creating was started.");
+            logger.LogInformation("Direction creating was started.");
 
             var direction = dto.ToDomain();
 
@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newDirection = await repository.Create(direction).ConfigureAwait(false);
 
-            logger.Information($"Direction with Id = {newDirection?.Id} created successfully.");
+            logger.LogInformation($"Direction with Id = {newDirection?.Id} created successfully.");
 
             return newDirection.ToModel();
         }
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting Direction with Id = {id} started.");
+            logger.LogInformation($"Deleting Direction with Id = {id} started.");
 
             var entity = new Direction() { Id = id };
 
@@ -61,11 +61,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information($"Direction with Id = {id} succesfully deleted.");
+                logger.LogInformation($"Direction with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Direction with Id = {id} doesn't exist in the system.");
+                logger.LogError($"Deleting failed. Direction with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -73,11 +73,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<DirectionDto>> GetAll()
         {
-            logger.Information("Getting all Directions started.");
+            logger.LogInformation("Getting all Directions started.");
 
             var directions = await this.repository.GetAll().ConfigureAwait(false);
 
-            logger.Information(!directions.Any()
+            logger.LogInformation(!directions.Any()
                 ? "Direction table is empty."
                 : $"All {directions.Count()} records were successfully received from the Direction table.");
 
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<DirectionDto> GetById(long id)
         {
-            logger.Information($"Getting Direction by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting Direction by Id started. Looking Id = {id}.");
 
             var direction = await repository.GetById((int)id).ConfigureAwait(false);
 
@@ -98,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Direction with Id = {id}.");
+            logger.LogInformation($"Successfully got a Direction with Id = {id}.");
 
             return direction.ToModel();
         }
@@ -106,19 +106,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<DirectionDto> Update(DirectionDto dto)
         {
-            logger.Information($"Updating Direction with Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating Direction with Id = {dto?.Id} started.");
 
             try
             {
                 var direction = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Direction with Id = {direction?.Id} updated succesfully.");
+                logger.LogInformation($"Direction with Id = {direction?.Id} updated succesfully.");
 
                 return direction.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Direction with Id = {dto?.Id} doesn't exist in the system.");
+                logger.LogError($"Updating failed. Direction with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

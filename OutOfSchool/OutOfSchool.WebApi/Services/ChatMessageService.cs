@@ -3,25 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
     public class ChatMessageService : IChatMessageService
     {
         private readonly IEntityRepository<ChatMessage> repository;
-        private readonly ILogger logger;
+        private readonly ILogger<ChatMessageService> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatMessageService"/> class.
         /// </summary>
         /// <param name="repository">Repository for the ChatMessage entity.</param>
         /// <param name="logger">Logger.</param>
-        public ChatMessageService(IEntityRepository<ChatMessage> repository, ILogger logger)
+        public ChatMessageService(IEntityRepository<ChatMessage> repository, ILogger<ChatMessageService> logger)
         {
             this.repository = repository;
             this.logger = logger;
@@ -35,17 +35,17 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException($"{nameof(chatMessageDto)}");
             }
 
-            logger.Information("ChatMessage creating was started.");
+            logger.LogInformation("ChatMessage creating was started.");
 
             try
             {
                 var chatMessage = await repository.Create(chatMessageDto.ToDomain()).ConfigureAwait(false);
-                logger.Information($"ChatMessage id:{chatMessage.Id} was saved to DB.");
+                logger.LogInformation($"ChatMessage id:{chatMessage.Id} was saved to DB.");
                 return chatMessage.ToModel();
             }
             catch (DbUpdateException exception)
             {
-                logger.Error($"ChatMessage was not created. Exception: {exception.Message}");
+                logger.LogError($"ChatMessage was not created. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"ChatMessage deleting was started. ChatMessage id:{id}");
+            logger.LogInformation($"ChatMessage deleting was started. ChatMessage id:{id}");
 
             try
             {
@@ -68,11 +68,11 @@ namespace OutOfSchool.WebApi.Services
                     throw new ArgumentOutOfRangeException(nameof(id), $"ChatMessage with id:{id} was not found in the system.");
                 }
 
-                logger.Information($"ChatMessage id:{id} was successfully deleted.");
+                logger.LogInformation($"ChatMessage id:{id} was successfully deleted.");
             }
             catch (DbUpdateConcurrencyException exception)
             {
-                logger.Error($"Deleting ChatMessage id:{id} failed. Exception: {exception.Message}");
+                logger.LogError($"Deleting ChatMessage id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -80,14 +80,14 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChatMessageDto>> GetAllByChatRoomId(long chatRoomId)
         {
-            logger.Information($"Process of getting all ChatMessages with ChatRoomId:{chatRoomId} was started.");
+            logger.LogInformation($"Process of getting all ChatMessages with ChatRoomId:{chatRoomId} was started.");
 
             try
             {
                 var query = repository.Get<long>(where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.Id);
                 var chatMessages = await query.ToListAsync().ConfigureAwait(false);
 
-                logger.Information(!chatMessages.Any()
+                logger.LogInformation(!chatMessages.Any()
                 ? $"There are no ChatMessages in the system with ChatRoomId:{chatRoomId}"
                 : $"Successfully got all {chatMessages.Count} records with ChatRoomId:{chatRoomId}.");
 
@@ -95,7 +95,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (Exception exception)
             {
-                logger.Error($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {exception.Message}");
+                logger.LogError($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -103,14 +103,14 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChatMessageDto>> GetAllNotReadByUserInChatRoom(long chatRoomId, string userId)
         {
-            logger.Information($"Process of getting all ChatMessages that are not read with ChatRoomId:{chatRoomId} and UserId:{userId} was started.");
+            logger.LogInformation($"Process of getting all ChatMessages that are not read with ChatRoomId:{chatRoomId} and UserId:{userId} was started.");
 
             try
             {
                 var query = repository.Get<long>(where: x => x.ChatRoomId == chatRoomId && x.UserId != userId && !x.IsRead, orderBy: x => x.Id);
                 var chatMessages = await query.AsNoTracking().ToListAsync().ConfigureAwait(false);
 
-                logger.Information(!chatMessages.Any()
+                logger.LogInformation(!chatMessages.Any()
                 ? $"There are no ChatMessages that are not read in the system with ChatRoomId:{chatRoomId} and UserId:{userId}."
                 : $"Successfully got all {chatMessages.Count} records that are not read with ChatRoomId:{chatRoomId} and UserId:{userId}.");
 
@@ -118,7 +118,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (Exception exception)
             {
-                logger.Error($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {exception.Message}");
+                logger.LogError($"Getting all ChatMessages with ChatRoomId:{chatRoomId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -126,7 +126,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChatMessageDto> GetById(long id)
         {
-            logger.Information($"ChatMessage getting was started. ChatMessage id:{id}");
+            logger.LogInformation($"ChatMessage getting was started. ChatMessage id:{id}");
 
             try
             {
@@ -134,18 +134,18 @@ namespace OutOfSchool.WebApi.Services
 
                 if (chatMessages.Count < 1)
                 {
-                    logger.Information($"ChatMessage id:{id} was not found.");
+                    logger.LogInformation($"ChatMessage id:{id} was not found.");
                     return null;
                 }
                 else
                 {
-                    logger.Information($"ChatMessage id:{chatMessages.First().Id} was successfully found.");
+                    logger.LogInformation($"ChatMessage id:{chatMessages.First().Id} was successfully found.");
                     return chatMessages.First().ToModel();
                 }
             }
             catch (Exception exception)
             {
-                logger.Error($"Getting ChatMessage with id:{id} failed. Exception: {exception.Message}");
+                logger.LogError($"Getting ChatMessage with id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -158,19 +158,19 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException($"{nameof(chatMessageDto)}");
             }
 
-            logger.Information($"ChatMessage updating was started. ChatMessage id:{chatMessageDto.Id}");
+            logger.LogInformation($"ChatMessage updating was started. ChatMessage id:{chatMessageDto.Id}");
 
             try
             {
                 var chatMessage = await repository.Update(chatMessageDto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"ChatMessage id:{chatMessage.Id} was successfully updated.");
+                logger.LogInformation($"ChatMessage id:{chatMessage.Id} was successfully updated.");
 
                 return chatMessage.ToModel();
             }
             catch (DbUpdateConcurrencyException exception)
             {
-                logger.Error($"Updating ChatMessage with id:{chatMessageDto.Id} failed. Exception: {exception.Message}");
+                logger.LogError($"Updating ChatMessage with id:{chatMessageDto.Id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -183,7 +183,7 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException($"{nameof(chatMessages)}");
             }
 
-            logger.Information($"Process of updating ({chatMessages.Count()}) ChatMessages that are not read was started.");
+            logger.LogInformation($"Process of updating ({chatMessages.Count()}) ChatMessages that are not read was started.");
 
             if (chatMessages.Any())
             {
@@ -196,12 +196,12 @@ namespace OutOfSchool.WebApi.Services
                     }
                     catch (DbUpdateConcurrencyException exception)
                     {
-                        logger.Error($"Updating ChatMessage with id:{item.Id} failed. Exception: {exception.Message}");
+                        logger.LogError($"Updating ChatMessage with id:{item.Id} failed. Exception: {exception.Message}");
                         throw;
                     }
                 }
 
-                logger.Information($"ChatMessages({chatMessages.Count()}) were successfully updated.");
+                logger.LogInformation($"ChatMessages({chatMessages.Count()}) were successfully updated.");
             }
 
             return chatMessages;

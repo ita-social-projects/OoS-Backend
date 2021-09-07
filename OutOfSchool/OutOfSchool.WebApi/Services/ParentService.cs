@@ -5,11 +5,11 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IParentRepository repositoryParent;
         private readonly IEntityRepository<User> repositoryUser;
-        private readonly ILogger logger;
+        private readonly ILogger<ParentService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repositoryUser">Repository for user entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ParentService(IParentRepository repositoryParent, IEntityRepository<User> repositoryUser, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ParentService(IParentRepository repositoryParent, IEntityRepository<User> repositoryUser, ILogger<ParentService> logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repositoryParent = repositoryParent;
@@ -41,13 +41,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> Create(ParentDTO dto)
         {
-            logger.Information("Parent creating was started");
+            logger.LogInformation("Parent creating was started");
 
             Func<Task<Parent>> operation = async () => await repositoryParent.Create(dto.ToDomain()).ConfigureAwait(false);
 
             var newParent = await repositoryParent.RunInTransaction(operation).ConfigureAwait(false);
 
-            logger.Information($"Parent with Id = {newParent?.Id} created successfully.");
+            logger.LogInformation($"Parent with Id = {newParent?.Id} created successfully.");
 
             return newParent.ToModel();
         }
@@ -55,7 +55,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting Parent with Id = {id} started.");
+            logger.LogInformation($"Deleting Parent with Id = {id} started.");
 
             var entity = new Parent() { Id = id };
 
@@ -63,11 +63,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repositoryParent.Delete(entity).ConfigureAwait(false);
 
-                logger.Information($"Parent with Id = {id} succesfully deleted.");
+                logger.LogInformation($"Parent with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Parent with Id = {id} doesn't exist in the system.");
+                logger.LogError($"Deleting failed. Parent with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -75,11 +75,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ParentDTO>> GetAll()
         {
-            logger.Information("Getting all Parents started.");
+            logger.LogInformation("Getting all Parents started.");
 
             var parents = await this.repositoryParent.GetAll().ConfigureAwait(false);
 
-            logger.Information(!parents.Any()
+            logger.LogInformation(!parents.Any()
                 ? "Parent table is empty."
                 : $"All {parents.Count()} records were successfully received from the Parent table");
 
@@ -89,7 +89,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> GetByUserId(string id)
         {
-            logger.Information($"Getting Parent by UserId started. Looking UserId is {id}.");
+            logger.LogInformation($"Getting Parent by UserId started. Looking UserId is {id}.");
 
             Expression<Func<Parent, bool>> filter = p => p.UserId == id;
 
@@ -100,7 +100,7 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException(localizer["There is no Parent in the Db with such User id"], nameof(id));
             }
 
-            logger.Information($"Successfully got a Parent with UserId = {id}.");
+            logger.LogInformation($"Successfully got a Parent with UserId = {id}.");
 
             return parents.FirstOrDefault().ToModel();
         }
@@ -108,7 +108,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ParentDTO> GetById(long id)
         {
-            logger.Information($"Getting Parent by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting Parent by Id started. Looking Id = {id}.");
 
             var parent = await repositoryParent.GetById((int)id).ConfigureAwait(false);
 
@@ -119,7 +119,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Parent with Id = {id}.");
+            logger.LogInformation($"Successfully got a Parent with Id = {id}.");
 
             return parent.ToModel();
         }
@@ -127,7 +127,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ShortUserDto> Update(ShortUserDto dto)
         {
-            logger.Information($"Updating Parent with User Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating Parent with User Id = {dto?.Id} started.");
 
             try
             {
@@ -137,13 +137,13 @@ namespace OutOfSchool.WebApi.Services
 
                 var updatedUser = await repositoryUser.Update(dto.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
 
-                logger.Information($"User with Id = {updatedUser?.Id} updated succesfully.");
+                logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
 
                 return updatedUser.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
+                logger.LogError($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

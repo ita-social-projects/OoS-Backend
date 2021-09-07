@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<ChatRoom> roomRepository;
         private readonly IEntityRepository<User> userRepository;
         private readonly IWorkshopRepository workshopRepository;
-        private readonly ILogger logger;
+        private readonly ILogger<ChatRoomService> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatRoomService"/> class.
@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Services
             IEntityRepository<ChatRoom> chatRoomRepository,
             IEntityRepository<User> userRepository,
             IWorkshopRepository workshopRepository,
-            ILogger logger)
+            ILogger<ChatRoomService> logger)
         {
             this.roomRepository = chatRoomRepository;
             this.userRepository = userRepository;
@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChatRoomDto> CreateOrReturnExisting(string user1Id, string user2Id, long workshopId)
         {
-            logger.Information($"Checking a ChatRoom with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
+            logger.LogInformation($"Checking a ChatRoom with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
             try
             {
@@ -52,7 +52,7 @@ namespace OutOfSchool.WebApi.Services
 
                 if (!(existingChatRoom is null))
                 {
-                    logger.Information($"ChatRoom id:{existingChatRoom.Id} is already existing in the system.");
+                    logger.LogInformation($"ChatRoom id:{existingChatRoom.Id} is already existing in the system.");
                     return existingChatRoom;
                 }
                 else
@@ -62,12 +62,12 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (InvalidOperationException exception)
             {
-                logger.Error($"CreateOrReturnExisting ChatRoom faild: {exception.Message}");
+                logger.LogError($"CreateOrReturnExisting ChatRoom faild: {exception.Message}");
                 throw;
             }
             catch (Exception exception)
             {
-                logger.Error($"CreateOrReturnExisting ChatRoom faild: {exception.Message}");
+                logger.LogError($"CreateOrReturnExisting ChatRoom faild: {exception.Message}");
                 throw;
             }
         }
@@ -75,7 +75,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"ChatRoom deleting was started. ChatRoom id:{id}");
+            logger.LogInformation($"ChatRoom deleting was started. ChatRoom id:{id}");
 
             try
             {
@@ -92,11 +92,11 @@ namespace OutOfSchool.WebApi.Services
                     await roomRepository.Delete(chatRoom).ConfigureAwait(false);
                 }
 
-                logger.Information($"ChatRoom id:{id} was successfully deleted.");
+                logger.LogInformation($"ChatRoom id:{id} was successfully deleted.");
             }
             catch (DbUpdateConcurrencyException exception)
             {
-                logger.Error($"Deleting ChatRoom id:{id} failed. Exception: {exception.Message}");
+                logger.LogError($"Deleting ChatRoom id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChatRoomDto> GetById(long id)
         {
-            logger.Information($"Process of getting ChatRoom by Id:{id} was started.");
+            logger.LogInformation($"Process of getting ChatRoom by Id:{id} was started.");
 
             try
             {
@@ -114,18 +114,18 @@ namespace OutOfSchool.WebApi.Services
 
                 if (chatRoom is null)
                 {
-                    logger.Information($"ChatRoom with id:{id} was not found.");
+                    logger.LogInformation($"ChatRoom with id:{id} was not found.");
                     return null;
                 }
                 else
                 {
-                    logger.Information($"ChatRoom id:{chatRoom.Id} was successfully found.");
+                    logger.LogInformation($"ChatRoom id:{chatRoom.Id} was successfully found.");
                     return chatRoom.ToModel();
                 }
             }
             catch (Exception exception)
             {
-                logger.Error($"Getting ChatRoom with id:{id} failed. Exception: {exception.Message}");
+                logger.LogError($"Getting ChatRoom with id:{id} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -133,14 +133,14 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ChatRoomDto>> GetByUserId(string userId)
         {
-            logger.Information($"Process of getting all ChatRooms with userId:{userId} was started.");
+            logger.LogInformation($"Process of getting all ChatRooms with userId:{userId} was started.");
 
             try
             {
                 var query = roomRepository.GetByFilterNoTracking(x => x.Users.Any(u => u.Id == userId), includeProperties: "Users");
                 var chatRooms = await query.AsNoTracking().ToListAsync().ConfigureAwait(false);
 
-                logger.Information(!chatRooms.Any()
+                logger.LogInformation(!chatRooms.Any()
                 ? $"There is no ChatRoom in the system with userId:{userId}."
                 : $"Successfully got all {chatRooms.Count} records with userId:{userId}.");
 
@@ -148,7 +148,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (Exception exception)
             {
-                logger.Error($"Getting all ChatMessages with userId:{userId} failed. Exception: {exception.Message}");
+                logger.LogError($"Getting all ChatMessages with userId:{userId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -156,7 +156,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChatRoomDto> GetUniqueChatRoomBetweenUsersWithinWorkshop(string user1Id, string user2Id, long workshopId)
         {
-            logger.Information($"Process of getting unique ChatRoom with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
+            logger.LogInformation($"Process of getting unique ChatRoom with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
             try
             {
@@ -166,7 +166,7 @@ namespace OutOfSchool.WebApi.Services
                     .ToListAsync()
                     .ConfigureAwait(false);
 
-                logger.Information(!chatRooms.Any()
+                logger.LogInformation(!chatRooms.Any()
                 ? $"There is no ChatRoom in the system with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.."
                 : $"Successfully got {chatRooms.Count} record(s) with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started..");
 
@@ -182,7 +182,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (Exception exception)
             {
-                logger.Error($"Getting all ChatMessages with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} failed. Exception: {exception.Message}");
+                logger.LogError($"Getting all ChatMessages with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -190,7 +190,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<bool> UsersCanChatBetweenEachOther(string user1Id, string user2Id, long workshopId)
         {
-            logger.Information($"Validation of ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
+            logger.LogInformation($"Validation of ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
             try
             {
@@ -231,7 +231,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (InvalidOperationException exception)
             {
-                logger.Error($"One of the entities was not found. {exception.Message}");
+                logger.LogError($"One of the entities was not found. {exception.Message}");
                 throw;
             }
         }
@@ -246,7 +246,7 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="DbUpdateException">If an error is encountered while saving to database.</exception>
         private async Task<ChatRoomDto> Create(string user1Id, string user2Id, long workshopId)
         {
-            logger.Information($"ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
+            logger.LogInformation($"ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
             var chatRoom = new ChatRoom()
             {
@@ -261,17 +261,17 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var newChatRoom = await roomRepository.RunInTransaction(operation).ConfigureAwait(false);
-                logger.Information($"ChatRoom id:{newChatRoom.Id} was saved to DB.");
+                logger.LogInformation($"ChatRoom id:{newChatRoom.Id} was saved to DB.");
                 foreach (var item in newChatRoom.ChatRoomUsers)
                 {
-                    logger.Information($"ChatRoomUser id:{item.Id} was saved to DB.");
+                    logger.LogInformation($"ChatRoomUser id:{item.Id} was saved to DB.");
                 }
 
                 return chatRoom.ToModel();
             }
             catch (DbUpdateException exception)
             {
-                logger.Error($"ChatRoom was not created. Exception: {exception.Message}");
+                logger.LogError($"ChatRoom was not created. Exception: {exception.Message}");
                 throw;
             }
         }

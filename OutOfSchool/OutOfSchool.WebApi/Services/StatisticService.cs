@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -19,7 +19,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IEntityRepository<Direction> directionRepository;
-        private readonly ILogger logger;
+        private readonly ILogger<StatisticService> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StatisticService"/> class.
@@ -32,7 +32,7 @@ namespace OutOfSchool.WebApi.Services
             IApplicationRepository applicationRepository,
             IWorkshopRepository workshopRepository,
             IEntityRepository<Direction> directionRepository,
-            ILogger logger)
+            ILogger<StatisticService> logger)
         {
             this.applicationRepository = applicationRepository;
             this.workshopRepository = workshopRepository;
@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit)
         {
-            logger.Information("Getting popular categories started.");
+            logger.LogInformation("Getting popular categories started.");
 
             var workshops = workshopRepository.Get<int>();
             var applications = applicationRepository.Get<int>();
@@ -107,7 +107,7 @@ namespace OutOfSchool.WebApi.Services
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            logger.Information($"All {sortedStatistics.Count} records were successfully received");
+            logger.LogInformation($"All {sortedStatistics.Count} records were successfully received");
 
             return sortedStatistics;
         }
@@ -115,7 +115,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshops(int limit)
         {
-            logger.Information("Getting popular workshops started.");
+            logger.LogInformation("Getting popular workshops started.");
 
             var workshops = workshopRepository.Get<int>(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
 
@@ -131,7 +131,7 @@ namespace OutOfSchool.WebApi.Services
 
             var popularWorkshopsList = await popularWorkshops.ToListAsync().ConfigureAwait(false);
 
-            logger.Information($"All {popularWorkshopsList.Count} records were successfully received");
+            logger.LogInformation($"All {popularWorkshopsList.Count} records were successfully received");
 
             return popularWorkshopsList.Select(w => w.ToCard());
         }
