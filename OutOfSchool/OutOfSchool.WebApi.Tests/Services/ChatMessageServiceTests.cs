@@ -133,7 +133,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var currentUserRoleIsProvider = Role.Provider;
 
             // Act
-            var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
+            var result = await messageService.SetReadDatetimeInAllMessagesForUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
@@ -151,7 +151,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var currentUserRoleIsProvider = Role.Provider;
 
             // Act
-            var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
+            var result = await messageService.SetReadDatetimeInAllMessagesForUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());

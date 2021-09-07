@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Hubs
             var userRoleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)
                 ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Role)} from HttpContext.");
 
-            Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName);
+            Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
 
             logger.Debug($"New Hub-connection established. {nameof(userId)}: {userId}, {nameof(userRoleName)}: {userRoleName}");
 
@@ -120,7 +120,7 @@ namespace OutOfSchool.WebApi.Hubs
                 }
 
                 // Save chatMessage in the system.
-                Role userRole = (Role)Enum.Parse(typeof(Role), Context.User.FindFirst("role").Value);
+                Role userRole = (Role)Enum.Parse(typeof(Role), Context.User.FindFirst("role").Value, true);
                 var createdMessageDto = await messageService.CreateAsync(chatMessageWorkshopCreateDto, userRole).ConfigureAwait(false);
 
                 // Add Parent's connections to the Group.

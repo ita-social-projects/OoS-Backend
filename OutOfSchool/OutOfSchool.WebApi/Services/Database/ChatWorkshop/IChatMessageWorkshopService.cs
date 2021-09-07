@@ -38,6 +38,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="userRole">The role of sender (parent/provider).</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a number of messages that were updated.</returns>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task<int> UpdateIsReadByCurrentUserInChatRoomAsync(long chatRoomId, Role userRole);
+        Task<int> SetReadDatetimeInAllMessagesForUserInChatRoomAsync(long chatRoomId, Role userRole);
     }
 }

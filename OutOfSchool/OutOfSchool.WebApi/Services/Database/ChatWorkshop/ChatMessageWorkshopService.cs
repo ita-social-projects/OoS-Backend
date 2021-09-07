@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<int> UpdateIsReadByCurrentUserInChatRoomAsync(long chatRoomId, Role userRole)
+        public async Task<int> SetReadDatetimeInAllMessagesForUserInChatRoomAsync(long chatRoomId, Role userRole)
         {
             logger.Debug($"Process of updating {nameof(ChatMessageWorkshop)}s that are not read by current User started.");
 
