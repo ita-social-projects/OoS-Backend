@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
@@ -10,7 +11,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -19,14 +19,14 @@ namespace OutOfSchool.WebApi.Tests.Services
         private readonly Child createdChild = new Child { Id = 14, FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
         private readonly ChildDto createdChildDTO = new ChildDto { Id = 14, FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
-        private Mock<ILogger> logger;
+        private Mock<ILogger<ChildService>> logger;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<IEntityRepository<Child>> mockRepository;
 
         [SetUp]
         public void SetUp()
         {
-            logger = new Mock<ILogger>();
+            logger = new Mock<ILogger<ChildService>>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             mockRepository = new Mock<IEntityRepository<Child>>();
         }

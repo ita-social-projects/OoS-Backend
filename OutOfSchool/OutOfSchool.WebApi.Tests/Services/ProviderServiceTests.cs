@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IEntityRepository<User>> usersRepositoryMock;
         private Mock<IRatingService> ratingService;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<ILogger> logger;
+        private Mock<ILogger<ProviderService>> logger;
 
         private List<Provider> fakeProviders;
         private User fakeUser;

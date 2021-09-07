@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -11,7 +12,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -19,7 +19,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     public class ChatMessageServiceTests
     {
         private IEntityRepository<ChatMessage> messageRepository;
-        private Mock<ILogger> loggerMoq;
+        private Mock<ILogger<ChatMessageService>> loggerMoq;
 
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext dbContext;
@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             dbContext = new OutOfSchoolDbContext(options);
 
             messageRepository = new EntityRepository<ChatMessage>(dbContext);
-            loggerMoq = new Mock<ILogger>();
+            loggerMoq = new Mock<ILogger<ChatMessageService>>();
 
             messageService = new ChatMessageService(messageRepository, loggerMoq.Object);
 

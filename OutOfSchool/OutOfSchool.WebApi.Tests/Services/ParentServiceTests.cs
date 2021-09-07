@@ -7,6 +7,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -15,7 +16,6 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -28,7 +28,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IEntityRepository<User> repoUser;
         private IParentService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<ILogger> logger;
+        private Mock<ILogger<ParentService>> logger;
 
         [SetUp]
         public void SetUp()
@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             repoParent = new ParentRepository(context);
             repoUser = new EntityRepository<User>(context);
-            logger = new Mock<ILogger>();
+            logger = new Mock<ILogger<ParentService>>();
             service = new ParentService(repoParent, repoUser, logger.Object, localizer.Object);
 
             SeedDatabase();

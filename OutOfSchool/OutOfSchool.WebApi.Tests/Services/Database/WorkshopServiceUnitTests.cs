@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Models;
@@ -10,7 +11,6 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services.UnitTests
 {
@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         private Mock<IEntityRepository<Address>> addressRepositoryMoq;
 
         private Mock<IRatingService> ratingService;
-        private Mock<ILogger> logger;
+        private Mock<ILogger<WorkshopService>> logger;
 
         private Workshop newWorkshop;
         private List<Workshop> workshops;
@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             teacherRepositoryMoq = new Mock<IEntityRepository<Teacher>>();
             addressRepositoryMoq = new Mock<IEntityRepository<Address>>();
             ratingService = new Mock<IRatingService>();
-            logger = new Mock<ILogger>();
+            logger = new Mock<ILogger<WorkshopService>>();
 
             workshopService = new WorkshopService(
                 workshopRepositoryMoq.Object,

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private Mock<IWorkshopService> mockDatabaseService;
         private Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>> mockElasticsearchService;
-        private Mock<ILogger> mockLogger;
+        private Mock<ILogger<WorkshopServicesCombiner>> mockLogger;
 
         private IWorkshopServicesCombiner service;
 
@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             mockDatabaseService = new Mock<IWorkshopService>();
             mockElasticsearchService = new Mock<IElasticsearchService<WorkshopES, WorkshopFilterES>>();
-            mockLogger = new Mock<ILogger>();
+            mockLogger = new Mock<ILogger<WorkshopServicesCombiner>>();
 
             service = new WorkshopServicesCombiner(mockDatabaseService.Object, mockElasticsearchService.Object, mockLogger.Object);
         }

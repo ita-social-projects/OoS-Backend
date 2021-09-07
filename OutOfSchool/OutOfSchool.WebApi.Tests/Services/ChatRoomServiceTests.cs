@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -11,7 +12,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IEntityRepository<ChatRoom> roomRepository;
         private IEntityRepository<User> userRepository;
         private IWorkshopRepository workshopRepository;
-        private Mock<ILogger> loggerMoq;
+        private Mock<ILogger<ChatRoomService>> loggerMoq;
 
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext dbContext;
@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             roomRepository = new EntityRepository<ChatRoom>(dbContext);
             userRepository = new EntityRepository<User>(dbContext);
             workshopRepository = new WorkshopRepository(dbContext);
-            loggerMoq = new Mock<ILogger>();
+            loggerMoq = new Mock<ILogger<ChatRoomService>>();
 
             roomService = new ChatRoomService(roomRepository, userRepository, workshopRepository, loggerMoq.Object);
 

@@ -6,10 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Hubs
 {
@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Hubs
         private static readonly ConcurrentDictionary<string, HubUser> Users
             = new ConcurrentDictionary<string, HubUser>(StringComparer.InvariantCultureIgnoreCase);
 
-        private readonly ILogger logger;
+        private readonly ILogger<ChatHub> logger;
         private readonly IChatMessageService messageService;
         private readonly IChatRoomService roomService;
 
@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Hubs
         /// <param name="chatMessageService">Service for ChatMessage model.</param>
         /// <param name="chatRoomService">Service for ChatRoom model.</param>
         /// <param name="logger">Logger.</param>
-        public ChatHub(ILogger logger, IChatMessageService chatMessageService, IChatRoomService chatRoomService)
+        public ChatHub(ILogger<ChatHub> logger, IChatMessageService chatMessageService, IChatRoomService chatRoomService)
         {
             this.logger = logger;
             this.messageService = chatMessageService;
@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Hubs
         public override async Task OnConnectedAsync()
         {
             var userId = Context.User.FindFirst("sub")?.Value;
-            logger.Information($"New Hub-connection established. UserId: {userId}");
+            logger.LogInformation($"New Hub-connection established. UserId: {userId}");
 
             this.AddUsersConnectionIdTracking(userId);
 
@@ -57,7 +57,7 @@ namespace OutOfSchool.WebApi.Hubs
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var userId = Context.User.FindFirst("sub")?.Value;
-            logger.Information($"UserId: {userId} connection:{Context.ConnectionId} disconnected.");
+            logger.LogInformation($"UserId: {userId} connection:{Context.ConnectionId} disconnected.");
 
             this.RemoveUsersConnectionIdTracking(userId);
 
@@ -83,7 +83,7 @@ namespace OutOfSchool.WebApi.Hubs
             }
 
             var senderUserId = Context.User.FindFirst("sub")?.Value;
-            logger.Information($"{nameof(SendMessageToOthersInGroup)}.Invoked.");
+            logger.LogInformation($"{nameof(SendMessageToOthersInGroup)}.Invoked.");
 
             var chatMessageDto = new ChatMessageDto()
             {
