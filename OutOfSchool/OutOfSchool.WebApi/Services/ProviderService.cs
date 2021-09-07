@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ProviderDto> Create(ProviderDto providerDto)
         {
-            logger.Debug("Provider creating was started.");
+            logger.LogDebug("Provider creating was started.");
 
             if (providerDto == null)
             {
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
 
-            logger.Debug($"Provider with Id = {newProvider?.Id} created successfully.");
+            logger.LogDebug($"Provider with Id = {newProvider?.Id} created successfully.");
 
             return newProvider.ToModel();
         }
@@ -95,7 +95,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ProviderDto>> GetAll()
         {
-            logger.Debug("Getting all Providers started.");
+            logger.LogDebug("Getting all Providers started.");
 
             var providers = await providerRepository.GetAll().ConfigureAwait(false);
 
@@ -166,7 +166,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ProviderDto> Update(ProviderDto providerDto, string userId, string userRole)
         {
-            logger.Debug($"Updating Provider with Id = {providerDto?.Id} started.");
+            logger.LogDebug($"Updating Provider with Id = {providerDto?.Id} started.");
 
             try
             {
@@ -187,7 +187,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Provider with Id = {providerDto?.Id} doesn't exist in the system.");
+                logger.LogError($"Updating failed. Provider with Id = {providerDto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -198,7 +198,7 @@ namespace OutOfSchool.WebApi.Services
             // BUG: Possible bug with deleting provider not owned by the user itself.
             // TODO: add unit tests to check ownership functionality
 
-            logger.Information($"Deleting Provider with Id = {id} started.");
+            logger.LogInformation($"Deleting Provider with Id = {id} started.");
 
             try
             {
