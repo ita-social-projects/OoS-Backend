@@ -28,7 +28,10 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public AddressService(IEntityRepository<Address> repository, ILogger<AddressService> logger, IStringLocalizer<SharedResource> localizer)
+        public AddressService(
+            IEntityRepository<Address> repository,
+            ILogger<AddressService> logger,
+            IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
