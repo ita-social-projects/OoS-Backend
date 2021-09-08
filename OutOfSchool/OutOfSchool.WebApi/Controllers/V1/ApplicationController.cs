@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.ApiModels;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -283,9 +284,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="201">Entity was created and returned with Id.</response>
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
-        /// <response code="500">If any server error occures.</response>
+        /// <response code="500">If any server error occurs.</response>
         [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -310,7 +311,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 applicationDto.CreationTime = DateTimeOffset.UtcNow;
 
-                applicationDto.Status = 0;
+                applicationDto.Status = ApplicationStatus.Pending;
 
                 var application = await applicationService.Create(applicationDto).ConfigureAwait(false);
 
@@ -411,6 +412,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return applications.ToList();
         }
 
+        // TODO: Ask Polina about status validation
         private void ValidateStatus(int status)
         {
             if (status < 0 || status > 2)

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,8 +45,8 @@ namespace OutOfSchool.WebApi
 
             var supportedCultures = new[]
             {
-                  new CultureInfo("en"),
-                  new CultureInfo("uk"),
+                new CultureInfo("en"),
+                new CultureInfo("uk"),
             };
 
             var requestLocalization = new RequestLocalizationOptions
@@ -108,6 +109,10 @@ namespace OutOfSchool.WebApi
                         .AllowCredentials()));
 
             services.AddControllers();
+
+            // TODO: Ask frontend if all enums as strings are fine by adding serializer project wide
+            // .AddJsonOptions(options =>
+            //     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
