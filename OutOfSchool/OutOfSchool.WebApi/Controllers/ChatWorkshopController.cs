@@ -68,7 +68,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public Task<IActionResult> GetRoomForParentByRoomIdAsync([Range(1, long.MaxValue)] long id)
-            => this.GetRoomByIdAsync(id, this.ParentHasRightsForChatRoom());
+            => this.GetRoomByIdAsync(id, this.IsParentAChatRoomParticipantAsync);
 
         /// <summary>
         /// Get provider's chat room with information about Parent and Workshop.
@@ -83,7 +83,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public Task<IActionResult> GetRoomForProviderByRoomIdAsync([Range(1, long.MaxValue)] long id)
-            => this.GetRoomByIdAsync(id, this.ProviderHasRightsForChatRoom());
+            => this.GetRoomByIdAsync(id, this.IsProviderAChatRoomParticipantAsync);
 
         /// <summary>
         /// Get a portion of chat messages for specified parent's chat room.
@@ -99,7 +99,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public Task<IActionResult> GetMessagesForParentByRoomIdAsync([Range(1, long.MaxValue)] long id, [FromQuery] OffsetFilter offsetFilter)
-            => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.ParentHasRightsForChatRoom());
+            => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.IsParentAChatRoomParticipantAsync);
 
         /// <summary>
         /// Get a portion of chat messages for specified provider's chat room.
@@ -115,7 +115,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public Task<IActionResult> GetMessagesForProviderByRoomIdAsync([Range(1, long.MaxValue)] long id, [FromQuery] OffsetFilter offsetFilter)
-            => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.ProviderHasRightsForChatRoom());
+            => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.IsProviderAChatRoomParticipantAsync);
 
         /// <summary>
         /// Get a list of chat rooms for current parent.
@@ -159,7 +159,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public Task<IActionResult> SetReadDatetimeInMessagesForParentAsync([Range(1, long.MaxValue)] long id)
-            => this.SetReadDatetimeInMessagesForCurrentUserAsync(id, this.ParentHasRightsForChatRoom());
+            => this.SetReadDatetimeInMessagesForCurrentUserAsync(id, this.IsParentAChatRoomParticipantAsync);
 
         /// <summary>
         /// Set current date and time for all not read chat messages for provider in the specified chat room.
@@ -175,7 +175,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public Task<IActionResult> SetReadDatetimeInMessagesForProviderAsync([Range(1, long.MaxValue)] long id)
-            => this.SetReadDatetimeInMessagesForCurrentUserAsync(id, this.ProviderHasRightsForChatRoom());
+            => this.SetReadDatetimeInMessagesForCurrentUserAsync(id, this.IsProviderAChatRoomParticipantAsync);
 
         private Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
@@ -184,16 +184,12 @@ namespace OutOfSchool.WebApi.Controllers
             return validationService.UserIsParentOwnerAsync(userId, chatRoom.ParentId);
         }
 
-        private Func<ChatRoomWorkshopDto, Task<bool>> ParentHasRightsForChatRoom() => chatRoom => this.IsParentAChatRoomParticipantAsync(chatRoom);
-
         private Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
             var userId = this.GetUserId();
 
             return validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId);
         }
-
-        private Func<ChatRoomWorkshopDto, Task<bool>> ProviderHasRightsForChatRoom() => chatRoom => this.IsProviderAChatRoomParticipantAsync(chatRoom);
 
         private string GetUserId()
         {
