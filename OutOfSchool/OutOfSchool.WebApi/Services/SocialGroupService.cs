@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     public class SocialGroupService : ISocialGroupService
     {
         private readonly IEntityRepository<SocialGroup> repository;
-        private readonly ILogger logger;
+        private readonly ILogger<SocialGroupService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public SocialGroupService(IEntityRepository<SocialGroup> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public SocialGroupService(IEntityRepository<SocialGroup> repository, ILogger<SocialGroupService> logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
@@ -37,11 +37,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<SocialGroupDto>> GetAll()
         {
-            logger.Information("Getting all Social Groups started.");
+            logger.LogInformation("Getting all Social Groups started.");
 
             var socialGroups = await repository.GetAll().ConfigureAwait(false);
 
-            logger.Information(!socialGroups.Any()
+            logger.LogInformation(!socialGroups.Any()
                 ? "SocialGroup table is empty."
                 : $"All {socialGroups.Count()} records were successfully received from the SocialGroup table");
 
@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SocialGroupDto> GetById(long id)
         {
-            logger.Information($"Getting SocialGroup by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting SocialGroup by Id started. Looking Id = {id}.");
 
             var socialGroup = await repository.GetById(id).ConfigureAwait(false);
 
@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a SocialGroup with Id = {id}.");
+            logger.LogInformation($"Successfully got a SocialGroup with Id = {id}.");
 
             return socialGroup.ToModel();
         }
@@ -70,13 +70,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SocialGroupDto> Create(SocialGroupDto dto)
         {
-            logger.Information("SocialGroup creating was started.");
+            logger.LogInformation("SocialGroup creating was started.");
 
             var socialGroup = dto.ToDomain();
 
             var newSocialGroup = await repository.Create(socialGroup).ConfigureAwait(false);
 
-            logger.Information($"SocialGroup with Id = {newSocialGroup?.Id} created successfully.");
+            logger.LogInformation($"SocialGroup with Id = {newSocialGroup?.Id} created successfully.");
 
             return newSocialGroup.ToModel();
         }
@@ -84,19 +84,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SocialGroupDto> Update(SocialGroupDto dto)
         {
-            logger.Information($"Updating SocialGroup with Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating SocialGroup with Id = {dto?.Id} started.");
 
             try
             {
                 var socialGroup = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
+                logger.LogInformation($"SocialGroup with Id = {socialGroup?.Id} updated succesfully.");
 
                 return socialGroup.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. SocialGroup with Id = {dto?.Id} doesn't exist in the system.");
+                logger.LogError($"Updating failed. SocialGroup with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting SocialGroup with Id = {id} started.");
+            logger.LogInformation($"Deleting SocialGroup with Id = {id} started.");
 
             var socialGroup = await repository.GetById(id).ConfigureAwait(false);
 
@@ -117,7 +117,7 @@ namespace OutOfSchool.WebApi.Services
 
             await repository.Delete(socialGroup).ConfigureAwait(false);
 
-            logger.Information($"SocialGroup with Id = {id} succesfully deleted.");
+            logger.LogInformation($"SocialGroup with Id = {id} succesfully deleted.");
         }
     }
 }

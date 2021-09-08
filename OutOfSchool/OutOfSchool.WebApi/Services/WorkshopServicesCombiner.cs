@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -12,9 +12,9 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IWorkshopService databaseService;
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
-        private readonly ILogger logger;
+        private readonly ILogger<WorkshopServicesCombiner> logger;
 
-        public WorkshopServicesCombiner(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger logger)
+        public WorkshopServicesCombiner(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger<WorkshopServicesCombiner> logger)
         {
             this.databaseService = workshopService;
             this.elasticsearchService = elasticsearchService;
@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!esResultIsValid)
             {
-                logger.Warning($"Error happend while trying to index {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
+                logger.LogWarning($"Error happend while trying to index {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
             }
 
             return workshop;
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!esResultIsValid)
             {
-                logger.Warning($"Error happend while trying to update {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
+                logger.LogWarning($"Error happend while trying to update {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
             }
 
             return workshop;
@@ -68,7 +68,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!esResultIsValid)
             {
-                logger.Warning($"Error happend while trying to delete Workshop:{id} in Elasticsearch.");
+                logger.LogWarning($"Error happend while trying to delete Workshop:{id} in Elasticsearch.");
             }
         }
 

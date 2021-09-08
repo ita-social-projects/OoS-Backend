@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     public class ClassService : IClassService
     {
         private readonly IClassRepository repository;
-        private readonly ILogger logger;
+        private readonly ILogger<ClassService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityRepository">Repository for some entity.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ClassService(IClassRepository entityRepository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public ClassService(IClassRepository entityRepository, ILogger<ClassService> logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = entityRepository;
@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ClassDto> Create(ClassDto dto)
         {
-            logger.Information("Class creating was started.");
+            logger.LogInformation("Class creating was started.");
 
             var classEntity = dto.ToDomain();
 
@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newClass = await repository.Create(classEntity).ConfigureAwait(false);
 
-            logger.Information($"Class with Id = {newClass?.Id} created successfully.");
+            logger.LogInformation($"Class with Id = {newClass?.Id} created successfully.");
 
             return newClass.ToModel();
         }
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting Class with Id = {id} started.");
+            logger.LogInformation($"Deleting Class with Id = {id} started.");
 
             var entity = new Class() { Id = id };
 
@@ -61,11 +61,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
-                logger.Information($"Class with Id = {id} succesfully deleted.");
+                logger.LogInformation($"Class with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Class with such Id = {id} doesn't exist in the system.");
+                logger.LogError($"Deleting failed. Class with such Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -73,11 +73,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ClassDto>> GetAll()
         {
-            logger.Information("Getting all Classes started.");
+            logger.LogInformation("Getting all Classes started.");
 
             var classes = await this.repository.GetAll().ConfigureAwait(false);
 
-            logger.Information(!classes.Any()
+            logger.LogInformation(!classes.Any()
                 ? "Class table is empty."
                 : $"All {classes.Count()} records were successfully received from the Class table");
 
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ClassDto> GetById(long id)
         {
-            logger.Information($"Getting Class by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting Class by Id started. Looking Id = {id}.");
 
             var classEntity = await repository.GetById((int)id).ConfigureAwait(false);
 
@@ -98,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Class with Id = {id}.");
+            logger.LogInformation($"Successfully got a Class with Id = {id}.");
 
             return classEntity.ToModel();
         }
@@ -106,13 +106,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<ClassDto>> GetByDepartmentId(long id)
         {
-            logger.Information($"Getting Class by Department's id started. Looking DepartmentId = {id}.");
+            logger.LogInformation($"Getting Class by Department's id started. Looking DepartmentId = {id}.");
 
             IdValidation(id);
 
             var classes = await this.repository.Get<int>(where: x => x.DepartmentId == id).ToListAsync().ConfigureAwait(false);
 
-            logger.Information(!classes.Any()
+            logger.LogInformation(!classes.Any()
                 ? $"There aren't Classes for Department with Id = {id}."
                 : $"All {classes.Count} records were successfully received from the Class table");
 
@@ -122,19 +122,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ClassDto> Update(ClassDto dto)
         {
-            logger.Information($"Updating Class with Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating Class with Id = {dto?.Id} started.");
 
             try
             {
                 var classEntity = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Class with Id = {classEntity?.Id} updated succesfully.");
+                logger.LogInformation($"Class with Id = {classEntity?.Id} updated succesfully.");
 
                 return classEntity.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Class with Id = {dto?.Id} doesn't exist in the system.");
+                logger.LogError($"Updating failed. Class with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }

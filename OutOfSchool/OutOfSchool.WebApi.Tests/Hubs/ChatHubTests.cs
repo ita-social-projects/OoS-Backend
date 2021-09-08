@@ -4,20 +4,20 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Hubs
 {
     [TestFixture]
     public class ChatHubTests
     {
-        private Mock<ILogger> loggerMoq;
+        private Mock<ILogger<ChatHub>> loggerMoq;
         private Mock<IChatMessageService> messageServiceMoq;
         private Mock<IChatRoomService> roomServiceMoq;
 
@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         [SetUp]
         public void SetUp()
         {
-            loggerMoq = new Mock<ILogger>();
+            loggerMoq = new Mock<ILogger<ChatHub>>();
             messageServiceMoq = new Mock<IChatMessageService>();
             roomServiceMoq = new Mock<IChatRoomService>();
 

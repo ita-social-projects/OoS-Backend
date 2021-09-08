@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -14,7 +15,6 @@ using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -32,7 +32,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IEntityRepository<Address> addressRepository;
 
         private Mock<IRatingService> ratingServiceMoq;
-        private Mock<ILogger> loggerMoq;
+        private Mock<ILogger<WorkshopService>> loggerMoq;
 
         private Workshop newWorkshop;
         private Class classEntity;
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             addressRepository = new EntityRepository<Address>(dbContext);
 
             ratingServiceMoq = new Mock<IRatingService>();
-            loggerMoq = new Mock<ILogger>();
+            loggerMoq = new Mock<ILogger<WorkshopService>>();
 
             workshopService = new WorkshopService(
                 workshopRepository,

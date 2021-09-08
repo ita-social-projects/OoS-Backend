@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -12,7 +13,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
-using ILogger = Serilog.ILogger;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IProviderRepository providerRepository;
         private IParentRepository parentRepository;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<ILogger> logger;
+        private Mock<ILogger<RatingService>> logger;
         private DbContextOptions<OutOfSchoolDbContext> options;
 
         [SetUp]
@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             workshopRepository = new WorkshopRepository(context);
             providerRepository = new ProviderRepository(context);
             parentRepository = new ParentRepository(context);
-            logger = new Mock<ILogger>();
+            logger = new Mock<ILogger<RatingService>>();
             service = new RatingService(ratingRepository, workshopRepository, providerRepository, parentRepository, logger.Object, localizer.Object);
 
             SeedDatabase();

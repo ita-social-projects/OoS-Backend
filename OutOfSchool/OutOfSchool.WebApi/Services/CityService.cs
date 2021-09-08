@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
     public class CityService : ICityService
     {
         private readonly IEntityRepository<City> repository;
-        private readonly ILogger logger;
+        private readonly ILogger<CityService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public CityService(IEntityRepository<City> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public CityService(IEntityRepository<City> repository, ILogger<CityService> logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
@@ -37,11 +37,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<CityDto>> GetAll()
         {
-            logger.Information("Getting all Cities started.");
+            logger.LogInformation("Getting all Cities started.");
 
             var cities = await repository.GetAll().ConfigureAwait(false);
 
-            logger.Information(!cities.Any()
+            logger.LogInformation(!cities.Any()
                 ? "City table is empty."
                 : $"All {cities.Count()} records were successfully received from the City table");
 
@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<CityDto> GetById(long id)
         {
-            logger.Information($"Getting City by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting City by Id started. Looking Id = {id}.");
 
             var city = await repository.GetById(id).ConfigureAwait(false);
 
@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a City with Id = {id}.");
+            logger.LogInformation($"Successfully got a City with Id = {id}.");
 
             return city.ToModel();
         }
@@ -70,11 +70,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<CityDto>> GetByCityName(string name)
         {
-            logger.Information("Getting all Cities by name started.");
+            logger.LogInformation("Getting all Cities by name started.");
 
             var cities = await repository.GetByFilter(c => c.Name.StartsWith(name)).ConfigureAwait(false);
 
-            logger.Information(!cities.Any()
+            logger.LogInformation(!cities.Any()
                 ? "City table is empty."
                 : $"All {cities.Count()} records were successfully received from the City table");
 
@@ -84,13 +84,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<CityDto> Create(CityDto dto)
         {
-            logger.Information("City creating was started.");
+            logger.LogInformation("City creating was started.");
 
             var city = dto.ToDomain();
 
             var newcity = await repository.Create(city).ConfigureAwait(false);
 
-            logger.Information($"City with Id = {newcity?.Id} created successfully.");
+            logger.LogInformation($"City with Id = {newcity?.Id} created successfully.");
 
             return newcity.ToModel();
         }
@@ -98,19 +98,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<CityDto> Update(CityDto dto)
         {
-            logger.Information($"Updating City with Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating City with Id = {dto?.Id} started.");
 
             try
             {
                 var city = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"City with Id = {city?.Id} updated succesfully.");
+                logger.LogInformation($"City with Id = {city?.Id} updated succesfully.");
 
                 return city.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. City with Id = {dto?.Id} doesn't exist in the system.");
+                logger.LogError($"Updating failed. City with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -118,7 +118,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting City with Id = {id} started.");
+            logger.LogInformation($"Deleting City with Id = {id} started.");
 
             var city = await repository.GetById(id).ConfigureAwait(false);
 
@@ -131,7 +131,7 @@ namespace OutOfSchool.WebApi.Services
 
             await repository.Delete(city).ConfigureAwait(false);
 
-            logger.Information($"City with Id = {id} succesfully deleted.");
+            logger.LogInformation($"City with Id = {id} succesfully deleted.");
         }
     }
 }

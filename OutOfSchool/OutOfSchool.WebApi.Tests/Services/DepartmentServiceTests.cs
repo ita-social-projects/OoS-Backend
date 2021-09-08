@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -13,7 +14,6 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IDepartmentRepository repo;
         private IDepartmentService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<ILogger> logger;
+        private Mock<ILogger<DepartmentService>> logger;
 
         [SetUp]
         public void SetUp()
@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             repo = new DepartmentRepository(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
-            logger = new Mock<ILogger>();
+            logger = new Mock<ILogger<DepartmentService>>();
             service = new DepartmentService(repo, logger.Object, localizer.Object);
 
             SeedDatabase();

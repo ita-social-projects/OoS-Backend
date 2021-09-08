@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -19,10 +19,10 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IEntityRepository<Favorite> repository;
         private readonly IWorkshopService workshopService;
-        private readonly ILogger logger;
+        private readonly ILogger<FavoriteService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
-        public FavoriteService(IEntityRepository<Favorite> repository, ILogger logger, IStringLocalizer<SharedResource> localizer, IWorkshopService worshopService)
+        public FavoriteService(IEntityRepository<Favorite> repository, ILogger<FavoriteService> logger, IStringLocalizer<SharedResource> localizer, IWorkshopService worshopService)
         {
             this.repository = repository;
             this.logger = logger;
@@ -33,11 +33,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<FavoriteDto>> GetAll()
         {
-            logger.Information("Getting all Favorites started.");
+            logger.LogInformation("Getting all Favorites started.");
 
             var favorites = await repository.GetAll().ConfigureAwait(false);
 
-            logger.Information(!favorites.Any()
+            logger.LogInformation(!favorites.Any()
                 ? "Favorites table is empty."
                 : $"All {favorites.Count()} records were successfully received from the Favorites table");
 
@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<FavoriteDto> GetById(long id)
         {
-            logger.Information($"Getting Favorite by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting Favorite by Id started. Looking Id = {id}.");
 
             var favorite = await repository.GetById(id).ConfigureAwait(false);
 
@@ -58,7 +58,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer["The id cannot be greater than number of table entities."]);
             }
 
-            logger.Information($"Successfully got a Favorite with Id = {id}.");
+            logger.LogInformation($"Successfully got a Favorite with Id = {id}.");
 
             return favorite.ToModel();
         }
@@ -66,11 +66,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<FavoriteDto>> GetAllByUser(string userId)
         {
-            logger.Information($"Getting Favorites by User started. Looking UserId = {userId}.");
+            logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
             var favorites = await repository.GetByFilter(x => x.UserId == userId).ConfigureAwait(false);
 
-            logger.Information(!favorites.Any()
+            logger.LogInformation(!favorites.Any()
                 ? $"There aren't Favorites for User with Id = {userId}."
                 : $"All {favorites.Count()} records were successfully received from the Favorites table");
 
@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<WorkshopCard>> GetFavoriteWorkshopsByUser(string userId, OffsetFilter offsetFilter)
         {
-            logger.Information($"Getting Favorites by User started. Looking UserId = {userId}.");
+            logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
             var favorites = await repository.Get<int>(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
 
@@ -93,7 +93,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshops = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
-            logger.Information(!workshops.Entities.Any()
+            logger.LogInformation(!workshops.Entities.Any()
                 ? $"There aren't Favorites for User with Id = {userId}."
                 : $"All {workshops.TotalAmount} records were successfully received from the Favorites table");
 
@@ -103,13 +103,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<FavoriteDto> Create(FavoriteDto dto)
         {
-            logger.Information("Favorite creating was started.");
+            logger.LogInformation("Favorite creating was started.");
 
             var favorite = dto.ToDomain();
 
             var newFavorite = await repository.Create(favorite).ConfigureAwait(false);
 
-            logger.Information($"Favorite with Id = {newFavorite?.Id} created successfully.");
+            logger.LogInformation($"Favorite with Id = {newFavorite?.Id} created successfully.");
 
             return newFavorite.ToModel();
         }
@@ -117,19 +117,19 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<FavoriteDto> Update(FavoriteDto dto)
         {
-            logger.Information($"Updating Favorite with Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating Favorite with Id = {dto?.Id} started.");
 
             try
             {
                 var favorite = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
 
-                logger.Information($"Favorite with Id = {favorite?.Id} updated succesfully.");
+                logger.LogInformation($"Favorite with Id = {favorite?.Id} updated succesfully.");
 
                 return favorite.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. Favorite with Id = {dto?.Id} doesn't exist in the system.");
+                logger.LogError($"Updating failed. Favorite with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -137,7 +137,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting Favorite with Id = {id} started.");
+            logger.LogInformation($"Deleting Favorite with Id = {id} started.");
 
             var favorite = await repository.GetById(id).ConfigureAwait(false);
 
@@ -150,7 +150,7 @@ namespace OutOfSchool.WebApi.Services
 
             await repository.Delete(favorite).ConfigureAwait(false);
 
-            logger.Information($"Favorite with Id = {id} succesfully deleted.");
+            logger.LogInformation($"Favorite with Id = {id} succesfully deleted.");
         }
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)

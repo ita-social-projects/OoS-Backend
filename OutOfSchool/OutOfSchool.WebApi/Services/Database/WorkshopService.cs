@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -11,7 +12,6 @@ using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Teacher> teacherRepository;
         private readonly IEntityRepository<Address> addressRepository;
         private readonly IRatingService ratingService;
-        private readonly ILogger logger;
+        private readonly ILogger<WorkshopService> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Services
             IEntityRepository<Teacher> teacherRepository,
             IEntityRepository<Address> addressRepository,
             IRatingService ratingService,
-            ILogger logger)
+            ILogger<WorkshopService> logger)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
@@ -58,7 +58,7 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
-            logger.Information("Workshop creating was started.");
+            logger.LogInformation("Workshop creating was started.");
 
             // In case if DirectionId and DepartmentId does not match ClassId
             await this.FillDirectionsFields(dto).ConfigureAwait(false);
@@ -67,7 +67,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
-            logger.Information($"Workshop with Id = {newWorkshop?.Id} created successfully.");
+            logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
             return newWorkshop.ToModel();
         }
@@ -75,7 +75,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<WorkshopDTO>> GetAll(OffsetFilter offsetFilter)
         {
-            logger.Information("Getting all Workshops started.");
+            logger.LogInformation("Getting all Workshops started.");
 
             if (offsetFilter is null)
             {
@@ -85,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
             var count = await workshopRepository.Count().ConfigureAwait(false);
             var workshops = workshopRepository.Get<long>(skip: offsetFilter.From, take: offsetFilter.Size, orderBy: x => x.Id, ascending: true).ToList();
 
-            logger.Information(!workshops.Any()
+            logger.LogInformation(!workshops.Any()
                 ? "Workshop table is empty."
                 : $"All {workshops.Count} records were successfully received from the Workshop table");
 
@@ -97,7 +97,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> GetById(long id)
         {
-            logger.Information($"Getting Workshop by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting Workshop by Id started. Looking Id = {id}.");
 
             var workshop = await workshopRepository.GetById(id).ConfigureAwait(false);
 
@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Services
                 return null;
             }
 
-            logger.Information($"Successfully got a Workshop with Id = {id}.");
+            logger.LogInformation($"Successfully got a Workshop with Id = {id}.");
 
             var workshopDTO = workshop.ToModel();
 
@@ -121,11 +121,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id)
         {
-            logger.Information($"Getting Workshop by organization started. Looking ProviderId = {id}.");
+            logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
             var workshops = await workshopRepository.GetByFilter(x => x.ProviderId == id).ConfigureAwait(false);
 
-            logger.Information(!workshops.Any()
+            logger.LogInformation(!workshops.Any()
                 ? $"There aren't Workshops for Provider with Id = {id}."
                 : $"From Workshop table were successfully received {workshops.Count()} records.");
 
@@ -139,7 +139,7 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
-            logger.Information($"Updating Workshop with Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
 
             var workshop = workshopRepository.GetByFilterNoTracking(x => x.Id == dto.Id, "Address,Teachers").FirstOrDefault();
 
@@ -199,13 +199,13 @@ namespace OutOfSchool.WebApi.Services
 
                 var newWorkshop = await workshopRepository.RunInTransaction(updateWorkshop).ConfigureAwait(false);
 
-                logger.Information($"Workshop with Id = {workshop?.Id} updated succesfully.");
+                logger.LogInformation($"Workshop with Id = {workshop?.Id} updated succesfully.");
 
                 return newWorkshop.ToModel();
             }
             catch (DbUpdateConcurrencyException exception)
             {
-                logger.Error($"Updating failed. Exception: {exception.Message}");
+                logger.LogError($"Updating failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -215,7 +215,7 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task Delete(long id)
         {
-            logger.Information($"Deleting Workshop with Id = {id} started.");
+            logger.LogInformation($"Deleting Workshop with Id = {id} started.");
 
             var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
 
@@ -229,11 +229,11 @@ namespace OutOfSchool.WebApi.Services
 
                 await workshopRepository.RunInTransaction(deleteWorkshop).ConfigureAwait(false);
 
-                logger.Information($"Workshop with Id = {id} succesfully deleted.");
+                logger.LogInformation($"Workshop with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Deleting failed. Workshop with Id = {id} doesn't exist in the system.");
+                logger.LogError($"Deleting failed. Workshop with Id = {id} doesn't exist in the system.");
                 throw;
             }
         }
@@ -241,7 +241,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null)
         {
-            logger.Information("Getting Workshops by filter started.");
+            logger.LogInformation("Getting Workshops by filter started.");
 
             if (filter is null)
             {
@@ -254,7 +254,7 @@ namespace OutOfSchool.WebApi.Services
             var workshopsCount = await workshopRepository.Count(where: filterPredicate).ConfigureAwait(false);
             var workshops = workshopRepository.Get<dynamic>(filter.From, filter.Size, string.Empty, filterPredicate, orderBy.Item1, orderBy.Item2).ToList();
 
-            logger.Information(!workshops.Any()
+            logger.LogInformation(!workshops.Any()
                 ? "There was no matching entity found."
                 : $"All matching {workshops.Count} records were successfully received from the Workshop table");
 

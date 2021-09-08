@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-
 using Microsoft.Extensions.Localization;
-
+using Microsoft.Extensions.Logging;
 using Moq;
-
 using NUnit.Framework;
-
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -18,8 +15,6 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
-
-using Serilog;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -34,7 +29,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IEntityRepository<User>> usersRepositoryMock;
         private Mock<IRatingService> ratingService;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<ILogger> logger;
+        private Mock<ILogger<ProviderService>> logger;
 
         private List<Provider> fakeProviders;
         private User fakeUser;
@@ -50,7 +45,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             ratingService = new Mock<IRatingService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
-            logger = new Mock<ILogger>();
+            logger = new Mock<ILogger<ProviderService>>();
             providerService = new ProviderService(providersRepositoryMock.Object, usersRepositoryMock.Object, ratingService.Object, logger.Object, localizer.Object);
         }
 

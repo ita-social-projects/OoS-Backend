@@ -6,11 +6,11 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
     public class UserService : IUserService
     {
         private readonly IEntityRepository<User> repository;
-        private readonly ILogger logger;
+        private readonly ILogger<UserService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repository">Repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public UserService(IEntityRepository<User> repository, ILogger logger, IStringLocalizer<SharedResource> localizer)
+        public UserService(IEntityRepository<User> repository, ILogger<UserService> logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
@@ -38,11 +38,11 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<IEnumerable<ShortUserDto>> GetAll()
         {
-            logger.Information("Getting all Users started.");
+            logger.LogInformation("Getting all Users started.");
 
             var users = await repository.GetAll().ConfigureAwait(false);
 
-            logger.Information(!users.Any()
+            logger.LogInformation(!users.Any()
                 ? "User table is empty."
                 : $"All {users.Count()} records were successfully received from the User table");
 
@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<ShortUserDto> GetById(string id)
         {
-            logger.Information($"Getting User by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting User by Id started. Looking Id = {id}.");
 
             Expression<Func<User, bool>> filter = p => p.Id == id;
 
@@ -62,14 +62,14 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException(localizer["There is no User in the Db with such an id"], nameof(id));
             }
 
-            logger.Information($"Successfully got an User with Id = {id}.");
+            logger.LogInformation($"Successfully got an User with Id = {id}.");
 
             return users.FirstOrDefault().ToModel();
         }
 
         public async Task<ShortUserDto> Update(ShortUserDto dto)
         {
-            logger.Information($"Updating User with Id = {dto?.Id} started.");
+            logger.LogInformation($"Updating User with Id = {dto?.Id} started.");
 
             try
             {
@@ -79,13 +79,13 @@ namespace OutOfSchool.WebApi.Services
 
                 var updatedUser = await repository.Update(dto.ToDomain(users.FirstOrDefault())).ConfigureAwait(false);
 
-                logger.Information($"User with Id = {updatedUser?.Id} updated succesfully.");
+                logger.LogInformation($"User with Id = {updatedUser?.Id} updated succesfully.");
 
                 return updatedUser.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
+                logger.LogError($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
