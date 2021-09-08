@@ -100,7 +100,12 @@ namespace OutOfSchool.IdentityServer
                 builder => builder.Bind(config.GetSection(SmtpOptions.SectionName)));
 
             services.AddControllersWithViews()
-                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
+                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+                .AddDataAnnotationsLocalization(options =>
+                {
+                    options.DataAnnotationLocalizerProvider = (type, factory) =>
+                    factory.Create(typeof(SharedResource));
+                });
 
             services.AddProxy();
 
@@ -159,7 +164,7 @@ namespace OutOfSchool.IdentityServer
 
             app.UseRouting();
 
-            app.UseCookiePolicy(new CookiePolicyOptions {MinimumSameSitePolicy = SameSiteMode.Lax});
+            app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
             app.UseStaticFiles();
 

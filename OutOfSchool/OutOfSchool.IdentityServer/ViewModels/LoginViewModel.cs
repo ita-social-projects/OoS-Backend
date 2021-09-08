@@ -6,7 +6,7 @@ namespace OutOfSchool.IdentityServer.ViewModels
 {
     public class LoginViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Email is required")]
         public string Username { get; set; }
 
         [Required(ErrorMessage = "Password is required")]
