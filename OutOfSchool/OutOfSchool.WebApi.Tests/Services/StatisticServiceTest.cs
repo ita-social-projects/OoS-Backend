@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
@@ -23,7 +24,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IWorkshopRepository> workshopRepository;
         private Mock<IEntityRepository<Direction>> directionRepository;
 
-        private Mock<ILogger> logger;
+        private Mock<ILogger<StatisticService>> logger;
 
         private IEnumerable<Workshop> workshops;
         private IEnumerable<Application> applications;
@@ -39,7 +40,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             workshopRepository = new Mock<IWorkshopRepository>();
             directionRepository = new Mock<IEntityRepository<Direction>>();
 
-            logger = new Mock<ILogger>();
+            logger = new Mock<ILogger<StatisticService>>();
 
             service = new StatisticService(
                 applicationRepository.Object,
