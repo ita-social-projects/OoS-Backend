@@ -23,7 +23,8 @@ if [ ! -d "./https" ]; then
         exit 1
     fi
 
-    mkdir ./https
+    mkdir -p ./https/ca-certificates
+    echo "ca-certificates" > ./https/ca-certificates/type
     # Generate a passphrase
     export PASSPHRASE=$(head -c 500 /dev/urandom | LC_CTYPE=C tr -dc 'a-z0-9A-Z' | head -c 128; echo)
     fail_if_error $?
@@ -63,6 +64,8 @@ if [ ! -d "./https" ]; then
         -out ./https/${DOMAIN}.key \
         -passin env:PASSPHRASE
     fail_if_error $?
+
+    cp ./https/${DOMAIN}.crt ./https/ca-certificates/
 
     if [[ $OSTYPE == 'darwin'* ]]; then
         sudo security find-certificate -a /Library/Keychains/System.keychain | awk -F'"' '/alis/{print $4}' | grep ${DOMAIN} -q
