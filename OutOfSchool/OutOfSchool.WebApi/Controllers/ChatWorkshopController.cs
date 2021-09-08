@@ -221,7 +221,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
 
-                var isChatRoomValid = !(chatRoom is null) && await userHasRights(chatRoom).ConfigureAwait(false);
+                var isChatRoomValid = chatRoom != null && await userHasRights(chatRoom).ConfigureAwait(false);
 
                 if (isChatRoomValid)
                 {
@@ -252,7 +252,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
 
-                var isChatRoomValid = !(chatRoom is null) && await userHasRights(chatRoom).ConfigureAwait(false);
+                var isChatRoomValid = chatRoom != null && await userHasRights(chatRoom).ConfigureAwait(false);
 
                 if (isChatRoomValid)
                 {
@@ -322,7 +322,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
 
-                var isChatRoomValid = !(chatRoom is null) && await userHasRights(chatRoom).ConfigureAwait(false);
+                var isChatRoomValid = chatRoom != null && await userHasRights(chatRoom).ConfigureAwait(false);
 
                 if (isChatRoomValid)
                 {
