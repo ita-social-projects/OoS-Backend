@@ -366,6 +366,18 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static WorkshopCard ToCard(this Workshop workshop)
+        {
+            return Mapper<Workshop, WorkshopCard>(workshop, cfg =>
+            {
+                cfg.CreateMap<Address, AddressDto>();
+                cfg.CreateMap<Workshop, WorkshopCard>()
+                .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
+                .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo))
+                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
+            });
+        }
+
         #endregion
         private static TDestination Mapper<TSource, TDestination>(
             this TSource source,
