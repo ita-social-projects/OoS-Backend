@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
@@ -8,7 +9,7 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        [Range(1, 5, ErrorMessage = "Status should be from 1 to 5")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
         public DateTimeOffset CreationTime { get; set; }
