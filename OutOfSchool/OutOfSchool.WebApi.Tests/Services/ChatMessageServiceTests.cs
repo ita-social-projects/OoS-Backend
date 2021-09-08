@@ -60,102 +60,107 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public async Task Create_WhenEntityIsValid_ShouldCreateEntity()
+        public async Task Create_WhenMessageIsValid_ShouldSaveMessageInDatabase()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
-            var chatRoom = new ChatRoomWorkshopDto() { Id = 1 };
-            roomServiceMock.Setup(x => x.CreateOrReturnExistingAsync(newMessage.WorkshopId, newMessage.ParentId)).ReturnsAsync(chatRoom);
+            var messagesCountBeforeInsert = dbContext.ChatMessageWorkshops.Count();
+            var validChatRoom = new ChatRoomWorkshopDto() { Id = 1 };
+            roomServiceMock.Setup(x => x.CreateOrReturnExistingAsync(newMessage.WorkshopId, newMessage.ParentId)).ReturnsAsync(validChatRoom);
 
             // Act
             var result = await messageService.CreateAsync(newMessage, Role.Provider).ConfigureAwait(false);
 
             // Assert
-            Assert.AreNotEqual(default(long), result.Id);
-            Assert.AreEqual(dbContext.ChatMessageWorkshops.Last().Id, result.Id);
-            Assert.AreEqual(newMessage.Text, result.Text);
-            Assert.AreEqual(messagesCount + 1, dbContext.ChatMessageWorkshops.Count());
+            Assert.Multiple(() =>
+            {
+                Assert.AreNotEqual(default(long), result.Id);
+                Assert.AreEqual(messagesCountBeforeInsert + 1, dbContext.ChatMessageWorkshops.Count());
+            });
         }
         #endregion
 
         #region GetMessagesForChatRoomAsync
         [Test]
-        public async Task GetMessagesForChatRoomAsync_WhenIfOffsetfilterIsNull_ShouldReturnFoundEntitiesByDefaultFilterValues()
+        public void GetMessagesForChatRoomAsync_WhenOffsetfilterIsNull_ShouldNotThrowException()
         {
             // Arrange
-            var roomId = 1;
+            var existingRoomId = 1;
             OffsetFilter offsetFilter = null;
 
-            // Act
-            var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(roomId, result.FirstOrDefault()?.ChatRoomId);
+            // Act and Assert
+            Assert.DoesNotThrowAsync(async () => await messageService.GetMessagesForChatRoomAsync(existingRoomId, offsetFilter));
         }
 
         [Test]
-        public async Task GetMessagesForChatRoomAsync_WhenCalled_ShouldReturnFoundEntities()
+        public async Task GetMessagesForChatRoomAsync_WhenCalledWithAllValidParameters_ShouldReturnFoundMessages()
         {
             // Arrange
-            var roomId = 1;
+            var existingRoomId = 1;
             var offsetFilter = new OffsetFilter() { From = 1, Size = 2 };
 
             // Act
-            var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
+            var result = await messageService.GetMessagesForChatRoomAsync(existingRoomId, offsetFilter).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(offsetFilter.Size, result.Count);
-            Assert.AreEqual(roomId, result.FirstOrDefault()?.ChatRoomId);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(offsetFilter.Size, result.Count);
+                Assert.AreEqual(existingRoomId, result.FirstOrDefault()?.ChatRoomId);
+            });
         }
 
         [Test]
         public async Task GetMessagesForChatRoomAsync_WhenCalledWithUnexistedRoomId_ShouldReturnEmptyList()
         {
             // Arrange
-            var roomId = 5;
+            var notExistingRoomId = 5;
             var offsetFilter = new OffsetFilter() { From = 0, Size = 2 };
 
             // Act
-            var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
+            var result = await messageService.GetMessagesForChatRoomAsync(notExistingRoomId, offsetFilter).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(default(int), result.Count);
         }
         #endregion
 
-        #region UpdateIsReadByCurrentUserInChatRoomAsync
+        #region GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync
         [Test]
-        public async Task UpdateIsRead_WhenEntityIsValid_ShouldSetIsReadTrueAndReturnNumberOfFoundEntites()
+        public async Task GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync_WhenCalledWithAllValidParameters_ShouldSetReadDateTimeToUnreadMessages()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
-            var chatRoomId = 1;
+            var existingChatRoomId = 1;
+            var offsetFilter = new OffsetFilter() { From = 0, Size = 4 };
             var currentUserRoleIsProvider = Role.Provider;
 
             // Act
-            var result = await messageService.SetReadDatetimeInAllMessagesForUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
+            await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(existingChatRoomId, offsetFilter, currentUserRoleIsProvider).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
-            Assert.AreEqual(2, result);
-            Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(3L).ReadDateTime);
-            Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(4L).ReadDateTime);
+            Assert.Multiple(() =>
+            {
+                Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(3L).ReadDateTime);
+                Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(4L).ReadDateTime);
+            });
         }
 
         [Test]
-        public async Task UpdateIsRead_WhenAllAreAlreadyRead_ShouldReturnNumberZero()
+        public async Task GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync_WhenCalledWithAllValidParameters_ShouldReturnFoundMessages()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
-            var chatRoomId = 2;
+            var existingChatRoomId = 1;
+            var offsetFilter = new OffsetFilter() { From = 0, Size = 4 };
             var currentUserRoleIsProvider = Role.Provider;
 
             // Act
-            var result = await messageService.SetReadDatetimeInAllMessagesForUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
+            var result = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(existingChatRoomId, offsetFilter, currentUserRoleIsProvider).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
-            Assert.AreEqual(default(int), result);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(offsetFilter.Size, result.Count);
+                Assert.AreEqual(existingChatRoomId, result.FirstOrDefault()?.ChatRoomId);
+            });
         }
         #endregion
 

@@ -32,12 +32,13 @@ namespace OutOfSchool.WebApi.Services
         Task<List<ChatMessageWorkshopDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter);
 
         /// <summary>
-        /// Update ChatMessages' property "IsRead" in specified ChatRoom and specified User.
+        /// Get a portion of all ChatMessages with specified ChatRoomId.
+        /// Set read current date and time in UTC format in messages that are not read by the current user.
         /// </summary>
-        /// <param name="chatRoomId">The key of ChatRoom.</param>
-        /// <param name="userRole">The role of sender (parent/provider).</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a number of messages that were updated.</returns>
-        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task<int> SetReadDatetimeInAllMessagesForUserInChatRoomAsync(long chatRoomId, Role userRole);
+        /// <param name="chatRoomId">ChatRoom's key.</param>
+        /// <param name="offsetFilter">Filter to take specified part of messages.</param>
+        /// <param name="userRole">Role of current user.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements from the input sequence.</returns>
+        Task<List<ChatMessageWorkshopDto>> GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(long chatRoomId, OffsetFilter offsetFilter, Role userRole);
     }
 }

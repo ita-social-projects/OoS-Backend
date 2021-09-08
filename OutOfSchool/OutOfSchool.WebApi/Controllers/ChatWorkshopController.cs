@@ -87,6 +87,7 @@ namespace OutOfSchool.WebApi.Controllers
 
         /// <summary>
         /// Get a portion of chat messages for specified parent's chat room.
+        /// Set read current date and time in UTC format in messages that are not read by the parent.
         /// </summary>
         /// <param name="id">ChatRoom's Id.</param>
         /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
@@ -103,6 +104,7 @@ namespace OutOfSchool.WebApi.Controllers
 
         /// <summary>
         /// Get a portion of chat messages for specified provider's chat room.
+        /// Set read current date and time in UTC format in messages that are not read by the provider.
         /// </summary>
         /// <param name="id">ChatRoom's Id.</param>
         /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
@@ -144,38 +146,6 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public Task<IActionResult> GetProvidersRoomsAsync()
             => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId));
-
-        /// <summary>
-        /// Set current date and time for all not read chat messages for parent in the specified chat room.
-        /// </summary>
-        /// <param name="id">ChatRoom's Id.</param>
-        /// <returns>Number of successfully updated items.</returns>
-        [HttpPatch("parent/chatrooms/{id}/read")]
-        [Authorize(Roles = "parent")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public Task<IActionResult> SetReadDatetimeInMessagesForParentAsync([Range(1, long.MaxValue)] long id)
-            => this.SetReadDatetimeInMessagesForCurrentUserAsync(id, this.IsParentAChatRoomParticipantAsync);
-
-        /// <summary>
-        /// Set current date and time for all not read chat messages for provider in the specified chat room.
-        /// </summary>
-        /// <param name="id">ChatRoom's Id.</param>
-        /// <returns>Number of successfully updated items.</returns>
-        [HttpPatch("provider/chatrooms/{id}/read")]
-        [Authorize(Roles = "provider")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public Task<IActionResult> SetReadDatetimeInMessagesForProviderAsync([Range(1, long.MaxValue)] long id)
-            => this.SetReadDatetimeInMessagesForCurrentUserAsync(id, this.IsProviderAChatRoomParticipantAsync);
 
         private Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
@@ -256,7 +226,7 @@ namespace OutOfSchool.WebApi.Controllers
 
                 if (isChatRoomValid)
                 {
-                    var messages = await messageService.GetMessagesForChatRoomAsync(chatRoomId, offsetFilter).ConfigureAwait(false);
+                    var messages = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(chatRoomId, offsetFilter, this.GetUserRole()).ConfigureAwait(false);
 
                     if (messages.Any())
                     {
@@ -299,39 +269,6 @@ namespace OutOfSchool.WebApi.Controllers
                         return Ok(chatRooms);
                     }
                 }
-
-                return NoContent();
-            }
-            catch (AuthenticationException exception)
-            {
-                logger.Warning(exception.Message);
-                var messageForUser = "Can not get some user's claims. Please check your authentication or contact technical support.";
-                return BadRequest(messageForUser);
-            }
-            catch (Exception exception)
-            {
-                logger.Error(exception.Message);
-                var messageForUser = "Server error. Please try again later or contact technical support.";
-                return new ObjectResult(messageForUser) { StatusCode = 500 };
-            }
-        }
-
-        private async Task<IActionResult> SetReadDatetimeInMessagesForCurrentUserAsync(long chatRoomId, Func<ChatRoomWorkshopDto, Task<bool>> userHasRights)
-        {
-            try
-            {
-                var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
-
-                var isChatRoomValid = chatRoom != null && await userHasRights(chatRoom).ConfigureAwait(false);
-
-                if (isChatRoomValid)
-                {
-                    var numberOfUpdatedMessages = await messageService.SetReadDatetimeInAllMessagesForUserInChatRoomAsync(chatRoomId, this.GetUserRole()).ConfigureAwait(false);
-
-                    return Ok(numberOfUpdatedMessages);
-                }
-
-                this.LogWarningAboutUsersTryingToGetNotOwnChatRoomInformation(chatRoomId);
 
                 return NoContent();
             }
