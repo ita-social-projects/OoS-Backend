@@ -111,7 +111,7 @@ namespace OutOfSchool.WebApi.Hubs
 
                 if (!userHasRights)
                 {
-                    var messageToLog = $"{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)} with UserId:{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)} is trying to send message with one of not his owne parameters: {nameof(chatMessageWorkshopCreateDto.WorkshopId)} {chatMessageWorkshopCreateDto.WorkshopId}, {nameof(chatMessageWorkshopCreateDto.ParentId)} {chatMessageWorkshopCreateDto.ParentId}";
+                    var messageToLog = $"{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)} with UserId:{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)} is trying to send message with one of not his own parameters: {nameof(chatMessageWorkshopCreateDto.WorkshopId)} {chatMessageWorkshopCreateDto.WorkshopId}, {nameof(chatMessageWorkshopCreateDto.ParentId)} {chatMessageWorkshopCreateDto.ParentId}";
                     logger.Warning(messageToLog);
 
                     var messageForUser = "Some of the message parameters were wrong. Please check your message and try again.";

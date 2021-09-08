@@ -72,7 +72,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public async Task UserIsProviderOwnerAsync_WhenEntityWasNotFaund_ReturnsFalse()
+        public async Task UserIsProviderOwnerAsync_WhenEntityWasNotFound_ReturnsFalse()
         {
             // Arrange
             var validUserId = "someUserId";
@@ -137,7 +137,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public async Task UserIsWorkshopOwnerAsync_WhenEntityWasNotFaund_ReturnsFalse()
+        public async Task UserIsWorkshopOwnerAsync_WhenEntityWasNotFound_ReturnsFalse()
         {
             // Arrange
             var validUserId = "someUserId";
@@ -194,7 +194,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public async Task UserIsParentOwnerAsync_WhenEntityWasNotFaund_ReturnsFalse()
+        public async Task UserIsParentOwnerAsync_WhenEntityWasNotFound_ReturnsFalse()
         {
             // Arrange
             var validUserId = "someUserId";
