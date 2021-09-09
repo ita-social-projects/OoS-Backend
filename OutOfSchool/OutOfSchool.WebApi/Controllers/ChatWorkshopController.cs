@@ -147,18 +147,32 @@ namespace OutOfSchool.WebApi.Controllers
         public Task<IActionResult> GetProvidersRoomsAsync()
             => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId));
 
-        private Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
+        private async Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
             var userId = this.GetUserId();
 
-            return validationService.UserIsParentOwnerAsync(userId, chatRoom.ParentId);
+            var result = await validationService.UserIsParentOwnerAsync(userId, chatRoom.ParentId).ConfigureAwait(false);
+
+            if (!result)
+            {
+                this.LogWarningAboutUsersTryingToGetNotOwnChatRoom(chatRoom.Id, userId);
+            }
+
+            return result;
         }
 
-        private Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
+        private async Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
             var userId = this.GetUserId();
 
-            return validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId);
+            var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId).ConfigureAwait(false);
+
+            if (!result)
+            {
+                this.LogWarningAboutUsersTryingToGetNotOwnChatRoom(chatRoom.Id, userId);
+            }
+
+            return result;
         }
 
         private string GetUserId()
@@ -179,10 +193,16 @@ namespace OutOfSchool.WebApi.Controllers
             return userRole;
         }
 
-        private void LogWarningAboutUsersTryingToGetNotOwnChatRoomInformation(long chatRoomId)
+        private void LogWarningAboutUsersTryingToGetNotOwnChatRoom(long chatRoomId, string userId)
         {
-            var messageToLog = $"{this.GetUserRole()} with UserId:{this.GetUserId()} is trying to get not his own chat room: {nameof(chatRoomId)}={chatRoomId}.";
+            var messageToLog = $"User with {nameof(userId)}:{userId} is trying to get not his own chat room: {nameof(chatRoomId)}={chatRoomId}.";
             logger.Warning(messageToLog);
+        }
+
+        private void LogInfoAboutUsersTryingToGetNotExistingChatRoom(long chatRoomId, string userId)
+        {
+            var messageToLog = $"User with {nameof(userId)}:{userId} is trying to get not existing chat room: {nameof(chatRoomId)}={chatRoomId}.";
+            logger.Information(messageToLog);
         }
 
         private async Task<IActionResult> GetRoomByIdAsync(long chatRoomId, Func<ChatRoomWorkshopDto, Task<bool>> userHasRights)
@@ -191,14 +211,19 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
 
-                var isChatRoomValid = chatRoom != null && await userHasRights(chatRoom).ConfigureAwait(false);
+                if (chatRoom is null)
+                {
+                    this.LogInfoAboutUsersTryingToGetNotExistingChatRoom(chatRoomId, this.GetUserId());
+
+                    return NoContent();
+                }
+
+                var isChatRoomValid = await userHasRights(chatRoom).ConfigureAwait(false);
 
                 if (isChatRoomValid)
                 {
                     return Ok(chatRoom);
                 }
-
-                this.LogWarningAboutUsersTryingToGetNotOwnChatRoomInformation(chatRoomId);
 
                 return NoContent();
             }
@@ -222,7 +247,15 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
 
-                var isChatRoomValid = chatRoom != null && await userHasRights(chatRoom).ConfigureAwait(false);
+                if (chatRoom is null)
+                {
+                    var messageToLog = $"User with userId:{this.GetUserId()} is trying to get messages from not existing chat room: {nameof(chatRoomId)}={chatRoomId}.";
+                    logger.Information(messageToLog);
+
+                    return NoContent();
+                }
+
+                var isChatRoomValid = await userHasRights(chatRoom).ConfigureAwait(false);
 
                 if (isChatRoomValid)
                 {
@@ -235,8 +268,6 @@ namespace OutOfSchool.WebApi.Controllers
 
                     return NoContent();
                 }
-
-                this.LogWarningAboutUsersTryingToGetNotOwnChatRoomInformation(chatRoomId);
 
                 return NoContent();
             }
