@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using OutOfSchool.Services.Enums;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -160,7 +160,7 @@ namespace OutOfSchool.WebApi.Services
                         await messageRepository.Update(message).ConfigureAwait(false);
                     }
 
-                    logger.Debug($"{messages.Count()} {nameof(messages)} were updated.");
+                    logger.LogDebug($"{messages.Count()} {nameof(messages)} were updated.");
                     return messages.Count();
                 }
 

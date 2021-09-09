@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private IEntityRepository<ChatMessageWorkshop> messageRepository;
         private Mock<IChatRoomWorkshopService> roomServiceMock;
-        private Mock<ILogger<ChatMessageService>> loggerMock;
+        private Mock<ILogger<ChatMessageWorkshopService>> loggerMock;
 
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext dbContext;
@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             messageRepository = new EntityRepository<ChatMessageWorkshop>(dbContext);
             roomServiceMock = new Mock<IChatRoomWorkshopService>();
-            loggerMock = new Mock<ILogger<ChatMessageService>>();
+            loggerMock = new Mock<ILogger<ChatMessageWorkshopService>>();
 
             messageService = new ChatMessageWorkshopService(messageRepository, roomServiceMock.Object, loggerMock.Object);
 

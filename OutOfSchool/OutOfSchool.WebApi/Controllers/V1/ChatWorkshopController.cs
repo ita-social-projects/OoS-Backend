@@ -8,15 +8,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
-using Serilog;
 
-namespace OutOfSchool.WebApi.Controllers
+namespace OutOfSchool.WebApi.Controllers.V1
 {
     /// <summary>
     /// Controller for chat operations between Parent and Provider.
@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Controllers
         private readonly IChatRoomWorkshopService roomService;
         private readonly IValidationService validationService;
         private readonly IStringLocalizer<SharedResource> localizer;
-        private readonly ILogger logger;
+        private readonly ILogger<ChatWorkshopController> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatWorkshopController"/> class.
@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Controllers
             IChatRoomWorkshopService roomService,
             IValidationService validationService,
             IStringLocalizer<SharedResource> localizer,
-            ILogger logger)
+            ILogger<ChatWorkshopController> logger)
         {
             this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             this.roomService = roomService ?? throw new ArgumentNullException(nameof(roomService));
@@ -198,13 +198,13 @@ namespace OutOfSchool.WebApi.Controllers
         private void LogWarningAboutUsersTryingToGetNotOwnChatRoom(long chatRoomId, string userId)
         {
             var messageToLog = $"User with {nameof(userId)}:{userId} is trying to get not his own chat room: {nameof(chatRoomId)}={chatRoomId}.";
-            logger.Warning(messageToLog);
+            logger.LogWarning(messageToLog);
         }
 
         private void LogInfoAboutUsersTryingToGetNotExistingChatRoom(long chatRoomId, string userId)
         {
             var messageToLog = $"User with {nameof(userId)}:{userId} is trying to get not existing chat room: {nameof(chatRoomId)}={chatRoomId}.";
-            logger.Information(messageToLog);
+            logger.LogInformation(messageToLog);
         }
 
         private async Task<IActionResult> GetRoomByIdAsync(long chatRoomId, Func<ChatRoomWorkshopDto, Task<bool>> userHasRights)
@@ -231,13 +231,13 @@ namespace OutOfSchool.WebApi.Controllers
             }
             catch (AuthenticationException exception)
             {
-                logger.Warning(exception.Message);
+                logger.LogWarning(exception.Message);
                 var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
                 return BadRequest(messageForUser);
             }
             catch (Exception exception)
             {
-                logger.Error(exception.Message);
+                logger.LogError(exception.Message);
                 var messageForUser = "Server error. Please try again later or contact technical support.";
                 return new ObjectResult(messageForUser) { StatusCode = 500 };
             }
@@ -252,7 +252,7 @@ namespace OutOfSchool.WebApi.Controllers
                 if (chatRoom is null)
                 {
                     var messageToLog = $"User with userId:{this.GetUserId()} is trying to get messages from not existing chat room: {nameof(chatRoomId)}={chatRoomId}.";
-                    logger.Information(messageToLog);
+                    logger.LogInformation(messageToLog);
 
                     return NoContent();
                 }
@@ -275,13 +275,13 @@ namespace OutOfSchool.WebApi.Controllers
             }
             catch (AuthenticationException exception)
             {
-                logger.Warning(exception.Message);
+                logger.LogWarning(exception.Message);
                 var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
                 return BadRequest(messageForUser);
             }
             catch (Exception exception)
             {
-                logger.Error(exception.Message);
+                logger.LogError(exception.Message);
                 var messageForUser = "Server error. Please try again later or contact technical support.";
                 return new ObjectResult(messageForUser) { StatusCode = 500 };
             }
@@ -307,13 +307,13 @@ namespace OutOfSchool.WebApi.Controllers
             }
             catch (AuthenticationException exception)
             {
-                logger.Warning(exception.Message);
+                logger.LogWarning(exception.Message);
                 var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
                 return BadRequest(messageForUser);
             }
             catch (Exception exception)
             {
-                logger.Error(exception.Message);
+                logger.LogError(exception.Message);
                 var messageForUser = "Server error. Please try again later or contact technical support.";
                 return new ObjectResult(messageForUser) { StatusCode = 500 };
             }

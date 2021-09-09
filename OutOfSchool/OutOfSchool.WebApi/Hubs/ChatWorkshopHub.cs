@@ -45,7 +45,13 @@ namespace OutOfSchool.WebApi.Hubs
         /// <param name="workshopRepository">Repository for workshop entities.</param>
         /// <param name="parentRepository">Repository for parent entities.</param>
         /// <param name="logger">Logger.</param>
-        public ChatWorkshopHub(ILogger<ChatWorkshopHub> logger, IChatMessageWorkshopService chatMessageService, IChatRoomWorkshopService chatRoomService, IValidationService validationService, IWorkshopRepository workshopRepository, IParentRepository parentRepository)
+        public ChatWorkshopHub(
+            ILogger<ChatWorkshopHub> logger,
+            IChatMessageWorkshopService chatMessageService,
+            IChatRoomWorkshopService chatRoomService,
+            IValidationService validationService,
+            IWorkshopRepository workshopRepository,
+            IParentRepository parentRepository)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.messageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
@@ -112,7 +118,7 @@ namespace OutOfSchool.WebApi.Hubs
                 if (!userHasRights)
                 {
                     var messageToLog = $"{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)} with UserId:{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)} is trying to send message with one of not his own parameters: {nameof(chatMessageWorkshopCreateDto.WorkshopId)} {chatMessageWorkshopCreateDto.WorkshopId}, {nameof(chatMessageWorkshopCreateDto.ParentId)} {chatMessageWorkshopCreateDto.ParentId}";
-                    logger.Warning(messageToLog);
+                    logger.LogWarning(messageToLog);
 
                     var messageForUser = "Some of the message parameters were wrong. Please check your message and try again.";
                     await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
