@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
@@ -20,14 +21,15 @@ namespace OutOfSchool.WebApi.Tests.Services
     public class ChatMessageServiceTests
     {
         private IEntityRepository<ChatMessageWorkshop> messageRepository;
-        private Mock<ILogger<ChatMessageService>> loggerMoq;
+        private Mock<IChatRoomWorkshopService> roomServiceMock;
+        private Mock<ILogger<ChatMessageService>> loggerMock;
 
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext dbContext;
 
         private IChatMessageWorkshopService messageService;
 
-        private ChatMessageWorkshopDto newMessage;
+        private ChatMessageWorkshopCreateDto newMessage;
 
         [SetUp]
         public void SetUp()
@@ -41,9 +43,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             dbContext = new OutOfSchoolDbContext(options);
 
             messageRepository = new EntityRepository<ChatMessageWorkshop>(dbContext);
-            loggerMoq = new Mock<ILogger<ChatMessageService>>();
+            roomServiceMock = new Mock<IChatRoomWorkshopService>();
+            loggerMock = new Mock<ILogger<ChatMessageService>>();
 
-            messageService = new ChatMessageWorkshopService(messageRepository, loggerMoq.Object);
+            messageService = new ChatMessageWorkshopService(messageRepository, roomServiceMock.Object, loggerMock.Object);
 
             SeedDatabase();
         }
@@ -53,226 +56,121 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Create_WhenParameterIsNull_ShouldThrowArgumentNullException()
         {
             // Act and Assert
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await messageService.CreateAsync(default));
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await messageService.CreateAsync(default, Role.Provider));
         }
 
         [Test]
-        public async Task Create_WhenEntityIsValid_ShouldCreateEntity()
+        public async Task Create_WhenMessageIsValid_ShouldSaveMessageInDatabase()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
+            var messagesCountBeforeInsert = dbContext.ChatMessageWorkshops.Count();
+            var validChatRoom = new ChatRoomWorkshopDto() { Id = 1 };
+            roomServiceMock.Setup(x => x.CreateOrReturnExistingAsync(newMessage.WorkshopId, newMessage.ParentId)).ReturnsAsync(validChatRoom);
 
             // Act
-            var result = await messageService.CreateAsync(newMessage).ConfigureAwait(false);
+            var result = await messageService.CreateAsync(newMessage, Role.Provider).ConfigureAwait(false);
 
             // Assert
-            Assert.AreNotEqual(default(long), result.Id);
-            Assert.AreEqual(dbContext.ChatMessageWorkshops.Last().Id, result.Id);
-            Assert.AreEqual(newMessage.Text, result.Text);
-            Assert.AreEqual(messagesCount + 1, dbContext.ChatMessageWorkshops.Count());
+            Assert.Multiple(() =>
+            {
+                Assert.AreNotEqual(default(long), result.Id);
+                Assert.AreEqual(messagesCountBeforeInsert + 1, dbContext.ChatMessageWorkshops.Count());
+            });
         }
         #endregion
 
         #region GetMessagesForChatRoomAsync
         [Test]
-        public async Task GetMessagesForChatRoomAsync_WhenIfOffsetfilterIsNull_ShouldReturnFoundEntitiesByDefaultFilterValues()
+        public void GetMessagesForChatRoomAsync_WhenOffsetfilterIsNull_ShouldNotThrowException()
         {
             // Arrange
-            var roomId = 1;
+            var existingRoomId = 1;
             OffsetFilter offsetFilter = null;
 
-            // Act
-            var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(roomId, result.FirstOrDefault()?.ChatRoomId);
+            // Act and Assert
+            Assert.DoesNotThrowAsync(async () => await messageService.GetMessagesForChatRoomAsync(existingRoomId, offsetFilter));
         }
 
         [Test]
-        public async Task GetMessagesForChatRoomAsync_WhenCalled_ShouldReturnFoundEntities()
+        public async Task GetMessagesForChatRoomAsync_WhenCalledWithAllValidParameters_ShouldReturnFoundMessages()
         {
             // Arrange
-            var roomId = 1;
+            var existingRoomId = 1;
             var offsetFilter = new OffsetFilter() { From = 1, Size = 2 };
 
             // Act
-            var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
+            var result = await messageService.GetMessagesForChatRoomAsync(existingRoomId, offsetFilter).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(offsetFilter.Size, result.Count);
-            Assert.AreEqual(roomId, result.FirstOrDefault()?.ChatRoomId);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(offsetFilter.Size, result.Count);
+                Assert.AreEqual(existingRoomId, result.FirstOrDefault()?.ChatRoomId);
+            });
         }
 
         [Test]
         public async Task GetMessagesForChatRoomAsync_WhenCalledWithUnexistedRoomId_ShouldReturnEmptyList()
         {
             // Arrange
-            var roomId = 5;
+            var notExistingRoomId = 5;
             var offsetFilter = new OffsetFilter() { From = 0, Size = 2 };
 
             // Act
-            var result = await messageService.GetMessagesForChatRoomAsync(roomId, offsetFilter).ConfigureAwait(false);
+            var result = await messageService.GetMessagesForChatRoomAsync(notExistingRoomId, offsetFilter).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(default(int), result.Count);
         }
         #endregion
 
-        #region GetById
-        [TestCase(1)]
-        public async Task GetById_WhenIdIsValid_ShouldReturnEntity(long id)
+        #region GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync
+        [Test]
+        public async Task GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync_WhenCalledWithAllValidParameters_ShouldSetReadDateTimeToUnreadMessages()
         {
             // Arrange
-            var expected = await messageRepository.GetById(id);
+            var existingChatRoomId = 1;
+            var offsetFilter = new OffsetFilter() { From = 0, Size = 4 };
+            var currentUserRoleIsProvider = Role.Provider;
 
             // Act
-            var result = await messageService.GetByIdNoTrackingAsync(id).ConfigureAwait(false);
+            await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(existingChatRoomId, offsetFilter, currentUserRoleIsProvider).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.Id, result.Id);
-            Assert.AreEqual(expected.Text, result.Text);
-        }
-
-        [TestCase(0)]
-        [TestCase(99)]
-        public async Task GetById_WhenThereIsNoEntityWithId_ShouldReturnNull(long id)
-        {
-            // Act
-            var result = await messageService.GetByIdNoTrackingAsync(id).ConfigureAwait(false);
-
-            // Assert
-            Assert.IsNull(result);
-        }
-        #endregion
-
-        #region Update
-        [Test]
-        public void Update_WhenParameterIsNull_ShouldThrowArgumentNullException()
-        {
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await messageService.UpdateAsync(default));
-        }
-
-        [Test]
-        public async Task Update_WhenEntityIsValid_ShouldUpdateEntity()
-        {
-            // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
-            var updMessage = new ChatMessageWorkshopDto()
+            Assert.Multiple(() =>
             {
-                Id = 1,
-                Text = "newtext",
-                SenderRoleIsProvider = true,
-                ChatRoomId = 1,
-                CreatedDateTime = DateTimeOffset.UtcNow,
-                ReadDateTime = DateTimeOffset.UtcNow,
-            };
-
-            // Act
-            var result = await messageService.UpdateAsync(updMessage).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(updMessage.Id, result.Id);
-            Assert.AreEqual(updMessage.Text, result.Text);
-            Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
-            Assert.AreEqual(updMessage.Text, dbContext.ChatMessageWorkshops.Find(1L).Text);
+                Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(3L).ReadDateTime);
+                Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(4L).ReadDateTime);
+            });
         }
 
         [Test]
-        public void Update_WhenIdIsInvalid_ShouldThrowArgumentOutOfRangeException()
+        public async Task GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync_WhenCalledWithAllValidParameters_ShouldReturnFoundMessages()
         {
             // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
-            var updMessage = new ChatMessageWorkshopDto()
+            var existingChatRoomId = 1;
+            var offsetFilter = new OffsetFilter() { From = 0, Size = 4 };
+            var currentUserRoleIsProvider = Role.Provider;
+
+            // Act
+            var result = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(existingChatRoomId, offsetFilter, currentUserRoleIsProvider).ConfigureAwait(false);
+
+            // Assert
+            Assert.Multiple(() =>
             {
-                Id = 99,
-                Text = "newtext",
-                SenderRoleIsProvider = true,
-                ChatRoomId = 1,
-                CreatedDateTime = DateTimeOffset.UtcNow,
-                ReadDateTime = DateTimeOffset.UtcNow,
-            };
-
-            // Act and Assert
-            Assert.That(
-                async () => await messageService.UpdateAsync(updMessage).ConfigureAwait(false),
-                Throws.Exception.TypeOf<DbUpdateConcurrencyException>());
-        }
-        #endregion
-
-        #region UpdateIsReadByCurrentUserInChatRoomAsync
-        [Test]
-        public async Task UpdateIsRead_WhenEntityIsValid_ShouldSetIsReadTrueAndReturnNumberOfFoundEntites()
-        {
-            // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
-            var chatRoomId = 1;
-            var currentUserRoleIsProvider = true;
-
-            // Act
-            var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
-            Assert.AreEqual(2, result);
-            Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(3L).ReadDateTime);
-            Assert.IsNotNull(dbContext.ChatMessageWorkshops.Find(4L).ReadDateTime);
-        }
-
-        [Test]
-        public async Task UpdateIsRead_WhenAllAreAlreadyRead_ShouldReturnNumberZero()
-        {
-            // Arrange
-            var messagesCount = dbContext.ChatMessageWorkshops.Count();
-            var chatRoomId = 2;
-            var currentUserRoleIsProvider = true;
-
-            // Act
-            var result = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, currentUserRoleIsProvider).ConfigureAwait(false);
-
-            // Assert
-            Assert.AreEqual(messagesCount, dbContext.ChatMessageWorkshops.Count());
-            Assert.AreEqual(default(int), result);
-        }
-        #endregion
-
-        #region Delete
-        [TestCase(1)]
-        public async Task Delete_WhenIdIsValid_ShouldDeleteEntity(long id)
-        {
-            // Arrange
-            var countMessagesBeforeDeleting = (await messageRepository.GetAll().ConfigureAwait(false)).Count();
-            var item = await messageRepository.GetById(1).ConfigureAwait(false);
-
-            // Act
-            await messageService.DeleteAsync(id).ConfigureAwait(false);
-
-            var countMessagesAfterDeleting = (await messageRepository.GetAll().ConfigureAwait(false)).Count();
-
-            // Assert
-            Assert.IsNotNull(item);
-            Assert.AreEqual(countMessagesBeforeDeleting - 1, countMessagesAfterDeleting);
-        }
-
-        [TestCase(7)]
-        public void Delete_WhenIdIsInvalid_ShouldThrowNullReferenceException(long id)
-        {
-            // Assert
-            Assert.That(
-                async () => await messageService.DeleteAsync(id).ConfigureAwait(false),
-                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
+                Assert.AreEqual(offsetFilter.Size, result.Count);
+                Assert.AreEqual(existingChatRoomId, result.FirstOrDefault()?.ChatRoomId);
+            });
         }
         #endregion
 
         private void SeedDatabase()
         {
-            newMessage = new ChatMessageWorkshopDto()
+            newMessage = new ChatMessageWorkshopCreateDto()
             {
                 Text = "Привіт всім!",
-                ChatRoomId = 1,
-                SenderRoleIsProvider = true,
-                CreatedDateTime = DateTimeOffset.UtcNow,
-                ReadDateTime = null,
+                ParentId = 1,
+                WorkshopId = 1,
             };
 
             using var context = new OutOfSchoolDbContext(options);

@@ -11,7 +11,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="chatRoomId">Chat rooms key in the system.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="ChatRoomWorkshopForChatList"/> that was faund, or null.</returns>
+        /// The task result contains a <see cref="ChatRoomWorkshopForChatList"/> that was found, or null.</returns>
         Task<ChatRoomWorkshopForChatList> GetByChatRoomIdAsync(long chatRoomId);
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="parentId">Parent key in the system.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains faund elements.</returns>
+        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains found elements.</returns>
         Task<List<ChatRoomWorkshopForChatList>> GetByParentIdAsync(long parentId);
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="providerId">Provider key in the system.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains faund elements.</returns>
+        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains found elements.</returns>
         Task<List<ChatRoomWorkshopForChatList>> GetByProviderIdAsync(long providerId);
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="workshopId">Workshop key in the system.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains faund elements.</returns>
+        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains found elements.</returns>
         Task<List<ChatRoomWorkshopForChatList>> GetByWorkshopIdAsync(long workshopId);
     }
 }

@@ -11,6 +11,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 
@@ -55,26 +57,26 @@ namespace OutOfSchool.WebApi.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.User.FindFirst("sub")?.Value
-                ?? throw new AuthenticationException("The claim type of user Id was not found.");
+            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
 
-            var userRole = Context.User.FindFirst("role")?.Value
-                ?? throw new AuthenticationException("The claim type of user role was not found.");
+            var userRoleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Role)} from HttpContext.");
 
-            logger.LogDebug($"New Hub-connection established. {nameof(userId)}: {userId}, {nameof(userRole)}: {userRole}");
+            Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
+
+            logger.LogDebug($"New Hub-connection established. {nameof(userId)}: {userId}, {nameof(userRoleName)}: {userRoleName}");
 
             this.AddUsersConnectionIdTracking(userId);
 
             // Add User to all Groups where he is a member.
             IEnumerable<long> usersRoomIds;
 
-            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+            var userRoleId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
 
-            var userRoleId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
-
-            usersRoomIds = userRoleIsProvider
-                ? await roomService.GetChatRoomIdsByProviderIdAsync(userRoleId).ConfigureAwait(false)
-                : await roomService.GetChatRoomIdsByParentIdAsync(userRoleId).ConfigureAwait(false);
+            usersRoomIds = (userRole == Role.Parent)
+                ? await roomService.GetChatRoomIdsByParentIdAsync(userRoleId).ConfigureAwait(false)
+                : await roomService.GetChatRoomIdsByProviderIdAsync(userRoleId).ConfigureAwait(false);
 
             // TODO: add parallel execution (Task.WhenAll(tasks))
             foreach (var id in usersRoomIds)
@@ -102,74 +104,50 @@ namespace OutOfSchool.WebApi.Hubs
 
             try
             {
-                // deserialize from string to Object
-                var newReceivedAndDeserializedMessage = JsonConvert.DeserializeObject<ChatMessageWorkshopCreateDto>(chatNewMessage);
+                // Deserialize from string to Object
+                var chatMessageWorkshopCreateDto = JsonConvert.DeserializeObject<ChatMessageWorkshopCreateDto>(chatNewMessage);
 
-                // create new dto object that will be saved to the database later
-                var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshopDto()
+                var userHasRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
+
+                if (!userHasRights)
                 {
-                    SenderRoleIsProvider = newReceivedAndDeserializedMessage.SenderRoleIsProvider,
-                    Text = newReceivedAndDeserializedMessage.Text,
-                    CreatedDateTime = DateTimeOffset.UtcNow,
-                    ReadDateTime = null,
-                    ChatRoomId = 0,
-                };
+                    var messageToLog = $"{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)} with UserId:{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)} is trying to send message with one of not his own parameters: {nameof(chatMessageWorkshopCreateDto.WorkshopId)} {chatMessageWorkshopCreateDto.WorkshopId}, {nameof(chatMessageWorkshopCreateDto.ParentId)} {chatMessageWorkshopCreateDto.ParentId}";
+                    logger.Warning(messageToLog);
 
-                var userRoleIsProvider = string.Equals(Context.User.FindFirst("role")?.Value, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
-
-                var userHarRights = await this.UserHasRigtsForChatRoomAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId).ConfigureAwait(false);
-
-                bool roomIsNew = false;
-
-                if ((chatMessageDtoThatWillBeSaved.SenderRoleIsProvider == userRoleIsProvider)
-                    && userHarRights)
-                {
-                    // set the unique ChatRoomId property according to WorkshopId and ParentId
-                    var existingRoom = await roomService.GetUniqueChatRoomAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId)
-                        .ConfigureAwait(false);
-
-                    if (existingRoom is null)
-                    {
-                        var newChatRoomDto = await roomService.CreateOrReturnExistingAsync(newReceivedAndDeserializedMessage.WorkshopId, newReceivedAndDeserializedMessage.ParentId)
-                            .ConfigureAwait(false);
-                        chatMessageDtoThatWillBeSaved.ChatRoomId = newChatRoomDto.Id;
-                        roomIsNew = true;
-                    }
-                    else
-                    {
-                        chatMessageDtoThatWillBeSaved.ChatRoomId = existingRoom.Id;
-                    }
-                }
-                else
-                {
-                    string message = "Some of the message parameters were wrong. User has no rights for this chat room or sender role is set invalid.";
-                    await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", message).ConfigureAwait(false);
+                    var messageForUser = "Some of the message parameters were wrong. Please check your message and try again.";
+                    await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
                     return;
                 }
 
                 // Save chatMessage in the system.
-                var createdMessageDto = await messageService.CreateAsync(chatMessageDtoThatWillBeSaved).ConfigureAwait(false);
+                Role userRole = (Role)Enum.Parse(typeof(Role), Context.User.FindFirst("role").Value, true);
+                var createdMessageDto = await messageService.CreateAsync(chatMessageWorkshopCreateDto, userRole).ConfigureAwait(false);
 
-                if (roomIsNew)
-                {
-                    // Add Parent's connections to the Group if he is online.
-                    var parent = await parentRepository.GetById(newReceivedAndDeserializedMessage.ParentId).ConfigureAwait(false);
-                    await AddConnectionsToGroupAsync(parent.UserId, createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
+                // Add Parent's connections to the Group.
+                var parent = await parentRepository.GetById(chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
+                await AddConnectionsToGroupAsync(parent.UserId, createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
 
-                    // Add Provider's connections to the Group if he is online.
-                    var workshops = await workshopRepository.GetByFilter(w => w.Id == newReceivedAndDeserializedMessage.WorkshopId, "Provider").ConfigureAwait(false);
-                    var workshop = workshops.SingleOrDefault();
-                    await AddConnectionsToGroupAsync(workshop.Provider.UserId, createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
-                }
+                // Add Provider's connections to the Group.
+                var workshops = await workshopRepository.GetByFilter(w => w.Id == chatMessageWorkshopCreateDto.WorkshopId, "Provider").ConfigureAwait(false);
+                var workshop = workshops.SingleOrDefault();
+                await AddConnectionsToGroupAsync(workshop.Provider.UserId, createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture) + "WorkshopChat").ConfigureAwait(false);
 
                 // Send chatMessage.
                 await Clients.OthersInGroup(createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture) + "WorkshopChat")
                     .SendAsync("ReceiveMessageInChatGroup", JsonConvert.SerializeObject(createdMessageDto))
                     .ConfigureAwait(false);
             }
+            catch (AuthenticationException exception)
+            {
+                logger.LogWarning(exception.Message);
+                var messageForUser = "Can not get some user's claims. Please check your authentication or contact technical support.";
+                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
+            }
             catch (Exception exception)
             {
-                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", exception.Message).ConfigureAwait(false);
+                logger.LogError(exception.Message);
+                var messageForUser = "Server error. Please try again later or contact technical support.";
+                await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
             }
         }
 
@@ -215,32 +193,20 @@ namespace OutOfSchool.WebApi.Hubs
 
         private Task<bool> UserHasRigtsForChatRoomAsync(long workshopId, long parentId)
         {
-            try
+            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
+
+            var userRole = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Role)} from HttpContext.");
+
+            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
+
+            if (userRoleIsProvider)
             {
-                var userId = Context.User.FindFirst("sub")?.Value
-                    ?? throw new AuthenticationException("The claim type of user Id was not found.");
-
-                var userRole = Context.User.FindFirst("role")?.Value
-                    ?? throw new AuthenticationException("The claim type of user role was not found.");
-
-                var userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
-
-                if (userRoleIsProvider)
-                {
-                    // the user is Provider
-                    // and we check if user is owner of workshop
-                    return validationService.UserIsWorkshopOwnerAsync(userId, workshopId);
-                }
-
-                // the user is Parent
-                // and we check if user is owner of parent
-                return validationService.UserIsParentOwnerAsync(userId, parentId);
+                return validationService.UserIsWorkshopOwnerAsync(userId, workshopId);
             }
-            catch
-            {
-                // TODO: log exception
-                return Task.FromResult(false);
-            }
+
+            return validationService.UserIsParentOwnerAsync(userId, parentId);
         }
     }
 }

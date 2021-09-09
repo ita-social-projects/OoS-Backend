@@ -1,34 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
+using Serilog;
 
 namespace OutOfSchool.WebApi.Controllers
 {
     /// <summary>
-    /// Controller for Chat operations.
+    /// Controller for chat operations between Parent and Provider.
     /// </summary>
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Authorize(Roles = "provider,parent")]
     public class ChatWorkshopController : ControllerBase
     {
-        // TODO: consider to return 404 instead of 403
-        // TODO: remove validation to service
+        // TODO: define the algorithm of logging information and warnings  in the solution
+        // TODO: add localization to response
         private readonly IChatMessageWorkshopService messageService;
         private readonly IChatRoomWorkshopService roomService;
         private readonly IValidationService validationService;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatWorkshopController"/> class.
@@ -37,439 +42,280 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="roomService">Service for ChatRoom entities.</param>
         /// <param name="validationService">Service for validation parameters.</param>
         /// <param name="localizer">Localizer.</param>
-        public ChatWorkshopController(IChatMessageWorkshopService messageService, IChatRoomWorkshopService roomService, IValidationService validationService, IStringLocalizer<SharedResource> localizer)
+        /// <param name="logger">Logger.</param>
+        public ChatWorkshopController(
+            IChatMessageWorkshopService messageService,
+            IChatRoomWorkshopService roomService,
+            IValidationService validationService,
+            IStringLocalizer<SharedResource> localizer,
+            ILogger logger)
         {
-            // TODO: add check for null
-            this.messageService = messageService;
-            this.roomService = roomService;
-            this.validationService = validationService;
-            this.localizer = localizer;
+            this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            this.roomService = roomService ?? throw new ArgumentNullException(nameof(roomService));
+            this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
+            this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+            this.logger = logger;
         }
 
         /// <summary>
-        /// Create new ChatMessage.
-        /// </summary>
-        /// <param name="chatMessageWorkshopCreateDto">Entity that contains text of message, receiver and workshop info.</param>
-        /// <returns>Created <see cref="ChatMessageWorkshopDto"/>.</returns>
-        [Obsolete("This method is for testing purposes.")]
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChatMessageWorkshopDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateMessageAsync(ChatMessageWorkshopCreateDto chatMessageWorkshopCreateDto)
-        {
-            // TODO: delete exception, add BadRequest
-            if (chatMessageWorkshopCreateDto is null)
-            {
-                throw new ArgumentNullException($"{nameof(chatMessageWorkshopCreateDto)}");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            // create new dto object that will be saved to the database
-            var chatMessageDtoThatWillBeSaved = new ChatMessageWorkshopDto()
-            {
-                SenderRoleIsProvider = chatMessageWorkshopCreateDto.SenderRoleIsProvider,
-                Text = chatMessageWorkshopCreateDto.Text,
-                CreatedDateTime = DateTimeOffset.UtcNow,
-                ReadDateTime = null,
-                ChatRoomId = 0,
-            };
-
-            var userRole = HttpContext.User.FindFirst("role")?.Value;
-
-            if (userRole is null)
-            {
-                throw new ArgumentException($"{nameof(userRole)}");
-            }
-
-            var userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
-
-            var userHasRights = await this.UserHasRigtsForChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId).ConfigureAwait(false);
-
-            if ((chatMessageDtoThatWillBeSaved.SenderRoleIsProvider == userRoleIsProvider)
-                && userHasRights)
-            {
-                // set the unique ChatRoomId property according to WorkshopId and ParentId
-                // TODO: delete check for unique chat room as we don't need it here
-                var existingRoom = await roomService.GetUniqueChatRoomAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId)
-                    .ConfigureAwait(false);
-
-                if (existingRoom is null)
-                {
-                    var newChatRoomDto = await roomService.CreateOrReturnExistingAsync(chatMessageWorkshopCreateDto.WorkshopId, chatMessageWorkshopCreateDto.ParentId)
-                        .ConfigureAwait(false);
-                    chatMessageDtoThatWillBeSaved.ChatRoomId = newChatRoomDto.Id;
-                }
-                else
-                {
-                    chatMessageDtoThatWillBeSaved.ChatRoomId = existingRoom.Id;
-                }
-
-                var createdMessageDto = await messageService.CreateAsync(chatMessageDtoThatWillBeSaved).ConfigureAwait(false);
-
-                return new CreatedResult(string.Empty, createdMessageDto);
-            }
-            else
-            {
-                string message = "Some of the message parameters were wrong. User has no rights for this chat room or sender role is set invalid.";
-                return StatusCode(403, message);
-            }
-        }
-
-        /// <summary>
-        /// Get ChatRoom without ChatMessages by ChatRoomId.
+        /// Get parent's chat room with information about Parent and Workshop.
         /// </summary>
         /// <param name="id">ChatRoom's Id.</param>
-        /// <returns>ChatRoom that was found.</returns>
-        [HttpGet("{id}")]
+        /// <returns>User's chat room that was found.</returns>
+        [HttpGet("parent/chatrooms/{id}")]
+        [Authorize(Roles = "parent")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetRoomByIdAsync(long id)
-        {
-            this.ValidateId(id, localizer);
-
-            var chatRoom = await roomService.GetByIdAsync(id).ConfigureAwait(false);
-
-            if (chatRoom is null)
-            {
-                return NoContent();
-            }
-
-            if (await this.UserHasRigtsForChatRoomAsync(chatRoom.WorkshopId, chatRoom.ParentId).ConfigureAwait(false))
-            {
-                return Ok(chatRoom);
-            }
-            else
-            {
-                return StatusCode(403, "Forbidden to get a chat room of another users.");
-            }
-        }
+        public Task<IActionResult> GetRoomForParentByRoomIdAsync([Range(1, long.MaxValue)] long id)
+            => this.GetRoomByIdAsync(id, this.IsParentAChatRoomParticipantAsync);
 
         /// <summary>
-        /// Get a portion of chat messages for specified ChatRoom.
+        /// Get provider's chat room with information about Parent and Workshop.
+        /// </summary>
+        /// <param name="id">ChatRoom's Id.</param>
+        /// <returns>User's chat room that was found.</returns>
+        [HttpGet("provider/chatrooms/{id}")]
+        [Authorize(Roles = "provider")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatRoomWorkshopDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public Task<IActionResult> GetRoomForProviderByRoomIdAsync([Range(1, long.MaxValue)] long id)
+            => this.GetRoomByIdAsync(id, this.IsProviderAChatRoomParticipantAsync);
+
+        /// <summary>
+        /// Get a portion of chat messages for specified parent's chat room.
+        /// Set read current date and time in UTC format in messages that are not read by the parent.
         /// </summary>
         /// <param name="id">ChatRoom's Id.</param>
         /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
-        /// <returns>ChatRoom that was found.</returns>
-        [HttpGet]
+        /// <returns>User's chat room's messages that were found.</returns>
+        [HttpGet("parent/chatrooms/{id}/messages")]
+        [Authorize(Roles = "parent")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMessagesByRoomIdAsync(long id, [FromQuery] OffsetFilter offsetFilter)
+        public Task<IActionResult> GetMessagesForParentByRoomIdAsync([Range(1, long.MaxValue)] long id, [FromQuery] OffsetFilter offsetFilter)
+            => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.IsParentAChatRoomParticipantAsync);
+
+        /// <summary>
+        /// Get a portion of chat messages for specified provider's chat room.
+        /// Set read current date and time in UTC format in messages that are not read by the provider.
+        /// </summary>
+        /// <param name="id">ChatRoom's Id.</param>
+        /// <param name="offsetFilter">Filter to get specified portion of messages in the chat room.</param>
+        /// <returns>User's chat room's messages that were found.</returns>
+        [HttpGet("provider/chatrooms/{id}/messages")]
+        [Authorize(Roles = "provider")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ChatMessageWorkshopDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public Task<IActionResult> GetMessagesForProviderByRoomIdAsync([Range(1, long.MaxValue)] long id, [FromQuery] OffsetFilter offsetFilter)
+            => this.GetMessagesByRoomIdAsync(id, offsetFilter, this.IsProviderAChatRoomParticipantAsync);
+
+        /// <summary>
+        /// Get a list of chat rooms for current parent.
+        /// </summary>
+        /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
+        [HttpGet("parent/chatrooms")]
+        [Authorize(Roles = "parent")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public Task<IActionResult> GetParentsRoomsAsync()
+            => this.GetUsersRoomsAsync(parentId => roomService.GetByParentIdAsync(parentId));
+
+        /// <summary>
+        /// Get a list of chat rooms for current provider.
+        /// </summary>
+        /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
+        [HttpGet("provider/chatrooms")]
+        [Authorize(Roles = "provider")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public Task<IActionResult> GetProvidersRoomsAsync()
+            => this.GetUsersRoomsAsync(providerId => roomService.GetByProviderIdAsync(providerId));
+
+        private async Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
-            this.ValidateId(id, localizer);
+            var userId = this.GetUserId();
 
-            var chatRoom = await roomService.GetByIdAsync(id).ConfigureAwait(false);
+            var result = await validationService.UserIsParentOwnerAsync(userId, chatRoom.ParentId).ConfigureAwait(false);
 
-            if (chatRoom is null)
+            if (!result)
             {
+                this.LogWarningAboutUsersTryingToGetNotOwnChatRoom(chatRoom.Id, userId);
+            }
+
+            return result;
+        }
+
+        private async Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
+        {
+            var userId = this.GetUserId();
+
+            var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId).ConfigureAwait(false);
+
+            if (!result)
+            {
+                this.LogWarningAboutUsersTryingToGetNotOwnChatRoom(chatRoom.Id, userId);
+            }
+
+            return result;
+        }
+
+        private string GetUserId()
+        {
+            var userId = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
+
+            return userId;
+        }
+
+        private Role GetUserRole()
+        {
+            var userRoleName = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
+
+            Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
+
+            return userRole;
+        }
+
+        private void LogWarningAboutUsersTryingToGetNotOwnChatRoom(long chatRoomId, string userId)
+        {
+            var messageToLog = $"User with {nameof(userId)}:{userId} is trying to get not his own chat room: {nameof(chatRoomId)}={chatRoomId}.";
+            logger.Warning(messageToLog);
+        }
+
+        private void LogInfoAboutUsersTryingToGetNotExistingChatRoom(long chatRoomId, string userId)
+        {
+            var messageToLog = $"User with {nameof(userId)}:{userId} is trying to get not existing chat room: {nameof(chatRoomId)}={chatRoomId}.";
+            logger.Information(messageToLog);
+        }
+
+        private async Task<IActionResult> GetRoomByIdAsync(long chatRoomId, Func<ChatRoomWorkshopDto, Task<bool>> userHasRights)
+        {
+            try
+            {
+                var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
+
+                if (chatRoom is null)
+                {
+                    this.LogInfoAboutUsersTryingToGetNotExistingChatRoom(chatRoomId, this.GetUserId());
+
+                    return NoContent();
+                }
+
+                var isChatRoomValid = await userHasRights(chatRoom).ConfigureAwait(false);
+
+                if (isChatRoomValid)
+                {
+                    return Ok(chatRoom);
+                }
+
                 return NoContent();
             }
-            else
+            catch (AuthenticationException exception)
             {
-                if (await this.UserHasRigtsForChatRoomAsync(chatRoom.WorkshopId, chatRoom.ParentId).ConfigureAwait(false))
+                logger.Warning(exception.Message);
+                var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
+                return BadRequest(messageForUser);
+            }
+            catch (Exception exception)
+            {
+                logger.Error(exception.Message);
+                var messageForUser = "Server error. Please try again later or contact technical support.";
+                return new ObjectResult(messageForUser) { StatusCode = 500 };
+            }
+        }
+
+        private async Task<IActionResult> GetMessagesByRoomIdAsync(long chatRoomId, OffsetFilter offsetFilter, Func<ChatRoomWorkshopDto, Task<bool>> userHasRights)
+        {
+            try
+            {
+                var chatRoom = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
+
+                if (chatRoom is null)
                 {
-                    var messages = await messageService.GetMessagesForChatRoomAsync(id, offsetFilter).ConfigureAwait(false);
+                    var messageToLog = $"User with userId:{this.GetUserId()} is trying to get messages from not existing chat room: {nameof(chatRoomId)}={chatRoomId}.";
+                    logger.Information(messageToLog);
+
+                    return NoContent();
+                }
+
+                var isChatRoomValid = await userHasRights(chatRoom).ConfigureAwait(false);
+
+                if (isChatRoomValid)
+                {
+                    var messages = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(chatRoomId, offsetFilter, this.GetUserRole()).ConfigureAwait(false);
 
                     if (messages.Any())
                     {
                         return Ok(messages);
                     }
-                    else
-                    {
-                        return NoContent();
-                    }
+
+                    return NoContent();
                 }
-                else
-                {
-                    return StatusCode(403, "Forbidden to get a chat room of another users.");
-                }
+
+                return NoContent();
+            }
+            catch (AuthenticationException exception)
+            {
+                logger.Warning(exception.Message);
+                var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
+                return BadRequest(messageForUser);
+            }
+            catch (Exception exception)
+            {
+                logger.Error(exception.Message);
+                var messageForUser = "Server error. Please try again later or contact technical support.";
+                return new ObjectResult(messageForUser) { StatusCode = 500 };
             }
         }
 
-        /// <summary>
-        /// Get a list of ChatRooms for current user.
-        /// </summary>
-        /// <returns>List of ChatRooms with last message and number of not read messages.</returns>
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ChatRoomWorkshopDtoWithLastMessage>))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetUsersRoomsAsync()
-        {
-            var userId = HttpContext.User.FindFirst("sub")?.Value;
-            var userRole = HttpContext.User.FindFirst("role")?.Value;
-
-            if (userId is null || userRole is null)
-            {
-                throw new ArgumentException($"{nameof(userId)} or {nameof(userRole)}");
-            }
-
-            IEnumerable<ChatRoomWorkshopDtoWithLastMessage> chatRooms;
-
-            // TODO: simplify this like in Hub
-            if (string.Equals(userRole, Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase))
-            {
-                var providerId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
-                chatRooms = await roomService.GetByProviderIdAsync(providerId).ConfigureAwait(false);
-            }
-            else
-            {
-                var parentId = await validationService.GetEntityIdAccordingToUserRoleAsync(userId, userRole).ConfigureAwait(false);
-                chatRooms = await roomService.GetByParentIdAsync(parentId).ConfigureAwait(false);
-            }
-
-            if (!chatRooms.Any())
-            {
-                return NoContent();
-            }
-
-            return Ok(chatRooms);
-        }
-
-        // TODO: consider to change method logic, if user gets only part of unread messages
-
-        /// <summary>
-        /// Set status IsRead on true for each user's ChatMessage in the ChatRoom.
-        /// </summary>
-        /// <param name="chatRoomId">ChatRoom's Id.</param>
-        /// <returns>Number of successfully updated items.</returns>
-        [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMessagesStatusAsync(long chatRoomId)
-        {
-            this.ValidateId(chatRoomId, localizer);
-
-            var room = await roomService.GetByIdAsync(chatRoomId).ConfigureAwait(false);
-
-            if (room is null)
-            {
-                return NoContent();
-            }
-
-            if (!await this.UserHasRigtsForChatRoomAsync(room.WorkshopId, room.ParentId).ConfigureAwait(false))
-            {
-                return BadRequest($"User is not a participant of the chat:{chatRoomId}");
-            }
-
-            var userRole = HttpContext.User.FindFirst("role")?.Value;
-            if (userRole is null)
-            {
-                throw new ArgumentException($"{nameof(userRole)}");
-            }
-
-            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
-
-            var numberOfUpdatedMessages = await messageService.UpdateIsReadByCurrentUserInChatRoomAsync(chatRoomId, userRoleIsProvider).ConfigureAwait(false);
-
-            if (numberOfUpdatedMessages > 0)
-            {
-                return Ok(numberOfUpdatedMessages);
-            }
-            else
-            {
-                return NoContent();
-            }
-        }
-
-        /// <summary>
-        /// Update ChatMessage info.
-        /// </summary>
-        /// <param name="updatedChatMessage">Entity that will be updated.</param>
-        /// <returns>Successfully updated item.</returns>
-        [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChatMessageWorkshopDto))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMessageAsync(ChatMessageWorkshopUpdateDto updatedChatMessage)
-        {
-            if (updatedChatMessage is null)
-            {
-                throw new ArgumentNullException($"{nameof(updatedChatMessage)}");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var oldChatMessage = await messageService.GetByIdNoTrackingAsync(updatedChatMessage.Id).ConfigureAwait(false);
-
-            var chatRoom = await roomService.GetByIdAsync(oldChatMessage.ChatRoomId).ConfigureAwait(false);
-
-            if (oldChatMessage is null
-                || chatRoom is null
-                || (oldChatMessage.Text == updatedChatMessage.Text))
-            {
-                return NoContent();
-            }
-
-            var userRole = HttpContext.User.FindFirst("role")?.Value;
-
-            if (userRole is null)
-            {
-                throw new ArgumentException($"{nameof(userRole)}");
-            }
-
-            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
-
-            if (!await this.UserHasRigtsForChatRoomAsync(chatRoom.WorkshopId, chatRoom.ParentId).ConfigureAwait(false)
-                || (oldChatMessage.SenderRoleIsProvider != userRoleIsProvider))
-            {
-                return StatusCode(403, "You can change only text of your messages only in chat rooms where you participate.");
-            }
-
-            var whenMessageBecomesOld = new TimeSpan(0, 10, 0);
-
-            if (oldChatMessage.CreatedDateTime.CompareTo(DateTimeOffset.UtcNow.Subtract(whenMessageBecomesOld)) < 0)
-            {
-                return StatusCode(403, "Forbidden to change old messages.");
-            }
-
-            oldChatMessage.Text = updatedChatMessage.Text;
-
-            var updatedMessage = await messageService.UpdateAsync(oldChatMessage).ConfigureAwait(false);
-
-            return Ok(updatedMessage);
-        }
-
-        /// <summary>
-        /// Delete ChatMessage by id.
-        /// </summary>
-        /// <param name="id">ChatMessage's id.</param>
-        /// <returns>Status code.</returns>
-        [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteMessageAsync(long id)
-        {
-            this.ValidateId(id, localizer);
-
-            var messageThatIsDeleting = await messageService.GetByIdNoTrackingAsync(id).ConfigureAwait(false);
-            var chatRoom = await roomService.GetByIdAsync(messageThatIsDeleting.ChatRoomId).ConfigureAwait(false);
-
-            if (messageThatIsDeleting is null || chatRoom is null)
-            {
-                return NoContent();
-            }
-
-            var userRole = HttpContext.User.FindFirst("role")?.Value;
-
-            if (userRole is null)
-            {
-                throw new ArgumentException($"{nameof(userRole)}");
-            }
-
-            bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
-
-            if (!await this.UserHasRigtsForChatRoomAsync(chatRoom.WorkshopId, chatRoom.ParentId).ConfigureAwait(false)
-                || (messageThatIsDeleting.SenderRoleIsProvider != userRoleIsProvider))
-            {
-                return StatusCode(403, "You can delete only your messages only in chat rooms where you participate.");
-            }
-
-            var whenMessageBecomesOld = new TimeSpan(0, 10, 0);
-
-            if (messageThatIsDeleting.CreatedDateTime.CompareTo(DateTimeOffset.UtcNow.Subtract(whenMessageBecomesOld)) < 0)
-            {
-                return StatusCode(403, "Forbidden to delete old messages.");
-            }
-
-            await messageService.DeleteAsync(id).ConfigureAwait(false);
-
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Delete ChatRoom by id.
-        /// </summary>
-        /// <param name="id">ChatRoom's id.</param>
-        /// <returns>Status code.</returns>
-        [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteRoomAsync(long id)
-        {
-            this.ValidateId(id, localizer);
-
-            var room = await roomService.GetByIdAsync(id).ConfigureAwait(false);
-
-            if (room is null)
-            {
-                return NoContent();
-            }
-
-            var roomMessages = await messageService.GetMessagesForChatRoomAsync(id, new OffsetFilter() { From = 0, Size = 1 }).ConfigureAwait(false);
-            if (roomMessages.Any())
-            {
-                return StatusCode(403, "Forbidden to delete a chat room with chat messages.");
-            }
-
-            if (!await this.UserHasRigtsForChatRoomAsync(room.WorkshopId, room.ParentId).ConfigureAwait(false))
-            {
-                return StatusCode(403, "You can delete only chat rooms where you participate.");
-            }
-
-            await roomService.DeleteAsync(id).ConfigureAwait(false);
-
-            return NoContent();
-        }
-
-        private async Task<bool> UserHasRigtsForChatRoomAsync(long workshopId, long parentId)
+        private async Task<IActionResult> GetUsersRoomsAsync(Func<long, Task<IEnumerable<ChatRoomWorkshopDtoWithLastMessage>>> getChatRoomsByRole)
         {
             try
             {
-                var userId = HttpContext.User.FindFirst("sub")?.Value;
-                var userRole = HttpContext.User.FindFirst("role")?.Value;
+                var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(this.GetUserId(), this.GetUserRole()).ConfigureAwait(false);
 
-                if (userId is null || userRole is null)
+                if (providerOrParentId != default)
                 {
-                    throw new ArgumentException($"{nameof(userId)} or {nameof(userRole)}");
+                    var chatRooms = await getChatRoomsByRole(providerOrParentId).ConfigureAwait(false);
+
+                    if (chatRooms.Any())
+                    {
+                        return Ok(chatRooms);
+                    }
                 }
 
-                bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
-
-                if (userRoleIsProvider)
-                {
-                    // the user is Provider
-                    // and we check if user is owner of workshop
-                    var result = await validationService.UserIsWorkshopOwnerAsync(userId, workshopId).ConfigureAwait(false);
-                    return result;
-                }
-                else
-                {
-                    // the user is Parent
-                    // and we check if user is owner of parent
-                    var result = await validationService.UserIsParentOwnerAsync(userId, parentId).ConfigureAwait(false);
-                    return result;
-                }
+                return NoContent();
             }
-            catch
+            catch (AuthenticationException exception)
             {
-                return false;
+                logger.Warning(exception.Message);
+                var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
+                return BadRequest(messageForUser);
+            }
+            catch (Exception exception)
+            {
+                logger.Error(exception.Message);
+                var messageForUser = "Server error. Please try again later or contact technical support.";
+                return new ObjectResult(messageForUser) { StatusCode = 500 };
             }
         }
     }
