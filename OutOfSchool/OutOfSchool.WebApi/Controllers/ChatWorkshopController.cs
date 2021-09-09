@@ -27,6 +27,8 @@ namespace OutOfSchool.WebApi.Controllers
     [Authorize(Roles = "provider,parent")]
     public class ChatWorkshopController : ControllerBase
     {
+        // TODO: define the algorithm of logging information and warnings  in the solution
+        // TODO: add localization to response
         private readonly IChatMessageWorkshopService messageService;
         private readonly IChatRoomWorkshopService roomService;
         private readonly IValidationService validationService;

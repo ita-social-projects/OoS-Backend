@@ -150,6 +150,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 if (messages.Any())
                 {
+                    // TODO: implement a new method to save an array of messages
                     foreach (var message in messages)
                     {
                         message.ReadDateTime = DateTimeOffset.UtcNow;
