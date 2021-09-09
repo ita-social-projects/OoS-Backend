@@ -76,6 +76,42 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<List<ChatMessageWorkshopDto>> GetMessagesForChatRoomAsync(long chatRoomId, OffsetFilter offsetFilter)
         {
+            try
+            {
+                var chatMessages = await this.GetMessagesForChatRoomDomainModelAsync(chatRoomId, offsetFilter).ConfigureAwait(false);
+
+                return chatMessages.Select(item => item.ToModel()).ToList();
+            }
+            catch (Exception exception)
+            {
+                logger.Error($"Getting all {nameof(ChatMessageWorkshopDto)}s with {nameof(chatRoomId)}:{chatRoomId} failed. Exception: {exception.Message}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<ChatMessageWorkshopDto>> GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(long chatRoomId, OffsetFilter offsetFilter, Role userRole)
+        {
+            try
+            {
+                var chatMessages = await this.GetMessagesForChatRoomDomainModelAsync(chatRoomId, offsetFilter).ConfigureAwait(false);
+
+                var userRoleIsProvider = userRole != Role.Parent;
+                var notReadChatMessages = chatMessages.Where(x => x.SenderRoleIsProvider != userRoleIsProvider && x.ReadDateTime == null);
+
+                await this.SetReadDateTimeUtcNow(notReadChatMessages).ConfigureAwait(false);
+
+                return chatMessages.Select(item => item.ToModel()).ToList();
+            }
+            catch (Exception exception)
+            {
+                logger.Error($"Getting and updating all {nameof(ChatMessageWorkshopDto)}s with {nameof(chatRoomId)}:{chatRoomId} failed. Exception: {exception.Message}");
+                throw;
+            }
+        }
+
+        private async Task<List<ChatMessageWorkshop>> GetMessagesForChatRoomDomainModelAsync(long chatRoomId, OffsetFilter offsetFilter)
+        {
             if (offsetFilter is null)
             {
                 offsetFilter = new OffsetFilter();
@@ -92,7 +128,7 @@ namespace OutOfSchool.WebApi.Services
                     ? $"There are no records in the system with {nameof(chatRoomId)}:{chatRoomId}."
                     : $"Successfully got all {chatMessages.Count} records with {nameof(chatRoomId)}:{chatRoomId}.");
 
-                return chatMessages.Select(item => item.ToModel()).ToList();
+                return chatMessages;
             }
             catch (Exception exception)
             {
@@ -101,36 +137,35 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        /// <inheritdoc/>
-        public async Task<int> SetReadDatetimeInAllMessagesForUserInChatRoomAsync(long chatRoomId, Role userRole)
+        private async Task<int> SetReadDateTimeUtcNow(IEnumerable<ChatMessageWorkshop> messages)
         {
-            logger.Debug($"Process of updating {nameof(ChatMessageWorkshop)}s that are not read by current User started.");
+            if (messages is null)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+            logger.Debug($"Process of setting {nameof(ChatMessageWorkshop.ReadDateTime)} was started.");
 
             try
             {
-                var userRoleIsProvider = userRole != Role.Parent;
-
-                var chatMessages = await messageRepository.Get<long>(where: x => x.ChatRoomId == chatRoomId
-                                                                && (x.SenderRoleIsProvider != userRoleIsProvider)
-                                                                && x.ReadDateTime == null)
-                    .ToListAsync().ConfigureAwait(false);
-
-                if (chatMessages.Count > 0)
+                if (messages.Any())
                 {
-                    foreach (var message in chatMessages)
+                    // TODO: implement a new method to save an array of messages
+                    foreach (var message in messages)
                     {
                         message.ReadDateTime = DateTimeOffset.UtcNow;
                         await messageRepository.Update(message).ConfigureAwait(false);
                     }
 
-                    return chatMessages.Count;
+                    logger.Debug($"{messages.Count()} {nameof(messages)} were updated.");
+                    return messages.Count();
                 }
 
                 return default;
             }
             catch (Exception exception)
             {
-                logger.Error($"Updating {nameof(ChatMessageWorkshop)}s' status in {nameof(chatRoomId)}:{chatRoomId} and {nameof(userRole)}:{userRole} failed. Exception: {exception.Message}");
+                logger.Error($"Updating {nameof(ChatMessageWorkshop.ReadDateTime)} failed. Exception: {exception.Message}");
                 throw;
             }
         }
