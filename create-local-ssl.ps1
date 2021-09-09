@@ -12,7 +12,10 @@ if ($null -eq (Get-Command "openssl.exe" -ErrorAction SilentlyContinue))
 $Https = ".\https"
 
 if (-Not (Test-Path -Path $Https)) {
-    mkdir $Https
+
+    New-Item -Type Directory -Path "$Https\ca-certificates"
+    New-Item -Type File -Path "$Https\ca-certificates\type" -Value "ca-certificates"
+
     $Env:Passphrase=-join ((0x30..0x39) + ( 0x41..0x5A) + ( 0x61..0x7A) | Get-Random -Count 128  | ForEach-Object {[char]$_})
     $subj="/C=UA/ST=Kyiv/L=Kyiv/O=SS/OU=ITA/CN=$Domain/emailAddress=admin@$Domain/"
     openssl req `
@@ -32,7 +35,9 @@ if (-Not (Test-Path -Path $Https)) {
         -in $Https\${Domain}.key `
         -out $Https\${Domain}.key `
         -passin env:Passphrase
-    
+
+    Copy-Item "$Https\${Domain}.crt" -Destination "$Https\ca-certificates"
+
     $LocalCert = Get-ChildItem -Path Cert:\LocalMachine\Root | Where-Object { $_.Subject -match "CN=$Domain" }
     if ($LocalCert) {
         certutil -delstore -f "ROOT" ${LocalCert}.Thumbprint

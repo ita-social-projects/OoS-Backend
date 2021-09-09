@@ -3,6 +3,8 @@ services:
   sql-server:
     environment:
       SA_PASSWORD: Oos-password1
+      OOS_API_PASS: Oos-password1
+      OOS_AUTH_PASS: Oos-password1
   elasticsearch:
     # Expose ports directly for local debug
     ports:
@@ -31,6 +33,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Compose
       Email__Enabled: "false"
+      SERVICE_BINDING_ROOT: /platform/bindings
+    volumes:
+      - ./https/ca-certificates:/platform/bindings/my-certificates
   webapi-server:
     # Expose ports directly for local debug
     ports:
@@ -40,6 +45,9 @@ services:
       Elasticsearch__Url: "http://elasticsearch:9200/"
       Elasticsearch__User: user
       Elasticsearch__Password: pass
+      SERVICE_BINDING_ROOT: /platform/bindings
+    volumes:
+      - ./https/ca-certificates:/platform/bindings/my-certificates
     depends_on:
       - "identity-server"
   nginx:

@@ -1,15 +1,20 @@
 version: '3.4'
 services:
 # === SQL SERVER ===
-# TODO: Configure volumes
   sql-server:
     image: mcr.microsoft.com/mssql/server:${SQL_VERSION}
+    command: /bin/bash ./usr/config/entrypoint.sh
     environment:
       ACCEPT_EULA: Y
       TZ: Europe/Kiev
       MSSQL_COLLATION: Ukrainian_100_CI_AS
     ports:
       - 1433:1433
+    volumes:
+      - sql-data:/var/opt/mssql
+      - ./MSSQL/entrypoint.sh:/usr/config/entrypoint.sh:ro
+      - ./MSSQL/configure-db.sh:/usr/config/configure-db.sh:ro
+      - ./MSSQL/configure-db.sql:/usr/config/configure-db.sql:ro
     networks:
       - db
 # === ELASTICSEARCH ===
@@ -81,6 +86,8 @@ services:
       - web
 # === VOLUMES ===
 volumes:
+  sql-data:
+    driver: local
   es-data:
     driver: local
   api-logs:
