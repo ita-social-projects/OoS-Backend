@@ -23,6 +23,7 @@
   - [Clone](#Clone)
   - [Run Dev Environment](#Run-Dev-Environment)
     - [Windows 10](#Windows-10)
+    - [Windows 10 Alternative](#Windows-10-Alternative)
     - [Linux](#Linux)
     - [Linux Alternative](#Linux-Alternative)
     - [MacOS](#MacOS)
@@ -44,7 +45,7 @@
 
 ## Frontend
 
-Here is the front-end part of our project: [https://github.com/ita-social-projects/OoS-Backend](https://github.com/ita-social-projects/OoS-Backend).
+Here is the front-end part of our project: [https://github.com/ita-social-projects/OoS-Frontend](https://github.com/ita-social-projects/OoS-Frontend).
 
 `develop` branch of the back-end corresponds to `develop` branch on the front-end. The same thing with `main` branches.
 
@@ -195,6 +196,128 @@ vagrant up
 If you want to completely remove the VM you can run:
 ```powershell
 vagrant destroy
+```
+
+#### Windows 10 Alternative
+
+To run the environment you need the following tools:
+* [Docker Desktop for Windows](https://docs.docker.com/desktop/windows/install/)
+* [Windows Subsystem for Linux version 2 (WSL 2)](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+* [WSL Ubuntu 20.04](https://www.microsoft.com/store/apps/9n6svws3rx71)
+* [Chocolatey](https://chocolatey.org/install)
+* [PowerShell v3+](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.1)
+
+> Important: All commands should be executed on your host machine in Powershell, unless stated otherwise. If a command needs to run inside the WSL - it's going to be prefixed with `$` (indicating a linux prompt)
+
+##### Additional software
+
+Install OpenSSL with Chocolatey
+
+```powershell
+choco install openssl -y
+```
+
+Install Pack CLI with Chocolatey
+
+```powershell
+choco install pack --version=0.20.0 -y
+```
+
+##### Change to project folder
+
+All commands should be executed in project folder
+
+```powershell
+# For example
+cd C:\Oos-Backend
+```
+
+##### Initial setup
+
+Setup SSL certificate and create hosts entry
+
+```powershell
+.\add-hosts.ps1 127.0.0.1
+.\create-local-ssl.ps1 oos.local
+```
+
+##### Build containers
+
+```powershell
+.\docker-build.ps1
+```
+
+##### Launch stack
+
+```powershell
+.\docker-compose.ps1
+```
+
+First launch should take around 2-5 minutes because you need to pull some large images. You can go make a cup of tea/coffee.
+
+If everything's fine you can access the application through your browser at:
+* [https://oos.local](https://oos.local) - for mock frontend
+* [https://oos.local/webapi](https://oos.local/webapi) - for API Server
+* [https://oos.local/identity](https://oos.local/identity) - for Identity Server
+
+Additionally, databases are exposed for debugging:
+* `oos.local:1433` - MS SQL
+* `oos.local:5601` - Opensearch Dashboard
+* `oos.local:9200` - Opensearch
+
+##### Update application code
+
+If you've made changes to Web API or Identity applications you can re-start the application stack.
+
+First, bring the stack down.
+
+```powershell
+docker-compose down
+```
+
+Then, build the app you've just modified.
+
+For Web API:
+```powershell
+$Tag=git rev-parse --short HEAD
+pack build oos-api:$Tag `
+    --buildpack gcr.io/paketo-buildpacks/dotnet-core `
+    --builder paketobuildpacks/builder:base `
+    --env BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
+```
+
+For Identity:
+```powershell
+$Tag=git rev-parse --short HEAD
+pack build oos-auth:$Tag `
+    --buildpack gcr.io/paketo-buildpacks/dotnet-core `
+    --builder paketobuildpacks/builder:base `
+    --env BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.IdentityServer/
+```
+
+Restart the stack:
+```powershell
+.\docker-compose.ps1
+```
+
+##### Stop & Restart the stack
+
+If you want to stop the stack for time being you can run:
+```powershell
+docker-compose down
+```
+
+To restart the stack simply execute:
+```powershell
+.\docker-compose.ps1
+```
+
+##### Remove the stack and all volumes
+
+If you want to completely remove the VM you can run:
+```powershell
+# add `sudo` if the command won't work :)
+docker-compose down -v
 ```
 
 #### Linux
@@ -587,20 +710,21 @@ TODO:
 
 > Backend
 
-[![@yfedo](https://avatars.githubusercontent.com/u/69301010?s=100&v=4)](https://github.com/yfedo)
-[![@DmyMi](https://avatars.githubusercontent.com/u/24808838?s=100&v=4)](https://github.com/DmyMi)
-[![@YehorOstapchuk](https://avatars.githubusercontent.com/u/62392669?s=100&v=4)](https://github.com/YehorOstapchuk)
-[![@Elizabeth129](https://avatars.githubusercontent.com/u/45245513?s=100&v=4)](https://github.com/Elizabeth129)
-[![@mmmpolishchuk](https://avatars.githubusercontent.com/u/55458556?s=100&v=4)](https://github.com/mmmpolishchuk)
-[![@dmitrykiev](https://avatars.githubusercontent.com/u/3800688?s=100&v=4)](https://github.com/dmitrykiev)
-[![@SergeyNovitsky](https://avatars.githubusercontent.com/u/10594407?s=100&v=4)](https://github.com/SergeyNovitsky)
-[![@h4wk13](https://avatars.githubusercontent.com/u/13885098?s=100&v=4)](https://github.com/h4wk13)
-[![@VadymLevkovskyi](https://avatars.githubusercontent.com/u/85107137?s=100&v=4)](https://github.com/VadymLevkovskyi)
-[![@v-ivanchuk](https://avatars.githubusercontent.com/u/73526573?s=100&v=4)](https://github.com/v-ivanchuk)
-[![@VyacheslavDzhus](https://avatars.githubusercontent.com/u/67432351?s=100&v=4)](https://github.com/VyacheslavDzhus)
-[![@OlhaHoliak](https://avatars.githubusercontent.com/u/59091855?s=100&v=4)](https://github.com/OlhaHoliak)
-[![@P0linux](https://avatars.githubusercontent.com/u/50420213?s=100&v=4)](https://github.com/P0linux)
-[![@Bogdan-Hasanov](https://avatars.githubusercontent.com/u/47710368?s=100&v=4)](https://github.com/Bogdan-Hasanov)
+[<img src="https://avatars.githubusercontent.com/u/69301010?s=100&v=4" width="100" height="100">](https://github.com/yfedo)
+[<img src="https://avatars.githubusercontent.com/u/24808838?s=100&v=4" width="100" height="100">](https://github.com/DmyMi)
+[<img src="https://avatars.githubusercontent.com/u/62392669?s=100&v=4" width="100" height="100">](https://github.com/YehorOstapchuk)
+[<img src="https://avatars.githubusercontent.com/u/45245513?s=100&v=4" width="100" height="100">](https://github.com/Elizabeth129)
+[<img src="https://avatars.githubusercontent.com/u/55458556?s=100&v=4" width="100" height="100">](https://github.com/mmmpolishchuk)
+[<img src="https://avatars.githubusercontent.com/u/3800688?s=100&v=4" width="100" height="100">](https://github.com/dmitrykiev)
+[<img src="https://avatars.githubusercontent.com/u/10594407?s=100&v=4" width="100" height="100">](https://github.com/SergeyNovitsky)
+[<img src="https://avatars.githubusercontent.com/u/13885098?s=100&v=4" width="100" height="100">](https://github.com/h4wk13)
+[<img src="https://avatars.githubusercontent.com/u/85107137?s=100&v=4" width="100" height="100">](https://github.com/VadymLevkovskyi)
+[<img src="https://avatars.githubusercontent.com/u/73526573?s=100&v=4" width="100" height="100">](https://github.com/v-ivanchuk)
+[<img src="https://avatars.githubusercontent.com/u/67432351?s=100&v=4" width="100" height="100">](https://github.com/VyacheslavDzhus)
+[<img src="https://avatars.githubusercontent.com/u/59091855?s=100&v=4" width="100" height="100">](https://github.com/OlhaHoliak)
+[<img src="https://avatars.githubusercontent.com/u/50420213?s=100&v=4" width="100" height="100">](https://github.com/P0linux)
+[<img src="https://avatars.githubusercontent.com/u/47710368?s=100&v=4" width="100" height="100">](https://github.com/Bogdan-Hasanov)
+
 > Frontend
 
 > Bussiness Analytics
