@@ -232,7 +232,7 @@ namespace OutOfSchool.WebApi.Controllers
             catch (AuthenticationException exception)
             {
                 logger.Warning(exception.Message);
-                var messageForUser = "Can not get some user's claims. Please check your authentication or contact technical support.";
+                var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
                 return BadRequest(messageForUser);
             }
             catch (Exception exception)
@@ -276,7 +276,7 @@ namespace OutOfSchool.WebApi.Controllers
             catch (AuthenticationException exception)
             {
                 logger.Warning(exception.Message);
-                var messageForUser = "Can not get some user's claims. Please check your authentication or contact technical support.";
+                var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
                 return BadRequest(messageForUser);
             }
             catch (Exception exception)
@@ -308,7 +308,7 @@ namespace OutOfSchool.WebApi.Controllers
             catch (AuthenticationException exception)
             {
                 logger.Warning(exception.Message);
-                var messageForUser = "Can not get some user's claims. Please check your authentication or contact technical support.";
+                var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
                 return BadRequest(messageForUser);
             }
             catch (Exception exception)
