@@ -12,6 +12,6 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="parentIds">Parent Ids.</param>
         /// <returns>List of Parents.</returns>
-        public Task<IReadOnlyList<Parent>> GetParentsByIds(IEnumerable<long> parentIds);
+        public Task<IReadOnlyList<Parent>> GetByIdsAsync(IEnumerable<long> parentIds);
     }
 }

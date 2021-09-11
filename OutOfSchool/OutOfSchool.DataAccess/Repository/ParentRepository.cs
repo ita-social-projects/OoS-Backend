@@ -36,11 +36,18 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public async Task<IReadOnlyList<Parent>> GetParentsByIds(IEnumerable<long> parentIds)
+        public async Task<IReadOnlyList<Parent>> GetByIdsAsync(IEnumerable<long> parentIds)
         {
+            _ = parentIds ?? throw new ArgumentNullException(nameof(parentIds));
+
             var parents = await db.Parents
                 .Where(parent => parentIds.Contains(parent.Id))
                 .ToListAsync();
+
+            if (!parents.Any())
+            {
+                throw new ArgumentException("There are no parents found in database matching current Ids.");
+            }
 
             return parents;
         }
