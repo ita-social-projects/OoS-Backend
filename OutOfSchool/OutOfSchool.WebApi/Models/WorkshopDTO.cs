@@ -109,6 +109,6 @@ namespace OutOfSchool.WebApi.Models
 
         public IEnumerable<TeacherDTO> Teachers { get; set; }
 
-        public List<DateTimeRange> DateTimeRanges { get; set; }
+        public List<DateTimeRangeDto> DateTimeRanges { get; set; }
     }
 }

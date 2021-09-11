@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace OutOfSchool.Services.Repository
 {
@@ -41,7 +40,7 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<T> RunInTransaction(Func<Task<T>> operation)
         {
-            using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
+            using var transaction = await dbContext.Database.BeginTransactionAsync();
 
             try
             {
@@ -65,7 +64,7 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<T>> GetAll()
+        public async Task<List<T>> GetAll()
         {
             return await dbSet.ToListAsync();
         }

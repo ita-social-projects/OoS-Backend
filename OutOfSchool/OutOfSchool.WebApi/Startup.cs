@@ -181,7 +181,7 @@ namespace OutOfSchool.WebApi
 
             services.AddProxy();
 
-            services.AddAutoMapper(typeof(Startup));
+            services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddSignalR();
         }

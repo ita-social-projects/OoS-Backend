@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Teacher
+    public class Teacher : IEquatable<Teacher>
     {
         public long Id { get; set; }
 
@@ -42,5 +42,25 @@ namespace OutOfSchool.Services.Models
         public long WorkshopId { get; set; }
 
         public virtual Workshop Workshop { get; set; }
+
+        public bool Equals(Teacher other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Id == other.Id && FirstName == other.FirstName && LastName == other.LastName && MiddleName == other.MiddleName && DateOfBirth.Equals(other.DateOfBirth) && Description == other.Description && Image == other.Image;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Teacher) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, FirstName, LastName, MiddleName, DateOfBirth, Description, Image);
+        }
     }
 }

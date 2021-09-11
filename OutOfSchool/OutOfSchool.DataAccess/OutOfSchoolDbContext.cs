@@ -1,16 +1,31 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services
 {
-    public class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyContext
+    public class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyContext, IUnitOfWork
     {
         public OutOfSchoolDbContext(DbContextOptions<OutOfSchoolDbContext> options)
             : base(options)
         {
+            this.ChangeTracker.StateChanged += StateChanged;
+            this.ChangeTracker.Tracked += Tracked;
+        }
+
+        private void StateChanged(object sender, EntityStateChangedEventArgs e)
+        {
+            Console.WriteLine($"State of {e.Entry.Entity.GetType()} with Id={0} changed from {e.OldState } to {e.NewState}");
+        }
+        
+        private void Tracked(object sender, EntityTrackedEventArgs e)
+        {
+            Console.WriteLine($"Newly tracked {e.Entry.Entity.GetType()} with Id={0} as {e.Entry.State}");
         }
 
         public DbSet<Parent> Parents { get; set; }
@@ -46,6 +61,12 @@ namespace OutOfSchool.Services
         public DbSet<City> Cities { get; set; }
 
         public DbSet<Favorite> Favorites { get; set; }
+
+        public DbSet<DateTimeRange> DateTimeRanges { get; set; }
+
+        public DbSet<Workday> Workdays { get; set; }
+
+        public async Task CompleteAsync() => await this.SaveChangesAsync();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

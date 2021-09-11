@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
@@ -11,9 +8,10 @@ namespace OutOfSchool.Services.Repository
     public class WorkshopRepository : EntityRepository<Workshop>, IWorkshopRepository
     {
         private readonly OutOfSchoolDbContext db;
+        public IUnitOfWork UnitOfWork => db;
 
         public WorkshopRepository(OutOfSchoolDbContext dbContext)
-         : base(dbContext)
+            : base(dbContext)
         {
             db = dbContext;
         }
@@ -41,6 +39,39 @@ namespace OutOfSchool.Services.Repository
             db.Entry(entity.Address).State = EntityState.Deleted;
 
             await db.SaveChangesAsync();
+        }
+
+        public async Task<Workshop> GetWithNavigations(long id)
+        {
+            db.ChangeTracker.LazyLoadingEnabled = false;
+            return await db.Workshops
+                .Include(ws => ws.Address)
+                .Include(ws => ws.Teachers)
+                .Include(ws => ws.DateTimeRanges)
+                .ThenInclude(range => range.Workdays)
+                .SingleOrDefaultAsync(ws => ws.Id == id);
+        }
+
+        public async Task<Workshop> UpdateWithNavigations(Workshop entity)
+        {
+            var withNavigations = await this.GetWithNavigations(entity.Id);
+            // withNavigations = entity;
+            db.Entry(withNavigations).CurrentValues.SetValues(entity);
+            // var byId = await GetById(entity.Id);
+            // byId = entity;
+            // db.Workshops.Where(wsh => wsh.Id == entity.Id).Include(workshop => workshop.DateTimeRanges);
+            // var entry = db.Entry(entity);
+
+            // db.UpdateGraph(
+            //     entity,
+            //     map => map.OwnedCollection(
+            //         workshop => workshop.DateTimeRanges,
+            //         with => with.OwnedCollection(range => range.Workdays)));
+
+            // entry.State = EntityState.Modified;
+            // var dateTimeRanges = dbContext.DateTimeRanges.ToListAsync().Result;
+            await this.db.SaveChangesAsync();
+            return entity;
         }
 
         /// <inheritdoc/>
