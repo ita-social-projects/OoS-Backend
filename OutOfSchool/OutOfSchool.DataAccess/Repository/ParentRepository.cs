@@ -44,11 +44,6 @@ namespace OutOfSchool.Services.Repository
                 .Where(parent => parentIds.Contains(parent.Id))
                 .ToListAsync();
 
-            if (!parents.Any())
-            {
-                throw new ArgumentException("There are no parents found in database matching current Ids.");
-            }
-
             return parents;
         }
     }
