@@ -10,7 +10,7 @@
     Layout = "_Layout";
 }
 <div class="wrapper_body">
-    <div class="wrapper modal">
+    <div class="wrapper">
         <h1 class="icon_title">@SharedLocalizer["Register"].Value.ToUpper()</h1>
         <div class="icon_wrapper">
             <h5 class="icon_subtitle">@SharedLocalizer["To be able to apply to clubs or become a service provider"]</h5>
@@ -22,7 +22,7 @@
                     <img class="icon-image" src="~/icons/google.png" alt="google">
                 </a>
             </div>
-            <div class="option-short">@SharedLocalizer["or fill out the form"]</div>
+            <div class="option">@SharedLocalizer["or fill out the form"]</div>
             <form onsubmit="return validateForm(this)" asp-controller="Auth" asp-action="Register" method="post">
                 <input type="hidden" asp-for="ReturnUrl"/>
                 <div asp-validation-summary="ModelOnly"></div>

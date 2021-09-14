@@ -9,7 +9,7 @@
     Layout = "_Layout";
 }
 <div class="wrapper_body">
-    <div class="wrapper modal">
+    <div class="wrapper">
         <h1 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h1>
         <div class="icon_wrapper">
             <div class="icon_social">
@@ -20,7 +20,7 @@
                     <img class="icon-image" src="~/icons/google.png" alt="google">
                 </a>
             </div>
-            <div class="option">@SharedLocalizer["or fill out the form"]</div>
+            <div class="option-short">@SharedLocalizer["or fill out the form"]</div>
 
             @* <form asp-controller="Auth" asp-action="ExternalLogin" *@
             @*       asp-route-returnUrl="@Model.ReturnUrl" method="post"> *@
@@ -53,6 +53,11 @@
                 <div class="title">
                     <span>Ще не зареєстровані?</span>
                     <a class="link" asp-controller="Auth" asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
+                </div>
+
+                <div class="title">
+                    <span>Забули пароль?</span>
+                    <a class="link" asp-controller="Account" asp-action="ForgotPassword" asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Forgot"]</a>
                 </div>
             </form>
         </div>

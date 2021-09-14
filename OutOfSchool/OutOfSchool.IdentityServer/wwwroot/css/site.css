@@ -55,6 +55,7 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 600px;
 }
 .wrapper {
   display: flex;
@@ -377,7 +378,7 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-width: max-content;
+  min-width: 400px;
   min-height: 56px;
   background: #FFEBB3;
   border-radius: 5px;
@@ -391,7 +392,7 @@ a {
 }
 .warning_icon{
   max-width: 1rem;
-  margin: 1rem;
+  margin-right: 1rem;
 }
 .icon_social_link{
   display: inline-block;
