@@ -237,20 +237,20 @@ cd C:\Oos-Backend
 Setup SSL certificate and create hosts entry
 
 ```powershell
-.\add-hosts.ps1 127.0.0.1
-.\create-local-ssl.ps1 oos.local
+powershell.exe -noprofile -executionpolicy bypass -file .\add-hosts.ps1 127.0.0.1
+powershell.exe -noprofile -executionpolicy bypass -file .\create-local-ssl.ps1 oos.local
 ```
 
 ##### Build containers
 
 ```powershell
-.\docker-build.ps1
+powershell.exe -noprofile -executionpolicy bypass -file .\docker-build.ps1
 ```
 
 ##### Launch stack
 
 ```powershell
-.\docker-compose.ps1
+powershell.exe -noprofile -executionpolicy bypass -file .\docker-compose.ps1
 ```
 
 First launch should take around 2-5 minutes because you need to pull some large images. You can go make a cup of tea/coffee.
@@ -297,7 +297,7 @@ pack build oos-auth:$Tag `
 
 Restart the stack:
 ```powershell
-.\docker-compose.ps1
+powershell.exe -noprofile -executionpolicy bypass -file .\docker-compose.ps1
 ```
 
 ##### Stop & Restart the stack
@@ -309,14 +309,13 @@ docker-compose down
 
 To restart the stack simply execute:
 ```powershell
-.\docker-compose.ps1
+powershell.exe -noprofile -executionpolicy bypass -file .\docker-compose.ps1
 ```
 
 ##### Remove the stack and all volumes
 
 If you want to completely remove the VM you can run:
 ```powershell
-# add `sudo` if the command won't work :)
 docker-compose down -v
 ```
 
