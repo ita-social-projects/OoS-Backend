@@ -31,11 +31,7 @@
         </form>
 
         <div class="title">
-            <a class="link" asp-controller="Auth" asp-action="Login"asp-route-returnUrl="@Model.ReturnUrl">
-                <button class="registration_submit registration_button">
-                    @SharedLocalizer["Sign In"]
-                </button>
-            </a>
+            <a class="link" asp-controller="Auth" asp-action="Login"asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Sign In"]</a>
         </div>
     </div>
 </div>
