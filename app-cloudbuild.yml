@@ -1,0 +1,43 @@
+steps:
+# Build the container image
+- name: 'gcr.io/k8s-skaffold/pack'
+  entrypoint: 'pack'
+  args:
+    - build
+    - gcr.io/$PROJECT_ID/oos-api:$COMMIT_SHA
+    - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
+    - --builder=paketobuildpacks/builder:base
+    - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
+    - --publish
+# Deploy container image to Cloud Run
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+    - beta
+    - run
+    - deploy
+    - apiservice
+    - --image
+    - gcr.io/$PROJECT_ID/oos-api:$COMMIT_SHA
+    - --region
+    - europe-central2
+    - --platform
+    - managed
+    - --allow-unauthenticated
+    - --service-account
+    - $_SERVICE_ACCOUNT
+    - --cpu=2
+    - --memory=512Mi
+    - --max-instances=2
+    - --update-env-vars
+    - ASPNETCORE_ENVIRONMENT=Google
+    - --update-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET
+    # Disable http2 because prod will be http1.1 for now
+    - --no-use-http2
+    - --vpc-connector
+    - central-serverless
+# Clean old versions except previous
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: bash
+  args:
+    - c
+    - $(yes | gcloud run revisions delete --platform managed --region europe-central2 `gcloud run revisions list --service apiservice --platform managed --region europe-central2 --format 'value(name)' | sort -r | tail -n +3 | paste -sd " " -`) || exit 0

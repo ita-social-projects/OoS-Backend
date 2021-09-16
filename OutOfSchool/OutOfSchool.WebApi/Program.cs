@@ -23,7 +23,7 @@ namespace OutOfSchool.WebApi
                 .WriteTo.Debug()
                 .WriteTo.Console();
 
-            if (environment != "Azure")
+            if (environment != "Azure" && environment != "Google")
             {
                 loggerConfigBuilder.WriteTo.File(
                     path: config.GetSection("Logging:FilePath").Value,
