@@ -2,30 +2,24 @@ version: '3.4'
 services:
   sql-server:
     environment:
+      MSSQL_MEMORYLIMIT_MB: 1300
       SA_PASSWORD: Oos-password1
       OOS_API_PASS: Oos-password1
       OOS_AUTH_PASS: Oos-password1
-  elasticsearch:
+  opensearch:
     # Expose ports directly for local debug
     ports:
       - 9200:9200
-      - 9300:9300
+      - 9600:9600
     environment:
-      - xpack.security.enabled=false
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
-  kibana:
+      - plugins.security.ssl.http.enabled=false
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - os-data:/usr/share/opensearch/data
+  opensearch-dashboards:
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - OPENSEARCH_HOSTS=["http://opensearch:9200"]
   identity-server:
     # Expose ports directly for local debug
     ports: 
@@ -42,9 +36,6 @@ services:
       - 5000:5000
     environment:
       ASPNETCORE_ENVIRONMENT: Compose
-      Elasticsearch__Url: "http://elasticsearch:9200/"
-      Elasticsearch__User: user
-      Elasticsearch__Password: pass
       SERVICE_BINDING_ROOT: /platform/bindings
     volumes:
       - ./https/ca-certificates:/platform/bindings/my-certificates
@@ -60,3 +51,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
+volumes: 
+  os-data:
+    driver: local

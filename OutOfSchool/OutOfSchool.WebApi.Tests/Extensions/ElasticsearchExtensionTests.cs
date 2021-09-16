@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Nest;
 using NUnit.Framework;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 
 namespace OutOfSchool.WebApi.Tests.Extensions
@@ -14,14 +14,15 @@ namespace OutOfSchool.WebApi.Tests.Extensions
         public void ElasticsearchClient_ServiceRegistration()
         {
             // Arrange
-            var mockConfig = new Mock<IConfiguration>();
-            mockConfig.Setup(x => x["elasticsearch:url"]).Returns("https://url");
-            mockConfig.Setup(x => x["elasticsearch:user"]).Returns("user");
-            mockConfig.Setup(x => x["elasticsearch:password"]).Returns("password");
+            var mockConfig = new ElasticConfig();
+            mockConfig.Urls = new List<string>();
+            mockConfig.Urls.Add("https://url");
+            mockConfig.User = "user";
+            mockConfig.Password = "password";
             var coll = new ServiceCollection();
 
             // Act
-            coll.AddElasticsearch(mockConfig.Object);
+            coll.AddElasticsearch(mockConfig);
             ServiceProvider provider = coll.BuildServiceProvider();
 
             // Assert
