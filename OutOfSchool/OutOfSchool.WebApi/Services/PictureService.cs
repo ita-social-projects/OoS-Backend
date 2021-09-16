@@ -8,13 +8,13 @@ using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
-    public class PictureServices : IPictureService
+    public class PictureService : IPictureService
     {
         private readonly IPictureStorage pictureStorage;
         private readonly IWorkshopRepository workshopRepository;
         private readonly ILogger logger;
 
-        public PictureServices(IPictureStorage pictureStorage, ILogger logger)
+        public PictureService(IPictureStorage pictureStorage, ILogger logger)
         {
             this.pictureStorage = pictureStorage ?? throw new ArgumentNullException(nameof(pictureStorage));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
