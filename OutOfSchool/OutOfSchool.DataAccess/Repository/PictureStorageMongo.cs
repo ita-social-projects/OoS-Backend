@@ -19,6 +19,15 @@ namespace OutOfSchool.Services.Repository
                 ?? throw new ArgumentNullException(nameof(storageConfiguration));
         }
 
+        /// <summary>
+        /// Returns picture by picture Id.
+        /// </summary>
+        /// <param name="pictureId">Picture id.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public async Task<Stream> GetPictureByIdAsync(string pictureId)
+            // Note: await should be here bacause of type conversion: Task<GridFSDownloadStream> cannot be automaticaly cast to the Task<Stream> ...
+            => await GetGreedFSBucket().OpenDownloadStreamAsync(new ObjectId(pictureId));
+
         private IGridFSBucket GetGreedFSBucket()
         {
             // TODO: check performance
@@ -27,9 +36,5 @@ namespace OutOfSchool.Services.Repository
 
             return new GridFSBucket(database);
         }
-
-        public async Task<Stream> GetPictureByIdAsync(string pictureId)
-            // Note: await should be here bacause of type conversion: Task<GridFSDownloadStream> cannot be automaticaly cast to the Task<Stream> ...
-            => await GetGreedFSBucket().OpenDownloadStreamAsync(new ObjectId(pictureId));
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.WebApi.Common.Exceptions;
 using OutOfSchool.WebApi.Services;
@@ -13,11 +15,25 @@ namespace OutOfSchool.WebApi.Controllers.V1
     {
         private readonly IPictureService pictureService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PictureController"/> class.
+        /// </summary>
+        /// <param name="pictureService">Service for picture model.</param>
         public PictureController(IPictureService pictureService)
         {
             this.pictureService = pictureService ?? throw new ArgumentNullException(nameof(pictureService));
         }
 
+        /// <summary>
+        /// Get picture by it's id and workshop Id.
+        /// </summary>
+        /// <param name="workshopId">Id of the Workshop Entity.</param>
+        /// <param name="pictureId">Id of the picture.</param>
+        /// <returns>Workshop picture.</returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileStreamResult))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [Route("workshop/{workshopId}/picture/{pictureId}")]
         public async Task<IActionResult> Workshop(long workshopId, Guid pictureId)
@@ -34,10 +50,20 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
             catch
             {
-                return BadRequest();
+                return BadRequest("An error occured while receiving the picture.");
             }
         }
 
+        /// <summary>
+        /// Get picture by it's id and provider Id.
+        /// </summary>
+        /// <param name="providerId">Id of the Provider Entity.</param>
+        /// <param name="pictureId">Id of the picture.</param>
+        /// <returns>Provider picture.</returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileStreamResult))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [Route("provider/{providerId}/picture/{pictureId}")]
         public async Task<IActionResult> Provider(long providerId, Guid pictureId)
@@ -54,10 +80,20 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
             catch
             {
-                return BadRequest();
+                return BadRequest("An error occured while receiving the picture.");
             }
         }
 
+        /// <summary>
+        /// Get picture by it's id and teacher Id.
+        /// </summary>
+        /// <param name="teacherId">Id of the Teacher Entity.</param>
+        /// <param name="pictureId">Id of the picture.</param>
+        /// <returns>Teacher picture.</returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileStreamResult))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [Route("teacher/{teacherId}/picture/{pictureId}")]
         public async Task<IActionResult> Teacher(long teacherId, Guid pictureId)
@@ -74,7 +110,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
             catch
             {
-                return BadRequest();
+                return BadRequest("An error occured while receiving the picture.");
             }
         }
     }

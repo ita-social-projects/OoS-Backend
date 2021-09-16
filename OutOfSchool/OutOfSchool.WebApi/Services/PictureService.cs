@@ -16,6 +16,14 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Teacher> teacherRepository;
         private readonly ILogger logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PictureService"/> class.
+        /// </summary>
+        /// <param name="pictureStorage">Repository to work with picture storage.</param>
+        /// <param name="workshopRepository">Repository to work with Workshop Entity.</param>
+        /// <param name="providerRepository">Repository to work with Provider Entity.</param>
+        /// <param name="teacherRepository">Repository to work with Teacher Entity.</param>
+        /// <param name="logger">Logger.</param>
         public PictureService(IPictureStorage pictureStorage, IWorkshopRepository workshopRepository, IProviderRepository providerRepository, IEntityRepository<Teacher> teacherRepository, ILogger logger)
         {
             this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
@@ -25,6 +33,7 @@ namespace OutOfSchool.WebApi.Services
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <inheritdoc/>
         public async Task<PictureStorageModel> GetPictureWorkshop(long workshopId, Guid pictureId)
         {
             logger.Debug($"Getting picture {pictureId} for workshop {workshopId}");
@@ -40,6 +49,7 @@ namespace OutOfSchool.WebApi.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<PictureStorageModel> GetPictureProvider(long providerId, Guid pictureId)
         {
             logger.Debug($"Getting picture {pictureId} for provider {providerId}");
@@ -55,6 +65,7 @@ namespace OutOfSchool.WebApi.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<PictureStorageModel> GetPictureTeacher(long teacherId, Guid pictureId)
         {
             logger.Debug($"Getting picture {pictureId} for workshop {teacherId}");
