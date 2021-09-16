@@ -48,9 +48,24 @@ namespace OutOfSchool.Services
 
         public DbSet<Favorite> Favorites { get; set; }
 
+        public DbSet<WorkshopPicture> WorkshopPictureTable { get; set; }
+
+        public DbSet<WorkshopPictureMetadata> WorkshopPictureMetadata { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<WorkshopPicture>().HasKey(nameof(WorkshopPicture.WorkshopId), nameof(WorkshopPicture.PictureId));
+
+            builder.Entity<WorkshopPicture>()
+                .HasOne(x => x.Workshop)
+                .WithMany(x => x.WorkshopPictures)
+                .HasForeignKey(x => x.WorkshopId);
+
+            builder.Entity<WorkshopPicture>()
+                .HasOne(x => x.Picture)
+                .WithOne(x => x.WorkshopPicture);
 
             builder.Entity<ChatMessage>()
                 .HasOne(m => m.ChatRoom)

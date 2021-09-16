@@ -115,5 +115,7 @@ namespace OutOfSchool.Services.Models
 
         // These properties are only for navigation EF Core.
         public virtual ICollection<ChatRoom> ChatRooms { get; set; }
+
+        public virtual ICollection<WorkshopPicture> WorkshopPictures { get; set; }
     }
 }
