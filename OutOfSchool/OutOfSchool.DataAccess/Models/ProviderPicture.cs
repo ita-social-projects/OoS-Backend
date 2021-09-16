@@ -2,11 +2,11 @@
 
 namespace OutOfSchool.Services.Models
 {
-    public class WorkshopPicture
+    public class ProviderPicture
     {
-        public long WorkshopId { get; set; }
+        public long ProviderId { get; set; }
 
-        public virtual Workshop Workshop { get; set; }
+        public virtual Provider Provider { get; set; }
 
         public Guid PictureId { get; set; }
 

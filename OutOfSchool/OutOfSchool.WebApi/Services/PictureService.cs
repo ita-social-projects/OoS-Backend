@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Services
             };
         }
 
-        private WorkshopPictureMetadata GetWorkshopPictureMetadata(Guid pictureId, Workshop workshop)
+        private PictureMetadata GetWorkshopPictureMetadata(Guid pictureId, Workshop workshop)
         {
             var picture = workshop.WorkshopPictures.FirstOrDefault(x => x.Picture.Id == pictureId)?.Picture;
 

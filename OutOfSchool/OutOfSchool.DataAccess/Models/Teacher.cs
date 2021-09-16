@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -42,5 +43,7 @@ namespace OutOfSchool.Services.Models
         public long WorkshopId { get; set; }
 
         public virtual Workshop Workshop { get; set; }
+
+        public virtual ICollection<TeacherPicture> TeacherPictures { get; set; }
     }
 }

@@ -95,5 +95,7 @@ namespace OutOfSchool.Services.Models
 
         [Required]
         public virtual Address LegalAddress { get; set; }
+
+        public virtual ICollection<ProviderPicture> ProviderPictures { get; set; }
     }
 }

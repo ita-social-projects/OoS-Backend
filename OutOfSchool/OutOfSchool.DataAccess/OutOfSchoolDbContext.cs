@@ -50,7 +50,11 @@ namespace OutOfSchool.Services
 
         public DbSet<WorkshopPicture> WorkshopPictureTable { get; set; }
 
-        public DbSet<WorkshopPictureMetadata> WorkshopPictureMetadata { get; set; }
+        public DbSet<ProviderPicture> ProviderPictureTable { get; set; }
+
+        public DbSet<TeacherPicture> TeacherPictureTable { get; set; }
+
+        public DbSet<PictureMetadata> PictureMetadata { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -66,6 +70,28 @@ namespace OutOfSchool.Services
             builder.Entity<WorkshopPicture>()
                 .HasOne(x => x.Picture)
                 .WithOne(x => x.WorkshopPicture);
+
+            builder.Entity<ProviderPicture>().HasKey(nameof(ProviderPicture.ProviderId), nameof(ProviderPicture.PictureId));
+
+            builder.Entity<ProviderPicture>()
+                .HasOne(x => x.Provider)
+                .WithMany(x => x.ProviderPictures)
+                .HasForeignKey(x => x.ProviderId);
+
+            builder.Entity<ProviderPicture>()
+                .HasOne(x => x.Picture)
+                .WithOne(x => x.ProviderPicture);
+
+            builder.Entity<TeacherPicture>().HasKey(nameof(TeacherPicture.TeacherId), nameof(TeacherPicture.PictureId));
+
+            builder.Entity<TeacherPicture>()
+                .HasOne(x => x.Teacher)
+                .WithMany(x => x.TeacherPictures)
+                .HasForeignKey(x => x.TeacherId);
+
+            builder.Entity<TeacherPicture>()
+                .HasOne(x => x.Picture)
+                .WithOne(x => x.TeacherPicture);
 
             builder.Entity<ChatMessage>()
                 .HasOne(m => m.ChatRoom)
