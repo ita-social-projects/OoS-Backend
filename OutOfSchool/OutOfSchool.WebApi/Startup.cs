@@ -118,7 +118,10 @@ namespace OutOfSchool.WebApi
                 builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             // Add Elasticsearch client
-            services.AddElasticsearch(Configuration);
+            var elasticConfig = Configuration
+                .GetSection(ElasticConfig.Name)
+                .Get<ElasticConfig>();
+            services.AddElasticsearch(elasticConfig);
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 

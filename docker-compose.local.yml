@@ -13,12 +13,13 @@ services:
       - 9600:9600
     environment:
       - discovery.type=single-node
+      - plugins.security.ssl.http.enabled=false
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
       - os-data:/usr/share/opensearch/data
   opensearch-dashboards:
     environment:
-      - OPENSEARCH_HOSTS=["https://opensearch:9200"]
+      - OPENSEARCH_HOSTS=["http://opensearch:9200"]
   identity-server:
     # Expose ports directly for local debug
     ports: 
@@ -35,9 +36,6 @@ services:
       - 5000:5000
     environment:
       ASPNETCORE_ENVIRONMENT: Compose
-      Elasticsearch__Url: "http://elasticsearch:9200/"
-      Elasticsearch__User: user
-      Elasticsearch__Password: pass
       SERVICE_BINDING_ROOT: /platform/bindings
     volumes:
       - ./https/ca-certificates:/platform/bindings/my-certificates
