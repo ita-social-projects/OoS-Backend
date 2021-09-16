@@ -12,10 +12,15 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IPictureStorage pictureStorage;
         private readonly IWorkshopRepository workshopRepository;
+        private readonly IProviderRepository providerRepository;
+        private readonly IEntityRepository<Teacher> teacherRepository;
         private readonly ILogger logger;
 
-        public PictureService(IPictureStorage pictureStorage, ILogger logger)
+        public PictureService(IPictureStorage pictureStorage, IWorkshopRepository workshopRepository, IProviderRepository providerRepository, IEntityRepository<Teacher> teacherRepository, ILogger logger)
         {
+            this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
+            this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
+            this.teacherRepository = teacherRepository ?? throw new ArgumentNullException(nameof(teacherRepository));
             this.pictureStorage = pictureStorage ?? throw new ArgumentNullException(nameof(pictureStorage));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -26,7 +31,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshop = workshopRepository.GetById(workshopId).Result;
 
-            var pictureMetadata = GetWorkshopPictureMetadata(pictureId, workshop);
+            var pictureMetadata = GetPictureMetadata(pictureId, workshop);
 
             return new PictureStorageModel
             {
@@ -35,9 +40,65 @@ namespace OutOfSchool.WebApi.Services
             };
         }
 
-        private PictureMetadata GetWorkshopPictureMetadata(Guid pictureId, Workshop workshop)
+        public async Task<PictureStorageModel> GetPictureProvider(long providerId, Guid pictureId)
+        {
+            logger.Debug($"Getting picture {pictureId} for provider {providerId}");
+
+            var provider = providerRepository.GetById(providerId).Result;
+
+            var pictureMetadata = GetPictureMetadata(pictureId, provider);
+
+            return new PictureStorageModel
+            {
+                ContentStream = await pictureStorage.GetPictureByIdAsync(pictureMetadata.StorageId).ConfigureAwait(false),
+                ContentType = pictureMetadata.ContentType,
+            };
+        }
+
+        public async Task<PictureStorageModel> GetPictureTeacher(long teacherId, Guid pictureId)
+        {
+            logger.Debug($"Getting picture {pictureId} for workshop {teacherId}");
+
+            var workshop = teacherRepository.GetById(teacherId).Result;
+
+            var pictureMetadata = GetPictureMetadata(pictureId, workshop);
+
+            return new PictureStorageModel
+            {
+                ContentStream = await pictureStorage.GetPictureByIdAsync(pictureMetadata.StorageId).ConfigureAwait(false),
+                ContentType = pictureMetadata.ContentType,
+            };
+        }
+
+        private PictureMetadata GetPictureMetadata(Guid pictureId, Workshop workshop)
         {
             var picture = workshop.WorkshopPictures.FirstOrDefault(x => x.Picture.Id == pictureId)?.Picture;
+
+            if (picture == null)
+            {
+                logger.Error($"Picture {pictureId} was not found");
+                throw new PictureNotFoundException(pictureId.ToString());
+            }
+
+            return picture;
+        }
+
+        private PictureMetadata GetPictureMetadata(Guid pictureId, Provider provider)
+        {
+            var picture = provider.ProviderPictures.FirstOrDefault(x => x.Picture.Id == pictureId)?.Picture;
+
+            if (picture == null)
+            {
+                logger.Error($"Picture {pictureId} was not found");
+                throw new PictureNotFoundException(pictureId.ToString());
+            }
+
+            return picture;
+        }
+
+        private PictureMetadata GetPictureMetadata(Guid pictureId, Teacher teacher)
+        {
+            var picture = teacher.TeacherPictures.FirstOrDefault(x => x.Picture.Id == pictureId)?.Picture;
 
             if (picture == null)
             {
