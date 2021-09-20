@@ -10,7 +10,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210920143733_TimeRanges")]
+    [Migration("20210920144554_TimeRanges")]
     partial class TimeRanges
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
