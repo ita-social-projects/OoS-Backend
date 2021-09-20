@@ -12,11 +12,14 @@ namespace OutOfSchool.Services.Repository
     public class PictureStorageMongo : IPictureStorage
     {
         private readonly MongoRepositoryConfiguration storageConfiguration;
+        private readonly IGridFSBucket greedFSBucket;
 
         public PictureStorageMongo(IOptions<MongoRepositoryConfiguration> storageConfiguration)
         {
             this.storageConfiguration = storageConfiguration?.Value
                 ?? throw new ArgumentNullException(nameof(storageConfiguration));
+
+            this.greedFSBucket = GetGreedFSBucket();
         }
 
         /// <summary>
@@ -26,11 +29,10 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task<Stream> GetPictureByIdAsync(string pictureId)
             // Note: await should be here bacause of type conversion: Task<GridFSDownloadStream> cannot be automaticaly cast to the Task<Stream> ...
-            => await GetGreedFSBucket().OpenDownloadStreamAsync(new ObjectId(pictureId));
+            => await greedFSBucket.OpenDownloadStreamAsync(new ObjectId(pictureId));
 
         private IGridFSBucket GetGreedFSBucket()
         {
-            // TODO: check performance
             var client = new MongoClient(storageConfiguration.ConnectionString);
             var database = client.GetDatabase(storageConfiguration.PicturesTableName);
 
