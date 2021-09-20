@@ -146,38 +146,18 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
 
-            // var workshop = workshopRepository.GetByFilterNoTracking(x => x.Id == dto.Id, "Address,Teachers,"+ nameof(Workshop.DateTimeRanges)).FirstOrDefault();
-            // var workshop =
-            //     (await workshopRepository
-            //         .GetByFilter(x => x.Id == dto.Id, "Address,Teachers," + nameof(Workshop.DateTimeRanges))
-            //         .ConfigureAwait(false)).FirstOrDefault();
-
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
             mapper.Map(dto, currentWorkshop);
-            await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-            // var workshopDto = mapper.Map<WorkshopDTO>(currentWorkshop);
-            // var workshopDateTimeRanges = JsonConvert.DeserializeObject<List<DateTimeRange>>(JsonConvert.SerializeObject(workshop.DateTimeRanges.ToList()));
-            // var workshopDto = mapper.Map<WorkshopDTO>(workshop);
-            // (workshopRepository.UnitOfWork as OutOfSchoolDbContext).ChangeTracker.DetectChanges();
-            // var dateTimeRanges = mapper.Map<List<DateTimeRange>>(dto.DateTimeRanges);
-            // var dtrToGetHash = dateTimeRanges[0].GetHashCode();
-            // var @equals = dateTimeRanges[0].Equals(currentWorkshop.DateTimeRanges[0]);
-            // currentWorkshop.DateTimeRanges[0] = dateTimeRanges[0];
-            // currentWorkshop.DateTimeRanges = backupTimeRanges;
-            // (workshopRepository.UnitOfWork as OutOfSchoolDbContext).ChangeTracker.DetectChanges();
-            // dtr.Workdays = currentWorkshop.DateTimeRanges[0].Workdays;
-            // currentWorkshop.DateTimeRanges[0] = dtr;
-            // var first = workshop.DateTimeRanges.First();
-            // workshop.DateTimeRanges = backupTimeRanges;
-            // workshop.DateTimeRanges[0].Workdays[0] = backupTimeRanges[0].Workdays[0];
-            // var firstTracked = backupTimeRanges.First();
-            // workshop.DateTimeRanges[0] = first;
-            // workshop.DateTimeRanges = workshopDateTimeRanges;
-            // var updateWithNavigations = await workshopRepository.UpdateWithNavigations(workshop).ConfigureAwait(false);
-            return mapper.Map<WorkshopDTO>(currentWorkshop);
+            try
+            {
+                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            }
+            catch (DbUpdateConcurrencyException exception)
+            {
+                logger.LogError($"Updating failed. Exception: {exception.Message}");
+                throw;
+            }   
 
-            // try
-            // {
             //     // In case if DirectionId and DepartmentId does not match ClassId
             //     await this.FillDirectionsFields(dto).ConfigureAwait(false);
             //
@@ -190,54 +170,7 @@ namespace OutOfSchool.WebApi.Services
             //     {
             //         teacher.WorkshopId = workshop.Id;
             //     }
-            //
-            //     this.CompareTwoListsOfTeachers(
-            //         dto.Teachers,
-            //         workshop.Teachers,
-            //         out List<TeacherDTO> teachersToCreate,
-            //         out List<TeacherDTO> teachersToUpdate,
-            //         out List<TeacherDTO> teachersToDelete);
-            //
-            //     // When updating entity Workshop with the existing list
-            //     // EF Core adds created and updated entities to the list so
-            //     // when we return updated entity duplication happens.
-            //     // This is only for returning entity. Database will be updated correctly.
-            //     // dto.Teachers = null;
-            //
-            //     Func<Task<Workshop>> updateWorkshop = async () =>
-            //     {
-            //         foreach (var teacherDto in teachersToCreate)
-            //         {
-            //             await teacherRepository.Create(teacherDto.ToDomain()).ConfigureAwait(false);
-            //         }
-            //
-            //         foreach (var teacherDto in teachersToUpdate)
-            //         {
-            //             await teacherRepository.Update(teacherDto.ToDomain()).ConfigureAwait(false);
-            //         }
-            //
-            //         foreach (var teacherDto in teachersToDelete)
-            //         {
-            //             await teacherRepository.Delete(teacherDto.ToDomain()).ConfigureAwait(false);
-            //         }
-            //
-            //         await addressRepository.Update(dto.Address.ToDomain()).ConfigureAwait(false);
-            //         return await workshopRepository.Update(dto.ToDomain()).ConfigureAwait(false);
-            //     };
-            //
-            //     var newWorkshop = await workshopRepository.RunInTransaction(updateWorkshop).ConfigureAwait(false);
-            //     workshop.DateTimeRanges = dto.DateTimeRanges;
-            //     var updateWithNavigations = await workshopRepository.UpdateWithNavigations(workshop).ConfigureAwait(false);
-            //     logger.Information($"Workshop with Id = {workshop?.Id} updated succesfully.");
-            //
-            //     // return update.ToModel();
-            //     return updateWithNavigations.ToModel();
-            // }
-            // catch (DbUpdateConcurrencyException exception)
-            // {
-            //     logger.Error($"Updating failed. Exception: {exception.Message}");
-            //     throw;
-            // }
+            return mapper.Map<WorkshopDTO>(currentWorkshop);
         }
 
         /// <inheritdoc/>
@@ -400,46 +333,6 @@ namespace OutOfSchool.WebApi.Services
             dto.DepartmentId = classEntity.DepartmentId;
             dto.DirectionId = classEntity.Department.DirectionId;
         }
-
-        // // private void CompareTwoListsOfTeachers(
-        // //     IEnumerable<TeacherDTO> source,
-        // //     IEnumerable<Teacher> destination,
-        // //     out List<TeacherDTO> teachersToCreate,
-        // //     out List<TeacherDTO> teachersToUpdate,
-        // //     out List<TeacherDTO> teachersToDelete)
-        // // {
-        // //     // Sort new teachers and old teachers
-        // //     var oldTeachers = new List<TeacherDTO>();
-        // //     teachersToCreate = new List<TeacherDTO>();
-        // //     foreach (var teacherDto in source)
-        // //     {
-        // //         if (destination.Any(x => x.Id == teacherDto.Id))
-        // //         {
-        // //             oldTeachers.Add(teacherDto);
-        // //         }
-        // //         else
-        // //         {
-        // //             // In case if TeacherId was set wrong, when someone is trying to hack the system.
-        // //             teacherDto.Id = default;
-        // //             teachersToCreate.Add(teacherDto);
-        // //         }
-        // //     }
-        //
-        //     // Sort teachers for update and delete
-        //     teachersToUpdate = new List<TeacherDTO>();
-        //     teachersToDelete = new List<TeacherDTO>();
-        //     foreach (var teacher in destination)
-        //     {
-        //         if (oldTeachers.Any(x => x.Id == teacher.Id))
-        //         {
-        //             teachersToUpdate.Add(oldTeachers.First(x => x.Id == teacher.Id));
-        //         }
-        //         else
-        //         {
-        //             teachersToDelete.Add(teacher.ToModel());
-        //         }
-        //     }
-        // }
 
         private List<WorkshopDTO> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshopsDTOs)
         {
