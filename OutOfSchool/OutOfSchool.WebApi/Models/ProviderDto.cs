@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
@@ -92,5 +93,7 @@ namespace OutOfSchool.WebApi.Models
         public AddressDto LegalAddress { get; set; }
 
         public AddressDto ActualAddress { get; set; }
+
+        public List<string> Pictures { get; private set; }
     }
 }

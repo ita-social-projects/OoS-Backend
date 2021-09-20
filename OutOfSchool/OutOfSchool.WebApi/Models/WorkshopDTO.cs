@@ -107,5 +107,7 @@ namespace OutOfSchool.WebApi.Models
         public AddressDto Address { get; set; }
 
         public IEnumerable<TeacherDTO> Teachers { get; set; }
+
+        public List<string> Pictures { get; private set; }
     }
 }

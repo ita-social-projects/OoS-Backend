@@ -1,4 +1,6 @@
-﻿using System;
+﻿using OutOfSchool.Services.Models;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
@@ -36,5 +38,7 @@ namespace OutOfSchool.WebApi.Models
         public string Image { get; set; } = string.Empty;
 
         public long WorkshopId { get; set; }
+
+        public List<string> Pictures { get; private set; }
     }
 }
