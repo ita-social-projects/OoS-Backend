@@ -38,8 +38,8 @@ namespace OutOfSchool.Services.Models
         [MaxLength(256)]
         public string Image { get; set; } = string.Empty;
 
-        // [Required]
-        // public long WorkshopId { get; set; }
+        [Required]
+        public long WorkshopId { get; set; }
 
         public virtual Workshop Workshop { get; set; }
     }
