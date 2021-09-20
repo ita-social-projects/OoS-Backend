@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common.Exceptions;
 using Serilog;
 
 namespace OutOfSchool.WebApi.Services
@@ -40,6 +41,12 @@ namespace OutOfSchool.WebApi.Services
 
             var workshop = workshopRepository.GetById(workshopId).Result;
 
+            if (workshop == null)
+            {
+                logger.Error($"Workshop {workshopId} was not found");
+                throw new EntityNotFoundException(nameof(workshopId));
+            }
+
             var pictureMetadata = GetPictureMetadata(pictureId, workshop);
 
             return new PictureStorageModel
@@ -56,6 +63,12 @@ namespace OutOfSchool.WebApi.Services
 
             var provider = providerRepository.GetById(providerId).Result;
 
+            if (provider == null)
+            {
+                logger.Error($"Provider {providerId} was not found");
+                throw new EntityNotFoundException(nameof(providerId));
+            }
+
             var pictureMetadata = GetPictureMetadata(pictureId, provider);
 
             return new PictureStorageModel
@@ -71,6 +84,12 @@ namespace OutOfSchool.WebApi.Services
             logger.Debug($"Getting picture {pictureId} for workshop {teacherId}");
 
             var teacher = teacherRepository.GetById(teacherId).Result;
+
+            if (teacher == null)
+            {
+                logger.Error($"Teacher {teacherId} was not found");
+                throw new EntityNotFoundException(nameof(teacherId));
+            }
 
             var pictureMetadata = GetPictureMetadata(pictureId, teacher);
 

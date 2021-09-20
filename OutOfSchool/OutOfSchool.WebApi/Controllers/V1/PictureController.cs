@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 return pictureData.ToFileResult();
             }
-            catch (WorkshopNotFoundException)
+            catch (EntityNotFoundException)
             {
                 return NotFound(pictureId);
             }
@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 return pictureData.ToFileResult();
             }
-            catch (ProviderNotFoundException)
+            catch (EntityNotFoundException)
             {
                 return NotFound(pictureId);
             }
@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 return pictureData.ToFileResult();
             }
-            catch (TeacherNotFoundException)
+            catch (EntityNotFoundException)
             {
                 return NotFound(pictureId);
             }
