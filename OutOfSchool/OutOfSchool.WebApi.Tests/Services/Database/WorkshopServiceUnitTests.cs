@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -26,6 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
 
         private Mock<IRatingService> ratingService;
         private Mock<ILogger<WorkshopService>> logger;
+        private Mock<IMapper> mapperMoq;
 
         private Workshop newWorkshop;
         private List<Workshop> workshops;
@@ -40,6 +42,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             addressRepositoryMoq = new Mock<IEntityRepository<Address>>();
             ratingService = new Mock<IRatingService>();
             logger = new Mock<ILogger<WorkshopService>>();
+            mapperMoq = new Mock<IMapper>();
 
             workshopService = new WorkshopService(
                 workshopRepositoryMoq.Object,
@@ -47,7 +50,8 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 teacherRepositoryMoq.Object,
                 addressRepositoryMoq.Object,
                 ratingService.Object,
-                logger.Object);
+                logger.Object,
+                mapperMoq.Object);
 
             FakeEntities();
         }
@@ -179,7 +183,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 Description = "Desc1",
                 Price = 1000,
                 WithDisabilityOptions = true,
-                DaysPerWeek = 1,
                 Head = "Head1",
                 HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                 ProviderTitle = "ProviderTitle",
@@ -312,7 +315,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 Description = "Desc",
                 Price = 1000,
                 WithDisabilityOptions = true,
-                DaysPerWeek = 1,
                 Head = "Head",
                 HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                 ProviderTitle = "ProviderTitle",
@@ -373,7 +375,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         Description = "Desc1",
                         Price = 1000,
                         WithDisabilityOptions = true,
-                        DaysPerWeek = 1,
                         Head = "Head1",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "ProviderTitle",
@@ -435,7 +436,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         Description = "Desc2",
                         Price = 2000,
                         WithDisabilityOptions = true,
-                        DaysPerWeek = 2,
                         Head = "Head2",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "ProviderTitle",
@@ -496,7 +496,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         Description = "Desc3",
                         Price = 3000,
                         WithDisabilityOptions = true,
-                        DaysPerWeek = 3,
                         Head = "Head3",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "ProviderTitle",
@@ -556,7 +555,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         Description = "Desc4",
                         Price = 4000,
                         WithDisabilityOptions = true,
-                        DaysPerWeek = 4,
                         Head = "Head4",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "ProviderTitle",
@@ -617,7 +615,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         Description = "Desc5",
                         Price = 5000,
                         WithDisabilityOptions = true,
-                        DaysPerWeek = 5,
                         Head = "Head5",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "ProviderTitle",

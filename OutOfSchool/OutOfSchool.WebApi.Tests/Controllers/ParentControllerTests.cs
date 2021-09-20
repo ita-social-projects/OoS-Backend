@@ -110,7 +110,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Description = "Desc6",
                 Price = 6000,
                 WithDisabilityOptions = true,
-                DaysPerWeek = 6,
                 Head = "Head6",
                 HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                 ProviderTitle = "ProviderTitle",

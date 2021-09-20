@@ -267,7 +267,6 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Price = 5000,
                 IsPerMonth = true,
                 WithDisabilityOptions = true,
-                DaysPerWeek = 5,
                 Head = "Head5",
                 HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                 ProviderTitle = "ProviderTitle",
