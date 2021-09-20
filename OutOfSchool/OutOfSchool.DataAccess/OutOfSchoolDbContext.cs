@@ -14,18 +14,6 @@ namespace OutOfSchool.Services
         public OutOfSchoolDbContext(DbContextOptions<OutOfSchoolDbContext> options)
             : base(options)
         {
-            this.ChangeTracker.StateChanged += StateChanged;
-            this.ChangeTracker.Tracked += Tracked;
-        }
-
-        private void StateChanged(object sender, EntityStateChangedEventArgs e)
-        {
-            Console.WriteLine($"State of {e.Entry.Entity.GetType()} with Id={0} changed from {e.OldState } to {e.NewState}");
-        }
-        
-        private void Tracked(object sender, EntityTrackedEventArgs e)
-        {
-            Console.WriteLine($"Newly tracked {e.Entry.Entity.GetType()} with Id={0} as {e.Entry.State}");
         }
 
         public DbSet<Parent> Parents { get; set; }

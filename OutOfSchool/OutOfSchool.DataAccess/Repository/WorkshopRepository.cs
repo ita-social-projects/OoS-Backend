@@ -43,35 +43,12 @@ namespace OutOfSchool.Services.Repository
 
         public async Task<Workshop> GetWithNavigations(long id)
         {
-            db.ChangeTracker.LazyLoadingEnabled = false;
             return await db.Workshops
                 .Include(ws => ws.Address)
                 .Include(ws => ws.Teachers)
                 .Include(ws => ws.DateTimeRanges)
                 .ThenInclude(range => range.Workdays)
                 .SingleOrDefaultAsync(ws => ws.Id == id);
-        }
-
-        public async Task<Workshop> UpdateWithNavigations(Workshop entity)
-        {
-            var withNavigations = await this.GetWithNavigations(entity.Id);
-            // withNavigations = entity;
-            db.Entry(withNavigations).CurrentValues.SetValues(entity);
-            // var byId = await GetById(entity.Id);
-            // byId = entity;
-            // db.Workshops.Where(wsh => wsh.Id == entity.Id).Include(workshop => workshop.DateTimeRanges);
-            // var entry = db.Entry(entity);
-
-            // db.UpdateGraph(
-            //     entity,
-            //     map => map.OwnedCollection(
-            //         workshop => workshop.DateTimeRanges,
-            //         with => with.OwnedCollection(range => range.Workdays)));
-
-            // entry.State = EntityState.Modified;
-            // var dateTimeRanges = dbContext.DateTimeRanges.ToListAsync().Result;
-            await this.db.SaveChangesAsync();
-            return entity;
         }
 
         /// <inheritdoc/>

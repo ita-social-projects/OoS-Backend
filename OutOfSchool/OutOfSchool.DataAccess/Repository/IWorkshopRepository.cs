@@ -17,8 +17,6 @@ namespace OutOfSchool.Services.Repository
         /// <returns>True if Class exists, otherwise false.</returns>
         bool ClassExists(long id);
 
-        Task<Workshop> UpdateWithNavigations(Workshop entity);
-
         Task<Workshop> GetWithNavigations(long id);
     }
 }

@@ -55,7 +55,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
-        Task<List<T>> GetAll();
+        Task<IEnumerable<T>> GetAll();
 
         /// <summary>
         /// Get element by Id.
