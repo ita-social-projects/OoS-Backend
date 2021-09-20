@@ -1,9 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Common.Exceptions;
 using Serilog;
 
 namespace OutOfSchool.WebApi.Services
@@ -88,7 +88,7 @@ namespace OutOfSchool.WebApi.Services
             if (picture == null)
             {
                 logger.Error($"Picture {pictureId} was not found");
-                throw new PictureNotFoundException(pictureId.ToString());
+                throw new FileNotFoundException(pictureId.ToString());
             }
 
             return picture;
@@ -101,7 +101,7 @@ namespace OutOfSchool.WebApi.Services
             if (picture == null)
             {
                 logger.Error($"Picture {pictureId} was not found");
-                throw new PictureNotFoundException(pictureId.ToString());
+                throw new FileNotFoundException(pictureId.ToString());
             }
 
             return picture;
@@ -114,7 +114,7 @@ namespace OutOfSchool.WebApi.Services
             if (picture == null)
             {
                 logger.Error($"Picture {pictureId} was not found");
-                throw new PictureNotFoundException(pictureId.ToString());
+                throw new FileNotFoundException(pictureId.ToString());
             }
 
             return picture;
