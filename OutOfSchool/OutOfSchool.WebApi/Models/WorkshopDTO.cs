@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -47,9 +46,9 @@ namespace OutOfSchool.WebApi.Models
         [Range(0, 18, ErrorMessage = "Max age should be a number from 0 to 18")]
         public int MaxAge { get; set; }
 
-        [Required(ErrorMessage = "Specify how many times per week lessons will be held")]
-        [Range(1, 7, ErrorMessage = "Field should be a digit from 1 to 7")]
-        public int DaysPerWeek { get; set; }
+        // [Required(ErrorMessage = "Specify how many times per week lessons will be held")]
+        // [Range(1, 7, ErrorMessage = "Field should be a digit from 1 to 7")]
+        // public int DaysPerWeek { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]

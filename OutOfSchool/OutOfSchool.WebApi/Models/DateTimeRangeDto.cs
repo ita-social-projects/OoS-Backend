@@ -11,8 +11,6 @@ namespace OutOfSchool.WebApi.Models
 
         public TimeSpan EndTime { get; set; }
 
-        public long WorkshopId { get; set; }
-
         public List<WorkdayDto> Workdays { get; set; }
     }
 }
