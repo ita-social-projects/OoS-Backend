@@ -4,7 +4,7 @@ steps:
   entrypoint: 'pack'
   args:
     - build
-    - gcr.io/$PROJECT_ID/oos-api:$COMMIT_SHA
+    - gcr.io/$PROJECT_ID/oos-api:$TAG_NAME
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --builder=paketobuildpacks/builder:base
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
@@ -17,9 +17,9 @@ steps:
     - deploy
     - apiservice
     - --image
-    - gcr.io/$PROJECT_ID/oos-api:$COMMIT_SHA
+    - gcr.io/$PROJECT_ID/oos-api:$TAG_NAME
     - --region
-    - europe-west1
+    - $_REGION
     - --platform
     - managed
     - --allow-unauthenticated
@@ -28,9 +28,10 @@ steps:
     - --cpu=2
     - --memory=512Mi
     - --max-instances=2
-    - --update-env-vars
+    - --concurrency=40
+    - --set-env-vars
     - ASPNETCORE_ENVIRONMENT=Google
-    - --update-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET
+    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET
     # Disable http2 because prod will be http1.1 for now
     - --no-use-http2
     - --vpc-connector
@@ -40,4 +41,4 @@ steps:
   entrypoint: bash
   args:
     - -c
-    - $(yes | gcloud run revisions delete --platform managed --region europe-west1 `gcloud run revisions list --service apiservice --platform managed --region europe-west1 --format 'value(name)' | sort -r | tail -n +3 | paste -sd " " -`) || exit 0
+    - for revision in `gcloud run revisions list --service apiservice --platform managed --region $_REGION --format 'value(name)' | sort -r | tail -n +3 | paste -sd " " -`; do $(yes | gcloud run revisions delete --platform managed --region $_REGION $revision) || exit 0; done;
