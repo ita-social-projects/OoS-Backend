@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OutOfSchool.Services.Configuration
+﻿namespace OutOfSchool.Services.Configuration
 {
     public class MongoRepositoryConfiguration
     {

@@ -70,9 +70,9 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.Debug($"Getting picture {pictureId} for workshop {teacherId}");
 
-            var workshop = teacherRepository.GetById(teacherId).Result;
+            var teacher = teacherRepository.GetById(teacherId).Result;
 
-            var pictureMetadata = GetPictureMetadata(pictureId, workshop);
+            var pictureMetadata = GetPictureMetadata(pictureId, teacher);
 
             return new PictureStorageModel
             {
