@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace OutOfSchool.WebApi
 {
@@ -20,16 +21,21 @@ namespace OutOfSchool.WebApi
             var loggerConfigBuilder = new LoggerConfiguration()
                 .ReadFrom.Configuration(config, sectionName: "Logging")
                 .Enrich.FromLogContext()
-                .WriteTo.Debug()
-                .WriteTo.Console();
+                .WriteTo.Debug();
 
             if (environment != "Azure" && environment != "Google")
             {
-                loggerConfigBuilder.WriteTo.File(
+                loggerConfigBuilder
+                    .WriteTo.Console()
+                    .WriteTo.File(
                     path: config.GetSection("Logging:FilePath").Value,
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 2,
                     fileSizeLimitBytes: null);
+            }
+            else
+            {
+                loggerConfigBuilder.WriteTo.Console(new RenderedCompactJsonFormatter());
             }
 
             Log.Logger = loggerConfigBuilder.CreateLogger();
