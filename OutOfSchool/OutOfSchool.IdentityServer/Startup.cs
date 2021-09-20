@@ -114,13 +114,13 @@ namespace OutOfSchool.IdentityServer
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var proxyOptions = config.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
+            app.UseProxy(proxyOptions);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            var proxyOptions = config.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
-            app.UseProxy(proxyOptions);
 
             var supportedCultures = new[]
             {

@@ -13,6 +13,8 @@ namespace OutOfSchool.Common.Extensions.Startup
             {
                 options.ForwardedHeaders =
                     ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
             });
 
             return services;
@@ -21,6 +23,8 @@ namespace OutOfSchool.Common.Extensions.Startup
         public static IApplicationBuilder UseProxy(this IApplicationBuilder app, ReverseProxyOptions options)
         {
             var basePath = options.BasePath;
+
+            app.UseForwardedHeaders();
 
             if (!string.IsNullOrEmpty(basePath))
             {
@@ -31,11 +35,6 @@ namespace OutOfSchool.Common.Extensions.Startup
                         .ConfigureAwait(false);
                 });
             }
-
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.All,
-            });
 
             return app;
         }
