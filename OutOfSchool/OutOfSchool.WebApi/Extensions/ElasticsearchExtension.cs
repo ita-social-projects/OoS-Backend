@@ -64,6 +64,11 @@ namespace OutOfSchool.WebApi.Extensions
                         {
                             Console.WriteLine($"Status: {details.HttpStatusCode}");
                         }
+
+                        if (!details.Success)
+                        {
+                            Console.Error.WriteLine($"Reason: {details.OriginalException}");
+                        }
                     });
 
             AddDefaultMappings(settings, config.DefaultIndex);
