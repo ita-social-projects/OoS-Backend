@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <returns>Provider.</returns>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{id}")]
+        [HttpGet("{providerId:long}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(long providerId)
         {
