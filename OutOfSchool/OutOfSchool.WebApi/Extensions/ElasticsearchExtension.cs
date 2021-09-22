@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using IdentityModel;
@@ -36,7 +37,39 @@ namespace OutOfSchool.WebApi.Extensions
             var settings = new ConnectionSettings(pool)
                     .DefaultIndex(config.DefaultIndex)
                     .BasicAuthentication(config.User, config.Password)
-                    .EnableDebugMode();
+
+                    // TODO: Configure this to run only in Dev and Test environments
+                    // TODO: Need this now to debug role permissions for Elastic
+                    // TODO: Use decent logger
+                    .EnableDebugMode(details =>
+                    {
+                        if (details.RequestBodyInBytes != null)
+                        {
+                            Console.WriteLine(
+                                $"{details.HttpMethod} {details.Uri} " +
+                                $"{Encoding.UTF8.GetString(details.RequestBodyInBytes)}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{details.HttpMethod} {details.Uri}");
+                        }
+
+                        // log out the response and the response body, if one exists for the type of response
+                        if (details.ResponseBodyInBytes != null)
+                        {
+                            Console.WriteLine($"Status: {details.HttpStatusCode}" +
+                                              $"{Encoding.UTF8.GetString(details.ResponseBodyInBytes)}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Status: {details.HttpStatusCode}");
+                        }
+
+                        if (!details.Success)
+                        {
+                            Console.Error.WriteLine($"Reason: {details.OriginalException}");
+                        }
+                    });
 
             AddDefaultMappings(settings, config.DefaultIndex);
 
