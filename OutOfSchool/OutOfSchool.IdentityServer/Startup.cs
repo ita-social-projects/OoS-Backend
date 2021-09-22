@@ -4,7 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using IdentityServer4.KeyManagement.EntityFramework;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -20,6 +22,7 @@ using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.EmailSender;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 
@@ -49,6 +52,8 @@ namespace OutOfSchool.IdentityServer
                         optionsBuilder =>
                             optionsBuilder.MigrationsAssembly("OutOfSchool.IdentityServer")));
 
+            services.AddCustomDataProtection("IdentityServer");
+
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
             services.AddIdentity<User, IdentityRole>(options =>
@@ -76,8 +81,7 @@ namespace OutOfSchool.IdentityServer
                         // TODO: Change this to something decent and configurable
                         options.IssuerUri = "http://hostname:5443";
                     }
-                })
-                .AddDeveloperSigningCredential()
+                }).AddDeveloperSigningCredential()
                 .AddConfigurationStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
