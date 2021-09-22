@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +20,8 @@ using Microsoft.Extensions.Hosting;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.EmailSender;
+using OutOfSchool.IdentityServer.Config;
+using OutOfSchool.IdentityServer.KeyManagement;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
@@ -65,21 +68,17 @@ namespace OutOfSchool.IdentityServer
                 .AddEntityFrameworkStores<OutOfSchoolDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.ConfigureApplicationCookie(config =>
+            services.ConfigureApplicationCookie(c =>
             {
-                config.Cookie.Name = "IdentityServer.Cookie";
-                config.LoginPath = "/Auth/Login";
-                config.LogoutPath = "/Auth/Logout";
+                c.Cookie.Name = "IdentityServer.Cookie";
+                c.LoginPath = "/Auth/Login";
+                c.LogoutPath = "/Auth/Logout";
             });
 
-            services.AddIdentityServer(options =>
-                {
-                    if (env.IsEnvironment("Release"))
-                    {
-                        // TODO: Change this to something decent and configurable
-                        options.IssuerUri = "http://hostname:5443";
-                    }
-                }).AddDeveloperSigningCredential()
+            var issuerSection = config.GetSection(IssuerConfig.Name);
+            services.Configure<IssuerConfig>(issuerSection);
+
+            services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
                 .AddConfigurationStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
@@ -97,6 +96,17 @@ namespace OutOfSchool.IdentityServer
                 .AddAspNetIdentity<User>()
                 .AddProfileService<ProfileService>();
 
+            services.AddDbContext<CertificateDbContext>(builder =>
+                builder.UseSqlServer(
+                    connString,
+                    sql => sql.MigrationsAssembly(migrationsAssembly)));
+
+            // TODO: Extract cache and use two separate classes
+            services
+                .AddSingleton<CredentialsStore>()
+                .AddSingleton<ISigningCredentialStore>(s => s.GetRequiredService<CredentialsStore>())
+                .AddSingleton<IValidationKeysStore>(s => s.GetRequiredService<CredentialsStore>());
+
             services.AddEmailSender(
                 builder => builder.Bind(config.GetSection(EmailOptions.SectionName)),
                 builder => builder.Bind(config.GetSection(SmtpOptions.SectionName)));
@@ -106,7 +116,7 @@ namespace OutOfSchool.IdentityServer
                 .AddDataAnnotationsLocalization(options =>
                 {
                     options.DataAnnotationLocalizerProvider = (type, factory) =>
-                    factory.Create(typeof(SharedResource));
+                        factory.Create(typeof(SharedResource));
                 });
 
             services.AddProxy();
@@ -166,7 +176,7 @@ namespace OutOfSchool.IdentityServer
 
             app.UseRouting();
 
-            app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
+            app.UseCookiePolicy(new CookiePolicyOptions {MinimumSameSitePolicy = SameSiteMode.Lax});
 
             app.UseStaticFiles();
 
