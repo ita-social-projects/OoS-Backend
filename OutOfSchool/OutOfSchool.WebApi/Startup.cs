@@ -38,6 +38,9 @@ namespace OutOfSchool.WebApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
+            var proxyOptions = Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
+            app.UseProxy(proxyOptions);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -55,9 +58,6 @@ namespace OutOfSchool.WebApi
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures,
             };
-
-            var proxyOptions = Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
-            app.UseProxy(proxyOptions);
 
             app.UseRequestLocalization(requestLocalization);
 
@@ -118,7 +118,10 @@ namespace OutOfSchool.WebApi
                 builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             // Add Elasticsearch client
-            services.AddElasticsearch(Configuration);
+            var elasticConfig = Configuration
+                .GetSection(ElasticConfig.Name)
+                .Get<ElasticConfig>();
+            services.AddElasticsearch(elasticConfig);
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
