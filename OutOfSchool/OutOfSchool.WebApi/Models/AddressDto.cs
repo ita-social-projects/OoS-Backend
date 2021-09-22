@@ -15,7 +15,7 @@ namespace OutOfSchool.WebApi.Models
 
         [Required(ErrorMessage = "City is required")]
         [DataType(DataType.Text)]
-        [MaxLength(15)]
+        [MaxLength(30)]
         public string City { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Street is required")]
