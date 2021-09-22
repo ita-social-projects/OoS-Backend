@@ -8,13 +8,14 @@ namespace OutOfSchool.Services.Repository
     public class WorkshopRepository : EntityRepository<Workshop>, IWorkshopRepository
     {
         private readonly OutOfSchoolDbContext db;
-        public IUnitOfWork UnitOfWork => db;
 
         public WorkshopRepository(OutOfSchoolDbContext dbContext)
             : base(dbContext)
         {
             db = dbContext;
         }
+
+        public IUnitOfWork UnitOfWork => db;
 
         /// <inheritdoc/>
         public new async Task Delete(Workshop entity)

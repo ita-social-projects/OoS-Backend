@@ -23,6 +23,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 },
                 constraints: table =>
                 {
+                    table.CheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
                     table.PrimaryKey("PK_DateTimeRanges", x => x.Id);
                     table.ForeignKey(
                         name: "FK_DateTimeRanges_Workshops_WorkshopId",
