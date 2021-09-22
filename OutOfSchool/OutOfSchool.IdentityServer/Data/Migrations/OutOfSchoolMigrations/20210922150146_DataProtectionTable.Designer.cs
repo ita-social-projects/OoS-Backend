@@ -10,7 +10,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210922145034_DataProtectionTable")]
+    [Migration("20210922150146_DataProtectionTable")]
     partial class DataProtectionTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
