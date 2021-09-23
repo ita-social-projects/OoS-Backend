@@ -1,0 +1,42 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using IdentityServer4.Models;
+using IdentityServer4.Stores;
+
+namespace OutOfSchool.IdentityServer.KeyManagement
+{
+    public class ValidationKeyStore : IValidationKeysStore
+    {
+        private readonly KeyManager keyManager;
+
+        public ValidationKeyStore(KeyManager manager)
+        {
+            keyManager = manager;
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
+        {
+            try
+            {
+                var certificate = await keyManager.Get();
+
+                var credential = keyManager.ConvertToCredentials(certificate);
+
+                var keyInfo = new SecurityKeyInfo
+                {
+                    Key = credential.Key,
+                    SigningAlgorithm = credential.Algorithm,
+                };
+
+                return new[] {keyInfo};
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return new SecurityKeyInfo[] { };
+            }
+        }
+    }
+}

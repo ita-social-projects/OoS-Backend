@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -94,18 +93,11 @@ namespace OutOfSchool.IdentityServer
                             sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 .AddAspNetIdentity<User>()
-                .AddProfileService<ProfileService>();
-
-            services.AddDbContext<CertificateDbContext>(builder =>
-                builder.UseSqlServer(
-                    connString,
-                    sql => sql.MigrationsAssembly(migrationsAssembly)));
-
-            // TODO: Extract cache and use two separate classes
-            services
-                .AddSingleton<CredentialsStore>()
-                .AddSingleton<ISigningCredentialStore>(s => s.GetRequiredService<CredentialsStore>())
-                .AddSingleton<IValidationKeysStore>(s => s.GetRequiredService<CredentialsStore>());
+                .AddProfileService<ProfileService>()
+                .AddCustomKeyManagement<CertificateDbContext>(builder =>
+                    builder.UseSqlServer(
+                        connString,
+                        sql => sql.MigrationsAssembly(migrationsAssembly)));
 
             services.AddEmailSender(
                 builder => builder.Bind(config.GetSection(EmailOptions.SectionName)),
