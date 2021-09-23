@@ -18,12 +18,12 @@ namespace OutOfSchool.WebApi.Services
         Task<SearchResult<WorkshopCard>> GetAll(OffsetFilter offsetFilter);
 
         /// <summary>
-        /// Get all workshops with the specified provider's Id.
+        /// Get all workshop cards with the specified provider's Id.
         /// </summary>
         /// <param name="id">Provider's key.</param>
-        /// <returns>A <see cref="Task{WorkshopDTO}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="IEnumerable{WorkshopDTO}"/> that contains elements from the input sequence.</returns>
-        Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id);
+        /// <returns>A <see cref="Task{WorkshopCard}"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="List{WorkshopCard}"/> that contains elements from the input sequence.</returns>
+        Task<List<WorkshopCard>> GetByProviderId(long id);
 
         /// <summary>
         /// Get all entities that matches filter's parameters.

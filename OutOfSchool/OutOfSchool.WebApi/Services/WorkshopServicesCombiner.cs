@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
@@ -119,22 +120,16 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id)
+        public async Task<List<WorkshopCard>> GetByProviderId(long id)
         {
-            var workshop = await databaseService.GetByProviderId(id).ConfigureAwait(false);
+            var workshopCards = DtoModelsToWorkshopCards(await databaseService.GetByProviderId(id).ConfigureAwait(false));
 
-            return workshop;
+            return workshopCards;
         }
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {
-            List<WorkshopCard> workshopCards = new List<WorkshopCard>();
-            foreach (var item in source)
-            {
-                workshopCards.Add(item.ToCardDto());
-            }
-
-            return workshopCards;
+            return source.Select(currentElement => currentElement.ToCardDto()).ToList();
         }
     }
 }
