@@ -176,7 +176,7 @@ namespace OutOfSchool.IdentityServer
 
             app.UseRouting();
 
-            app.UseCookiePolicy(new CookiePolicyOptions {MinimumSameSitePolicy = SameSiteMode.Lax});
+            app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
             app.UseStaticFiles();
 
