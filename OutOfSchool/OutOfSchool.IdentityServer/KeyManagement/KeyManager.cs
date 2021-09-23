@@ -12,7 +12,7 @@ using OutOfSchool.IdentityServer.Config;
 
 namespace OutOfSchool.IdentityServer.KeyManagement
 {
-    public class KeyManager
+    public class KeyManager : IKeyManager
     {
         private readonly int expirationTimeDays = 365;
         private readonly IServiceScopeFactory scopeFactory;
@@ -28,13 +28,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             inMemoryCertificateCache = cache;
         }
 
-        /// <summary>
-        /// Converts <see cref="X509Certificate2"/> into a valid <see cref="SigningCredentials"/> for
-        /// Identity Server to use for signing and validating tokens.
-        /// </summary>
-        /// <param name="cert">Application X509 signing certificate.</param>
-        /// <param name="signingAlgorithm">Signing algorithm, defaults to SHA256.</param>
-        /// <returns>Signing credentials for Identity Server.</returns>
+        /// <inheritdoc />
         public SigningCredentials ConvertToCredentials(
             X509Certificate2 cert,
             string signingAlgorithm = SecurityAlgorithms.RsaSha256)
@@ -45,10 +39,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             return new SigningCredentials(key, signingAlgorithm);
         }
 
-        /// <summary>
-        /// Returns current caches certificate or forces its re-initialization.
-        /// </summary>
-        /// <returns>An future containing <see cref="X509Certificate2"/>.</returns>
+        /// <inheritdoc />
         public async Task<X509Certificate2> Get()
         {
             var uri = new Uri(config.Uri);

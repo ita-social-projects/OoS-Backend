@@ -7,9 +7,9 @@ namespace OutOfSchool.IdentityServer.KeyManagement
 {
     public class SigningCredentialsStore : ISigningCredentialStore
     {
-        private readonly KeyManager keyManager;
+        private readonly IKeyManager keyManager;
 
-        public SigningCredentialsStore(KeyManager manager)
+        public SigningCredentialsStore(IKeyManager manager)
         {
             keyManager = manager;
         }

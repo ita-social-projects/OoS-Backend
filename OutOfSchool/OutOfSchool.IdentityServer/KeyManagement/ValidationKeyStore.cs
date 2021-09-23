@@ -8,9 +8,9 @@ namespace OutOfSchool.IdentityServer.KeyManagement
 {
     public class ValidationKeyStore : IValidationKeysStore
     {
-        private readonly KeyManager keyManager;
+        private readonly IKeyManager keyManager;
 
-        public ValidationKeyStore(KeyManager manager)
+        public ValidationKeyStore(IKeyManager manager)
         {
             keyManager = manager;
         }
