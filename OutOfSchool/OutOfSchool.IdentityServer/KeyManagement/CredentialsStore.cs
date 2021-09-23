@@ -23,7 +23,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
         private readonly IssuerConfig config;
 
         // TODO: Probably should limit to 1 min & 1 max
-        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
         private readonly AsyncLazy<X509Certificate2> inMemoryCertificate;
 
@@ -153,7 +153,10 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             var expirationDate = new DateTimeOffset(DateTime.UtcNow.AddDays(365));
 
             var certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), expirationDate);
-            certificate.FriendlyName = certificateName;
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                certificate.FriendlyName = certificateName;
+            }
 
             return new SigningCertificate
             {
