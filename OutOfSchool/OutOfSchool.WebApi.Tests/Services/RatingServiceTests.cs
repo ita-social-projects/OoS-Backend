@@ -11,6 +11,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
 
@@ -30,6 +31,14 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<ILogger<RatingService>> logger;
         private DbContextOptions<OutOfSchoolDbContext> options;
 
+        private List<Parent> fakeParents;
+        private List<Rating> fakeRatings;
+        private Mock<IRatingRepository> ratingsRepositoryMock;
+        private IRatingService ratingService;
+        private Mock<IWorkshopRepository> workshopRepositoryMock;
+        private Mock<IProviderRepository> providerRepositoryMock;
+        private Mock<IParentRepository> parentRepositoryMock;
+
         [SetUp]
         public void SetUp()
         {
@@ -47,21 +56,58 @@ namespace OutOfSchool.WebApi.Tests.Services
             logger = new Mock<ILogger<RatingService>>();
             service = new RatingService(ratingRepository, workshopRepository, providerRepository, parentRepository, logger.Object, localizer.Object);
 
+            workshopRepositoryMock = new Mock<IWorkshopRepository>();
+            providerRepositoryMock = new Mock<IProviderRepository>();
+            parentRepositoryMock = new Mock<IParentRepository>();
+            fakeParents = ParentsGenerator.Generate(10);
+            fakeRatings = GenerateFakeRatings(fakeParents);
+            ratingsRepositoryMock = CreateRatingsRepositoryMock(fakeRatings);
+            ratingService = new RatingService(
+                ratingsRepositoryMock.Object,
+                workshopRepositoryMock.Object,
+                providerRepositoryMock.Object,
+                parentRepositoryMock.Object,
+                logger.Object,
+                localizer.Object);
+
             SeedDatabase();
         }
 
+        private static List<Rating> GenerateFakeRatings(List<Parent> parents)
+        {
+            var ratings = RatingsGenerator.Generate(10);
+            var random = new Random();
+            foreach (var rating in ratings)
+            {
+                int index = random.Next(parents.Count);
+                rating.ParentId = parents[index].Id;
+                rating.Parent = parents[index];
+            }
+
+            return ratings;
+        }
+
+        private static Mock<IRatingRepository> CreateRatingsRepositoryMock(IEnumerable<Rating> ratingCollection)
+        {
+            var ratingsRepository = new Mock<IRatingRepository>();
+            ratingsRepository.Setup(r => r.GetAll()).Returns(Task.FromResult(ratingCollection));
+
+            return ratingsRepository;
+        }
+
         [Test]
-        [Ignore("Test must be fixed")]
         public async Task GetAll_WhenCalled_ReturnsAllRatings()
         {
             // Arrange
-            var expected = await ratingRepository.GetAll();
+            ratingsRepositoryMock.Setup(r => r.GetAll()).Returns(Task.FromResult(fakeRatings.AsEnumerable()));
+            parentRepositoryMock.Setup(p => p.GetByIdsAsync(It.IsAny<IEnumerable<long>>())).Returns(Task.FromResult<IReadOnlyList<Parent>>(fakeParents));
 
             // Act
-            var result = await service.GetAll().ConfigureAwait(false);
+            var ratings = await ratingService.GetAll().ConfigureAwait(false);
+            var actualRatings = ratings.Select(r => r.ToDomain()).ToList();
 
             // Assert
-            Assert.AreEqual(result.ToList().Count(), expected.Count());
+            Assert.AreEqual(fakeRatings.ToList().Count(), actualRatings.Count());
         }
 
         [Test]
