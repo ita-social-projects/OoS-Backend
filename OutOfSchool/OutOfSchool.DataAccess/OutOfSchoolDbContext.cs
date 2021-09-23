@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Extensions;
@@ -5,7 +6,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services
 {
-    public class OutOfSchoolDbContext : IdentityDbContext<User>
+    public class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyContext
     {
         public OutOfSchoolDbContext(DbContextOptions<OutOfSchoolDbContext> options)
             : base(options)
@@ -111,5 +112,7 @@ namespace OutOfSchool.Services
             builder.Seed();
             builder.UpdateIdentityTables();
         }
+
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     }
 }
