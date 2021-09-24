@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using LazyCache;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using OutOfSchool.IdentityServer.Config;
 
 namespace OutOfSchool.IdentityServer.KeyManagement
@@ -19,6 +19,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
         private readonly IssuerConfig config;
 
         private readonly IAppCache inMemoryCertificateCache;
+        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
 
         public KeyManager(IOptions<IssuerConfig> options, IServiceScopeFactory factory, IAppCache cache)
         {
@@ -120,6 +121,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
 
                 try
                 {
+                    await semaphore.WaitAsync();
                     dbContext
                         .Entry(certificate)
                         .CurrentValues
@@ -133,12 +135,17 @@ namespace OutOfSchool.IdentityServer.KeyManagement
                 {
                     return await HandleConcurrentUpdate(e);
                 }
+                finally
+                {
+                    semaphore.Release();
+                }
             }
 
             // certificate does not exist
             var newCertificate = GenerateSigningCertificate();
             try
             {
+                await semaphore.WaitAsync();
                 dbContext.Add(newCertificate);
                 await dbContext.SaveChangesAsync();
 
@@ -148,6 +155,10 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             catch (DbUpdateException e)
             {
                 return await HandleConcurrentUpdate(e);
+            }
+            finally
+            {
+                semaphore.Release();
             }
         }
 
