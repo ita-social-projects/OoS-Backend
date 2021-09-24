@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -13,7 +14,8 @@ namespace OutOfSchool.Services.Models
         public TimeSpan EndTime { get; set; }
 
         public long WorkshopId { get; set; }
-
+        
+        [Required] 
         public List<DaysBitMask> Workdays { get; set; }
     }
 }

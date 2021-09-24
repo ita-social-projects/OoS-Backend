@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using Castle.Core.Internal;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
@@ -116,6 +117,12 @@ namespace OutOfSchool.WebApi.Models
                 {
                     yield return new ValidationResult(
                         "End date can't be earlier that start date");
+                }
+
+                if (dateTimeRange.Workdays.IsNullOrEmpty())
+                {
+                    yield return new ValidationResult(
+                        "Workdays are required");
                 }
 
                 var daysHs = new HashSet<DaysBitMask>();

@@ -68,13 +68,14 @@ namespace OutOfSchool.WebApi.Services
             // In case if DirectionId and DepartmentId does not match ClassId
             await this.FillDirectionsFields(dto).ConfigureAwait(false);
 
-            Func<Task<Workshop>> operation = async () => await workshopRepository.Create(dto.ToDomain()).ConfigureAwait(false);
+            Func<Task<Workshop>> operation = async () =>
+                await workshopRepository.Create(mapper.Map<Workshop>(dto)).ConfigureAwait(false);
 
             var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
             logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
-            return newWorkshop.ToModel();
+            return mapper.Map<WorkshopDTO>(newWorkshop);
         }
 
         /// <inheritdoc/>
@@ -82,21 +83,19 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation("Getting all Workshops started.");
 
-            if (offsetFilter is null)
-            {
-                offsetFilter = new OffsetFilter();
-            }
+            offsetFilter ??= new OffsetFilter();
 
             var count = await workshopRepository.Count().ConfigureAwait(false);
-            var workshops = workshopRepository.Get<long>(skip: offsetFilter.From, take: offsetFilter.Size, orderBy: x => x.Id, ascending: true).ToList();
+            var workshops = workshopRepository.Get<long>(skip: offsetFilter.From, take: offsetFilter.Size,
+                orderBy: x => x.Id, ascending: true).ToList();
 
             logger.LogInformation(!workshops.Any()
                 ? "Workshop table is empty."
                 : $"All {workshops.Count} records were successfully received from the Workshop table");
 
-            var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
+            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
             var workshopsWithRating = GetWorkshopsWithAverageRating(workshopsDTO);
-            return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
+            return new SearchResult<WorkshopDTO>() {TotalAmount = count, Entities = workshopsWithRating};
         }
 
         /// <inheritdoc/>
@@ -134,7 +133,7 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There aren't Workshops for Provider with Id = {id}."
                 : $"From Workshop table were successfully received {workshops.Count()} records.");
 
-            var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
+            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
 
             return GetWorkshopsWithAverageRating(workshopsDTO);
         }
@@ -146,7 +145,15 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
 
+            // In case if DirectionId and DepartmentId does not match ClassId
+            await this.FillDirectionsFields(dto).ConfigureAwait(false);
+
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
+
+            // In case if AddressId was changed. AddresId is one and unique for workshop.
+            dto.AddressId = currentWorkshop.AddressId;
+            dto.Address.Id = currentWorkshop.AddressId;
+
             mapper.Map(dto, currentWorkshop);
             try
             {
@@ -156,20 +163,8 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.LogError($"Updating failed. Exception: {exception.Message}");
                 throw;
-            }   
+            }
 
-            //     // In case if DirectionId and DepartmentId does not match ClassId
-            //     await this.FillDirectionsFields(dto).ConfigureAwait(false);
-            //
-            //     // In case if AddressId was changed. AddresId is one and unique for workshop.
-            //     dto.AddressId = workshop.AddressId;
-            //     dto.Address.Id = workshop.AddressId;
-            //
-            //     // In case if WorkshopId of teachers was changed.
-            //     foreach (var teacher in dto.Teachers)
-            //     {
-            //         teacher.WorkshopId = workshop.Id;
-            //     }
             return mapper.Map<WorkshopDTO>(currentWorkshop);
         }
 
@@ -209,13 +204,14 @@ namespace OutOfSchool.WebApi.Services
             var orderBy = GetOrderParameter(filter);
 
             var workshopsCount = await workshopRepository.Count(where: filterPredicate).ConfigureAwait(false);
-            var workshops = workshopRepository.Get<dynamic>(filter.From, filter.Size, string.Empty, filterPredicate, orderBy.Item1, orderBy.Item2).ToList();
+            var workshops = workshopRepository.Get<dynamic>(filter.From, filter.Size, string.Empty, filterPredicate,
+                orderBy.Item1, orderBy.Item2).ToList();
 
             logger.LogInformation(!workshops.Any()
                 ? "There was no matching entity found."
                 : $"All matching {workshops.Count} records were successfully received from the Workshop table");
 
-            var workshopsDTO = workshops.Select(x => x.ToModel()).ToList();
+            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
 
             var result = new SearchResult<WorkshopDTO>()
             {
@@ -269,7 +265,8 @@ namespace OutOfSchool.WebApi.Services
             }
             else if (filter.IsFree && !(filter.MinPrice == 0 && filter.MaxPrice == int.MaxValue))
             {
-                predicate = predicate.And(x => (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
+                predicate = predicate.And(x =>
+                    (x.Price >= filter.MinPrice && x.Price <= filter.MaxPrice) || x.Price == 0);
             }
 
             if (filter.MinAge != 0 || filter.MaxAge != 100)
@@ -336,7 +333,8 @@ namespace OutOfSchool.WebApi.Services
 
         private List<WorkshopDTO> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshopsDTOs)
         {
-            var averageRatings = ratingService.GetAverageRatingForRange(workshopsDTOs.Select(p => p.Id), RatingType.Workshop);
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(workshopsDTOs.Select(p => p.Id), RatingType.Workshop);
 
             if (averageRatings != null)
             {

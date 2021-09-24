@@ -122,8 +122,8 @@ namespace OutOfSchool.Services
 
             builder.Entity<DateTimeRange>()
                 .Property(range => range.Workdays)
-                .HasConversion<byte>(
-                    list => (byte) list.Aggregate((prev, next) => prev | next),
+                .HasConversion(
+                    list => (byte)list.Aggregate((prev, next) => prev | next),
                     mask =>
                         Enum.GetValues(typeof(DaysBitMask)).Cast<DaysBitMask>().ToList()
                             .Where(amenity => amenity != 0 && ((DaysBitMask) mask).HasFlag(amenity)).ToList(),

@@ -20,7 +20,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     EndTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     WorkshopId = table.Column<long>(type: "bigint", nullable: false),
-                    Workdays = table.Column<byte>(type: "tinyint", nullable: true)
+                    Workdays = table.Column<byte>(type: "tinyint", nullable: false)
                 },
                 constraints: table =>
                 {
