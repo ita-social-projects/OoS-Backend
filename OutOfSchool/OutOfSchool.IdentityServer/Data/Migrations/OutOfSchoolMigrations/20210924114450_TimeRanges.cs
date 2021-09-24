@@ -19,12 +19,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     EndTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    WorkshopId = table.Column<long>(type: "bigint", nullable: false)
+                    WorkshopId = table.Column<long>(type: "bigint", nullable: false),
+                    Workdays = table.Column<byte>(type: "tinyint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.CheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
                     table.PrimaryKey("PK_DateTimeRanges", x => x.Id);
+                    table.CheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
                     table.ForeignKey(
                         name: "FK_DateTimeRanges_Workshops_WorkshopId",
                         column: x => x.WorkshopId,
@@ -33,42 +34,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Workdays",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DateTimeRangeId = table.Column<long>(type: "bigint", nullable: false),
-                    DayOfWeek = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Workdays", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Workdays_DateTimeRanges_DateTimeRangeId",
-                        column: x => x.DateTimeRangeId,
-                        principalTable: "DateTimeRanges",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_DateTimeRanges_WorkshopId",
                 table: "DateTimeRanges",
                 column: "WorkshopId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Workdays_DateTimeRangeId",
-                table: "Workdays",
-                column: "DateTimeRangeId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Workdays");
-
             migrationBuilder.DropTable(
                 name: "DateTimeRanges");
 

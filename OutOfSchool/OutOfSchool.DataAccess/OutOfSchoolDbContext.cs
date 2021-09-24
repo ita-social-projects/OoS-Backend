@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 
@@ -52,8 +57,6 @@ namespace OutOfSchool.Services
 
         public DbSet<DateTimeRange> DateTimeRanges { get; set; }
 
-        public DbSet<Workday> Workdays { get; set; }
-
         public async Task CompleteAsync() => await this.SaveChangesAsync();
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -76,16 +79,16 @@ namespace OutOfSchool.Services
                 .HasMany(r => r.Users)
                 .WithMany(u => u.ChatRooms)
                 .UsingEntity<ChatRoomUser>(
-                j => j
-                    .HasOne(cru => cru.User)
-                    .WithMany(u => u.ChatRoomUsers)
-                    .HasForeignKey(cru => cru.UserId)
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j
-                    .HasOne(cru => cru.ChatRoom)
-                    .WithMany(r => r.ChatRoomUsers)
-                    .HasForeignKey(cru => cru.ChatRoomId)
-                    .OnDelete(DeleteBehavior.Cascade));
+                    j => j
+                        .HasOne(cru => cru.User)
+                        .WithMany(u => u.ChatRoomUsers)
+                        .HasForeignKey(cru => cru.UserId)
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne(cru => cru.ChatRoom)
+                        .WithMany(r => r.ChatRoomUsers)
+                        .HasForeignKey(cru => cru.ChatRoomId)
+                        .OnDelete(DeleteBehavior.Cascade));
 
             builder.Entity<ChatRoom>()
                 .HasOne(r => r.Workshop)
@@ -115,6 +118,18 @@ namespace OutOfSchool.Services
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasForeignKey(x => x.ActualAddressId)
                 .IsRequired(false);
+
+            builder.Entity<DateTimeRange>()
+                .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
+
+            builder.Entity<DateTimeRange>()
+                .Property(range => range.Workdays)
+                .HasConversion<byte>(
+                    list => (byte) list.Aggregate((prev, next) => prev | next),
+                    mask =>
+                        Enum.GetValues(typeof(DaysBitMask)).Cast<DaysBitMask>().ToList()
+                            .Where(amenity => amenity != 0 && ((DaysBitMask) mask).HasFlag(amenity)).ToList(),
+                    ValueComparer.CreateDefault(typeof(List<DaysBitMask>), true));
 
             builder.Seed();
             builder.UpdateIdentityTables();

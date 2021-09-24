@@ -10,7 +10,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20210920144554_TimeRanges")]
+    [Migration("20210924114450_TimeRanges")]
     partial class TimeRanges
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -442,6 +442,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<TimeSpan>("StartTime")
                         .HasColumnType("time");
 
+                    b.Property<byte?>("Workdays")
+                        .HasColumnType("tinyint");
+
                     b.Property<long>("WorkshopId")
                         .HasColumnType("bigint");
 
@@ -450,6 +453,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("WorkshopId");
 
                     b.ToTable("DateTimeRanges");
+
+                    b.HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>
@@ -852,26 +857,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Workday", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .UseIdentityColumn();
-
-                    b.Property<long>("DateTimeRangeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DateTimeRangeId");
-
-                    b.ToTable("Workdays");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
                 {
                     b.Property<long>("Id")
@@ -1243,15 +1228,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Workday", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.DateTimeRange", null)
-                        .WithMany("Workdays")
-                        .HasForeignKey("DateTimeRangeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Address", "Address")
@@ -1297,11 +1273,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
                     b.Navigation("BirthCertificate");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
-                {
-                    b.Navigation("Workdays");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>

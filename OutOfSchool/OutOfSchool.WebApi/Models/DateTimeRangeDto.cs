@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -11,6 +12,6 @@ namespace OutOfSchool.WebApi.Models
 
         public TimeSpan EndTime { get; set; }
 
-        public List<WorkdayDto> Workdays { get; set; }
+        public List<DaysBitMask> Workdays { get; set; }
     }
 }

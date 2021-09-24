@@ -24,12 +24,8 @@ namespace OutOfSchool.WebApi.Util
                             new HashSet<DateTimeRange>(dateTimeRanges, new DateTimeRangeComparerWithoutFK());
                         foreach (var destDateTimeRange in dest)
                         {
-                            if (dtoTimeRangesHs.TryGetValue(destDateTimeRange, out var dtoTimeRange) &&
-                                dtoTimeRangesHs.Remove(destDateTimeRange))
+                            if (dtoTimeRangesHs.Remove(destDateTimeRange))
                             {
-                                destDateTimeRange.Workdays = UseSameRefsForTheSameWorkdays(
-                                    dtoTimeRange.Workdays, destDateTimeRange.Workdays).ToList();
-
                                 dtoTimeRangesHs.Add(destDateTimeRange);
                             }
                         }
@@ -66,19 +62,6 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Provider, ProviderDto>().ReverseMap();
             CreateMap<Teacher, TeacherDTO>().ReverseMap();
             CreateMap<DateTimeRange, DateTimeRangeDto>().ReverseMap();
-            CreateMap<Workday, WorkdayDto>().ReverseMap();
-        }
-
-        private static HashSet<Workday> UseSameRefsForTheSameWorkdays(
-            IEnumerable<Workday> baseWorkdays, IEnumerable<Workday> workdaysToBeReplaced)
-        {
-            var baseWorkdaysHs = new HashSet<Workday>(baseWorkdays, new WorkdayComparerWithoutFK());
-            foreach (var destWd in workdaysToBeReplaced.Where(destWd => baseWorkdaysHs.Remove(destWd)))
-            {
-                baseWorkdaysHs.Add(destWd);
-            }
-
-            return baseWorkdaysHs;
         }
     }
 }

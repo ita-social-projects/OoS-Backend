@@ -48,7 +48,6 @@ namespace OutOfSchool.Services.Repository
                 .Include(ws => ws.Address)
                 .Include(ws => ws.Teachers)
                 .Include(ws => ws.DateTimeRanges)
-                .ThenInclude(range => range.Workdays)
                 .SingleOrDefaultAsync(ws => ws.Id == id);
         }
 

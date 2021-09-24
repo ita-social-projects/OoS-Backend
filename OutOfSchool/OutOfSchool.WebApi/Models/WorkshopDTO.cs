@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class WorkshopDTO
+    public class WorkshopDTO : IValidatableObject
     {
         public long Id { get; set; }
 
@@ -105,5 +107,24 @@ namespace OutOfSchool.WebApi.Models
         public IEnumerable<TeacherDTO> Teachers { get; set; }
 
         public List<DateTimeRangeDto> DateTimeRanges { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            foreach (var dateTimeRange in DateTimeRanges)
+            {
+                if (dateTimeRange.StartTime > dateTimeRange.EndTime)
+                {
+                    yield return new ValidationResult(
+                        "End date can't be earlier that start date");
+                }
+
+                var daysHs = new HashSet<DaysBitMask>();
+                if (!dateTimeRange.Workdays.All(daysHs.Add))
+                {
+                    yield return new ValidationResult(
+                        "Workdays contain duplications");
+                }
+            }
+        }
     }
 }

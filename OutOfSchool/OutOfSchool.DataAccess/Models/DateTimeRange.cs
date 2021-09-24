@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
@@ -13,6 +14,6 @@ namespace OutOfSchool.Services.Models
 
         public long WorkshopId { get; set; }
 
-        public virtual List<Workday> Workdays { get; set; }
+        public List<DaysBitMask> Workdays { get; set; }
     }
 }
