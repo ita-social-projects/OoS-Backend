@@ -14,7 +14,6 @@ namespace OutOfSchool.IdentityServer.KeyManagement
 {
     public class KeyManager : IKeyManager
     {
-        private readonly int expirationTimeDays = 365;
         private readonly IServiceScopeFactory scopeFactory;
 
         private readonly IssuerConfig config;
@@ -95,7 +94,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
         }
 
         /// <summary>
-        /// Cleans expired certificates from database if any and returns a valid certificate.
+        /// Updates expired certificate in database if exists and returns a valid certificate.
         /// If database is empty - creates a new one.
         /// There should be only 1 certificate in database at a time for a given hostname.
         /// </summary>
@@ -182,9 +181,11 @@ namespace OutOfSchool.IdentityServer.KeyManagement
                 new X509EnhancedKeyUsageExtension(
                     new OidCollection {new Oid("1.3.6.1.5.5.7.3.1")}, false));
 
-            var expirationDate = new DateTimeOffset(DateTime.UtcNow.AddDays(expirationTimeDays));
+            var expirationDate = new DateTimeOffset(DateTime.UtcNow.AddDays(config.CertificateExpirationDays));
 
-            var certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), expirationDate);
+            var certificate = request.CreateSelfSigned(
+                new DateTimeOffset(DateTime.UtcNow.AddDays(-1)),
+                expirationDate);
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
                 certificate.FriendlyName = certificateName;
