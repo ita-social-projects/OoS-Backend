@@ -16,8 +16,8 @@ namespace OutOfSchool.IdentityServer.KeyManagement
                 .AddDbContext<TContext>(optionsAction)
                 .AddLazyCache()
                 .AddSingleton<IKeyManager, KeyManager>()
-                .AddSingleton<ISigningCredentialStore, SigningCredentialsStore>()
-                .AddSingleton<IValidationKeysStore, ValidationKeyStore>();
+                .AddTransient<ISigningCredentialStore, SigningCredentialsStore>()
+                .AddTransient<IValidationKeysStore, ValidationKeyStore>();
             return builder;
         }
     }

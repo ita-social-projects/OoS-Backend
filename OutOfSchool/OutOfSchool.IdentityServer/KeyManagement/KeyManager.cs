@@ -186,6 +186,8 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             var certificate = request.CreateSelfSigned(
                 new DateTimeOffset(DateTime.UtcNow.AddDays(-1)),
                 expirationDate);
+
+            // TODO: As prod will be on linux we can probably drop friendly name
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
                 certificate.FriendlyName = certificateName;
