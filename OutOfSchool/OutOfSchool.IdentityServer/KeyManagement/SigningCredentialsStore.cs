@@ -21,7 +21,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             {
                 var certificate = await keyManager.Get();
 
-                return keyManager.ConvertToCredentials(certificate);
+                return certificate.ConvertToCredentials();
             }
             catch (Exception e)
             {

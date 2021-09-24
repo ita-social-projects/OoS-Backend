@@ -29,17 +29,6 @@ namespace OutOfSchool.IdentityServer.KeyManagement
         }
 
         /// <inheritdoc />
-        public SigningCredentials ConvertToCredentials(
-            X509Certificate2 cert,
-            string signingAlgorithm = SecurityAlgorithms.RsaSha256)
-        {
-            var key = new X509SecurityKey(cert);
-            key.KeyId += signingAlgorithm;
-
-            return new SigningCredentials(key, signingAlgorithm);
-        }
-
-        /// <inheritdoc />
         public async Task<X509Certificate2> Get()
         {
             var uri = new Uri(config.Uri);

@@ -22,7 +22,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             {
                 var certificate = await keyManager.Get();
 
-                var credential = keyManager.ConvertToCredentials(certificate);
+                var credential = certificate.ConvertToCredentials();
 
                 var keyInfo = new SecurityKeyInfo
                 {
