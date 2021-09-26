@@ -1,7 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson;
+using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common.Exceptions;
@@ -100,6 +104,147 @@ namespace OutOfSchool.WebApi.Services
             };
         }
 
+        /// <inheritdoc/>
+        public async Task UploadPictureTeacher(long teacherId, Stream file, string contentType)
+        {
+            // TODO: maybe find the better solution how to handle if error occurs after picture was created.
+            ObjectId pictureObjectId = default;
+
+            try
+            {
+                logger.Debug($"Uploading picture for teacher {teacherId}");
+
+                var teacher = teacherRepository.GetById(teacherId).Result;
+
+                var pictureId = await pictureStorage.UploadPicture(file, CancellationToken.None).ConfigureAwait(false);
+
+                pictureObjectId = new ObjectId(pictureId);
+
+                var teacherPicture = new TeacherPicture
+                {
+                    Picture = new PictureMetadata
+                    {
+                        ContentType = contentType,
+                        StorageId = pictureId,
+                    },
+                };
+
+                teacher.TeacherPictures.Add(teacherPicture);
+
+                await teacherRepository.Update(teacher).ConfigureAwait(false);
+            }
+            catch (PictureStorageException ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                throw;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                await pictureStorage.DeletePicture(pictureObjectId, CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task UploadPictureWorkshop(long workshopId, Stream file, string contentType)
+        {
+            // TODO: maybe find the better solution how to handle if error occurs after picture was created.
+            ObjectId pictureObjectId = default;
+
+            try
+            {
+                logger.Debug($"Uploading picture for workshop {workshopId}");
+
+                var workshop = workshopRepository.GetById(workshopId).Result;
+
+                var pictureId = await pictureStorage.UploadPicture(file, CancellationToken.None).ConfigureAwait(false);
+
+                pictureObjectId = new ObjectId(pictureId);
+
+                var workshopPicture = new WorkshopPicture
+                {
+                    Picture = new PictureMetadata
+                    {
+                        ContentType = contentType,
+                        StorageId = pictureId,
+                    },
+                };
+
+                workshop.WorkshopPictures.Add(workshopPicture);
+
+                await workshopRepository.Update(workshop).ConfigureAwait(false);
+            }
+            catch (PictureStorageException ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                throw;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                await pictureStorage.DeletePicture(pictureObjectId, CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task UploadPictureProvider(long providerId, Stream file, string contentType)
+        {
+            // TODO: maybe find the better solution how to handle if error occurs after picture was created.
+            ObjectId pictureObjectId = default;
+
+            try
+            {
+                logger.Debug($"Uploading picture for provider {providerId}");
+
+                var provider = providerRepository.GetById(providerId).Result;
+
+                var pictureId = await pictureStorage.UploadPicture(file, CancellationToken.None).ConfigureAwait(false);
+
+                pictureObjectId = new ObjectId(pictureId);
+
+                var providerPicture = new ProviderPicture
+                {
+                    Picture = new PictureMetadata
+                    {
+                        ContentType = contentType,
+                        StorageId = pictureId,
+                    },
+                };
+
+                provider.ProviderPictures.Add(providerPicture);
+
+                await providerRepository.Update(provider).ConfigureAwait(false);
+            }
+            catch (PictureStorageException ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                throw;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                await pictureStorage.DeletePicture(pictureObjectId, CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                throw;
+            }
+        }
+
         private PictureMetadata GetPictureMetadata(Guid pictureId, Workshop workshop)
         {
             var picture = workshop.WorkshopPictures.FirstOrDefault(x => x.Picture.Id == pictureId)?.Picture;
@@ -138,5 +283,7 @@ namespace OutOfSchool.WebApi.Services
 
             return picture;
         }
+
+        
     }
 }
