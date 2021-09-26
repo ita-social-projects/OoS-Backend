@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models;
@@ -15,6 +17,14 @@ namespace OutOfSchool.WebApi.Services
 {
     public class PictureService : IPictureService
     {
+        private const string KeyTeacherPictureSizeParameters = "PictureSettings:TeacherPictureSizeParameter";
+        private const string KeyToProviderAndWorkshopPictureHeight = "PictureSettings:ProviderAndWorkshopPictureSizeParameters:Height";
+        private const string KeyToProviderAndWorkshopPictureWidth = "PictureSettings:ProviderAndWorkshopPictureSizeParameters:Width";
+
+        private readonly int teacherPictureWidthAndHeight;
+        private readonly int providerAndWorkshopPictureWidth;
+        private readonly int providerAndWorkshopPictureHeight;
+
         private readonly IPictureStorage pictureStorage;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IProviderRepository providerRepository;
@@ -29,13 +39,18 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="providerRepository">Repository to work with Provider Entity.</param>
         /// <param name="teacherRepository">Repository to work with Teacher Entity.</param>
         /// <param name="logger">Logger.</param>
-        public PictureService(IPictureStorage pictureStorage, IWorkshopRepository workshopRepository, IProviderRepository providerRepository, IEntityRepository<Teacher> teacherRepository, ILogger logger)
+        /// <param name="config">Config.</param>
+        public PictureService(IPictureStorage pictureStorage, IWorkshopRepository workshopRepository, IProviderRepository providerRepository, IEntityRepository<Teacher> teacherRepository, ILogger logger, IConfiguration config)
         {
             this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
             this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
             this.teacherRepository = teacherRepository ?? throw new ArgumentNullException(nameof(teacherRepository));
             this.pictureStorage = pictureStorage ?? throw new ArgumentNullException(nameof(pictureStorage));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            this.teacherPictureWidthAndHeight = config.GetValue<int>(KeyTeacherPictureSizeParameters);
+            this.providerAndWorkshopPictureHeight = config.GetValue<int>(KeyToProviderAndWorkshopPictureHeight);
+            this.providerAndWorkshopPictureWidth = config.GetValue<int>(KeyToProviderAndWorkshopPictureWidth);
         }
 
         /// <inheritdoc/>

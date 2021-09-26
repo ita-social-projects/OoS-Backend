@@ -183,6 +183,8 @@ namespace OutOfSchool.WebApi
             services.AddAutoMapper(typeof(Startup));
 
             services.AddSignalR();
+
+            services.Configure<string>(Configuration.GetSection("PictureSettings"));
         }
     }
 }
