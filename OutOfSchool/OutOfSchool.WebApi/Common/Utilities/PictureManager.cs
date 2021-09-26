@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Common.Utilities
 
             using (var bitmap = file)
             {
-                return BitmapToStream(bitmap);
+                return BitmapToStream(file);
             }
         }
 
@@ -82,20 +82,18 @@ namespace OutOfSchool.WebApi.Common.Utilities
         /// <returns>Stream.</returns>
         private Stream BitmapToStream(Bitmap image)
         {
-            using (var stream = new MemoryStream())
-            {
-                var qualityParamId = Encoder.Quality;
-                var encoderParameters = new EncoderParameters(CountEncoderParameters);
-                encoderParameters.Param[uint.MinValue] = new EncoderParameter(qualityParamId, Quality);
-                var codec = ImageCodecInfo.GetImageDecoders()
-                    .FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+            var stream = new MemoryStream();
+            var qualityParamId = Encoder.Quality;
+            var encoderParameters = new EncoderParameters(CountEncoderParameters);
+            encoderParameters.Param[uint.MinValue] = new EncoderParameter(qualityParamId, Quality);
+            var codec = ImageCodecInfo.GetImageDecoders()
+                .FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
 
-                image.Save(stream, codec, encoderParameters);
+            image.Save(stream, codec, encoderParameters);
 
-                encoderParameters.Dispose();
+            encoderParameters.Dispose();
 
-                return stream;
-            }
+            return stream;
         }
     }
 }
