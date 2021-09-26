@@ -11,6 +11,7 @@ using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common.Exceptions;
+using OutOfSchool.WebApi.Common.Utilities;
 using Serilog;
 
 namespace OutOfSchool.WebApi.Services
@@ -131,7 +132,9 @@ namespace OutOfSchool.WebApi.Services
 
                 var teacher = teacherRepository.GetById(teacherId).Result;
 
-                var pictureId = await pictureStorage.UploadPicture(file, CancellationToken.None).ConfigureAwait(false);
+                var resizedPicture = GetResizedPicture(file, new Size(teacherPictureWidthAndHeight, teacherPictureWidthAndHeight));
+
+                var pictureId = await pictureStorage.UploadPicture(resizedPicture, CancellationToken.None).ConfigureAwait(false);
 
                 pictureObjectId = new ObjectId(pictureId);
 
@@ -159,6 +162,11 @@ namespace OutOfSchool.WebApi.Services
                 await pictureStorage.DeletePicture(pictureObjectId, CancellationToken.None).ConfigureAwait(false);
                 throw;
             }
+            catch (ArgumentException ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                throw;
+            }
             catch (Exception ex)
             {
                 logger.Error($"An error occurred while uploading the picture {ex}");
@@ -178,7 +186,9 @@ namespace OutOfSchool.WebApi.Services
 
                 var workshop = workshopRepository.GetById(workshopId).Result;
 
-                var pictureId = await pictureStorage.UploadPicture(file, CancellationToken.None).ConfigureAwait(false);
+                var resizedPicture = GetResizedPicture(file, new Size(providerAndWorkshopPictureWidth, providerAndWorkshopPictureHeight));
+
+                var pictureId = await pictureStorage.UploadPicture(resizedPicture, CancellationToken.None).ConfigureAwait(false);
 
                 pictureObjectId = new ObjectId(pictureId);
 
@@ -206,6 +216,11 @@ namespace OutOfSchool.WebApi.Services
                 await pictureStorage.DeletePicture(pictureObjectId, CancellationToken.None).ConfigureAwait(false);
                 throw;
             }
+            catch (ArgumentException ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
+                throw;
+            }
             catch (Exception ex)
             {
                 logger.Error($"An error occurred while uploading the picture {ex}");
@@ -225,7 +240,9 @@ namespace OutOfSchool.WebApi.Services
 
                 var provider = providerRepository.GetById(providerId).Result;
 
-                var pictureId = await pictureStorage.UploadPicture(file, CancellationToken.None).ConfigureAwait(false);
+                var resizedPicture = GetResizedPicture(file, new Size(providerAndWorkshopPictureWidth, providerAndWorkshopPictureHeight));
+
+                var pictureId = await pictureStorage.UploadPicture(resizedPicture, CancellationToken.None).ConfigureAwait(false);
 
                 pictureObjectId = new ObjectId(pictureId);
 
@@ -251,6 +268,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.Error($"An error occurred while uploading the picture {ex}");
                 await pictureStorage.DeletePicture(pictureObjectId, CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
+            catch (ArgumentException ex)
+            {
+                logger.Error($"An error occurred while uploading the picture {ex}");
                 throw;
             }
             catch (Exception ex)
@@ -299,6 +321,24 @@ namespace OutOfSchool.WebApi.Services
             return picture;
         }
 
-        
+        private Stream GetResizedPicture(Stream contentStream, Size requiredSize)
+        {
+            using (var img = Image.FromStream(contentStream))
+            {
+                if (img.Width < requiredSize.Width)
+                {
+                    throw new ArgumentException($"The width of the picture is less than {requiredSize.Width}px.");
+                }
+
+                if (img.Height < requiredSize.Height)
+                {
+                    throw new ArgumentException($"The height of the picture is less than {requiredSize.Height}px.");
+                }
+
+                var pictureManager = new PictureManager(img, requiredSize);
+
+                return pictureManager.GetStreamFromImage();
+            }
+        }
     }
 }
