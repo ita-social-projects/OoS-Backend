@@ -85,16 +85,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Gender = Gender.Male,
                     SocialGroupId = 1,
                     ParentId = 2,
-                    BirthCertificate = new BirthCertificateDto()
-                    {
-                        Id = 1,
-                        SvidDate = new DateTime(2000, 11, 1),
-                        SvidNum = "SvidNum",
-                        SvidNumMD5 = "SvidNumMD5",
-                        SvidSer = "SvidSer",
-                        SvidWho = "SvidWho",
-                        ChildId = 1,
-                    },
                 },
                 new ChildDto()
                 {
@@ -106,16 +96,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Gender = Gender.Female,
                     SocialGroupId = 1,
                     ParentId = 2,
-                    BirthCertificate = new BirthCertificateDto()
-                    {
-                        Id = 2,
-                        SvidDate = new DateTime(2000, 11, 1),
-                        SvidNum = "SvidNum",
-                        SvidNumMD5 = "SvidNumMD5",
-                        SvidSer = "SvidSer",
-                        SvidWho = "SvidWho",
-                        ChildId = 2,
-                    },
                 },
             };
         }
