@@ -119,7 +119,7 @@ namespace OutOfSchool.WebApi.Models
                         "End date can't be earlier that start date");
                 }
 
-                if (dateTimeRange.Workdays.IsNullOrEmpty())
+                if (dateTimeRange.Workdays.IsNullOrEmpty() || dateTimeRange.Workdays.Any(workday => workday == DaysBitMask.None))
                 {
                     yield return new ValidationResult(
                         "Workdays are required");
