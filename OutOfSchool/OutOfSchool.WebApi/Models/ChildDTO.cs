@@ -31,7 +31,7 @@ namespace OutOfSchool.WebApi.Models
         public Gender Gender { get; set; } = default;
 
         [MaxLength(500)]
-        public string PlaceOfStudy { get; set; }
+        public string PlaceOfStudy { get; set; } = string.Empty;
 
         public long ParentId { get; set; } = default;
 
