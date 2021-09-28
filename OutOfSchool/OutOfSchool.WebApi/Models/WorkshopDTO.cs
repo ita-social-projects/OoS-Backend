@@ -106,7 +106,8 @@ namespace OutOfSchool.WebApi.Models
         public AddressDto Address { get; set; }
 
         public IEnumerable<TeacherDTO> Teachers { get; set; }
-
+       
+        [Required]
         public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
