@@ -112,6 +112,7 @@ namespace OutOfSchool.WebApi.Models
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            // TODO: Validate DateTimeRanges are not empty when frontend is ready
             foreach (var dateTimeRange in DateTimeRanges)
             {
                 if (dateTimeRange.StartTime > dateTimeRange.EndTime)
