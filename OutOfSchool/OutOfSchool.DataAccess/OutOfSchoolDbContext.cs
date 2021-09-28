@@ -55,7 +55,9 @@ namespace OutOfSchool.Services
 
         public DbSet<DateTimeRange> DateTimeRanges { get; set; }
 
-        public async Task CompleteAsync() => await this.SaveChangesAsync();
+        public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
+
+        public int Complete() => this.SaveChanges();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

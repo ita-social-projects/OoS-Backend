@@ -4,6 +4,8 @@ namespace OutOfSchool.Services
 {
     public interface IUnitOfWork
     {
-        public Task CompleteAsync();
+        public Task<int> CompleteAsync();
+
+        public int Complete();
     }
 }

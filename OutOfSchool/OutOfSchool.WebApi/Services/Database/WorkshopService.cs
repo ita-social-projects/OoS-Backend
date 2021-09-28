@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -180,7 +181,6 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 await workshopRepository.Delete(entity).ConfigureAwait(false);
-                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
                 logger.LogInformation($"Workshop with Id = {id} succesfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
