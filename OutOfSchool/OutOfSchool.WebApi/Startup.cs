@@ -24,6 +24,7 @@ using OutOfSchool.WebApi.Extensions.Startup;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -110,7 +111,7 @@ namespace OutOfSchool.WebApi
                         .AllowAnyHeader()
                         .AllowCredentials()));
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
 
             // TODO: Ask frontend if all enums as strings are fine by adding serializer project wide
             // .AddJsonOptions(options =>
@@ -181,7 +182,7 @@ namespace OutOfSchool.WebApi
 
             services.AddProxy();
 
-            services.AddAutoMapper(typeof(Startup));
+            services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddSignalR();
         }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
@@ -13,10 +10,12 @@ namespace OutOfSchool.Services.Repository
         private readonly OutOfSchoolDbContext db;
 
         public WorkshopRepository(OutOfSchoolDbContext dbContext)
-         : base(dbContext)
+            : base(dbContext)
         {
             db = dbContext;
         }
+
+        public IUnitOfWork UnitOfWork => db;
 
         /// <inheritdoc/>
         public new async Task Delete(Workshop entity)
@@ -41,6 +40,15 @@ namespace OutOfSchool.Services.Repository
             db.Entry(entity.Address).State = EntityState.Deleted;
 
             await db.SaveChangesAsync();
+        }
+
+        public async Task<Workshop> GetWithNavigations(long id)
+        {
+            return await db.Workshops
+                .Include(ws => ws.Address)
+                .Include(ws => ws.Teachers)
+                .Include(ws => ws.DateTimeRanges)
+                .SingleOrDefaultAsync(ws => ws.Id == id);
         }
 
         /// <inheritdoc/>

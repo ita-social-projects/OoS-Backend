@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private Mock<IRatingService> ratingServiceMoq;
         private Mock<ILogger<WorkshopService>> loggerMoq;
+        private Mock<IMapper> mapperMoq;
 
         private Workshop newWorkshop;
         private Class classEntity;
@@ -55,6 +57,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             ratingServiceMoq = new Mock<IRatingService>();
             loggerMoq = new Mock<ILogger<WorkshopService>>();
+            mapperMoq = new Mock<IMapper>();
 
             workshopService = new WorkshopService(
                 workshopRepository,
@@ -62,7 +65,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 teacherRepository,
                 addressRepository,
                 ratingServiceMoq.Object,
-                loggerMoq.Object);
+                loggerMoq.Object,
+                mapperMoq.Object);
 
             SeedDatabase();
         }
@@ -225,7 +229,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Description = "Desc1",
                 Price = 1000,
                 WithDisabilityOptions = true,
-                DaysPerWeek = 1,
                 Head = "Head1",
                 HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                 ProviderTitle = "ProviderTitle",
@@ -653,7 +656,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Description = "Desc",
                 Price = 1000,
                 WithDisabilityOptions = true,
-                DaysPerWeek = 1,
                 Head = "Head",
                 HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                 ProviderTitle = "ProviderTitle",
@@ -738,7 +740,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Keywords = "шаффл",
                         Price = 0,
                         WithDisabilityOptions = true,
-                        DaysPerWeek = 1,
                         Head = "Head1",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "Школа танцю",
@@ -801,7 +802,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Keywords = "танці¤діти¤шаффл",
                         Price = 50,
                         WithDisabilityOptions = false,
-                        DaysPerWeek = 2,
                         Head = "Head2",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "Школа танцю",
@@ -863,7 +863,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Keywords = "м'яч¤біг¤ноги¤діти¤дорослі¤спорт",
                         Price = 100,
                         WithDisabilityOptions = true,
-                        DaysPerWeek = 3,
                         Head = "Head3",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "ProviderTitle",
@@ -924,7 +923,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Keywords = "м'яч¤біг¤спорт",
                         Price = 1000,
                         WithDisabilityOptions = false,
-                        DaysPerWeek = 4,
                         Head = "Head4",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "ProviderTitle",
@@ -986,7 +984,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                         Keywords = "рукоділля¤вишивка",
                         Price = 0,
                         WithDisabilityOptions = true,
-                        DaysPerWeek = 5,
                         Head = "Head5",
                         HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                         ProviderTitle = "ProviderTitle",
