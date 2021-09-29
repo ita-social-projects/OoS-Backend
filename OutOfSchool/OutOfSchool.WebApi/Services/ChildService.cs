@@ -41,17 +41,13 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId)
         {
+            this.ValidateChildDto(childDto);
+            this.ValidateUserId(userId);
+
             logger.LogDebug($"Started creation of a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}.");
 
-            this.ValidateChildDto(childDto);
-
-            if (userId is null)
-            {
-                throw new ArgumentNullException($"{nameof(userId)}");
-            }
-
             var parent = (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault()
-                ?? throw new ArgumentException($"There is no Parent with {nameof(userId)}:{userId}", userId);
+                ?? throw new UnauthorizedAccessException($"Trying to create a new child the Parent with {nameof(userId)}:{userId} was not found.");
 
             if (childDto.ParentId != parent.Id)
             {
@@ -63,7 +59,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newChild = await childRepository.Create(childDto.ToDomain()).ConfigureAwait(false);
 
-            logger.LogDebug($"Child with Id:{newChild?.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
+            logger.LogDebug($"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
             return newChild.ToModel();
         }
@@ -71,12 +67,9 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<ChildDto>> GetAllWithOffsetFilterOrderedById(OffsetFilter offsetFilter)
         {
-            logger.LogDebug($"Getting all Children started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
+            this.ValidateOffsetFilter(offsetFilter);
 
-            if (offsetFilter is null)
-            {
-                throw new ArgumentNullException($"{nameof(offsetFilter)}");
-            }
+            logger.LogDebug($"Getting all Children started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
 
             var totalAmount = await childRepository.Count().ConfigureAwait(false);
 
@@ -84,9 +77,9 @@ namespace OutOfSchool.WebApi.Services
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            logger.LogDebug(!children.Any()
-                ? $"There is no child in the Childrens table. Skipped records: {offsetFilter.From}. Order: by Child.Id."
-                : $"{children.Count} children from {totalAmount} were successfully received. Skipped records: {offsetFilter.From}. Order: by Child.Id.");
+            logger.LogDebug(children.Any()
+                ? $"{children.Count} children from {totalAmount} were successfully received. Skipped records: {offsetFilter.From}. Order: by Child.Id."
+                : $"There is no child in the Children table. Skipped records: {offsetFilter.From}. Order: by Child.Id.");
 
             var searchResult = new SearchResult<ChildDto>()
             {
@@ -100,27 +93,17 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDto> GetByIdAndUserId(long id, string userId)
         {
+            this.ValidateId(id);
+            this.ValidateUserId(userId);
+
             logger.LogDebug($"User:{userId} is trying to get the child with id: {id}.");
 
-            if (userId is null)
-            {
-                throw new ArgumentNullException($"{nameof(userId)}");
-            }
-
-            var child = id > 0
-                ? (await childRepository.GetByFilter(child => child.Id == id, $"{nameof(Child.Parent)}").ConfigureAwait(false)).SingleOrDefault()
-                : null;
-
-            if (child is null)
-            {
-                logger.LogWarning($"User:{userId} is trying to get an unexisting child with id: {id}.");
-                return null;
-            }
+            var child = (await childRepository.GetByFilter(child => child.Id == id, $"{nameof(Child.Parent)}").ConfigureAwait(false)).SingleOrDefault()
+                ?? throw new UnauthorizedAccessException($"User:{userId} is trying to get an unexisting child with id: {id}.");
 
             if (child.Parent.UserId != userId)
             {
-                logger.LogWarning($"User{userId} is trying to get not his/her own child with id: {id}.");
-                return null;
+                throw new UnauthorizedAccessException($"User{userId} is trying to get not his/her own child with id: {id}.");
             }
 
             logger.LogDebug($"User:{userId} successfully got the child with id: {id}.");
@@ -131,26 +114,21 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(long parentId, OffsetFilter offsetFilter)
         {
-            if (offsetFilter is null)
-            {
-                throw new ArgumentNullException($"{nameof(offsetFilter)}");
-            }
+            this.ValidateId(parentId);
+            this.ValidateOffsetFilter(offsetFilter);
 
             logger.LogDebug($"Getting Children with ParentId: {parentId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
 
-            var totalAmount = parentId > 0
-                ? await childRepository.Count(x => x.ParentId == parentId).ConfigureAwait(false)
-                : 0;
+            var totalAmount = await childRepository.Count(x => x.ParentId == parentId).ConfigureAwait(false);
 
-            var children = parentId > 0
-                ? await childRepository.Get<string>(offsetFilter.From, offsetFilter.Size, "SocialGroup", x => x.ParentId == parentId, x => x.FirstName, true)
-                    .ToListAsync()
-                    .ConfigureAwait(false)
-                : new List<Child>();
+            var children = await childRepository
+                .Get<string>(offsetFilter.From, offsetFilter.Size, "SocialGroup", x => x.ParentId == parentId, x => x.FirstName, true)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
-            logger.LogDebug(!children.Any()
-                ? $"There is no child with ParentId: {parentId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
-                : $"{children.Count} children with ParentId: {parentId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
+            logger.LogDebug(children.Any()
+                ? $"{children.Count} children with ParentId: {parentId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
+                : $"There is no child with ParentId: {parentId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
 
             var searchResult = new SearchResult<ChildDto>()
             {
@@ -164,27 +142,21 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<ChildDto>> GetByUserId(string userId, OffsetFilter offsetFilter)
         {
-            if (userId is null)
-            {
-                throw new ArgumentNullException($"{nameof(userId)}");
-            }
-
-            if (offsetFilter is null)
-            {
-                throw new ArgumentNullException($"{nameof(offsetFilter)}");
-            }
+            this.ValidateUserId(userId);
+            this.ValidateOffsetFilter(offsetFilter);
 
             logger.LogDebug($"Getting Child's for User started. Looking UserId = {userId}.");
 
             var totalAmount = await childRepository.Count(x => x.Parent.UserId == userId).ConfigureAwait(false);
 
-            var children = await childRepository.Get<string>(offsetFilter.From, offsetFilter.Size, string.Empty, x => x.Parent.UserId == userId, x => x.FirstName, true)
+            var children = await childRepository
+                .Get<string>(offsetFilter.From, offsetFilter.Size, string.Empty, x => x.Parent.UserId == userId, x => x.FirstName, true)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            logger.LogDebug(!children.Any()
-                ? $"There is no child for User:{userId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
-                : $"{children.Count} records for User:{userId} were successfully received from the Children table. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
+            logger.LogDebug(children.Any()
+                ? $"{children.Count} children for User:{userId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
+                : $"There is no child for User:{userId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
 
             var searchResult = new SearchResult<ChildDto>()
             {
@@ -198,95 +170,60 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId)
         {
+            this.ValidateChildDto(childDto);
+            this.ValidateUserId(userId);
+
             logger.LogDebug($"Updating the child with Id: {childDto.Id} and {nameof(userId)}: {userId} started.");
 
-            this.ValidateChildDto(childDto);
+            var child = childDto.Id > 0
+                ? (await childRepository.GetByFilterNoTracking(c => c.Id == childDto.Id, $"{nameof(Child.Parent)}").SingleOrDefaultAsync().ConfigureAwait(false)
+                    ?? throw new UnauthorizedAccessException($"User: {userId} is trying to update not existing Child (Id = {childDto.Id})."))
+                : throw new ArgumentException($"Child Id: {childDto.Id} is smaller than 1.");
 
-            if (userId is null)
+            if (child.Parent.UserId != userId)
             {
-                throw new ArgumentNullException($"{nameof(userId)}");
+                throw new UnauthorizedAccessException($"User: {userId} is trying to update not his own child. Child Id = {childDto.Id}");
             }
 
-            try
+            if (childDto.ParentId != child.ParentId)
             {
-                var child = childDto.Id > 0
-                    ? await childRepository.GetByFilterNoTracking(c => c.Id == childDto.Id, $"{nameof(Child.Parent)}").SingleOrDefaultAsync().ConfigureAwait(false)
-                    : null;
-
-                if (child is null)
-                {
-                    throw new ArgumentException($"User: {userId} is trying to update not existing Child (Id = {childDto.Id}).");
-                }
-
-                if (child.Parent.UserId != userId)
-                {
-                    throw new UnauthorizedAccessException($"User: {userId} is trying to update not his own child. Child Id = {childDto.Id}");
-                }
-
-                if (childDto.ParentId != child.ParentId)
-                {
-                    logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
-                    childDto.ParentId = child.ParentId;
-                }
-
-                var updatedChild = await childRepository.Update(childDto.ToDomain()).ConfigureAwait(false);
-
-                logger.LogDebug($"Child with Id = {updatedChild?.Id} was updated succesfully.");
-
-                return updatedChild.ToModel();
+                logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
+                childDto.ParentId = child.ParentId;
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                // TODO: provide proper exception handling or remove this try-catch
-                logger.LogError($"Updating failed. Children with Id = {childDto.Id} doesn't exist in the system.");
-                throw;
-            }
+
+            var updatedChild = await childRepository.Update(childDto.ToDomain()).ConfigureAwait(false);
+
+            logger.LogDebug($"Child with Id = {updatedChild?.Id} was updated succesfully.");
+
+            return updatedChild.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task DeleteChildCheckingItsUserIdProperty(long id, string userId)
         {
+            this.ValidateId(id);
+            this.ValidateUserId(userId);
+
             logger.LogDebug($"Deleting the child with Id: {id} and {nameof(userId)}: {userId} started.");
 
-            if (userId is null)
+            var child = await childRepository.GetByFilterNoTracking(c => c.Id == id, $"{nameof(Child.Parent)}").SingleOrDefaultAsync().ConfigureAwait(false)
+                ?? throw new UnauthorizedAccessException($"User: {userId} is trying to delete not existing Child (Id = {id}).");
+
+            if (child.Parent.UserId != userId)
             {
-                throw new ArgumentNullException($"{nameof(userId)}");
+                throw new UnauthorizedAccessException($"User: {userId} is not authorized to delete not his own child. Child Id = {id}");
             }
 
-            try
-            {
-                var child = id > 0
-                    ? await childRepository.GetByFilterNoTracking(c => c.Id == id, $"{nameof(Child.Parent)}").SingleOrDefaultAsync().ConfigureAwait(false)
-                    : null;
+            await childRepository.Delete(child).ConfigureAwait(false);
 
-                if (child is null)
-                {
-                    throw new ArgumentException($"User: {userId} is trying to delete not existing Child (Id = {id}).");
-                }
-
-                if (child.Parent.UserId != userId)
-                {
-                    throw new UnauthorizedAccessException($"User: {userId} is not authorized to delete not his own child. Child Id = {id}");
-                }
-
-                await childRepository.Delete(child).ConfigureAwait(false);
-
-                logger.LogDebug($"Child with Id = {id} succesfully deleted.");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                // TODO: provide proper exception handling or remove this try-catch
-                logger.LogError($"Deleting failed. Children with Id = {id} doesn't exist in the system.");
-                throw;
-            }
+            logger.LogDebug($"Child with Id = {id} succesfully deleted.");
         }
 
         private void ValidateChildDto(ChildDto childDto)
         {
             if (childDto == null)
             {
-                logger.LogInformation("Child creating failed. Child is null.");
-                throw new ArgumentNullException(nameof(childDto), localizer["Child is null."]);
+                throw new ArgumentNullException(nameof(childDto));
             }
 
             var isValid = true;
@@ -315,6 +252,52 @@ namespace OutOfSchool.WebApi.Services
             if (!isValid)
             {
                 throw new ArgumentException(stringBuilder.ToString(), nameof(childDto));
+            }
+        }
+
+        private void ValidateOffsetFilter(OffsetFilter offsetFilter)
+        {
+            if (offsetFilter == null)
+            {
+                throw new ArgumentNullException(nameof(offsetFilter));
+            }
+
+            var isValid = true;
+
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine($"Validation of {nameof(OffsetFilter)} faild.");
+
+            if (offsetFilter.Size < 1)
+            {
+                isValid = false;
+                stringBuilder.AppendLine($"{nameof(OffsetFilter.Size)}: {offsetFilter.Size} is smaller than 1.");
+            }
+
+            if (offsetFilter.From < 0)
+            {
+                isValid = false;
+                stringBuilder.AppendLine($"{nameof(OffsetFilter.From)}: {offsetFilter.From} is smaller than 0.");
+            }
+
+            if (!isValid)
+            {
+                throw new ArgumentException(stringBuilder.ToString(), nameof(offsetFilter));
+            }
+        }
+
+        private void ValidateUserId(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentException($"The {nameof(userId)} parameter cannot be null, empty or white space.");
+            }
+        }
+
+        private void ValidateId(long id)
+        {
+            if (id < 1)
+            {
+                throw new ArgumentException($"The {nameof(id)} parameter has to be greater than zero.");
             }
         }
     }
