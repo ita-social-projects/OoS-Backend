@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -21,7 +19,6 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Child> childRepository;
         private readonly IParentRepository parentRepository;
         private readonly ILogger<ChildService> logger;
-        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildService"/> class.
@@ -29,13 +26,11 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="childRepository">Repository for the Child entity.</param>
         /// <param name="parentRepository">Repository for the Parent entity.</param>
         /// <param name="logger">Logger.</param>
-        /// <param name="localizer">Localizer.</param>
-        public ChildService(IEntityRepository<Child> childRepository, IParentRepository parentRepository, ILogger<ChildService> logger, IStringLocalizer<SharedResource> localizer)
+        public ChildService(IEntityRepository<Child> childRepository, IParentRepository parentRepository, ILogger<ChildService> logger)
         {
             this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
             this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
         }
 
         /// <inheritdoc/>
@@ -193,7 +188,7 @@ namespace OutOfSchool.WebApi.Services
 
             var updatedChild = await childRepository.Update(childDto.ToDomain()).ConfigureAwait(false);
 
-            logger.LogDebug($"Child with Id = {updatedChild?.Id} was updated succesfully.");
+            logger.LogDebug($"Child with Id = {updatedChild.Id} was updated succesfully.");
 
             return updatedChild.ToModel();
         }
