@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Services
         Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(long parentId, OffsetFilter offsetFilter);
 
         /// <summary>
-        /// Get children with some UsertId.
+        /// Get children with some UserId.
         /// </summary>
         /// <param name="userId">Key in the User table.</param>
         /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>

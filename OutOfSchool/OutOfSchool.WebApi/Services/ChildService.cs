@@ -267,16 +267,16 @@ namespace OutOfSchool.WebApi.Services
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"Validation of {nameof(OffsetFilter)} faild.");
 
-            if (offsetFilter.Size < 1)
+            if (offsetFilter.Size < 0)
             {
                 isValid = false;
-                stringBuilder.AppendLine($"{nameof(OffsetFilter.Size)}: {offsetFilter.Size} is smaller than 1.");
+                stringBuilder.AppendLine($"{nameof(OffsetFilter.Size)}: {offsetFilter.Size} cannot be negative.");
             }
 
             if (offsetFilter.From < 0)
             {
                 isValid = false;
-                stringBuilder.AppendLine($"{nameof(OffsetFilter.From)}: {offsetFilter.From} is smaller than 0.");
+                stringBuilder.AppendLine($"{nameof(OffsetFilter.From)}: {offsetFilter.From} cannot be negative.");
             }
 
             if (!isValid)
