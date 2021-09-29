@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.WebApi.Models;
 
@@ -21,7 +22,8 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The result contains a <see cref="ChildDto"/> that was created.</returns>
         /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
-        /// <exception cref="ArgumentException">If parent with userId was not found, or required child's properties are not set.</exception>
+        /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
+        /// <exception cref="UnauthorizedAccessException">If parent with userId was not found.</exception>
         /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
         Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId);
 
@@ -32,6 +34,8 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
         /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
+        /// <exception cref="ArgumentException">If one of the offsetFilter's properties is negative.</exception>
+        /// <exception cref="SqlException">If the database cannot execute the query.</exception>
         Task<SearchResult<ChildDto>> GetAllWithOffsetFilterOrderedById(OffsetFilter offsetFilter);
 
         /// <summary>
@@ -42,7 +46,9 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The result contains a <see cref="ChildDto"/> that was found, or null if a child with such id was not found.
         /// Also if the user is not child's owner the result will be null. </returns>
-        /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
+        /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
+        /// <exception cref="UnauthorizedAccessException">If the child was not found or the user is trying to get not his own child.</exception>
+        /// <exception cref="SqlException">If the database cannot execute the query.</exception>
         Task<ChildDto> GetByIdAndUserId(long id, string userId);
 
         /// <summary>
@@ -53,6 +59,8 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
         /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
+        /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
+        /// <exception cref="SqlException">If the database cannot execute the query.</exception>
         Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(long parentId, OffsetFilter offsetFilter);
 
         /// <summary>
@@ -63,10 +71,12 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
         /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
+        /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
+        /// <exception cref="SqlException">If the database cannot execute the query.</exception>
         Task<SearchResult<ChildDto>> GetByUserId(string userId, OffsetFilter offsetFilter);
 
         /// <summary>
-        /// Update a child of specified user.
+        /// Update a child of the specified user.
         /// Child's property ParentId cannot be changed and uatomatically will be set to the old value.
         /// </summary>
         /// <param name="childDto">Child entity to update.</param>
@@ -76,16 +86,18 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="ArgumentNullException">If one of the entities was not initialized.</exception>
         /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
         /// <exception cref="UnauthorizedAccessException">If user is trying to update not his own child.</exception>
+        /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
         Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId);
 
         /// <summary>
-        /// Delete child.
+        /// Delete a child of the specified user.
         /// </summary>
         /// <param name="id">Child's key.</param>
         /// <param name="userId">Key in the User table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        /// <exception cref="ArgumentNullException">If userId was null.</exception>
+        /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
         /// <exception cref="UnauthorizedAccessException">If user is trying to delete not his own child.</exception>
+        /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
         Task DeleteChildCheckingItsUserIdProperty(long id, string userId);
     }
 }
