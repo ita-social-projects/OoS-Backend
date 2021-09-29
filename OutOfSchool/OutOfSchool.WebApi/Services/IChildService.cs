@@ -44,8 +44,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the Children table.</param>
         /// <param name="userId">Key in the Users table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The result contains a <see cref="ChildDto"/> that was found, or null if a child with such id was not found.
-        /// Also if the user is not child's owner the result will be null. </returns>
+        /// The result contains a <see cref="ChildDto"/> that was found.
+        /// If the child was not found or the user is trying to get not his own child the <see cref="UnauthorizedAccessException"/> will be thrown.</returns>
         /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
         /// <exception cref="UnauthorizedAccessException">If the child was not found or the user is trying to get not his own child.</exception>
         /// <exception cref="SqlException">If the database cannot execute the query.</exception>
