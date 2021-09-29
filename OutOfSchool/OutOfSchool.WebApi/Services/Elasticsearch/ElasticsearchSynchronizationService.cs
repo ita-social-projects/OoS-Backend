@@ -36,6 +36,8 @@ namespace OutOfSchool.WebApi.Services
         public async Task<bool> Synchronize()
         {
             {
+                var result = Result.Error;
+
                 var sourceDtoForCreate = await databaseService.GetWorkshopsForCreate().ConfigureAwait(false);
                 var sourceDtoForUpdate = await databaseService.GetWorkshopsForUpdate().ConfigureAwait(false);
 
@@ -49,7 +51,16 @@ namespace OutOfSchool.WebApi.Services
                     source.Add(entity.ToESModel());
                 }
 
-                var result = await esProvider.IndexAll(source).ConfigureAwait(false);
+                result = await esProvider.IndexAll(source).ConfigureAwait(false);
+
+                if (result == Result.Error)
+                {
+                    return false;
+                }
+
+                var workshopIds = await databaseService.GetWorkshopsForDelete().ConfigureAwait(false);
+
+                result = await esProvider.DeleteRangeOfEntitiesByIdsAsync(workshopIds).ConfigureAwait(false);
 
                 if (result == Result.Error)
                 {

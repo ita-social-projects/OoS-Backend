@@ -16,8 +16,13 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopService workshopService;
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly ILogger<WorkshopServicesCombiner> logger;
+        private readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService;
 
-        public WorkshopServicesCombiner(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger<WorkshopServicesCombiner> logger)
+        public WorkshopServicesCombiner(
+            IWorkshopService workshopService,
+            IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
+            ILogger<WorkshopServicesCombiner> logger,
+            IElasticsearchSynchronizationService elasticsearchSynchronizationService)
         {
             this.workshopService = workshopService;
             this.elasticsearchService = elasticsearchService;
@@ -30,21 +35,13 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
-            //var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
-
-            BackupTrackerDto backupTrackerDto = new BackupTrackerDto()
-            {
-                Operation = OutOfSchool.Services.Enums.BackupOperation.Create,
-                OperationDate = DateTime.UtcNow,
-                TableName = "Workshop",
-                RecordId = 1,
-            };
-
-            var backupTracker = await backupTrackerService.Create(backupTrackerDto).ConfigureAwait(false);
+            var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
 
             if (!esResultIsValid)
             {
                 logger.LogWarning($"Error happend while trying to index {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
+
+                await AddNewRecordToElasticsearchSynchronizationTable(workshop.Id, ElasticsearchSyncOperation.Create).ConfigureAwait(false);
             }
 
             return workshop;
@@ -63,13 +60,13 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
-            // TODO: For emulate situation when Elasticsearch is not accessible.
-            // var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
-            var esResultIsValid = false;
+            var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
 
             if (!esResultIsValid)
             {
                 logger.LogWarning($"Error happend while trying to update {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
+
+                await AddNewRecordToElasticsearchSynchronizationTable(workshop.Id, ElasticsearchSyncOperation.Update).ConfigureAwait(false);
             }
 
             return workshop;
@@ -80,13 +77,13 @@ namespace OutOfSchool.WebApi.Services
         {
             await workshopService.Delete(id).ConfigureAwait(false);
 
-            // TODO: For emulate situation when Elasticsearch is not accessible.
-            // var esResultIsValid = await elasticsearchService.Delete(id).ConfigureAwait(false);
-            var esResultIsValid = false;
+            var esResultIsValid = await elasticsearchService.Delete(id).ConfigureAwait(false);
 
             if (!esResultIsValid)
             {
                 logger.LogWarning($"Error happend while trying to delete Workshop:{id} in Elasticsearch.");
+
+                await AddNewRecordToElasticsearchSynchronizationTable(id, ElasticsearchSyncOperation.Delete).ConfigureAwait(false);
             }
         }
 

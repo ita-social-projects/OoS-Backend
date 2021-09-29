@@ -88,5 +88,7 @@ namespace OutOfSchool.ElasticsearchData
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
         /// The task result contains true if server is available.</returns>
         Task<bool> PingServerAsync();
+
+        Task<Result> DeleteRangeOfEntitiesByIdsAsync(IEnumerable<long> ids);
     }
 }

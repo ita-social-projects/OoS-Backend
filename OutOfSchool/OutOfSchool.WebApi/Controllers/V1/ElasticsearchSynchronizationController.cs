@@ -6,6 +6,8 @@ using OutOfSchool.WebApi.Services;
 namespace OutOfSchool.WebApi.Controllers
 {
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Route("[controller]/[action]")]
     //TODO: Commented only for testing purpose
     //[Authorize(AuthenticationSchemes = "Bearer")]
