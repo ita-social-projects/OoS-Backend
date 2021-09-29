@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] OffsetFilter offsetFilter)
+        public async Task<IActionResult> GetAllForAdmin([FromQuery] OffsetFilter offsetFilter)
         {
             var children = await service.GetAllWithOffsetFilterOrderedById(offsetFilter).ConfigureAwait(false);
 
@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{parentId}")]
-        public async Task<IActionResult> GetByParentId([Range(1, long.MaxValue)] long parentId, [FromQuery] OffsetFilter offsetFilter)
+        public async Task<IActionResult> GetByParentIdForAdmin([Range(1, long.MaxValue)] long parentId, [FromQuery] OffsetFilter offsetFilter)
         {
             var children = await service.GetByParentIdOrderedByFirstName(parentId, offsetFilter).ConfigureAwait(false);
 

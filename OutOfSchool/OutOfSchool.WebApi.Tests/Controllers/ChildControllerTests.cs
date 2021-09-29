@@ -50,7 +50,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAllWithOffsetFilterOrderedById(filter)).ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
 
             // Act
-            var result = await controller.Get(filter).ConfigureAwait(false);
+            var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAllWithOffsetFilterOrderedById(filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = new List<ChildDto>() });
 
             // Act
-            var result = await controller.Get(filter).ConfigureAwait(false);
+            var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<NoContentResult>(result);
@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Where(p => p.ParentId == id).Count(), Entities = children.Where(p => p.ParentId == id).ToList() });
 
             // Act
-            var result = await controller.GetByParentId(id, filter).ConfigureAwait(false);
+            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
@@ -120,7 +120,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetByParentIdOrderedByFirstName(id, filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = children.Where(p => p.ParentId == id).ToList() });
 
             // Act
-            var result = await controller.GetByParentId(id, filter).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             Assert.IsInstanceOf<NoContentResult>(result);
