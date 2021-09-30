@@ -96,7 +96,7 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
             var workshopsWithRating = GetWorkshopsWithAverageRating(workshopsDTO);
-            return new SearchResult<WorkshopDTO>() {TotalAmount = count, Entities = workshopsWithRating};
+            return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
         }
 
         /// <inheritdoc/>

@@ -15,6 +15,7 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
+
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
     [TestFixture]
@@ -32,7 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         private IEnumerable<ApplicationDto> applications;
         private IEnumerable<ChildDto> children;
-        private IEnumerable<WorkshopDTO> workshops;
+        private IEnumerable<WorkshopCard> workshops;
         private ParentDTO parent;
         private ProviderDto provider;
 
@@ -58,7 +59,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 parentService.Object,
                 workshopService.Object)
             {
-                ControllerContext = new ControllerContext() { HttpContext = httpContext.Object},
+                ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
             };
 
             applications = FakeApplications();
@@ -239,12 +240,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenIdIsValid_ShouldReturnOkObjectResult(long id, string property)
         {
             // Arrange
-            var filter = new ApplicationFilter{ Status = 1 };
+            var filter = new ApplicationFilter { Status = 1 };
 
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
-            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.First());
+            //workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.First());
             applicationService.Setup(s => s.GetAllByProvider(id, filter))
                 .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
             applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
@@ -314,7 +315,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherProvider);
-            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.First());
+            // workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.First());
             applicationService.Setup(s => s.GetAllByProvider(id, filter))
                 .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
             applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
@@ -335,7 +336,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var filter = new ApplicationFilter { Status = 1 };
 
-            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.Where(w => w.Id == id).FirstOrDefault());
+            //  workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.Where(w => w.Id == id).FirstOrDefault());
 
             // Act
             var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
@@ -699,13 +700,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<WorkshopDTO> FakeWorkshops()
+        private IEnumerable<WorkshopCard> FakeWorkshops()
         {
-            return new List<WorkshopDTO>()
+            return new List<WorkshopCard>()
             {
-                new WorkshopDTO()
+                new WorkshopCard()
                 {
-                    Id = 1,
+                    WorkshopId = 1,
                     Title = "w1",
                     ProviderId = 1,
                 },

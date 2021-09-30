@@ -13,6 +13,7 @@
 
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
+    <UserSecretsId>42a0c5b0-4d8f-4657-a143-6a3e4f0d82bb</UserSecretsId>
   </PropertyGroup>
   
   <ItemGroup>
@@ -24,6 +25,7 @@
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="IdentityModel" Version="5.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.13" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.8.0" />
     <PackageReference Include="MockQueryable.Moq" Version="5.0.1" />
     <PackageReference Include="Moq" Version="4.16.0" />

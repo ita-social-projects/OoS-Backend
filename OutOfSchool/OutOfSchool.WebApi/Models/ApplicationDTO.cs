@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Models
         [Range(1, long.MaxValue, ErrorMessage = "Parent id should be grater than 0")]
         public long ParentId { get; set; }
 
-        public WorkshopDTO Workshop { get; set; }
+        public WorkshopCard Workshop { get; set; }
 
         public ChildDto Child { get; set; }
 
