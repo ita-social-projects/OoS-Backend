@@ -52,7 +52,8 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                             },
                         },
                     });
-                });
+                })
+                .AddSwaggerGenNewtonsoftSupport();
 
             return services;
         }
