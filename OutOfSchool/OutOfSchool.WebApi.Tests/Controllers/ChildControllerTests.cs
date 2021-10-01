@@ -9,8 +9,6 @@ using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -20,26 +18,22 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class ChildControllerTests
     {
-        private const int OkStatusCode = 200;
-        private const int NoContentStatusCode = 204;
-        private const int CreateStatusCode = 201;
-        private const int BadRequestStatusCode = 400;
         private ChildController controller;
         private Mock<IChildService> service;
-        private Mock<IEntityRepository<Child>> repo;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
-        private IEnumerable<ChildDto> children;
+        private List<ChildDto> children;
         private ChildDto child;
+        private string currentUserId;
 
         [SetUp]
         public void Setup()
         {
-            repo = new Mock<IEntityRepository<Child>>();
             service = new Mock<IChildService>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
-            controller = new ChildController(service.Object, localizer.Object);
+            controller = new ChildController(service.Object);
+
+            currentUserId = "3341c870-5ef4-462b-8c86-b4e8bd4e6d41";
             var user = new ClaimsPrincipal(new ClaimsIdentity(
-                new Claim[] { new Claim("sub", "3341c870-5ef4-462b-8c86-b4e8bd4e6d41") }, "sub"));
+                new Claim[] { new Claim("sub", currentUserId) }, "sub"));
+
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
             children = FakeChildren();
@@ -47,126 +41,100 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetChildren_WhenCalled_ShouldReturnOkResultObject()
+        public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
         {
             // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(children);
+            var filter = new OffsetFilter();
+            service.Setup(x => x.GetAllWithOffsetFilterOrderedById(filter)).ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
 
             // Act
-            var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
         [Test]
+        public async Task GetChildren_WhenThereIsNoChild_ShouldReturnOkObjectResult()
+        {
+            // Arrange
+            var filter = new OffsetFilter();
+            service.Setup(x => x.GetAllWithOffsetFilterOrderedById(filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = new List<ChildDto>() });
+
+            // Act
+            var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<OkObjectResult>(result);
+        }
+
         [TestCase(1)]
-        public async Task GetChildById_WhenIdIsValid_ShouldReturnOkResultObject(long id)
+        public async Task GetUsersChilById_WhenChildWasFound_ShouldReturnOkResultObject(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
+            var filter = new OffsetFilter();
+            service.Setup(x => x.GetByIdAndUserId(id, It.IsAny<string>())).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
 
             // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetUsersChildById(id).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-        [Test]
-        [TestCase(0)]
-        public void GetChildById_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
-        {
-            // Assert
-            Assert.That(
-                async () => await controller.GetById(id),
-                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
-        }
-
-        [Test]
         [TestCase(10)]
-        public async Task GetChildById_WhenIdIsNotValid_ShouldReturnNull(long id)
+        public async Task GetUsersChilById_WhenChildWasNotFound_ShouldReturnOkObjectResult(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
+            service.Setup(x => x.GetByIdAndUserId(id, It.IsAny<string>())).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
 
             // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetUsersChildById(id).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
-            Assert.AreEqual(result.Value, null);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-        [Test]
-        [TestCase(1, "3341c870-5ef4-462b-8c86-b4e8bd4e6d41")]
-        public async Task GetByParentId_WhenIdIsValid_ShouldReturnOkResultObject(long id, string userId)
+        [TestCase(1)]
+        public async Task GetByParentId_WhenThereAreChildren_ShouldReturnOkResultObject(long id)
         {
             // Arrange
-            service.Setup(x => x.GetAllByParent(id, userId)).ReturnsAsync(children.Where(p => p.ParentId == id && p.Parent.UserId == userId));
+            var filter = new OffsetFilter();
+            service.Setup(x => x.GetByParentIdOrderedByFirstName(id, filter))
+                .ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Where(p => p.ParentId == id).Count(), Entities = children.Where(p => p.ParentId == id).ToList() });
 
             // Act
-            var result = await controller.GetByParentId(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-        [Test]
-        [TestCase(0)]
-        public void GetByParentId_WhenIdIsNotValid_ShouldThrowArgumentOutOfRangeException(long id)
-        {
-            // Assert
-            Assert.That(
-                async () => await controller.GetByParentId(id),
-                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
-        }
-
-        [Test]
-        [TestCase(10, "aab42f43-f5d6-48ed-95aa-0b4f7b77e541")]
-        public async Task GetByParentId_WhenIdIsNotValid_ShouldReturnNull(long id, string userId)
+        [TestCase(10)]
+        public async Task GetByParentId_WhenThereIsNoChild_ShouldReturnOkObjectResult(long id)
         {
             // Arrange
-            service.Setup(x => x.GetAllByParent(id, userId)).ReturnsAsync(children.Where(p => p.ParentId == id && p.Parent.UserId == userId));
+            var filter = new OffsetFilter();
+            service.Setup(x => x.GetByParentIdOrderedByFirstName(id, filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = children.Where(p => p.ParentId == id).ToList() });
 
             // Act
-            var result = await controller.GetByParentId(id).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
         [Test]
         public async Task CreateChild_WhenModelIsValid_ShouldReturnCreatedAtActionResult()
         {
             // Arrange
-            service.Setup(x => x.Create(child)).ReturnsAsync(child);
-
-            // Act
-            var result = await controller.Create(child).ConfigureAwait(false) as CreatedAtActionResult;
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(CreateStatusCode, result.StatusCode);
-        }
-
-        [Test]
-        public async Task CreateChild_WhenModelIsNotValid_ShouldReturnBadRequestObjectResult()
-        {
-            // Arrange
-            controller.ModelState.AddModelError("CreateChild", "Invalid model state.");
+            service.Setup(x => x.CreateChildForUser(child, currentUserId)).ReturnsAsync(child);
 
             // Act
             var result = await controller.Create(child).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
+            Assert.IsInstanceOf<CreatedAtActionResult>(result);
         }
 
         [Test]
@@ -179,67 +147,33 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 FirstName = "fn11",
                 LastName = "ln11",
             };
-            service.Setup(x => x.Update(changedChild)).ReturnsAsync(changedChild);
+            service.Setup(x => x.UpdateChildCheckingItsUserIdProperty(changedChild, It.IsAny<string>())).ReturnsAsync(changedChild);
 
             // Act
             var result = await controller.Update(changedChild).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-        [Test]
-        public async Task UpdateChild_WhenModelIsNotValid_ShouldReturnBadRequestObjectResult()
-        {
-            // Arrange
-            controller.ModelState.AddModelError("UpdateChild", "Invalid model state.");
-
-            // Act
-            var result = await controller.Update(child).ConfigureAwait(false);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
-        }
-
-        [Test]
         [TestCase(1)]
-        public async Task DeleteChild_WhenIdIsValid_ShouldReturnNoContentResult(long id)
+        public async Task DeleteChild_WhenChildWithIdExists_ShouldReturnNoContentResult(long id)
         {
-            // Arrange
-            service.Setup(x => x.Delete(id));
-
             // Act
-            var result = await controller.Delete(id) as NoContentResult;
+            var result = await controller.Delete(id);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
+            Assert.IsInstanceOf<NoContentResult>(result);
         }
 
-        [Test]
-        [TestCase(0)]
-        public void DeleteChild_WhenIdIsNotValid_ShouldReturnBadRequestObjectResult(long id)
-        {
-            // Assert
-            Assert.That(
-                async () => await controller.Delete(id),
-                Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
-        }
-
-        [Test]
         [TestCase(10)]
         public async Task DeleteChild_WhenIdIsNotValid_ShouldReturnNull(long id)
         {
-            // Arrange
-            service.Setup(x => x.Delete(id));
-
             // Act
-            var result = await controller.Delete(id) as OkObjectResult;
+            var result = await controller.Delete(id);
 
             // Assert
-            Assert.That(result, Is.Null);
+            Assert.IsInstanceOf<NoContentResult>(result);
         }
 
         private ChildDto FakeChild()
@@ -257,9 +191,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private IEnumerable<ChildDto> FakeChildren()
+        private List<ChildDto> FakeChildren()
         {
-            var parent1 = new ParentDTO() { Id = 1, UserId = "3341c870-5ef4-462b-8c86-b4e8bd4e6d41" };
+            var parent1 = new ParentDTO() { Id = 1, UserId = currentUserId };
             var parent2 = new ParentDTO() { Id = 2, UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" };
 
             return new List<ChildDto>()

@@ -25,9 +25,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<HttpContext> httpContextMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
-        private IEnumerable<ParentDTO> parents;
-        private IEnumerable<ChildDto> children;
-        private IEnumerable<ApplicationDto> application;
+        private List<ParentDTO> parents;
+        private List<ChildDto> children;
+        private List<ApplicationDto> application;
         private ParentDTO parent;
 
         [SetUp]
@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             application = FakeApplications();
         }
 
-        public IEnumerable<ParentDTO> FakeParents()
+        public List<ParentDTO> FakeParents()
         {
             return new List<ParentDTO>
             {
@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             return new ParentDTO() { Id = 4, UserId = "de909f35-5eb7-4b7a-bda8-ccc0a5bfda96a6" };
         }
 
-        public IEnumerable<ChildDto> FakeChildren()
+        public List<ChildDto> FakeChildren()
         {
             return new List<ChildDto>
             {
@@ -165,7 +165,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        public IEnumerable<ApplicationDto> FakeApplications()
+        public List<ApplicationDto> FakeApplications()
         {
             return new List<ApplicationDto>()
             {
@@ -208,7 +208,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
 
             serviceParent.Setup(x => x.GetByUserId("de804f35-bda8-4b8n-5eb7-70a5tyfg90a6")).ReturnsAsync(parent);
-            serviceChild.Setup(x => x.GetAllByParent(parent.Id, "de909f35-5eb7-4b7a-bda8-ccc0a5bfda96a6")).ReturnsAsync(children);
+            serviceChild.Setup(x => x.GetByUserId("de804f35-bda8-4b8n-5eb7-70a5tyfg90a6", It.IsAny<OffsetFilter>()))
+                .ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
             serviceApplication.Setup(x => x.GetAllByChild(children.First().Id)).ReturnsAsync(application);
 
             // Act

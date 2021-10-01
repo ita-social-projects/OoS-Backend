@@ -1,9 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -18,142 +19,153 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Roles = "admin,parent")]
     public class ChildController : ControllerBase
     {
         private readonly IChildService service;
-        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildController"/> class.
         /// </summary>
         /// <param name="service">Service for Child model.</param>
-        /// <param name="localizer">Localizer.</param>
-        public ChildController(IChildService service, IStringLocalizer<SharedResource> localizer)
+        public ChildController(IChildService service)
         {
-            this.localizer = localizer;
-            this.service = service;
+            this.service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         /// <summary>
         /// Get all children from the database.
         /// </summary>
-        /// <returns>List of all children.</returns>
+        /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
+        /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
         [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetAllForAdmin([FromQuery] OffsetFilter offsetFilter)
         {
-            var children = await service.GetAll().ConfigureAwait(false);
-
-            if (!children.Any())
-            {
-                return NoContent();
-            }
-
-            return Ok(children);
+            return Ok(await service.GetAllWithOffsetFilterOrderedById(offsetFilter).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Get child by it's id.
+        /// Get all children from the database by parent's id.
         /// </summary>
-        /// <param name="id">The key in the database.</param>
-        /// <returns>Child entity.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(long id)
-        {
-            this.ValidateId(id, localizer);
-
-            return Ok(await service.GetById(id).ConfigureAwait(false));
-        }
-
-        /// <summary>
-        /// Get all children from the database by parent id.
-        /// </summary>
-        /// <param name="id">Id of Parent.</param>
-        /// <returns>List of all children.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetByParentId(long id)
-        {
-            this.ValidateId(id, localizer);
-
-            string userId = User.FindFirst("sub")?.Value;
-
-            var children = await service.GetAllByParent(id, userId).ConfigureAwait(false);
-
-            if (!children.Any())
-            {
-                return NoContent();
-            }
-
-            return Ok(children);
-        }
-
-        /// <summary>
-        /// Method for creating a new child.
-        /// </summary>
-        /// <param name="dto">Child entity to add.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        /// <param name="parentId">Id of the parent.</param>
+        /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
+        /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{parentId}")]
+        public async Task<IActionResult> GetByParentIdForAdmin([Range(1, long.MaxValue)] long parentId, [FromQuery] OffsetFilter offsetFilter)
+        {
+            return Ok(await service.GetByParentIdOrderedByFirstName(parentId, offsetFilter).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get all user's children from the database.
+        /// </summary>
+        /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
+        /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
+        [Authorize(Roles = "parent")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        public async Task<IActionResult> GetUsersChildren([FromQuery] OffsetFilter offsetFilter)
+        {
+            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+
+            return Ok(await service.GetByUserId(userId, offsetFilter).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get the user's child by child's id.
+        /// </summary>
+        /// <param name="id">The child's id.</param>
+        /// <returns>The <see cref="ChildDto"/> that was found or null.</returns>
+        [Authorize(Roles = "parent")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChildDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUsersChildById([Range(1, long.MaxValue)] long id)
+        {
+            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+
+            return Ok(await service.GetByIdAndUserId(id, userId).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Method for creating a new user's child.
+        /// </summary>
+        /// <param name="childDto">Child entity to add.</param>
+        /// <returns>The child that was created.</returns>
+        [Authorize(Roles = "parent")]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(ChildDto dto)
+        public async Task<IActionResult> Create(ChildDto childDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
-            var child = await service.Create(dto).ConfigureAwait(false);
+            var child = await service.CreateChildForUser(childDto, userId).ConfigureAwait(false);
 
             return CreatedAtAction(
-                nameof(GetById),
+                nameof(GetUsersChildById),
                 new { id = child.Id, },
                 child);
         }
 
         /// <summary>
-        /// Update info about a specific child in the database.
+        /// Update info about the user's child in the database.
         /// </summary>
-        /// <param name="dto">Child entity.</param>
-        /// <returns>Child's key.</returns>
-        [Authorize(Roles = "parent,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        /// <param name="dto">Child entity to update.</param>
+        /// <returns>The child that was updated.</returns>
+        [Authorize(Roles = "parent")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChildDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
         public async Task<IActionResult> Update(ChildDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
-            return Ok(await service.Update(dto).ConfigureAwait(false));
+            return Ok(await service.UpdateChildCheckingItsUserIdProperty(dto, userId).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// Delete a specific Child entity from the database.
+        /// Delete the user's child from the database.
         /// </summary>
-        /// <param name="id">Child's key.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        /// <param name="id">The child's id.</param>
+        /// <returns>If deletion was successful, the result will be Status Code 204.</returns>
+        [Authorize(Roles = "parent")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<IActionResult> Delete([Range(1, long.MaxValue)] long id)
         {
-            this.ValidateId(id, localizer);
+            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
-            await service.Delete(id).ConfigureAwait(false);
+            await service.DeleteChildCheckingItsUserIdProperty(id, userId).ConfigureAwait(false);
 
             return NoContent();
         }
