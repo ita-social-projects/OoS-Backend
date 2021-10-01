@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OutOfSchool.IdentityServer.Config;
+using OutOfSchool.IdentityServer.KeyManagement;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 
@@ -34,6 +35,8 @@ namespace OutOfSchool.IdentityServer
                 }
 
                 scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
+                    .Database.Migrate();
+                scope.ServiceProvider.GetRequiredService<CertificateDbContext>()
                     .Database.Migrate();
                 var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
                 var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
