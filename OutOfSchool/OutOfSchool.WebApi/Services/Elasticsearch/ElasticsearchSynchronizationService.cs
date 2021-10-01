@@ -60,6 +60,7 @@ namespace OutOfSchool.WebApi.Services
 
                 if (result == Result.Error)
                 {
+                    logger.LogError($"Error happend while trying to update indexes in Elasticsearch.");
                     return false;
                 }
 
@@ -69,6 +70,7 @@ namespace OutOfSchool.WebApi.Services
 
                 if (result == Result.Error)
                 {
+                    logger.LogError($"Error happend while trying to delete indexes in Elasticsearch.");
                     return false;
                 }
 
