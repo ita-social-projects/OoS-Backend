@@ -20,7 +20,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private ChildController controller;
         private Mock<IChildService> service;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
         private List<ChildDto> children;
         private ChildDto child;
         private string currentUserId;
@@ -29,8 +28,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void Setup()
         {
             service = new Mock<IChildService>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
-            controller = new ChildController(service.Object, localizer.Object);
+            controller = new ChildController(service.Object);
 
             currentUserId = "3341c870-5ef4-462b-8c86-b4e8bd4e6d41";
             var user = new ClaimsPrincipal(new ClaimsIdentity(
@@ -50,24 +48,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAllWithOffsetFilterOrderedById(filter)).ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
 
             // Act
-            var result = await controller.Get(filter).ConfigureAwait(false);
+            var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
         [Test]
-        public async Task GetChildren_WhenThereIsNoChild_ShouldReturnNoContent()
+        public async Task GetChildren_WhenThereIsNoChild_ShouldReturnOkObjectResult()
         {
             // Arrange
             var filter = new OffsetFilter();
             service.Setup(x => x.GetAllWithOffsetFilterOrderedById(filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = new List<ChildDto>() });
 
             // Act
-            var result = await controller.Get(filter).ConfigureAwait(false);
+            var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<NoContentResult>(result);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
         [TestCase(1)]
@@ -85,7 +83,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [TestCase(10)]
-        public async Task GetUsersChilById_WhenChildWasNotFound_ShouldReturnNoContentResult(long id)
+        public async Task GetUsersChilById_WhenChildWasNotFound_ShouldReturnOkObjectResult(long id)
         {
             // Arrange
             service.Setup(x => x.GetByIdAndUserId(id, It.IsAny<string>())).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
@@ -94,7 +92,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetUsersChildById(id).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<NoContentResult>(result);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
         [TestCase(1)]
@@ -106,24 +104,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Where(p => p.ParentId == id).Count(), Entities = children.Where(p => p.ParentId == id).ToList() });
 
             // Act
-            var result = await controller.GetByParentId(id, filter).ConfigureAwait(false);
+            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
         [TestCase(10)]
-        public async Task GetByParentId_WhenThereIsNoChild_ShouldReturnNoContentResult(long id)
+        public async Task GetByParentId_WhenThereIsNoChild_ShouldReturnOkObjectResult(long id)
         {
             // Arrange
             var filter = new OffsetFilter();
             service.Setup(x => x.GetByParentIdOrderedByFirstName(id, filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = children.Where(p => p.ParentId == id).ToList() });
 
             // Act
-            var result = await controller.GetByParentId(id, filter).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<NoContentResult>(result);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
         [Test]
