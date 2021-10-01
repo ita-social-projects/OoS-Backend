@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Nest;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
@@ -10,22 +11,24 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using Serilog;
 
 namespace OutOfSchool.WebApi.Services
 {
+    /// <summary>
+    /// Implements the operations for synchronization databases.
+    /// </summary>
     public class ElasticsearchSynchronizationService : IElasticsearchSynchronizationService
     {
         private readonly IWorkshopService databaseService;
         private readonly IEntityRepository<ElasticsearchSyncRecord> repository;
         private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
-        private readonly ILogger logger;
+        private readonly ILogger<ElasticsearchSynchronizationService> logger;
 
         public ElasticsearchSynchronizationService(
             IWorkshopService workshopService,
             IEntityRepository<ElasticsearchSyncRecord> repository,
             IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
-            ILogger logger)
+            ILogger<ElasticsearchSynchronizationService> logger)
         {
             this.databaseService = workshopService;
             this.repository = repository;
@@ -36,7 +39,7 @@ namespace OutOfSchool.WebApi.Services
         public async Task<bool> Synchronize()
         {
             {
-                var result = Result.Error;
+                Result result;
 
                 var sourceDtoForCreate = await databaseService.GetWorkshopsForCreate().ConfigureAwait(false);
                 var sourceDtoForUpdate = await databaseService.GetWorkshopsForUpdate().ConfigureAwait(false);
@@ -67,6 +70,8 @@ namespace OutOfSchool.WebApi.Services
                     return false;
                 }
 
+                await repository.DeleteAll().ConfigureAwait(false);
+
                 return true;
             }
         }
@@ -78,11 +83,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 await repository.Create(elasticsearchSyncRecord).ConfigureAwait(false);
 
-                logger.Information("ElasticsearchSyncRecord created successfully.");
+                logger.LogInformation("ElasticsearchSyncRecord created successfully.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.Error($"Creating new record to ElasticserchSyncRecord failed.");
+                logger.LogError($"Creating new record to ElasticserchSyncRecord failed.");
                 throw;
             }
         }
