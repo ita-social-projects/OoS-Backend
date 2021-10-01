@@ -33,8 +33,6 @@ namespace OutOfSchool.IdentityServer.KeyManagement
         {
             var uri = new Uri(config.Uri);
 
-            // TODO: Maybe add cache expiration on top of certificate expiration?
-            // TODO: Do we need it?
             var certificate = await inMemoryCertificateCache
                 .GetOrAddAsync(uri.Host, () => GetCertificateAsync(uri.Host));
             if (certificate.NotAfter < new DateTimeOffset(DateTime.UtcNow))
@@ -60,10 +58,8 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             var databaseValues = await entry.GetDatabaseValuesAsync();
             if (databaseValues == null)
             {
-                // TODO: Data was deleted but we didn't do it, this case should be unreal
-                // TODO: throw exception and hope for the better next time?
-                // TODO: Which exception?
-                // TODO: or return null and deal with null checks?
+                // Data was deleted but we didn't do it, this case should be unreal
+                // throw exception and hope for the better next time
                 throw new Exception();
             }
 
@@ -76,10 +72,8 @@ namespace OutOfSchool.IdentityServer.KeyManagement
                 return new X509Certificate2(Convert.FromBase64String(cert.CertificateBase64));
             }
 
-            // TODO: updated and expired, wtf?
-            // TODO: throw exception and hope for the better next time?
-            // TODO: Which exception?
-            // TODO: or return null and deal with null checks?
+            // Updated and expired right away, this case should be unreal
+            // throw exception and hope for the better next time?
             throw new Exception();
         }
 
@@ -154,9 +148,8 @@ namespace OutOfSchool.IdentityServer.KeyManagement
         /// <summary>
         /// Generates a new certificate for signing and validation of tokens.
         /// </summary>
-        /// <param name="certificateName">Friendly name of the certificate.</param>
         /// <returns>Returns <see cref="SigningCertificate" /> that can be save to database.</returns>
-        private SigningCertificate GenerateSigningCertificate(string certificateName = "Identity")
+        private SigningCertificate GenerateSigningCertificate()
         {
             var uri = new Uri(config.Uri);
 
@@ -186,12 +179,6 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             var certificate = request.CreateSelfSigned(
                 new DateTimeOffset(DateTime.UtcNow.AddDays(-1)),
                 expirationDate);
-
-            // TODO: As prod will be on linux we can probably drop friendly name
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                certificate.FriendlyName = certificateName;
-            }
 
             return new SigningCertificate
             {

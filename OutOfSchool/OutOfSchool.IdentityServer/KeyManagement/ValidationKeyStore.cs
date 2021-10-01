@@ -35,7 +35,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return new SecurityKeyInfo[] { };
+                return Array.Empty<SecurityKeyInfo>();
             }
         }
     }
