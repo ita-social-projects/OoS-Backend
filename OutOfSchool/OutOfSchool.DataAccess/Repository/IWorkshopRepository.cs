@@ -18,5 +18,10 @@ namespace OutOfSchool.Services.Repository
         bool ClassExists(long id);
 
         Task<Workshop> GetWithNavigations(Guid id);
+        Task<Workshop> GetWithNavigations(long id);
+
+        Task<IEnumerable<Workshop>> GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation operation);
+
+        Task<IEnumerable<long>> GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation operation);
     }
 }
