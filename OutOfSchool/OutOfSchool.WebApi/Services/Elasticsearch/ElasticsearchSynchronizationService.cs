@@ -41,6 +41,8 @@ namespace OutOfSchool.WebApi.Services
             {
                 Result result;
 
+                logger.LogInformation($"Synchronization of elasticsearch has started.");
+
                 var sourceDtoForCreate = await databaseService.GetWorkshopsForCreate().ConfigureAwait(false);
                 var sourceDtoForUpdate = await databaseService.GetWorkshopsForUpdate().ConfigureAwait(false);
 
@@ -70,7 +72,17 @@ namespace OutOfSchool.WebApi.Services
                     return false;
                 }
 
-                await repository.DeleteAll().ConfigureAwait(false);
+                try
+                {
+                    await repository.DeleteAll().ConfigureAwait(false);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    logger.LogError($"Delete all records in ElasticsearchSyncRecords is failed.");
+                    return false;
+                }
+
+                logger.LogInformation($"Synchronization of elasticsearch has finished successfully.");
 
                 return true;
             }
