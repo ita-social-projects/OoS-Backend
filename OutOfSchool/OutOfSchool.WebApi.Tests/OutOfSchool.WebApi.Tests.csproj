@@ -13,7 +13,6 @@
 
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
-    <UserSecretsId>42a0c5b0-4d8f-4657-a143-6a3e4f0d82bb</UserSecretsId>
   </PropertyGroup>
   
   <ItemGroup>
