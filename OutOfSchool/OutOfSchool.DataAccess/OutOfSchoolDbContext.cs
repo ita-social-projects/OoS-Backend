@@ -1,14 +1,17 @@
-using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.Configurations;
 
 namespace OutOfSchool.Services
 {
@@ -128,8 +131,10 @@ namespace OutOfSchool.Services
                     list => (byte)list.Aggregate((prev, next) => prev | next),
                     mask =>
                         Enum.GetValues(typeof(DaysBitMask)).Cast<DaysBitMask>().ToList()
-                            .Where(amenity => amenity != 0 && ((DaysBitMask) mask).HasFlag(amenity)).ToList(),
+                            .Where(amenity => amenity != 0 && ((DaysBitMask)mask).HasFlag(amenity)).ToList(),
                     ValueComparer.CreateDefault(typeof(List<DaysBitMask>), true));
+
+            builder.ApplyConfiguration(new TeacherConfiguration());
 
             builder.Seed();
             builder.UpdateIdentityTables();

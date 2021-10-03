@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using AutoMapper;
+
 using Microsoft.Extensions.Logging;
+
 using Moq;
+
 using NUnit.Framework;
+
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -172,7 +178,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
 
         #region Update
         [Test]
-        public async Task Update_WhenEntityIsValid_ShouldRunInTransaction()
+        public async Task Update_WhenEntityIsValid_ShouldRunInTransaction([Random(2, 5, 1)] int teachersNumber)
         {
             // Arrange
             var changedFirstEntity = new Workshop()
@@ -199,47 +205,10 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                 ClassId = 1,
                 DepartmentId = 1,
                 AddressId = 55,
-                Address = new Address
-                {
-                    Id = 55,
-                    Region = "Region55",
-                    District = "District55",
-                    City = "City55",
-                    Street = "Street55",
-                    BuildingNumber = "BuildingNumber55",
-                    Latitude = 10,
-                    Longitude = 10,
-                },
-                Teachers = new List<Teacher>
-                        {
-                            // deleteted first teacher
-                            // changed teacher
-                            new Teacher
-                            {
-                                Id = 2,
-                                FirstName = "John",
-                                LastName = "Snow",
-                                MiddleName = "Targaryen",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("2000-01-01"),
-                                WorkshopId = 1,
-                            },
-
-                            // new teacher
-                            new Teacher
-                            {
-                                Id = 0,
-                                FirstName = "Daenerys",
-                                LastName = "Targaryen",
-                                MiddleName = "SomeMiddleName",
-                                Description = "New",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("2000-01-01"),
-                                WorkshopId = 1,
-                            },
-                        },
+                Address = AddressGenerator.Generate(),
             };
+            changedFirstEntity.Teachers = TeachersGenerator.Generate(teachersNumber).WithWorkshopId(changedFirstEntity.Id);
+
             IQueryable<Workshop> quer = new EnumerableQuery<Workshop>(workshops);
             workshopRepositoryMoq.Setup(z => z.GetByFilterNoTracking(It.IsAny<Expression<Func<Workshop, bool>>>(), It.IsAny<string>()))
                 .Returns(quer);
@@ -341,31 +310,10 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                     Latitude = 0,
                     Longitude = 0,
                 },
-                Teachers = new List<Teacher>
-                {
-                    new Teacher
-                    {
-                        FirstName = "Alex",
-                        LastName = "Brown",
-                        MiddleName = "SomeMiddleName",
-                        Description = "Description",
-                        Image = "Image",
-                        DateOfBirth = DateTime.Parse("2000-01-01"),
-                        WorkshopId = 0,
-                    },
-                    new Teacher
-                    {
-                        FirstName = "John",
-                        LastName = "Snow",
-                        MiddleName = "SomeMiddleName",
-                        Description = "Description",
-                        Image = "Image",
-                        DateOfBirth = DateTime.Parse("2000-01-01"),
-                        WorkshopId = 0,
-                    },
-                },
+                Teachers = TeachersGenerator.Generate(2).WithWorkshopId(0),
             };
-            workshops = new List<Workshop>()
+            workshops =
+                new List<Workshop>()
                 {
                     new Workshop()
                     {
@@ -391,42 +339,8 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                         ClassId = 1,
                         DepartmentId = 1,
                         AddressId = 55,
-                        Address = new Address
-                        {
-                            Id = 55,
-                            Region = "Region55",
-                            District = "District55",
-                            City = "City55",
-                            Street = "Street55",
-                            BuildingNumber = "BuildingNumber55",
-                            Latitude = 0,
-                            Longitude = 0,
-                        },
-                        Teachers = new List<Teacher>
-                        {
-                            new Teacher
-                            {
-                                Id = 1,
-                                FirstName = "Alex",
-                                LastName = "Brown",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("2000-01-01"),
-                                WorkshopId = 1,
-                            },
-                            new Teacher
-                            {
-                                Id = 2,
-                                FirstName = "John",
-                                LastName = "Snow",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("2000-01-01"),
-                                WorkshopId = 1,
-                            },
-                        },
+                        Address = AddressGenerator.Generate(),
+                        Teachers = TeachersGenerator.Generate(2).WithWorkshopId(1),
                     },
                     new Workshop()
                     {
@@ -462,31 +376,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                             Latitude = 0,
                             Longitude = 0,
                         },
-                        Teachers = new List<Teacher>
-                        {
-                            new Teacher
-                            {
-                                Id = 4,
-                                FirstName = "Alex",
-                                LastName = "Brown",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("2000-01-01"),
-                                WorkshopId = 2,
-                            },
-                            new Teacher
-                            {
-                                Id = 5,
-                                FirstName = "John",
-                                LastName = "Snow",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("2000-01-01"),
-                                WorkshopId = 2,
-                            },
-                        },
+                        Teachers = TeachersGenerator.Generate(2).WithWorkshopId(2),
                     },
                     new Workshop()
                     {
@@ -521,31 +411,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                             Latitude = 0,
                             Longitude = 0,
                         },
-                        Teachers = new List<Teacher>
-                        {
-                            new Teacher
-                            {
-                                Id = 6,
-                                FirstName = "Alex",
-                                LastName = "Brown",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("2000-01-01"),
-                                WorkshopId = 3,
-                            },
-                            new Teacher
-                            {
-                                Id = 7,
-                                FirstName = "John",
-                                LastName = "Snow",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("2000-01-01"),
-                                WorkshopId = 3,
-                            },
-                        },
+                        Teachers = TeachersGenerator.Generate(2).WithWorkshopId(3),
                     },
                     new Workshop()
                     {
@@ -581,31 +447,7 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                             Latitude = 0,
                             Longitude = 0,
                         },
-                        Teachers = new List<Teacher>
-                        {
-                            new Teacher
-                            {
-                                Id = 8,
-                                FirstName = "Alex",
-                                LastName = "Brown",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("2020-01-01"),
-                                WorkshopId = 4,
-                            },
-                            new Teacher
-                            {
-                                Id = 9,
-                                FirstName = "John",
-                                LastName = "Snow",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("1990-01-01"),
-                                WorkshopId = 4,
-                            },
-                        },
+                        Teachers = TeachersGenerator.Generate(2).WithWorkshopId(4),
                     },
                     new Workshop()
                     {
@@ -641,33 +483,10 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
                             Latitude = 0,
                             Longitude = 0,
                         },
-                        Teachers = new List<Teacher>
-                        {
-                            new Teacher
-                            {
-                                Id = 10,
-                                FirstName = "Alex",
-                                LastName = "Brown",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("1990-01-01"),
-                                WorkshopId = 5,
-                            },
-                            new Teacher
-                            {
-                                Id = 11,
-                                FirstName = "John",
-                                LastName = "Snow",
-                                MiddleName = "SomeMiddleName",
-                                Description = "Description",
-                                Image = "Image",
-                                DateOfBirth = DateTime.Parse("1990-01-01"),
-                                WorkshopId = 5,
-                            },
-                        },
+                        Teachers = TeachersGenerator.Generate(2).WithWorkshopId(5),
                     },
                 };
+
             classEntity = new Class()
             {
                 Id = 1,
