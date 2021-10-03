@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
         /// <exception cref="UnauthorizedAccessException">If the child was not found or the user is trying to get not his own child.</exception>
         /// <exception cref="SqlException">If the database cannot execute the query.</exception>
-        Task<ChildDto> GetByIdAndUserId(long id, string userId);
+        Task<ChildDto> GetByIdAndUserId(Guid id, string userId);
 
         /// <summary>
         /// Get children with some ParentId.
@@ -98,6 +98,6 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
         /// <exception cref="UnauthorizedAccessException">If user is trying to delete not his own child.</exception>
         /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
-        Task DeleteChildCheckingItsUserIdProperty(long id, string userId);
+        Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId);
     }
 }

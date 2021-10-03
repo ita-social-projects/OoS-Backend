@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 
 namespace OutOfSchool.Tests
 {
@@ -26,15 +28,28 @@ namespace OutOfSchool.Tests
 
         public static void SeedData(OutOfSchoolDbContext context)
         {
-            context.SocialGroups.Add(new SocialGroup { Id = 1, Name = "sg1" });
-            context.SocialGroups.Add(new SocialGroup { Id = 2, Name = "sg2" });
-            context.SocialGroups.Add(new SocialGroup { Id = 3, Name = "sg3" });
-            context.Parents.Add(new Parent { Id = 1 });
-            context.Parents.Add(new Parent { Id = 2 });
-            context.Parents.Add(new Parent { Id = 3 });
-            context.Children.Add(new Child { Id = 1, FirstName = "fn1", LastName = "ln1", MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = 1, SocialGroupId = 2 });
-            context.Children.Add(new Child { Id = 2, FirstName = "fn2", LastName = "ln2", MiddleName = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = 2, SocialGroupId = 1 });
-            context.Children.Add(new Child { Id = 3, FirstName = "fn3", LastName = "ln3", MiddleName = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 });
+            var socialGroups = new List<SocialGroup>
+            {
+                new SocialGroup { Id = 1, Name = "sg1" },
+                new SocialGroup { Id = 2, Name = "sg2" },
+                new SocialGroup { Id = 3, Name = "sg3" },
+            };
+
+            context.SocialGroups.AddRange(socialGroups);
+
+            var parents = new List<Parent>
+            {
+                new Parent { Id = 1 },
+                new Parent { Id = 2 },
+                new Parent { Id = 3 },
+            };
+            context.Parents.AddRange(parents);
+
+            var children = ChildGenerator.Generate(3);
+            children.ForEach(c => c.WithSocial(socialGroups.RandomItem())
+                                   .WithParent(parents.RandomItem()));
+
+            context.Children.AddRange(children);
 
             context.Directions.Add(new Direction { Id = 1, Title = "c1" });
             context.Directions.Add(new Direction { Id = 2, Title = "c2" });
@@ -51,9 +66,9 @@ namespace OutOfSchool.Tests
             context.Workshops.Add(new Workshop { Id = 2, Title = "w2", DirectionId = 1 });
             context.Workshops.Add(new Workshop { Id = 3, Title = "w3", DirectionId = 3 });
 
-            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
-            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
-            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 3, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
+            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = children[0].Id, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
+            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = children[1].Id, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
+            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = children[2].Id, Status = ApplicationStatus.Pending, WorkshopId = 3, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
 
             context.SaveChanges();
         }

@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             workshops = FakeWorkshops();
             applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopDto(workshops.First());
-            children = FakeChildren();
+            children = ChildDtoGenerator.Generate(2).WithSocial(new SocialGroupDto { Id = 1 });
 
             parent = new ParentDTO { Id = 1, UserId = userId };
             provider = new ProviderDto { Id = 1, UserId = userId };
@@ -636,35 +636,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = 1,
                     Title = "w1",
                     ProviderId = 1,
-                },
-            };
-        }
-
-        private IEnumerable<ChildDto> FakeChildren()
-        {
-            return new List<ChildDto>()
-            {
-                new ChildDto()
-                {
-                    Id = 1,
-                    FirstName = "fn1",
-                    LastName = "ln1",
-                    MiddleName = "mn1",
-                    DateOfBirth = new DateTime(2003, 11, 9),
-                    Gender = Gender.Male,
-                    ParentId = 1,
-                    SocialGroupId = 2,
-                },
-                new ChildDto()
-                {
-                    Id = 2,
-                    FirstName = "fn2",
-                    LastName = "ln2",
-                    MiddleName = "mn2",
-                    DateOfBirth = new DateTime(2004, 11, 8),
-                    Gender = Gender.Female,
-                    ParentId = 2,
-                    SocialGroupId = 1,
                 },
             };
         }

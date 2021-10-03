@@ -148,7 +148,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByChild(long id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByChild(Guid id)
         {
             logger.LogInformation($"Getting Applications by Child Id started. Looking Child Id = {id}.");
 
@@ -308,7 +308,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private async Task<bool> CheckChildParent(long parentId, long childId)
+        private async Task<bool> CheckChildParent(long parentId, Guid childId)
         {
             Expression<Func<Child, bool>> filter = c => c.ParentId == parentId;
 

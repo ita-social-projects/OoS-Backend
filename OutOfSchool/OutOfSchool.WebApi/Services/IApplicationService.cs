@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -72,7 +73,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByChild(long id);
+        Task<IEnumerable<ApplicationDto>> GetAllByChild(Guid id);
 
         /// <summary>
         /// Update entity.

@@ -9,6 +9,8 @@ using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -52,7 +54,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             parents = FakeParents();
             parent = FakeParent();
-            children = FakeChildren();
+            children = ChildDtoGenerator.Generate(2).WithParent(parents.RandomItem()).WithSocial(new SocialGroupDto { Id = 2 });
             application = FakeApplications();
         }
 
@@ -69,35 +71,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public ParentDTO FakeParent()
         {
             return new ParentDTO() { Id = 4, UserId = "de909f35-5eb7-4b7a-bda8-ccc0a5bfda96a6" };
-        }
-
-        public List<ChildDto> FakeChildren()
-        {
-            return new List<ChildDto>
-            {
-                new ChildDto()
-                {
-                    Id = 1,
-                    FirstName = "FirstName",
-                    LastName = "LastName",
-                    MiddleName = "MiddleName",
-                    DateOfBirth = new DateTime(2005, 2, 23),
-                    Gender = Gender.Male,
-                    SocialGroupId = 1,
-                    ParentId = 2,
-                },
-                new ChildDto()
-                {
-                    Id = 2,
-                    FirstName = "FirstName",
-                    LastName = "LastName",
-                    MiddleName = "MiddleName",
-                    DateOfBirth = new DateTime(2005, 2, 23),
-                    Gender = Gender.Female,
-                    SocialGroupId = 1,
-                    ParentId = 2,
-                },
-            };
         }
 
         public WorkshopDTO FakeWorkshop()
@@ -166,29 +139,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         public List<ApplicationDto> FakeApplications()
-        {
-            return new List<ApplicationDto>()
+            => new List<ApplicationDto>()
             {
-                new ApplicationDto()
-                {
-                    Id = Guid.NewGuid(),
-                    ChildId = 1,
-                    Status = ApplicationStatus.Pending,
-                    ParentId = 2,
-                    WorkshopId = 1,
-                    Workshop = FakeWorkshop(),
-                },
-                new ApplicationDto()
-                {
-                    Id = Guid.NewGuid(),
-                    ChildId = 2,
-                    Status = ApplicationStatus.Pending,
-                    ParentId = 2,
-                    WorkshopId = 1,
-                    Workshop = FakeWorkshop(),
-                },
+                ApplicationDTOsGenerator.Generate().WithWorkshopDto(FakeWorkshop()),
+                ApplicationDTOsGenerator.Generate().WithWorkshopDto(FakeWorkshop()),
             };
-        }
 
         #region GetChildrenWorkshops
         [Order(13)]

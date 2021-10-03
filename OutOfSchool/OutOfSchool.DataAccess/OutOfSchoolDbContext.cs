@@ -136,6 +136,7 @@ namespace OutOfSchool.Services
 
             builder.ApplyConfiguration(new TeacherConfiguration());
             builder.ApplyConfiguration(new ApplicationConfiguration());
+            builder.ApplyConfiguration(new ChildConfiguration());
 
             builder.Seed();
             builder.UpdateIdentityTables();

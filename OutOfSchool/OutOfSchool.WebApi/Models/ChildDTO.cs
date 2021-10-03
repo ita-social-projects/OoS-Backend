@@ -7,7 +7,7 @@ namespace OutOfSchool.WebApi.Models
 {
     public class ChildDto
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
         [MaxLength(40)]

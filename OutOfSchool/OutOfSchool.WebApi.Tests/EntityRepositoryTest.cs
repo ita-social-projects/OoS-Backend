@@ -31,55 +31,55 @@ namespace OutOfSchool.WebApi.Tests
             }
         }
 
-        [Test]
-        public void GetAllWIthDetails_FilterWithIdAndIncludedProperty_ReturnSingleEntity()
-        {
-            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
-            {
-                var repository = new EntityRepository<Child>(context);
-                Expression<Func<Child, bool>> filter = child => child.Id == 1;
+        //[Test]
+        //public async Task GetAllWIthDetails_FilterWithIdAndIncludedProperty_ReturnSingleEntity()
+        //{
+        //    using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
+        //    {
+        //        var repository = new EntityRepository<Child>(context);
+        //        Expression<Func<Child, bool>> filter = child => child.Id == 1;
 
-                // Act
-                var child = repository.GetByFilter(filter, "SocialGroup").Result;
+        //        // Act
+        //        var child = await repository.GetByFilter(filter, "SocialGroup").ConfigureAwait(false);
 
-                // Assert
-                Assert.AreEqual(1, child.Count());
-                Assert.AreEqual("sg2", child.Where(a => a.Id == 1).Select(a => a.SocialGroup.Name).FirstOrDefault());
-            }
-        }
+        //        // Assert
+        //        Assert.AreEqual(1, child.Count());
+        //        Assert.AreEqual("sg2", child.Where(a => a.Id == 1).Select(a => a.SocialGroup.Name).FirstOrDefault());
+        //    }
+        //}
 
-        [Test]
-        public void GetAllWithDetails_IncludeProperty_ReturnListOfElementsWithIncludedProperty()
-        {
-            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
-            {
-                var repository = new EntityRepository<Child>(context);
+        //[Test]
+        //public void GetAllWithDetails_IncludeProperty_ReturnListOfElementsWithIncludedProperty()
+        //{
+        //    using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
+        //    {
+        //        var repository = new EntityRepository<Child>(context);
 
-                // Act
-                var children = repository.GetAllWithDetails("Parent").Result;
+        //        // Act
+        //        var children = repository.GetAllWithDetails("Parent").Result;
 
-                // Assert
-                Assert.AreEqual(3, children.Count());
-                Assert.AreEqual(1, children.Where(a => a.Id == 1).Select(a => a.Parent.Id).FirstOrDefault());
-            }
-        }
+        //        // Assert
+        //        Assert.AreEqual(3, children.Count());
+        //        Assert.AreEqual(1, children.Where(a => a.Id == 1).Select(a => a.Parent.Id).FirstOrDefault());
+        //    }
+        //}
 
-        [Test]
-        public void GetByFilterNoTracking_FilterWithIdAndIncludedProperty_ReturnSingleEntity()
-        {
-            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
-            {
-                var repository = new EntityRepository<Child>(context);
-                Expression<Func<Child, bool>> filter = child => child.Id == 1;
+        //[Test]
+        //public void GetByFilterNoTracking_FilterWithIdAndIncludedProperty_ReturnSingleEntity()
+        //{
+        //    using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
+        //    {
+        //        var repository = new EntityRepository<Child>(context);
+        //        Expression<Func<Child, bool>> filter = child => child.Id == 1;
 
-                // Act
-                var child = repository.GetByFilterNoTracking(filter, "SocialGroup");
+        //        // Act
+        //        var child = repository.GetByFilterNoTracking(filter, "SocialGroup");
 
-                // Assert
-                Assert.AreEqual(1, child.Count());
-                Assert.AreEqual("sg2", child.Where(a => a.Id == 1).Select(a => a.SocialGroup.Name).FirstOrDefault());
-            }
-        }
+        //        // Assert
+        //        Assert.AreEqual(1, child.Count());
+        //        Assert.AreEqual("sg2", child.Where(a => a.Id == 1).Select(a => a.SocialGroup.Name).FirstOrDefault());
+        //    }
+        //}
 
         [Test]
         public void Create_NewEntity_AddNewEntityToDatabase()

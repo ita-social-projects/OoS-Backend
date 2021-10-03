@@ -22,8 +22,7 @@ namespace OutOfSchool.WebApi.Models
         public long WorkshopId { get; set; }
 
         [Required]
-        [Range(1, long.MaxValue, ErrorMessage = "Child id should be grater than 0")]
-        public long ChildId { get; set; }
+        public Guid ChildId { get; set; }
 
         [Required]
         [Range(1, long.MaxValue, ErrorMessage = "Parent id should be grater than 0")]

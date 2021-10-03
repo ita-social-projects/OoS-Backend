@@ -1,4 +1,5 @@
 ﻿using System;
+
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -13,7 +14,7 @@ namespace OutOfSchool.Services.Models
 
         public long WorkshopId { get; set; }
 
-        public long ChildId { get; set; }
+        public Guid ChildId { get; set; }
 
         public long ParentId { get; set; }
 
