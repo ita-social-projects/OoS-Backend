@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -20,6 +22,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ApplicationService : IApplicationService
     {
+        // TODO: move to configuration
         private const int ApplicationsLimit = 2;
 
         private readonly IApplicationRepository applicationRepository;
@@ -93,7 +96,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             logger.LogInformation($"Deleting Application with Id = {id} started.");
 
@@ -218,7 +221,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ApplicationDto> GetById(long id)
+        public async Task<ApplicationDto> GetById(Guid id)
         {
             logger.LogInformation($"Getting Application by Id started. Looking Id = {id}.");
 
@@ -244,7 +247,7 @@ namespace OutOfSchool.WebApi.Services
 
             ModelNullValidation(applicationDto);
 
-            CheckApplicationExists(applicationDto?.Id);
+            CheckApplicationExists(applicationDto.Id);
 
             try
             {
@@ -294,7 +297,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private void CheckApplicationExists(long? id)
+        private void CheckApplicationExists(Guid id)
         {
             var applications = applicationRepository.Get<int>(where: a => a.Id == id);
 

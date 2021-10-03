@@ -171,7 +171,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             {
                 new ApplicationDto()
                 {
-                    Id = 1,
+                    Id = Guid.NewGuid(),
                     ChildId = 1,
                     Status = ApplicationStatus.Pending,
                     ParentId = 2,
@@ -180,7 +180,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 },
                 new ApplicationDto()
                 {
-                    Id = 2,
+                    Id = Guid.NewGuid(),
                     ChildId = 2,
                     Status = ApplicationStatus.Pending,
                     ParentId = 2,

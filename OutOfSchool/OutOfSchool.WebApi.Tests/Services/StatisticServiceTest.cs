@@ -92,7 +92,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     DirectionId = 1,
                     Applications = new List<Application>()
                     {
-                        new Application() { Id = 1},
+                        new Application() { Id = Guid.NewGuid()},
                     },
                 },
                 new Workshop()
@@ -102,8 +102,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                     DirectionId = 2,
                     Applications = new List<Application>()
                     {
-                        new Application() { Id = 2},
-                        new Application() { Id = 3},
+                        new Application() { Id = Guid.NewGuid()},
+                        new Application() { Id = Guid.NewGuid()},
                     },
                 },
                 new Workshop()
@@ -113,9 +113,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                     DirectionId = 3,
                     Applications = new List<Application>()
                     {
-                        new Application() { Id = 4},
-                        new Application() { Id = 5},
-                        new Application() { Id = 6},
+                        new Application() { Id = Guid.NewGuid()},
+                        new Application() { Id = Guid.NewGuid()},
+                        new Application() { Id = Guid.NewGuid()},
                     },
                 },
             };
@@ -135,9 +135,9 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             return new List<Application>()
             {
-                new Application { Id = 1, WorkshopId = 1, Workshop = new Workshop { Id = 1 } },
-                new Application { Id = 2, WorkshopId = 2, Workshop = new Workshop { Id = 2 } },
-                new Application { Id = 3, WorkshopId = 2, Workshop = new Workshop { Id = 2 } },
+                new Application { Id = Guid.NewGuid(), WorkshopId = 1, Workshop = new Workshop { Id = 1 } },
+                new Application { Id = Guid.NewGuid(), WorkshopId = 2, Workshop = new Workshop { Id = 2 } },
+                new Application { Id = Guid.NewGuid(), WorkshopId = 2, Workshop = new Workshop { Id = 2 } },
             };
         }
 

@@ -135,6 +135,7 @@ namespace OutOfSchool.Services
                     ValueComparer.CreateDefault(typeof(List<DaysBitMask>), true));
 
             builder.ApplyConfiguration(new TeacherConfiguration());
+            builder.ApplyConfiguration(new ApplicationConfiguration());
 
             builder.Seed();
             builder.UpdateIdentityTables();

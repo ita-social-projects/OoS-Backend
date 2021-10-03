@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
 
@@ -34,7 +35,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Application.</returns>
-        Task<ApplicationDto> GetById(long id);
+        Task<ApplicationDto> GetById(Guid id);
 
         /// <summary>
         /// Get applications by workshop id.
@@ -85,6 +86,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Application's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(long id);
+        Task Delete(Guid id);
     }
 }

@@ -1,14 +1,16 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
     public class ApplicationDto
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;

@@ -898,7 +898,14 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                 };
 
-                var apps = new List<Application>() { new Application() { Id = 1, WorkshopId = 1 }, new Application() { Id = 2, WorkshopId = 1 }, new Application() { Id = 3, WorkshopId = 2 }, new Application() { Id = 4, WorkshopId = 2 } };
+                var apps = new List<Application>()
+                {
+                    new Application() { Id = Guid.NewGuid(), WorkshopId = 1 },
+                    new Application() { Id = Guid.NewGuid(), WorkshopId = 1 },
+                    new Application() { Id = Guid.NewGuid(), WorkshopId = 2 },
+                    new Application() { Id = Guid.NewGuid(), WorkshopId = 2 },
+                };
+
                 context.Applications.AddRangeAsync(apps);
 
                 var directions = new List<Direction>() { new Direction() { Title = "Direction1" }, new Direction() { Title = "Direction2" } };

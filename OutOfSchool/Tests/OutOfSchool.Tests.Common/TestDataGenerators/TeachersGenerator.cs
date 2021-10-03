@@ -29,13 +29,6 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         public static Teacher Generate() => faker.Generate();
 
         /// <summary>
-        /// Creates new instance of the <see cref="Teacher"/> class with random data and assigns given <paramref name="workshopId"/>.
-        /// </summary>
-        /// <param name="workshopId">The workshop id to assign to generated teacher.</param>
-        /// <returns><see cref="Teacher"/> object.</returns>
-        public static Teacher Generate(long workshopId) => faker.Generate();
-
-        /// <summary>
         /// Generates a list of the <see cref="Teacher"/> objects.
         /// </summary>
         /// <param name="number">Number of instances to generate.</param>

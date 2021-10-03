@@ -10,6 +10,7 @@ using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.ApiModels;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
@@ -61,9 +62,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 ControllerContext = new ControllerContext() { HttpContext = httpContext.Object},
             };
 
-            applications = FakeApplications();
-            children = FakeChildren();
             workshops = FakeWorkshops();
+            applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopDto(workshops.First());
+            children = FakeChildren();
 
             parent = new ParentDTO { Id = 1, UserId = userId };
             provider = new ProviderDto { Id = 1, UserId = userId };
@@ -98,56 +99,42 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task GetApplicationById_WhenIdIsValid_ShouldReturnOkObjectResult(long id)
+        public async Task GetApplicationById_WhenIdIsValid_ShouldReturnOkObjectResult()
         {
             // Arrange
+            var existingApplicationId = applications.First().Id;
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
 
-            applicationService.Setup(s => s.GetById(id)).ReturnsAsync(applications.SingleOrDefault(a => a.Id == id));
+            applicationService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(applications.SingleOrDefault(a => a.Id == existingApplicationId));
 
             // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetById(existingApplicationId).ConfigureAwait(false);
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(200);
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
         }
 
         [Test]
-        [TestCase(0)]
-        public async Task GetApplicationById_WhenIdIsNotValid_ShouldReturnBadRequest(long id)
-        {
-            // Act
-            var result = await controller.GetById(0).ConfigureAwait(false) as BadRequestObjectResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task GetApplicationById_WhenThereIsNoApplicationWithId_ShouldReturnNoContent(long id)
+        public async Task GetApplicationById_WhenThereIsNoApplicationWithId_ShouldReturnNoContent()
         {
             // Arrange
-            applicationService.Setup(s => s.GetById(id)).ReturnsAsync(applications.SingleOrDefault(a => a.Id == id));
+            var noneExistingApplicationId = Guid.NewGuid();
+            applicationService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(applications.SingleOrDefault(a => a.Id == noneExistingApplicationId));
 
             // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetById(noneExistingApplicationId).ConfigureAwait(false);
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(204);
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
         }
 
-        [Test]
-        [TestCase(1, "parent")]
-        [TestCase(1, "provider")]
-        public async Task GetApplicationById_WhenUserHasNoRights_ShouldReturnBadRequest(long id, string role)
+        [TestCase("parent")]
+        [TestCase("provider")]
+        public async Task GetApplicationById_WhenUserHasNoRights_ShouldReturnBadRequest(string role)
         {
             // Arrange
+            var applicationId = applications.First().Id;
             var anotherParent = new ParentDTO { Id = 2, UserId = userId };
             var anotherProvider = new ProviderDto { Id = 2, UserId = userId };
 
@@ -155,14 +142,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             parentService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(anotherParent);
             providerService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(anotherProvider);
-            applicationService.Setup(s => s.GetById(id)).ReturnsAsync(applications.SingleOrDefault(a => a.Id == id));
+            applicationService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(applications.SingleOrDefault(a => a.Id == applicationId));
 
             // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as BadRequestObjectResult;
+            var result = await controller.GetById(applicationId).ConfigureAwait(false);
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -540,24 +526,23 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var shortApplication = new ShortApplicationDto
             {
-                Id = 1,
+                Id = applications.First().Id,
                 Status = ApplicationStatus.Pending,
             };
 
-            httpContext.Setup(c => c.User.IsInRole(role)).Returns(true);
+            httpContext.Setup(c => c.User.IsInRole(It.IsAny<string>())).Returns(true);
 
-            parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
-            providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
+            parentService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(parent);
+            providerService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider);
 
-            applicationService.Setup(s => s.Update(applications.First())).ReturnsAsync(applications.First());
-            applicationService.Setup(s => s.GetById(shortApplication.Id)).ReturnsAsync(applications.First());
+            applicationService.Setup(s => s.Update(It.IsAny<ApplicationDto>())).ReturnsAsync(applications.First());
+            applicationService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(applications.First());
 
             // Act
-            var result = await controller.Update(shortApplication).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.Update(shortApplication).ConfigureAwait(false);
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(200);
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
         }
 
         [Test]
@@ -566,21 +551,19 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var shortApplication = new ShortApplicationDto
             {
-                Id = 1,
+                Id = Guid.NewGuid(),
                 Status = ApplicationStatus.Pending,
             };
 
             controller.ModelState.AddModelError("UpdateApplication", "Invalid model state.");
 
             // Act
-            var result = await controller.Update(shortApplication).ConfigureAwait(false) as BadRequestObjectResult;
+            var result = await controller.Update(shortApplication).ConfigureAwait(false);
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
-        [Test]
         [TestCase("parent")]
         [TestCase("provider")]
         public async Task UpdateApplication_WhenUserHasNoRights_ShouldReturnBadRequest(string role)
@@ -588,7 +571,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var shortApplication = new ShortApplicationDto
             {
-                Id = 1,
+                Id = applications.First().Id,
                 Status = ApplicationStatus.Pending,
             };
 
@@ -604,11 +587,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             applicationService.Setup(s => s.GetById(shortApplication.Id)).ReturnsAsync(applications.First());
 
             // Act
-            var result = await controller.Update(shortApplication).ConfigureAwait(false) as BadRequestObjectResult;
+            var result = await controller.Update(shortApplication).ConfigureAwait(false);
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -617,7 +599,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var shortApplication = new ShortApplicationDto
             {
-                Id = 10,
+                Id = Guid.NewGuid(),
                 Status = ApplicationStatus.Pending,
             };
 
@@ -625,78 +607,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ReturnsAsync(applications.Where(a => a.Id == shortApplication.Id).FirstOrDefault());
 
             // Act
-            var result = await controller.Update(shortApplication).ConfigureAwait(false) as BadRequestObjectResult;
+            var result = await controller.Update(shortApplication).ConfigureAwait(false);
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task DeleteApplication_WhenIdIsValid_ShouldReturnNoContent(long id)
+        public async Task DeleteApplication_WhenIdIsValid_ShouldReturnNoContent()
         {
             // Arrange
-            applicationService.Setup(s => s.Delete(id));
+            var applicationId = applications.First().Id;
+            applicationService.Setup(s => s.Delete(applicationId));
 
             // Act
-            var result = await controller.Delete(id).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.Delete(applicationId).ConfigureAwait(false);
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(204);
-        }
-
-        [Test]
-        [TestCase(0)]
-        public async Task DeleteApplication_WhenIdIsNotValid_ShouldReturnBadRequest(long id)
-        {
-            // Act
-            var result = await controller.Delete(id).ConfigureAwait(false) as BadRequestObjectResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task DeleteApplication_WhenThereIsNoApplicationWithId_ShouldBadRequest(long id)
-        {
-            // Arrange
-            applicationService.Setup(s => s.Delete(id)).ThrowsAsync(new ArgumentException());
-
-            // Act
-            var result = await controller.Delete(id).ConfigureAwait(false) as BadRequestObjectResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
-        }
-
-        private IEnumerable<ApplicationDto> FakeApplications()
-        {
-            return new List<ApplicationDto>()
-            {
-                new ApplicationDto()
-                {
-                    Id = 1,
-                    ChildId = 1,
-                    Status = ApplicationStatus.Pending,
-                    ParentId = 1,
-                    WorkshopId = 1,
-                    Workshop = FakeWorkshops().First(),
-                },
-                new ApplicationDto()
-                {
-                    Id = 2,
-                    ChildId = 2,
-                    Status = ApplicationStatus.Pending,
-                    ParentId = 2,
-                    WorkshopId = 1,
-                    Workshop = FakeWorkshops().First(),
-                },
-            };
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
         }
 
         private IEnumerable<WorkshopDTO> FakeWorkshops()

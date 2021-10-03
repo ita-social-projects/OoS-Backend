@@ -51,9 +51,9 @@ namespace OutOfSchool.Tests
             context.Workshops.Add(new Workshop { Id = 2, Title = "w2", DirectionId = 1 });
             context.Workshops.Add(new Workshop { Id = 3, Title = "w3", DirectionId = 3 });
 
-            context.Applications.Add(new Application() { Id = 1, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
-            context.Applications.Add(new Application() { Id = 3, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
-            context.Applications.Add(new Application() { Id = 10, ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 3, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
+            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
+            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
+            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = 1, Status = ApplicationStatus.Pending, WorkshopId = 3, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
 
             context.SaveChanges();
         }

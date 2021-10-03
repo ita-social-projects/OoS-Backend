@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003171912_UpdatedApplicationModelToUseGuidsAsId.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003171912_UpdatedApplicationModelToUseGuidsAsId.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
     <PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
     <PackageReference Include="IdentityModel" Version="5.0.0" />

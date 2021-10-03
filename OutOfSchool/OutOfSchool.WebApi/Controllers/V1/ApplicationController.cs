@@ -87,17 +87,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            try
-            {
-                this.ValidateId(id, localizer);
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
             var application = await applicationService.GetById(id).ConfigureAwait(false);
 
             if (application is null)
@@ -385,15 +376,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                this.ValidateId(id, localizer);
-
                 await applicationService.Delete(id).ConfigureAwait(false);
                 return NoContent();
             }
+            // TODO: update exception handling
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
