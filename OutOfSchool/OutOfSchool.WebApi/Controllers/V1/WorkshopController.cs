@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -75,30 +77,30 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Get workshops by Provider's Id.
+        /// Get workshop cards by Provider's Id.
         /// </summary>
         /// <param name="id">Provider's id.</param>
-        /// <returns><see cref="IEnumerable{WorkshopDTO}"/>, or no content.</returns>
+        /// <returns><see cref="IEnumerable{WorkshopCard}"/>, or no content.</returns>
         /// <response code="200">The list of found entities by given Id.</response>
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures. For example: Id was less than one.</response>
         [AllowAnonymous]
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetByProviderId(long id)
         {
             this.ValidateId(id, localizer);
 
-            var workshops = await combinedWorkshopService.GetByProviderId(id).ConfigureAwait(false);
+            var workshopCards = await combinedWorkshopService.GetByProviderId(id).ConfigureAwait(false);
 
-            if (!workshops.Any())
+            if (!workshopCards.Any())
             {
                 return NoContent();
             }
 
-            return Ok(workshops);
+            return Ok(workshopCards);
         }
 
         /// <summary>

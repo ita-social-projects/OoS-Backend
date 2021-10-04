@@ -79,11 +79,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 var parent = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
 
-                var children = await serviceChild.GetAllByParent(parent.Id, userId).ConfigureAwait(false);
+                var children = await serviceChild.GetByUserId(userId, new OffsetFilter() { From = 0, Size = int.MaxValue}).ConfigureAwait(false);
 
                 var cards = new List<ParentCard>();
 
-                foreach (var child in children)
+                foreach (var child in children.Entities)
                 {
                     var applications = await serviceApplication.GetAllByChild(child.Id).ConfigureAwait(false);
 

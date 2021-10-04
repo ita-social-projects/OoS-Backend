@@ -19,6 +19,24 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.2");
 
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -228,31 +246,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Applications");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.BirthCertificate", b =>
-                {
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("SvidDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("SvidNum")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SvidNumMD5")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SvidSer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SvidWho")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BirthCertificates");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatMessage", b =>
                 {
                     b.Property<long>("Id")
@@ -359,6 +352,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("ParentId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("PlaceOfStudy")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<long?>("SocialGroupId")
                         .HasColumnType("bigint");
 
@@ -425,6 +422,34 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("DepartmentId");
 
                     b.ToTable("Classes");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<byte>("Workdays")
+                        .HasColumnType("tinyint");
+
+                    b.Property<long>("WorkshopId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkshopId");
+
+                    b.ToTable("DateTimeRanges");
+
+                    b.HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>
@@ -840,9 +865,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("ClassId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("DaysPerWeek")
-                        .HasColumnType("int");
-
                     b.Property<long>("DepartmentId")
                         .HasColumnType("bigint");
 
@@ -1015,17 +1037,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.BirthCertificate", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Child", "Child")
-                        .WithOne("BirthCertificate")
-                        .HasForeignKey("OutOfSchool.Services.Models.BirthCertificate", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Child");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatMessage", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.ChatRoom", "ChatRoom")
@@ -1101,6 +1112,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
+                        .WithMany("DateTimeRanges")
+                        .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>
@@ -1234,11 +1254,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("ChatRoomUsers");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
-                {
-                    b.Navigation("BirthCertificate");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>
                 {
                     b.Navigation("Classes");
@@ -1276,6 +1291,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Applications");
 
                     b.Navigation("ChatRooms");
+
+                    b.Navigation("DateTimeRanges");
 
                     b.Navigation("Teachers");
                 });

@@ -2,6 +2,8 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace OutOfSchool.WebApi.Extensions
@@ -33,21 +35,56 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 await next(context).ConfigureAwait(false);
             }
+            catch (ArgumentException ex)
+            {
+                logger.LogError($"Exception information: {ex}");
+
+                var messageForUser = "Validation error. Please check your input data and try again. If you are sure of input data please contact support.";
+
+                await HandleExceptionAsync(context, messageForUser, StatusCodes.Status400BadRequest).ConfigureAwait(false);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                logger.LogError($"Exception information: {ex}");
+
+                var messageForUser = "Sorry, you have no rights to do this(or get, or change some properties). Check your input data and try again.";
+
+                await HandleExceptionAsync(context, messageForUser, StatusCodes.Status403Forbidden).ConfigureAwait(false);
+            }
+            catch (DbUpdateException ex)
+            {
+                logger.LogError($"Exception information: {ex}");
+
+                var messageForUser = "Server error, your data was not saved. Please try again later or contact support.";
+
+                await HandleExceptionAsync(context, messageForUser, StatusCodes.Status500InternalServerError).ConfigureAwait(false);
+            }
+            catch (SqlException ex)
+            {
+                logger.LogError($"Exception information: {ex}");
+
+                var messageForUser = "Server error, invalid query. Please check your input data or contact support.";
+
+                await HandleExceptionAsync(context, messageForUser, StatusCodes.Status500InternalServerError).ConfigureAwait(false);
+            }
             catch (Exception ex)
             {
-                logger.LogError($"Something went wrong: {ex.Message}");
-                await HandleExceptionAsync(context, ex).ConfigureAwait(false);
+                logger.LogError($"Exception information: {ex}");
+
+                var messageForUser = "Internal Server Error. Please try again later or contact support.";
+
+                await HandleExceptionAsync(context, messageForUser, StatusCodes.Status500InternalServerError).ConfigureAwait(false);
             }
         }
 
-        private Task HandleExceptionAsync(HttpContext context, Exception exception)
+        private Task HandleExceptionAsync(HttpContext context, string messageForUser, int statusCode)
         {
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = 500;
+            context.Response.StatusCode = statusCode;
 
             return context.Response.WriteAsync(JsonSerializer.Serialize(new
             {
-                Message = "Internal Server Error. " + exception.Message,
+                Message = messageForUser,
             }));
         }
     }

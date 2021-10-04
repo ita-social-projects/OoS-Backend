@@ -25,17 +25,11 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<Workshop, WorkshopDTO>()
                 .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
                 .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)));
-                cfg.CreateMap<BirthCertificate, BirthCertificateDto>();
                 cfg.CreateMap<Child, ChildDto>()
                 .ForMember(c => c.Parent, m => m.Ignore());
                 cfg.CreateMap<Parent, ParentDTO>();
                 cfg.CreateMap<Application, ApplicationDto>();
             });
-        }
-
-        public static BirthCertificateDto ToModel(this BirthCertificate birthCertificate)
-        {
-            return Mapper<BirthCertificate, BirthCertificateDto>(birthCertificate, cfg => { cfg.CreateMap<BirthCertificate, BirthCertificateDto>(); });
         }
 
         public static ChatMessageDto ToModel(this ChatMessage chatMessage)
@@ -67,7 +61,6 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return child.Mapper<Child, ChildDto>(cfg =>
             {
-                cfg.CreateMap<BirthCertificate, BirthCertificateDto>();
                 cfg.CreateMap<Child, ChildDto>();
                 cfg.CreateMap<Parent, ParentDTO>();
             });
@@ -197,18 +190,9 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<WorkshopDTO, Workshop>()
                 .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())))
                 .ForMember(dest => dest.Direction, opt => opt.Ignore());
-                cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
                 cfg.CreateMap<ChildDto, Child>();
                 cfg.CreateMap<ParentDTO, Parent>();
                 cfg.CreateMap<ApplicationDto, Application>();
-            });
-        }
-
-        public static BirthCertificate ToDomain(this BirthCertificateDto birthCertificateDTO)
-        {
-            return Mapper<BirthCertificateDto, BirthCertificate>(birthCertificateDTO, cfg =>
-            {
-                cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
             });
         }
 
@@ -231,7 +215,6 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<ChildDto, Child>(childDto, cfg =>
             {
-                cfg.CreateMap<BirthCertificateDto, BirthCertificate>();
                 cfg.CreateMap<ChildDto, Child>();
                 cfg.CreateMap<ParentDTO, Parent>();
             });

@@ -10,18 +10,15 @@ namespace OutOfSchool.WebApi.Models
         public long Id { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
-        [DataType(DataType.Text)]
         [MaxLength(40)]
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "First name cannot contains digits")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Last name is required")]
-        [DataType(DataType.Text)]
         [MaxLength(40)]
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "Last name cannot contains digits")]
         public string LastName { get; set; } = string.Empty;
 
-        [DataType(DataType.Text)]
         [MaxLength(40)]
         [RegularExpression(@"[\w\-\']*", ErrorMessage = "Middle name cannot contains digits")]
         public string MiddleName { get; set; } = string.Empty;
@@ -31,16 +28,18 @@ namespace OutOfSchool.WebApi.Models
         public DateTime DateOfBirth { get; set; } = default;
 
         [Required(ErrorMessage = "Gender is required")]
+        [Range(0, 1)]
         public Gender Gender { get; set; } = default;
 
-        [Required(ErrorMessage = "Parent Id is required")]
+        [MaxLength(500)]
+        public string PlaceOfStudy { get; set; } = string.Empty;
+
         public long ParentId { get; set; } = default;
 
         public long? SocialGroupId { get; set; } = default;
 
+        // TODO: define if we really need this in dto
         [JsonIgnore]
         public ParentDTO Parent { get; set; }
-
-        public BirthCertificateDto BirthCertificate { get; set; }
     }
 }

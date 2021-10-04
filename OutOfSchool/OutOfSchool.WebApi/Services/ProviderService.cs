@@ -151,7 +151,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Provider, bool>> filter = p => p.UserId == id;
 
-            var providers = await providerRepository.GetByFilter(filter).ConfigureAwait(false);
+            var providers = (await providerRepository.GetByFilter(filter).ConfigureAwait(false)).ToList();
 
             if (!providers.Any())
             {

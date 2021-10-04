@@ -160,12 +160,12 @@ namespace OutOfSchool.Services.Repository
                 }
             }
 
-            if (skip != 0)
+            if (skip > 0)
             {
                 query = query.Skip(skip);
             }
 
-            if (take != 0)
+            if (take > 0)
             {
                 query = query.Take(take);
             }

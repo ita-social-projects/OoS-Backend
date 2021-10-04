@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
@@ -9,7 +10,7 @@ namespace OutOfSchool.WebApi.Models
     {
         public long Id { get; set; }
 
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(StringEnumConverter))]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
         public DateTimeOffset CreationTime { get; set; }
