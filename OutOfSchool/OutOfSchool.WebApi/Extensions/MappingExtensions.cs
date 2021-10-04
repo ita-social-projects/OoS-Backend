@@ -177,6 +177,7 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>();
                 cfg.CreateMap<Teacher, TeacherDTO>();
+                cfg.CreateMap<DateTimeRange, DateTimeRangeDto>();
             });
         }
 
@@ -345,6 +346,7 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
                 cfg.CreateMap<TeacherDTO, Teacher>();
+                cfg.CreateMap<DateTimeRangeDto, DateTimeRange>();
             });
         }
 
