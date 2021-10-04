@@ -515,23 +515,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Parents");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.PictureMetadata", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ContentType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StorageId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PictureMetadata");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
                     b.Property<long>("Id")
@@ -620,22 +603,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Providers");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderPicture", b =>
-                {
-                    b.Property<long>("ProviderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("PictureId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ProviderId", "PictureId");
-
-                    b.HasIndex("PictureId")
-                        .IsUnique();
-
-                    b.ToTable("ProviderPictureTable");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Rating", b =>
@@ -752,22 +719,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("WorkshopId");
 
                     b.ToTable("Teachers");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.TeacherPicture", b =>
-                {
-                    b.Property<long>("TeacherId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("PictureId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("TeacherId", "PictureId");
-
-                    b.HasIndex("PictureId")
-                        .IsUnique();
-
-                    b.ToTable("TeacherPictureTable");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
@@ -984,22 +935,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("ProviderId");
 
                     b.ToTable("Workshops");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopPicture", b =>
-                {
-                    b.Property<long>("WorkshopId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("PictureId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("WorkshopId", "PictureId");
-
-                    b.HasIndex("PictureId")
-                        .IsUnique();
-
-                    b.ToTable("WorkshopPictureTable");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1235,25 +1170,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderPicture", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.PictureMetadata", "Picture")
-                        .WithOne("ProviderPicture")
-                        .HasForeignKey("OutOfSchool.Services.Models.ProviderPicture", "PictureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
-                        .WithMany("ProviderPictures")
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Picture");
-
-                    b.Navigation("Provider");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Rating", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
@@ -1274,25 +1190,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("Workshop");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.TeacherPicture", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.PictureMetadata", "Picture")
-                        .WithOne("TeacherPicture")
-                        .HasForeignKey("OutOfSchool.Services.Models.TeacherPicture", "PictureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Teacher", "Teacher")
-                        .WithMany("TeacherPictures")
-                        .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Picture");
-
-                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
@@ -1330,25 +1227,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Provider");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopPicture", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.PictureMetadata", "Picture")
-                        .WithOne("WorkshopPicture")
-                        .HasForeignKey("OutOfSchool.Services.Models.WorkshopPicture", "PictureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
-                        .WithMany("WorkshopPictures")
-                        .HasForeignKey("WorkshopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Picture");
-
-                    b.Navigation("Workshop");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatRoom", b =>
                 {
                     b.Navigation("ChatMessages");
@@ -1376,30 +1254,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Children");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.PictureMetadata", b =>
-                {
-                    b.Navigation("ProviderPicture");
-
-                    b.Navigation("TeacherPicture");
-
-                    b.Navigation("WorkshopPicture");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
-                    b.Navigation("ProviderPictures");
-
                     b.Navigation("Workshops");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
                 {
                     b.Navigation("Children");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
-                {
-                    b.Navigation("TeacherPictures");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.User", b =>
@@ -1416,8 +1278,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("ChatRooms");
 
                     b.Navigation("Teachers");
-
-                    b.Navigation("WorkshopPictures");
                 });
 #pragma warning restore 612, 618
         }
