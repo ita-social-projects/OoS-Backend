@@ -14,8 +14,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    //TODO: Commented only for testing purpose
-    //[Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin")]
     public class ElasticsearchSynchronizationController : ControllerBase
     {
         private readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService;
