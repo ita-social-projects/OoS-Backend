@@ -62,17 +62,24 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<IEnumerable<Workshop>> GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation operation)
         {
-            var elasticsearchSyncRecords = db.ElasticsearchSyncRecords;
+            var esSyncRecords = db.ElasticsearchSyncRecords;
 
-            var resultMaxDates = from record in elasticsearchSyncRecords
-                                 group record by record.RecordId into groupedRecords
-                                 select new { RecordId = groupedRecords.Key, MaxOperationDate = groupedRecords.Max(r => r.OperationDate) };
-
-            var result = from rMaxDate in resultMaxDates
-                         join record in elasticsearchSyncRecords on new { rMaxDate.RecordId, OperationDate = rMaxDate.MaxOperationDate } equals new { record.RecordId, record.OperationDate } into leftJoin
-                         from joinedRecord in leftJoin
-                         where joinedRecord.Operation == operation
-                         select new { joinedRecord.RecordId, joinedRecord.OperationDate, joinedRecord.Operation };
+            var result = esSyncRecords
+                .Where(x => x.Entity == ElasticsearchSyncEntity.Workshop)
+                .GroupBy(
+                    x => x.RecordId,
+                    x => x.OperationDate,
+                    (id, op) => new
+                    {
+                        RecordId = id,
+                        OperationDate = op.Max(),
+                    })
+                .Join(
+                    esSyncRecords,
+                    maxDates => new { maxDates.RecordId, maxDates.OperationDate },
+                    esRecords => new { esRecords.RecordId, esRecords.OperationDate },
+                    (maxDates, esRecords) => esRecords)
+                .Where(es => es.Operation == operation);
 
             return await db.Workshops.Join(result, workshop => workshop.Id, result => result.RecordId, (workshop, result) => workshop).ToListAsync();
         }
@@ -80,17 +87,25 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task<IEnumerable<long>> GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation operation)
         {
-            var elasticsearchSyncRecords = db.ElasticsearchSyncRecords;
+            var esSyncRecords = db.ElasticsearchSyncRecords;
 
-            var resultMaxDates = from record in elasticsearchSyncRecords
-                                 group record by record.RecordId into groupedRecords
-                                 select new { RecordId = groupedRecords.Key, MaxOperationDate = groupedRecords.Max(r => r.OperationDate) };
-
-            var result = from rMaxDate in resultMaxDates
-                         join record in elasticsearchSyncRecords on new { rMaxDate.RecordId, OperationDate = rMaxDate.MaxOperationDate } equals new { record.RecordId, record.OperationDate } into leftJoin
-                         from joinedRecord in leftJoin
-                         where joinedRecord.Operation == operation
-                         select joinedRecord.RecordId;
+            var result = esSyncRecords
+                .Where(x => x.Entity == ElasticsearchSyncEntity.Workshop)
+                .GroupBy(
+                    x => x.RecordId,
+                    x => x.OperationDate,
+                    (id, op) => new
+                    {
+                        RecordId = id,
+                        OperationDate = op.Max(),
+                    })
+                .Join(
+                    esSyncRecords,
+                    maxDates => new { maxDates.RecordId, maxDates.OperationDate },
+                    esRecords => new { esRecords.RecordId, esRecords.OperationDate },
+                    (maxDates, esRecords) => esRecords)
+                .Where(es => es.Operation == operation)
+                .Select(es => es.RecordId);
 
             return await result.ToListAsync();
         }
