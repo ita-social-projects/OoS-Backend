@@ -16,6 +16,6 @@ namespace OutOfSchool.Services.Models
         public long WorkshopId { get; set; }
         
         [Required] 
-        public List<DaysBitMask> Workdays { get; set; }
+        public DaysBitMask Workdays { get; set; }
     }
 }

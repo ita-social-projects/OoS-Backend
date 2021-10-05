@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util.CustomComparers;
@@ -14,7 +15,8 @@ namespace OutOfSchool.WebApi.Util
         {
             const char SEPARATOR = '¤';
             CreateMap<WorkshopDTO, Workshop>()
-                .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join(SEPARATOR, src.Keywords.Distinct())))
+                .ForMember(dest => dest.Keywords,
+                    opt => opt.MapFrom(src => string.Join(SEPARATOR, src.Keywords.Distinct())))
                 .ForMember(dest => dest.Direction, opt => opt.Ignore())
                 .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom((dto, entity, dest, ctx) =>
                 {
@@ -62,7 +64,12 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Address, AddressDto>().ReverseMap();
             CreateMap<Provider, ProviderDto>().ReverseMap();
             CreateMap<Teacher, TeacherDTO>().ReverseMap();
-            CreateMap<DateTimeRange, DateTimeRangeDto>().ReverseMap();
+            CreateMap<DateTimeRange, DateTimeRangeDto>()
+                .ForMember(dtr => dtr.Workdays, cfg => cfg.MapFrom(dtr => Enum.GetValues(typeof(DaysBitMask))
+                    .Cast<DaysBitMask>().ToList()
+                    .Where(amenity => amenity != 0 && dtr.Workdays.HasFlag(amenity)).ToList()));
+            CreateMap<DateTimeRangeDto, DateTimeRange>()
+                .ForMember(dtr => dtr.Workdays, cfg => cfg.MapFrom(dtr => dtr.Workdays.Aggregate((prev, next) => prev | next)));
         }
     }
 }
