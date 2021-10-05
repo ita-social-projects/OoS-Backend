@@ -12,8 +12,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OperationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Entity = table.Column<int>(type: "int", nullable: false),
                     RecordId = table.Column<long>(type: "bigint", nullable: false),
+                    OperationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Operation = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

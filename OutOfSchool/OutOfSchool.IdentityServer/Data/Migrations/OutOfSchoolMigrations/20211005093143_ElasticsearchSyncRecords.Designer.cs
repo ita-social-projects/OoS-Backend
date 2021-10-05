@@ -10,7 +10,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20211004082708_ElasticsearchSyncRecords")]
+    [Migration("20211005093143_ElasticsearchSyncRecords")]
     partial class ElasticsearchSyncRecords
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -506,6 +506,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Entity")
+                        .HasColumnType("int");
 
                     b.Property<int>("Operation")
                         .HasColumnType("int");

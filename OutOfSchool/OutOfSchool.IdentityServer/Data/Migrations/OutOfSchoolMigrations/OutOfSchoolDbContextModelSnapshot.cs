@@ -467,6 +467,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Entity")
+                        .HasColumnType("int");
+
                     b.Property<int>("Operation")
                         .HasColumnType("int");
 
