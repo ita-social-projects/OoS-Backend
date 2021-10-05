@@ -14,8 +14,8 @@ namespace OutOfSchool.Services.Models
         public TimeSpan EndTime { get; set; }
 
         public long WorkshopId { get; set; }
-        
-        [Required] 
+
+        [Required]
         public DaysBitMask Workdays { get; set; }
     }
 }

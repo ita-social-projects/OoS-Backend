@@ -437,8 +437,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<TimeSpan>("StartTime")
                         .HasColumnType("time");
 
-                    b.Property<int>("Workdays")
-                        .HasColumnType("int");
+                    b.Property<byte>("Workdays")
+                        .HasColumnType("tinyint");
 
                     b.Property<long>("WorkshopId")
                         .HasColumnType("bigint");
