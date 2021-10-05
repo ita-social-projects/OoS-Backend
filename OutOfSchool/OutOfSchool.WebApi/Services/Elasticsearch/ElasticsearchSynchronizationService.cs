@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -104,6 +105,18 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Creating new record to ElasticserchSyncRecord failed.");
                 throw;
             }
+        }
+
+        public async Task AddNewRecordToElasticsearchSynchronizationTable(ElasticsearchSyncEntity entity, long id, ElasticsearchSyncOperation operation)
+        {
+            ElasticsearchSyncRecordDto elasticsearchSyncRecordDto = new ElasticsearchSyncRecordDto()
+            {
+                Entity = entity,
+                RecordId = id,
+                OperationDate = DateTime.UtcNow,
+                Operation = operation,
+            };
+            await Create(elasticsearchSyncRecordDto).ConfigureAwait(false);
         }
     }
 }

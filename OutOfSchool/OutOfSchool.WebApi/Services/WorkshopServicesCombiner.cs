@@ -41,7 +41,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.LogWarning($"Error happend while trying to index {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
 
-                await AddNewRecordToElasticsearchSynchronizationTable(workshop.Id, ElasticsearchSyncOperation.Create).ConfigureAwait(false);
+                await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                    ElasticsearchSyncEntity.Workshop,
+                    workshop.Id,
+                    ElasticsearchSyncOperation.Create)
+                    .ConfigureAwait(false);
             }
 
             return workshop;
@@ -66,7 +70,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.LogWarning($"Error happend while trying to update {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
 
-                await AddNewRecordToElasticsearchSynchronizationTable(workshop.Id, ElasticsearchSyncOperation.Update).ConfigureAwait(false);
+                await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                    ElasticsearchSyncEntity.Workshop,
+                    workshop.Id,
+                    ElasticsearchSyncOperation.Update)
+                    .ConfigureAwait(false);
             }
 
             return workshop;
@@ -83,7 +91,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.LogWarning($"Error happend while trying to delete Workshop:{id} in Elasticsearch.");
 
-                await AddNewRecordToElasticsearchSynchronizationTable(id, ElasticsearchSyncOperation.Delete).ConfigureAwait(false);
+                await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                    ElasticsearchSyncEntity.Workshop,
+                    id,
+                    ElasticsearchSyncOperation.Delete)
+                    .ConfigureAwait(false);
             }
         }
 
