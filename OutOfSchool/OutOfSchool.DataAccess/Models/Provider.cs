@@ -24,7 +24,7 @@ namespace OutOfSchool.Services.Models
         public string ShortTitle { get; set; }
 
         [DataType(DataType.Url)]
-        [MaxLength(100)]
+        [MaxLength(256)]
         public string Website { get; set; } = string.Empty;
 
         [DataType(DataType.EmailAddress)]
@@ -34,11 +34,11 @@ namespace OutOfSchool.Services.Models
         public string Email { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
-        [MaxLength(100)]
+        [MaxLength(256)]
         public string Facebook { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
-        [MaxLength(100)]
+        [MaxLength(256)]
         public string Instagram { get; set; } = string.Empty;
 
         [MaxLength(500)]

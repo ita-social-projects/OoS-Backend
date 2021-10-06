@@ -35,10 +35,12 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(256)]
         public string Website { get; set; } = string.Empty;
 
-        [MaxLength(30)]
+        [DataType(DataType.Url)]
+        [MaxLength(256)]
         public string Facebook { get; set; } = string.Empty;
 
-        [MaxLength(30)]
+        [DataType(DataType.Url)]
+        [MaxLength(256)]
         public string Instagram { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Children's min age is required")]
@@ -106,7 +108,7 @@ namespace OutOfSchool.WebApi.Models
         public AddressDto Address { get; set; }
 
         public IEnumerable<TeacherDTO> Teachers { get; set; }
-       
+
         [Required]
         public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 

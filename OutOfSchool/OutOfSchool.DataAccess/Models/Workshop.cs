@@ -34,9 +34,11 @@ namespace OutOfSchool.Services.Models
         [MaxLength(256)]
         public string Website { get; set; } = string.Empty;
 
+        [DataType(DataType.Url)]
         [MaxLength(256)]
         public string Facebook { get; set; } = string.Empty;
 
+        [DataType(DataType.Url)]
         [MaxLength(256)]
         public string Instagram { get; set; } = string.Empty;
 
