@@ -25,6 +25,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using Serilog;
 
 namespace OutOfSchool.IdentityServer
 {
@@ -76,6 +77,8 @@ namespace OutOfSchool.IdentityServer
 
             var issuerSection = config.GetSection(IssuerConfig.Name);
             services.Configure<IssuerConfig>(issuerSection);
+
+            services.AddSingleton(Log.Logger);
 
             services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
                 .AddConfigurationStore(options =>
