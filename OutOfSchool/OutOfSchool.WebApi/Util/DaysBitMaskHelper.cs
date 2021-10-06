@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Util
         /// </summary>
         /// <param name="daysBitMask">Source.</param>
         /// <returns>Splitted enumerable.</returns>
-        public static IEnumerable<DaysBitMask> ToDaysBitMaskEnumarable(this DaysBitMask daysBitMask)
+        public static IEnumerable<DaysBitMask> ToDaysBitMaskEnumerable(this DaysBitMask daysBitMask)
         {
             return Enum.GetValues(typeof(DaysBitMask))
                 .Cast<DaysBitMask>().ToList()
