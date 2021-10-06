@@ -63,6 +63,12 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Provider, ProviderDto>().ReverseMap();
             CreateMap<Teacher, TeacherDTO>().ReverseMap();
             CreateMap<DateTimeRange, DateTimeRangeDto>().ReverseMap();
+            CreateMap<Application, ApplicationDto>().ReverseMap();
+            CreateMap<Workshop, WorkshopCard>()
+                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
+            CreateMap<Child, ChildDto>()
+                .ForMember(c => c.Parent, m => m.Ignore());
+            CreateMap<Parent, ParentDTO>();
         }
     }
 }

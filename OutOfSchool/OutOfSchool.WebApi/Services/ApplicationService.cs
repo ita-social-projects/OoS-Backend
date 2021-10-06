@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Child> childRepository;
         private readonly ILogger<ApplicationService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationService"/> class.
@@ -36,18 +38,21 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="localizer">Localizer.</param>
         /// <param name="workshopRepository">Workshop repository.</param>
         /// <param name="childRepository">Child repository.</param>
+        /// <param name="mapper">Automapper DI service.</param>
         public ApplicationService(
             IApplicationRepository repository,
             ILogger<ApplicationService> logger,
             IStringLocalizer<SharedResource> localizer,
             IWorkshopRepository workshopRepository,
-            IEntityRepository<Child> childRepository)
+            IEntityRepository<Child> childRepository,
+            IMapper mapper)
         {
             this.applicationRepository = repository;
             this.workshopRepository = workshopRepository;
             this.logger = logger;
             this.localizer = localizer;
             this.childRepository = childRepository;
+            this.mapper = mapper;
         }
 
         /// <inheritdoc/>
@@ -67,13 +72,13 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException(localizer["Unable to create application for another parent`s child."]);
             }
 
-            var application = applicationDto.ToDomain();
+            var application = mapper.Map<Application>(applicationDto);
 
             var newApplication = await applicationRepository.Create(application).ConfigureAwait(false);
 
             logger.LogInformation($"Application with Id = {newApplication?.Id} created successfully.");
 
-            return newApplication.ToModel();
+            return mapper.Map<ApplicationDto>(newApplication);
         }
 
         /// <inheritdoc/>
@@ -83,13 +88,13 @@ namespace OutOfSchool.WebApi.Services
 
             MultipleModelCreationValidation(applicationDtos);
 
-            var applications = applicationDtos.Select(a => a.ToDomain()).ToList();
+            var applications = mapper.Map<List<Application>>(applicationDtos);
 
             var newApplications = await applicationRepository.Create(applications).ConfigureAwait(false);
 
             logger.LogInformation("Applications created successfully.");
 
-            return newApplications.Select(a => a.ToModel());
+            return mapper.Map<List<ApplicationDto>>(newApplications);
         }
 
         /// <inheritdoc/>
@@ -125,7 +130,7 @@ namespace OutOfSchool.WebApi.Services
                 ? "Application table is empty."
                 : $"All {applications.Count()} records were successfully received from the Application table");
 
-            return applications.Select(a => a.ToModel()).ToList();
+            return mapper.Map<List<ApplicationDto>>(applications);
         }
 
         /// <inheritdoc/>
@@ -141,7 +146,7 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There is no applications in the Db with Parent Id = {id}."
                 : $"Successfully got Applications with Parent Id = {id}.");
 
-            return applications.Select(a => a.ToModel()).ToList();
+            return mapper.Map<List<ApplicationDto>>(applications);
         }
 
         /// <inheritdoc/>
@@ -157,7 +162,7 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There is no applications in the Db with Child Id = {id}."
                 : $"Successfully got Applications with Child Id = {id}.");
 
-            return applications.Select(a => a.ToModel()).ToList();
+            return mapper.Map<List<ApplicationDto>>(applications);
         }
 
         /// <inheritdoc/>
@@ -176,7 +181,7 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There is no applications in the Db with Workshop Id = {id}."
                 : $"Successfully got Applications with Workshop Id = {id}.");
 
-            return filteredApplications.Select(a => a.ToModel());
+            return mapper.Map<List<ApplicationDto>>(filteredApplications);
         }
 
         /// <inheritdoc/>
@@ -198,7 +203,7 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There is no applications in the Db with Provider Id = {id}."
                 : $"Successfully got Applications with Provider Id = {id}.");
 
-            return filteredApplications.Select(a => a.ToModel());
+            return mapper.Map<List<ApplicationDto>>(filteredApplications);
         }
 
         /// <inheritdoc/>
@@ -214,7 +219,7 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There is no applications in the Db with Status = {status}."
                 : $"Successfully got Applications with Status = {status}.");
 
-            return applications.Select(a => a.ToModel()).ToList();
+            return mapper.Map<List<ApplicationDto>>(applications);
         }
 
         /// <inheritdoc/>
@@ -235,7 +240,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Successfully got an Application with Id = {id}.");
 
-            return application.ToModel();
+            return mapper.Map<ApplicationDto>(application);
         }
 
         public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
@@ -248,12 +253,12 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var updatedApplication = await applicationRepository.Update(applicationDto.ToDomain())
+                var updatedApplication = await applicationRepository.Update(mapper.Map<Application>(applicationDto))
                     .ConfigureAwait(false);
 
                 logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");
 
-                return updatedApplication.ToModel();
+                return mapper.Map<ApplicationDto>(updatedApplication);
             }
             catch (DbUpdateConcurrencyException ex)
             {
