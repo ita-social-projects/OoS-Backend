@@ -147,7 +147,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             }
 
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
-            var callBackUrl = Url.Action("ResetPassword", "Account", new { area = "Identity", token }, Request.Scheme);
+            var callBackUrl = Url.Action("ResetPassword", "Account", new { token }, Request.Scheme);
 
             var email = model.Email;
             var subject = "Reset Password";
