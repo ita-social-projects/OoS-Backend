@@ -18,6 +18,8 @@ namespace OutOfSchool.WebApi.Extensions
                     .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())));
                 cfg.CreateMap<AddressDto, AddressES>();
                 cfg.CreateMap<TeacherDTO, TeacherES>();
+                cfg.CreateMap<DateTimeRangeDto, DateTimeRangeES>()
+                    .ForMember(dest => dest.Workdays, opt => opt.MapFrom(src => string.Join(' ', src.Workdays)));
             });
         }
 
@@ -25,7 +27,8 @@ namespace OutOfSchool.WebApi.Extensions
         {
             return Mapper<WorkshopFilter, WorkshopFilterES>(workshopFilterDto, cfg =>
             {
-                cfg.CreateMap<WorkshopFilter, WorkshopFilterES>();
+                cfg.CreateMap<WorkshopFilter, WorkshopFilterES>()
+                    .ForMember(dest => dest.Workdays, opt => opt.MapFrom(src => string.Join(' ', src.Workdays)));
             });
         }
 
