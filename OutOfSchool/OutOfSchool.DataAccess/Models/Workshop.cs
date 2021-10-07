@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models
 {
@@ -31,15 +32,15 @@ namespace OutOfSchool.Services.Models
         public string Email { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
-        [MaxLength(256)]
+        [MaxLength(Constants.UnifiedUrlLength)]
         public string Website { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
-        [MaxLength(256)]
+        [MaxLength(Constants.UnifiedUrlLength)]
         public string Facebook { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
-        [MaxLength(256)]
+        [MaxLength(Constants.UnifiedUrlLength)]
         public string Instagram { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Children's min age is required")]
