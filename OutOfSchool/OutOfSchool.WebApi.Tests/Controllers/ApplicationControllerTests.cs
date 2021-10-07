@@ -231,30 +231,30 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             result.StatusCode.Should().Be(400);
         }
 
-        // TODO : Need to refactor for short Workshop
-        //[Test]
-        //[TestCase(1, "provider")]
-        //[TestCase(1, "workshop")]
-        //public async Task GetByPropertyId_WhenIdIsValid_ShouldReturnOkObjectResult(long id, string property)
-        //{
-        //    // Arrange
-        //    var filter = new ApplicationFilter { Status = 1 };
 
-        //    httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
+        [Test]
+        [TestCase(1, "provider")]
+        [TestCase(1, "workshop")]
+        public async Task GetByPropertyId_WhenIdIsValid_ShouldReturnOkObjectResult(long id, string property)
+        {
+            // Arrange
+            var filter = new ApplicationFilter { Status = 1 };
 
-        //    providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
-        //    applicationService.Setup(s => s.GetAllByProvider(id, filter))
-        //        .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
-        //    applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
-        //        .ReturnsAsync(applications.Where(a => a.WorkshopId == id));
+            httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
-        //    // Act
-        //    var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as OkObjectResult;
+            providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
+            applicationService.Setup(s => s.GetAllByProvider(id, filter))
+                .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
+            applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
+                .ReturnsAsync(applications.Where(a => a.WorkshopId == id));
 
-        //    // Assert
-        //    result.Should().NotBeNull();
-        //    result.StatusCode.Should().Be(200);
-        //}
+            // Act
+            var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            result.Should().NotBeNull();
+            result.StatusCode.Should().Be(200);
+        }
 
         [Test]
         [TestCase(0, "provider")]
@@ -330,7 +330,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var filter = new ApplicationFilter { Status = 1 };
-            
+
             // Act
             var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
 
