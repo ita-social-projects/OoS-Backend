@@ -84,6 +84,11 @@ namespace OutOfSchool.WebApi.Services
 
             var favorites = await repository.Get<int>(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
 
+            if (!favorites.Any())
+            {
+                return new SearchResult<WorkshopCard>();
+            }
+
             if (offsetFilter is null)
             {
                 offsetFilter = new OffsetFilter();

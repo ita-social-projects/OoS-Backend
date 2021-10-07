@@ -33,7 +33,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         [Authorize]
         public IActionResult ChangeEmail(string returnUrl = "Login")
         {
-            return View("Email/Change", new ChangeEmailViewModel() { ReturnUrl = returnUrl });
+            return View("Email/ChangeEmail", new ChangeEmailViewModel() { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
@@ -42,7 +42,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(new ChangeEmailViewModel());
+                return View("Email/ChangeEmail", new ChangeEmailViewModel());
             }
 
             var user = await userManager.FindByEmailAsync(User.Identity.Name);
@@ -54,7 +54,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             var htmlMessage = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
             await emailSender.SendAsync(email, subject, htmlMessage);
 
-            return View("Email/Change");
+            return View("Email/ChangeEmail");
         }
 
         [HttpGet]
@@ -84,7 +84,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             }
 
             await signInManager.RefreshSignInAsync(user);
-            return View("Email/ConfirmChange");
+            return View("Email/ConfirmChangeEmail");
         }
 
         [HttpGet]
@@ -129,7 +129,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public IActionResult ForgotPassword(string returnUrl = "Login")
         {
-            return View("Password/Forgot", new ForgotPasswordViewModel() { ReturnUrl = returnUrl });
+            return View("Password/ForgotPassword", new ForgotPasswordViewModel() { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
@@ -137,7 +137,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(new ForgotPasswordViewModel());
+                return View("Password/ForgotPassword", new ForgotPasswordViewModel());
             }
 
             var user = await userManager.FindByEmailAsync(model.Email);
@@ -147,7 +147,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             }
 
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
-            var callBackUrl = Url.Action("ResetPassword", "Account", new { area = "Identity", token }, Request.Scheme);
+            var callBackUrl = Url.Action("ResetPassword", "Account", new { token }, Request.Scheme);
 
             var email = model.Email;
             var subject = "Reset Password";
@@ -165,7 +165,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return BadRequest("A token must be supplied for password reset.");
             }
 
-            return View("Password/Reset", new ResetPasswordViewModel() { Token = token });
+            return View("Password/ResetPassword", new ResetPasswordViewModel() { Token = token });
         }
 
         [HttpPost]
@@ -195,7 +195,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         [Authorize]
         public IActionResult ChangePassword(string returnUrl = "Login")
         {
-            return View("Password/Change", new ChangePasswordViewModel() { ReturnUrl = returnUrl });
+            return View("Password/ChangePassword", new ChangePasswordViewModel() { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
