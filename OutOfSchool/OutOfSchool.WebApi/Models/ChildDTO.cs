@@ -10,17 +10,17 @@ namespace OutOfSchool.WebApi.Models
         public long Id { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
-        [MaxLength(40)]
-        [RegularExpression(@"[\w\-\']*", ErrorMessage = "First name cannot contains digits")]
+        [StringLength(30, MinimumLength = 1)]
+        [RegularExpression(@"^[a-zA-Z]+(([\'\-][a-zA-Z])?[a-zA-Z]*)*$", ErrorMessage = "First name contains invalid characters")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Last name is required")]
-        [MaxLength(40)]
-        [RegularExpression(@"[\w\-\']*", ErrorMessage = "Last name cannot contains digits")]
+        [StringLength(30, MinimumLength = 1)]
+        [RegularExpression(@"^[a-zA-Z]+(([\'\-][a-zA-Z])?[a-zA-Z]*)*$", ErrorMessage = "Last name contains invalid characters")]
         public string LastName { get; set; } = string.Empty;
 
-        [MaxLength(40)]
-        [RegularExpression(@"[\w\-\']*", ErrorMessage = "Middle name cannot contains digits")]
+        [StringLength(30, MinimumLength = 1)]
+        [RegularExpression(@"^[a-zA-Z]+(([\'\-][a-zA-Z])?[a-zA-Z]*)*$", ErrorMessage = "Middle name contains invalid characters")]
         public string MiddleName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Date of birth is required")]

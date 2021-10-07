@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -120,6 +121,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPost]
         public async Task<IActionResult> Create(ChildDto childDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.Values);
+            }
+
             string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
             var child = await service.CreateChildForUser(childDto, userId).ConfigureAwait(false);
