@@ -29,8 +29,6 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private IWorkshopRepository workshopRepository;
         private Mock<IClassRepository> classRepositoryMoq;
-        private IEntityRepository<Teacher> teacherRepository;
-        private IEntityRepository<Address> addressRepository;
 
         private Mock<IRatingService> ratingServiceMoq;
         private Mock<ILogger<WorkshopService>> loggerMoq;
@@ -52,8 +50,6 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             workshopRepository = new WorkshopRepository(dbContext);
             classRepositoryMoq = new Mock<IClassRepository>();
-            teacherRepository = new EntityRepository<Teacher>(dbContext);
-            addressRepository = new EntityRepository<Address>(dbContext);
 
             ratingServiceMoq = new Mock<IRatingService>();
             loggerMoq = new Mock<ILogger<WorkshopService>>();
@@ -62,8 +58,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             workshopService = new WorkshopService(
                 workshopRepository,
                 classRepositoryMoq.Object,
-                teacherRepository,
-                addressRepository,
                 ratingServiceMoq.Object,
                 loggerMoq.Object,
                 mapperMoq.Object);
@@ -335,8 +329,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Act
             var countWorkshopsBeforeDeleting = (await workshopService.GetAll(new OffsetFilter()).ConfigureAwait(false)).TotalAmount;
-            var countAddressesBeforeDeleting = (await addressRepository.GetAll().ConfigureAwait(false)).Count();
-            var countTeachersBeforeDeleting = (await teacherRepository.GetAll().ConfigureAwait(false)).Count();
 
             var appRepository = new EntityRepository<Application>(dbContext);
             var countAppsBeforeDeleting = (await appRepository.GetAll().ConfigureAwait(false)).Count();
@@ -345,15 +337,11 @@ namespace OutOfSchool.WebApi.Tests.Services
             await workshopService.Delete(id).ConfigureAwait(false);
 
             var countWorkshopsAfterDeleting = (await workshopService.GetAll(new OffsetFilter()).ConfigureAwait(false)).TotalAmount;
-            var countAddressesAfterDeleting = (await addressRepository.GetAll().ConfigureAwait(false)).Count();
-            var countTeachersAfterDeleting = (await teacherRepository.GetAll().ConfigureAwait(false)).Count();
 
             var countAppsAfterDeleting = (await appRepository.GetAll().ConfigureAwait(false)).Count();
 
             // Assert
             Assert.AreEqual(countWorkshopsBeforeDeleting - 1, countWorkshopsAfterDeleting);
-            Assert.AreEqual(countAddressesBeforeDeleting - 1, countAddressesAfterDeleting);
-            Assert.AreEqual(countTeachersBeforeDeleting - 2, countTeachersAfterDeleting);
             Assert.AreEqual(countAppsBeforeDeleting - 2, countAppsAfterDeleting);
         }
 

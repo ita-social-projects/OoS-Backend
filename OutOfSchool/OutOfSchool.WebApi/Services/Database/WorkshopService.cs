@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
 
@@ -22,10 +20,10 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class WorkshopService : IWorkshopService
     {
+        private readonly string includingPropertiesForMappingDtoModel = $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.Direction)}";
+
         private readonly IWorkshopRepository workshopRepository;
         private readonly IClassRepository classRepository;
-        private readonly IEntityRepository<Teacher> teacherRepository;
-        private readonly IEntityRepository<Address> addressRepository;
         private readonly IRatingService ratingService;
         private readonly ILogger<WorkshopService> logger;
         private readonly IMapper mapper;
@@ -35,24 +33,18 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="workshopRepository">Repository for Workshop entity.</param>
         /// <param name="classRepository">Repository for Class entity.</param>
-        /// <param name="teacherRepository">Repository for Teacher.</param>
-        /// <param name="addressRepository">Repository for Address.</param>
         /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Automapper DI service.</param>
         public WorkshopService(
             IWorkshopRepository workshopRepository,
             IClassRepository classRepository,
-            IEntityRepository<Teacher> teacherRepository,
-            IEntityRepository<Address> addressRepository,
             IRatingService ratingService,
             ILogger<WorkshopService> logger,
             IMapper mapper)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
-            this.teacherRepository = teacherRepository;
-            this.addressRepository = addressRepository;
             this.ratingService = ratingService;
             this.logger = logger;
             this.mapper = mapper;
@@ -87,8 +79,13 @@ namespace OutOfSchool.WebApi.Services
             offsetFilter ??= new OffsetFilter();
 
             var count = await workshopRepository.Count().ConfigureAwait(false);
-            var workshops = workshopRepository.Get<long>(skip: offsetFilter.From, take: offsetFilter.Size,
-                orderBy: x => x.Id, ascending: true).ToList();
+            var workshops = workshopRepository.Get<long>(
+                skip: offsetFilter.From,
+                take: offsetFilter.Size,
+                includeProperties: includingPropertiesForMappingDtoModel,
+                orderBy: x => x.Id,
+                ascending: true)
+                .ToList();
 
             logger.LogInformation(!workshops.Any()
                 ? "Workshop table is empty."
@@ -128,7 +125,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
-            var workshops = await workshopRepository.GetByFilter(x => x.ProviderId == id).ConfigureAwait(false);
+            var workshops = await workshopRepository.GetByFilter(x => x.ProviderId == id, includingPropertiesForMappingDtoModel).ConfigureAwait(false);
 
             logger.LogInformation(!workshops.Any()
                 ? $"There aren't Workshops for Provider with Id = {id}."
@@ -204,8 +201,14 @@ namespace OutOfSchool.WebApi.Services
             var orderBy = GetOrderParameter(filter);
 
             var workshopsCount = await workshopRepository.Count(where: filterPredicate).ConfigureAwait(false);
-            var workshops = workshopRepository.Get<dynamic>(filter.From, filter.Size, string.Empty, filterPredicate,
-                orderBy.Item1, orderBy.Item2).ToList();
+            var workshops = workshopRepository.Get<dynamic>(
+                skip: filter.From,
+                take: filter.Size,
+                includeProperties: includingPropertiesForMappingDtoModel,
+                where: filterPredicate,
+                orderBy: orderBy.Item1,
+                ascending: orderBy.Item2)
+                .ToList();
 
             logger.LogInformation(!workshops.Any()
                 ? "There was no matching entity found."
@@ -226,7 +229,7 @@ namespace OutOfSchool.WebApi.Services
         {
             var predicate = PredicateBuilder.True<Workshop>();
 
-            if (!(filter.Ids is null) && filter.Ids.Count > 0)
+            if (filter.Ids.Any())
             {
                 predicate = predicate.And(x => filter.Ids.Any(c => c == x.Id));
 
@@ -244,7 +247,7 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(tempPredicate);
             }
 
-            if (filter.DirectionIds[0] != 0)
+            if (filter.DirectionIds.Any())
             {
                 var tempPredicate = PredicateBuilder.False<Workshop>();
                 foreach (var direction in filter.DirectionIds)
@@ -277,6 +280,19 @@ namespace OutOfSchool.WebApi.Services
             if (filter.WithDisabilityOptions)
             {
                 predicate = predicate.And(x => x.WithDisabilityOptions);
+            }
+
+            if (filter.StartHour > 0 || filter.EndHour < 23 || filter.Workdays.Any())
+            {
+                var workdaysBitMask = filter.Workdays.Aggregate((prev, next) => prev | next);
+
+                if (workdaysBitMask > 0 && (byte)workdaysBitMask < byte.MaxValue)
+                {
+                    predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
+                        (tr.Workdays & workdaysBitMask) > 0
+                        && tr.StartTime.Hours >= filter.StartHour
+                        && tr.StartTime.Hours <= filter.EndHour));
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(filter.City))
@@ -324,7 +340,7 @@ namespace OutOfSchool.WebApi.Services
             var classEntity = await classRepository.GetById(dto.ClassId).ConfigureAwait(false);
             if (classEntity is null)
             {
-                throw new ArgumentOutOfRangeException($"There is no Class with id:{dto.ClassId}");
+                throw new ArgumentException($"There is no Class with id:{dto.ClassId}");
             }
 
             dto.DepartmentId = classEntity.DepartmentId;
