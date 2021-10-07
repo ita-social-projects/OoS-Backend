@@ -51,11 +51,7 @@ namespace OutOfSchool.WebApi.Services
                 sourceDto.AddRange(sourceDtoForCreate);
                 sourceDto.AddRange(sourceDtoForUpdate);
 
-                List<WorkshopES> source = new List<WorkshopES>();
-                foreach (var entity in sourceDto)
-                {
-                    source.Add(entity.ToESModel());
-                }
+                var source = sourceDto.Select(entity => entity.ToESModel());
 
                 result = await esProvider.IndexAll(source).ConfigureAwait(false);
 
