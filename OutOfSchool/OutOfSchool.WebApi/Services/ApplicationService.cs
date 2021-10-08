@@ -361,7 +361,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (filter.Status != 0)
             {
-                predicate = predicate.And(a => (int)a.Status == filter.Status);
+                predicate = predicate.And(a => a.Status == filter.Status);
             }
 
             if (filter.Workshops != null)
