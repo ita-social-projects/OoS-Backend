@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -35,17 +36,20 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get popular directions.
         /// </summary>
         /// <param name="limit">The number of entries.</param>
+        /// <param name="city">City to look for.</param>
         /// <returns>List of popular directions.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionStatistic>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [AllowAnonymous]
-        public async Task<IActionResult> GetDirections(int limit)
+        public async Task<IActionResult> GetDirections(int limit, [FromQuery] string city = null)
         {
             var newLimit = ValidateNumberOfEntries(limit);
 
-            var popularDirections = await service.GetPopularDirections(newLimit).ConfigureAwait(false);
+            var popularDirections = await service
+                .GetPopularDirections(newLimit, city)
+                .ConfigureAwait(false);
 
             if (!popularDirections.Any())
             {
@@ -59,17 +63,20 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get popular workshops.
         /// </summary>
         /// <param name="limit">The number of entries.</param>
+        /// <param name="city">City to look for.</param>
         /// <returns>List of popular workshops.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [AllowAnonymous]
-        public async Task<IActionResult> GetWorkshops(int limit)
+        public async Task<IActionResult> GetWorkshops(int limit, [FromQuery] string city = null)
         {
             int newLimit = ValidateNumberOfEntries(limit);
 
-            var popularWorkshops = await service.GetPopularWorkshops(newLimit).ConfigureAwait(false);
+            var popularWorkshops = await service
+                .GetPopularWorkshops(newLimit, city)
+                .ConfigureAwait(false);
 
             if (!popularWorkshops.Any())
             {
