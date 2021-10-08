@@ -53,10 +53,10 @@ namespace OutOfSchool.IdentityServer
 
             Log.Logger = loggerConfigBuilder.CreateLogger();
 
-            try 
+            try
             {
                 Log.Information("Application has started.");
-                
+
                 var host = CreateHostBuilder(args).Build();
 
                 using (var scope = host.Services.CreateScope())
@@ -129,7 +129,7 @@ namespace OutOfSchool.IdentityServer
             finally
             {
                 Log.CloseAndFlush();
-            } 
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
