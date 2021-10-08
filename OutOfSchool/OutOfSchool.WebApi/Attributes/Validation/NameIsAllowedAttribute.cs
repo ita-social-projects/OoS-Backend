@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Attributes.Validation
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
     public class NameIsAllowedAttribute : ValidationAttribute
     {
-        public const string Pattern = @"^[А-ЩЬЮЯҐЄІЇ][а-щьюяґєії]*(([\'\-][А-ЩЬЮЯҐЄІЇа-щьюяґєії])?[а-щьюяґєії]*)*$";
+        public const string Pattern = @"^[А-ЩЬЮЯҐЄІЇ](([\'\-][А-ЩЬЮЯҐЄІЇа-щьюяґєії])?[а-щьюяґєії]*)*$";
 
         public override bool IsValid(object value)
         {
