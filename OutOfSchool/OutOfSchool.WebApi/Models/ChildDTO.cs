@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Attributes.Validation;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -11,16 +12,16 @@ namespace OutOfSchool.WebApi.Models
 
         [Required(ErrorMessage = "First name is required")]
         [StringLength(30, MinimumLength = 1)]
-        [RegularExpression(@"^[a-zA-Z]+(([\'\-][a-zA-Z])?[a-zA-Z]*)*$", ErrorMessage = "First name contains invalid characters")]
+        [NameIsAllowed(ErrorMessage = "First name contains invalid characters")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Last name is required")]
         [StringLength(30, MinimumLength = 1)]
-        [RegularExpression(@"^[a-zA-Z]+(([\'\-][a-zA-Z])?[a-zA-Z]*)*$", ErrorMessage = "Last name contains invalid characters")]
+        [NameIsAllowed(ErrorMessage = "Last name contains invalid characters")]
         public string LastName { get; set; } = string.Empty;
 
         [StringLength(30, MinimumLength = 1)]
-        [RegularExpression(@"^[a-zA-Z]+(([\'\-][a-zA-Z])?[a-zA-Z]*)*$", ErrorMessage = "Middle name contains invalid characters")]
+        [NameIsAllowed(ErrorMessage = "Middle name contains invalid characters")]
         public string MiddleName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Date of birth is required")]
