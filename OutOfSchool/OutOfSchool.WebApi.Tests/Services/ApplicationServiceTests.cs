@@ -110,8 +110,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.Create(toCreate).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(toCreate, options =>
-            options.Excluding(t => t.Workshop.Teachers));
+            result.Should().BeEquivalentTo(toCreate);
         }
 
         [Test]

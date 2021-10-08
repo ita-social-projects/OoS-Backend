@@ -22,11 +22,10 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Teacher, TeacherDTO>();
-                cfg.CreateMap<Workshop, WorkshopDTO>()
-                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
-                .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)));
+                cfg.CreateMap<Workshop, WorkshopCard>()
+                    .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
                 cfg.CreateMap<Child, ChildDto>()
-                .ForMember(c => c.Parent, m => m.Ignore());
+                    .ForMember(c => c.Parent, m => m.Ignore());
                 cfg.CreateMap<Parent, ParentDTO>();
                 cfg.CreateMap<Application, ApplicationDto>();
             });
@@ -146,7 +145,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
             {
                 cfg.CreateMap<Workshop, WorkshopDTO>()
-                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)))
                     .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>();
@@ -154,15 +152,13 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static WorkshopDTO ToModelSimple(this Workshop workshop)
+        public static WorkshopCard ToModelSimple(this Workshop workshop)
         {
-            return Mapper<Workshop, WorkshopDTO>(workshop, cfg =>
+            return Mapper<Workshop, WorkshopCard>(workshop, cfg =>
             {
-                cfg.CreateMap<Workshop, WorkshopDTO>()
-                   .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => src.Keywords.Split('¤', StringSplitOptions.None)))
-                   .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
-                   .ForMember(w => w.Address, m => m.Ignore())
-                   .ForMember(w => w.Teachers, m => m.Ignore());
+                cfg.CreateMap<Workshop, WorkshopCard>()
+                    .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
+                    .ForMember(w => w.Address, m => m.Ignore());
             });
         }
 
@@ -181,9 +177,8 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<TeacherDTO, Teacher>();
-                cfg.CreateMap<WorkshopDTO, Workshop>()
-                .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())))
-                .ForMember(dest => dest.Direction, opt => opt.Ignore());
+                cfg.CreateMap<WorkshopCard, Workshop>()
+                    .ForMember(dest => dest.Direction, opt => opt.Ignore());
                 cfg.CreateMap<ChildDto, Child>();
                 cfg.CreateMap<ParentDTO, Parent>();
                 cfg.CreateMap<ApplicationDto, Application>();
@@ -330,7 +325,6 @@ namespace OutOfSchool.WebApi.Extensions
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title))
                 .ForMember(dest => dest.IsPerMonth, opt => opt.MapFrom(src => src.Workshop.IsPerMonth))
-                .ForMember(dest => dest.Photo, opt => opt.MapFrom(src => src.Workshop.Logo))
                 .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
                 .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Workshop.MinAge))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Workshop.Price))

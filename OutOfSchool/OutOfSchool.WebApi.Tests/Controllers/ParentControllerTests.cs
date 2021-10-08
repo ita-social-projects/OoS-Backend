@@ -100,32 +100,17 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        public WorkshopDTO FakeWorkshop()
+        public WorkshopCard FakeWorkshop()
         {
-            return new WorkshopDTO()
+            return new WorkshopCard()
             {
-                Id = 6,
+                WorkshopId = 6,
                 Title = "Title6",
-                Phone = "1111111111",
-                Description = "Desc6",
                 Price = 6000,
-                WithDisabilityOptions = true,
-                Head = "Head6",
-                HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                 ProviderTitle = "ProviderTitle",
-                DisabilityOptionsDesc = "Desc6",
-                Website = "website6",
-                Instagram = "insta6",
-                Facebook = "facebook6",
-                Email = "email6@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
-                Logo = "image6",
                 ProviderId = 1,
-                DirectionId = 1,
-                DepartmentId = 1,
-                ClassId = 1,
-                AddressId = 55,
                 Address = new AddressDto
                 {
                     Id = 55,
@@ -136,31 +121,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     BuildingNumber = "BuildingNumber55",
                     Latitude = 0,
                     Longitude = 0,
-                },
-                Teachers = new List<TeacherDTO>
-                {
-                    new TeacherDTO
-                    {
-                        Id = 1,
-                        FirstName = "Alex",
-                        LastName = "Brown",
-                        MiddleName = "SomeMiddleName",
-                        Description = "Description",
-                        Image = "Image",
-                        DateOfBirth = DateTime.Parse("2000-01-01"),
-                        WorkshopId = 6,
-                    },
-                    new TeacherDTO
-                    {
-                        Id = 2,
-                        FirstName = "John",
-                        LastName = "Snow",
-                        MiddleName = "SomeMiddleName",
-                        Description = "Description",
-                        Image = "Image",
-                        DateOfBirth = DateTime.Parse("1990-01-01"),
-                        WorkshopId = 6,
-                    },
                 },
             };
         }
