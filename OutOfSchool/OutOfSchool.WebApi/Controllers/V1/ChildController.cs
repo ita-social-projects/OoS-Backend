@@ -121,11 +121,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPost]
         public async Task<IActionResult> Create(ChildDto childDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.Values);
-            }
-
             string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
             var child = await service.CreateChildForUser(childDto, userId).ConfigureAwait(false);
