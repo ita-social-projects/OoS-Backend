@@ -36,8 +36,8 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId)
         {
-            this.ValidateChildDto(childDto);
-            this.ValidateUserId(userId);
+            ValidateChildDto(childDto);
+            ValidateUserId(userId);
 
             logger.LogDebug($"Started creation of a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}.");
 
@@ -221,32 +221,9 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException(nameof(childDto));
             }
 
-            var isValid = true;
-
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine($"Validation of {nameof(ChildDto)} faild.");
-
             if (childDto.DateOfBirth > DateTime.Now)
             {
-                isValid = false;
-                stringBuilder.AppendLine($"{nameof(ChildDto.DateOfBirth)}: {childDto.DateOfBirth} is bigger than current date.");
-            }
-
-            if (childDto.FirstName.Length == 0)
-            {
-                isValid = false;
-                stringBuilder.AppendLine($"{nameof(ChildDto.FirstName)}: is empty.");
-            }
-
-            if (childDto.LastName.Length == 0)
-            {
-                isValid = false;
-                stringBuilder.AppendLine($"{nameof(ChildDto.LastName)}: is empty.");
-            }
-
-            if (!isValid)
-            {
-                throw new ArgumentException(stringBuilder.ToString(), nameof(childDto));
+                throw new ArgumentException($"{nameof(ChildDto.DateOfBirth)}: {childDto.DateOfBirth} is bigger than current date.");
             }
         }
 
