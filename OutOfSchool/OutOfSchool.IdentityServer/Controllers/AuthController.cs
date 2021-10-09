@@ -58,14 +58,20 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout(string logoutId)
         {
+            logger.LogInformation("Logout started.");
+
             await signInManager.SignOutAsync();
 
             var logoutRequest = await interactionService.GetLogoutContextAsync(logoutId);
 
             if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
             {
+                logger.LogError("PostLogoutRedirectUri was null.");
+
                 throw new NotImplementedException();
             }
+
+            logger.LogInformation("Successfully logged out.");
 
             return Redirect(logoutRequest.PostLogoutRedirectUri);
         }
@@ -94,8 +100,12 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            logger.LogInformation("Login started.");
+
             if (!ModelState.IsValid)
             {
+                logger.LogInformation("Model was not valid.");
+
                 return View(new LoginViewModel
                 {
                     ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
@@ -107,13 +117,19 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             if (result.Succeeded)
             {
+                logger.LogInformation("Successfully logged");
+
                 return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
 
             if (result.IsLockedOut)
             {
+                logger.LogWarning("User attempting to sign-in is locked out.");
+
                 return BadRequest();
             }
+
+            logger.LogInformation("Login failed");
 
             ModelState.AddModelError(string.Empty, localizer["Login or password is wrong"]);
             return View(new LoginViewModel
@@ -143,8 +159,12 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            logger.LogInformation("Register started.");
+
             if (!ModelState.IsValid)
             {
+                logger.LogInformation("Model was not valid.");
+
                 return View(model);
             }
 
@@ -207,13 +227,15 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                     if (!deletionResult.Succeeded)
                     {
-                        logger.Log(LogLevel.Warning, "User was created without role");
+                        logger.Log(LogLevel.Warning, "User was created without role.");
                     }
 
                     foreach (var error in roleAssignResult.Errors)
                     {
                         ModelState.AddModelError(string.Empty, error.Description);
                     }
+
+                    logger.LogInformation("Successfully registered.");
                 }
                 else
                 {
@@ -223,6 +245,8 @@ namespace OutOfSchool.IdentityServer.Controllers
                         {
                             error.Description = localizer["Email {0} is already taken", error.Description.Substring(10).Split('\'')[0]];
                         }
+
+                        logger.LogError("Error happened while creating User entity" + error.Description);
 
                         ModelState.AddModelError(string.Empty, error.Description);
                     }
