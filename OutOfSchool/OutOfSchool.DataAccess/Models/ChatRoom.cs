@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
 
 namespace OutOfSchool.Services.Models
 {
     public class ChatRoom
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
-        [Required]
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         public virtual Workshop Workshop { get; set; }
 

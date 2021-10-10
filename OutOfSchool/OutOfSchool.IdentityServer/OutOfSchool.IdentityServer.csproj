@@ -10,8 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003125036_UpdatedTeacherModelToUseGuidsAsId.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003125036_UpdatedTeacherModelToUseGuidsAsId.Designer.cs" />
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003171912_UpdatedApplicationModelToUseGuidsAsId.cs" />
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003171912_UpdatedApplicationModelToUseGuidsAsId.Designer.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003172240_UpdatedApplicationModelToUseGuidsAsId.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003172240_UpdatedApplicationModelToUseGuidsAsId.Designer.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003190648_UpdatedChildModelToUseGuidsAsId.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003190648_UpdatedChildModelToUseGuidsAsId.Designer.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211006220217_UpdateParticularModels.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211006220217_UpdateParticularModels.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

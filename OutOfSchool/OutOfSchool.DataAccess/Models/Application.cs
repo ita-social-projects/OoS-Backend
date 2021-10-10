@@ -12,11 +12,11 @@ namespace OutOfSchool.Services.Models
 
         public DateTimeOffset CreationTime { get; set; }
 
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         public Guid ChildId { get; set; }
 
-        public long ParentId { get; set; }
+        public Guid ParentId { get; set; }
 
         public virtual Workshop Workshop { get; set; }
 

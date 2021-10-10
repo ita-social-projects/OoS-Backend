@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using AutoMapper;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
 
@@ -87,8 +88,13 @@ namespace OutOfSchool.WebApi.Services
             offsetFilter ??= new OffsetFilter();
 
             var count = await workshopRepository.Count().ConfigureAwait(false);
-            var workshops = workshopRepository.Get<long>(skip: offsetFilter.From, take: offsetFilter.Size,
-                orderBy: x => x.Id, ascending: true).ToList();
+            var workshops =
+                workshopRepository.Get(
+                    skip: offsetFilter.From,
+                    take: offsetFilter.Size,
+                    orderBy: x => x.Id,
+                    ascending: true)
+                .ToList();
 
             logger.LogInformation(!workshops.Any()
                 ? "Workshop table is empty."
@@ -96,11 +102,11 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
             var workshopsWithRating = GetWorkshopsWithAverageRating(workshopsDTO);
-            return new SearchResult<WorkshopDTO>() {TotalAmount = count, Entities = workshopsWithRating};
+            return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> GetById(long id)
+        public async Task<WorkshopDTO> GetById(Guid id)
         {
             logger.LogInformation($"Getting Workshop by Id started. Looking Id = {id}.");
 
@@ -124,7 +130,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id)
+        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(Guid id)
         {
             logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -172,7 +178,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         /// <exception cref="ArgumentNullException">If the entity with specified id was not found in the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             logger.LogInformation($"Deleting Workshop with Id = {id} started.");
 

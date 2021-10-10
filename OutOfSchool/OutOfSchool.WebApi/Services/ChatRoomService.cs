@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDto> CreateOrReturnExisting(string user1Id, string user2Id, long workshopId)
+        public async Task<ChatRoomDto> CreateOrReturnExisting(string user1Id, string user2Id, Guid workshopId)
         {
             logger.LogInformation($"Checking a ChatRoom with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
@@ -73,7 +73,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             logger.LogInformation($"ChatRoom deleting was started. ChatRoom id:{id}");
 
@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDto> GetById(long id)
+        public async Task<ChatRoomDto> GetById(Guid id)
         {
             logger.LogInformation($"Process of getting ChatRoom by Id:{id} was started.");
 
@@ -154,7 +154,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatRoomDto> GetUniqueChatRoomBetweenUsersWithinWorkshop(string user1Id, string user2Id, long workshopId)
+        public async Task<ChatRoomDto> GetUniqueChatRoomBetweenUsersWithinWorkshop(string user1Id, string user2Id, Guid workshopId)
         {
             logger.LogInformation($"Process of getting unique ChatRoom with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
@@ -188,7 +188,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<bool> UsersCanChatBetweenEachOther(string user1Id, string user2Id, long workshopId)
+        public async Task<bool> UsersCanChatBetweenEachOther(string user1Id, string user2Id, Guid workshopId)
         {
             logger.LogInformation($"Validation of ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 
@@ -244,7 +244,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopId">Id of Workshop.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDto"/> that was created.</returns>
         /// <exception cref="DbUpdateException">If an error is encountered while saving to database.</exception>
-        private async Task<ChatRoomDto> Create(string user1Id, string user2Id, long workshopId)
+        private async Task<ChatRoomDto> Create(string user1Id, string user2Id, Guid workshopId)
         {
             logger.LogInformation($"ChatRoom creating with {nameof(user1Id)}:{user1Id}, {nameof(user2Id)}:{user2Id}, workshopId:{workshopId} was started.");
 

@@ -31,9 +31,9 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// <summary>
         /// Generates a list of the <see cref="Child"/> objects.
         /// </summary>
-        /// <param name="number">Number of instances to generate.</param>
+        /// <param name="count">count of instances to generate.</param>
         /// <returns>A <see cref="List{T}"/> of <see cref="Child"/> objects.</returns>
-        public static List<Child> Generate(int number) => faker.Generate(number);
+        public static List<Child> Generate(int count) => faker.Generate(count);
 
         public static Child WithParent(this Child child, Parent parent)
         {
@@ -49,12 +49,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         {
             _ = children ?? throw new ArgumentNullException(nameof(children));
 
-            children.ForEach(
-                child =>
-                {
-                    child.Parent = parent;
-                    child.ParentId = parent?.Id ?? default;
-                });
+            children.ForEach(x => x.WithParent(parent));
 
             return children;
         }
@@ -73,12 +68,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         {
             _ = children ?? throw new ArgumentNullException(nameof(children));
 
-            children.ForEach(
-                child =>
-                {
-                    child.SocialGroup = socialGroup;
-                    child.SocialGroupId = socialGroup?.Id ?? default;
-                });
+            children.ForEach(x => x.WithSocial(socialGroup));
 
             return children;
         }

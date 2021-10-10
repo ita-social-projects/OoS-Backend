@@ -11,6 +11,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services
@@ -27,6 +28,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         private OutOfSchoolDbContext dbContext;
 
         private IChatRoomService roomService;
+
+        private List<ChatRoom> chatRooms;
 
         [SetUp]
         public void SetUp()
@@ -84,16 +87,16 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         #region Delete
         [Test]
-        [TestCase(1)]
-        public async Task Delete_WhenRoomExist_ShouldDeleteEntities(long id)
+        public async Task Delete_WhenRoomExist_ShouldDeleteEntities()
         {
             // Arrange
             var roomCount = dbContext.ChatRooms.Count();
             var messagesCount = dbContext.ChatMessages.Count();
             var roomUsersCount = dbContext.ChatRoomUsers.Count();
+            var chatRoomToDelete = TestDataHelper.RandomItem(chatRooms);
 
             // Act
-            await roomService.Delete(id).ConfigureAwait(false);
+            await roomService.Delete(chatRoomToDelete.Id).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(roomCount - 1, dbContext.ChatRooms.Count());
@@ -102,8 +105,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(5)]
-        public void Delete_WhenRoomDoesNotExist_ShouldThrowArgumentOutOfRangeException(long id)
+        public void Delete_WhenRoomDoesNotExist_ShouldThrowArgumentOutOfRangeException()
         {
             // Arrange
             var roomCount = dbContext.ChatRooms.Count();
@@ -112,7 +114,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act and Assert
             Assert.That(
-                async () => await roomService.Delete(id).ConfigureAwait(false),
+                async () => await roomService.Delete(Guid.NewGuid()).ConfigureAwait(false),
                 Throws.Exception.TypeOf<ArgumentOutOfRangeException>());
             Assert.AreEqual(roomCount, dbContext.ChatRooms.Count());
             Assert.AreEqual(messagesCount, dbContext.ChatMessages.Count());
@@ -121,25 +123,23 @@ namespace OutOfSchool.WebApi.Tests.Services
         #endregion
 
         #region GetById
+        //[Test]
+        //public async Task GetById_WhenRoomExist_ShouldReturnFoundEntity()
+        //{
+        //    // Act
+        //    var chatRoom = TestDataHelper.RandomItem(chatRooms);
+        //    var result = await roomService.GetById(chatRoom.Id).ConfigureAwait(false);
+
+        //    // Assert
+        //    Assert.IsNotNull(result);
+        //    Assert.AreEqual(id, result.Id);
+        //}
+
         [Test]
-        [TestCase(1)]
-        public async Task GetById_WhenRoomExist_ShouldReturnFoundEntity(long id)
+        public async Task GetById_WhenRoomDoesNotExist_ShouldReturnNull()
         {
             // Act
-            var result = await roomService.GetById(id).ConfigureAwait(false);
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(id, dbContext.ChatRooms.Find(id).Id);
-            Assert.AreEqual(id, result.Id);
-        }
-
-        [Test]
-        [TestCase(5)]
-        public async Task GetById_WhenRoomDoesNotExist_ShouldReturnNull(long id)
-        {
-            // Act
-            var result = await roomService.GetById(id).ConfigureAwait(false);
+            var result = await roomService.GetById(Guid.NewGuid()).ConfigureAwait(false);
 
             // Assert
             Assert.IsNull(result);
@@ -235,25 +235,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                var messages = new List<ChatMessage>()
-                {
-                    new ChatMessage() { Id = 1, UserId = "user1", ChatRoomId = 1, Text = "text1", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:47"), IsRead = false },
-                    new ChatMessage() { Id = 2, UserId = "user3", ChatRoomId = 1, Text = "text2", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:48"), IsRead = false },
-                    new ChatMessage() { Id = 3, UserId = "user1", ChatRoomId = 2, Text = "text3", CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
-                    new ChatMessage() { Id = 4, UserId = "user4", ChatRoomId = 2, Text = "text4", CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
-                };
-                context.ChatMessages.AddRangeAsync(messages);
-
-                var users = new List<User>()
-                {
-                    new User() { Id = "user1", Role = Role.Parent.ToString().ToLower() },
-                    new User() { Id = "user2", Role = Role.Parent.ToString().ToLower() },
-                    new User() { Id = "user3", Role = Role.Provider.ToString().ToLower() },
-                    new User() { Id = "user4", Role = Role.Provider.ToString().ToLower() },
-                    new User() { Id = "admin", Role = Role.Admin.ToString().ToLower() },
-                };
-                context.Users.AddRangeAsync(users);
-
                 var workshops = new List<Workshop>()
                 {
                     new Workshop()
@@ -277,32 +258,52 @@ namespace OutOfSchool.WebApi.Tests.Services
                 };
                 context.Workshops.AddRangeAsync(workshops);
 
+                var users = new List<User>()
+                {
+                    new User() { Id = "user1", Role = Role.Parent.ToString().ToLower() },
+                    new User() { Id = "user2", Role = Role.Parent.ToString().ToLower() },
+                    new User() { Id = "user3", Role = Role.Provider.ToString().ToLower() },
+                    new User() { Id = "user4", Role = Role.Provider.ToString().ToLower() },
+                    new User() { Id = "admin", Role = Role.Admin.ToString().ToLower() },
+                };
+                context.Users.AddRangeAsync(users);
+
+                chatRooms = new List<ChatRoom>()
+                {
+                    new ChatRoom() { Id = Guid.NewGuid(), WorkshopId = 1, Users = new List<User>() { users[0], users[2] } },
+                    new ChatRoom() { Id = Guid.NewGuid(), WorkshopId = 2, Users = new List<User>() { users[0], users[3] } },
+                    new ChatRoom() { Id = Guid.NewGuid(), WorkshopId = 3, Users = new List<User>() { users[0], users[3] } },
+                    new ChatRoom() { Id = Guid.NewGuid(), WorkshopId = 1, Users = new List<User>() { users[1], users[2] } },
+                };
+
+                context.ChatRooms.AddRangeAsync(chatRooms);
+
+                var messages = new List<ChatMessage>()
+                {
+                    new ChatMessage() { Id = Guid.NewGuid(), UserId = "user1", ChatRoomId = chatRooms[0].Id, ChatRoom = chatRooms[0], Text = "text1", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:47"), IsRead = false },
+                    new ChatMessage() { Id = Guid.NewGuid(), UserId = "user3", ChatRoomId = chatRooms[0].Id, ChatRoom = chatRooms[0], Text = "text2", CreatedTime = DateTimeOffset.Parse("2021-06-18 15:48"), IsRead = false },
+                    new ChatMessage() { Id = Guid.NewGuid(), UserId = "user1", ChatRoomId = chatRooms[1].Id, ChatRoom = chatRooms[1], Text = "text3", CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
+                    new ChatMessage() { Id = Guid.NewGuid(), UserId = "user4", ChatRoomId = chatRooms[1].Id, ChatRoom = chatRooms[1], Text = "text4", CreatedTime = DateTimeOffset.UtcNow, IsRead = false },
+                };
+                context.ChatMessages.AddRangeAsync(messages);
+
                 var providers = new List<Provider>()
                 {
-                    new Provider() { Id = 1, UserId = users.ToArray()[2].Id },
-                    new Provider() { Id = 2, UserId = users.ToArray()[3].Id },
+                    new Provider() { Id = 1, UserId = users[2].Id },
+                    new Provider() { Id = 2, UserId = users[3].Id },
                 };
                 context.Providers.AddRangeAsync(providers);
 
-                var rooms = new List<ChatRoom>()
-                {
-                    new ChatRoom() { Id = 1, WorkshopId = 1, Users = new List<User>() { users.ToArray()[0], users.ToArray()[2] } },
-                    new ChatRoom() { Id = 2, WorkshopId = 2, Users = new List<User>() { users.ToArray()[0], users.ToArray()[3] } },
-                    new ChatRoom() { Id = 3, WorkshopId = 3, Users = new List<User>() { users.ToArray()[0], users.ToArray()[3] } },
-                    new ChatRoom() { Id = 4, WorkshopId = 1, Users = new List<User>() { users.ToArray()[1], users.ToArray()[2] } },
-                };
-                context.ChatRooms.AddRangeAsync(rooms);
-
                 var roomUsers = new List<ChatRoomUser>()
                 {
-                    new ChatRoomUser() { Id = 1, ChatRoomId = 1, UserId = users.ToArray()[0].Id },
-                    new ChatRoomUser() { Id = 2, ChatRoomId = 1, UserId = users.ToArray()[2].Id },
-                    new ChatRoomUser() { Id = 3, ChatRoomId = 2, UserId = users.ToArray()[0].Id },
-                    new ChatRoomUser() { Id = 4, ChatRoomId = 2, UserId = users.ToArray()[3].Id },
-                    new ChatRoomUser() { Id = 5, ChatRoomId = 3, UserId = users.ToArray()[0].Id },
-                    new ChatRoomUser() { Id = 6, ChatRoomId = 3, UserId = users.ToArray()[3].Id },
-                    new ChatRoomUser() { Id = 7, ChatRoomId = 4, UserId = users.ToArray()[1].Id },
-                    new ChatRoomUser() { Id = 8, ChatRoomId = 4, UserId = users.ToArray()[2].Id },
+                    new ChatRoomUser() { Id = Guid.NewGuid(), ChatRoomId = chatRooms[0].Id, ChatRoom = chatRooms[0], UserId = users[0].Id },
+                    new ChatRoomUser() { Id = Guid.NewGuid(), ChatRoomId = chatRooms[0].Id, ChatRoom = chatRooms[0], UserId = users[2].Id },
+                    new ChatRoomUser() { Id = Guid.NewGuid(), ChatRoomId = chatRooms[1].Id, ChatRoom = chatRooms[1], UserId = users[0].Id },
+                    new ChatRoomUser() { Id = Guid.NewGuid(), ChatRoomId = chatRooms[1].Id, ChatRoom = chatRooms[1], UserId = users[3].Id },
+                    new ChatRoomUser() { Id = Guid.NewGuid(), ChatRoomId = chatRooms[2].Id, ChatRoom = chatRooms[2], UserId = users[0].Id },
+                    new ChatRoomUser() { Id = Guid.NewGuid(), ChatRoomId = chatRooms[2].Id, ChatRoom = chatRooms[2], UserId = users[3].Id },
+                    new ChatRoomUser() { Id = Guid.NewGuid(), ChatRoomId = chatRooms[3].Id, ChatRoom = chatRooms[3], UserId = users[1].Id },
+                    new ChatRoomUser() { Id = Guid.NewGuid(), ChatRoomId = chatRooms[3].Id, ChatRoom = chatRooms[3], UserId = users[2].Id },
                 };
                 context.ChatRoomUsers.AddRangeAsync(roomUsers);
 

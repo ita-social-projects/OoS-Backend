@@ -1,11 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
+
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
 {
-    public class WorkshopRepository : EntityRepository<Workshop>, IWorkshopRepository
+    public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshopRepository
     {
         private readonly OutOfSchoolDbContext db;
 
@@ -42,7 +45,7 @@ namespace OutOfSchool.Services.Repository
             await db.SaveChangesAsync();
         }
 
-        public async Task<Workshop> GetWithNavigations(long id)
+        public async Task<Workshop> GetWithNavigations(Guid id)
         {
             return await db.Workshops
                 .Include(ws => ws.Address)

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
+
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -25,14 +27,14 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatMessageDto"/> that was found, or null.</returns>
-        Task<ChatMessageDto> GetById(long id);
+        Task<ChatMessageDto> GetById(Guid id);
 
         /// <summary>
         /// Get ChatMessage with some ChatRoomId.
         /// </summary>
         /// <param name="chatRoomId">ChatRoom's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements from the input sequence.</returns>
-        Task<IEnumerable<ChatMessageDto>> GetAllByChatRoomId(long chatRoomId);
+        Task<IEnumerable<ChatMessageDto>> GetAllByChatRoomId(Guid chatRoomId);
 
         /// <summary>
         /// Update the ChatMessage.
@@ -58,7 +60,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="chatRoomId">Identifier of ChatRoom where ChatMessages are not read.</param>
         /// <param name="userId">Identifier of User who did not read ChatMessages.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="IEnumerable{ChatMessageDTO}"/> that contains elements from the input sequence.</returns>
-        Task<IEnumerable<ChatMessageDto>> GetAllNotReadByUserInChatRoom(long chatRoomId, string userId);
+        Task<IEnumerable<ChatMessageDto>> GetAllNotReadByUserInChatRoom(Guid chatRoomId, string userId);
 
         /// <summary>
         /// Delete the ChatMessage.
@@ -67,6 +69,6 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         /// <exception cref="ArgumentOutOfRangeException">If entity with id was not found in system.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task Delete(long id);
+        Task Delete(Guid id);
     }
 }

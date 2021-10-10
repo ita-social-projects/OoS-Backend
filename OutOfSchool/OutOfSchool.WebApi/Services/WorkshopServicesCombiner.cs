@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -11,13 +12,13 @@ namespace OutOfSchool.WebApi.Services
 {
     public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     {
-        private readonly IWorkshopService databaseService;
+        private readonly IWorkshopService workshopService;
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly ILogger<WorkshopServicesCombiner> logger;
 
         public WorkshopServicesCombiner(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger<WorkshopServicesCombiner> logger)
         {
-            this.databaseService = workshopService;
+            this.workshopService = workshopService;
             this.elasticsearchService = elasticsearchService;
             this.logger = logger;
         }
@@ -25,7 +26,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
-            var workshop = await databaseService.Create(dto).ConfigureAwait(false);
+            var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
             var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
 
@@ -38,9 +39,9 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> GetById(long id)
+        public async Task<WorkshopDTO> GetById(Guid id)
         {
-            var workshop = await databaseService.GetById(id).ConfigureAwait(false);
+            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
 
             return workshop;
         }
@@ -48,7 +49,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
-            var workshop = await databaseService.Update(dto).ConfigureAwait(false);
+            var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
             var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
 
@@ -61,9 +62,9 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
-            await databaseService.Delete(id).ConfigureAwait(false);
+            await workshopService.Delete(id).ConfigureAwait(false);
 
             var esResultIsValid = await elasticsearchService.Delete(id).ConfigureAwait(false);
 
@@ -96,7 +97,7 @@ namespace OutOfSchool.WebApi.Services
             }
             else
             {
-                var databaseResult = await databaseService.GetByFilter(filter).ConfigureAwait(false);
+                var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
                 return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = DtoModelsToWorkshopCards(databaseResult.Entities) };
             }
@@ -113,16 +114,16 @@ namespace OutOfSchool.WebApi.Services
             }
             else
             {
-                var databaseResult = await databaseService.GetByFilter(filter).ConfigureAwait(false);
+                var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
                 return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = DtoModelsToWorkshopCards(databaseResult.Entities) };
             }
         }
 
         /// <inheritdoc/>
-        public async Task<List<WorkshopCard>> GetByProviderId(long id)
+        public async Task<List<WorkshopCard>> GetByProviderId(Guid id)
         {
-            var workshopCards = DtoModelsToWorkshopCards(await databaseService.GetByProviderId(id).ConfigureAwait(false));
+            var workshopCards = DtoModelsToWorkshopCards(await workshopService.GetByProviderId(id).ConfigureAwait(false));
 
             return workshopCards;
         }

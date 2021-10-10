@@ -21,7 +21,7 @@ namespace OutOfSchool.Services.Models
         public string PlaceOfStudy { get; set; }
 
         // TODO: validate case when child has registered without parent help
-        public long ParentId { get; set; }
+        public Guid ParentId { get; set; }
 
         public virtual Parent Parent { get; set; }
 

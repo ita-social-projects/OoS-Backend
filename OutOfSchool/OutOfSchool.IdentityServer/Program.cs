@@ -34,10 +34,16 @@ namespace OutOfSchool.IdentityServer
                     Task.Delay(CheckConnectivityDelay).Wait();
                 }
 
-                scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
-                    .Database.Migrate();
-                scope.ServiceProvider.GetRequiredService<CertificateDbContext>()
-                    .Database.Migrate();
+                scope.ServiceProvider
+                    .GetRequiredService<PersistedGrantDbContext>()
+                    .Database
+                    .Migrate();
+
+                scope.ServiceProvider
+                    .GetRequiredService<CertificateDbContext>()
+                    .Database
+                    .Migrate();
+
                 var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
                 var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 

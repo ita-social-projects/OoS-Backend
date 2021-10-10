@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {
     public class WorkshopES
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         public string Title { get; set; }
 

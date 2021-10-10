@@ -109,10 +109,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            this.ValidateId(id, localizer);
-
             return Ok(await serviceParent.GetById(id).ConfigureAwait(false));
         }
 
@@ -155,10 +153,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Delete(long id)
+        public async Task<ActionResult> Delete(Guid id)
         {
-            this.ValidateId(id, localizer);
-
             var parent = await serviceParent.GetById(id).ConfigureAwait(false);
 
             if (parent is null)
@@ -202,7 +198,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
         }
 
-        private async Task<bool> IsUserParentProfileOwner(long parentId)
+        private async Task<bool> IsUserParentProfileOwner(Guid parentId)
         {
             // Parent can create/update/delete his/her account only if parent is the owner.
             // Admin can manipulate data without checks.

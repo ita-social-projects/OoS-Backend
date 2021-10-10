@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(500)]
         public string PlaceOfStudy { get; set; } = string.Empty;
 
-        public long ParentId { get; set; } = default;
+        public Guid ParentId { get; set; } = default;
 
         public long? SocialGroupId { get; set; } = default;
 

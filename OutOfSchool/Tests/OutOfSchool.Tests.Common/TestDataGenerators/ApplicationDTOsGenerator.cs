@@ -30,9 +30,9 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// <summary>
         /// Generates a list of the <see cref="ApplicationDto"/> objects.
         /// </summary>
-        /// <param name="number">Number of instances to generate.</param>
+        /// <param name="count">count of instances to generate.</param>
         /// <returns>A <see cref="List{T}"/> of <see cref="ApplicationDto"/> objects.</returns>
-        public static List<ApplicationDto> Generate(int number) => faker.Generate(number);
+        public static List<ApplicationDto> Generate(int count) => faker.Generate(count);
 
         /// <summary>
         /// Assigns given <paramref name="workshop"/> to the given <paramref name="application"/>
@@ -41,10 +41,9 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         public static ApplicationDto WithWorkshopDto(this ApplicationDto application, WorkshopDTO workshop)
         {
             _ = application ?? throw new ArgumentNullException(nameof(application));
-            _ = workshop ?? throw new ArgumentNullException(nameof(workshop));
 
             application.Workshop = workshop;
-            application.WorkshopId = workshop.Id;
+            application.WorkshopId = workshop?.Id ?? default;
 
             return application;
         }
@@ -56,7 +55,6 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         public static List<ApplicationDto> WithWorkshopDto(this List<ApplicationDto> applications, WorkshopDTO workshop)
         {
             _ = applications ?? throw new ArgumentNullException(nameof(applications));
-            _ = workshop ?? throw new ArgumentNullException(nameof(workshop));
 
             applications.ForEach(a => a.WithWorkshopDto(workshop));
 

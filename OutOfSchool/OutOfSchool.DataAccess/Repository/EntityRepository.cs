@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -11,69 +12,70 @@ namespace OutOfSchool.Services.Repository
     /// <summary>
     /// Repository for accessing the database.
     /// </summary>
-    /// <typeparam name="T">Entity.</typeparam>
-    public class EntityRepository<T> : IEntityRepository<T>
-        where T : class, new()
+    /// <typeparam name="TKey">Key type.</typeparam>
+    /// <typeparam name="TValue">Entity type.</typeparam>
+    public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase<TKey, TValue>
+        where TValue : class, new()
     {
-        private readonly OutOfSchoolDbContext dbContext;
-        private readonly DbSet<T> dbSet;
+        protected readonly OutOfSchoolDbContext dbContext;
+        protected readonly DbSet<TValue> dbSet;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
         /// </summary>
         /// <param name="dbContext">OutOfSchoolDbContext.</param>
-        public EntityRepository(OutOfSchoolDbContext dbContext)
+        protected EntityRepositoryBase(OutOfSchoolDbContext dbContext)
         {
             this.dbContext = dbContext;
-            dbSet = this.dbContext.Set<T>();
+            dbSet = this.dbContext.Set<TValue>();
         }
 
-        // TODO: make all public methods virtual
-
         /// <inheritdoc/>
-        public async Task<T> Create(T entity)
+        public virtual async Task<TValue> Create(TValue entity)
         {
-            await dbSet.AddAsync(entity);
-            await dbContext.SaveChangesAsync();
-            return await Task.FromResult(entity);
+            await dbSet.AddAsync(entity).ConfigureAwait(false);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+            return await Task.FromResult(entity).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public async Task<T> RunInTransaction(Func<Task<T>> operation)
+        public virtual async Task<TValue> RunInTransaction(Func<Task<TValue>> operation)
         {
             using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                var result = await operation();
-                await transaction.CommitAsync();
+                var result = await operation().ConfigureAwait(false);
+                await transaction.CommitAsync().ConfigureAwait(false);
+
                 return result;
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync().ConfigureAwait(false);
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task Delete(T entity)
+        public virtual async Task Delete(TValue entity)
         {
             dbContext.Entry(entity).State = EntityState.Deleted;
 
-            await this.dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<T>> GetAll()
+        public virtual async Task<IEnumerable<TValue>> GetAll()
         {
-            return await dbSet.ToListAsync();
+            return await dbSet.ToListAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "")
+        public virtual async Task<IEnumerable<TValue>> GetAllWithDetails(string includeProperties = "")
         {
-            IQueryable<T> query = dbSet;
+            IQueryable<TValue> query = dbSet;
             foreach (var includeProperty in includeProperties.Split(
                 new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -83,7 +85,7 @@ namespace OutOfSchool.Services.Repository
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        public virtual async Task<IEnumerable<TValue>> GetByFilter(Expression<Func<TValue, bool>> predicate, string includeProperties = "")
         {
             var query = this.dbSet.Where(predicate);
 
@@ -93,11 +95,11 @@ namespace OutOfSchool.Services.Repository
                 query = query.Include(includeProperty);
             }
 
-            return await query.ToListAsync();
+            return await query.ToListAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public IQueryable<T> GetByFilterNoTracking(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        public virtual IQueryable<TValue> GetByFilterNoTracking(Expression<Func<TValue, bool>> predicate, string includeProperties = "")
         {
             var query = this.dbSet.Where(predicate);
 
@@ -111,38 +113,36 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public async Task<T> GetById(long id)
-        {
-            return await dbSet.FindAsync(id).AsTask();
-        }
+        public virtual Task<TValue> GetById(TKey id) => dbSet.FindAsync(id).AsTask();
 
         /// <inheritdoc/>
-        public async Task<T> Update(T entity)
+        public virtual async Task<TValue> Update(TValue entity)
         {
             dbContext.Entry(entity).State = EntityState.Modified;
 
-            await this.dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
             return entity;
         }
 
         /// <inheritdoc/>
-        public async Task<int> Count(Expression<Func<T, bool>> where = null)
+        public virtual Task<int> Count(Expression<Func<TValue, bool>> where = null)
         {
-            if (where == null)
-            {
-                return await dbSet.CountAsync().ConfigureAwait(false);
-            }
-            else
-            {
-                return await dbSet.Where(where).CountAsync().ConfigureAwait(false);
-            }
+            return where == null
+                   ? dbSet.CountAsync()
+                   : dbSet.Where(where).CountAsync();
         }
 
         /// <inheritdoc/>
-        public IQueryable<T> Get<TOrderKey>(
-        int skip = 0, int take = 0, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
+        public virtual IQueryable<TValue> Get<TOrderKey>(
+            int skip = 0,
+            int take = 0,
+            string includeProperties = "",
+            Expression<Func<TValue, bool>> where = null,
+            Expression<Func<TValue, TOrderKey>> orderBy = null,
+            bool ascending = true)
         {
-            IQueryable<T> query = (IQueryable<T>)dbSet;
+            IQueryable<TValue> query = (IQueryable<TValue>)dbSet;
             if (where != null)
             {
                 query = query.Where(where);
@@ -171,12 +171,39 @@ namespace OutOfSchool.Services.Repository
             }
 
             foreach (var includeProperty in includeProperties.Split(
-           new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 query = query.Include(includeProperty);
             }
 
             return query;
         }
+    }
+
+    public class EntityRepository<T> : EntityRepositoryBase<long, T>, IEntityRepository<T>
+        where T : class, new()
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
+        /// </summary>
+        /// <param name="dbContext">OutOfSchoolDbContext.</param>
+        public EntityRepository(OutOfSchoolDbContext dbContext)
+            : base(dbContext)
+        {
+        }
+    }
+
+    public class SensitiveEntityRepository<T> : EntityRepositoryBase<Guid, T>, ISensitiveEntityRepository<T>
+        where T : class, new()
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
+        /// </summary>
+        /// <param name="dbContext">OutOfSchoolDbContext.</param>
+        public SensitiveEntityRepository(OutOfSchoolDbContext dbContext)
+            : base(dbContext)
+        {
+        }
+
     }
 }

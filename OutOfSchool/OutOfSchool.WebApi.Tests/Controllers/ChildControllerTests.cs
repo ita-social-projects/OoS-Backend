@@ -27,6 +27,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private ChildDto child;
         private string currentUserId;
 
+        private ParentDTO existingParent;
+
         [SetUp]
         public void Setup()
         {
@@ -41,12 +43,18 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
-            var parent1 = new ParentDTO() { Id = 1, UserId = currentUserId };
-            //var parent2 = new ParentDTO() { Id = 2, UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" };
-            var parent2 = new ParentDTO() { Id = 2, UserId = Guid.NewGuid().ToString() };
+            existingParent = ParentDtoGenerator.Generate();
+            existingParent.UserId = currentUserId;
 
-            children = ChildDtoGenerator.Generate(2).WithParent(parent1).WithSocial(new SocialGroupDto { Id = 1 })
-                .Concat(ChildDtoGenerator.Generate(2).WithParent(parent2).WithSocial(new SocialGroupDto { Id = 2 }))
+            var parent2 = ParentDtoGenerator.Generate();
+
+            children =
+                ChildDtoGenerator.Generate(2)
+                .WithParent(existingParent)
+                .WithSocial(new SocialGroupDto { Id = 1 })
+                .Concat(ChildDtoGenerator.Generate(2)
+                .WithParent(parent2)
+                .WithSocial(new SocialGroupDto { Id = 2 }))
                 .ToList();
             child = ChildDtoGenerator.Generate();
         }
@@ -108,16 +116,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-        [TestCase(1)]
-        public async Task GetByParentId_WhenThereAreChildren_ShouldReturnOkResultObject(long id)
+        public async Task GetByParentId_WhenThereAreChildren_ShouldReturnOkResultObject()
         {
             // Arrange
             var filter = new OffsetFilter();
-            service.Setup(x => x.GetByParentIdOrderedByFirstName(id, filter))
-                .ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Where(p => p.ParentId == id).Count(), Entities = children.Where(p => p.ParentId == id).ToList() });
+            service.Setup(x => x.GetByParentIdOrderedByFirstName(existingParent.Id, filter))
+                .ReturnsAsync(
+                new SearchResult<ChildDto>()
+                {
+                    TotalAmount = children.Where(p => p.ParentId == existingParent.Id).Count(),
+                    Entities = children.Where(p => p.ParentId == existingParent.Id).ToList(),
+                });
 
             // Act
-            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false);
+            var result = await controller.GetByParentIdForAdmin(existingParent.Id, filter).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
@@ -127,11 +139,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByParentId_WhenThereIsNoChild_ShouldReturnOkObjectResult(long id)
         {
             // Arrange
+            var noneExistingParentId = Guid.NewGuid();
             var filter = new OffsetFilter();
-            service.Setup(x => x.GetByParentIdOrderedByFirstName(id, filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = children.Where(p => p.ParentId == id).ToList() });
+            service.Setup(x => x.GetByParentIdOrderedByFirstName(noneExistingParentId, filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = children.Where(p => p.ParentId == noneExistingParentId).ToList() });
 
             // Act
-            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false);
+            var result = await controller.GetByParentIdForAdmin(noneExistingParentId, filter).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);

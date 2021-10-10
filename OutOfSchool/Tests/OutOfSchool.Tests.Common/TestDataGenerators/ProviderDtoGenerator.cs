@@ -4,16 +4,13 @@ using System.Collections.Generic;
 using Bogus;
 
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
+using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators
 {
-    /// <summary>
-    /// Contains methods to generate fake <see cref="Provider"/> objects.
-    /// </summary>
-    public static class ProvidersGenerator
+    public static class ProviderDtoGenerator
     {
-        private static readonly Faker<Provider> faker = new Faker<Provider>()
+        private static readonly Faker<ProviderDto> faker = new Faker<ProviderDto>()
             .RuleFor(x => x.Id, _ => Guid.NewGuid())
             .RuleFor(x => x.FullTitle, f => f.Company.CompanyName())
             .RuleFor(x => x.ShortTitle, f => f.Company.CompanySuffix())
@@ -29,19 +26,23 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.Type, f => f.Random.ArrayElement((ProviderType[])Enum.GetValues(typeof(ProviderType))))
             .RuleFor(x => x.Status, f => f.Random.Bool())
             .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
-            .RuleFor(x => x.LegalAddress, _ => AddressGenerator.Generate())
-            .RuleFor(x => x.ActualAddress, _ => AddressGenerator.Generate());
+            .RuleFor(x => x.LegalAddress, _ => AddressDtoGenerator.Generate())
+            .RuleFor(x => x.ActualAddress, _ => AddressDtoGenerator.Generate());
 
         /// <summary>
         /// Creates new instance of the <see cref="Provider"/> class with random data.
         /// </summary>
         /// <returns><see cref="Provider"/> object.</returns>
-        public static Provider Generate() => faker.Generate();
+        public static ProviderDto Generate() => faker.Generate();
 
         /// <summary>
         /// Generates a list of the <see cref="Provider"/> objects.
         /// </summary>
         /// <param name="count">count of instances to generate.</param>
-        public static List<Provider> Generate(int count) => faker.Generate(count);
+        public static List<ProviderDto> Generate(int count) => faker.Generate(count);
+
+        public static ProviderDto WithUserId(this ProviderDto providerDto, string userId)
+            => TestDataHelper.ApplyOnItem(providerDto, (x, y) => x.UserId = y, userId);
+
     }
 }

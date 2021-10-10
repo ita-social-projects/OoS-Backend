@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+
 using FluentAssertions;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+
 using Moq;
+
 using NUnit.Framework;
+
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.ApiModels;
@@ -46,7 +51,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             parentService = new Mock<IParentService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            userId = "User1Id";
+            userId = Guid.NewGuid().ToString();
 
             httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.User.FindFirst("sub"))
@@ -59,15 +64,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 parentService.Object,
                 workshopService.Object)
             {
-                ControllerContext = new ControllerContext() { HttpContext = httpContext.Object},
+                ControllerContext = new ControllerContext() { HttpContext = httpContext.Object },
             };
 
             workshops = FakeWorkshops();
             applications = ApplicationDTOsGenerator.Generate(2).WithWorkshopDto(workshops.First());
             children = ChildDtoGenerator.Generate(2).WithSocial(new SocialGroupDto { Id = 1 });
 
-            parent = new ParentDTO { Id = 1, UserId = userId };
-            provider = new ProviderDto { Id = 1, UserId = userId };
+            parent = ParentDtoGenerator.Generate().WithUserId(userId);
+            provider = ProviderDtoGenerator.Generate();
+            provider.UserId = userId;
         }
 
         [Test]
@@ -135,8 +141,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var applicationId = applications.First().Id;
-            var anotherParent = new ParentDTO { Id = 2, UserId = userId };
-            var anotherProvider = new ProviderDto { Id = 2, UserId = userId };
+            var anotherParent = ParentDtoGenerator.Generate().WithUserId(userId);
+            var anotherProvider = ProviderDtoGenerator.Generate().WithUserId(userId);
 
             httpContext.Setup(c => c.User.IsInRole(role)).Returns(true);
 
@@ -152,17 +158,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task GetByParentId_WhenIdIsValid_ShouldReturnOkObjectResult(long id)
+        public async Task GetByParentId_WhenIdIsValid_ShouldReturnOkObjectResult()
         {
             // Arrange
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
 
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
-            applicationService.Setup(s => s.GetAllByParent(id)).ReturnsAsync(applications.Where(a => a.ParentId == id));
+            applicationService.Setup(s => s.GetAllByParent(parent.Id)).ReturnsAsync(applications.Where(a => a.ParentId == parent.Id));
 
             // Act
-            var result = await controller.GetByParentId(id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByParentId(parent.Id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -170,30 +175,17 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(0)]
-        public async Task GetByParentId_WhenIdIsNotValid_ShouldReturnBadRequest(long id)
-        {
-            // Act
-            var result = await controller.GetByParentId(id).ConfigureAwait(false) as BadRequestObjectResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task GetByParentId_WhenParentHasNoApplications_ShouldReturnNoContent(long id)
+        public async Task GetByParentId_WhenParentHasNoApplications_ShouldReturnNoContent()
         {
             // Arrange
-            var newParent = new ParentDTO { Id = 10, UserId = userId };
+            var newParent = ParentDtoGenerator.Generate().WithUserId(userId);
 
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(newParent);
-            applicationService.Setup(s => s.GetAllByParent(id)).ReturnsAsync(applications.Where(a => a.ParentId == id));
+            applicationService.Setup(s => s.GetAllByParent(newParent.Id)).ReturnsAsync(applications.Where(a => a.ParentId == newParent.Id));
 
             // Act
-            var result = await controller.GetByParentId(id).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetByParentId(newParent.Id).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -201,40 +193,42 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task GetByParentId_WhenParentHasNoRights_ShouldReturnBadRequest(long id)
+        public async Task GetByParentId_WhenParentHasNoRights_ShouldReturnBadRequest()
         {
             // Arrange
-            var anotherParent = new ParentDTO { Id = 2, UserId = userId };
+            var anotherParent = ParentDtoGenerator.Generate().WithUserId(userId);
 
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherParent);
-            applicationService.Setup(s => s.GetAllByParent(id)).ReturnsAsync(applications.Where(a => a.ParentId == id));
+            applicationService.Setup(s => s.GetAllByParent(parent.Id))
+                .ReturnsAsync(applications.Where(a => a.ParentId == parent.Id));
 
             // Act
-            var result = await controller.GetByParentId(id).ConfigureAwait(false) as BadRequestObjectResult;
+            var result = await controller.GetByParentId(parent.Id).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
             result.Should().NotBeNull();
             result.StatusCode.Should().Be(400);
         }
 
-        [Test]
-        [TestCase(1, "provider")]
-        [TestCase(1, "workshop")]
-        public async Task GetByPropertyId_WhenIdIsValid_ShouldReturnOkObjectResult(long id, string property)
+        // Split
+        [TestCase("provider")]
+        [TestCase("workshop")]
+        public async Task GetByPropertyId_WhenIdIsValid_ShouldReturnOkObjectResult(string property)
         {
             // Arrange
-            var filter = new ApplicationFilter{ Status = 1 };
+            var filter = new ApplicationFilter { Status = 1 };
+            var expectedApplicationsByProvider = applications.Where(a => a.Workshop.ProviderId == id);
+            var expectedApplicationsByWorkshop = applications.Where(a => a.Workshop.Id == id);
 
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
+            providerService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider);
+            workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(workshops.First());
 
-            providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(provider);
-            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(workshops.First());
-            applicationService.Setup(s => s.GetAllByProvider(id, filter))
-                .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
-            applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
-                .ReturnsAsync(applications.Where(a => a.WorkshopId == id));
+            applicationService.Setup(s => s.GetAllByProvider(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
+                .ReturnsAsync(expectedApplicationsByProvider);
+            applicationService.Setup(s => s.GetAllByWorkshop(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
+                .ReturnsAsync(expectedApplicationsByWorkshop);
 
             // Act
             var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as OkObjectResult;

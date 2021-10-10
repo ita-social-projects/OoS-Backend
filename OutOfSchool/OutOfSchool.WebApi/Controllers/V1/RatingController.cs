@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class RatingController : ControllerBase
     {
-        private readonly IRatingService service;
+        private readonly IRatingService ratingService;
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> esWorkshopService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="esWorkshopService">Service for operations with workshop documents of Elasticsearch data.</param>
         public RatingController(IRatingService service, IStringLocalizer<SharedResource> localizer, IElasticsearchService<WorkshopES, WorkshopFilterES> esWorkshopService)
         {
-            this.service = service;
+            this.ratingService = service;
             this.localizer = localizer;
             this.esWorkshopService = esWorkshopService;
         }
@@ -51,7 +51,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var ratings = await service.GetAll().ConfigureAwait(false);
+            var ratings = await ratingService.GetAll().ConfigureAwait(false);
 
             if (!ratings.Any())
             {
@@ -73,9 +73,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            this.ValidateId(id, localizer);
-
-            return Ok(await service.GetById(id).ConfigureAwait(false));
+            return Ok(await ratingService.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -90,11 +88,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}")]
-        public async Task<IActionResult> GetByEntityId(string entityType, long entityId)
+        public async Task<IActionResult> GetByEntityId(string entityType, Guid entityId)
         {
             RatingType type = ToRatingType(entityType);
 
-            var ratings = await service.GetAllByEntityId(entityId, type).ConfigureAwait(false);
+            var ratings = await ratingService.GetAllByEntityId(entityId, type).ConfigureAwait(false);
 
             if (!ratings.Any())
             {
@@ -115,9 +113,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("byprovider/{id}")]
-        public async Task<IActionResult> GetAllWorshopsByProvider(long id)
+        public async Task<IActionResult> GetAllWorshopsByProvider(Guid id)
         {
-            var ratings = await service.GetAllWorshopsRatingByProvider(id).ConfigureAwait(false);
+            var ratings = await ratingService.GetAllWorshopsRatingByProvider(id).ConfigureAwait(false);
 
             if (!ratings.Any())
             {
@@ -140,15 +138,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{entityType:regex(^provider$|^workshop$)}/{entityId}/parent/{parentId}")]
-        public async Task<IActionResult> GetParentRating(string entityType, long parentId, long entityId)
+        public async Task<IActionResult> GetParentRating(string entityType, Guid parentId, Guid entityId)
         {
-            this.ValidateId(parentId, localizer);
-
-            this.ValidateId(entityId, localizer);
-
             RatingType type = ToRatingType(entityType);
 
-            var rating = await service.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
+            var rating = await ratingService.GetParentRating(parentId, entityId, type).ConfigureAwait(false);
 
             if (rating == null)
             {
@@ -171,7 +165,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPost]
         public async Task<IActionResult> Create(RatingDto dto)
         {
-            var rating = await service.Create(dto).ConfigureAwait(false);
+            var rating = await ratingService.Create(dto).ConfigureAwait(false);
 
             if (rating == null)
             {
@@ -181,7 +175,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             if (dto.Type == RatingType.Workshop)
             {
-                await this.UpdateWorkshopInElasticsearch(dto.EntityId).ConfigureAwait(false);
+                await this.UpdateWorkshopInElasticSearch(dto.EntityId).ConfigureAwait(false);
             }
 
             return CreatedAtAction(
@@ -203,7 +197,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPut]
         public async Task<IActionResult> Update(RatingDto dto)
         {
-            var rating = await service.Update(dto).ConfigureAwait(false);
+            var rating = await ratingService.Update(dto).ConfigureAwait(false);
 
             if (rating == null)
             {
@@ -213,7 +207,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             if (dto.Type == RatingType.Workshop)
             {
-                await this.UpdateWorkshopInElasticsearch(dto.EntityId).ConfigureAwait(false);
+                await this.UpdateWorkshopInElasticSearch(dto.EntityId).ConfigureAwait(false);
             }
 
             return Ok(rating);
@@ -231,18 +225,18 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            this.ValidateId(id, localizer);
+            var ratingDto = await ratingService.GetById(id).ConfigureAwait(false);
+            if (ratingDto is null)
+            {
+                return NoContent();
+            }
 
-            var dto = await service.GetById(id).ConfigureAwait(false);
-            if (!(dto is null) && dto.Type == RatingType.Workshop)
+            if (ratingDto.Type == RatingType.Workshop)
             {
-                await service.Delete(id).ConfigureAwait(false);
-                await this.UpdateWorkshopInElasticsearch(dto.Id).ConfigureAwait(false);
+                await UpdateWorkshopInElasticSearch(ratingDto.EntityId).ConfigureAwait(false);
             }
-            else
-            {
-                await service.Delete(id).ConfigureAwait(false);
-            }
+
+            await ratingService.Delete(id).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -271,11 +265,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return type;
         }
 
-        private async Task<bool> UpdateWorkshopInElasticsearch(long id)
+        private async Task<bool> UpdateWorkshopInElasticSearch(Guid id)
         {
             try
             {
-                var entitis = await esWorkshopService.Search(new WorkshopFilterES() { Ids = new List<long>() { id } }).ConfigureAwait(false);
+                var entitis = await esWorkshopService.Search(new WorkshopFilterES() { Ids = new List<Guid>() { id } }).ConfigureAwait(false);
 
                 var res = await esWorkshopService.Update(entitis.Entities.Single()).ConfigureAwait(false);
 

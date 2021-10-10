@@ -86,7 +86,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<RatingDto>> GetAllByEntityId(long entityId, RatingType type)
+        public async Task<IEnumerable<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type)
         {
             logger.LogInformation($"Getting all Ratings with EntityId = {entityId} and RatingType = {type} started.");
 
@@ -103,7 +103,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<RatingDto>> GetAllWorshopsRatingByProvider(long id)
+        public async Task<IEnumerable<RatingDto>> GetAllWorshopsRatingByProvider(Guid id)
         {
             logger.LogInformation($"Getting all Worshops Ratings by ProviderId = {id} started.");
 
@@ -128,7 +128,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<RatingDto> GetParentRating(long parentId, long entityId, RatingType type)
+        public async Task<RatingDto> GetParentRating(Guid parentId, Guid entityId, RatingType type)
         {
             logger.LogInformation($"Getting Rating for Parent started. Looking parentId = {parentId}, entityId = {entityId} and type = {type}.");
 
@@ -144,18 +144,18 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public Tuple<float, int> GetAverageRating(long entityId, RatingType type)
+        public Tuple<float, int> GetAverageRating(Guid entityId, RatingType type)
         {
             var ratingTuple = ratingRepository.GetAverageRating(entityId, type);
             return new Tuple<float, int>((float)Math.Round(ratingTuple?.Item1 ?? default, roundToDigits), ratingTuple?.Item2 ?? default);
         }
 
         /// <inheritdoc/>
-        public Dictionary<long, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type)
+        public Dictionary<Guid, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<Guid> entities, RatingType type)
         {
             var entitiesRating = ratingRepository.GetAverageRatingForEntities(entities, type);
 
-            var formattedEntities = new Dictionary<long, Tuple<float, int>>(entitiesRating.Count);
+            var formattedEntities = new Dictionary<Guid, Tuple<float, int>>(entitiesRating.Count);
 
             foreach (var entity in entitiesRating)
             {
@@ -331,16 +331,16 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Entity Id.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>True if Entity with such parameters already exists in the system and false otherwise.</returns>
-        private async Task<bool> EntityExists(long id, RatingType type)
+        private async Task<bool> EntityExists(Guid id, RatingType type)
         {
             switch (type)
             {
                 case RatingType.Provider:
-                    Provider provider = await providerRepository.GetById(id).ConfigureAwait(false);
+                    Provider provider = providerRepository.GetByFilterNoTracking(x => x.Id == id).FirstOrDefault();
                     return provider != null;
 
                 case RatingType.Workshop:
-                    Workshop workshop = await workshopRepository.GetById(id).ConfigureAwait(false);
+                    Workshop workshop = workshopRepository.GetByFilterNoTracking(x => x.Id == id).FirstOrDefault();
                     return workshop != null;
 
                 default:
@@ -351,7 +351,7 @@ namespace OutOfSchool.WebApi.Services
         private async Task<IEnumerable<RatingDto>> AddParentInfoAsync(IEnumerable<RatingDto> ratingDtos)
         {
             var parentList = await parentRepository.GetByIdsAsync(ratingDtos.Select(rating => rating.ParentId).Distinct()).ConfigureAwait(false);
-            Dictionary<long, Parent> parents = parentList.ToDictionary(parent => parent.Id);
+            var parents = parentList.ToDictionary(parent => parent.Id);
 
             return ratingDtos.Select(rating =>
             {

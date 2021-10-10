@@ -16,7 +16,7 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public Tuple<double, int> GetAverageRating(long entityId, RatingType type)
+        public Tuple<double, int> GetAverageRating(Guid entityId, RatingType type)
         {
             var ratings = db.Ratings.Where(rating => rating.EntityId == entityId && rating.Type == type);
 
@@ -30,7 +30,7 @@ namespace OutOfSchool.Services.Repository
             }
         }
 
-        public Dictionary<long, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<long> entityIds, RatingType type)
+        public Dictionary<Guid, Tuple<double, int>> GetAverageRatingForEntities(IEnumerable<Guid> entityIds, RatingType type)
         {
             return db.Ratings
                 .Where(rating => rating.Type == type && entityIds.Contains(rating.EntityId))

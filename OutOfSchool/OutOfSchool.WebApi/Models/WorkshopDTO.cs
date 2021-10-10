@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Models
 {
     public class WorkshopDTO : IValidatableObject
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Workshop title is required")]
         [MinLength(1)]
@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Models
         public int NumberOfRatings { get; set; }
 
         [Required]
-        public long ProviderId { get; set; }
+        public Guid ProviderId { get; set; }
 
         [Required]
         public long AddressId { get; set; }

@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
         /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
         /// <exception cref="SqlException">If the database cannot execute the query.</exception>
-        Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(long parentId, OffsetFilter offsetFilter);
+        Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(Guid parentId, OffsetFilter offsetFilter);
 
         /// <summary>
         /// Get children with some UserId.

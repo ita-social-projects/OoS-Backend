@@ -1,21 +1,17 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System;
 
 namespace OutOfSchool.Services.Models
 {
     public class ChatRoomUser
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
-        [Required]
-        [MaxLength(450)]
-        public string UserId { get; set; }
-
-        [Required]
-        public long ChatRoomId { get; set; }
-
-        public virtual User User { get; set; }
+        public Guid ChatRoomId { get; set; }
 
         public virtual ChatRoom ChatRoom { get; set; }
+
+        public string UserId { get; set; }
+
+        public virtual User User { get; set; }
     }
 }

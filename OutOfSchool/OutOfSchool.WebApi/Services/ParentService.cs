@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             logger.LogInformation($"Deleting Parent with Id = {id} started.");
 
@@ -106,11 +106,11 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ParentDTO> GetById(long id)
+        public async Task<ParentDTO> GetById(Guid id)
         {
             logger.LogInformation($"Getting Parent by Id started. Looking Id = {id}.");
 
-            var parent = await repositoryParent.GetById((int)id).ConfigureAwait(false);
+            var parent = await repositoryParent.GetById(id).ConfigureAwait(false);
 
             if (parent == null)
             {

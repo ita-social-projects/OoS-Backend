@@ -18,15 +18,13 @@ namespace OutOfSchool.WebApi.Models
         public DateTimeOffset CreationTime { get; set; }
 
         [Required]
-        [Range(1, long.MaxValue, ErrorMessage = "Workshop id should be grater than 0")]
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         [Required]
         public Guid ChildId { get; set; }
 
-        [Required]
         [Range(1, long.MaxValue, ErrorMessage = "Parent id should be grater than 0")]
-        public long ParentId { get; set; }
+        public Guid ParentId { get; set; }
 
         public WorkshopDTO Workshop { get; set; }
 

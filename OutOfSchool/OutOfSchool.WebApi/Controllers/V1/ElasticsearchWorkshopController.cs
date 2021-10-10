@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -34,7 +37,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         [HttpDelete]
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             await esService.Delete(id).ConfigureAwait(false);
         }

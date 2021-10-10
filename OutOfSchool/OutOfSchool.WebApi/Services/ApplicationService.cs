@@ -132,7 +132,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByParent(long id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByParent(Guid id)
         {
             logger.LogInformation($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
 
@@ -164,7 +164,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id, ApplicationFilter filter)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(Guid id, ApplicationFilter filter)
         {
             logger.LogInformation($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
 
@@ -183,7 +183,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id, ApplicationFilter filter)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(Guid id, ApplicationFilter filter)
         {
             logger.LogInformation($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
 
@@ -308,7 +308,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private async Task<bool> CheckChildParent(long parentId, Guid childId)
+        private async Task<bool> CheckChildParent(Guid parentId, Guid childId)
         {
             Expression<Func<Child, bool>> filter = c => c.ParentId == parentId;
 

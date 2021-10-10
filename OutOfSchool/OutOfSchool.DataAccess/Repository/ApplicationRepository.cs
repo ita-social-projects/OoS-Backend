@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +10,8 @@ namespace OutOfSchool.Services.Repository
     /// <summary>
     /// Repository for accessing the Application table in database.
     /// </summary>
-    public class ApplicationRepository : EntityRepository<Application>, IApplicationRepository
+    public class ApplicationRepository : EntityRepositoryBase<Guid, Application>, IApplicationRepository
     {
-        private readonly OutOfSchoolDbContext db;
-        private readonly DbSet<Application> dbSet;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationRepository"/> class.
         /// </summary>
@@ -21,8 +19,6 @@ namespace OutOfSchool.Services.Repository
         public ApplicationRepository(OutOfSchoolDbContext dbContext)
             : base(dbContext)
         {
-            db = dbContext;
-            dbSet = db.Set<Application>();
         }
 
         /// <summary>
@@ -33,7 +29,8 @@ namespace OutOfSchool.Services.Repository
         public async Task<IEnumerable<Application>> Create(IEnumerable<Application> applications)
         {
             await dbSet.AddRangeAsync(applications);
-            await db.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
+
             return await Task.FromResult(applications);
         }
 
@@ -49,11 +46,11 @@ namespace OutOfSchool.Services.Repository
         {
             var application = dbSet.Find(entity.Id);
 
-            db.Entry(application).CurrentValues.SetValues(entity);
+            dbContext.Entry(application).CurrentValues.SetValues(entity);
 
-            db.Entry(application).State = EntityState.Modified;
+            dbContext.Entry(application).State = EntityState.Modified;
 
-            await this.db.SaveChangesAsync();
+            await this.dbContext.SaveChangesAsync();
             return entity;
         }
 
@@ -62,7 +59,7 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="workshopId">Workshop id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        public Task<int> GetCountByWorkshop(long workshopId)
+        public Task<int> GetCountByWorkshop(Guid workshopId)
         {
             var applications = dbSet.Where(a => a.WorkshopId == workshopId);
 

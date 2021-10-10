@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Parent object.</returns>
-        Task<ParentDTO> GetById(long id);
+        Task<ParentDTO> GetById(Guid id);
 
         /// <summary>
         /// Get entity by User id.
@@ -50,6 +50,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(long id);
+        Task Delete(Guid id);
     }
 }

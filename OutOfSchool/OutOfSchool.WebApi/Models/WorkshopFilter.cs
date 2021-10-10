@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+
 using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
     public class WorkshopFilter : OffsetFilter
     {
-        public List<long> Ids { get; set; } = null;
+        public List<Guid> Ids { get; set; }
 
         public string SearchText { get; set; } = string.Empty;
 

@@ -37,14 +37,14 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityId">Entity key.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>List of all rating records.</returns>
-        Task<IEnumerable<RatingDto>> GetAllByEntityId(long entityId, RatingType type);
+        Task<IEnumerable<RatingDto>> GetAllByEntityId(Guid entityId, RatingType type);
 
         /// <summary>
         /// Get all workshop rating by provider.
         /// </summary>
         /// <param name="id">Entity key.</param>
         /// <returns>List of all rating records relatet to provider.</returns>
-        Task<IEnumerable<RatingDto>> GetAllWorshopsRatingByProvider(long id);
+        Task<IEnumerable<RatingDto>> GetAllWorshopsRatingByProvider(Guid id);
 
         /// <summary>
         /// Get parent rating for the specified entity.
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityId">Entity key.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>Parent rating for the specified entity.</returns>
-        Task<RatingDto> GetParentRating(long parentId, long entityId, RatingType type);
+        Task<RatingDto> GetParentRating(Guid parentId, Guid entityId, RatingType type);
 
         /// <summary>
         /// Get average entity rating.
@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entityId">Entity key.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>Average rating of entity.</returns>
-        Tuple<float, int> GetAverageRating(long entityId, RatingType type);
+        Tuple<float, int> GetAverageRating(Guid entityId, RatingType type);
 
         /// <summary>
         /// Get average rating for entities range.
@@ -69,7 +69,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="entities">Entities keys.</param>
         /// <param name="type">Entity type.</param>
         /// <returns>Average rating of entities range.</returns>
-        Dictionary<long, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<long> entities, RatingType type);
+        Dictionary<Guid, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<Guid> entities, RatingType type);
 
         /// <summary>
         /// Update rating entity.

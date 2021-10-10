@@ -32,8 +32,36 @@ namespace OutOfSchool.Tests.Common
         public static int GetPositiveInt() => faker.Random.Number(1, int.MaxValue);
 
         /// <summary>
+        /// Gets the positive (1 .. max) number.
+        /// </summary>
+        public static int GetPositiveInt(int max) => faker.Random.Number(1, max);
+
+        /// <summary>
         /// Gets the collection of the positive (1 .. int.MaxValue) numbers.
         /// </summary>
         public static int[] GetPositiveInts(int count) => faker.Random.Digits(count, 1, 9);
+
+        public static TEntity ApplyOnItem<TEntity, TValue>(TEntity item, Action<TEntity, TValue> setter, TValue value)
+            where TEntity : class
+        {
+            _ = item ?? throw new ArgumentNullException(nameof(item));
+
+            setter(item, value);
+
+            return item;
+        }
+
+        public static List<TEntity> ApplyOnCollection<TEntity, TValue>(
+            this List<TEntity> collection,
+            Func<TEntity, TValue, TEntity> setter,
+            TValue value)
+            where TEntity : class
+        {
+            _ = collection ?? throw new ArgumentNullException(nameof(collection));
+
+            collection.ForEach(item => setter(item, value));
+
+            return collection;
+        }
     }
 }

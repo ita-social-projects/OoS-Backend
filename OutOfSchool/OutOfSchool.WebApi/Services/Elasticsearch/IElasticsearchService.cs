@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -31,7 +32,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">The entity's key that will be deleted from the index.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task<bool> Delete(long id);
+        Task<bool> Delete(Guid id);
 
         /// <summary>
         /// Use this method to delete all entities from the index.

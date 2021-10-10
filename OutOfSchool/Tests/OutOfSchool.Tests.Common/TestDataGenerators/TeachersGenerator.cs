@@ -31,9 +31,9 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// <summary>
         /// Generates a list of the <see cref="Teacher"/> objects.
         /// </summary>
-        /// <param name="number">Number of instances to generate.</param>
+        /// <param name="count">count of instances to generate.</param>
         /// <returns>A <see cref="List{T}"/> of <see cref="Teacher"/> objects.</returns>
-        public static List<Teacher> Generate(int number) => faker.Generate(number);
+        public static List<Teacher> Generate(int count) => faker.Generate(count);
 
         /// <summary>
         /// Assigns given <paramref name="workshopId"/> to the given <paramref name="teacher"/>
