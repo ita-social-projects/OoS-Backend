@@ -26,13 +26,6 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private Mock<ILogger<StatisticService>> logger;
 
-        private IEnumerable<Workshop> workshops;
-        private IEnumerable<Application> applications;
-        private IEnumerable<Direction> directions;
-
-        private List<WorkshopCard> workshopCards;
-        private List<DirectionStatistic> directionStatistics;
-
         [SetUp]
         public void SetUp()
         {
@@ -47,83 +40,186 @@ namespace OutOfSchool.WebApi.Tests.Services
                 workshopRepository.Object,
                 directionRepository.Object,
                 logger.Object);
-
-            workshops = FakeWorkshops();
-            applications = FakeApplications();
-            directions = FakeDirections();
-
-            workshopCards = ExpectedWorkshopCards();
-            directionStatistics = ExpectedDirectionStatistics();
-
-            SetupMocks();
         }
 
         [Test]
-        public async Task GetPopularWorkshops_ShouldReturnWorkshops()
+        public async Task GetPopularWorkshops_NoCityQuery_ShouldReturnWorkshops()
         {
+            // Arrange
+            SetupGetPopularWorkshops();
+
             // Act
-            var result = await service.GetPopularWorkshops(2).ConfigureAwait(false);
+            var result = await service.GetPopularWorkshops(2, string.Empty).ConfigureAwait(false);
 
             // Assert
             result.Should().HaveCount(2);
-            result.Should().BeEquivalentTo(workshopCards, options => options.WithStrictOrdering());
+            result.Should().BeEquivalentTo(ExpectedWorkshopCardsNoCityFilter(), options => options.WithStrictOrdering());
         }
 
         [Test]
-        [Ignore("Test must be fixed")]
-        public async Task GetPopularDirections_ShouldReturnDirections()
+        public async Task GetPopularWorkshops_WithCityQuery_ShouldReturnWorkshops()
         {
+            // Arrange
+            SetupGetPopularWorkshops();
+
             // Act
-            var result = await service.GetPopularDirections(2).ConfigureAwait(false);
+            var result = await service.GetPopularWorkshops(2, "Київ").ConfigureAwait(false);
 
             // Assert
             result.Should().HaveCount(2);
-            result.Should().BeEquivalentTo(directionStatistics, options => options.WithStrictOrdering());
+            result.Should().BeEquivalentTo(ExpectedWorkshopCardsCityFilter(), options => options.WithStrictOrdering());
         }
 
-        private IEnumerable<Workshop> FakeWorkshops()
+        [Test]
+        public async Task GetPopularDirections_NoCityQuery_ShouldReturnDirections()
         {
-            return new List<Workshop>()
+            // Arrange
+            SetupGetPopularDirections();
+
+            // Act
+            var result = await service.GetPopularDirections(2, string.Empty).ConfigureAwait(false);
+
+            // Assert
+            result.Should().HaveCount(2);
+            result.Should().BeEquivalentTo(ExpectedDirectionStatisticsNoCityFilter(), options => options.WithStrictOrdering());
+        }
+
+        [Test]
+        public async Task GetPopularDirections_WithCityQuery_ShouldReturnDirections()
+        {
+            // Arrange
+            SetupGetPopularDirections();
+
+            // Act
+            var result = await service.GetPopularDirections(2, "Київ").ConfigureAwait(false);
+
+            // Assert
+            result.Should().HaveCount(2);
+            result.Should().BeEquivalentTo(ExpectedDirectionStatisticsCityFilter(), options => options.WithStrictOrdering());
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            workshopRepository.Verify();
+            applicationRepository.Verify();
+            directionRepository.Verify();
+        }
+
+        #region Setup
+
+        private void SetupGetPopularWorkshops()
+        {
+            var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
+
+            workshopRepository
+                .Setup(w => w.Get<It.IsAnyType>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Workshop, bool>>>(),
+                    It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
+                    It.IsAny<bool>()))
+                .Returns(workshopsMock.Object)
+                .Verifiable();
+        }
+
+        private void SetupGetPopularDirections()
+        {
+            var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
+            var applicationsMock = WithApplications().AsQueryable().BuildMock();
+            var directionsMock = WithDirections().AsQueryable().BuildMock();
+
+            workshopRepository.Setup(w => w.Get<It.IsAnyType>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Workshop, bool>>>(),
+                    It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
+                    It.IsAny<bool>()))
+                .Returns(workshopsMock.Object)
+                .Verifiable();
+
+            applicationRepository.Setup(w => w.Get<It.IsAnyType>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Application, bool>>>(),
+                    It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                    It.IsAny<bool>()))
+                .Returns(applicationsMock.Object)
+                .Verifiable();
+
+            directionRepository.Setup(w => w.Get<It.IsAnyType>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Direction, bool>>>(),
+                    It.IsAny<Expression<Func<Direction, It.IsAnyType>>>(),
+                    It.IsAny<bool>()))
+                .Returns(directionsMock.Object)
+                .Verifiable();
+        }
+
+        #endregion
+
+        #region With
+
+        private IEnumerable<Workshop> WithWorkshops()
+        {
+            return new List<Workshop>
             {
-                new Workshop()
+                new Workshop
                 {
                     Id = 1,
                     Title = "w1",
                     DirectionId = 1,
-                    Applications = new List<Application>()
+                    Address = new Address
                     {
-                        new Application() { Id = 1},
+                        City = "Київ",
+                    },
+                    Applications = new List<Application>
+                    {
+                        new Application { Id = 1 },
                     },
                 },
-                new Workshop()
+                new Workshop
                 {
                     Id = 2,
                     Title = "w2",
                     DirectionId = 2,
-                    Applications = new List<Application>()
+                    Address = new Address
                     {
-                        new Application() { Id = 2},
-                        new Application() { Id = 3},
+                        City = "Київ",
+                    },
+                    Applications = new List<Application>
+                    {
+                        new Application { Id = 2 },
+                        new Application { Id = 3 },
                     },
                 },
-                new Workshop()
+                new Workshop
                 {
                     Id = 3,
                     Title = "w3",
                     DirectionId = 3,
-                    Applications = new List<Application>()
+                    Address = new Address
                     {
-                        new Application() { Id = 4},
-                        new Application() { Id = 5},
-                        new Application() { Id = 6},
+                        City = "Одеса",
+                    },
+                    Applications = new List<Application>
+                    {
+                        new Application { Id = 4 },
+                        new Application { Id = 5 },
+                        new Application { Id = 6 },
                     },
                 },
             };
         }
 
-        private IEnumerable<Direction> FakeDirections()
+        private IEnumerable<Direction> WithDirections()
         {
-            return new List<Direction>()
+            return new List<Direction>
             {
                 new Direction { Id = 1 },
                 new Direction { Id = 2 },
@@ -131,66 +227,60 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
         }
 
-        private IEnumerable<Application> FakeApplications()
+        private IEnumerable<Application> WithApplications()
         {
-            return new List<Application>()
+            return new List<Application>
             {
-                new Application { Id = 1, WorkshopId = 1, Workshop = new Workshop { Id = 1 } },
-                new Application { Id = 2, WorkshopId = 2, Workshop = new Workshop { Id = 2 } },
-                new Application { Id = 3, WorkshopId = 2, Workshop = new Workshop { Id = 2 } },
+                new Application { Id = 1, WorkshopId = 1, Workshop = new Workshop { Id = 1, DirectionId = 1 } },
+                new Application { Id = 2, WorkshopId = 2, Workshop = new Workshop { Id = 2, DirectionId = 2 } },
+                new Application { Id = 3, WorkshopId = 2, Workshop = new Workshop { Id = 2, DirectionId = 2 } },
+                new Application { Id = 4, WorkshopId = 3, Workshop = new Workshop { Id = 3, DirectionId = 3 } },
+                new Application { Id = 5, WorkshopId = 3, Workshop = new Workshop { Id = 3, DirectionId = 3 } },
+                new Application { Id = 6, WorkshopId = 3, Workshop = new Workshop { Id = 3, DirectionId = 3 } },
             };
         }
 
-        private List<WorkshopCard> ExpectedWorkshopCards()
+        #endregion
+
+        #region Expected
+
+        private List<WorkshopCard> ExpectedWorkshopCardsNoCityFilter()
         {
-            return new List<WorkshopCard>()
+            return new List<WorkshopCard>
             {
-                new WorkshopCard { WorkshopId = 3, Title = "w3" },
-                new WorkshopCard { WorkshopId = 2, Title = "w2" },
+                new WorkshopCard {WorkshopId = 3, Title = "w3", Address = new AddressDto {City = "Одеса"}},
+                new WorkshopCard {WorkshopId = 2, Title = "w2", Address = new AddressDto {City = "Київ"}},
             };
         }
 
-        private List<DirectionStatistic> ExpectedDirectionStatistics()
+        private List<WorkshopCard> ExpectedWorkshopCardsCityFilter()
         {
-            return new List<DirectionStatistic>()
+            return new List<WorkshopCard>
+            {
+                new WorkshopCard {WorkshopId = 2, Title = "w2", Address = new AddressDto {City = "Київ"}},
+                new WorkshopCard {WorkshopId = 1, Title = "w1", Address = new AddressDto {City = "Київ"}},
+            };
+        }
+
+        private List<DirectionStatistic> ExpectedDirectionStatisticsNoCityFilter()
+        {
+            return new List<DirectionStatistic>
             {
                 new DirectionStatistic {ApplicationsCount = 3, Direction = new DirectionDto { Id = 3 }, WorkshopsCount = 1 },
                 new DirectionStatistic {ApplicationsCount = 2, Direction = new DirectionDto { Id = 2 }, WorkshopsCount = 1 },
             };
         }
 
-        private void SetupMocks()
+        private List<DirectionStatistic> ExpectedDirectionStatisticsCityFilter()
         {
-            var workshopsMock = workshops.AsQueryable().BuildMock();
-            var applicationsMock = applications.AsQueryable().BuildMock();
-            var directionsMock = directions.AsQueryable().BuildMock();
-
-            workshopRepository.Setup(w => w.Get<It.IsAnyType>(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
-                It.IsAny<bool>()))
-                .Returns(workshopsMock.Object);
-
-            applicationRepository.Setup(w => w.Get<It.IsAnyType>(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
-                It.IsAny<bool>()))
-                .Returns(applicationsMock.Object);
-
-            directionRepository.Setup(w => w.Get<It.IsAnyType>(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Direction, bool>>>(),
-                It.IsAny<Expression<Func<Direction, It.IsAnyType>>>(),
-                It.IsAny<bool>()))
-                .Returns(directionsMock.Object);
+            return new List<DirectionStatistic>
+            {
+                new DirectionStatistic {ApplicationsCount = 2, Direction = new DirectionDto { Id = 2 }, WorkshopsCount = 1 },
+                new DirectionStatistic {ApplicationsCount = 1, Direction = new DirectionDto { Id = 1 }, WorkshopsCount = 1 },
+            };
         }
+
+        #endregion
+
     }
 }
