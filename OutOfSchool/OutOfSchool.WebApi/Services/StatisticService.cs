@@ -73,19 +73,19 @@ namespace OutOfSchool.WebApi.Services
                     ApplicationsCount = g.Count() as int?,
                 });
 
-            // LEFT JOIN CategoriesWithWorkshops with CategoriesWithApplications
+            // LEFT JOIN DirectionsWithWorkshops with DirectionsWithApplications
             var directionsWithCounts = directionsWithWorkshops
                 .GroupJoin(
                     directionsWithApplications,
                     directionWithWorkshop => directionWithWorkshop.DirectionId,
                     directionWithApplication => directionWithApplication.DirectionId,
-                    (directionWithWorkshop, directionsWithApplications) => new
+                    (directionWithWorkshop, localDirectionsWithApplications) => new
                     {
                         directionWithWorkshop,
-                        directionsWithApplications,
+                        localDirectionsWithApplications,
                     })
                 .SelectMany(
-                    x => x.directionsWithApplications.DefaultIfEmpty(),
+                    x => x.localDirectionsWithApplications.DefaultIfEmpty(),
                     (x, y) => new
                     {
                         DirectionId = x.directionWithWorkshop.DirectionId,
@@ -95,15 +95,15 @@ namespace OutOfSchool.WebApi.Services
 
             var allDirections = directionRepository.Get<int>();
 
-            // LEFT JOIN CategoriesWithCounts with all Categories
+            // LEFT JOIN DirectionsWithCounts with all Directions
             var statistics = allDirections
                 .GroupJoin(
                     directionsWithCounts,
                     direction => direction.Id,
                     directionWithCounts => directionWithCounts.DirectionId,
-                    (direction, directionsWithCounts) => new {direction, directionsWithCounts})
+                    (direction, localDirectionsWithCounts) => new {direction, localDirectionsWithCounts})
                 .SelectMany(
-                    x => x.directionsWithCounts.DefaultIfEmpty(),
+                    x => x.localDirectionsWithCounts,
                     (x, y) => new DirectionStatistic
                     {
                         Direction = x.direction.ToModel(),
@@ -133,9 +133,7 @@ namespace OutOfSchool.WebApi.Services
             if (!string.IsNullOrWhiteSpace(city))
             {
                 workshops = workshops
-                    .Where(q => string.Equals(q.Address.City, city.Trim()));
-
-
+                    .Where(w => string.Equals(w.Address.City, city.Trim()));
             }
 
             var workshopsWithApplications = workshops.Select(w => new
