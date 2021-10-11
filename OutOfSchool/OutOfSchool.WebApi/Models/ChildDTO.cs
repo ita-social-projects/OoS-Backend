@@ -11,16 +11,16 @@ namespace OutOfSchool.WebApi.Models
 
         [Required(ErrorMessage = "First name is required")]
         [StringLength(30, MinimumLength = 1)]
-        [RegularExpression(@"^[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇа-яґєії])?[а-яґєії]*)*$", ErrorMessage = "First name contains invalid characters")]
+        [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "First name contains invalid characters")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Last name is required")]
         [StringLength(30, MinimumLength = 1)]
-        [RegularExpression(@"^[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇа-яґєії])?[а-яґєії]*)*$", ErrorMessage = "Last name contains invalid characters")]
+        [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "Last name contains invalid characters")]
         public string LastName { get; set; } = string.Empty;
 
         [StringLength(30, MinimumLength = 1)]
-        [RegularExpression(@"^[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇа-яґєії])?[а-яґєії]*)*$", ErrorMessage = "Middle name contains invalid characters")]
+        [RegularExpression(@"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$", ErrorMessage = "Middle name contains invalid characters")]
         public string MiddleName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Date of birth is required")]
