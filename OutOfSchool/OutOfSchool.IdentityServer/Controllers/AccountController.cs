@@ -216,7 +216,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             if (!ModelState.IsValid)
             {
-                logger.LogInformation("ResetPassword started.");
+                logger.LogInformation("Model was not valid.");
 
                 return BadRequest(ModelState);
             }
