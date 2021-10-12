@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Elasticsearch.Net;
 using Nest;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
@@ -27,12 +28,12 @@ namespace OutOfSchool.ElasticsearchData
             var sorts = this.CreateSortFromFilter(filter);
 
             var resp = await ElasticClient.SearchAsync<WorkshopES>(new SearchRequest<WorkshopES>()
-                {
-                    Query = query,
-                    Sort = sorts,
-                    From = filter.From,
-                    Size = filter.Size,
-                });
+            {
+                Query = query,
+                Sort = sorts,
+                From = filter.From,
+                Size = filter.Size,
+            });
 
             return new SearchResultES<WorkshopES>() { TotalAmount = (int)resp.Total, Entities = resp.Documents };
         }
@@ -41,7 +42,7 @@ namespace OutOfSchool.ElasticsearchData
         {
             var queryContainer = new QueryContainer();
 
-            if (!(filter.Ids is null) && filter.Ids.Count > 0)
+            if (filter.Ids.Any())
             {
                 var box = new List<object>();
                 foreach (var item in filter.Ids)
@@ -71,7 +72,7 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            if (filter.DirectionIds[0] != 0)
+            if (filter.DirectionIds.Any())
             {
                 var box = new List<object>();
                 foreach (var item in filter.DirectionIds)
@@ -149,6 +150,34 @@ namespace OutOfSchool.ElasticsearchData
                     Field = Infer.Field<WorkshopES>(w => w.WithDisabilityOptions),
                     Value = filter.WithDisabilityOptions,
                 };
+            }
+
+            if (filter.StartHour > 0 || filter.EndHour < 23 || !string.IsNullOrWhiteSpace(filter.Workdays))
+            {
+                var nestedContainer = new QueryContainer();
+
+                nestedContainer = new NestedQuery()
+                {
+                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
+                    Query = new MatchQuery()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().Workdays),
+                        Query = filter.Workdays,
+                    },
+                };
+
+                nestedContainer &= new NestedQuery()
+                {
+                    Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
+                    Query = new NumericRangeQuery()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
+                        GreaterThanOrEqualTo = TimeSpan.FromHours(filter.StartHour).Ticks,
+                        LessThanOrEqualTo = TimeSpan.FromHours(filter.EndHour).Ticks,
+                    },
+                };
+
+                queryContainer &= nestedContainer;
             }
 
             if (!string.IsNullOrWhiteSpace(filter.City))

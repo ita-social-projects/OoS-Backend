@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Nest;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {
@@ -42,6 +43,9 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string Keywords { get; set; }
 
-        public IEnumerable<TeacherES> Teachers { get; set; }
+        [Nested]
+        public List<DateTimeRangeES> DateTimeRanges { get; set; }
+
+        public List<TeacherES> Teachers { get; set; }
     }
 }

@@ -22,8 +22,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
 
         private Mock<IWorkshopRepository> workshopRepositoryMoq;
         private Mock<IClassRepository> classRepositoryMoq;
-        private Mock<IEntityRepository<Teacher>> teacherRepositoryMoq;
-        private Mock<IEntityRepository<Address>> addressRepositoryMoq;
 
         private Mock<IRatingService> ratingService;
         private Mock<ILogger<WorkshopService>> logger;
@@ -38,8 +36,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         {
             workshopRepositoryMoq = new Mock<IWorkshopRepository>();
             classRepositoryMoq = new Mock<IClassRepository>();
-            teacherRepositoryMoq = new Mock<IEntityRepository<Teacher>>();
-            addressRepositoryMoq = new Mock<IEntityRepository<Address>>();
             ratingService = new Mock<IRatingService>();
             logger = new Mock<ILogger<WorkshopService>>();
             mapperMoq = new Mock<IMapper>();
@@ -47,8 +43,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             workshopService = new WorkshopService(
                 workshopRepositoryMoq.Object,
                 classRepositoryMoq.Object,
-                teacherRepositoryMoq.Object,
-                addressRepositoryMoq.Object,
                 ratingService.Object,
                 logger.Object,
                 mapperMoq.Object);
@@ -98,7 +92,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         #endregion
 
         #region GetById
-        [Test]
         [TestCase(1)]
         public async Task GetById_WhenIdIsValid_ShouldReturnEntity(long id)
         {
@@ -113,7 +106,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             Assert.AreEqual(workshops.First().Id, result.Id);
         }
 
-        [Test]
         [TestCase(10)]
         public async Task GetById_WhenThereIsNoEntityWithId_ShouldReturnNull(long id)
         {
@@ -130,7 +122,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         #endregion
 
         #region GetWorkshopsByOrganization
-        [Test]
         [TestCase(1)]
         public async Task GetWorkshopsByOrganization_WhenIdIsValid_ShouldReturnEntities(long id)
         {
@@ -149,7 +140,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             });
         }
 
-        [Test]
         [TestCase(10)]
         public async Task GetWorkshopsByOrganization_WhenThereIsNoWorkshop_ShouldReturnEmptyList(long id)
         {
@@ -266,7 +256,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
         #endregion
 
         #region Delete
-        [Test]
         [TestCase(1)]
         public async Task Delete_WhenIdIsValid_ShouldRunInTransactionDelete(long id)
         {
@@ -290,7 +279,6 @@ namespace OutOfSchool.WebApi.Tests.Services.UnitTests
             });
         }
 
-        [Test]
         [TestCase(1)]
         public void Delete_WhenIdIsInvalid_ShouldThrowNullReferenceException(long id)
         {
