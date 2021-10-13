@@ -15,7 +15,7 @@ namespace OutOfSchool.IdentityServer.ViewModels
 
         [Required(ErrorMessage = "Password is required")]
         [RegularExpression(
-            @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+            @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$",
             ErrorMessage = "Password must contain at least one capital, number and symbol(@$!%*?&).")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
@@ -32,8 +32,8 @@ namespace OutOfSchool.IdentityServer.ViewModels
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(
-            @"([0-9]{3})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})",
-            ErrorMessage = "Phone number format is incorrect. Example: +38XXX-XXX-XX-XX")]
+            @"([0-9]{2})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})",
+            ErrorMessage = "Phone number format is incorrect. Example: +380XX-XXX-XX-XX")]
         public string PhoneNumber { get; set; }
 
         [DataType(DataType.DateTime)]
