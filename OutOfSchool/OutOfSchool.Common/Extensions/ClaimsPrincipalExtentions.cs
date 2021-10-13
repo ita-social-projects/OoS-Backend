@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Claims;
 
-namespace OutOfSchool.WebApi.Extensions
+namespace OutOfSchool.Common.Extensions
 {
     /// <summary>
     /// Extention methods for the <see cref="ClaimsPrincipal"/> class.
