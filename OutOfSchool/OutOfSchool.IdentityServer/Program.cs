@@ -13,6 +13,7 @@ using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.KeyManagement;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
+using Serilog;
 
 namespace OutOfSchool.IdentityServer
 {
@@ -22,15 +23,26 @@ namespace OutOfSchool.IdentityServer
 
         public static void Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
+            var config = new ConfigurationBuilder()
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", true)
+                .Build();
+
+            var loggerConfigBuilder = new LoggerConfiguration()
+                .ReadFrom.Configuration(config, sectionName: "Serilog")
+                .WriteTo.Debug();
+
+            Log.Logger = loggerConfigBuilder.CreateLogger();
+
+            var host = CreateHostBuilder(args).Build();
             using (var scope = host.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
 
                 while (!context.Database.CanConnect())
                 {
-                    Console.WriteLine("Waiting for db connection");
+                    Log.Information("Connection to db");
                     Task.Delay(CheckConnectivityDelay).Wait();
                 }
 
@@ -90,7 +102,8 @@ namespace OutOfSchool.IdentityServer
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .UseSerilog();
 
         private static void RolesInit(RoleManager<IdentityRole> manager)
         {
