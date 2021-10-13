@@ -56,12 +56,7 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public async Task DeleteAll()
         {
-            var records = dbSet.Select(x => x);
-
-            foreach (var record in records)
-            {
-                dbSet.Remove(record);
-            }
+            dbSet.RemoveRange(dbSet);
 
             await dbContext.SaveChangesAsync();
         }

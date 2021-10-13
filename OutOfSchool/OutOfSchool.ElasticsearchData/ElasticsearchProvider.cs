@@ -59,9 +59,7 @@ namespace OutOfSchool.ElasticsearchData
                 Operations = ids.Select(x => new BulkDeleteOperation<TEntity>(x)).Cast<IBulkOperation>().ToList(),
             });
 
-            Result result = Result.Deleted;
-
-            return result;
+            return Result.Deleted;
         }
 
         /// <inheritdoc/>

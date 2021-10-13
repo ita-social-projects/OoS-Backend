@@ -98,6 +98,9 @@ namespace OutOfSchool.WebApi.Services
             var dtos = mapper.Map<List<WorkshopDTO>>(workshops);
             var workshopsWithRating = GetWorkshopsWithAverageRating(dtos);
             return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
+            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
+            var workshopsWithRating = GetWorkshopsWithAverageRating(workshopsDTO);
+            return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
         }
 
         /// <inheritdoc/>
@@ -280,6 +283,18 @@ namespace OutOfSchool.WebApi.Services
             };
 
             return result;
+        }
+
+        public async Task<IEnumerable<T>> GetWorkshops<T>(ElasticsearchSyncOperation operation)
+        {
+            if (operation == ElasticsearchSyncOperation.Delete)
+            {
+                return (IEnumerable<T>)(await workshopRepository.GetListOfWorkshopIdsForSynchronizationByOperation(operation).ConfigureAwait(false));
+            }
+
+            var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(operation).ConfigureAwait(false);
+
+            return (IEnumerable<T>)workshops.Select(x => x.ToModel()).ToList();
         }
 
         public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForCreate()
