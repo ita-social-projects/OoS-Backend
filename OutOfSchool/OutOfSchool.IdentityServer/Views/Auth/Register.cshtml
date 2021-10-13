@@ -23,7 +23,7 @@
                 </a>
             </div>
             <div class="option">@SharedLocalizer["or fill out the form"]</div>
-            <form onsubmit="return validateForm(this)" asp-controller="Auth" asp-action="Register" method="post">
+            <form onsubmit="return validateForm(this)" onkeyup="validateFormOnKeyUp(this)" asp-controller="Auth" asp-action="Register" method="post">
                 <input type="hidden" asp-for="ReturnUrl"/>
                 <div asp-validation-summary="ModelOnly"></div>
                 <ul class="registration_list">
@@ -57,7 +57,7 @@
                         <label class="registration_label" asp-for="LastName">
                             @SharedLocalizer["Last name"]<span class="registration_star">*</span>
                         </label>
-                        <input class="registration_input" type="text" asp-for="LastName" id="last_name">
+                        <input class="registration_input registration_input_required" type="text" asp-for="LastName" id="last_name">
                         <div>
                             <span asp-validation-for="LastName"></span>
                         </div>
@@ -67,14 +67,14 @@
                         <label class="registration_label" asp-for="FirstName">
                             @SharedLocalizer["First name"]<span class="registration_star">*</span>
                         </label>
-                        <input class="registration_input" type="text" asp-for="FirstName" id="first_name">
+                        <input class="registration_input registration_input_required" type="text" asp-for="FirstName" id="first_name">
                         <div>
                             <span asp-validation-for="FirstName"></span>
                         </div>
                     </li>
                     <li class="registration_item">
                         <label class="registration_label" asp-for="MiddleName">@SharedLocalizer["Middle name"]</label>
-                        <input class="registration_input" type="text" asp-for="MiddleName" id="middle_name">
+                        <input class="registration_input registration_input_unrequired" type="text" asp-for="MiddleName" id="middle_name">
                         <div>
                             <span asp-validation-for="MiddleName"></span>
                         </div>
@@ -84,8 +84,8 @@
                             @SharedLocalizer["Phone"]<span class="registration_star">*</span>
                         </label>
                         <div class="registration_phone">
-                            <div class="registration_phone-code">+38</div>
-                            <input class="registration_input" maxlength="10" type="text" asp-for="PhoneNumber" id="phone_number">
+                            <div class="registration_phone-code">+380</div>
+                            <input class="registration_input registration_input_required" maxlength="9" type="text" asp-for="PhoneNumber" id="phone_number">
                         </div>
                         <div>
                             <span asp-validation-for="PhoneNumber"></span>
@@ -95,7 +95,7 @@
                         <label class="registration_label" asp-for="Email">
                             @SharedLocalizer["Email"]<span class="registration_star">*</span>
                         </label>
-                        <input class="registration_input" type="email" asp-for="Email" id="user_mail">
+                        <input class="registration_input registration_input_required" type="email" asp-for="Email" id="user_mail">
                         <div>
                             <span asp-validation-for="Email"></span>
                         </div>
@@ -105,7 +105,7 @@
                             <label class="registration_label" asp-for="Password">
                                 @SharedLocalizer["Password"]<span class="registration_star">*</span>
                             </label>
-                            <input class="registration_input registration_input-password" type="Password" asp-for="Password" id="password">
+                            <input class="registration_input registration_input-password registration_input_required" type="Password" asp-for="Password" id="password">
                             <div class="registration_privacy_password">
                                 <img src="~/icons/ic_eye.svg" alt="eye" class="registration_eye" id="password_eye">
                             </div>
@@ -124,7 +124,7 @@
                             <label class="registration_label" asp-for="ConfirmPassword">
                                 @SharedLocalizer["Confirm password"]<span class="registration_star">*</span>
                             </label>
-                            <input class="registration_input registration_input-password" type="password" asp-for="ConfirmPassword" id="repeat_password">
+                            <input class="registration_input registration_input-password registration_input_required" type="password" asp-for="ConfirmPassword" id="repeat_password">
                             <div class="registration_privacy_confirm_password">
                                 <img src="~/icons/ic_eye.svg" alt="eye" class="registration_eye" id="confirm_password_eye">
                             </div>
