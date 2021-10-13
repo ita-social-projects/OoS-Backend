@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Models
         [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal Price { get; set; } = default;
 
-        public string DirectionId { get; set; }
+        public string Direction { get; set; }
 
         [Required]
         public long ProviderId { get; set; }
