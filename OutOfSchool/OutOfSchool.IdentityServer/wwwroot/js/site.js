@@ -104,14 +104,10 @@ function validateFormOnKeyUp(form) {
 function allFieldsValid(form) {
     let registrationInputs = form.getElementsByClassName("registration_input_required");
     for (var i = 0; i < registrationInputs.length; i++) {
-        if (isFieldEmpty(registrationInputs.item(i).value))
+        if (registrationInputs.item(i).value === '')
             return false;
     }
     return true;
-}
-
-function isFieldEmpty(value) {
-    return value === '';
 }
 
 
