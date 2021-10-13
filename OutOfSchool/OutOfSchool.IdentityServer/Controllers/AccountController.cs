@@ -1,9 +1,12 @@
-﻿using System.Text.Encodings.Web;
+﻿using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.EmailSender;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Models;
@@ -40,8 +43,16 @@ namespace OutOfSchool.IdentityServer.Controllers
         [Authorize]
         public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
         {
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
+
+            logger.LogDebug($"{path} started. User(id): {userId}.");
+
             if (!ModelState.IsValid)
             {
+                logger.LogError($"{path} Input data was not valid for User(id): {userId}. " +
+                    $"Entered new Email: {model.Email}");
+
                 return View("Email/ChangeEmail", new ChangeEmailViewModel());
             }
 
@@ -54,34 +65,52 @@ namespace OutOfSchool.IdentityServer.Controllers
             var htmlMessage = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
             await emailSender.SendAsync(email, subject, htmlMessage);
 
+            logger.LogInformation($"{path} Confirmation message was sent for User(id) + {userId}.");
+
             return View("Email/ChangeEmail");
         }
 
         [HttpGet]
         public async Task<IActionResult> ConfirmEmailChange(string userId, string email, string token)
         {
+            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
+
+            logger.LogDebug($"{path} started. User(id): {userId}.");
+
             if (userId == null || email == null || token == null)
             {
+                logger.LogError($"{path} Parameters were not valid. User(id): {userId}.");
+
                 return BadRequest("One or more parameters are null.");
             }
 
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID: '{userId}'.");
+                logger.LogError($"{path} User(id): {userId} was not found.");
+
+                return NotFound($"Changing email for user with ID: '{userId}' was not allowed.");
             }
 
             var result = await userManager.ChangeEmailAsync(user, email, token);
             if (!result.Succeeded)
             {
+                logger.LogError($"{path} Changing email was failed for User(id): {user.Id}. " +
+                    $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+
                 return BadRequest();
             }
 
             var setUserNameResult = await userManager.SetUserNameAsync(user, email);
             if (!setUserNameResult.Succeeded)
             {
+                logger.LogError($"{path} Setting username was failed for User(id): {user.Id}. " +
+                    $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+
                 return BadRequest();
             }
+
+            logger.LogInformation($"{path} Successfully logged. User(id): {userId}");
 
             await signInManager.RefreshSignInAsync(user);
             return View("Email/ConfirmChangeEmail");
@@ -91,6 +120,11 @@ namespace OutOfSchool.IdentityServer.Controllers
         [Authorize]
         public async Task<IActionResult> ConfirmEmail()
         {
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
+
+            logger.LogDebug($"{path} started. User(id): {userId}.");
+
             var user = await userManager.FindByEmailAsync(User.Identity.Name);
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
             var callBackUrl = Url.Action(nameof(EmailConfirmation), "Account", new { userId = user.Id, token }, Request.Scheme);
@@ -100,28 +134,43 @@ namespace OutOfSchool.IdentityServer.Controllers
             var htmlMessage = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
             await emailSender.SendAsync(email, subject, htmlMessage);
 
+            logger.LogInformation($"Confirmation message was sent. User(id): {userId}.");
+
             return Ok();
         }
 
         [HttpGet]
         public async Task<IActionResult> EmailConfirmation(string userId, string token)
         {
+            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
+
+            logger.LogDebug($"{path} started. User(id): {userId}.");
+
             if (userId == null || token == null)
             {
+                logger.LogError($"{path} Parameters were not valid. User(id): {userId}.");
+
                 return BadRequest("One or more parameters are null.");
             }
 
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
+                logger.LogError($"{path} User with UserId: {userId} was not found.");
+
                 return NotFound($"Unable to load user with ID: '{userId}'.");
             }
 
             var result = await userManager.ConfirmEmailAsync(user, token);
             if (!result.Succeeded)
             {
+                logger.LogError($"{path} Email сonfirmation  was failed for User(id): {userId} " +
+                    $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+
                 return BadRequest();
             }
+
+            logger.LogInformation($"{path} Email was confirmed. User(id): {userId}.");
 
             return Ok();
         }
@@ -135,14 +184,22 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
+            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
+
+            logger.LogDebug($"{path} started.");
+
             if (!ModelState.IsValid)
             {
+                logger.LogError($"{path} Input data was not valid.");
+
                 return View("Password/ForgotPassword", new ForgotPasswordViewModel());
             }
 
             var user = await userManager.FindByEmailAsync(model.Email);
             if (user == null || !(await userManager.IsEmailConfirmedAsync(user)))
             {
+                logger.LogError($"{path} User with Email: {model.Email} was not found or Email was not confirmed.");
+
                 return View("Password/ForgotPasswordConfirmation");
             }
 
@@ -154,14 +211,22 @@ namespace OutOfSchool.IdentityServer.Controllers
             var htmlMessage = $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
             await emailSender.SendAsync(email, subject, htmlMessage);
 
+            logger.LogInformation($"{path} Message to change password was sent. User(id): {user.Id}.");
+
             return View("Password/ForgotPasswordConfirmation");
         }
 
         [HttpGet]
         public IActionResult ResetPassword(string token = null)
         {
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub ?? "unlogged");
+            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
+
+            logger.LogDebug($"{path} started. User(id): {userId}");
+
             if (token == null)
             {
+                logger.LogError($"{path} Token was not supplied for reset password. User(id): {userId}");
                 return BadRequest("A token must be supplied for password reset.");
             }
 
@@ -171,23 +236,38 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub ?? "unlogged");
+            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
+
+            logger.LogDebug($"{path} started. User(id): {userId}");
+
             if (!ModelState.IsValid)
             {
+                logger.LogError($"{path} Input data was not valid. User(id): {userId}");
+
                 return BadRequest(ModelState);
             }
 
             var user = await userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
+                logger.LogError($"{path} User with Email:{model.Email} was not found. User(id): {userId}");
+
                 return View("Password/ResetPasswordConfirmation");
             }
 
             var result = await userManager.ResetPasswordAsync(user, model.Token, model.Password);
             if (result.Succeeded)
             {
+                logger.LogInformation($"{path} Password was successfully reseted. User(id): {userId}");
+
                 return View("Password/ResetPasswordConfirmation");
             }
 
+            logger.LogError($"{path} Reset password was failed. User(id): {user.Id}. " +
+                    $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+
+            // TODO: In my opinion we shouldn't return Ok in this cause.
             return Ok();
         }
 
@@ -202,8 +282,15 @@ namespace OutOfSchool.IdentityServer.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub ?? "unlogged");
+            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
+
+            logger.LogDebug($"{path} started. User(id): {userId}.");
+
             if (!ModelState.IsValid)
             {
+                logger.LogError($"{path} Input data was not valid. User(id): {userId}.");
+
                 return BadRequest(ModelState);
             }
 
@@ -211,8 +298,13 @@ namespace OutOfSchool.IdentityServer.Controllers
             var result = await userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
             if (result.Succeeded)
             {
+                logger.LogInformation($"{path} Password was changed. User(id): {userId}.");
+
                 return View("Password/ChangePasswordConfirmation");
             }
+
+            logger.LogError($"{path} Changing password was failed for User(id): {user.Id}." +
+                    $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
             return Redirect(model.ReturnUrl);
         }

@@ -23,15 +23,12 @@ namespace OutOfSchool.IdentityServer
 
         public static void Main(string[] args)
         {
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
             var config = new ConfigurationBuilder()
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", true)
                 .Build();
 
             var loggerConfigBuilder = new LoggerConfiguration()
-                .ReadFrom.Configuration(config, sectionName: "Serilog")
-                .WriteTo.Debug();
+                .ReadFrom.Configuration(config, sectionName: "Serilog");
 
             Log.Logger = loggerConfigBuilder.CreateLogger();
 
