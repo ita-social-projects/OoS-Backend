@@ -11,6 +11,8 @@ let check_confirmPasswordEye = false;
 let password = document.getElementById('password');
 let repeatPassword = document.getElementById('repeat_password');
 
+btn_register.disabled = true;
+
 if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
     btn_provider.className = "registration_type";
     btn_parent.className = "registration_type";
@@ -92,5 +94,24 @@ function validateForm(form) {
     }
 }
 
+function validateFormOnKeyUp(form) {
+    let valid = allFieldsValid(form);
+
+    if (btn_register.disabled === valid)
+        btn_register.disabled = !valid;
+}
+
+function allFieldsValid(form) {
+    let registrationInputs = form.getElementsByClassName("registration_input_required");
+    for (var i = 0; i < registrationInputs.length; i++) {
+        if (isFieldEmpty(registrationInputs.item(i).value))
+            return false;
+    }
+    return true;
+}
+
+function isFieldEmpty(value) {
+    return value === '';
+}
 
 
