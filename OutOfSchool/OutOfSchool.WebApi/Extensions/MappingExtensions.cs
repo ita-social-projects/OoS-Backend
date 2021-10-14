@@ -135,6 +135,11 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<SocialGroup, SocialGroupDto>(group, cfg => { cfg.CreateMap<SocialGroup, SocialGroupDto>(); });
         }
 
+        public static InstitutionStatusDTO ToModel(this InstitutionStatus status)
+        {
+            return Mapper<InstitutionStatus, InstitutionStatusDTO>(status, cfg => { cfg.CreateMap<InstitutionStatus, InstitutionStatusDTO>(); });
+        }
+
         public static TeacherDTO ToModel(this Teacher teacher)
         {
             return Mapper<Teacher, TeacherDTO>(teacher, cfg => { cfg.CreateMap<Teacher, TeacherDTO>(); });
@@ -258,6 +263,11 @@ namespace OutOfSchool.WebApi.Extensions
         public static SocialGroup ToDomain(this SocialGroupDto groupDto)
         {
             return Mapper<SocialGroupDto, SocialGroup>(groupDto, cfg => { cfg.CreateMap<SocialGroupDto, SocialGroup>(); });
+        }
+
+        public static InstitutionStatus ToDomain(this InstitutionStatusDTO statusDTO)
+        {
+            return Mapper<InstitutionStatusDTO, InstitutionStatus>(statusDTO, cfg => { cfg.CreateMap<InstitutionStatusDTO, InstitutionStatus>(); });
         }
 
         public static Teacher ToDomain(this TeacherDTO teacherDto)
