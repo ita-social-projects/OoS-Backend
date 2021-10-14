@@ -259,12 +259,12 @@ namespace OutOfSchool.IdentityServer.Controllers
             var result = await userManager.ResetPasswordAsync(user, model.Token, model.Password);
             if (result.Succeeded)
             {
-                logger.LogInformation($"{path} Password was successfully reseted. User(id): {userId}");
+                logger.LogInformation($"{path} Password was successfully reseted. User(id): {user.Id}");
 
                 return View("Password/ResetPasswordConfirmation");
             }
 
-            logger.LogError($"{path} Reset password was failed. User(id): {user.Id}. " +
+            logger.LogError($"{path} Reset password was failed. User(id): {userId}. " +
                     $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
             // TODO: In my opinion we shouldn't return Ok in this cause.
@@ -282,7 +282,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub ?? "unlogged");
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
             var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
 
             logger.LogDebug($"{path} started. User(id): {userId}.");
@@ -303,7 +303,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return View("Password/ChangePasswordConfirmation");
             }
 
-            logger.LogError($"{path} Changing password was failed for User(id): {user.Id}." +
+            logger.LogError($"{path} Changing password was failed for User(id): {userId}." +
                     $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
             return Redirect(model.ReturnUrl);

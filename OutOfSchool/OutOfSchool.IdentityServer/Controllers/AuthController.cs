@@ -91,14 +91,13 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl = "Login")
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
             var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
 
-            logger.LogDebug($"{path} started. User(id) {userId}");
+            logger.LogDebug($"{path} started.");
 
             var externalProviders = await signInManager.GetExternalAuthenticationSchemesAsync();
 
-            logger.LogDebug($"{path} External providers were obtained. User(id): {userId}.");
+            logger.LogDebug($"{path} External providers were obtained.");
 
             return View(new LoginViewModel
             {
@@ -115,14 +114,13 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
             var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
 
-            logger.LogDebug($"{path} started. User(id): {userId}.");
+            logger.LogDebug($"{path} started.");
 
             if (!ModelState.IsValid)
             {
-                logger.LogError($"{path} Input data was not valid. User(id): {userId}.");
+                logger.LogError($"{path} Input data was not valid.");
 
                 return View(new LoginViewModel
                 {
@@ -135,17 +133,19 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             if (result.Succeeded)
             {
-                logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
+                logger.LogInformation($"{path} Successfully logged. User(id): {User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)}.");
 
                 return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
 
             if (result.IsLockedOut)
             {
-                logger.LogWarning($"{path} Attempting to sign-in is locked out. User(id): {userId}.");
+                logger.LogWarning($"{path} Attempting to sign-in is locked out.");
 
                 return BadRequest();
             }
+
+            logger.LogInformation($"{path} Login was failed.");
 
             ModelState.AddModelError(string.Empty, localizer["Login or password is wrong"]);
             return View(new LoginViewModel
@@ -239,7 +239,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                             await parentRepository.RunInTransaction(operation).ConfigureAwait(false);
                         }
 
-                        logger.LogInformation($"{path} User(id) {user.Id} was successfully registered with Role: {user.Role}.");
+                        logger.LogInformation($"{path} User(id): {user.Id} was successfully registered with Role: {user.Role}.");
 
                         return Redirect(model.ReturnUrl);
                     }
@@ -258,7 +258,8 @@ namespace OutOfSchool.IdentityServer.Controllers
                 }
                 else
                 {
-                    logger.LogError($"{path} Registration was failed.");
+                    logger.LogError($"{path} Registration was failed. " +
+                        $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
                     foreach (var error in result.Errors)
                     {
@@ -280,7 +281,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                 ModelState.AddModelError(string.Empty, localizer["Error! Something happened on the server!"]);
 
-                logger.LogError("Error happened while creating Parent entity! " + ex.Message);
+                logger.LogError("Error happened while creating Parent entity. " + ex.Message);
 
                 return View(model);
             }

@@ -25,6 +25,7 @@ namespace OutOfSchool.IdentityServer
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", true)
+                .AddEnvironmentVariables()
                 .Build();
 
             var loggerConfigBuilder = new LoggerConfiguration()
