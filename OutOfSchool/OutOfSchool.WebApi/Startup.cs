@@ -143,6 +143,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IParentService, ParentService>();
             services.AddTransient<IProviderService, ProviderService>();
             services.AddTransient<IRatingService, RatingService>();
+            services.AddTransient<ISocialGroupService, SocialGroupService>();
             services.AddTransient<IStatusService, StatusService>();
             services.AddTransient<IStatisticService, StatisticService>();
             services.AddTransient<ITeacherService, TeacherService>();
