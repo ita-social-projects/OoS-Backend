@@ -32,69 +32,80 @@ namespace OutOfSchool.IdentityServer
 
             Log.Logger = loggerConfigBuilder.CreateLogger();
 
-            var host = CreateHostBuilder(args).Build();
-            using (var scope = host.Services.CreateScope())
+            try
             {
-                var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-
-                while (!context.Database.CanConnect())
+                var host = CreateHostBuilder(args).Build();
+                using (var scope = host.Services.CreateScope())
                 {
-                    Log.Information("Connection to db");
-                    Task.Delay(CheckConnectivityDelay).Wait();
+                    var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+
+                    while (!context.Database.CanConnect())
+                    {
+                        Log.Information("Connection to db");
+                        Task.Delay(CheckConnectivityDelay).Wait();
+                    }
+
+                    scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
+                        .Database.Migrate();
+                    scope.ServiceProvider.GetRequiredService<CertificateDbContext>()
+                        .Database.Migrate();
+                    var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
+                    var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+                    // TODO: Move to identity options
+                    var apiSecret = configService["outofschoolapi:ApiSecret"];
+                    var clientSecret = configService["m2m.client:ClientSecret"];
+                    var identityOptions = new IdentityAccessOptions();
+                    configService.GetSection(identityOptions.Name).Bind(identityOptions);
+
+                    context.Database.Migrate();
+                    identityContext.Database.Migrate();
+                    var manager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                    if (!manager.Roles.Any())
+                    {
+                        RolesInit(manager);
+                    }
+
+                    foreach (var client in StaticConfig.Clients(clientSecret, identityOptions.AdditionalIdentityClients))
+                    {
+                        context.Clients.AddIfNotExists(client.ToEntity(), c => c.ClientId == client.ClientId);
+                    }
+
+                    context.SaveChanges();
+
+                    foreach (var resource in StaticConfig.IdentityResources)
+                    {
+                        context.IdentityResources.AddIfNotExists(resource.ToEntity(), ir => resource.Name == ir.Name);
+                    }
+
+                    context.SaveChanges();
+
+                    foreach (var resource in StaticConfig.ApiResources(apiSecret))
+                    {
+                        context.ApiResources.AddIfNotExists(resource.ToEntity(), ar => resource.Name == ar.Name);
+                    }
+
+                    context.SaveChanges();
+
+                    foreach (var resource in StaticConfig.ApiScopes)
+                    {
+                        context.ApiScopes.AddIfNotExists(resource.ToEntity(), apiScope => apiScope.Name == resource.Name);
+                    }
+
+                    context.SaveChanges();
                 }
 
-                scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>()
-                    .Database.Migrate();
-                scope.ServiceProvider.GetRequiredService<CertificateDbContext>()
-                    .Database.Migrate();
-                var identityContext = scope.ServiceProvider.GetRequiredService<OutOfSchoolDbContext>();
-                var configService = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-
-                // TODO: Move to identity options
-                var apiSecret = configService["outofschoolapi:ApiSecret"];
-                var clientSecret = configService["m2m.client:ClientSecret"];
-                var identityOptions = new IdentityAccessOptions();
-                configService.GetSection(identityOptions.Name).Bind(identityOptions);
-
-                context.Database.Migrate();
-                identityContext.Database.Migrate();
-                var manager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-                if (!manager.Roles.Any())
-                {
-                    RolesInit(manager);
-                }
-
-                foreach (var client in StaticConfig.Clients(clientSecret, identityOptions.AdditionalIdentityClients))
-                {
-                    context.Clients.AddIfNotExists(client.ToEntity(), c => c.ClientId == client.ClientId);
-                }
-
-                context.SaveChanges();
-
-                foreach (var resource in StaticConfig.IdentityResources)
-                {
-                    context.IdentityResources.AddIfNotExists(resource.ToEntity(), ir => resource.Name == ir.Name);
-                }
-
-                context.SaveChanges();
-
-                foreach (var resource in StaticConfig.ApiResources(apiSecret))
-                {
-                    context.ApiResources.AddIfNotExists(resource.ToEntity(), ar => resource.Name == ar.Name);
-                }
-
-                context.SaveChanges();
-
-                foreach (var resource in StaticConfig.ApiScopes)
-                {
-                    context.ApiScopes.AddIfNotExists(resource.ToEntity(), apiScope => apiScope.Name == resource.Name);
-                }
-
-                context.SaveChanges();
+                host.Run();
             }
-
-            host.Run();
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application failed to start.");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
