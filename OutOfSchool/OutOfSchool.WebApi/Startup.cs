@@ -161,6 +161,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Favorite>, EntityRepository<Favorite>>();
             services.AddTransient<IEntityRepository<Direction>, EntityRepository<Direction>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
+            services.AddTransient<IEntityRepository<InstitutionStatus>, EntityRepository<InstitutionStatus>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
 
