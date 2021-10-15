@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
@@ -19,6 +20,8 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> userManager;
         private readonly IEmailSender emailSender;
         private readonly ILogger<AccountController> logger;
+        private string userId;
+        private string path;
 
         public AccountController(
             SignInManager<User> signInManager,
@@ -32,6 +35,12 @@ namespace OutOfSchool.IdentityServer.Controllers
             this.logger = logger;
         }
 
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+            path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
+        }
+
         [HttpGet]
         [Authorize]
         public IActionResult ChangeEmail(string returnUrl = "Login")
@@ -43,9 +52,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [Authorize]
         public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
             if (!ModelState.IsValid)
@@ -73,8 +79,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public async Task<IActionResult> ConfirmEmailChange(string userId, string email, string token)
         {
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
             if (userId == null || email == null || token == null)
@@ -104,7 +108,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             var setUserNameResult = await userManager.SetUserNameAsync(user, email);
             if (!setUserNameResult.Succeeded)
             {
-                logger.LogError($"{path} Setting username was failed for User(id): {user.Id}. " +
+                logger.LogError($"{path} Setting username was failed for User(id): {userId}. " +
                     $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
                 return BadRequest();
@@ -120,9 +124,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [Authorize]
         public async Task<IActionResult> ConfirmEmail()
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
             var user = await userManager.FindByEmailAsync(User.Identity.Name);
@@ -142,8 +143,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public async Task<IActionResult> EmailConfirmation(string userId, string token)
         {
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
             if (userId == null || token == null)
@@ -184,9 +183,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
-            logger.LogDebug($"{path} started.");
+            logger.LogDebug($"{path} started. User(id): {userId}");
 
             if (!ModelState.IsValid)
             {
@@ -219,9 +216,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public IActionResult ResetPassword(string token = null)
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub ?? "unlogged");
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started. User(id): {userId}");
 
             if (token == null)
@@ -236,9 +230,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub ?? "unlogged");
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started. User(id): {userId}");
 
             if (!ModelState.IsValid)
@@ -282,9 +273,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
             if (!ModelState.IsValid)

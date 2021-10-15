@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
@@ -27,6 +28,8 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly ILogger<AuthController> logger;
         private readonly IParentRepository parentRepository;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private string userId;
+        private string path;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -53,6 +56,12 @@ namespace OutOfSchool.IdentityServer.Controllers
             this.localizer = localizer;
         }
 
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+            path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
+        }
+
         /// <summary>
         /// Logging out a user who is authenticated.
         /// </summary>
@@ -61,16 +70,13 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout(string logoutId)
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
             await signInManager.SignOutAsync();
 
             var logoutRequest = await interactionService.GetLogoutContextAsync(logoutId);
 
-            // TODO: Ñheck whether it is correct to return NotImplementedException here
+            // TODO: Check whether it is correct to return NotImplementedException here
             if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
             {
                 logger.LogError($"{path} PostLogoutRedirectUri was null. User(id): {userId}.");
@@ -91,8 +97,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl = "Login")
         {
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started.");
 
             var externalProviders = await signInManager.GetExternalAuthenticationSchemesAsync();
@@ -114,8 +118,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started.");
 
             if (!ModelState.IsValid)
@@ -133,7 +135,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             if (result.Succeeded)
             {
-                logger.LogInformation($"{path} Successfully logged. User(id): {User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)}.");
+                logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
 
                 return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
@@ -174,8 +176,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            var path = $"{Request.Path.Value}[{HttpContext.Request.Method}]";
-
             logger.LogDebug($"{path} started.");
 
             if (!ModelState.IsValid)
