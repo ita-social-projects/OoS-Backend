@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -32,6 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private OutOfSchoolDbContext context;
 
         private IEnumerable<ApplicationDto> applications;
+        private Mock<IMapper> mapper;
 
         [SetUp]
         public void SetUp()
@@ -44,12 +46,13 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ApplicationService>>();
+            mapper = new Mock<IMapper>();
             service = new ApplicationService(
                 applicationRepository,
                 logger.Object,
                 localizer.Object,
                 workshopRepository,
-                childRepository);
+                childRepository, mapper.Object);
 
             applications = FakeApplications();
         }
@@ -205,7 +208,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var applicationFilter = new ApplicationFilter
             {
-                Status = 1,
+                Status = (ApplicationStatus)1,
                 OrderByAlphabetically = false,
                 OrderByDateAscending = false,
                 OrderByStatus = false,
@@ -213,7 +216,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
             var expected = await applicationRepository.GetByFilter(filter);
-            expected = expected.Where(a => (int)a.Status == applicationFilter.Status);
+            expected = expected.Where(a => a.Status == applicationFilter.Status);
 
             // Act
             var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
@@ -227,7 +230,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAllByWorkshop_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
         {
             // Act
-            var applicationFilter = new ApplicationFilter { Status = 1 };
+            var applicationFilter = new ApplicationFilter { Status = (ApplicationStatus)1 };
             var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
 
             // Assert
@@ -260,7 +263,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             Expression<Func<Application, bool>> filter = a => a.Workshop.ProviderId == id;
             var expected = await applicationRepository.GetByFilter(filter);
-            expected = expected.Where(a => (int)a.Status == applicationFilter.Status);
+            expected = expected.Where(a => a.Status == applicationFilter.Status);
 
             // Act
             var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
@@ -274,7 +277,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAllByProvider_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
         {
             // Act
-            var applicationFilter = new ApplicationFilter { Status = 1 };
+            var applicationFilter = new ApplicationFilter { Status = (ApplicationStatus)1 };
 
             var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
 

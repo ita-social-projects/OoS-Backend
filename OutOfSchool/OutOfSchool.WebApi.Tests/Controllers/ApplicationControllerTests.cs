@@ -238,7 +238,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenIdIsValid_ShouldReturnOkObjectResult(long id, string property)
         {
             // Arrange
-            var filter = new ApplicationFilter { Status = 1 };
+            var filter = new ApplicationFilter { Status = (ApplicationStatus)1 };
 
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
@@ -262,7 +262,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenIdIsNotValid_ShouldReturnBadRequest(long id, string property)
         {
             // Act
-            var filter = new ApplicationFilter { Status = 1 };
+            var filter = new ApplicationFilter { Status = (ApplicationStatus)1 };
 
             var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
 
@@ -277,7 +277,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenProviderHasNoApplications_ShouldReturnNoContent(long id, string property)
         {
             // Arrange
-            var filter = new ApplicationFilter { Status = 1 };
+            var filter = new ApplicationFilter { Status = (ApplicationStatus)1 };
 
             var newProvider = new ProviderDto { Id = 10, UserId = userId };
             var newWorkshop = new WorkshopDTO { Id = 10, ProviderId = 10 };
@@ -305,7 +305,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenProviderHasNoRights_ShouldReturnNoContent(long id, string property)
         {
             // Arrange
-            var filter = new ApplicationFilter { Status = 1 };
+            var filter = new ApplicationFilter { Status = (ApplicationStatus)1 };
 
             var anotherProvider = new ProviderDto { Id = 2, UserId = userId };
 
@@ -329,7 +329,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenThereIsNoWorkshopWithId_ShouldReturnBadRequest(long id, string property)
         {
             // Arrange
-            var filter = new ApplicationFilter { Status = 1 };
+            var filter = new ApplicationFilter { Status = (ApplicationStatus)1 };
 
             // Act
             var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
