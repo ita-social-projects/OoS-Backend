@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IRatingService ratingService;
         private readonly ILogger<ProviderService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IMapper mapper;
 
         // TODO: It should be removed after models revision.
         //       Temporary instance to fill 'Provider' model 'User' property
@@ -42,9 +44,10 @@ namespace OutOfSchool.WebApi.Services
             IEntityRepository<User> usersRepository,
             IRatingService ratingService,
             ILogger<ProviderService> logger,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer, IMapper mapper)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+            this.mapper = mapper;
             this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
             this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
             this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
@@ -170,15 +173,15 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var checkProvider = providerRepository.GetByFilterNoTracking(p => p.Id == providerDto.Id).FirstOrDefault();
+                var checkProvider = (await providerRepository.GetByFilter(p => p.Id == providerDto.Id).ConfigureAwait(false)).FirstOrDefault();
 
                 if (checkProvider?.UserId == userId || userRole == AdminRole)
                 {
-                    var provider = await providerRepository.Update(providerDto.ToDomain()).ConfigureAwait(false);
+                   mapper.Map(providerDto, checkProvider);
+                   await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+                   logger.LogInformation($"Provider with Id = {checkProvider?.Id} updated succesfully.");
 
-                    logger.LogInformation($"Provider with Id = {provider?.Id} updated succesfully.");
-
-                    return provider.ToModel();
+                   return mapper.Map<ProviderDto>(checkProvider);
                 }
                 else
                 {
