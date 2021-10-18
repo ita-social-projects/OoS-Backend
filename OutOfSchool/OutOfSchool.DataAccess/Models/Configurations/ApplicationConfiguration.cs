@@ -18,6 +18,11 @@ namespace OutOfSchool.Services.Models.Configurations
 
             builder.Property(x => x.CreationTime)
                 .IsRequired();
+
+            builder.HasOne(x => x.Parent)
+                .WithMany()
+                // Note: cascade delete causes circular dependencie issue
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

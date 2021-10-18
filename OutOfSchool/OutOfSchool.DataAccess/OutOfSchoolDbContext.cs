@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Configurations;
@@ -76,6 +71,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ChatRoomConfiguration());
             builder.ApplyConfiguration(new ChatRoomUserConfiguration());
             builder.ApplyConfiguration(new ProviderConfiguration());
+            builder.ApplyConfiguration(new WorkshopConfiguration());
 
             builder.Seed();
             builder.UpdateIdentityTables();

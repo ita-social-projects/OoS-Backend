@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
-    public partial class Initial : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -115,6 +115,19 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Directions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InstitutionStatus",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InstitutionStatus", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -255,6 +268,27 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Departments",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    DirectionId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Departments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Departments_Directions_DirectionId",
+                        column: x => x.DirectionId,
+                        principalTable: "Directions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Providers",
                 columns: table => new
                 {
@@ -276,7 +310,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     Status = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ActualAddressId = table.Column<long>(type: "bigint", nullable: true),
-                    LegalAddressId = table.Column<long>(type: "bigint", nullable: false)
+                    LegalAddressId = table.Column<long>(type: "bigint", nullable: false),
+                    InstitutionStatusId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -300,27 +335,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Departments",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    DirectionId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Departments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Departments_Directions_DirectionId",
-                        column: x => x.DirectionId,
-                        principalTable: "Directions",
+                        name: "FK_Providers_InstitutionStatus_InstitutionStatusId",
+                        column: x => x.InstitutionStatusId,
+                        principalTable: "InstitutionStatus",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -447,14 +467,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         name: "FK_Workshops_Directions_DirectionId",
                         column: x => x.DirectionId,
                         principalTable: "Directions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Workshops_Providers_ProviderId",
                         column: x => x.ProviderId,
                         principalTable: "Providers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -482,8 +500,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         name: "FK_Applications_Parents_ParentId",
                         column: x => x.ParentId,
                         principalTable: "Parents",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Applications_Workshops_WorkshopId",
                         column: x => x.WorkshopId,
@@ -643,6 +660,16 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 });
 
             migrationBuilder.InsertData(
+                table: "InstitutionStatus",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1L, "Працює" },
+                    { 2L, "Перебуває в стані реорганізації" },
+                    { 3L, "Має намір на реорганізацію" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "SocialGroups",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
@@ -779,6 +806,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 column: "ActualAddressId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Providers_InstitutionStatusId",
+                table: "Providers",
+                column: "InstitutionStatusId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Providers_LegalAddressId",
                 table: "Providers",
                 column: "LegalAddressId");
@@ -811,7 +843,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             migrationBuilder.CreateIndex(
                 name: "IX_Workshops_DirectionId",
                 table: "Workshops",
-                column: "DirectionId");
+                column: "DirectionId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Workshops_ProviderId",
@@ -895,6 +928,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "InstitutionStatus");
 
             migrationBuilder.DropTable(
                 name: "Directions");

@@ -20,6 +20,14 @@
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003190648_UpdatedChildModelToUseGuidsAsId.Designer.cs" />
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211006220217_UpdateParticularModels.cs" />
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211006220217_UpdateParticularModels.Designer.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018180919_InitialMigration.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018180919_InitialMigration.Designer.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183311_InitialMigration.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183311_InitialMigration.Designer.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183510_InitialMigration.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183510_InitialMigration.Designer.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183738_InitialMigration.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183738_InitialMigration.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,6 +70,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </AdditionalFiles>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\Migrations\OutOfSchoolMigrations\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://json.schemastore.org/appsettings" appsettings_1release_1json__JsonSchema="https://json.schemastore.org/appsettings" /></VisualStudio></ProjectExtensions>
