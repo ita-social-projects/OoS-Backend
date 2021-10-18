@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using NUnit.Framework;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using Range = Moq.Range;
 
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
@@ -16,47 +18,87 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private StatisticController controller;
         private Mock<IStatisticService> service;
 
-        private List<DirectionStatistic> categories;
-        private List<WorkshopCard> workshops;
-
         [SetUp]
         public void SetUp()
         {
             service = new Mock<IStatisticService>();
             controller = new StatisticController(service.Object);
-
-            categories = FakeDirectionStatistics();
-            workshops = FakeWorkshopCards();
         }
 
         [Test]
-        [TestCase(5, "")]
-        [TestCase(2, "")]
-        [TestCase(12, "")]
-        public async Task GetWorkshops_WhenLimitIsValid_NoCity_ShouldReturnOkResultObject(int limit, string city)
+        public async Task GetWorkshops_WhenLimitInRange_CityIsNull_ShouldReturnCorrectAmountOfData(
+            [Random(3, 10, 3)] int limit, [Values(null)]string city)
         {
             // Arrange
-            service.Setup(s => 
-                s.GetPopularWorkshops(
-                    It.IsInRange(3, 10, Range.Inclusive), It.IsAny<string>()))
-                .ReturnsAsync(workshops);
+            SetupGetWorkshops();
 
             // Act
             var result = await controller
-                .GetWorkshops(limit, string.Empty)
-                .ConfigureAwait(false) as OkObjectResult;
+                .GetWorkshops(limit, city)
+                .ConfigureAwait(false) as ObjectResult;
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(200);
+            result.Should().BeAssignableTo<OkObjectResult>();
+            result?.Value.Should().BeEquivalentTo(ExpectedWorkshopCards());
         }
 
         [Test]
-        [TestCase(5, "")]
-        public async Task GetWorkshops_WhenCollectionIsEmpty_WithCity_ShouldReturnNoContent(int limit, string city)
+        public async Task GetWorkshops_WhenLimitNotInRangeBelow_ShouldReturnCorrectAmountOfData(
+            [Random(1, 2, 2)] int limit, [Values(null)] string city)
         {
             // Arrange
-            service.Setup(s => s.GetPopularWorkshops(limit, city)).ReturnsAsync(new List<WorkshopCard>());
+            SetupGetWorkshops();
+
+            // Act
+            var result = await controller
+                .GetWorkshops(limit, city)
+                .ConfigureAwait(false) as ObjectResult;
+
+            // Assert
+            result.Should().BeAssignableTo<OkObjectResult>();
+            result?.Value.Should().BeEquivalentTo(ExpectedWorkshopCards());
+        }
+
+        [Test]
+        public async Task GetWorkshops_WhenLimitNotInRangeAbove_ShouldReturnCorrectAmountOfData(
+            [Random(11, 15, 3)] int limit, [Values(null)] string city)
+        {
+            // Arrange
+            SetupGetWorkshops();
+
+            // Act
+            var result = await controller
+                .GetWorkshops(limit, city)
+                .ConfigureAwait(false) as ObjectResult;
+
+            // Assert
+            result.Should().BeAssignableTo<OkObjectResult>();
+            result?.Value.Should().BeEquivalentTo(ExpectedWorkshopCards());
+        }
+
+        [Test]
+        public async Task GetWorkshops_WhenCityIsEmptyOrWhiteSpace_ShouldReturnCorrectAmountOfData(
+            [Random(3, 10, 2)] int limit, [Values("", "  ")]string city)
+        {
+            // Arrange
+            SetupGetWorkshops();
+
+            // Act
+            var result = await controller
+                .GetWorkshops(limit, city)
+                .ConfigureAwait(false) as ObjectResult;
+
+            // Assert
+            result.Should().BeAssignableTo<OkObjectResult>();
+            result?.Value.Should().BeEquivalentTo(ExpectedWorkshopCards());
+        }
+
+        [Test]
+        public async Task GetWorkshops_WhenCollectionIsEmpty_ShouldReturnNoContent(
+            [Random(3, 10, 3)] int limit, [Values(null)]string city)
+        {
+            // Arrange
+            SetupGetWorkshopsEmpty();
 
             // Act
             var result = await controller
@@ -64,48 +106,142 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 .ConfigureAwait(false) as NoContentResult;
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(204);
+            result.Should().BeAssignableTo<NoContentResult>();
         }
 
         [Test]
-        [TestCase(5, "")]
-        [TestCase(2, "")]
-        [TestCase(12, "")]
-        public async Task GetDirections_WhenLimitIsValid_NoCity_ShouldReturnOkResultObject(int limit, string city)
+        public async Task GetDirections_WhenLimitInRange_CityIsNull_ShouldReturnCorrectAmountOfData(
+            [Random(3, 10, 3)] int limit, [Values(null)]string city)
         {
             // Arrange
-            service.Setup(s => 
-                s.GetPopularDirections(
-                    It.IsInRange(3, 10, Range.Inclusive), It.IsAny<string>()))
-                .ReturnsAsync(categories);
+            SetupGetDirections();
 
             // Act
             var result = await controller
-                .GetDirections(limit)
-                .ConfigureAwait(false) as OkObjectResult;
+                .GetDirections(limit, city)
+                .ConfigureAwait(false) as ObjectResult;
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(200);
+            result.Should().BeAssignableTo<OkObjectResult>();
+            result?.Value.Should().BeEquivalentTo(ExpectedDirectionStatistics());
         }
 
         [Test]
-        [TestCase(5, null)]
-        public async Task GetDirections_WhenCollectionIsEmpty_WithCity_ShouldReturnNoContent(int limit, string city)
+        public async Task GetDirections_WhenLimitNotInRangeBelow_ShouldReturnCorrectAmountOfData(
+            [Random(1, 2, 2)] int limit, [Values(null)]string city)
         {
             // Arrange
-            service.Setup(s => s.GetPopularDirections(limit, city)).ReturnsAsync(new List<DirectionStatistic>());
+            SetupGetDirections();
 
             // Act
-            var result = await controller.GetDirections(limit).ConfigureAwait(false) as NoContentResult;
+            var result = await controller
+                .GetDirections(limit, city)
+                .ConfigureAwait(false) as ObjectResult;
 
             // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(204);
+            result.Should().BeAssignableTo<OkObjectResult>();
+            result?.Value.Should().BeEquivalentTo(ExpectedDirectionStatistics());
         }
 
-        private List<DirectionStatistic> FakeDirectionStatistics()
+        [Test]
+        public async Task GetDirections_WhenLimitNotInRangeAbove_ShouldReturnCorrectAmountOfData(
+            [Random(11, 15, 3)] int limit, [Values(null)]string city)
+        {
+            // Arrange
+            SetupGetDirections();
+
+            // Act
+            var result = await controller
+                .GetDirections(limit, city)
+                .ConfigureAwait(false) as ObjectResult;
+
+            // Assert
+            result.Should().BeAssignableTo<OkObjectResult>();
+            result?.Value.Should().BeEquivalentTo(ExpectedDirectionStatistics());
+        }
+
+        [Test]
+        public async Task GetDirections_WhenCityIsEmptyOrWhitespace_ShouldReturnCorrectAmountOfData(
+            [Random(3, 10, 3)] int limit, [Values("", "  ")]string city)
+        {
+            // Arrange
+            SetupGetDirections();
+
+            // Act
+            var result = await controller
+                .GetDirections(limit, city)
+                .ConfigureAwait(false) as ObjectResult;
+
+            // Assert
+            result.Should().BeAssignableTo<OkObjectResult>();
+            result?.Value.Should().BeEquivalentTo(ExpectedDirectionStatistics());
+        }
+
+        [Test]
+        public async Task GetDirections_WhenCollectionIsEmpty_ShouldReturnNoContent(
+            [Random(3, 10, 3)] int limit, [Values(null)]string city)
+        {
+            // Arrange
+            SetupGetDirectionsEmpty();
+
+            // Act
+            var result = await controller
+                .GetDirections(limit, city)
+                .ConfigureAwait(false) as NoContentResult;
+
+            // Assert
+            result.Should().BeAssignableTo<NoContentResult>();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            service.Verify();
+        }
+
+        #region Setup
+
+        private void SetupGetWorkshops()
+        {
+            service.Setup(s =>
+                    s.GetPopularWorkshops(
+                        It.IsInRange(3, 10, Range.Inclusive), It.IsAny<string>()))
+                .ReturnsAsync(WithWorkshopCards())
+                .Verifiable();
+        }
+
+        private void SetupGetWorkshopsEmpty()
+        {
+            service.Setup(s =>
+                    s.GetPopularWorkshops(
+                        It.IsInRange(3, 10, Range.Inclusive), It.IsAny<string>()))
+                .ReturnsAsync(new List<WorkshopCard>())
+                .Verifiable();
+        }
+
+        private void SetupGetDirections()
+        {
+            service.Setup(s =>
+                    s.GetPopularDirections(
+                        It.IsInRange(3, 10, Range.Inclusive), It.IsAny<string>()))
+                .ReturnsAsync(WithDirectionStatistics())
+                .Verifiable();
+        }
+
+        private void SetupGetDirectionsEmpty()
+        {
+            service.Setup(s =>
+                    s.GetPopularDirections(
+                        It.IsInRange(3, 10, Range.Inclusive), It.IsAny<string>()))
+                .ReturnsAsync(new List<DirectionStatistic>())
+                .Verifiable();
+        }
+
+        #endregion
+
+        #region With
+
+        private List<DirectionStatistic> WithDirectionStatistics()
         {
             return new List<DirectionStatistic>()
             {
@@ -125,7 +261,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private List<WorkshopCard> FakeWorkshopCards()
+        private List<WorkshopCard> WithWorkshopCards()
         {
             return new List<WorkshopCard>()
             {
@@ -142,5 +278,49 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 },
             };
         }
+
+        #endregion
+
+        #region Expected
+
+        private List<WorkshopCard> ExpectedWorkshopCards()
+        {
+            return new List<WorkshopCard>()
+            {
+                new WorkshopCard()
+                {
+                    WorkshopId = 1,
+                    Title = "w1",
+                },
+
+                new WorkshopCard()
+                {
+                    WorkshopId = 2,
+                    Title = "w2",
+                },
+            };
+        }
+
+        private List<DirectionStatistic> ExpectedDirectionStatistics()
+        {
+            return new List<DirectionStatistic>()
+            {
+                new DirectionStatistic()
+                {
+                    WorkshopsCount = 2,
+                    ApplicationsCount = 2,
+                    Direction = new DirectionDto { Id = 1, Title = "c1" },
+                },
+
+                new DirectionStatistic()
+                {
+                    WorkshopsCount = 1,
+                    ApplicationsCount = 1,
+                    Direction = new DirectionDto { Id = 3, Title = "c3" },
+                },
+            };
+        }
+
+        #endregion
     }
 }

@@ -43,59 +43,75 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public async Task GetPopularWorkshops_NoCityQuery_ShouldReturnWorkshops()
+        public async Task GetPopularWorkshops_WhenCityNotQueried_ShouldReturnCertainWorkshops()
         {
             // Arrange
             SetupGetPopularWorkshops();
 
             // Act
-            var result = await service.GetPopularWorkshops(2, string.Empty).ConfigureAwait(false);
+            var result = await service
+                .GetPopularWorkshops(2, string.Empty)
+                .ConfigureAwait(false);
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().BeEquivalentTo(ExpectedWorkshopCardsNoCityFilter(), options => options.WithStrictOrdering());
+            result
+                .Should()
+                .BeEquivalentTo(
+                    ExpectedWorkshopCardsNoCityFilter(), options => options.WithStrictOrdering());
         }
 
         [Test]
-        public async Task GetPopularWorkshops_WithCityQuery_ShouldReturnWorkshops()
+        public async Task GetPopularWorkshops_WithCityQueried_ShouldReturnCertainWorkshops()
         {
             // Arrange
             SetupGetPopularWorkshops();
 
             // Act
-            var result = await service.GetPopularWorkshops(2, "Київ").ConfigureAwait(false);
+            var result = await service
+                .GetPopularWorkshops(2, "Київ")
+                .ConfigureAwait(false);
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().BeEquivalentTo(ExpectedWorkshopCardsCityFilter(), options => options.WithStrictOrdering());
+            result
+                .Should()
+                .BeEquivalentTo(
+                    ExpectedWorkshopCardsCityFilter(), options => options.WithStrictOrdering());
         }
 
         [Test]
-        public async Task GetPopularDirections_NoCityQuery_ShouldReturnDirections()
+        public async Task GetPopularDirections_WhenCityNotQueried_ShouldReturnCertainDirections()
         {
             // Arrange
             SetupGetPopularDirections();
 
             // Act
-            var result = await service.GetPopularDirections(2, string.Empty).ConfigureAwait(false);
+            var result = await service
+                .GetPopularDirections(2, string.Empty)
+                .ConfigureAwait(false);
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().BeEquivalentTo(ExpectedDirectionStatisticsNoCityFilter(), options => options.WithStrictOrdering());
+            result
+                .Should()
+                .BeEquivalentTo(
+                    ExpectedDirectionStatisticsNoCityFilter(), options => options.WithStrictOrdering());
         }
 
         [Test]
-        public async Task GetPopularDirections_WithCityQuery_ShouldReturnDirections()
+        public async Task GetPopularDirections_WithCityQueried_ShouldReturnCertainDirections()
         {
             // Arrange
             SetupGetPopularDirections();
 
             // Act
-            var result = await service.GetPopularDirections(2, "Київ").ConfigureAwait(false);
+            var result = await service
+                .GetPopularDirections(2, "Київ")
+                .ConfigureAwait(false);
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().BeEquivalentTo(ExpectedDirectionStatisticsCityFilter(), options => options.WithStrictOrdering());
+            result
+                .Should()
+                .BeEquivalentTo(
+                    ExpectedDirectionStatisticsCityFilter(), options => options.WithStrictOrdering());
         }
 
         [TearDown]

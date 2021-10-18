@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [AllowAnonymous]
-        public async Task<IActionResult> GetDirections(int limit, [FromQuery] string city = null)
+        public async Task<IActionResult> GetDirections(int limit, [FromQuery] string city)
         {
             var newLimit = ValidateNumberOfEntries(limit);
 
@@ -69,7 +69,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [AllowAnonymous]
-        public async Task<IActionResult> GetWorkshops(int limit, [FromQuery] string city = null)
+        public async Task<IActionResult> GetWorkshops(int limit, [FromQuery] string city)
         {
             int newLimit = ValidateNumberOfEntries(limit);
 
