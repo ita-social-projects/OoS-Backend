@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 

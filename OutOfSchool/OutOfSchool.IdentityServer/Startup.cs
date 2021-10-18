@@ -25,6 +25,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using Serilog;
 
 namespace OutOfSchool.IdentityServer
 {
@@ -171,6 +172,8 @@ namespace OutOfSchool.IdentityServer
             app.UseCookiePolicy(new CookiePolicyOptions {MinimumSameSitePolicy = SameSiteMode.Lax});
 
             app.UseStaticFiles();
+
+            app.UseSerilogRequestLogging();
 
             app.UseIdentityServer();
 

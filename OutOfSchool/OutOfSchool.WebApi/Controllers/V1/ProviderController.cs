@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
-using OutOfSchool.WebApi.Common;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;

@@ -1,10 +1,14 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -24,6 +28,8 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly ILogger<AuthController> logger;
         private readonly IParentRepository parentRepository;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private string userId;
+        private string path;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -50,6 +56,12 @@ namespace OutOfSchool.IdentityServer.Controllers
             this.localizer = localizer;
         }
 
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
+            path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
+        }
+
         /// <summary>
         /// Logging out a user who is authenticated.
         /// </summary>
@@ -58,14 +70,21 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout(string logoutId)
         {
+            logger.LogDebug($"{path} started. User(id): {userId}.");
+
             await signInManager.SignOutAsync();
 
             var logoutRequest = await interactionService.GetLogoutContextAsync(logoutId);
 
+            // TODO: Check whether it is correct to return NotImplementedException here
             if (string.IsNullOrEmpty(logoutRequest.PostLogoutRedirectUri))
             {
+                logger.LogError($"{path} PostLogoutRedirectUri was null. User(id): {userId}.");
+
                 throw new NotImplementedException();
             }
+
+            logger.LogInformation($"{path} Successfully logged out. User(id): {userId}");
 
             return Redirect(logoutRequest.PostLogoutRedirectUri);
         }
@@ -78,7 +97,12 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl = "Login")
         {
+            logger.LogDebug($"{path} started.");
+
             var externalProviders = await signInManager.GetExternalAuthenticationSchemesAsync();
+
+            logger.LogDebug($"{path} External providers were obtained.");
+
             return View(new LoginViewModel
             {
                 ReturnUrl = returnUrl,
@@ -94,8 +118,12 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            logger.LogDebug($"{path} started.");
+
             if (!ModelState.IsValid)
             {
+                logger.LogError($"{path} Input data was not valid.");
+
                 return View(new LoginViewModel
                 {
                     ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
@@ -107,13 +135,19 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             if (result.Succeeded)
             {
+                logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
+
                 return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
 
             if (result.IsLockedOut)
             {
+                logger.LogWarning($"{path} Attempting to sign-in is locked out.");
+
                 return BadRequest();
             }
+
+            logger.LogInformation($"{path} Login was failed.");
 
             ModelState.AddModelError(string.Empty, localizer["Login or password is wrong"]);
             return View(new LoginViewModel
@@ -131,8 +165,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public IActionResult Register(string returnUrl = "Login")
         {
-            return View(
-                new RegisterViewModel { ReturnUrl = returnUrl });
+            return View(new RegisterViewModel { ReturnUrl = returnUrl });
         }
 
         /// <summary>
@@ -143,8 +176,12 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            logger.LogDebug($"{path} started.");
+
             if (!ModelState.IsValid)
             {
+                logger.LogError($"{path} Input data was not valid.");
+
                 return View(model);
             }
 
@@ -180,6 +217,8 @@ namespace OutOfSchool.IdentityServer.Controllers
                 var result = await userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    logger.LogDebug($"{path} User was created. User(id): {user.Id}");
+
                     IdentityResult roleAssignResult = IdentityResult.Failed();
 
                     roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
@@ -200,6 +239,8 @@ namespace OutOfSchool.IdentityServer.Controllers
                             await parentRepository.RunInTransaction(operation).ConfigureAwait(false);
                         }
 
+                        logger.LogInformation($"{path} User(id): {user.Id} was successfully registered with Role: {user.Role}.");
+
                         return Redirect(model.ReturnUrl);
                     }
 
@@ -207,7 +248,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                     if (!deletionResult.Succeeded)
                     {
-                        logger.Log(LogLevel.Warning, "User was created without role");
+                        logger.LogWarning($"{path} User(id): {user.Id} was created without role.");
                     }
 
                     foreach (var error in roleAssignResult.Errors)
@@ -217,6 +258,9 @@ namespace OutOfSchool.IdentityServer.Controllers
                 }
                 else
                 {
+                    logger.LogError($"{path} Registration was failed. " +
+                        $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+
                     foreach (var error in result.Errors)
                     {
                         if (error.Code == "DuplicateUserName")
@@ -237,7 +281,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                 ModelState.AddModelError(string.Empty, localizer["Error! Something happened on the server!"]);
 
-                logger.Log(LogLevel.Error, "Error happened while creating Parent entity! " + ex.Message);
+                logger.LogError("Error happened while creating Parent entity. " + ex.Message);
 
                 return View(model);
             }
