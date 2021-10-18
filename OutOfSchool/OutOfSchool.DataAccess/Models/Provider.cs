@@ -95,5 +95,9 @@ namespace OutOfSchool.Services.Models
 
         [Required]
         public virtual Address LegalAddress { get; set; }
+
+        public long? InstitutionStatusId { get; set; }
+
+        public virtual InstitutionStatus InstitutionStatus { get; set; }
     }
 }
