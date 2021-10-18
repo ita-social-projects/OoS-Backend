@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.WebApi.Common
+﻿namespace OutOfSchool.Common
 {
     /// <summary>
     /// Contains names of the resource claims types.

@@ -7,7 +7,7 @@ namespace OutOfSchool.WebApi.Models
     public class WorkshopCard
     {
         [Required]
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         [Required]
         [MaxLength(60)]
@@ -37,10 +37,10 @@ namespace OutOfSchool.WebApi.Models
         [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal Price { get; set; } = default;
 
-        public string Direction { get; set; }
+        public long DirectionId { get; set; }
 
         [Required]
-        public long ProviderId { get; set; }
+        public Guid ProviderId { get; set; }
 
         public AddressDto Address { get; set; }
     }

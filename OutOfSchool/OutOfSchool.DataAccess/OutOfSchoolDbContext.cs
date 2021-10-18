@@ -69,15 +69,6 @@ namespace OutOfSchool.Services
             builder.Entity<DateTimeRange>()
                 .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
 
-            builder.Entity<DateTimeRange>()
-                .Property(range => range.Workdays)
-                .HasConversion(
-                    list => (byte)list.Aggregate((prev, next) => prev | next),
-                    mask =>
-                        Enum.GetValues(typeof(DaysBitMask)).Cast<DaysBitMask>().ToList()
-                            .Where(amenity => amenity != 0 && ((DaysBitMask)mask).HasFlag(amenity)).ToList(),
-                    ValueComparer.CreateDefault(typeof(List<DaysBitMask>), true));
-
             builder.ApplyConfiguration(new TeacherConfiguration());
             builder.ApplyConfiguration(new ApplicationConfiguration());
             builder.ApplyConfiguration(new ChildConfiguration());
@@ -85,7 +76,6 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ChatRoomConfiguration());
             builder.ApplyConfiguration(new ChatRoomUserConfiguration());
             builder.ApplyConfiguration(new ProviderConfiguration());
-
 
             builder.Seed();
             builder.UpdateIdentityTables();

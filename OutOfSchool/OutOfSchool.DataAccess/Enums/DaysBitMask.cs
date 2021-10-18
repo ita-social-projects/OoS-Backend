@@ -6,7 +6,7 @@ namespace OutOfSchool.Services.Enums
 {
     [JsonConverter(typeof(StringEnumConverter))]
     [Flags]
-    public enum DaysBitMask
+    public enum DaysBitMask : byte
     {
         None = 0,
         Monday = 1,

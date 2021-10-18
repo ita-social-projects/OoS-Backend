@@ -38,6 +38,23 @@ namespace OutOfSchool.Services.Extensions
                     Id = 5,
                     Name = "Діти, позбавлені батьківського піклування",
                 });
+
+            builder.Entity<InstitutionStatus>().HasData(
+                new InstitutionStatus
+                {
+                    Id = 1,
+                    Name = "Працює",
+                },
+                new InstitutionStatus
+                {
+                    Id = 2,
+                    Name = "Перебуває в стані реорганізації",
+                },
+                new InstitutionStatus
+                {
+                    Id = 3,
+                    Name = "Має намір на реорганізацію",
+                });
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Util.CustomComparers
                 return true;
             if (x == null || y == null)
                 return false;
-            return x.Id == y.Id && x.StartTime.Equals(y.StartTime) && x.EndTime.Equals(y.EndTime) && x.Workdays.SequenceEqual(y.Workdays);
+            return x.Id == y.Id && x.StartTime.Equals(y.StartTime) && x.EndTime.Equals(y.EndTime) && x.Workdays == y.Workdays;
         }
 
         public int GetHashCode(DateTimeRange obj)
@@ -22,8 +22,7 @@ namespace OutOfSchool.WebApi.Util.CustomComparers
             hash.Add(obj.Id);
             hash.Add(obj.StartTime);
             hash.Add(obj.EndTime);
-            obj.Workdays.Sort();
-            obj.Workdays.ForEach(wd => hash.Add(wd));
+            hash.Add(obj.Workdays);
             return hash.ToHashCode();
         }
     }

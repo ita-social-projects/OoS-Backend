@@ -81,23 +81,23 @@ namespace OutOfSchool.WebApi.Tests
         //    }
         //}
 
-        [Test]
-        public void Create_NewEntity_AddNewEntityToDatabase()
-        {
-            using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
-            {
-                var repository = new EntityRepository<Child>(context);
-                Child child = new Child { FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 4, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
+        //[Test]
+        //public void Create_NewEntity_AddNewEntityToDatabase()
+        //{
+        //    using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
+        //    {
+        //        var repository = new EntityRepository<Child>(context);
+        //        Child child = new Child { FirstName = "fn4", LastName = "ln4", MiddleName = "mn4", DateOfBirth = new DateTime(2006, 4, 2), Gender = Gender.Male, ParentId = 1, SocialGroupId = 1 };
 
-                // Act
-                var child1 = repository.Create(child).Result;
-                var children = repository.GetAll();
+        //        // Act
+        //        var child1 = repository.Create(child).Result;
+        //        var children = repository.GetAll();
 
-                // Assert
-                Assert.AreEqual(4, children.Result.Count());
-                Assert.AreEqual(child.LastName, child1.LastName);
-            }
-        }
+        //        // Assert
+        //        Assert.AreEqual(4, children.Result.Count());
+        //        Assert.AreEqual(child.LastName, child1.LastName);
+        //    }
+        //}
 
         [Test]
         public async Task Delete_DeleteEntity_DeleteFromDatabaseAsync()

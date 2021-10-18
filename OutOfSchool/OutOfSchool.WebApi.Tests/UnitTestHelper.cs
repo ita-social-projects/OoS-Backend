@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Microsoft.EntityFrameworkCore;
+
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -39,10 +41,11 @@ namespace OutOfSchool.Tests
 
             var parents = new List<Parent>
             {
-                new Parent { Id = 1 },
-                new Parent { Id = 2 },
-                new Parent { Id = 3 },
+                new Parent { Id = Guid.NewGuid() },
+                new Parent { Id = Guid.NewGuid() },
+                new Parent { Id = Guid.NewGuid() },
             };
+
             context.Parents.AddRange(parents);
 
             var children = ChildGenerator.Generate(3);
@@ -62,13 +65,18 @@ namespace OutOfSchool.Tests
             context.Classes.Add(new Class { Id = 2, Title = "ssc2", DepartmentId = 1 });
             context.Classes.Add(new Class { Id = 3, Title = "ssc3", DepartmentId = 2 });
 
-            context.Workshops.Add(new Workshop { Id = 1, Title = "w1", DirectionId = 1 });
-            context.Workshops.Add(new Workshop { Id = 2, Title = "w2", DirectionId = 1 });
-            context.Workshops.Add(new Workshop { Id = 3, Title = "w3", DirectionId = 3 });
+            var workshops = new List<Workshop>
+            {
+                new Workshop { Id = Guid.NewGuid(), Title = "w1", DirectionId = 1 },
+                new Workshop { Id = Guid.NewGuid(), Title = "w2", DirectionId = 1 },
+                new Workshop { Id = Guid.NewGuid(), Title = "w3", DirectionId = 3 },
+            };
 
-            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = children[0].Id, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
-            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = children[1].Id, Status = ApplicationStatus.Pending, WorkshopId = 1, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
-            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = children[2].Id, Status = ApplicationStatus.Pending, WorkshopId = 3, ParentId = 1, CreationTime = new DateTime(2021, 7, 9) });
+            context.Workshops.AddRange(workshops);
+
+            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = children[0].Id, Status = ApplicationStatus.Pending, WorkshopId = workshops[0].Id, ParentId = parents[0].Id, CreationTime = new DateTime(2021, 7, 9) });
+            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = children[1].Id, Status = ApplicationStatus.Pending, WorkshopId = workshops[0].Id, ParentId = parents[0].Id, CreationTime = new DateTime(2021, 7, 9) });
+            context.Applications.Add(new Application() { Id = Guid.NewGuid(), ChildId = children[2].Id, Status = ApplicationStatus.Pending, WorkshopId = workshops[2].Id, ParentId = parents[0].Id, CreationTime = new DateTime(2021, 7, 9) });
 
             context.SaveChanges();
         }

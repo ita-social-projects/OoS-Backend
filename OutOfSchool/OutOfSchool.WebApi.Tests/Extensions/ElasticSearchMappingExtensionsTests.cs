@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
@@ -82,37 +83,59 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                     "twist",
                 },
                 Rating = 23.12314f,
+                DateTimeRanges = new List<DateTimeRangeDto>()
+                {
+                    new DateTimeRangeDto()
+                    {
+                        Id = 1,
+                        StartTime = TimeSpan.FromHours(8.5d),
+                        EndTime = TimeSpan.FromHours(12),
+                        Workdays = new List<DaysBitMask>() { DaysBitMask.Monday, DaysBitMask.Tuesday },
+                    },
+
+                    new DateTimeRangeDto()
+                    {
+                        Id = 2,
+                        StartTime = TimeSpan.FromHours(13.5d),
+                        EndTime = TimeSpan.FromHours(17),
+                        Workdays = new List<DaysBitMask>() { DaysBitMask.Saturday, DaysBitMask.Tuesday },
+                    },
+                },
             };
 
             // Act
             var result = workshopDto.ToESModel();
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOf<WorkshopES>(result);
-            Assert.AreEqual(workshopDto.Id, result.Id);
-            Assert.AreEqual(workshopDto.Title, result.Title);
-            Assert.AreEqual(workshopDto.Price, result.Price);
-            Assert.AreEqual(workshopDto.IsPerMonth, result.IsPerMonth);
-            Assert.AreEqual(workshopDto.WithDisabilityOptions, result.WithDisabilityOptions);
-            Assert.AreEqual(workshopDto.ProviderId, result.ProviderId);
-            Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
-            Assert.AreEqual(workshopDto.MinAge, result.MinAge);
-            Assert.AreEqual(workshopDto.MaxAge, result.MaxAge);
-            Assert.AreEqual(workshopDto.Logo, result.Logo);
-            Assert.AreEqual(workshopDto.DirectionId, result.DirectionId);
-            Assert.AreEqual(workshopDto.Direction, result.Direction);
-            Assert.AreEqual(workshopDto.DepartmentId, result.DepartmentId);
-            Assert.AreEqual(workshopDto.ClassId, result.ClassId);
-            Assert.AreEqual(workshopDto.AddressId, result.AddressId);
-            Assert.IsNotNull(result.Address);
-            Assert.IsInstanceOf<AddressES>(result.Address);
-            Assert.AreEqual(workshopDto.Address.Latitude, result.Address.Latitude);
-            Assert.AreEqual(workshopDto.Rating, result.Rating);
-            Assert.IsNotNull(result.Teachers);
-            Assert.IsInstanceOf<IEnumerable<TeacherES>>(result.Teachers);
-            Assert.AreEqual("dance¤twist", result.Keywords);
-            Assert.AreEqual(workshopDto.Description, result.Description);
+            Assert.Multiple(() =>
+            {
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOf<WorkshopES>(result);
+                Assert.AreEqual(workshopDto.Id, result.Id);
+                Assert.AreEqual(workshopDto.Title, result.Title);
+                Assert.AreEqual(workshopDto.Price, result.Price);
+                Assert.AreEqual(workshopDto.IsPerMonth, result.IsPerMonth);
+                Assert.AreEqual(workshopDto.WithDisabilityOptions, result.WithDisabilityOptions);
+                Assert.AreEqual(workshopDto.ProviderId, result.ProviderId);
+                Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
+                Assert.AreEqual(workshopDto.MinAge, result.MinAge);
+                Assert.AreEqual(workshopDto.MaxAge, result.MaxAge);
+                Assert.AreEqual(workshopDto.Logo, result.Logo);
+                Assert.AreEqual(workshopDto.DirectionId, result.DirectionId);
+                Assert.AreEqual(workshopDto.Direction, result.Direction);
+                Assert.AreEqual(workshopDto.DepartmentId, result.DepartmentId);
+                Assert.AreEqual(workshopDto.ClassId, result.ClassId);
+                Assert.AreEqual(workshopDto.AddressId, result.AddressId);
+                Assert.IsNotNull(result.Address);
+                Assert.IsInstanceOf<AddressES>(result.Address);
+                Assert.AreEqual(workshopDto.Address.Latitude, result.Address.Latitude);
+                Assert.AreEqual(workshopDto.Rating, result.Rating);
+                Assert.IsNotNull(result.Teachers);
+                Assert.IsInstanceOf<IEnumerable<TeacherES>>(result.Teachers);
+                Assert.AreEqual("dance¤twist", result.Keywords);
+                Assert.AreEqual(workshopDto.Description, result.Description);
+                Assert.IsInstanceOf<IEnumerable<DateTimeRangeES>>(result.DateTimeRanges);
+            });
         }
 
         [Test]
@@ -132,6 +155,9 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 MaxPrice = 20,
                 OrderByField = Enums.OrderBy.PriceDesc.ToString(),
                 SearchText = "Text",
+                StartHour = 8,
+                EndHour = 12,
+                Workdays = new List<DaysBitMask>() { DaysBitMask.Friday },
                 From = 13,
                 Size = 12,
             };
@@ -140,21 +166,27 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             var result = filter.ToESModel();
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOf<WorkshopFilterES>(result);
-            Assert.AreEqual(filter.Ids, result.Ids);
-            Assert.AreEqual(filter.DirectionIds, result.DirectionIds);
-            Assert.AreEqual(filter.IsFree, result.IsFree);
-            Assert.AreEqual(filter.MinAge, result.MinAge);
-            Assert.AreEqual(filter.MaxAge, result.MaxAge);
-            Assert.AreEqual(filter.WithDisabilityOptions, result.WithDisabilityOptions);
-            Assert.AreEqual(filter.City, result.City);
-            Assert.AreEqual(filter.MinPrice, result.MinPrice);
-            Assert.AreEqual(filter.MaxPrice, result.MaxPrice);
-            Assert.AreEqual(filter.OrderByField.ToString(), result.OrderByField.ToString());
-            Assert.AreEqual(filter.SearchText, result.SearchText);
-            Assert.AreEqual(filter.From, result.From);
-            Assert.AreEqual(filter.Size, result.Size);
+            Assert.Multiple(() =>
+            {
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOf<WorkshopFilterES>(result);
+                Assert.AreEqual(filter.Ids, result.Ids);
+                Assert.AreEqual(filter.DirectionIds, result.DirectionIds);
+                Assert.AreEqual(filter.IsFree, result.IsFree);
+                Assert.AreEqual(filter.MinAge, result.MinAge);
+                Assert.AreEqual(filter.MaxAge, result.MaxAge);
+                Assert.AreEqual(filter.WithDisabilityOptions, result.WithDisabilityOptions);
+                Assert.AreEqual(filter.City, result.City);
+                Assert.AreEqual(filter.MinPrice, result.MinPrice);
+                Assert.AreEqual(filter.MaxPrice, result.MaxPrice);
+                Assert.AreEqual(filter.OrderByField.ToString(), result.OrderByField.ToString());
+                Assert.AreEqual(filter.SearchText, result.SearchText);
+                Assert.AreEqual(filter.StartHour, result.StartHour);
+                Assert.AreEqual(filter.EndHour, result.EndHour);
+                Assert.IsInstanceOf<string>(result.Workdays);
+                Assert.AreEqual(filter.From, result.From);
+                Assert.AreEqual(filter.Size, result.Size);
+            });
         }
 
         [Test]
@@ -234,7 +266,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             Assert.AreEqual(workshopES.MinAge, result.MinAge);
             Assert.AreEqual(workshopES.MaxAge, result.MaxAge);
             Assert.AreEqual(workshopES.Logo, result.Photo);
-            Assert.AreEqual(workshopES.Direction, result.Direction);
+            Assert.AreEqual(workshopES.Direction, result.DirectionId);
             Assert.IsNotNull(result.Address);
             Assert.IsInstanceOf<AddressDto>(result.Address);
             Assert.AreEqual(workshopES.Address.Latitude, result.Address.Latitude);

@@ -23,11 +23,17 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public int MaxPrice { get; set; } = int.MaxValue;
 
-        public List<long> DirectionIds { get; set; } = new List<long> { 0 };
+        public List<long> DirectionIds { get; set; } = new List<long>();
 
         public string City { get; set; } = string.Empty;
 
         public bool WithDisabilityOptions { get; set; } = false;
+
+        public string Workdays { get; set; } = string.Empty;
+
+        public int StartHour { get; set; } = 0;
+
+        public int EndHour { get; set; } = 23;
 
         public int Size { get; set; } = 12;
 

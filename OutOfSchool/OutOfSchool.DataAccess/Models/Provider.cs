@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -24,7 +24,7 @@ namespace OutOfSchool.Services.Models
         public string ShortTitle { get; set; }
 
         [DataType(DataType.Url)]
-        [MaxLength(100)]
+        [MaxLength(Constants.UnifiedUrlLength)]
         public string Website { get; set; } = string.Empty;
 
         [DataType(DataType.EmailAddress)]
@@ -34,11 +34,11 @@ namespace OutOfSchool.Services.Models
         public string Email { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
-        [MaxLength(100)]
+        [MaxLength(Constants.UnifiedUrlLength)]
         public string Facebook { get; set; } = string.Empty;
 
         [DataType(DataType.Url)]
-        [MaxLength(100)]
+        [MaxLength(Constants.UnifiedUrlLength)]
         public string Instagram { get; set; } = string.Empty;
 
         [MaxLength(500)]
@@ -95,5 +95,9 @@ namespace OutOfSchool.Services.Models
 
         [Required]
         public virtual Address LegalAddress { get; set; }
+
+        public long? InstitutionStatusId { get; set; }
+
+        public virtual InstitutionStatus InstitutionStatus { get; set; }
     }
 }

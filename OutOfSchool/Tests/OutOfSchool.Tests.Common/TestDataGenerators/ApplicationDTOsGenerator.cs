@@ -38,25 +38,24 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// Assigns given <paramref name="workshop"/> to the given <paramref name="application"/>
         /// </summary>
         /// <returns><see cref="ApplicationDto"/> object with assigned <paramref name="workshopId"/>.</returns>
-        public static ApplicationDto WithWorkshopDto(this ApplicationDto application, WorkshopDTO workshop)
+        public static ApplicationDto WithWorkshopCard(this ApplicationDto application, WorkshopCard workshopCard)
         {
             _ = application ?? throw new ArgumentNullException(nameof(application));
 
-            application.Workshop = workshop;
-            application.WorkshopId = workshop?.Id ?? default;
+            application.Workshop = workshopCard;
 
             return application;
         }
 
         /// <summary>
-        /// Assigns given <paramref name="workshop"/> to the given <paramref name="applications"/>
+        /// Assigns given <paramref name="workshopCard"/> to the given <paramref name="applications"/>
         /// </summary>
         /// <returns><see cref="ApplicationDto"/> object with assigned <paramref name="workshopId"/>.</returns>
-        public static List<ApplicationDto> WithWorkshopDto(this List<ApplicationDto> applications, WorkshopDTO workshop)
+        public static List<ApplicationDto> WithWorkshopCard(this List<ApplicationDto> applications, WorkshopCard workshopCard)
         {
             _ = applications ?? throw new ArgumentNullException(nameof(applications));
 
-            applications.ForEach(a => a.WithWorkshopDto(workshop));
+            applications.ForEach(a => a.WithWorkshopCard(workshopCard));
 
             return applications;
         }

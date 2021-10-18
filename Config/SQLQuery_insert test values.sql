@@ -61,7 +61,7 @@ VALUES
         ,NULL
         ,1
         ,0
-        ,0) --is registered
+        ,1) --is registered
 
         ,('7604a851-66db-4236-9271-1f037ffe3a81' --Id
         ,'2021-06-04 10:24:40.8990089 +00:00' --[CreatingTime]
@@ -84,7 +84,7 @@ VALUES
         ,NULL
         ,1
         ,0
-        ,0) --is registered
+        ,1) --is registered
 
         ,('47802b21-2fb5-435e-9057-75c43d002cef' --Id
         ,'2021-06-04 10:29:56.7988521 +00:00' --[CreatingTime]
@@ -107,7 +107,7 @@ VALUES
         ,NULL
         ,1
         ,0
-        ,0) --is registered
+        ,1) --is registered
 
         ,('5bff5f95-1848-4c87-9846-a567aeb407ea' --Id
         ,'2021-06-04 10:33:26.6295481 +00:00' --[CreatingTime]
@@ -130,7 +130,7 @@ VALUES
         ,NULL
         ,1
         ,0
-        ,0) --is registered
+        ,1) --is registered
     GO
 
 --Roles' Ids according to your data in [AspNetRoles].
@@ -181,7 +181,8 @@ INSERT INTO [dbo].[Children]
     ,[DateOfBirth]
     ,[Gender]
     ,[ParentId]
-    ,[SocialGroupId])
+    ,[SocialGroupId]
+	,[PlaceOfStudy])
 VALUES
     ('Тетяна'
         ,'Батькоперший'
@@ -189,7 +190,8 @@ VALUES
         ,'2010-12-11'
         ,1 --gender
         ,1 --parent Id (parent 1, user 1)
-        ,null) --social group
+        ,null --social group
+		,'Загальноосвітня школа №125') --[PlaceOfStudy]
 
         ,('Богдан'
         ,'Батькодругий'
@@ -197,7 +199,8 @@ VALUES
         ,'2010-05-05'
         ,0 --gender
         ,2 --parent Id (parent 2, user 2)
-        ,2) --social group
+        ,2 --social group
+		,'ЗО №14') --[PlaceOfStudy]
 
         ,('Лідія'
         ,'Батькодругий'
@@ -205,38 +208,8 @@ VALUES
         ,'2015-10-01'
         ,1 --gender
         ,2 --parent Id (parent 2, user 2)
-        ,2) --social group
-    GO
-
---Children birth certificates
-INSERT INTO [dbo].[BirthCertificates]
-([Id]
-    ,[SvidSer]
-    ,[SvidNum]
-    ,[SvidNumMD5]
-    ,[SvidWho]
-    ,[SvidDate])
-VALUES
-    (1
-        ,'І-ФП'
-        ,'315315'
-        ,null
-        ,'Виконавчий комітет Дарницького району м. Києва'
-        ,'2010-12-12')
-
-        ,(2
-        ,'І-ФВ'
-        ,'415415'
-        ,null
-        ,'Виконавчий комітет Деснянського району м. Києва'
-        ,'2010-05-12')
-
-        ,(3
-        ,'А-ФВ'
-        ,'455485'
-        ,null
-        ,'Виконавчий комітет м.Житомиру'
-        ,'2015-10-12')
+        ,2 --social group
+		,'СШ №1') --[PlaceOfStudy]
     GO
 
 --==================== PROVIDERS AND WORKSHOPS ================================
@@ -1291,6 +1264,54 @@ VALUES
         ,6) --workshop Id
     GO
 
+--Schedule
+INSERT INTO [dbo].[DateTimeRanges]
+           ([StartTime]
+           ,[EndTime]
+           ,[WorkshopId]
+           ,[Workdays])
+     VALUES
+           ('8:00' --<StartTime>
+           ,'17:30' --<EndTime>
+           ,1 --<WorkshopId>
+           ,21) --<Workdays>
+
+		   ,('8:00' --<StartTime>
+           ,'20:00' --<EndTime>
+           ,2 --<WorkshopId>
+           ,255) --<Workdays>
+
+		   ,('8:00' --<StartTime>
+           ,'20:00' --<EndTime>
+           ,3 --<WorkshopId>
+           ,21) --<Workdays>
+
+		   ,('9:00' --<StartTime>
+           ,'21:00' --<EndTime>
+           ,3 --<WorkshopId>
+           ,10) --<Workdays>
+
+		   ,('12:00' --<StartTime>
+           ,'19:00' --<EndTime>
+           ,4 --<WorkshopId>
+           ,21) --<Workdays>
+
+		   ,('9:00' --<StartTime>
+           ,'21:00' --<EndTime>
+           ,4 --<WorkshopId>
+           ,10) --<Workdays>
+
+		   ,('9:00' --<StartTime>
+           ,'21:00' --<EndTime>
+           ,5 --<WorkshopId>
+           ,96) --<Workdays>
+
+		   ,('9:00' --<StartTime>
+           ,'21:00' --<EndTime>
+           ,6 --<WorkshopId>
+           ,96) --<Workdays>
+GO
+
 --Applications
 INSERT INTO [dbo].[Applications]
 ([Status]
@@ -1360,156 +1381,6 @@ VALUES
         ,1 --parent
         ,'2021-02-15 18:00:45')
 
-        ,(5 --rating
-        ,2 --workshop
-        ,3 -- workshopId
-        ,1 --parent
-        ,'2021-03-15 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,4 -- workshopId
-        ,1 --parent
-        ,'2021-04-15 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,4 -- workshopId
-        ,1 --parent
-        ,'2021-05-15 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,5 -- workshopId
-        ,1 --parent
-        ,'2021-06-15 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,6 -- workshopId
-        ,1 --parent
-        ,'2021-07-01 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,7 -- workshopId
-        ,1 --parent
-        ,'2021-07-02 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,8 -- workshopId
-        ,1 --parent
-        ,'2021-07-03 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,9 -- workshopId
-        ,1 --parent
-        ,'2021-07-04 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,10 -- workshopId
-        ,1 --parent
-        ,'2021-07-05 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,11 -- workshopId
-        ,1 --parent
-        ,'2021-07-06 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,12 -- workshopId
-        ,1 --parent
-        ,'2021-07-08 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,13 -- workshopId
-        ,1 --parent
-        ,'2021-07-09 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,14 -- workshopId
-        ,1 --parent
-        ,'2021-07-10 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,15 -- workshopId
-        ,1 --parent
-        ,'2021-07-11 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,16 -- workshopId
-        ,1 --parent
-        ,'2021-07-12 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,17 -- workshopId
-        ,1 --parent
-        ,'2021-07-13 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,18 -- workshopId
-        ,1 --parent
-        ,'2021-07-14 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,19 -- workshopId
-        ,1 --parent
-        ,'2021-07-15 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,20 -- workshopId
-        ,1 --parent
-        ,'2021-07-16 18:00:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,21 -- workshopId
-        ,1 --parent
-        ,'2021-07-17 18:00:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,22 -- workshopId
-        ,1 --parent
-        ,'2021-07-18 18:00:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,23 -- workshopId
-        ,1 --parent
-        ,'2021-07-19 18:00:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,24 -- workshopId
-        ,1 --parent
-        ,'2021-07-20 18:00:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,25 -- workshopId
-        ,1 --parent
-        ,'2021-07-21 18:00:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,26 -- workshopId
-        ,1 --parent
-        ,'2021-07-22 18:00:45')
-
 --parent 2
         ,(5 --rating
         ,2 --workshop
@@ -1522,154 +1393,4 @@ VALUES
         ,2 -- workshopId
         ,2 --parent
         ,'2021-02-02 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,3 -- workshopId
-        ,2 --parent
-        ,'2021-03-02 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,4 -- workshopId
-        ,2 --parent
-        ,'2021-04-02 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,4 -- workshopId
-        ,2 --parent
-        ,'2021-05-01 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,5 -- workshopId
-        ,2 --parent
-        ,'2021-05-02 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,6 -- workshopId
-        ,2 --parent
-        ,'2021-06-02 18:00:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,7 -- workshopId
-        ,2 --parent
-        ,'2021-07-02 18:00:45')
-
-        ,(2 --rating
-        ,2 --workshop
-        ,8 -- workshopId
-        ,2 --parent
-        ,'2021-07-01 18:00:45')
-
-        ,(1 --rating
-        ,2 --workshop
-        ,9 -- workshopId
-        ,2 --parent
-        ,'2021-07-02 18:00:45')
-
-        ,(2 --rating
-        ,2 --workshop
-        ,10 -- workshopId
-        ,2 --parent
-        ,'2021-07-02 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,11 -- workshopId
-        ,2 --parent
-        ,'2021-07-03 18:00:45')
-
-        ,(2 --rating
-        ,2 --workshop
-        ,12 -- workshopId
-        ,2 --parent
-        ,'2021-07-04 18:00:45')
-
-        ,(2 --rating
-        ,2 --workshop
-        ,13 -- workshopId
-        ,2 --parent
-        ,'2021-07-05 18:00:45')
-
-        ,(2 --rating
-        ,2 --workshop
-        ,14 -- workshopId
-        ,2 --parent
-        ,'2021-07-06 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,15 -- workshopId
-        ,2 --parent
-        ,'2021-07-07 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,16 -- workshopId
-        ,2 --parent
-        ,'2021-07-08 18:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,17 -- workshopId
-        ,2 --parent
-        ,'2021-07-09 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,18 -- workshopId
-        ,2 --parent
-        ,'2021-07-10 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,19 -- workshopId
-        ,2 --parent
-        ,'2021-07-10 19:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,20 -- workshopId
-        ,2 --parent
-        ,'2021-07-11 10:00:45')
-
-        ,(5 --rating
-        ,2 --workshop
-        ,21 -- workshopId
-        ,2 --parent
-        ,'2021-07-11 13:00:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,22 -- workshopId
-        ,2 --parent
-        ,'2021-07-12 13:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,23 -- workshopId
-        ,2 --parent
-        ,'2021-07-13 18:00:45')
-
-        ,(4 --rating
-        ,2 --workshop
-        ,24 -- workshopId
-        ,2 --parent
-        ,'2021-07-14 18:20:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,25 -- workshopId
-        ,2 --parent
-        ,'2021-07-15 18:00:45')
-
-        ,(3 --rating
-        ,2 --workshop
-        ,26 -- workshopId
-        ,2 --parent
-        ,'2021-07-16 18:00:45')
     GO

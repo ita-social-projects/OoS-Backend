@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211009201353_ChangedChildFieldsLengths")]
+    partial class ChangedChildFieldsLengths
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -215,29 +217,27 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Application", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
 
-                    b.Property<Guid>("ChildId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("ChildId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("CreationTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("ParentId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("WorkshopId")
+                        .HasColumnType("bigint");
 
-                    b.HasKey("Id")
-                        .IsClustered(false);
+                    b.HasKey("Id");
 
                     b.HasIndex("ChildId");
 
@@ -250,12 +250,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatMessage", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
 
-                    b.Property<Guid>("ChatRoomId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("ChatRoomId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("CreatedTime")
                         .HasColumnType("datetimeoffset");
@@ -269,10 +270,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Id")
-                        .IsClustered(false);
+                    b.HasKey("Id");
 
                     b.HasIndex("ChatRoomId");
 
@@ -283,15 +285,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatRoom", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
 
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("WorkshopId")
+                        .HasColumnType("bigint");
 
-                    b.HasKey("Id")
-                        .IsClustered(false);
+                    b.HasKey("Id");
 
                     b.HasIndex("WorkshopId");
 
@@ -300,18 +302,20 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatRoomUser", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
 
-                    b.Property<Guid>("ChatRoomId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("ChatRoomId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Id")
-                        .IsClustered(false);
+                    b.HasKey("Id");
 
                     b.HasIndex("ChatRoomId");
 
@@ -322,9 +326,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("date");
@@ -335,9 +340,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("nvarchar(30)");
 
                     b.Property<int>("Gender")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("int");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -345,12 +348,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("MiddleName")
-                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("ParentId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("PlaceOfStudy")
                         .HasMaxLength(500)
@@ -359,8 +361,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long?>("SocialGroupId")
                         .HasColumnType("bigint");
 
-                    b.HasKey("Id")
-                        .IsClustered(false);
+                    b.HasKey("Id");
 
                     b.HasIndex("ParentId");
 
@@ -444,12 +445,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("WorkshopId")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid?>("WorkshopId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkshopId1");
+                    b.HasIndex("WorkshopId");
 
                     b.ToTable("DateTimeRanges");
 
@@ -514,8 +512,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("WorkshopId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -526,44 +524,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Favorites");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .UseIdentityColumn();
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("InstitutionStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            Name = "Працює"
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            Name = "Перебуває в стані реорганізації"
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            Name = "Має намір на реорганізацію"
-                        });
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -578,9 +544,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
 
                     b.Property<long?>("ActualAddressId")
                         .HasColumnType("bigint");
@@ -588,20 +555,19 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .IsUnicode(true)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Director")
                         .HasMaxLength(50)
-                        .IsUnicode(true)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("DirectorDateOfBirth")
-                        .HasColumnType("Date");
+                        .HasColumnType("date");
 
-                    b.Property<long>("EdrpouIpn")
+                    b.Property<string>("EdrpouIpn")
+                        .IsRequired()
                         .HasMaxLength(12)
-                        .HasColumnType("bigint");
+                        .HasColumnType("nvarchar(12)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -609,8 +575,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Facebook")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Founder")
                         .IsRequired()
@@ -620,15 +586,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("FullTitle")
                         .IsRequired()
                         .HasMaxLength(60)
-                        .IsUnicode(true)
                         .HasColumnType("nvarchar(60)");
 
                     b.Property<string>("Instagram")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<long?>("InstitutionStatusId")
-                        .HasColumnType("bigint");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<long>("LegalAddressId")
                         .HasColumnType("bigint");
@@ -643,7 +605,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("ShortTitle")
                         .IsRequired()
                         .HasMaxLength(60)
-                        .IsUnicode(true)
                         .HasColumnType("nvarchar(60)");
 
                     b.Property<bool>("Status")
@@ -657,16 +618,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Website")
-                        .HasMaxLength(256)
-                        .IsUnicode(true)
-                        .HasColumnType("nvarchar(256)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.HasKey("Id")
-                        .IsClustered(false);
+                    b.HasKey("Id");
 
                     b.HasIndex("ActualAddressId");
-
-                    b.HasIndex("InstitutionStatusId");
 
                     b.HasIndex("LegalAddressId");
 
@@ -685,11 +642,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<DateTimeOffset>("CreationTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("EntityId")
+                        .HasColumnType("bigint");
 
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("ParentId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Rate")
                         .HasColumnType("int");
@@ -749,9 +706,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("date");
@@ -783,13 +741,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("WorkshopId")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid?>("WorkshopId1")
-                        .HasColumnType("uniqueidentifier");
+                    b.HasKey("Id");
 
-                    b.HasKey("Id")
-                        .IsClustered(false);
-
-                    b.HasIndex("WorkshopId1");
+                    b.HasIndex("WorkshopId");
 
                     b.ToTable("Teachers");
                 });
@@ -902,9 +856,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
 
                     b.Property<long>("AddressId")
                         .HasColumnType("bigint");
@@ -973,8 +928,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("ProviderId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("ProviderId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("ProviderTitle")
                         .IsRequired()
@@ -1095,7 +1050,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
                         .WithMany("ChatMessages")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ChatRoom");
 
@@ -1124,7 +1080,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
                         .WithMany("ChatRoomUsers")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ChatRoom");
 
@@ -1163,7 +1120,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", null)
                         .WithMany("DateTimeRanges")
-                        .HasForeignKey("WorkshopId1");
+                        .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>
@@ -1211,11 +1170,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Address", "ActualAddress")
                         .WithMany()
-                        .HasForeignKey("ActualAddressId");
-
-                    b.HasOne("OutOfSchool.Services.Models.InstitutionStatus", "InstitutionStatus")
-                        .WithMany("Providers")
-                        .HasForeignKey("InstitutionStatusId");
+                        .HasForeignKey("ActualAddressId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("OutOfSchool.Services.Models.Address", "LegalAddress")
                         .WithMany()
@@ -1230,8 +1186,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("ActualAddress");
-
-                    b.Navigation("InstitutionStatus");
 
                     b.Navigation("LegalAddress");
 
@@ -1253,7 +1207,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
                         .WithMany("Teachers")
-                        .HasForeignKey("WorkshopId1");
+                        .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Workshop");
                 });
@@ -1308,11 +1264,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Direction", b =>
                 {
                     b.Navigation("Departments");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
-                {
-                    b.Navigation("Providers");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
