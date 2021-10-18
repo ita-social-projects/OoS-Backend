@@ -35,18 +35,11 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
-
-            if (!esResultIsValid)
-            {
-                logger.LogWarning($"Error happend while trying to index {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
-
-                await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
                     workshop.Id,
                     ElasticsearchSyncOperation.Create)
                     .ConfigureAwait(false);
-            }
 
             return workshop;
         }
@@ -64,18 +57,11 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
-
-            if (!esResultIsValid)
-            {
-                logger.LogWarning($"Error happend while trying to update {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
-
-                await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
                     workshop.Id,
                     ElasticsearchSyncOperation.Update)
                     .ConfigureAwait(false);
-            }
 
             return workshop;
         }
@@ -85,18 +71,11 @@ namespace OutOfSchool.WebApi.Services
         {
             await workshopService.Delete(id).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Delete(id).ConfigureAwait(false);
-
-            if (!esResultIsValid)
-            {
-                logger.LogWarning($"Error happend while trying to delete Workshop:{id} in Elasticsearch.");
-
-                await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
                     id,
                     ElasticsearchSyncOperation.Delete)
                     .ConfigureAwait(false);
-            }
         }
 
         /// <inheritdoc/>

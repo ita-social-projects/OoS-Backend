@@ -110,6 +110,7 @@ namespace OutOfSchool.WebApi.Services
                 OperationDate = DateTime.UtcNow,
                 Operation = operation,
             };
+
             await Create(elasticsearchSyncRecordDto).ConfigureAwait(false);
         }
     }
