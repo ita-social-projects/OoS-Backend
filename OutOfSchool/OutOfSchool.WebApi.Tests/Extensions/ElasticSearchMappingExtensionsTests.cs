@@ -266,7 +266,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             Assert.AreEqual(workshopES.MinAge, result.MinAge);
             Assert.AreEqual(workshopES.MaxAge, result.MaxAge);
             Assert.AreEqual(workshopES.Logo, result.Photo);
-            Assert.AreEqual(workshopES.Direction, result.Direction);
+            Assert.AreEqual(workshopES.Direction, result.DirectionId);
             Assert.IsNotNull(result.Address);
             Assert.IsInstanceOf<AddressDto>(result.Address);
             Assert.AreEqual(workshopES.Address.Latitude, result.Address.Latitude);
