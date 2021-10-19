@@ -410,3 +410,10 @@ a {
   justify-content: center;
   align-items: center;
 }
+
+.registration_submit:disabled,
+.registration_submit[disabled] {
+    border: 1px solid #999999;
+    background: #cccccc;
+    color: #666666;
+}
