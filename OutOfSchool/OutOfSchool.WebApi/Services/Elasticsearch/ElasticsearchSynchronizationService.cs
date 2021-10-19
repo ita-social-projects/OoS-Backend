@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -112,6 +113,20 @@ namespace OutOfSchool.WebApi.Services
             };
 
             await Create(elasticsearchSyncRecordDto).ConfigureAwait(false);
+        }
+
+        public async Task Synchronize(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                logger.LogInformation("Elasticsearch synchronization started");
+
+                await Synchronize().ConfigureAwait(false);
+
+                logger.LogInformation("Elasticsearch synchronization finished");
+
+                await Task.Delay(10000, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 }

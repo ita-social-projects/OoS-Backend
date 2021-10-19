@@ -34,12 +34,19 @@ namespace OutOfSchool.WebApi.Services
 
             using (var scope = Services.CreateScope())
             {
-                var scopedProcessingService =
+                var elasticsearchSynchronizationService =
                     scope.ServiceProvider
                     .GetRequiredService<IElasticsearchSynchronizationService>();
 
-                await scopedProcessingService.Synchronize().ConfigureAwait(false);
+                await elasticsearchSynchronizationService.Synchronize(cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            logger.LogInformation("Elasticsearch synchronization hosted service is stopping.");
+
+            await base.StopAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }
