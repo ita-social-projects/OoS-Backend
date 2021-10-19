@@ -39,16 +39,18 @@ namespace OutOfSchool.WebApi.Tests.IntegrationTests.ProviderServiceIntergrationT
 
         private List<Provider> fakeProviders;
         private User fakeUser;
-        private OutOfSchoolDbContext getContext => new OutOfSchoolDbContext(unitTestDbOptions);
+
         private IProviderRepository providerRepository;
         private Mapper mapper;
         private DbContextOptions<OutOfSchoolDbContext> unitTestDbOptions;
+
+        private OutOfSchoolDbContext GetContext => new OutOfSchoolDbContext(unitTestDbOptions);
 
         [SetUp]
         public async Task SetUp()
         {
             unitTestDbOptions = UnitTestHelper.GetUnitTestDbOptions();
-            await using var context = getContext;
+            await using var context = GetContext;
             fakeProviders = ProvidersGenerator.Generate(10);
             await context.AddRangeAsync(fakeProviders);
             await context.SaveChangesAsync();
@@ -60,27 +62,16 @@ namespace OutOfSchool.WebApi.Tests.IntegrationTests.ProviderServiceIntergrationT
             ratingService = new Mock<IRatingService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ProviderService>>();
-            providerRepository = new ProviderRepository(getContext);
+            providerRepository = new ProviderRepository(GetContext);
             providerService = new ProviderService(providerRepository, usersRepositoryMock.Object, ratingService.Object,
                 logger.Object, localizer.Object, mapper);
-        }
-
-        private static Mock<IEntityRepository<User>> CreateUsersRepositoryMock(User fakeUser)
-        {
-            var usersRepository = new Mock<IEntityRepository<User>>();
-            usersRepository.Setup(r => r.GetAll())
-                .Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
-            usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty))
-                .Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
-
-            return usersRepository;
         }
 
         [Test]
         public async Task Update_WithSameAddresses_UpdatesOneAddress()
         {
             // Arrange
-            await using var context = getContext;
+            await using var context = GetContext;
             var provider = context.Providers.First();
             provider.ActualAddress = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
@@ -94,7 +85,24 @@ namespace OutOfSchool.WebApi.Tests.IntegrationTests.ProviderServiceIntergrationT
             Assert.IsTrue(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
         }
 
-        // TODO: move random test data creation to Tests.Common
+        [Test]
+        public async Task Update_WithSameAddresses_UpdatesOneAddress()
+        {
+            // Arrange
+            await using var context = GetContext;
+            var provider = context.Providers.First();
+            provider.ActualAddress = null;
+            await context.SaveChangesAsync().ConfigureAwait(false);
+            provider.ActualAddress = provider.LegalAddress;
+
+            // Act
+            var result = await providerService.Update(mapper.Map<ProviderDto>(provider), provider.UserId, "Provider")
+                .ConfigureAwait(false);
+
+            // Assert
+            Assert.IsTrue(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
+        }
+
         private static User CreateFakeUser()
         {
             return new User
@@ -121,6 +129,17 @@ namespace OutOfSchool.WebApi.Tests.IntegrationTests.ProviderServiceIntergrationT
                 AccessFailedCount = 0,
                 IsRegistered = false,
             };
+        }
+
+        private static Mock<IEntityRepository<User>> CreateUsersRepositoryMock(User fakeUser)
+        {
+            var usersRepository = new Mock<IEntityRepository<User>>();
+            usersRepository.Setup(r => r.GetAll())
+                .Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
+            usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty))
+                .Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
+
+            return usersRepository;
         }
 
         private static void AssertProvidersAreEqual(Provider expected, Provider result)
