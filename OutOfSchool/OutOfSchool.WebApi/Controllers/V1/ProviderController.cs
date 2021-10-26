@@ -161,7 +161,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 return CreatedAtAction(
                     nameof(GetById),
-                    new { id = createdProvider.Id, },
+                    new { providerId = createdProvider.Id, },
                     createdProvider);
             }
             catch (InvalidOperationException ex)
