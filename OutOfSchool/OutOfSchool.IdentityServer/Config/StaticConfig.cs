@@ -17,6 +17,13 @@ namespace OutOfSchool.IdentityServer.Config
                     Name = "role",
                     UserClaims = new List<string> {"role"},
                 },
+
+                // new identity resource - permissions.
+                new IdentityResource
+                {
+                   Name = "permissions",
+                   UserClaims = new List<string> {"permissions"},
+                },
             };
 
         public static IEnumerable<ApiScope> ApiScopes =>
@@ -32,7 +39,7 @@ namespace OutOfSchool.IdentityServer.Config
             {
                 Scopes = new List<string> {"outofschoolapi.read", "outofschoolapi.write"},
                 ApiSecrets = new List<Secret> { new Secret(apiSecret.Sha256()) },
-                UserClaims = new List<string> {"role"},
+                UserClaims = new List<string> {"role", "permissions"},
             },
         };
 
