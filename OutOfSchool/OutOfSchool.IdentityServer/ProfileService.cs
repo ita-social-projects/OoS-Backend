@@ -6,6 +6,7 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.IdentityServer
@@ -25,6 +26,7 @@ namespace OutOfSchool.IdentityServer
             {
                 context.Subject.Claims.FirstOrDefault(claim => claim.Type == "name"),
                 context.Subject.Claims.FirstOrDefault(claim => claim.Type == "role"),
+                context.Subject.GetPermissionsForUser(),
             };
 
             context.IssuedClaims.AddRange(claims);

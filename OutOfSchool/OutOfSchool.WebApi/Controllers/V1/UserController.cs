@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -30,7 +31,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all users from the database.
         /// </summary>
         /// <returns>List of all users.</returns>
-        [Authorize(Roles = "admin")]
+        [HasPermission("AccessAll")]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ShortUserDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -64,7 +65,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             if (userId != id)
             {
-                 return StatusCode(403, "Forbidden to get another user.");
+                return StatusCode(403, "Forbidden to get another user.");
             }
 
             var user = await userService.GetById(id).ConfigureAwait(false);
