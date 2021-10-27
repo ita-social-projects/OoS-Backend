@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security.Claims;
+using OutOfSchool.Common.PermissionsModule;
 
 namespace OutOfSchool.Common.Extensions
 {
@@ -33,6 +34,15 @@ namespace OutOfSchool.Common.Extensions
             }
 
             return principal.FindFirst(identityResourceClaim)?.Value;
+        }
+
+
+        public static Claim GetPermissionsForUser(this ClaimsPrincipal principal)
+        {
+            var role = principal.FindFirst("role").Value;
+            var permissions = RolesToPermissionsManager.CalcPermissions(role);
+            var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, permissions);
+            return permissionsClaim;
         }
     }
 }
