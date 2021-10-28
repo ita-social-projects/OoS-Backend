@@ -68,12 +68,12 @@ namespace OutOfSchool.WebApi.Tests.IntegrationTests.ProviderServiceIntergrationT
         }
 
         [Test]
-        public async Task Update_WithSameAddresses_UpdatesOneAddress()
+        public async Task UpdateWhenProviderHasSameAdresses_WithSameAddresses_UpdatesOneAddress()
         {
             // Arrange
             await using var context = GetContext;
             var provider = context.Providers.First();
-            provider.ActualAddress = null;
+            provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
             provider.ActualAddress = provider.LegalAddress;
 
@@ -82,25 +82,80 @@ namespace OutOfSchool.WebApi.Tests.IntegrationTests.ProviderServiceIntergrationT
                 .ConfigureAwait(false);
 
             // Assert
-            Assert.IsTrue(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
+            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
+            Assert.IsNotNull(result.LegalAddress);
+            Assert.IsNull(result.ActualAddress);
         }
 
         [Test]
-        public async Task Update_WithSameAddresses_UpdatesOneAddress()
+        public async Task UpdateWhenProviderHasSameAdresses_WithActualAddressNull_UpdatesOneAddress()
         {
             // Arrange
             await using var context = GetContext;
             var provider = context.Providers.First();
-            provider.ActualAddress = null;
+            provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
-            provider.ActualAddress = provider.LegalAddress;
+            var providerDto = mapper.Map<ProviderDto>(provider);
+            providerDto.ActualAddress = null;
 
             // Act
-            var result = await providerService.Update(mapper.Map<ProviderDto>(provider), provider.UserId, "Provider")
+            var result = await providerService.Update(providerDto, provider.UserId, "Provider")
                 .ConfigureAwait(false);
 
             // Assert
-            Assert.IsTrue(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
+            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
+            Assert.IsNotNull(result.LegalAddress);
+            Assert.IsNull(result.ActualAddress);
+        }
+
+        [Test]
+        public async Task UpdateWhenProviderHasSameAdresses_WithNewLegalAddressAndActualIsPreviousLegal_UpdatesOneAddress()
+        {
+            // Arrange
+            await using var context = GetContext;
+            var provider = context.Providers.First();
+            provider.ActualAddressId = null;
+            await context.SaveChangesAsync().ConfigureAwait(false);
+            await context.Entry(provider).ReloadAsync().ConfigureAwait(false);
+            var randomAddress = AddressGenerator.Generate();
+            randomAddress.Id = 0;
+            // provider.ActualAddress = provider.LegalAddress;
+            provider.LegalAddress = randomAddress;
+            var providerDto = mapper.Map<ProviderDto>(provider);
+
+            // Act
+            var result = await providerService.Update(providerDto, provider.UserId, "Provider")
+                .ConfigureAwait(false);
+
+            // Assert
+            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
+            Assert.IsNotNull(result.LegalAddress);
+            Assert.IsNull(result.ActualAddress);
+        }
+
+        [Test]
+        public async Task UpdateWhenProviderHasSameAdresses_WithSameLegalAddressAndNewActual_UpdatesOneAddress()
+        {
+            // Arrange
+            await using var context = GetContext;
+            var provider = context.Providers.First();
+            provider.ActualAddressId = null;
+            await context.SaveChangesAsync().ConfigureAwait(false);
+            await context.Entry(provider).ReloadAsync().ConfigureAwait(false);
+            var randomAddress = AddressGenerator.Generate();
+            randomAddress.Id = 0;
+            // provider.ActualAddress = provider.LegalAddress;
+            provider.ActualAddress = randomAddress;
+            var providerDto = mapper.Map<ProviderDto>(provider);
+
+            // Act
+            var result = await providerService.Update(providerDto, provider.UserId, "Provider")
+                .ConfigureAwait(false);
+
+            // Assert
+            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
+            Assert.IsNotNull(result.LegalAddress);
+            Assert.IsNull(result.ActualAddress);
         }
 
         private static User CreateFakeUser()

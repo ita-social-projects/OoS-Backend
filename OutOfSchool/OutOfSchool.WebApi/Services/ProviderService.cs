@@ -26,6 +26,8 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<ProviderService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
+        private readonly IEntityRepository<Address> addressRepository;
+        private readonly IAddressService addressService;
 
         // TODO: It should be removed after models revision.
         //       Temporary instance to fill 'Provider' model 'User' property
@@ -44,10 +46,11 @@ namespace OutOfSchool.WebApi.Services
             IEntityRepository<User> usersRepository,
             IRatingService ratingService,
             ILogger<ProviderService> logger,
-            IStringLocalizer<SharedResource> localizer, IMapper mapper)
+            IStringLocalizer<SharedResource> localizer, IMapper mapper, IEntityRepository<Address> addressRepository)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
             this.mapper = mapper;
+            this.addressRepository = addressRepository;
             this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
             this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
             this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
@@ -109,7 +112,8 @@ namespace OutOfSchool.WebApi.Services
             var providersDTO = providers.Select(provider => provider.ToModel()).ToList();
 
             // TODO: move ratings calculations out of getting all providers.
-            var averageRatings = ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
 
             foreach (var provider in providersDTO)
             {
@@ -173,15 +177,38 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var checkProvider = (await providerRepository.GetByFilter(p => p.Id == providerDto.Id).ConfigureAwait(false)).FirstOrDefault();
+                var checkProvider =
+                    (await providerRepository.GetByFilter(p => p.Id == providerDto.Id).ConfigureAwait(false))
+                    .FirstOrDefault();
 
                 if (checkProvider?.UserId == userId || userRole == AdminRole)
                 {
-                   mapper.Map(providerDto, checkProvider);
-                   await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-                   logger.LogInformation($"Provider with Id = {checkProvider?.Id} updated succesfully.");
+                    if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
+                    {
+                        providerDto.ActualAddress = null;
+                    }
 
-                   return mapper.Map<ProviderDto>(checkProvider);
+                    providerDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
+                    if (providerDto.ActualAddress is {})
+                    {
+                        providerDto.ActualAddress.Id = checkProvider.ActualAddress?.Id ?? 0;
+                    }
+                    else
+                    {
+                        if (checkProvider.ActualAddress is {})
+                        {
+                            var checkProviderActualAddress = checkProvider.ActualAddress;
+                            checkProvider.ActualAddressId = null;
+                            checkProvider.ActualAddress = null;
+                            await addressRepository.Delete(checkProviderActualAddress).ConfigureAwait(false);
+                        }
+                    }
+
+                    mapper.Map(providerDto, checkProvider);
+                    await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+                    logger.LogInformation($"Provider with Id = {checkProvider?.Id} updated succesfully.");
+
+                    return mapper.Map<ProviderDto>(checkProvider);
                 }
                 else
                 {
@@ -190,7 +217,8 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.LogError($"Updating failed. Provider with Id = {providerDto?.Id} doesn't exist in the system.");
+                logger.LogError(
+                    $"Updating failed. Provider with Id = {providerDto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
