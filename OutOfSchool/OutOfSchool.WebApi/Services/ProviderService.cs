@@ -181,39 +181,40 @@ namespace OutOfSchool.WebApi.Services
                     (await providerRepository.GetByFilter(p => p.Id == providerDto.Id).ConfigureAwait(false))
                     .FirstOrDefault();
 
-                if (checkProvider?.UserId == userId || userRole == AdminRole)
+                if (checkProvider?.UserId != userId && userRole != AdminRole)
                 {
-                    if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
-                    {
-                        providerDto.ActualAddress = null;
-                    }
+                    return null;
+                }
 
-                    providerDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
-                    if (providerDto.ActualAddress is {})
+                providerDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
+
+                if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
+                {
+                    providerDto.ActualAddress = null;
+                }
+
+                if (providerDto.ActualAddress is null && checkProvider.ActualAddress is { })
+                {
+                    var checkProviderActualAddress = checkProvider.ActualAddress;
+                    checkProvider.ActualAddressId = null;
+                    checkProvider.ActualAddress = null;
+                    mapper.Map(providerDto, checkProvider);
+                    await addressRepository.Delete(checkProviderActualAddress).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (providerDto.ActualAddress != null)
                     {
                         providerDto.ActualAddress.Id = checkProvider.ActualAddress?.Id ?? 0;
-                    }
-                    else
-                    {
-                        if (checkProvider.ActualAddress is {})
-                        {
-                            var checkProviderActualAddress = checkProvider.ActualAddress;
-                            checkProvider.ActualAddressId = null;
-                            checkProvider.ActualAddress = null;
-                            await addressRepository.Delete(checkProviderActualAddress).ConfigureAwait(false);
-                        }
                     }
 
                     mapper.Map(providerDto, checkProvider);
                     await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-                    logger.LogInformation($"Provider with Id = {checkProvider?.Id} updated succesfully.");
+                }
 
-                    return mapper.Map<ProviderDto>(checkProvider);
-                }
-                else
-                {
-                    return null;
-                }
+                logger.LogInformation($"Provider with Id = {checkProvider?.Id} updated succesfully.");
+
+                return mapper.Map<ProviderDto>(checkProvider);
             }
             catch (DbUpdateConcurrencyException)
             {
