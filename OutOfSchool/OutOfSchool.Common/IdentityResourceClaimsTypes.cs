@@ -20,7 +20,6 @@
         /// <summary>
         /// Contains the 'permissions' name.
         /// </summary>
-        // TODO: find more meaningful name.
         public const string Permissions = "permissions";
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
@@ -139,7 +140,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize(Roles = "provider,admin")]
+        // [Authorize(Roles = "provider,admin")]
+        [HasPermission(Permissions.WorkshopAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -187,7 +189,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize(Roles = "provider,admin")]
+        // [Authorize(Roles = "provider,admin")]
+        [HasPermission(Permissions.WorkshopEdit)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -219,7 +222,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method, or deletes not own workshop.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize(Roles = "provider,admin")]
+        // [Authorize(Roles = "provider,admin")]
+        [HasPermission(Permissions.WorkshopRemove)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

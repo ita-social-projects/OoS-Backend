@@ -31,7 +31,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all users from the database.
         /// </summary>
         /// <returns>List of all users.</returns>
-        [HasPermission("AccessAll")]
+        // [Authorize(Roles = "admin")]
+        [HasPermission(Permissions.SystemManagement)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -53,7 +54,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">The key in the database.</param>
         /// <returns>User element with some id.</returns>
-        [Authorize(Roles = "parent,provider,admin")]
+        // [Authorize(Roles = "parent,provider,admin")]
+        [HasPermission(Permissions.UserRead)]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -84,7 +86,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="dto">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
         [Authorize(AuthenticationSchemes = "Bearer")]
-        [Authorize(Roles = "parent,provider,admin")]
+        // [Authorize(Roles = "parent,provider,admin")]
+        [HasPermission(Permissions.UserEdit)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

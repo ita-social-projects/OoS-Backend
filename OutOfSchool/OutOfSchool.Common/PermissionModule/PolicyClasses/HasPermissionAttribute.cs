@@ -6,8 +6,9 @@ namespace OutOfSchool.Common.PermissionsModule
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false)]
     public class HasPermissionAttribute : AuthorizeAttribute
     {
-        public HasPermissionAttribute(string permission)
-            : base(permission)
-        { }
+        public HasPermissionAttribute(Permissions permission)
+            : base(permission.ToString())
+        {
+        }
     }
 }
