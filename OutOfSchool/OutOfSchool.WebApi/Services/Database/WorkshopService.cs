@@ -299,7 +299,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
                     tr.StartTime.Hours >= filter.MinStartHour
-                        && tr.StartTime.Hours <= filter.MaxStartHour + 1));
+                        && tr.StartTime.Hours <= filter.MaxStartHour));
             }
 
             if (!string.IsNullOrWhiteSpace(filter.City))
