@@ -140,6 +140,12 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<InstitutionStatus, InstitutionStatusDTO>(status, cfg => { cfg.CreateMap<InstitutionStatus, InstitutionStatusDTO>(); });
         }
 
+        public static PermissionsForRoleDTO ToModel(this PermissionsForRole permissionsForRole)
+        {
+            return Mapper<PermissionsForRole, PermissionsForRoleDTO>(permissionsForRole, cfg =>
+            { cfg.CreateMap<PermissionsForRole, PermissionsForRoleDTO>(); });
+        }
+
         public static TeacherDTO ToModel(this Teacher teacher)
         {
             return Mapper<Teacher, TeacherDTO>(teacher, cfg => { cfg.CreateMap<Teacher, TeacherDTO>(); });
@@ -268,6 +274,12 @@ namespace OutOfSchool.WebApi.Extensions
         public static InstitutionStatus ToDomain(this InstitutionStatusDTO statusDTO)
         {
             return Mapper<InstitutionStatusDTO, InstitutionStatus>(statusDTO, cfg => { cfg.CreateMap<InstitutionStatusDTO, InstitutionStatus>(); });
+        }
+
+        public static PermissionsForRole ToDomain(this PermissionsForRoleDTO permissionsDTO)
+        {
+            return Mapper<PermissionsForRoleDTO, PermissionsForRole>(permissionsDTO, cfg =>
+            { cfg.CreateMap<PermissionsForRoleDTO, PermissionsForRole>(); });
         }
 
         public static Teacher ToDomain(this TeacherDTO teacherDto)
