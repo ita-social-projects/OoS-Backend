@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.ApiModels;
 using OutOfSchool.WebApi.Extensions;
@@ -118,7 +119,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">Entities were found by given Id.</response>
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize(Roles = "parent,admin")]
+        // [Authorize(Roles = "parent,admin")]
+        [HasPermission(Permissions.ApplicationReadParent)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -155,7 +157,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">Entities were found by given Id.</response>
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize(Roles = "provider,admin")]
+        // [Authorize(Roles = "provider,admin")]
+        [HasPermission(Permissions.ApplicationReadManager)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -197,7 +200,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">Entities were found by given status.</response>
         /// <response code="204">No entity with given status was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize(Roles = "provider,admin")]
+        // [Authorize(Roles = "provider,admin")]
+        [HasPermission(Permissions.ApplicationReadManager)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -271,7 +275,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occurs.</response>
-        [Authorize(Roles = "parent,admin")]
+        // [Authorize(Roles = "parent,admin")]
+        [HasPermission(Permissions.ApplicationAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -321,6 +326,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
+        [HasPermission(Permissions.ApplicationEdit)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -366,7 +372,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <responce code="400">If entity with given Id does not exist.</responce>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize(Roles = "admin")]
+        // [Authorize(Roles = "admin")]
+        [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

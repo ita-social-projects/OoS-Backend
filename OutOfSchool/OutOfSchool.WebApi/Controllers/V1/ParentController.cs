@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -78,7 +79,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 var parent = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
 
-                var children = await serviceChild.GetByUserId(userId, new OffsetFilter() { From = 0, Size = int.MaxValue}).ConfigureAwait(false);
+                var children = await serviceChild.GetByUserId(userId, new OffsetFilter() { From = 0, Size = int.MaxValue }).ConfigureAwait(false);
 
                 var cards = new List<ParentCard>();
 
@@ -118,7 +119,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="shortUserDto">ShortUserDto object with new properties.</param>
         /// <returns>Parent's key.</returns>
-        [Authorize(Roles = "parent,admin")]
+        // [Authorize(Roles = "parent,admin")]
+        [HasPermission(Permissions.ParentEdit)]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -146,7 +148,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">The key in table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        // [Authorize(Roles = "parent,admin")]
+        [HasPermission(Permissions.ParentRemove)]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -177,7 +180,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// To Get the Profile of authorized Parent.
         /// </summary>
         /// <returns>Authorized parent's profile.</returns>
-        [Authorize(Roles = "parent,admin")]
+        // [Authorize(Roles = "parent,admin")]
+        [HasPermission(Permissions.ParentRead)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
