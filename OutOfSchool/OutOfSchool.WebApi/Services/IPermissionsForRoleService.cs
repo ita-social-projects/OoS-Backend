@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OutOfSchool.WebApi.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,6 +35,13 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="dto">PermissionsForRole entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<PermissionsForRoleDTO> Update(PermissionsForRoleDTO dto);
+
+        /// <summary>
+        ///  Delete entity.
+        /// </summary>
+        /// <param name="id">PermissionsForRole key.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task Delete(long id);
 
     }
 }
