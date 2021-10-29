@@ -30,6 +30,8 @@ namespace OutOfSchool.Services.Models
 
         public double Longitude { get; set; }
 
+        public ulong GeoHash { get; set; } = default;
+
         public override bool Equals(object obj)
         {
             if (obj == null)

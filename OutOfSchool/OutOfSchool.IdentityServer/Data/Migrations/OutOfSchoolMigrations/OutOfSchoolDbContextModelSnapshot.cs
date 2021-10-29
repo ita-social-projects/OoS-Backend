@@ -193,6 +193,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<decimal>("GeoHash")
+                        .HasColumnType("decimal(20,0)");
+
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
 

@@ -201,7 +201,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var searchResult = new SearchResult<WorkshopCard>() { TotalAmount = 5, Entities = workshopCards };
-            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(searchResult);
+            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>(), It.IsAny<decimal>(), It.IsAny<decimal>())).ReturnsAsync(searchResult);
 
             // Act
             var result = await controller.GetByFilter(new WorkshopFilter()).ConfigureAwait(false) as OkObjectResult;
@@ -217,7 +217,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var searchResult = new SearchResult<WorkshopCard>() { TotalAmount = 0, Entities = new List<WorkshopCard>() };
-            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>())).ReturnsAsync(searchResult);
+            workshopServiceMoq.Setup(x => x.GetByFilter(It.IsAny<WorkshopFilter>(),It.IsAny<decimal>(), It.IsAny<decimal>())).ReturnsAsync(searchResult);
 
             // Act
             var result = await controller.GetByFilter(new WorkshopFilter()).ConfigureAwait(false) as NoContentResult;

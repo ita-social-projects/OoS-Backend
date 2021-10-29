@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-
 using AutoMapper;
-
+using H3Lib;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
+using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -24,6 +23,7 @@ namespace OutOfSchool.WebApi.Services
     public class WorkshopService : IWorkshopService
     {
         private readonly string includingPropertiesForMappingDtoModel = $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.Direction)}";
+        private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
         private readonly IWorkshopRepository workshopRepository;
         private readonly IClassRepository classRepository;
@@ -223,6 +223,79 @@ namespace OutOfSchool.WebApi.Services
             {
                 TotalAmount = workshopsCount,
                 Entities = GetWorkshopsWithAverageRating(workshopsDTO),
+            };
+
+            return result;
+        }
+
+        public async Task<SearchResult<WorkshopCard>> NearestGetByFilter(decimal lat, decimal lon, WorkshopFilter filter = null)
+        {
+            logger.LogInformation("Getting Workshops by filter started.");
+            if (filter is null)
+            {
+                filter = new WorkshopFilter();
+            }
+
+            int count = 10;
+            int kRing = 1;
+            var geo = new GeoCoord(lat, lon);
+            var h3Location = H3Lib.Api.GeoToH3(geo, 6);
+            Api.KRing(h3Location, kRing, out var neighbours);
+
+            var filterPredicate = PredicateBuild(filter);
+
+            var closestWorkshops = workshopRepository.Get<dynamic>(
+                skip: 0,
+                take: 0,
+                includeProperties: includingPropertiesForMappingWorkShopCard,
+                where: filterPredicate,
+                orderBy: null,
+                ascending: true)
+                .Where(w => neighbours
+                    .Select(n => n.Value)
+                    .Any(hash => hash == w.Address.GeoHash));
+
+            // var closestWorkshops = workshops
+            //     .Include(w => w.Address)
+            //     .Where(w => neighbours
+            //         .Select(n => n.Value)
+            //         .Any(hash => hash == w.Address.GeoHash));
+
+            // while (closestWorkshops.Count() < count && kRing < 10)
+            // {
+            //     Api.KRing(h3Location, ++kRing, out neighbours);
+            //     neighbours.Add(h3Location);
+            //
+            //     closestWorkshops = workshops
+            //         .Include(w => w.Address)
+            //         .Where(w => neighbours
+            //             .Select(n => n.Value)
+            //             .Any(hash => hash == w.Address.GeoHash));
+            // }
+
+            var workshopsCount = await closestWorkshops.CountAsync().ConfigureAwait(false);
+
+            var enumerableWorkshops = closestWorkshops.AsEnumerable();
+
+            var nearestWorkshops = enumerableWorkshops
+                .Select(w => new
+                {
+                    w,
+                    Distance = GeoMathHelper
+                        .GetDistanceFromLatLonInKm(
+                            w.Address.Latitude,
+                            w.Address.Longitude,
+                            (double)geo.Latitude,
+                            (double)geo.Longitude),
+                })
+                .OrderBy(p => p.Distance).Take(count).Select(a => a.w);
+
+            var workshopsDTO = mapper.Map<List<WorkshopCard>>(nearestWorkshops);
+
+            var result = new SearchResult<WorkshopCard>()
+            {
+                TotalAmount = workshopsCount,
+                Entities = workshopsDTO,
             };
 
             return result;

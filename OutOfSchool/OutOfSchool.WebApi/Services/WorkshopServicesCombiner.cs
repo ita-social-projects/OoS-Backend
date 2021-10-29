@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter)
+        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter, decimal? latitude = null, decimal? longitude = null)
         {
             if (!IsFilterValid(filter))
             {
@@ -113,9 +113,15 @@ namespace OutOfSchool.WebApi.Services
 
             var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
 
+            // TODO: ElasticPing logic (bool IsHealthy)
             if (result.TotalAmount > 0 || await elasticsearchService.PingServer().ConfigureAwait(false))
             {
                 return result.ToSearchResult();
+            }
+            else if (filter.OrderByField == OrderBy.Nearest.ToString() && latitude.HasValue && longitude.HasValue)
+            {
+                var databaseResult = await databaseService.NearestGetByFilter(latitude.Value, longitude.Value, filter).ConfigureAwait(false);
+                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
             }
             else
             {

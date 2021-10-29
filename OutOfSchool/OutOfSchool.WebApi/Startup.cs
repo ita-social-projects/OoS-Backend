@@ -156,6 +156,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
+            services.AddTransient<H3GeoService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
