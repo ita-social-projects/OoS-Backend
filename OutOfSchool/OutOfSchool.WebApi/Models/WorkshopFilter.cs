@@ -39,9 +39,9 @@ namespace OutOfSchool.WebApi.Models
         public List<DaysBitMask> Workdays { get; set; } = new List<DaysBitMask>();
 
         [Range(0, 23, ErrorMessage = "Field value should be in a range from 0 to 23")]
-        public int StartHour { get; set; } = 0;
+        public int MinStartHour { get; set; } = 0;
 
         [Range(0, 23, ErrorMessage = "Field value should be in a range from 0 to 23")]
-        public int EndHour { get; set; } = 23;
+        public int MaxStartHour { get; set; } = 23;
     }
 }

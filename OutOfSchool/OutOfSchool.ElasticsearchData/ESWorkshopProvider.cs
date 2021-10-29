@@ -152,11 +152,9 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            if (filter.StartHour > 0 || filter.EndHour < 23 || !string.IsNullOrWhiteSpace(filter.Workdays))
+            if (!string.IsNullOrWhiteSpace(filter.Workdays))
             {
-                var nestedContainer = new QueryContainer();
-
-                nestedContainer = new NestedQuery()
+                queryContainer &= new NestedQuery()
                 {
                     Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
                     Query = new MatchQuery()
@@ -165,19 +163,20 @@ namespace OutOfSchool.ElasticsearchData
                         Query = filter.Workdays,
                     },
                 };
+            }
 
-                nestedContainer &= new NestedQuery()
+            if (filter.MinStartHour > 0 || filter.MaxStartHour < 23)
+            {
+                queryContainer &= new NestedQuery()
                 {
                     Path = Infer.Field<WorkshopES>(p => p.DateTimeRanges),
                     Query = new NumericRangeQuery()
                     {
                         Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
-                        GreaterThanOrEqualTo = TimeSpan.FromHours(filter.StartHour).Ticks,
-                        LessThanOrEqualTo = TimeSpan.FromHours(filter.EndHour).Ticks,
+                        GreaterThanOrEqualTo = TimeSpan.FromHours(filter.MinStartHour).Ticks,
+                        LessThanOrEqualTo = TimeSpan.FromHours(filter.MaxStartHour + 1).Ticks,
                     },
                 };
-
-                queryContainer &= nestedContainer;
             }
 
             if (!string.IsNullOrWhiteSpace(filter.City))

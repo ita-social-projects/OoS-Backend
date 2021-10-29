@@ -31,9 +31,9 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string Workdays { get; set; } = string.Empty;
 
-        public int StartHour { get; set; } = 0;
+        public int MinStartHour { get; set; } = 0;
 
-        public int EndHour { get; set; } = 23;
+        public int MaxStartHour { get; set; } = 23;
 
         public int Size { get; set; } = 12;
 

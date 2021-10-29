@@ -106,6 +106,11 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter)
         {
+            if (!IsFilterValid(filter))
+            {
+                return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
+            }
+
             var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
 
             if (result.TotalAmount > 0 || await elasticsearchService.PingServer().ConfigureAwait(false))
@@ -131,6 +136,13 @@ namespace OutOfSchool.WebApi.Services
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {
             return source.Select(currentElement => currentElement.ToCardDto()).ToList();
+        }
+
+        private bool IsFilterValid(WorkshopFilter filter)
+        {
+            return filter != null && filter.MaxStartHour >= filter.MinStartHour
+                                  && filter.MaxAge >= filter.MinAge
+                                  && filter.MaxPrice >= filter.MinPrice;
         }
     }
 }
