@@ -1,30 +1,30 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Services
 {
-    public class PermissionForRoleService : IPermissionsForRoleService
+    public class PermissionsForRoleService : IPermissionsForRoleService
     {
         private readonly IEntityRepository<PermissionsForRole> repository;
-        private readonly ILogger<PermissionForRoleService> logger;
+        private readonly ILogger<PermissionsForRoleService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PermissionForRoleService"/> class.
+        /// Initializes a new instance of the <see cref="PermissionsForRoleService"/> class.
         /// </summary>
         /// <param name="repository">Repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public PermissionForRoleService(IEntityRepository<PermissionsForRole> repository, ILogger<PermissionForRoleService> logger, IStringLocalizer<SharedResource> localizer)
+        public PermissionsForRoleService(IEntityRepository<PermissionsForRole> repository, ILogger<PermissionsForRoleService> logger, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = repository;
@@ -46,28 +46,34 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<PermissionsForRoleDTO> GetById(long id)
+        public async Task<PermissionsForRoleDTO> GetByRole(string roleName)
         {
-            logger.LogInformation($"Getting Permissions for role by Id started. Looking Id = {id}.");
+            logger.LogInformation($"Getting Permissions for role by roleName started. Looking role = {roleName}.");
 
-            var permissionsForRole = await repository.GetById(id).ConfigureAwait(false);
-
+            var permissionsForRole = await repository.GetByFilter(p => p.RoleName == roleName).ConfigureAwait(false);
             if (permissionsForRole == null)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be greater than number of table entities."]);
+                    nameof(roleName),
+                    localizer["There are no packed permissions for role with such name"]);
             }
 
-            logger.LogInformation($"Successfully got a permissionsForRole with name  {permissionsForRole.RoleName}.");
+            logger.LogInformation($"Successfully got a permissionsForRole with name  {permissionsForRole.FirstOrDefault().RoleName}.");
 
-            return permissionsForRole.ToModel();
+            return permissionsForRole.FirstOrDefault().ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<PermissionsForRoleDTO> Create(PermissionsForRoleDTO dto)
         {
             logger.LogInformation($"Permissions for Role - {dto?.RoleName} creating was started.");
+
+            var allPermissions = await repository.GetAll().ConfigureAwait(false);
+            if (allPermissions.Any(p => p.RoleName == dto.RoleName))
+            {
+                // TODO: add more specific expception
+                throw new Exception("There are entity with packed permissions for this role, you can't create one more");
+            }
 
             var permissionsForRole = dto.ToDomain();
 
@@ -81,7 +87,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<PermissionsForRoleDTO> Update(PermissionsForRoleDTO dto)
         {
-            logger.LogInformation($"Updating Permissions For Role = {dto.RoleName} started.");
+            logger.LogInformation($"Updating Permissions For Role = {dto?.RoleName} started.");
 
             try
             {
@@ -99,22 +105,22 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(string roleName)
         {
-            logger.LogInformation($"Deleting PermissionsForRole with Id = {id} started.");
+            logger.LogInformation($"Deleting PermissionsForRole with roleName = {roleName} started.");
 
-            var permissionsForRole = await repository.GetById(id).ConfigureAwait(false);
+            var permissionsForRole = await repository.GetByFilter(p => p.RoleName == roleName).ConfigureAwait(false);
 
             if (permissionsForRole == null)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer[$"PermissionsForRole with Id = {id} doesn't exist in the system"]);
+                    nameof(roleName),
+                    localizer[$"PermissionsForRole with roleName = {roleName} doesn't exist in the system"]);
             }
 
-            await repository.Delete(permissionsForRole).ConfigureAwait(false);
+            await repository.Delete(permissionsForRole.FirstOrDefault()).ConfigureAwait(false);
 
-            logger.LogInformation($"PermissionsForRole with Id = {id} with name {permissionsForRole.RoleName} succesfully deleted.");
+            logger.LogInformation($"PermissionsForRole with roleName - {roleName} succesfully deleted.");
         }
     }
 }
