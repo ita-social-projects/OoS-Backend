@@ -2,18 +2,18 @@
 
 namespace OutOfSchool.Common.PermissionsModule
 {
-    // permissions for role calculator.
-    public static class RolesToPermissionsManager
+    // permissions for role seeding class.
+    public static class PermissionsSeeder
     {
-        // hardcode seed permissions
+        // basic seed for PermissionsToRole table in DB due to current state of application
         private static readonly IEnumerable<Permissions> SeedAdminPermissions = new List<Permissions>
         {
             Permissions.SystemManagement,
             Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
-            Permissions.ApplicationReadManager,Permissions.ApplicationReadParent, Permissions.ApplicationEdit, Permissions.ApplicationRemove, Permissions.ApplicationAddNew,
+            Permissions.ApplicationReadManager, Permissions.ApplicationReadParent, Permissions.ApplicationEdit, Permissions.ApplicationRemove, Permissions.ApplicationAddNew,
             Permissions.FavoriteRead, Permissions.FavoriteAddNew, Permissions.FavoriteEdit, Permissions.FavoriteRemove,
             Permissions.ParentRead, Permissions.ParentEdit, Permissions.ParentRemove,
-            Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead,Permissions.ProviderRemove,
+            Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove,
             Permissions.RatingAddNew, Permissions.RatingEdit, Permissions.RatingRead, Permissions.RatingRemove,
             Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove,
             Permissions.UserRead, Permissions.UserEdit,
@@ -28,7 +28,6 @@ namespace OutOfSchool.Common.PermissionsModule
             Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove,
             Permissions.UserRead, Permissions.UserEdit,
             Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
-
         };
 
         private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
@@ -43,7 +42,7 @@ namespace OutOfSchool.Common.PermissionsModule
         };
 
         // method which returns set of packed permissions for specific role
-        internal static string CalcPermissions(string role)
+        public static string SeedPermissions(string role)
         {
             string result = string.Empty;
             switch (role)

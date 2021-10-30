@@ -41,6 +41,10 @@ namespace OutOfSchool.Services
 
         public DbSet<SocialGroup> SocialGroups { get; set; }
 
+        public DbSet<InstitutionStatus> InstitutionStatuses { get; set; }
+
+        public DbSet<PermissionsForRole> PermissionsForRoles { get; set; }
+
         public DbSet<Address> Addresses { get; set; }
 
         public DbSet<Application> Applications { get; set; }
