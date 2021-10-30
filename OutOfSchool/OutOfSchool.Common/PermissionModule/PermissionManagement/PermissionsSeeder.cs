@@ -44,6 +44,7 @@ namespace OutOfSchool.Common.PermissionsModule
         // method which returns set of packed permissions for specific role
         public static string SeedPermissions(string role)
         {
+            string result = string.Empty;
             switch (role)
             {
                 case "admin":

@@ -1,5 +1,4 @@
-﻿using OutOfSchool.WebApi.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,9 +38,8 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         ///  Delete entity.
         /// </summary>
-        /// <param name="id">PermissionsForRole key.</param>
+        /// <param name="roleName">Name of Role for which permissions are stored.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(long id);
-
+        Task Delete(string roleName);
     }
 }

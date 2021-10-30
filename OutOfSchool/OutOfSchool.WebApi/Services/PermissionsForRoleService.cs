@@ -104,5 +104,23 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
+        /// <inheritdoc/>
+        public async Task Delete(string roleName)
+        {
+            logger.LogInformation($"Deleting PermissionsForRole with roleName = {roleName} started.");
+
+            var permissionsForRole = await repository.GetByFilter(p => p.RoleName == roleName).ConfigureAwait(false);
+
+            if (permissionsForRole == null)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(roleName),
+                    localizer[$"PermissionsForRole with roleName = {roleName} doesn't exist in the system"]);
+            }
+
+            await repository.Delete(permissionsForRole.FirstOrDefault()).ConfigureAwait(false);
+
+            logger.LogInformation($"PermissionsForRole with roleName - {roleName} succesfully deleted.");
+        }
     }
 }
