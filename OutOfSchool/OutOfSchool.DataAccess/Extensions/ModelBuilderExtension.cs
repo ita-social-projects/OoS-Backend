@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Extensions
@@ -54,6 +55,30 @@ namespace OutOfSchool.Services.Extensions
                 {
                     Id = 3,
                     Name = "Має намір на реорганізацію",
+                });
+
+            // default seed permissions.
+            builder.Entity<PermissionsForRole>().HasData(
+                new PermissionsForRole
+                {
+                    Id = 1,
+                    RoleName = "admin",
+                    PackedPermissions = PermissionsSeeder.SeedPermissions("admin"),
+                    Description = "admin permissions",
+                },
+                new PermissionsForRole
+                {
+                    Id = 2,
+                    RoleName = "provider",
+                    PackedPermissions = PermissionsSeeder.SeedPermissions("provider"),
+                    Description = "provider permissions",
+                },
+                new PermissionsForRole
+                {
+                    Id = 3,
+                    RoleName = "parent",
+                    PackedPermissions = PermissionsSeeder.SeedPermissions("parent"),
+                    Description = "parent permissions",
                 });
         }
 
