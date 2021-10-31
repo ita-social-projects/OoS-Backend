@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
@@ -143,7 +144,10 @@ namespace OutOfSchool.WebApi.Extensions
         public static PermissionsForRoleDTO ToModel(this PermissionsForRole permissionsForRole)
         {
             return Mapper<PermissionsForRole, PermissionsForRoleDTO>(permissionsForRole, cfg =>
-            { cfg.CreateMap<PermissionsForRole, PermissionsForRoleDTO>(); });
+            {
+                cfg.CreateMap<PermissionsForRole, PermissionsForRoleDTO>()
+                      .ForMember(dest => dest.Permissions, opt => opt.MapFrom(c => c.PackedPermissions.UnpackPermissionsFromString()));
+            });
         }
 
         public static TeacherDTO ToModel(this Teacher teacher)
@@ -279,7 +283,10 @@ namespace OutOfSchool.WebApi.Extensions
         public static PermissionsForRole ToDomain(this PermissionsForRoleDTO permissionsDTO)
         {
             return Mapper<PermissionsForRoleDTO, PermissionsForRole>(permissionsDTO, cfg =>
-            { cfg.CreateMap<PermissionsForRoleDTO, PermissionsForRole>(); });
+            {
+                cfg.CreateMap<PermissionsForRoleDTO, PermissionsForRole>()
+                  .ForMember(dest => dest.PackedPermissions, opt => opt.MapFrom(c => c.Permissions.PackPermissionsIntoString()));
+            });
         }
 
         public static Teacher ToDomain(this TeacherDTO teacherDto)
