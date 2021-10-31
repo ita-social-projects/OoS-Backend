@@ -115,6 +115,7 @@ namespace OutOfSchool.IdentityServer
             services.AddProxy();
 
             services.AddTransient<IParentRepository, ParentRepository>();
+            services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
