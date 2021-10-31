@@ -35,11 +35,5 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<PermissionsForRoleDTO> Update(PermissionsForRoleDTO dto);
 
-        /// <summary>
-        ///  Delete entity.
-        /// </summary>
-        /// <param name="roleName">Name of Role for which permissions are stored.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(string roleName);
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1
@@ -66,6 +67,43 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             var permissionsForRole = await service.GetByRole(roleName).ConfigureAwait(false);
             return Ok(permissionsForRole);
+        }
+
+        /// <summary>
+        /// Add a new PermissionsForRole entity to the database.
+        /// </summary>
+        /// <param name="dto">PermissionsForRole entity to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [HasPermission(Permissions.SystemManagement)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost]
+        public async Task<IActionResult> Create(PermissionsForRoleDTO dto)
+        {
+            var permissionsForRole = await service.Create(dto).ConfigureAwait(false);
+
+            return CreatedAtAction(
+                nameof(GetByRoleName),
+                new { id = permissionsForRole.Id, roleName = permissionsForRole.RoleName },
+                permissionsForRole);
+        }
+
+        /// <summary>
+        /// Update data in PermissionsForRole entity in the database.
+        /// </summary>
+        /// <param name="dto">PermissionsForRole to update.</param>
+        /// <returns>PermissionsForRole</returns>
+        [HasPermission(Permissions.SystemManagement)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPut]
+        public async Task<IActionResult> Update(PermissionsForRoleDTO dto)
+        {
+            return Ok(await service.Update(dto).ConfigureAwait(false));
         }
     }
 }
