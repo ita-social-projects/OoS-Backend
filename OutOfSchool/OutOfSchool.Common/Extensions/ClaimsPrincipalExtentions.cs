@@ -35,14 +35,5 @@ namespace OutOfSchool.Common.Extensions
 
             return principal.FindFirst(identityResourceClaim)?.Value;
         }
-
-        // hardcode seed without using DB
-        public static Claim GetPermissionsForUser(this ClaimsPrincipal principal)
-        {
-            var role = principal.FindFirst("role").Value;
-            var permissions = PermissionsSeeder.SeedPermissions(role);
-            var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, permissions);
-            return permissionsClaim;
-        }
     }
 }
