@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101081640_InitialMigration.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101081640_InitialMigration.Designer.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101082648_InitialMigration.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101082648_InitialMigration.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

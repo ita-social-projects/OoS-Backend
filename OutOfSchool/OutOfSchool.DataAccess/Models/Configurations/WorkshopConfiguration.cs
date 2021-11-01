@@ -1,6 +1,7 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models.Configurations
 {
@@ -8,6 +9,9 @@ namespace OutOfSchool.Services.Models.Configurations
     {
         public void Configure(EntityTypeBuilder<Workshop> builder)
         {
+            builder.HasKey(x => x.Id)
+                .IsClustered(false);
+
             builder.HasOne(x => x.Direction)
                 .WithMany()
                 .IsRequired()

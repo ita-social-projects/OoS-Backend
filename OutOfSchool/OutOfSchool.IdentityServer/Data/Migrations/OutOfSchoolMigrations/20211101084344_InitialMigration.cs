@@ -450,7 +450,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Workshops", x => x.Id);
+                    table.PrimaryKey("PK_Workshops", x => x.Id)
+                        .Annotation("SqlServer:Clustered", false);
                     table.ForeignKey(
                         name: "FK_Workshops_Addresses_AddressId",
                         column: x => x.AddressId,
