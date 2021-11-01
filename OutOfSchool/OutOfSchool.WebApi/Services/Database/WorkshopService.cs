@@ -86,6 +86,7 @@ namespace OutOfSchool.WebApi.Services
                 workshopRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
+                    includeProperties: includingPropertiesForMappingDtoModel,
                     orderBy: x => x.Id,
                     ascending: true)
                 .ToList();

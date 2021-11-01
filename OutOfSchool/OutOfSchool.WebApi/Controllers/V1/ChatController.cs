@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 IsRead = false,
             };
 
-            if (chatNewMessageDto.ChatRoomId == default)
+            if (chatNewMessageDto.ChatRoomId != default)
             {
                 var existingChatRoom = await roomService.GetById(chatNewMessageDto.ChatRoomId).ConfigureAwait(false);
                 if (!(existingChatRoom is null) && existingChatRoom.Users.Any(u => u.Id == senderUserId))

@@ -37,16 +37,16 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             return chatMessage;
         }
 
-        public static List<ChatMessage> WithUser(this List<ChatMessage> chatMesages, User user)
+        public static List<ChatMessage> WithUser(this List<ChatMessage> chatMessages, User user)
         {
-            _ = chatMesages ?? throw new ArgumentNullException(nameof(chatMesages));
-            chatMesages.ForEach(chatMesage =>
+            _ = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
+            chatMessages.ForEach(chatMessage =>
             {
-                chatMesage.User = user;
-                chatMesage.UserId = user?.Id ?? default;
+                chatMessage.User = user;
+                chatMessage.UserId = user?.Id ?? default;
             });
 
-            return chatMesages;
+            return chatMessages;
         }
 
         public static ChatMessage WithChatRoom(this ChatMessage chatMessage, ChatRoom chatRoom)

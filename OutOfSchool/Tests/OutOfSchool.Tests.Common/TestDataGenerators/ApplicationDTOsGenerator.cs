@@ -22,7 +22,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.Status, f => f.Random.Enum<ApplicationStatus>());
 
         /// <summary>
-        /// Generates new instance of the <see cref="Address"/> class.
+        /// Generates new instance of the <see cref="ApplicationDto"/> class.
         /// </summary>
         /// <returns><see cref="ApplicationDto"/> object with random data.</returns>
         public static ApplicationDto Generate() => faker.Generate();

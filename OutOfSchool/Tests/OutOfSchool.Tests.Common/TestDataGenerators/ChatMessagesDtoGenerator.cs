@@ -36,13 +36,13 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             return chatMessage;
         }
 
-        public static List<ChatMessageDto> WithUser(this List<ChatMessageDto> chatMesages, UserDto user)
+        public static List<ChatMessageDto> WithUser(this List<ChatMessageDto> chatMessages, UserDto user)
         {
-            _ = chatMesages ?? throw new ArgumentNullException(nameof(chatMesages));
+            _ = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
 
-            chatMesages.ForEach(x => x.WithUser(user));
+            chatMessages.ForEach(x => x.WithUser(user));
 
-            return chatMesages;
+            return chatMessages;
         }
     }
 }

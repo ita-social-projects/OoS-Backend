@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Models
     /// <inheritdoc/>>
     public class WorkshopFilter : OffsetFilter
     {
-        public List<Guid> Ids { get; set; }
+        public List<Guid> Ids { get; set; } = new List<Guid>();
 
         public string SearchText { get; set; } = string.Empty;
 

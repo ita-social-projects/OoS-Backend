@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(
             @"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU/IPN code must contain 8 or 10 digits")]
-        public long EdrpouIpn { get; set; }
+        public string EdrpouIpn { get; set; }
 
         [MaxLength(50)]
         public string Director { get; set; } = string.Empty;

@@ -9,7 +9,7 @@ namespace OutOfSchool.WebApi.Models
         public Guid Id { get; set; }
 
         [Required]
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         public int NotReadMessagesCount { get; set; }
 

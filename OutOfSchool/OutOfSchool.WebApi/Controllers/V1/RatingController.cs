@@ -231,12 +231,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return NoContent();
             }
 
+            await ratingService.Delete(id).ConfigureAwait(false);
+
             if (ratingDto.Type == RatingType.Workshop)
             {
                 await UpdateWorkshopInElasticSearch(ratingDto.EntityId).ConfigureAwait(false);
             }
-
-            await ratingService.Delete(id).ConfigureAwait(false);
 
             return NoContent();
         }

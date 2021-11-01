@@ -11,7 +11,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
     public static class AddressGenerator
     {
         private static readonly Faker<Address> faker = new Faker<Address>()
-            .RuleFor(x => x.Id, f => f.Random.Int())
+            .RuleFor(x => x.Id, f => f.IndexFaker)
             .RuleFor(x => x.Region, f => f.Address.State())
             .RuleFor(x => x.District, f => f.Address.County())
             .RuleFor(x => x.City, f => f.Address.City())

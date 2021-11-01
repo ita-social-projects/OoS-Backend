@@ -22,7 +22,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.Instagram, f => f.Internet.Url())
             .RuleFor(x => x.Description, f => f.Company.CatchPhrase())
             .RuleFor(x => x.DirectorDateOfBirth, f => f.Person.DateOfBirth)
-            .RuleFor(x => x.EdrpouIpn, f => f.Random.Long())
+            .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnNumber)
             .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)
             .RuleFor(x => x.Founder, f => f.Person.FullName)
             .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))
