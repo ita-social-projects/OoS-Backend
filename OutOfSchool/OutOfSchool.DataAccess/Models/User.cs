@@ -36,5 +36,7 @@ namespace OutOfSchool.Services.Models
         public virtual ICollection<ChatRoomUser> ChatRoomUsers { get; set; }
 
         public virtual ICollection<ChatMessage> ChatMessages { get; set; }
+
+        public virtual ProviderAdmin ProviderAdmin { get; set; }
     }
 }

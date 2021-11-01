@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
 {
@@ -18,5 +19,7 @@ namespace OutOfSchool.Services.Models
         public double? Latitude { get; set; } = default;
 
         public double? Longitude { get; set; } = default;
+
+        public virtual ICollection<ProviderAdmin> ProviderAdmins { get; set; }
     }
 }

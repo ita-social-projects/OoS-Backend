@@ -49,6 +49,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Application> Applications { get; set; }
 
+        public DbSet<ProviderAdmin> ProviderAdmins { get; set; }
+
         public DbSet<Rating> Ratings { get; set; }
 
         public DbSet<City> Cities { get; set; }
@@ -64,6 +66,62 @@ namespace OutOfSchool.Services
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<ChatMessage>()
+                .HasOne(m => m.ChatRoom)
+                .WithMany(r => r.ChatMessages)
+                .HasForeignKey(r => r.ChatRoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ChatMessage>()
+                .HasOne(m => m.User)
+                .WithMany(u => u.ChatMessages)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ChatRoom>()
+                .HasMany(r => r.Users)
+                .WithMany(u => u.ChatRooms)
+                .UsingEntity<ChatRoomUser>(
+                    j => j
+                        .HasOne(cru => cru.User)
+                        .WithMany(u => u.ChatRoomUsers)
+                        .HasForeignKey(cru => cru.UserId)
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne(cru => cru.ChatRoom)
+                        .WithMany(r => r.ChatRoomUsers)
+                        .HasForeignKey(cru => cru.ChatRoomId)
+                        .OnDelete(DeleteBehavior.Cascade));
+
+            builder.Entity<ChatRoom>()
+                .HasOne(r => r.Workshop)
+                .WithMany(w => w.ChatRooms)
+                .HasForeignKey(r => r.WorkshopId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Provider>()
+                .HasKey(x => x.Id);
+
+            builder.Entity<Provider>()
+                .HasOne(x => x.User);
+
+            builder.Entity<Provider>()
+                .HasMany(x => x.Workshops)
+                .WithOne(w => w.Provider);
+
+            builder.Entity<Provider>()
+                .HasOne(x => x.LegalAddress)
+                .WithMany()
+                .HasForeignKey(x => x.LegalAddressId)
+                .IsRequired();
+
+            builder.Entity<Provider>()
+                .HasOne(x => x.ActualAddress)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasForeignKey(x => x.ActualAddressId)
+                .IsRequired(false);
 
             builder.Entity<DateTimeRange>()
                 .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
