@@ -165,7 +165,7 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            if (filter.MinStartHour > 0 || filter.MaxStartHour < 23)
+            if (filter.MinStartTime.TotalMinutes > 0 || filter.MaxStartTime.Hours < 23)
             {
                 queryContainer &= new NestedQuery()
                 {
@@ -173,8 +173,8 @@ namespace OutOfSchool.ElasticsearchData
                     Query = new NumericRangeQuery()
                     {
                         Field = Infer.Field<WorkshopES>(w => w.DateTimeRanges.First().StartTime),
-                        GreaterThanOrEqualTo = TimeSpan.FromHours(filter.MinStartHour).Ticks,
-                        LessThanOrEqualTo = TimeSpan.FromHours(filter.MaxStartHour + 1).Ticks,
+                        GreaterThanOrEqualTo = filter.MinStartTime.Ticks,
+                        LessThan = TimeSpan.FromHours(filter.MaxStartTime.Hours + 1).Ticks,
                     },
                 };
             }

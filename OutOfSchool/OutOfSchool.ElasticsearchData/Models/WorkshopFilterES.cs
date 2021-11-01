@@ -31,9 +31,9 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string Workdays { get; set; } = string.Empty;
 
-        public int MinStartHour { get; set; } = 0;
+        public TimeSpan MinStartTime { get; set; } = new TimeSpan(0, 0, 0);
 
-        public int MaxStartHour { get; set; } = 23;
+        public TimeSpan MaxStartTime { get; set; } = new TimeSpan(23, 59, 59);
 
         public int Size { get; set; } = 12;
 

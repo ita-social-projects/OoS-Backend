@@ -140,7 +140,7 @@ namespace OutOfSchool.WebApi.Services
 
         private bool IsFilterValid(WorkshopFilter filter)
         {
-            return filter != null && filter.MaxStartHour >= filter.MinStartHour
+            return filter != null && filter.MaxStartTime >= filter.MinStartTime
                                   && filter.MaxAge >= filter.MinAge
                                   && filter.MaxPrice >= filter.MinPrice;
         }

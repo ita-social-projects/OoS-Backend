@@ -295,11 +295,11 @@ namespace OutOfSchool.WebApi.Services
                 }
             }
 
-            if (filter.MinStartHour > 0 || filter.MaxStartHour < 23)
+            if (filter.MinStartTime.TotalMinutes > 0 || filter.MaxStartTime.Hours < 23)
             {
                 predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
-                    tr.StartTime.Hours >= filter.MinStartHour
-                        && tr.StartTime.Hours <= filter.MaxStartHour));
+                    tr.StartTime >= filter.MinStartTime
+                        && tr.StartTime.Hours <= filter.MaxStartTime.Hours));
             }
 
             if (!string.IsNullOrWhiteSpace(filter.City))
