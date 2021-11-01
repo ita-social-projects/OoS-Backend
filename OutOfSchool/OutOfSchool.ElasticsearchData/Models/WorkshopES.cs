@@ -7,6 +7,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 {
     public class WorkshopES
     {
+        // TODO: check Nested attribute
         public Guid Id { get; set; }
 
         public string Title { get; set; }
