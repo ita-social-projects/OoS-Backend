@@ -269,6 +269,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id")
@@ -308,6 +309,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id")
@@ -441,15 +443,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<byte>("Workdays")
                         .HasColumnType("tinyint");
 
-                    b.Property<long>("WorkshopId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid?>("WorkshopId1")
+                    b.Property<Guid>("WorkshopId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkshopId1");
+                    b.HasIndex("WorkshopId");
 
                     b.ToTable("DateTimeRanges");
 
@@ -780,16 +779,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<long>("WorkshopId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid?>("WorkshopId1")
+                    b.Property<Guid>("WorkshopId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id")
                         .IsClustered(false);
 
-                    b.HasIndex("WorkshopId1");
+                    b.HasIndex("WorkshopId");
 
                     b.ToTable("Teachers");
                 });
@@ -999,8 +995,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasIndex("ClassId");
 
-                    b.HasIndex("DirectionId")
-                        .IsUnique();
+                    b.HasIndex("DirectionId");
 
                     b.HasIndex("ProviderId");
 
@@ -1096,7 +1091,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
                         .WithMany("ChatMessages")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ChatRoom");
 
@@ -1125,7 +1121,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
                         .WithMany("ChatRoomUsers")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ChatRoom");
 
@@ -1164,7 +1161,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", null)
                         .WithMany("DateTimeRanges")
-                        .HasForeignKey("WorkshopId1");
+                        .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>
@@ -1254,7 +1253,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
                         .WithMany("Teachers")
-                        .HasForeignKey("WorkshopId1");
+                        .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Workshop");
                 });
@@ -1274,8 +1275,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.HasOne("OutOfSchool.Services.Models.Direction", "Direction")
-                        .WithOne()
-                        .HasForeignKey("OutOfSchool.Services.Models.Workshop", "DirectionId")
+                        .WithMany()
+                        .HasForeignKey("DirectionId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 

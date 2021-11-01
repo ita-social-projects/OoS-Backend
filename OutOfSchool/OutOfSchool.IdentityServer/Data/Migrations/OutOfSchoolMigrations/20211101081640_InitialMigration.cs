@@ -536,20 +536,19 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     EndTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    WorkshopId = table.Column<long>(type: "bigint", nullable: false),
-                    Workdays = table.Column<byte>(type: "tinyint", nullable: false),
-                    WorkshopId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    WorkshopId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Workdays = table.Column<byte>(type: "tinyint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DateTimeRanges", x => x.Id);
                     table.CheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
                     table.ForeignKey(
-                        name: "FK_DateTimeRanges_Workshops_WorkshopId1",
-                        column: x => x.WorkshopId1,
+                        name: "FK_DateTimeRanges_Workshops_WorkshopId",
+                        column: x => x.WorkshopId,
                         principalTable: "Workshops",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -589,19 +588,18 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     DateOfBirth = table.Column<DateTime>(type: "date", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
                     Image = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    WorkshopId = table.Column<long>(type: "bigint", nullable: false),
-                    WorkshopId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    WorkshopId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Teachers", x => x.Id)
                         .Annotation("SqlServer:Clustered", false);
                     table.ForeignKey(
-                        name: "FK_Teachers_Workshops_WorkshopId1",
-                        column: x => x.WorkshopId1,
+                        name: "FK_Teachers_Workshops_WorkshopId",
+                        column: x => x.WorkshopId,
                         principalTable: "Workshops",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -609,7 +607,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ChatRoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Text = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -639,7 +637,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ChatRoomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -776,9 +774,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 column: "DepartmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DateTimeRanges_WorkshopId1",
+                name: "IX_DateTimeRanges_WorkshopId",
                 table: "DateTimeRanges",
-                column: "WorkshopId1");
+                column: "WorkshopId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Departments_DirectionId",
@@ -826,9 +824,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Teachers_WorkshopId1",
+                name: "IX_Teachers_WorkshopId",
                 table: "Teachers",
-                column: "WorkshopId1");
+                column: "WorkshopId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Workshops_AddressId",
@@ -843,8 +841,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             migrationBuilder.CreateIndex(
                 name: "IX_Workshops_DirectionId",
                 table: "Workshops",
-                column: "DirectionId",
-                unique: true);
+                column: "DirectionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Workshops_ProviderId",

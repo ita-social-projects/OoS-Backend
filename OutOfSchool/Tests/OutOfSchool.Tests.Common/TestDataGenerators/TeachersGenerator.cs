@@ -39,7 +39,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// Assigns given <paramref name="workshopId"/> to the given <paramref name="teacher"/>
         /// </summary>
         /// <returns><see cref="Teacher"/> object with assigned <paramref name="workshopId"/>.</returns>
-        public static Teacher WithWorkshopId(this Teacher teacher, long workshopId)
+        public static Teacher WithWorkshopId(this Teacher teacher, Guid workshopId)
         {
             _ = teacher ?? throw new ArgumentNullException(nameof(teacher));
 
@@ -52,7 +52,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// Assigns given <paramref name="workshopId"/> to the each item of the given <paramref name="teachers"/> collection
         /// </summary>
         /// <returns>Input collection with assigned <paramref name="workshopId"/>.</returns>
-        public static List<Teacher> WithWorkshopId(this List<Teacher> teachers, long workshopId)
+        public static List<Teacher> WithWorkshopId(this List<Teacher> teachers, Guid workshopId)
         {
             _ = teachers ?? throw new ArgumentNullException(nameof(teachers));
             teachers.ForEach(t => t.WithWorkshopId(workshopId));

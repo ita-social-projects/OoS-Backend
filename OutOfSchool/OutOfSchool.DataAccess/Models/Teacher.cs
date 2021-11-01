@@ -18,7 +18,7 @@ namespace OutOfSchool.Services.Models
 
         public string Image { get; set; }
 
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         public virtual Workshop Workshop { get; set; }
     }

@@ -9,6 +9,12 @@ namespace OutOfSchool.Services.Models.Configurations
         {
             builder.HasKey(x => x.Id)
                 .IsClustered(false);
+
+            builder.HasOne(x => x.User)
+                .WithMany(x => x.ChatRoomUsers)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
         }
     }
 }

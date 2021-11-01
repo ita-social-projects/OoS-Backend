@@ -23,12 +23,14 @@ namespace OutOfSchool.Services.Models.Configurations
             builder.HasOne(m => m.ChatRoom)
                 .WithMany(r => r.ChatMessages)
                 .HasForeignKey(r => r.ChatRoomId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
 
             builder.HasOne(m => m.User)
                 .WithMany(u => u.ChatMessages)
                 .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
         }
     }
 }

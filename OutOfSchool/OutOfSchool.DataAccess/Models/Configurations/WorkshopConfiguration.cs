@@ -9,13 +9,15 @@ namespace OutOfSchool.Services.Models.Configurations
         public void Configure(EntityTypeBuilder<Workshop> builder)
         {
             builder.HasOne(x => x.Direction)
-                .WithOne()
-                // Note: cascade delete causes circular dependencie issue
+                .WithMany()
+                .IsRequired()
+                .HasForeignKey(x => x.DirectionId)
+                // Note: cascade delete causes circular dependency issue
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(x => x.Provider)
                 .WithMany(x => x.Workshops)
-                // Note: cascade delete causes circular dependencie issue
+                // Note: cascade delete causes circular dependency issue
                 .OnDelete(DeleteBehavior.NoAction);
         }
     }

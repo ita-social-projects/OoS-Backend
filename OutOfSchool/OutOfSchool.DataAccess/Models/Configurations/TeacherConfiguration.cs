@@ -35,6 +35,11 @@ namespace OutOfSchool.Services.Models.Configurations
 
             builder.Property(x => x.Image)
                 .HasMaxLength(ModelsConfigurationConstants.ImageMaxLength);
+
+            builder.HasOne(x => x.Workshop)
+                .WithMany(x => x.Teachers)
+                .HasForeignKey(x => x.WorkshopId)
+                .IsRequired();
         }
     }
 }

@@ -21,7 +21,7 @@ namespace OutOfSchool.Services.Models.Configurations
 
             builder.HasOne(x => x.Parent)
                 .WithMany()
-                // Note: cascade delete causes circular dependencie issue
+                // Note: cascade delete causes circular dependency issue
                 .OnDelete(DeleteBehavior.NoAction);
         }
     }

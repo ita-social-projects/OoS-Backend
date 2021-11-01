@@ -59,12 +59,12 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             return chatMessage;
         }
 
-        public static List<ChatMessage> WithChatRoom(this List<ChatMessage> chatMesages, ChatRoom chatRoom)
+        public static List<ChatMessage> WithChatRoom(this List<ChatMessage> chatMessages, ChatRoom chatRoom)
         {
-            _ = chatMesages ?? throw new ArgumentNullException(nameof(chatMesages));
-            chatMesages.ForEach(x => x.WithChatRoom(chatRoom));
+            _ = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
+            chatMessages.ForEach(x => x.WithChatRoom(chatRoom));
 
-            return chatMesages;
+            return chatMessages;
         }
     }
 }
