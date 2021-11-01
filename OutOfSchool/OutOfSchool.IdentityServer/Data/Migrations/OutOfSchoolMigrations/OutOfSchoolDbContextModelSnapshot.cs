@@ -538,7 +538,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("InstitutionStatus");
+                    b.ToTable("InstitutionStatuses");
 
                     b.HasData(
                         new

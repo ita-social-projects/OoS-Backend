@@ -10,34 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003125036_UpdatedTeacherModelToUseGuidsAsId.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003125036_UpdatedTeacherModelToUseGuidsAsId.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003171912_UpdatedApplicationModelToUseGuidsAsId.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003171912_UpdatedApplicationModelToUseGuidsAsId.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003172240_UpdatedApplicationModelToUseGuidsAsId.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003172240_UpdatedApplicationModelToUseGuidsAsId.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003190648_UpdatedChildModelToUseGuidsAsId.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211003190648_UpdatedChildModelToUseGuidsAsId.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211006220217_UpdateParticularModels.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211006220217_UpdateParticularModels.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018180919_InitialMigration.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018180919_InitialMigration.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183311_InitialMigration.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183311_InitialMigration.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183510_InitialMigration.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183510_InitialMigration.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183738_InitialMigration.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018183738_InitialMigration.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018184337_InitialMigration.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211018184337_InitialMigration.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211029061143_InitialMigrtio.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211029061143_InitialMigrtio.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211029061213_InitialMigration.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211029061213_InitialMigration.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211029061443_InitialMigration.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211029061443_InitialMigration.Designer.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101081239_InitialMigration.cs" />
-    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101081239_InitialMigration.Designer.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101081640_InitialMigration.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101081640_InitialMigration.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

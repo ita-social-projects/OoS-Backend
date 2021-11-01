@@ -118,7 +118,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InstitutionStatus",
+                name: "InstitutionStatuses",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -127,7 +127,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InstitutionStatus", x => x.Id);
+                    table.PrimaryKey("PK_InstitutionStatuses", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -336,9 +336,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Providers_InstitutionStatus_InstitutionStatusId",
+                        name: "FK_Providers_InstitutionStatuses_InstitutionStatusId",
                         column: x => x.InstitutionStatusId,
-                        principalTable: "InstitutionStatus",
+                        principalTable: "InstitutionStatuses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -658,7 +658,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 });
 
             migrationBuilder.InsertData(
-                table: "InstitutionStatus",
+                table: "InstitutionStatuses",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
@@ -927,7 +927,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "InstitutionStatus");
+                name: "InstitutionStatuses");
 
             migrationBuilder.DropTable(
                 name: "Directions");
