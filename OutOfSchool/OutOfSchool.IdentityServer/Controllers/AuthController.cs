@@ -93,10 +93,16 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// Generates a view for user to log in.
         /// </summary>
         /// <param name="returnUrl"> URL used to redirect user back to client.</param>
+        /// <param name="providerRegistration"> bool used to redirect on registration page and prepare page for provider registration.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpGet]
-        public async Task<IActionResult> Login(string returnUrl = "Login")
+        public async Task<IActionResult> Login(string returnUrl = "Login", bool providerRegistration = false)
         {
+            if (providerRegistration)
+            {
+                return RedirectToAction("Register", new { providerRegistration });
+            }
+
             logger.LogDebug($"{path} started.");
 
             var externalProviders = await signInManager.GetExternalAuthenticationSchemesAsync();
@@ -161,11 +167,12 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// Generates a view for user to register.
         /// </summary>
         /// <param name="returnUrl"> URL used to redirect user back to client.</param>
+        /// <param name="providerRegistration"> bool used to prepare page for provider registration.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpGet]
-        public IActionResult Register(string returnUrl = "Login")
+        public IActionResult Register(string returnUrl = "Login", bool providerRegistration = false)
         {
-            return View(new RegisterViewModel { ReturnUrl = returnUrl });
+            return View(new RegisterViewModel { ReturnUrl = returnUrl, ProviderRegistration = providerRegistration });
         }
 
         /// <summary>

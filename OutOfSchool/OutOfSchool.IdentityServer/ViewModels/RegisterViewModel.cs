@@ -45,5 +45,7 @@ namespace OutOfSchool.IdentityServer.ViewModels
         public string ReturnUrl { get; set; }
 
         public string Role { get; set; }
+
+        public bool ProviderRegistration { get; set; }
     }
 }
