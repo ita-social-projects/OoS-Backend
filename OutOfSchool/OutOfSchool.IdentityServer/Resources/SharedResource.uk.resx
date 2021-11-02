@@ -247,11 +247,11 @@
   <data name="Your password has been reset" xml:space="preserve">
     <value>Ваш пароль було відновлено</value>
   </data>
-  <data name="Forgot password" xml:space="preserve">
-    <value>Забули пароль</value>
+  <data name="Forgot password?" xml:space="preserve">
+    <value>Забули пароль?</value>
   </data>
   <data name="Forgot password confirmation" xml:space="preserve">
-    <value>Забули пароль</value>
+    <value>Забули пароль?</value>
   </data>
   <data name="Confirm email" xml:space="preserve">
     <value>Підтвердження емейлу</value>
@@ -294,5 +294,8 @@
   </data>
   <data name="Email {0} is already taken" xml:space="preserve">
     <value>Емейл {0} вже зайнятий</value>
+  </data>
+   <data name="Not registered yet?" xml:space="preserve">
+    <value>Ще не зареєстровані?</value>
   </data>
 </root>

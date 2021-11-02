@@ -62,7 +62,7 @@ a {
   justify-content: center;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  padding: 4rem;
   background: #ffffff;
   box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
   border-radius: 5px;
@@ -102,6 +102,7 @@ a {
   text-align: center;
   color: #333333;
   position: relative;
+  margin-bottom: 24px;
 }
 .option:after, .option-short:after{
    content: "";
@@ -128,13 +129,13 @@ a {
   left: 10rem;
 }
 .option-short:after {
-  left: 4rem;
+  left: 6rem;
 }
 .option:before {
   right: 10rem;
 }
 .option-short:before {
-  right: 4rem;
+  right: 6rem;
 }
 .registration_star {
   color: red;
@@ -154,10 +155,14 @@ a {
   margin: 16px 0;
   box-sizing: border-box;
 }
+#login_registration_item{
+  position: relative;
+  margin-top:16px;
+}
 .registration_item-maturity {
   flex-direction: row;
   gap: 8px;
-  font-family: Open Sans;
+  font-family: "Open Sans", sans-serif;;
   font-style: normal;
   font-weight: normal;
   font-size: 13px;
@@ -169,7 +174,7 @@ a {
   margin: 24px auto 0 auto;
   text-align: center;
   display: block;
-  font-family: Open Sans;
+  font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 13px;
@@ -179,7 +184,7 @@ a {
 }
 .registration_item-tip {
   margin: 0;
-  font-family: Open Sans;
+  font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 13px;
@@ -193,6 +198,10 @@ a {
   color: #3849f9;
   font-weight: bold;
   text-decoration: underline;
+}
+#password_link {
+  text-align: right;
+  margin-top: 8px;
 }
 .registration_as {
   display: flex;
@@ -208,7 +217,7 @@ a {
   gap: 0.3rem;
   height: 34px;
   padding: 0;
-  font-family: Open Sans;
+  font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: bold;
   font-size: 0.8125rem;
@@ -271,7 +280,7 @@ a {
   margin-top: 8px !important;
   padding: 0 0 0 16px !important;
   outline: none;
-  font-family: Open Sans;
+  font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 13px;
@@ -279,7 +288,7 @@ a {
   color: #333333;
 }
 .registration_input-password {
-  font-size: 30px;
+  font-size: 20px;
   padding-right: 30px !important;
 }
 .registration_label {
@@ -288,6 +297,7 @@ a {
   font-size: 13px;
   line-height: 15px;
   color: #333333;
+  display:block;
 }
 .registration_phone {
   display: flex;
@@ -303,7 +313,7 @@ a {
   height: 30px;
   width: 59px;
   text-align: center;
-  font-family: Open Sans;
+  font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 13px;
@@ -317,7 +327,7 @@ a {
   width: 12rem;
   margin: 16px auto;
   border-radius: 20px;
-  font-family: Open Sans;
+  font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: bold;
   font-size: 13px;
@@ -333,7 +343,8 @@ a {
   color: #444444;
 }
 .registration_privacy_password,
-.registration_privacy_confirm_password {
+.registration_privacy_confirm_password,
+.login_privacy_password {
     border: none;
     outline: none;
     background: inherit;
@@ -347,9 +358,11 @@ a {
     justify-content: center !important;
 }
 .registration_privacy_password img,
-.registration_privacy_confirm_password img {
+.registration_privacy_confirm_password img,
+.login_privacy_password img {
   height: 16px;
   width: auto;
+  cursor: pointer;
 }
 .input-validation-error {
   border: 1px solid #ff0000 !important;
@@ -365,7 +378,7 @@ a {
   visibility: hidden;
 }
 .instruction{
-  font-family: Open Sans;
+  font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: bold;
   font-size: 13px;
@@ -382,7 +395,7 @@ a {
   min-height: 56px;
   background: #FFEBB3;
   border-radius: 5px;
-  font-family: Open Sans;
+  font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 13px;

@@ -249,8 +249,8 @@
   <data name="Your password has been reset" xml:space="preserve">
     <value>Your password has been reset</value>
   </data>
-  <data name="Forgot password" xml:space="preserve">
-    <value>Forgot password</value>
+  <data name="Forgot password?" xml:space="preserve">
+    <value>Forgot password?</value>
   </data>
   <data name="Forgot password confirmation" xml:space="preserve">
     <value>Forgot password confirmation</value>
@@ -296,5 +296,8 @@
   </data>
   <data name="Email {0} is already taken" xml:space="preserve">
     <value>Email {0} is already taken</value>
+  </data>
+   <data name="Not registered yet?" xml:space="preserve">
+    <value>Not registered yet?</value>
   </data>
 </root>

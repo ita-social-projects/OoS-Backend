@@ -42,24 +42,29 @@
                 <div>
                     <span asp-validation-for="Username"></span>
                 </div>
-                <label class="registration_label">@SharedLocalizer["Password"]</label>
-                <input class="registration_input" asp-for="Password"/>
-                <div>
-                    <span asp-validation-for="Password"></span>
+                <div id="login_registration_item">
+                    <label class="registration_label">@SharedLocalizer["Password"]</label>
+                    <input class="registration_input registration_input-password" asp-for="Password" id="login_password" />
+                    <div class="login_privacy_password">
+                        <img src="~/icons/ic_eye.svg" alt="eye" class="registration_eye" id="login_password_eye">
+                    </div>
+                    <div>
+                        <span asp-validation-for="Password"></span>
+                    </div>
+                </div> 
+                <div id="password_link">
+                    <a class="link" asp-controller="Account" asp-action="ForgotPassword"
+                        asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Forgot password?"]</a>
                 </div>
                 <div class="title">
-                    <button class="registration_submit registration_button" type="submit" >@SharedLocalizer["Sign In"]</button>
+                    <button class="registration_submit registration_button" type="submit" >@SharedLocalizer["Sign In"].Value.ToUpper()</button>
                 </div>
                 <div class="title">
-                    <span>Ще не зареєстровані?</span>
+                    <span>@SharedLocalizer["Not registered yet?"]&nbsp;</span>
                     <a class="link" asp-controller="Auth" asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Register"]</a>
-                </div>
-
-                <div class="title">
-                    <span>Забули пароль?</span>
-                    <a class="link" asp-controller="Account" asp-action="ForgotPassword" asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Forgot"]</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+<script src="~/js/login.js"></script>
