@@ -87,17 +87,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            try
-            {
-                this.ValidateId(id, localizer);
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
             var application = await applicationService.GetById(id).ConfigureAwait(false);
 
             if (application is null)
@@ -134,12 +125,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByParentId(long id)
+        public async Task<IActionResult> GetByParentId(Guid id)
         {
             try
             {
-                this.ValidateId(id, localizer);
-
                 await CheckUserRights(parentId: id).ConfigureAwait(false);
             }
             catch (ArgumentException ex)
@@ -173,14 +162,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{property:regex(^provider$|^workshop$)}/{id}")]
-        public async Task<IActionResult> GetByPropertyId(string property, long id, [FromQuery]ApplicationFilter filter)
+        public async Task<IActionResult> GetByPropertyId(string property, Guid id, [FromQuery]ApplicationFilter filter)
         {
             IEnumerable<ApplicationDto> applications = default;
 
             try
             {
-                this.ValidateId(id, localizer);
-
                 if (property.Equals("provider", StringComparison.CurrentCultureIgnoreCase))
                 {
                     applications = await GetByProviderId(id, filter).ConfigureAwait(false);
@@ -305,7 +292,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             try
             {
-                await CheckUserRights(parentId: applicationDto?.ParentId).ConfigureAwait(false);
+                await CheckUserRights(parentId: applicationDto.ParentId).ConfigureAwait(false);
 
                 applicationDto.Id = default;
 
@@ -385,15 +372,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                this.ValidateId(id, localizer);
-
                 await applicationService.Delete(id).ConfigureAwait(false);
                 return NoContent();
             }
+            // TODO: update exception handling
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
@@ -421,7 +407,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
         }
 
-        private async Task<IEnumerable<ApplicationDto>> GetByWorkshopId(long id, ApplicationFilter filter)
+        private async Task<IEnumerable<ApplicationDto>> GetByWorkshopId(Guid id, ApplicationFilter filter)
         {
             var workshop = await workshopService.GetById(id).ConfigureAwait(false);
 
@@ -437,7 +423,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return applications;
         }
 
-        private async Task<IEnumerable<ApplicationDto>> GetByProviderId(long id, ApplicationFilter filter)
+        private async Task<IEnumerable<ApplicationDto>> GetByProviderId(Guid id, ApplicationFilter filter)
         {
             await CheckUserRights(providerId: id).ConfigureAwait(false);
 
@@ -446,7 +432,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return applications;
         }
 
-        private async Task CheckUserRights(long? parentId = null, long? providerId = null)
+        private async Task CheckUserRights(Guid parentId = default, Guid providerId = default)
         {
             var userId = User.FindFirst("sub")?.Value;
 

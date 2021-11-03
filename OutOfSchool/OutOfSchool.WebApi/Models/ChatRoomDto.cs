@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
     public class ChatRoomDto
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required]
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         public int NotReadMessagesCount { get; set; }
 

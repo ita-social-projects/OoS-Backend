@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -7,7 +8,7 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// Defines interface for CRUD functionality for Address entity.
     /// </summary>
-    public interface IAddressService : ICRUDService<AddressDto>
+    public interface IAddressService : ICRUDService<AddressDto, long>
     {
         /// <summary>
         /// Get all entities from the database.

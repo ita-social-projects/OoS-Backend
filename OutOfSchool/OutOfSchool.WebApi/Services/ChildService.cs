@@ -50,7 +50,7 @@ namespace OutOfSchool.WebApi.Services
                 childDto.ParentId = parent.Id;
             }
 
-            childDto.Id = 0;
+            childDto.Id = default;
 
             var newChild = await childRepository.Create(childDto.ToDomain()).ConfigureAwait(false);
 
@@ -68,7 +68,7 @@ namespace OutOfSchool.WebApi.Services
 
             var totalAmount = await childRepository.Count().ConfigureAwait(false);
 
-            var children = await childRepository.Get<long>(offsetFilter.From, offsetFilter.Size, $"{nameof(Child.SocialGroup)}", null, x => x.Id, true)
+            var children = await childRepository.Get(offsetFilter.From, offsetFilter.Size, $"{nameof(Child.SocialGroup)}", null, x => x.Id, true)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -86,9 +86,8 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChildDto> GetByIdAndUserId(long id, string userId)
+        public async Task<ChildDto> GetByIdAndUserId(Guid id, string userId)
         {
-            this.ValidateId(id);
             this.ValidateUserId(userId);
 
             logger.LogDebug($"User:{userId} is trying to get the child with id: {id}.");
@@ -107,10 +106,9 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(long parentId, OffsetFilter offsetFilter)
+        public async Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(Guid parentId, OffsetFilter offsetFilter)
         {
-            this.ValidateId(parentId);
-            this.ValidateOffsetFilter(offsetFilter);
+            ValidateOffsetFilter(offsetFilter);
 
             logger.LogDebug($"Getting Children with ParentId: {parentId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
 
@@ -170,10 +168,10 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogDebug($"Updating the child with Id: {childDto.Id} and {nameof(userId)}: {userId} started.");
 
-            var child = childDto.Id > 0
-                ? (await childRepository.GetByFilterNoTracking(c => c.Id == childDto.Id, $"{nameof(Child.Parent)}").SingleOrDefaultAsync().ConfigureAwait(false)
-                    ?? throw new UnauthorizedAccessException($"User: {userId} is trying to update not existing Child (Id = {childDto.Id})."))
-                : throw new ArgumentException($"Child Id: {childDto.Id} is smaller than 1.");
+            var child = await childRepository.GetByFilterNoTracking(c => c.Id == childDto.Id, $"{nameof(Child.Parent)}")
+                                             .SingleOrDefaultAsync()
+                                             .ConfigureAwait(false)
+                    ?? throw new UnauthorizedAccessException($"User: {userId} is trying to update not existing Child (Id = {childDto.Id}).");
 
             if (child.Parent.UserId != userId)
             {
@@ -194,14 +192,15 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task DeleteChildCheckingItsUserIdProperty(long id, string userId)
+        public async Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId)
         {
-            this.ValidateId(id);
             this.ValidateUserId(userId);
 
             logger.LogDebug($"Deleting the child with Id: {id} and {nameof(userId)}: {userId} started.");
 
-            var child = await childRepository.GetByFilterNoTracking(c => c.Id == id, $"{nameof(Child.Parent)}").SingleOrDefaultAsync().ConfigureAwait(false)
+            var child = await childRepository.GetByFilterNoTracking(c => c.Id == id, $"{nameof(Child.Parent)}")
+                                             .SingleOrDefaultAsync()
+                                             .ConfigureAwait(false)
                 ?? throw new UnauthorizedAccessException($"User: {userId} is trying to delete not existing Child (Id = {id}).");
 
             if (child.Parent.UserId != userId)

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -7,7 +9,7 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// The interface for CRUD operations with workshops.
     /// </summary>
-    public interface IWorkshopServicesCombiner : ICRUDService<WorkshopDTO>
+    public interface IWorkshopServicesCombiner : ICRUDService<WorkshopDTO, Guid>
     {
         /// <summary>
         /// Get all entities from the database.
@@ -23,7 +25,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task{WorkshopCard}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="List{WorkshopCard}"/> that contains elements from the input sequence.</returns>
-        Task<List<WorkshopCard>> GetByProviderId(long id);
+        Task<List<WorkshopCard>> GetByProviderId(Guid id);
 
         /// <summary>
         /// Get all entities that matches filter's parameters.

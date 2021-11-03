@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+
 using OutOfSchool.ElasticsearchData.Enums;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {
     public class WorkshopFilterES
     {
-        public List<long> Ids { get; set; } = new List<long>();
+        public List<Guid> Ids { get; set; } = null;
 
         public string SearchText { get; set; } = string.Empty;
 

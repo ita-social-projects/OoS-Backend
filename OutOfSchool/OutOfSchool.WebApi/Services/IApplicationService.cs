@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -34,7 +36,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Application.</returns>
-        Task<ApplicationDto> GetById(long id);
+        Task<ApplicationDto> GetById(Guid id);
 
         /// <summary>
         /// Get applications by workshop id.
@@ -42,7 +44,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id, ApplicationFilter filter);
+        Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(Guid id, ApplicationFilter filter);
 
         /// <summary>
         /// Get applications by provider id.
@@ -50,7 +52,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id, ApplicationFilter filter);
+        Task<IEnumerable<ApplicationDto>> GetAllByProvider(Guid id, ApplicationFilter filter);
 
         /// <summary>
         /// Get applications by status.
@@ -64,14 +66,14 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByParent(long id);
+        Task<IEnumerable<ApplicationDto>> GetAllByParent(Guid id);
 
         /// <summary>
         /// Get applications by child id.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByChild(long id);
+        Task<IEnumerable<ApplicationDto>> GetAllByChild(Guid id);
 
         /// <summary>
         /// Update entity.
@@ -85,6 +87,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Application's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(long id);
+        Task Delete(Guid id);
     }
 }

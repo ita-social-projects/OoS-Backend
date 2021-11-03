@@ -5,13 +5,13 @@ namespace OutOfSchool.WebApi.Models
 {
     public class ChatMessageDto
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required]
         [MaxLength(450)]
         public string UserId { get; set; }
 
-        public long ChatRoomId { get; set; }
+        public Guid ChatRoomId { get; set; }
 
         [Required]
         [MaxLength(200)]

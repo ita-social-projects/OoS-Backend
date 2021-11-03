@@ -7,7 +7,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
 {
-    public class ParentRepository : EntityRepository<Parent>, IParentRepository
+    public class ParentRepository : EntityRepositoryBase<Guid, Parent>, IParentRepository
     {
         private readonly OutOfSchoolDbContext db;
 
@@ -36,7 +36,7 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public async Task<IReadOnlyList<Parent>> GetByIdsAsync(IEnumerable<long> parentIds)
+        public async Task<IReadOnlyList<Parent>> GetByIdsAsync(IEnumerable<Guid> parentIds)
         {
             _ = parentIds ?? throw new ArgumentNullException(nameof(parentIds));
 

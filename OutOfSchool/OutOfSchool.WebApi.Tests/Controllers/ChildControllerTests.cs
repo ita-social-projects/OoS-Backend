@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
+
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Services.Enums;
+
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -24,20 +27,36 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private ChildDto child;
         private string currentUserId;
 
+        private ParentDTO existingParent;
+
         [SetUp]
         public void Setup()
         {
             service = new Mock<IChildService>();
             controller = new ChildController(service.Object);
 
-            currentUserId = "3341c870-5ef4-462b-8c86-b4e8bd4e6d41";
+            // TODO: find out why it is a string but not a GUID
+            currentUserId = Guid.NewGuid().ToString();
+
             var user = new ClaimsPrincipal(new ClaimsIdentity(
                 new Claim[] { new Claim("sub", currentUserId) }, "sub"));
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
-            children = FakeChildren();
-            child = FakeChild();
+            existingParent = ParentDtoGenerator.Generate();
+            existingParent.UserId = currentUserId;
+
+            var parent2 = ParentDtoGenerator.Generate();
+
+            children =
+                ChildDtoGenerator.Generate(2)
+                .WithParent(existingParent)
+                .WithSocial(new SocialGroupDto { Id = 1 })
+                .Concat(ChildDtoGenerator.Generate(2)
+                .WithParent(parent2)
+                .WithSocial(new SocialGroupDto { Id = 2 }))
+                .ToList();
+            child = ChildDtoGenerator.Generate();
         }
 
         [Test]
@@ -68,43 +87,49 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-        [TestCase(1)]
-        public async Task GetUsersChilById_WhenChildWasFound_ShouldReturnOkResultObject(long id)
+        public async Task GetUsersChilById_WhenChildWasFound_ShouldReturnOkResultObject()
         {
             // Arrange
-            var filter = new OffsetFilter();
-            service.Setup(x => x.GetByIdAndUserId(id, It.IsAny<string>())).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
+            var existingChildId = children.RandomItem().Id;
+            service.Setup(x => x.GetByIdAndUserId(It.IsAny<Guid>(), It.IsAny<string>()))
+                   .ReturnsAsync(children.First(x => x.Id.Equals(existingChildId)));
 
             // Act
-            var result = await controller.GetUsersChildById(id).ConfigureAwait(false);
+            var result = await controller.GetUsersChildById(existingChildId).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-        [TestCase(10)]
-        public async Task GetUsersChilById_WhenChildWasNotFound_ShouldReturnOkObjectResult(long id)
+        [Test]
+        public async Task GetUsersChildById_WhenChildWasNotFound_ShouldReturnOkObjectResult()
         {
             // Arrange
-            service.Setup(x => x.GetByIdAndUserId(id, It.IsAny<string>())).ReturnsAsync(children.SingleOrDefault(x => x.Id == id));
+            var noneExistingChildId = Guid.NewGuid();
+            service.Setup(x => x.GetByIdAndUserId(It.IsAny<Guid>(), It.IsAny<string>()))
+                .ReturnsAsync(default, default);
 
             // Act
-            var result = await controller.GetUsersChildById(id).ConfigureAwait(false);
+            var result = await controller.GetUsersChildById(Guid.NewGuid()).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-        [TestCase(1)]
-        public async Task GetByParentId_WhenThereAreChildren_ShouldReturnOkResultObject(long id)
+        public async Task GetByParentId_WhenThereAreChildren_ShouldReturnOkResultObject()
         {
             // Arrange
             var filter = new OffsetFilter();
-            service.Setup(x => x.GetByParentIdOrderedByFirstName(id, filter))
-                .ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Where(p => p.ParentId == id).Count(), Entities = children.Where(p => p.ParentId == id).ToList() });
+            service.Setup(x => x.GetByParentIdOrderedByFirstName(existingParent.Id, filter))
+                .ReturnsAsync(
+                new SearchResult<ChildDto>()
+                {
+                    TotalAmount = children.Where(p => p.ParentId == existingParent.Id).Count(),
+                    Entities = children.Where(p => p.ParentId == existingParent.Id).ToList(),
+                });
 
             // Act
-            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false);
+            var result = await controller.GetByParentIdForAdmin(existingParent.Id, filter).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
@@ -114,11 +139,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByParentId_WhenThereIsNoChild_ShouldReturnOkObjectResult(long id)
         {
             // Arrange
+            var noneExistingParentId = Guid.NewGuid();
             var filter = new OffsetFilter();
-            service.Setup(x => x.GetByParentIdOrderedByFirstName(id, filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = children.Where(p => p.ParentId == id).ToList() });
+            service.Setup(x => x.GetByParentIdOrderedByFirstName(noneExistingParentId, filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = children.Where(p => p.ParentId == noneExistingParentId).ToList() });
 
             // Act
-            var result = await controller.GetByParentIdForAdmin(id, filter).ConfigureAwait(false);
+            var result = await controller.GetByParentIdForAdmin(noneExistingParentId, filter).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
@@ -141,100 +167,39 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateChild_WhenModelIsValid_ShouldReturnOkObjectResult()
         {
             // Arrange
-            var changedChild = new ChildDto()
-            {
-                Id = 1,
-                FirstName = "fn11",
-                LastName = "ln11",
-            };
-            service.Setup(x => x.UpdateChildCheckingItsUserIdProperty(changedChild, It.IsAny<string>())).ReturnsAsync(changedChild);
+            var childToUpdate = ChildDtoGenerator.Generate();
+            childToUpdate.Id = children.RandomItem().Id;
+
+            service.Setup(x => x.UpdateChildCheckingItsUserIdProperty(childToUpdate, It.IsAny<string>())).ReturnsAsync(childToUpdate);
 
             // Act
-            var result = await controller.Update(changedChild).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.Update(childToUpdate).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-        [TestCase(1)]
-        public async Task DeleteChild_WhenChildWithIdExists_ShouldReturnNoContentResult(long id)
+        [Test]
+        public async Task DeleteChild_WhenChildWithIdExists_ShouldReturnNoContentResult()
         {
+            // Arrange
+            var childToDelete = children.RandomItem();
+
             // Act
-            var result = await controller.Delete(id);
+            var result = await controller.Delete(childToDelete.Id);
 
             // Assert
             Assert.IsInstanceOf<NoContentResult>(result);
         }
 
-        [TestCase(10)]
-        public async Task DeleteChild_WhenIdIsNotValid_ShouldReturnNull(long id)
+        [Test]
+        public async Task DeleteChild_WhenIdIsNotValid_ShouldReturnNull()
         {
             // Act
-            var result = await controller.Delete(id);
+            var result = await controller.Delete(Guid.NewGuid());
 
             // Assert
             Assert.IsInstanceOf<NoContentResult>(result);
-        }
-
-        private ChildDto FakeChild()
-        {
-            return new ChildDto()
-            {
-                Id = 1,
-                FirstName = "fn1",
-                LastName = "ln1",
-                MiddleName = "mn1",
-                DateOfBirth = new DateTime(2003, 11, 9),
-                Gender = Gender.Male,
-                ParentId = 1,
-                SocialGroupId = 2,
-            };
-        }
-
-        private List<ChildDto> FakeChildren()
-        {
-            var parent1 = new ParentDTO() { Id = 1, UserId = currentUserId };
-            var parent2 = new ParentDTO() { Id = 2, UserId = "de804f35-bda8-4b8n-5eb7-70a5tyfg90a6" };
-
-            return new List<ChildDto>()
-            {
-                new ChildDto()
-                {
-                    Id = 1,
-                    FirstName = "fn1",
-                    LastName = "ln1",
-                    MiddleName = "mn1",
-                    DateOfBirth = new DateTime(2003, 11, 9),
-                    Gender = Gender.Male,
-                    ParentId = 1,
-                    SocialGroupId = 2,
-                    Parent = parent1,
-                },
-                new ChildDto()
-                {
-                    Id = 2,
-                    FirstName = "fn2",
-                    LastName = "ln2",
-                    MiddleName = "mn2",
-                    DateOfBirth = new DateTime(2004, 11, 8),
-                    Gender = Gender.Female,
-                    ParentId = 2,
-                    SocialGroupId = 1,
-                    Parent = parent2,
-                },
-                new ChildDto()
-                {
-                    Id = 3,
-                    FirstName = "fn3",
-                    LastName = "ln3",
-                    MiddleName = "mn3",
-                    DateOfBirth = new DateTime(2006, 11, 2),
-                    Gender = Gender.Male,
-                    ParentId = 1,
-                    SocialGroupId = 1,
-                    Parent = parent1,
-                },
-            };
         }
     }
 }

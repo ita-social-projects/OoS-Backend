@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
+
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -19,14 +21,14 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopId">Id of Workshop.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDto"/> that was created.</returns>
         /// <exception cref="InvalidOperationException">If one of the entities was not found.</exception>
-        Task<ChatRoomDto> CreateOrReturnExisting(string user1Id, string user2Id, long workshopId);
+        Task<ChatRoomDto> CreateOrReturnExisting(string user1Id, string user2Id, Guid workshopId);
 
         /// <summary>
         /// Get ChatRoom by it's key, including Users and Messages.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDto"/> that was found, or null.</returns>
-        Task<ChatRoomDto> GetById(long id);
+        Task<ChatRoomDto> GetById(Guid id);
 
         /// <summary>
         /// Get ChatRooms for some User, Not including ChatMessages.
@@ -42,7 +44,7 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         /// <exception cref="ArgumentOutOfRangeException">If entity with id was not found in system.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task Delete(long id);
+        Task Delete(Guid id);
 
         /// <summary>
         /// Get the ChatRoom by userIds and workshop. Not include ChatMessages.
@@ -52,7 +54,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopId">Id of the Workshop.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains a <see cref="ChatRoomDto"/> that was found, or null.</returns>
         /// <exception cref="InvalidOperationException">If the logic of creating chat was compromised.</exception>
-        Task<ChatRoomDto> GetUniqueChatRoomBetweenUsersWithinWorkshop(string user1Id, string user2Id, long workshopId);
+        Task<ChatRoomDto> GetUniqueChatRoomBetweenUsersWithinWorkshop(string user1Id, string user2Id, Guid workshopId);
 
         /// <summary>
         /// Validate if users can chat between each other.
@@ -62,6 +64,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopId">Id of Workshop.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation. The task result contains <see cref="bool"/> representing if chat can be created.</returns>
         /// <exception cref="InvalidOperationException">If one of the entities was not found.</exception>
-        Task<bool> UsersCanChatBetweenEachOther(string user1Id, string user2Id, long workshopId);
+        Task<bool> UsersCanChatBetweenEachOther(string user1Id, string user2Id, Guid workshopId);
     }
 }

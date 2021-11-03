@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -41,6 +43,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Teacher's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(long id);
+        Task Delete(Guid id);
     }
 }

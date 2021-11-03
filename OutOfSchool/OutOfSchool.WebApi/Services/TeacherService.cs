@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             logger.LogInformation($"Deleting Teacher with Id = {id} started.");
 

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
 using Newtonsoft.Json;
 using OutOfSchool.Common;
 
@@ -10,7 +12,7 @@ namespace OutOfSchool.Services.Models
 {
     public class Workshop
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Workshop title is required")]
         [MinLength(1)]
@@ -87,7 +89,7 @@ namespace OutOfSchool.Services.Models
         public bool IsPerMonth { get; set; }
 
         [Required]
-        public long ProviderId { get; set; }
+        public Guid ProviderId { get; set; }
 
         [Required]
         public long AddressId { get; set; }

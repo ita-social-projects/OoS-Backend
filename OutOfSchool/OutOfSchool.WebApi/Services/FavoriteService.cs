@@ -17,14 +17,18 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class FavoriteService : IFavoriteService
     {
-        private readonly IEntityRepository<Favorite> repository;
+        private readonly IEntityRepository<Favorite> favoriteRepository;
         private readonly IWorkshopService workshopService;
         private readonly ILogger<FavoriteService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
-        public FavoriteService(IEntityRepository<Favorite> repository, ILogger<FavoriteService> logger, IStringLocalizer<SharedResource> localizer, IWorkshopService worshopService)
+        public FavoriteService(
+            IEntityRepository<Favorite> favoriteRepository,
+            ILogger<FavoriteService> logger,
+            IStringLocalizer<SharedResource> localizer,
+            IWorkshopService worshopService)
         {
-            this.repository = repository;
+            this.favoriteRepository = favoriteRepository;
             this.logger = logger;
             this.localizer = localizer;
             this.workshopService = worshopService;
@@ -35,7 +39,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation("Getting all Favorites started.");
 
-            var favorites = await repository.GetAll().ConfigureAwait(false);
+            var favorites = await favoriteRepository.GetAll().ConfigureAwait(false);
 
             logger.LogInformation(!favorites.Any()
                 ? "Favorites table is empty."
@@ -49,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Favorite by Id started. Looking Id = {id}.");
 
-            var favorite = await repository.GetById(id).ConfigureAwait(false);
+            var favorite = await favoriteRepository.GetById(id).ConfigureAwait(false);
 
             if (favorite == null)
             {
@@ -68,7 +72,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
-            var favorites = await repository.GetByFilter(x => x.UserId == userId).ConfigureAwait(false);
+            var favorites = await favoriteRepository.GetByFilter(x => x.UserId == userId).ConfigureAwait(false);
 
             logger.LogInformation(!favorites.Any()
                 ? $"There aren't Favorites for User with Id = {userId}."
@@ -82,7 +86,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
-            var favorites = await repository.Get<int>(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
+            var favorites = await favoriteRepository.Get<int>(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
 
             if (!favorites.Any())
             {
@@ -112,7 +116,7 @@ namespace OutOfSchool.WebApi.Services
 
             var favorite = dto.ToDomain();
 
-            var newFavorite = await repository.Create(favorite).ConfigureAwait(false);
+            var newFavorite = await favoriteRepository.Create(favorite).ConfigureAwait(false);
 
             logger.LogInformation($"Favorite with Id = {newFavorite?.Id} created successfully.");
 
@@ -126,7 +130,7 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var favorite = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var favorite = await favoriteRepository.Update(dto.ToDomain()).ConfigureAwait(false);
 
                 logger.LogInformation($"Favorite with Id = {favorite?.Id} updated succesfully.");
 
@@ -144,7 +148,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Deleting Favorite with Id = {id} started.");
 
-            var favorite = await repository.GetById(id).ConfigureAwait(false);
+            var favorite = await favoriteRepository.GetById(id).ConfigureAwait(false);
 
             if (favorite == null)
             {
@@ -153,7 +157,7 @@ namespace OutOfSchool.WebApi.Services
                     localizer[$"Favorite with Id = {id} doesn't exist in the system"]);
             }
 
-            await repository.Delete(favorite).ConfigureAwait(false);
+            await favoriteRepository.Delete(favorite).ConfigureAwait(false);
 
             logger.LogInformation($"Favorite with Id = {id} succesfully deleted.");
         }

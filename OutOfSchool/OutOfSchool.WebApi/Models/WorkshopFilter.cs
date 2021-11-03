@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 
@@ -8,7 +10,7 @@ namespace OutOfSchool.WebApi.Models
     /// <inheritdoc/>>
     public class WorkshopFilter : OffsetFilter
     {
-        public List<long> Ids { get; set; } = new List<long>();
+        public List<Guid> Ids { get; set; } = new List<Guid>();
 
         public string SearchText { get; set; } = string.Empty;
 

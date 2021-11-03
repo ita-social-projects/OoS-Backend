@@ -1,18 +1,22 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.KeyManagement;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
+
 using Serilog;
 
 namespace OutOfSchool.IdentityServer

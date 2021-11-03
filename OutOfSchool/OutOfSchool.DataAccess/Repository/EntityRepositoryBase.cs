@@ -1,0 +1,182 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+
+namespace OutOfSchool.Services.Repository
+{
+    /// <summary>
+    /// Repository for accessing the database.
+    /// </summary>
+    /// <typeparam name="TKey">Key type.</typeparam>
+    /// <typeparam name="TValue">Entity type.</typeparam>
+    public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase<TKey, TValue>
+        where TValue : class, new()
+    {
+        protected readonly OutOfSchoolDbContext dbContext;
+        protected readonly DbSet<TValue> dbSet;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
+        /// </summary>
+        /// <param name="dbContext">OutOfSchoolDbContext.</param>
+        protected EntityRepositoryBase(OutOfSchoolDbContext dbContext)
+        {
+            this.dbContext = dbContext;
+            dbSet = this.dbContext.Set<TValue>();
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task<TValue> Create(TValue entity)
+        {
+            await dbSet.AddAsync(entity).ConfigureAwait(false);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+            return await Task.FromResult(entity).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task<TValue> RunInTransaction(Func<Task<TValue>> operation)
+        {
+            using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                var result = await operation().ConfigureAwait(false);
+                await transaction.CommitAsync().ConfigureAwait(false);
+
+                return result;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync().ConfigureAwait(false);
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task Delete(TValue entity)
+        {
+            dbContext.Entry(entity).State = EntityState.Deleted;
+
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task<IEnumerable<TValue>> GetAll()
+        {
+            return await dbSet.ToListAsync().ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task<IEnumerable<TValue>> GetAllWithDetails(string includeProperties = "")
+        {
+            IQueryable<TValue> query = dbSet;
+            foreach (var includeProperty in includeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public virtual async Task<IEnumerable<TValue>> GetByFilter(Expression<Func<TValue, bool>> predicate, string includeProperties = "")
+        {
+            var query = this.dbSet.Where(predicate);
+
+            foreach (var includeProperty in includeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.ToListAsync().ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public virtual IQueryable<TValue> GetByFilterNoTracking(Expression<Func<TValue, bool>> predicate, string includeProperties = "")
+        {
+            var query = this.dbSet.Where(predicate);
+
+            foreach (var includeProperty in includeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return query.AsNoTracking();
+        }
+
+        /// <inheritdoc/>
+        public virtual Task<TValue> GetById(TKey id) => dbSet.FindAsync(id).AsTask();
+
+        /// <inheritdoc/>
+        public virtual async Task<TValue> Update(TValue entity)
+        {
+            dbContext.Entry(entity).State = EntityState.Modified;
+
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+            return entity;
+        }
+
+        /// <inheritdoc/>
+        public virtual Task<int> Count(Expression<Func<TValue, bool>> where = null)
+        {
+            return where == null
+                   ? dbSet.CountAsync()
+                   : dbSet.Where(where).CountAsync();
+        }
+
+        /// <inheritdoc/>
+        public virtual IQueryable<TValue> Get<TOrderKey>(
+            int skip = 0,
+            int take = 0,
+            string includeProperties = "",
+            Expression<Func<TValue, bool>> where = null,
+            Expression<Func<TValue, TOrderKey>> orderBy = null,
+            bool ascending = true)
+        {
+            IQueryable<TValue> query = (IQueryable<TValue>)dbSet;
+            if (where != null)
+            {
+                query = query.Where(where);
+            }
+
+            if (orderBy != null)
+            {
+                if (ascending)
+                {
+                    query = query.OrderBy(orderBy);
+                }
+                else
+                {
+                    query = query.OrderByDescending(orderBy);
+                }
+            }
+
+            if (skip > 0)
+            {
+                query = query.Skip(skip);
+            }
+
+            if (take > 0)
+            {
+                query = query.Take(take);
+            }
+
+            foreach (var includeProperty in includeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return query;
+        }
+    }
+}

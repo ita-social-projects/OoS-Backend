@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 namespace OutOfSchool.WebApi.Models
@@ -7,7 +8,7 @@ namespace OutOfSchool.WebApi.Models
     {
         [Required]
         [JsonProperty("WorkshopId")]
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         [Required]
         [MaxLength(200)]
@@ -20,6 +21,6 @@ namespace OutOfSchool.WebApi.Models
         public string ReceiverUserId { get; set; }
 
         [JsonProperty("ChatRoomId")]
-        public long ChatRoomId { get; set; }
+        public Guid ChatRoomId { get; set; }
     }
 }

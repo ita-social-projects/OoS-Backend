@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using AutoMapper;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -79,12 +82,13 @@ namespace OutOfSchool.WebApi.Services
             offsetFilter ??= new OffsetFilter();
 
             var count = await workshopRepository.Count().ConfigureAwait(false);
-            var workshops = workshopRepository.Get<long>(
-                skip: offsetFilter.From,
-                take: offsetFilter.Size,
-                includeProperties: includingPropertiesForMappingDtoModel,
-                orderBy: x => x.Id,
-                ascending: true)
+            var workshops =
+                workshopRepository.Get(
+                    skip: offsetFilter.From,
+                    take: offsetFilter.Size,
+                    includeProperties: includingPropertiesForMappingDtoModel,
+                    orderBy: x => x.Id,
+                    ascending: true)
                 .ToList();
 
             logger.LogInformation(!workshops.Any()
@@ -97,7 +101,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> GetById(long id)
+        public async Task<WorkshopDTO> GetById(Guid id)
         {
             logger.LogInformation($"Getting Workshop by Id started. Looking Id = {id}.");
 
@@ -121,7 +125,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(long id)
+        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(Guid id)
         {
             logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -169,7 +173,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         /// <exception cref="ArgumentNullException">If the entity with specified id was not found in the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             logger.LogInformation($"Deleting Workshop with Id = {id} started.");
 

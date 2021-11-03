@@ -15,6 +15,8 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -32,7 +34,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<ILogger<ApplicationService>> logger;
         private OutOfSchoolDbContext context;
 
-        private IEnumerable<ApplicationDto> applications;
+        private List<ApplicationDto> applications;
         private Mock<IMapper> mapper;
 
         [SetUp]
@@ -54,7 +56,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 workshopRepository,
                 childRepository, mapper.Object);
 
-            applications = FakeApplications();
+            applications = ApplicationDTOsGenerator.Generate(5);
         }
 
         [Test]
@@ -71,49 +73,39 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task GetApplicationById_WhenIdIsValid_ShouldReturnApplication(long id)
+        public async Task GetApplicationById_WhenIdIsValid_ShouldReturnApplication()
         {
             // Arrange
-            var expected = await applicationRepository.GetById(id);
+            var expected = applications.First();
 
             // Act
-            var result = await service.GetById(id).ConfigureAwait(false);
+            var result = await service.GetById(expected.Id).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.Id, result.Id);
+            AssertApplicationsDTOsAreEqual(expected, result);
         }
 
         [Test]
-        [TestCase(100)]
-        public async Task GetApplicationById_WhenIdIsNotValid_ShouldReturnNull(long id)
+        public async Task GetApplicationById_WhenIdIsNotValid_ShouldReturnNull()
         {
             // Act
-            var result = await service.GetById(id).ConfigureAwait(false);
+            var result = await service.GetById(Guid.NewGuid()).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeNull();
+            Assert.That(result, Is.Null);
         }
 
         [Test]
         public async Task CreateApplication_WhenCalled_ShouldReturnApplication()
         {
             // Arrange
-            var toCreate = new ApplicationDto()
-            {
-                Id = 2,
-                ChildId = 2,
-                Status = ApplicationStatus.Pending,
-                WorkshopId = 2,
-                ParentId = 2,
-                CreationTime = new DateTime(2021, 7, 9),
-            };
+            var toCreate = ApplicationDTOsGenerator.Generate();
 
             // Act
             var result = await service.Create(toCreate).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(toCreate);
+            AssertApplicationsDTOsAreEqual(toCreate, result);
         }
 
         [Test]
@@ -131,15 +123,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
         {
             // Arrange
-            var toCreate = new ApplicationDto()
-            {
-                Id = 4,
-                ChildId = 1,
-                Status = ApplicationStatus.Pending,
-                WorkshopId = 1,
-                ParentId = 1,
-                CreationTime = new DateTime(2021, 7, 9),
-            };
+            var toCreate = ApplicationDTOsGenerator.Generate();
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
@@ -150,15 +134,16 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void CreateApplication_WhenParametersAreNotValid_ShouldThrowArgumentException()
         {
             // Arrange
-            var toCreate = new ApplicationDto()
-            {
-                Id = 7,
-                ChildId = 2,
-                Status = ApplicationStatus.Pending,
-                WorkshopId = 1,
-                ParentId = 1,
-                CreationTime = new DateTime(2021, 7, 9),
-            };
+            var toCreate = ApplicationDTOsGenerator.Generate();
+            //var toCreate = new ApplicationDto()
+            //{
+            //    Id = 7,
+            //    ChildId = 2,
+            //    Status = ApplicationStatus.Pending,
+            //    WorkshopId = 1,
+            //    ParentId = 1,
+            //    CreationTime = new DateTime(2021, 7, 9),
+            //};
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
@@ -201,148 +186,147 @@ namespace OutOfSchool.WebApi.Tests.Services
                 async () => await service.Create(applications).ConfigureAwait(false));
         }
 
+        //[Test]
+        //[TestCase(1)]
+        //public async Task GetAllByWokshop_WhenIdIsValid_ShouldReturnApplications(long id)
+        //{
+        //    // Arrange
+        //    var applicationFilter = new ApplicationFilter
+        //    {
+        //        Status = (ApplicationStatus)1,
+        //        OrderByAlphabetically = false,
+        //        OrderByDateAscending = false,
+        //        OrderByStatus = false,
+        //    };
+
+        //    Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
+        //    var expected = await applicationRepository.GetByFilter(filter);
+        //    expected = expected.Where(a => a.Status == applicationFilter.Status);
+
+        //    // Act
+        //    var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
+
+        //    // Assert
+        //    result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
+        //}
+
+        //[Test]
+        //[TestCase(10)]
+        //public async Task GetAllByWorkshop_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
+        //{
+        //    // Act
+        //    var applicationFilter = new ApplicationFilter { Status = (ApplicationStatus)1 };
+        //    var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
+
+        //    // Assert
+        //    result.Count().Should().Be(0);
+        //}
+
+        //[Test]
+        //[TestCase(1)]
+        //public void GetAllByWorkshop_WhenFilterIsNull_ShouldThrowArgumentException(long id)
+        //{
+        //    // Arrange
+        //    ApplicationFilter filter = null;
+
+        //    // Act and Assert
+        //    service.Invoking(s => s.GetAllByWorkshop(id, filter)).Should().ThrowAsync<ArgumentException>();
+        //}
+
+        //[Test]
+        //[TestCase(1)]
+        //public async Task GetAllByProvider_WhenIdIsValid_ShouldReturnApplications(long id)
+        //{
+        //    // Arrange
+        //    var applicationFilter = new ApplicationFilter
+        //    {
+        //        Status = 0,
+        //        OrderByAlphabetically = false,
+        //        OrderByStatus = false,
+        //        OrderByDateAscending = false,
+        //    };
+
+        //    Expression<Func<Application, bool>> filter = a => a.Workshop.ProviderId == id;
+        //    var expected = await applicationRepository.GetByFilter(filter);
+        //    expected = expected.Where(a => a.Status == applicationFilter.Status);
+
+        //    // Act
+        //    var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
+
+        //    // Assert
+        //    result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
+        //}
+
+        //[Test]
+        //[TestCase(10)]
+        //public async Task GetAllByProvider_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
+        //{
+        //    // Act
+        //    var applicationFilter = new ApplicationFilter { Status = (ApplicationStatus)1 };
+
+        //    var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
+
+        //    // Assert
+        //    result.Count().Should().Be(0);
+        //}
+
+        //[Test]
+        //[TestCase(1)]
+        //public void GetAllByProvider_WhenFilterIsNull_ShouldThrowArgumentException(long id)
+        //{
+        //    // Arrange
+        //    ApplicationFilter filter = null;
+
+        //    // Act and Assert
+        //    service.Invoking(s => s.GetAllByProvider(id, filter)).Should().ThrowAsync<ArgumentException>();
+        //}
+
+        //[Test]
+        //[TestCase(1)]
+        //public async Task GetAllByParent_WhenIdIsValid_ShouldReturnApplications(long id)
+        //{
+        //    // Arrange
+        //    Expression<Func<Application, bool>> filter = a => a.ParentId == id;
+        //    var expected = await applicationRepository.GetByFilter(filter);
+
+        //    // Act
+        //    var result = await service.GetAllByParent(id).ConfigureAwait(false);
+
+        //    // Assert
+        //    result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
+        //}
+
+        //[Test]
+        //[TestCase(10)]
+        //public async Task GetAllByParent_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
+        //{
+        //    // Act
+        //    var result = await service.GetAllByParent(id).ConfigureAwait(false);
+
+        //    // Assert
+        //    result.Count().Should().Be(0);
+        //}
+
         [Test]
-        [TestCase(1)]
-        public async Task GetAllByWokshop_WhenIdIsValid_ShouldReturnApplications(long id)
+        public async Task GetAllByChild_WhenIdIsValid_ShouldReturnApplications()
         {
             // Arrange
-            var applicationFilter = new ApplicationFilter
-            {
-                Status = (ApplicationStatus)1,
-                OrderByAlphabetically = false,
-                OrderByDateAscending = false,
-                OrderByStatus = false,
-            };
-
-            Expression<Func<Application, bool>> filter = a => a.WorkshopId == id;
+            var existingApplication = applications.RandomItem();
+            Expression<Func<Application, bool>> filter = a => a.ChildId == existingApplication.ChildId;
             var expected = await applicationRepository.GetByFilter(filter);
-            expected = expected.Where(a => a.Status == applicationFilter.Status);
 
             // Act
-            var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
+            var result = await service.GetAllByChild(existingApplication.ChildId).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
         }
 
         [Test]
-        [TestCase(10)]
-        public async Task GetAllByWorkshop_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
+        public async Task GetAllByChild_WhenIdIsNotValid_ShouldReturnEmptyCollection()
         {
             // Act
-            var applicationFilter = new ApplicationFilter { Status = (ApplicationStatus)1 };
-            var result = await service.GetAllByWorkshop(id, applicationFilter).ConfigureAwait(false);
-
-            // Assert
-            result.Count().Should().Be(0);
-        }
-
-        [Test]
-        [TestCase(1)]
-        public void GetAllByWorkshop_WhenFilterIsNull_ShouldThrowArgumentException(long id)
-        {
-            // Arrange
-            ApplicationFilter filter = null;
-
-            // Act and Assert
-            service.Invoking(s => s.GetAllByWorkshop(id, filter)).Should().ThrowAsync<ArgumentException>();
-        }
-
-        [Test]
-        [TestCase(1)]
-        public async Task GetAllByProvider_WhenIdIsValid_ShouldReturnApplications(long id)
-        {
-            // Arrange
-            var applicationFilter = new ApplicationFilter
-            {
-                Status = 0,
-                OrderByAlphabetically = false,
-                OrderByStatus = false,
-                OrderByDateAscending = false,
-            };
-
-            Expression<Func<Application, bool>> filter = a => a.Workshop.ProviderId == id;
-            var expected = await applicationRepository.GetByFilter(filter);
-            expected = expected.Where(a => a.Status == applicationFilter.Status);
-
-            // Act
-            var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
-
-            // Assert
-            result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task GetAllByProvider_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
-        {
-            // Act
-            var applicationFilter = new ApplicationFilter { Status = (ApplicationStatus)1 };
-
-            var result = await service.GetAllByProvider(id, applicationFilter).ConfigureAwait(false);
-
-            // Assert
-            result.Count().Should().Be(0);
-        }
-
-        [Test]
-        [TestCase(1)]
-        public void GetAllByProvider_WhenFilterIsNull_ShouldThrowArgumentException(long id)
-        {
-            // Arrange
-            ApplicationFilter filter = null;
-
-            // Act and Assert
-            service.Invoking(s => s.GetAllByProvider(id, filter)).Should().ThrowAsync<ArgumentException>();
-        }
-
-        [Test]
-        [TestCase(1)]
-        public async Task GetAllByParent_WhenIdIsValid_ShouldReturnApplications(long id)
-        {
-            // Arrange
-            Expression<Func<Application, bool>> filter = a => a.ParentId == id;
-            var expected = await applicationRepository.GetByFilter(filter);
-
-            // Act
-            var result = await service.GetAllByParent(id).ConfigureAwait(false);
-
-            // Assert
-            result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task GetAllByParent_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
-        {
-            // Act
-            var result = await service.GetAllByParent(id).ConfigureAwait(false);
-
-            // Assert
-            result.Count().Should().Be(0);
-        }
-
-        [Test]
-        [TestCase(1)]
-        public async Task GetAllByChild_WhenIdIsValid_ShouldReturnApplications(long id)
-        {
-            // Arrange
-            Expression<Func<Application, bool>> filter = a => a.ChildId == id;
-            var expected = await applicationRepository.GetByFilter(filter);
-
-            // Act
-            var result = await service.GetAllByChild(id).ConfigureAwait(false);
-
-            // Assert
-            result.Should().BeEquivalentTo(expected.Select(a => a.ToModel()));
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task GetAllByChild_WhenIdIsNotValid_ShouldReturnEmptyCollection(long id)
-        {
-            // Act
-            var result = await service.GetAllByChild(id).ConfigureAwait(false);
+            var result = await service.GetAllByChild(Guid.NewGuid()).ConfigureAwait(false);
 
             // Assert
             result.Count().Should().Be(0);
@@ -378,34 +362,21 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task UpdateApplication_WhenIdIsValid_ShouldReturnApplication()
         {
             // Arrange
-            var expected = new ApplicationDto()
-            {
-                Id = 1,
-                Status = ApplicationStatus.Approved,
-                ChildId = 1,
-                WorkshopId = 1,
-                ParentId = 1,
-            };
+            var expected = ApplicationDTOsGenerator.Generate();
+            expected.Id = applications.First().Id;
 
             // Act
             var result = await service.Update(expected).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(expected, options =>
-            options.Excluding(e => e.Parent)
-                   .Excluding(e => e.Workshop)
-                   .Excluding(e => e.Child));
+            AssertApplicationsDTOsAreEqual(expected, result);
         }
 
         [Test]
         public void UpdateApplication_WhenThereIsNoApplicationWithId_ShouldTrowArgumentException()
         {
             // Arrange
-            var application = new ApplicationDto
-            {
-                Id = 100,
-                Status = ApplicationStatus.Approved,
-            };
+            var application = ApplicationDTOsGenerator.Generate();
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
@@ -420,50 +391,36 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task DeleteApplication_WhenIdIsValid_ShouldDeleteApplication(long id)
+        public async Task DeleteApplication_WhenIdIsValid_ShouldDeleteApplication()
         {
             // Arrange
-            var countBeforeDelete = await context.Applications.CountAsync();
+            var applicationToDelete = applications.RandomItem();
 
             // Act
-            await service.Delete(id).ConfigureAwait(false);
+            await service.Delete(applicationToDelete.Id).ConfigureAwait(false);
 
             // Assert
-            context.Applications.CountAsync().Result.Should().Be(countBeforeDelete - 1);
-            context.Applications.FindAsync(id).Result.Should().BeNull();
+            Assert.That(applications.Find(app => app.Id.Equals(applicationToDelete.Id)), Is.Null);
         }
 
         [Test]
-        [TestCase(100)]
-        public void DeleteApplication_WhenIdIsNotValid_ShouldThrowArgumentException(long id)
+        public void DeleteApplication_WhenIdIsNotValid_ShouldThrowArgumentException()
         {
             // Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Delete(id).ConfigureAwait(false));
+                async () => await service.Delete(Guid.NewGuid()).ConfigureAwait(false));
         }
 
-        private IEnumerable<ApplicationDto> FakeApplications()
+        private static void AssertApplicationsDTOsAreEqual(ApplicationDto expected, ApplicationDto actual)
         {
-            return new List<ApplicationDto>()
+            Assert.Multiple(() =>
             {
-                new ApplicationDto()
-                {
-                    Id = 5,
-                    ChildId = 2,
-                    Status = ApplicationStatus.Pending,
-                    ParentId = 2,
-                    WorkshopId = 1,
-                },
-                new ApplicationDto()
-                {
-                    Id = 6,
-                    ChildId = 3,
-                    Status = ApplicationStatus.Pending,
-                    ParentId = 1,
-                    WorkshopId = 2,
-                },
-            };
+                Assert.That(expected.Id, Is.EqualTo(actual.Id));
+                Assert.That(expected.Status, Is.EqualTo(actual.Status));
+                Assert.That(expected.CreationTime, Is.EqualTo(actual.CreationTime));
+                Assert.That(expected.ChildId, Is.EqualTo(actual.ChildId));
+                Assert.That(expected.ParentId, Is.EqualTo(actual.ParentId));
+            });
         }
     }
 }

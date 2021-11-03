@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using AutoMapper;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -21,6 +24,7 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ApplicationService : IApplicationService
     {
+        // TODO: move to configuration
         private const int ApplicationsLimit = 2;
 
         private readonly IApplicationRepository applicationRepository;
@@ -98,7 +102,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             logger.LogInformation($"Deleting Application with Id = {id} started.");
 
@@ -134,7 +138,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByParent(long id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByParent(Guid id)
         {
             logger.LogInformation($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
 
@@ -150,7 +154,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByChild(long id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByChild(Guid id)
         {
             logger.LogInformation($"Getting Applications by Child Id started. Looking Child Id = {id}.");
 
@@ -166,7 +170,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(long id, ApplicationFilter filter)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(Guid id, ApplicationFilter filter)
         {
             logger.LogInformation($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
 
@@ -185,7 +189,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(long id, ApplicationFilter filter)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(Guid id, ApplicationFilter filter)
         {
             logger.LogInformation($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
 
@@ -223,7 +227,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ApplicationDto> GetById(long id)
+        public async Task<ApplicationDto> GetById(Guid id)
         {
             logger.LogInformation($"Getting Application by Id started. Looking Id = {id}.");
 
@@ -249,7 +253,7 @@ namespace OutOfSchool.WebApi.Services
 
             ModelNullValidation(applicationDto);
 
-            CheckApplicationExists(applicationDto?.Id);
+            CheckApplicationExists(applicationDto.Id);
 
             try
             {
@@ -299,7 +303,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private void CheckApplicationExists(long? id)
+        private void CheckApplicationExists(Guid id)
         {
             var applications = applicationRepository.Get<int>(where: a => a.Id == id);
 
@@ -310,7 +314,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private async Task<bool> CheckChildParent(long parentId, long childId)
+        private async Task<bool> CheckChildParent(Guid parentId, Guid childId)
         {
             Expression<Func<Child, bool>> filter = c => c.ParentId == parentId;
 

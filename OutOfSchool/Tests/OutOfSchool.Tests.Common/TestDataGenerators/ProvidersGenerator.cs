@@ -14,7 +14,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
     public static class ProvidersGenerator
     {
         private static readonly Faker<Provider> faker = new Faker<Provider>()
-            .RuleFor(x => x.Id, f => f.UniqueIndex)
+            .RuleFor(x => x.Id, _ => Guid.NewGuid())
             .RuleFor(x => x.FullTitle, f => f.Company.CompanyName())
             .RuleFor(x => x.ShortTitle, f => f.Company.CompanySuffix())
             .RuleFor(x => x.Website, f => f.Internet.Url())
@@ -22,7 +22,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.Instagram, f => f.Internet.Url())
             .RuleFor(x => x.Description, f => f.Company.CatchPhrase())
             .RuleFor(x => x.DirectorDateOfBirth, f => f.Person.DateOfBirth)
-            .RuleFor(x => x.EdrpouIpn, f => f.Random.ReplaceNumbers("########"))
+            .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnNumber)
             .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)
             .RuleFor(x => x.Founder, f => f.Person.FullName)
             .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))
@@ -41,7 +41,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// <summary>
         /// Generates a list of the <see cref="Provider"/> objects.
         /// </summary>
-        /// <param name="number">Number of instances to generate.</param>
-        public static List<Provider> Generate(int number) => faker.Generate(number);
+        /// <param name="count">count of instances to generate.</param>
+        public static List<Provider> Generate(int count) => faker.Generate(count);
     }
 }

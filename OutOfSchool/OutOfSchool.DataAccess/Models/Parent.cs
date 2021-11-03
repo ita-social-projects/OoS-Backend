@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
@@ -10,7 +11,7 @@ namespace OutOfSchool.Services.Models
             Children = new List<Child>();
         }
 
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         public virtual IReadOnlyCollection<Child> Children { get; set; }
 

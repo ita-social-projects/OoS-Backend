@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Hubs
             var usersRooms = await roomService.GetByUserId(userId).ConfigureAwait(false);
             foreach (var room in usersRooms)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, room.Id.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                await Groups.AddToGroupAsync(Context.ConnectionId, room.Id.ToString()).ConfigureAwait(false);
             }
 
             await base.OnConnectedAsync().ConfigureAwait(false);
@@ -88,7 +88,7 @@ namespace OutOfSchool.WebApi.Hubs
             var chatMessageDto = new ChatMessageDto()
             {
                 UserId = senderUserId,
-                ChatRoomId = 0,
+                ChatRoomId = default,
                 Text = chatNewMessageDto.Text,
                 CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
@@ -97,8 +97,7 @@ namespace OutOfSchool.WebApi.Hubs
             bool roomIsNew = false;
 
             // Validate chat between users and get chatRoom.
-            if (chatNewMessageDto.ChatRoomId > 0 &&
-                (await this.RoomExistAndSenderIsItsParticipant(chatNewMessageDto.ChatRoomId, senderUserId).ConfigureAwait(false)))
+            if (await this.RoomExistAndSenderIsItsParticipant(chatNewMessageDto.ChatRoomId, senderUserId).ConfigureAwait(false))
             {
                 chatMessageDto.ChatRoomId = chatNewMessageDto.ChatRoomId;
             }
@@ -135,7 +134,7 @@ namespace OutOfSchool.WebApi.Hubs
             }
 
             // Send chatMessage.
-            await Clients.OthersInGroup(createdMessageDto.ChatRoomId.ToString(CultureInfo.InvariantCulture))
+            await Clients.OthersInGroup(createdMessageDto.ChatRoomId.ToString())
                 .SendAsync("ReceiveMessageInChatGroup", JsonConvert.SerializeObject(createdMessageDto))
                 .ConfigureAwait(false);
         }
@@ -172,18 +171,18 @@ namespace OutOfSchool.WebApi.Hubs
             }
         }
 
-        private async Task AddConnectionsToGroup(string userId, long chatRoomId)
+        private async Task AddConnectionsToGroup(string userId, Guid chatRoomId)
         {
             if (Users.TryGetValue(userId, out HubUser user))
             {
                 foreach (var connection in user.ConnectionIds)
                 {
-                    await Groups.AddToGroupAsync(connection, chatRoomId.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                    await Groups.AddToGroupAsync(connection, chatRoomId.ToString()).ConfigureAwait(false);
                 }
             }
         }
 
-        private async Task<bool> RoomExistAndSenderIsItsParticipant(long chatRoomId, string senderId)
+        private async Task<bool> RoomExistAndSenderIsItsParticipant(Guid chatRoomId, string senderId)
         {
             var usersRooms = await roomService.GetByUserId(senderId).ConfigureAwait(false);
             var room = usersRooms.Where(room => room.Id == chatRoomId).FirstOrDefault();

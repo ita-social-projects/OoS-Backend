@@ -1,14 +1,16 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
     public class ApplicationDto
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
@@ -16,16 +18,13 @@ namespace OutOfSchool.WebApi.Models
         public DateTimeOffset CreationTime { get; set; }
 
         [Required]
-        [Range(1, long.MaxValue, ErrorMessage = "Workshop id should be grater than 0")]
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         [Required]
-        [Range(1, long.MaxValue, ErrorMessage = "Child id should be grater than 0")]
-        public long ChildId { get; set; }
+        public Guid ChildId { get; set; }
 
-        [Required]
         [Range(1, long.MaxValue, ErrorMessage = "Parent id should be grater than 0")]
-        public long ParentId { get; set; }
+        public Guid ParentId { get; set; }
 
         public WorkshopCard Workshop { get; set; }
 

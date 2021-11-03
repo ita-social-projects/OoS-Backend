@@ -103,8 +103,11 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>()
-                 .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(c => c.ActualAddress))
-                 .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(c => c.LegalAddress));
+                 .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
+                 .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
+                 .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => src.EdrpouIpn.ToString()))
+                 .ForMember(dest => dest.Rating, opt => opt.Ignore())
+                 .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
             });
         }
 
@@ -251,7 +254,11 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ProviderDto, Provider>(providerDto, cfg =>
             {
                 cfg.CreateMap<AddressDto, Address>();
-                cfg.CreateMap<ProviderDto, Provider>();
+                cfg.CreateMap<ProviderDto, Provider>()
+                 .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => long.Parse(src.EdrpouIpn)))
+                 .ForMember(dest => dest.Workshops, opt => opt.Ignore())
+                 .ForMember(dest => dest.User, opt => opt.Ignore())
+                 .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore());
             });
         }
 

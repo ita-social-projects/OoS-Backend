@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -51,23 +53,21 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             logger.LogInformation($"ChatMessage deleting was started. ChatMessage id:{id}");
 
             try
             {
-                var chatMessage = await repository.GetById(id).ConfigureAwait(false);
+                var chatMessages = await repository.GetByFilter(x => x.Id.Equals(id)).ConfigureAwait(false);
+                var chatMessage = chatMessages.SingleOrDefault();
 
-                if (!(chatMessage is null))
+                if (chatMessage is null)
                 {
-                    await repository.Delete(chatMessage).ConfigureAwait(false);
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException(nameof(id), $"ChatMessage with id:{id} was not found in the system.");
+                    return;
                 }
 
+                await repository.Delete(chatMessage).ConfigureAwait(false);
                 logger.LogInformation($"ChatMessage id:{id} was successfully deleted.");
             }
             catch (DbUpdateConcurrencyException exception)
@@ -78,13 +78,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatMessageDto>> GetAllByChatRoomId(long chatRoomId)
+        public async Task<IEnumerable<ChatMessageDto>> GetAllByChatRoomId(Guid chatRoomId)
         {
             logger.LogInformation($"Process of getting all ChatMessages with ChatRoomId:{chatRoomId} was started.");
 
             try
             {
-                var query = repository.Get<long>(where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.Id);
+                var query = repository.Get(where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.Id);
                 var chatMessages = await query.ToListAsync().ConfigureAwait(false);
 
                 logger.LogInformation(!chatMessages.Any()
@@ -101,13 +101,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ChatMessageDto>> GetAllNotReadByUserInChatRoom(long chatRoomId, string userId)
+        public async Task<IEnumerable<ChatMessageDto>> GetAllNotReadByUserInChatRoom(Guid chatRoomId, string userId)
         {
             logger.LogInformation($"Process of getting all ChatMessages that are not read with ChatRoomId:{chatRoomId} and UserId:{userId} was started.");
 
             try
             {
-                var query = repository.Get<long>(where: x => x.ChatRoomId == chatRoomId && x.UserId != userId && !x.IsRead, orderBy: x => x.Id);
+                var query = repository.Get(where: x => x.ChatRoomId == chatRoomId && x.UserId != userId && !x.IsRead, orderBy: x => x.Id);
                 var chatMessages = await query.AsNoTracking().ToListAsync().ConfigureAwait(false);
 
                 logger.LogInformation(!chatMessages.Any()
@@ -124,7 +124,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageDto> GetById(long id)
+        public async Task<ChatMessageDto> GetById(Guid id)
         {
             logger.LogInformation($"ChatMessage getting was started. ChatMessage id:{id}");
 

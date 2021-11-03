@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
 {
@@ -7,8 +8,7 @@ namespace OutOfSchool.Services.Models
         public long Id { get; set; }
 
         [Required]
-        [Range(1, long.MaxValue, ErrorMessage = "Workshop id should be grater than 0")]
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
 
         [Required]
         public string UserId { get; set; }

@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+
 using Nest;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {
     public class WorkshopES
     {
-        public long Id { get; set; }
+        // TODO: check Nested attribute
+        public Guid Id { get; set; }
 
         public string Title { get; set; }
 

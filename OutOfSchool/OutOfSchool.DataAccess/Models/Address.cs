@@ -8,27 +8,27 @@ namespace OutOfSchool.Services.Models
         public long Id { get; set; }
 
         [MaxLength(30)]
-        public string Region { get; set; } = string.Empty;
+        public string Region { get; set; }
 
         [MaxLength(30)]
-        public string District { get; set; } = string.Empty;
+        public string District { get; set; }
 
         [Required(ErrorMessage = "City is required")]
         [DataType(DataType.Text)]
         [MaxLength(30)]
-        public string City { get; set; } = string.Empty;
+        public string City { get; set; }
 
         [Required(ErrorMessage = "Street is required")]
         [MaxLength(30)]
-        public string Street { get; set; } = string.Empty;
+        public string Street { get; set; }
 
         [Required(ErrorMessage = "Building number is required")]
         [MaxLength(15)]
-        public string BuildingNumber { get; set; } = string.Empty;
+        public string BuildingNumber { get; set; }
 
-        public double Latitude { get; set; } = default;
+        public double Latitude { get; set; }
 
-        public double Longitude { get; set; } = default;
+        public double Longitude { get; set; }
 
         public override bool Equals(object obj)
         {

@@ -7,12 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OutOfSchool.Services.Repository
 {
-    /// <summary>
-    /// Interface of repository for accessing the database.
-    /// </summary>
-    /// <typeparam name="T">Entity.</typeparam>
-    public interface IEntityRepository<T>
-        where T : class, new()
+    public interface IEntityRepositoryBase<TKey, TEntity>
+        where TEntity : class, new()
     {
         /// <summary>
         /// Add new element.
@@ -22,14 +18,14 @@ namespace OutOfSchool.Services.Repository
         /// The task result contains the entity that was created.</returns>
         /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task<T> Create(T entity);
+        Task<TEntity> Create(TEntity entity);
 
         /// <summary>
         /// Runs operation in transaction.
         /// </summary>
         /// <param name="operation">Method that represents the operation.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<T> RunInTransaction(Func<Task<T>> operation);
+        Task<TEntity> RunInTransaction(Func<Task<TEntity>> operation);
 
         /// <summary>
         /// Update information about element.
@@ -39,7 +35,7 @@ namespace OutOfSchool.Services.Repository
         /// The task result contains the entity that was updated.</returns>
         /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task<T> Update(T entity);
+        Task<TEntity> Update(TEntity entity);
 
         /// <summary>
         /// Delete element.
@@ -48,14 +44,14 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task Delete(T entity);
+        Task Delete(TEntity entity);
 
         /// <summary>
         /// Get all elements.
         /// </summary>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
-        Task<IEnumerable<T>> GetAll();
+        Task<IEnumerable<TEntity>> GetAll();
 
         /// <summary>
         /// Get element by Id.
@@ -63,7 +59,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="id">Key in database.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains an entity that was found, or null.</returns>
-        Task<T> GetById(long id);
+        Task<TEntity> GetById(TKey id);
 
         /// <summary>
         /// Get all elements with details.
@@ -71,7 +67,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
-        Task<IEnumerable<T>> GetAllWithDetails(string includeProperties = "");
+        Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "");
 
         /// <summary>
         /// Get elements by a specific filter.
@@ -80,7 +76,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
-        Task<IEnumerable<T>> GetByFilter(Expression<Func<T, bool>> predicate, string includeProperties = "");
+        Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> predicate, string includeProperties = "");
 
         /// <summary>
         /// Get elements by a specific filter with no tracking.
@@ -89,7 +85,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="includeProperties">Name of properties which should be included.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
-        IQueryable<T> GetByFilterNoTracking(Expression<Func<T, bool>> predicate, string includeProperties = "");
+        IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> predicate, string includeProperties = "");
 
         /// <summary>
         /// Get the amount of elements with filter or without it.
@@ -97,7 +93,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="where">Filter.</param>
         /// <returns>>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains an amount of found elements.</returns>
-        Task<int> Count(Expression<Func<T, bool>> where = null);
+        Task<int> Count(Expression<Func<TEntity, bool>> where = null);
 
         /// <summary>
         /// Get ordered, filtered list of elements.
@@ -111,6 +107,21 @@ namespace OutOfSchool.Services.Repository
         /// <param name="ascending">Ascending or descending ordering.</param>
         /// <returns>>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains an ordered, filtered <see cref="IQueryable{T}"/>.</returns>
-        IQueryable<T> Get<TOrderKey>(int skip = 0, int take = 0, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true);
+        IQueryable<TEntity> Get<TOrderKey>(int skip = 0, int take = 0, string includeProperties = "", Expression<Func<TEntity, bool>> where = null, Expression<Func<TEntity, TOrderKey>> orderBy = null, bool ascending = true);
+    }
+
+    /// <summary>
+    /// Interface of repository for accessing the database.
+    /// </summary>
+    /// <typeparam name="TEntity"> Entity type.</typeparam>
+    public interface IEntityRepository<TEntity> : IEntityRepositoryBase<long, TEntity>
+        where TEntity : class, new()
+    {
+    }
+
+    public interface ISensitiveEntityRepository<TEntity> : IEntityRepositoryBase<Guid, TEntity>
+        where TEntity : class, new()
+    {
+
     }
 }

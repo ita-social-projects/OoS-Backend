@@ -62,15 +62,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            this.ValidateId(id, localizer);
-
             var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
 
             if (workshop is null)
             {
-                return NoContent();
+                return NotFound();
             }
 
             return Ok(workshop);
@@ -89,10 +87,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetByProviderId(long id)
+        public async Task<IActionResult> GetByProviderId(Guid id)
         {
-            this.ValidateId(id, localizer);
-
             var workshopCards = await combinedWorkshopService.GetByProviderId(id).ConfigureAwait(false);
 
             if (!workshopCards.Any())
@@ -229,10 +225,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            this.ValidateId(id, localizer);
-
             var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
 
             if (workshop is null)
@@ -243,7 +237,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             var userHasRights = await this.IsUserProvidersOwner(workshop.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
-                return StatusCode(403, "Forbidden to delete workshops of another providers.");
+                return new ForbidResult("Forbidden to delete workshops of another providers.");
             }
 
             await combinedWorkshopService.Delete(id).ConfigureAwait(false);
@@ -251,7 +245,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return NoContent();
         }
 
-        private async Task<bool> IsUserProvidersOwner(long providerId)
+        private async Task<bool> IsUserProvidersOwner(Guid providerId)
         {
             // Provider can create/update/delete a workshop only with it's own ProviderId.
             // Admin can create a work without checks.

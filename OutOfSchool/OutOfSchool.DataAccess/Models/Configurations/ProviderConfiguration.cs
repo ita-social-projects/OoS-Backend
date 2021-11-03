@@ -1,0 +1,83 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace OutOfSchool.Services.Models.Configurations
+{
+    internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
+    {
+        public void Configure(EntityTypeBuilder<Provider> builder)
+        {
+            builder.HasKey(x => x.Id)
+                .IsClustered(false);
+
+            builder.Property(x => x.FullTitle)
+                .IsRequired()
+                .HasMaxLength(60) // Same as in short title. Bug ?
+                .IsUnicode();
+
+            builder.Property(x => x.ShortTitle)
+                .IsRequired()
+                .HasMaxLength(60) // Same as in full title. Bug ?
+                .IsUnicode();
+
+            builder.Property(x => x.Website)
+                // TODO: use constant from ?? after url validation implementation
+                .HasMaxLength(256)
+                // Note: IDN
+                .IsUnicode();
+
+            builder.Property(x => x.Email)
+                .IsRequired()
+                .HasMaxLength(256);
+
+            builder.Property(x => x.Facebook)
+                // TODO: use constant from ?? after url validation implementation
+                .HasMaxLength(256);
+
+            builder.Property(x => x.Instagram)
+                // TODO: use constant from ?? after url validation implementation
+                .HasMaxLength(256);
+
+            builder.Property(x => x.Description)
+                .IsRequired()
+                .HasMaxLength(500)
+                .IsUnicode();
+
+            builder.Property(x => x.Director)
+                .HasMaxLength(50)
+                .IsUnicode();
+
+            builder.Property(x => x.DirectorDateOfBirth)
+                .HasColumnType(nameof(DataType.Date));
+
+            builder.Property(x => x.PhoneNumber)
+                .HasMaxLength(15);
+
+            builder.Property(x => x.Founder)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            builder.Property(x => x.Ownership)
+                .IsRequired();
+
+            builder.Property(x => x.Type)
+                .IsRequired();
+
+            builder.Property(x => x.UserId)
+                .IsRequired();
+
+            //builder.HasOne(x => x.LegalAddress)
+            //    .WithOne()
+            //    .OnDelete(DeleteBehavior.NoAction)
+            //    .HasForeignKey(x => x.)
+            //    .IsRequired();
+
+            //builder.HasOne(x => x.ActualAddress)
+            //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Cascade)
+            //    .HasForeignKey(x => x.ActualAddressId);
+        }
+    }
+}

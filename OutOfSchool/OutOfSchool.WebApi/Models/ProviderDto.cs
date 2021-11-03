@@ -7,8 +7,7 @@ namespace OutOfSchool.WebApi.Models
 {
     public class ProviderDto
     {
-        // TODO: change type to GUID.
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Full Title is required")]
         [DataType(DataType.Text)]
@@ -49,7 +48,6 @@ namespace OutOfSchool.WebApi.Models
         [RegularExpression(
             @"^(\d{8}|\d{10})$",
             ErrorMessage = "EDRPOU/IPN code must contain 8 or 10 digits")]
-        [MaxLength(12)]
         public string EdrpouIpn { get; set; }
 
         [MaxLength(50)]

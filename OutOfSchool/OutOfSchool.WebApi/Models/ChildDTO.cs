@@ -7,7 +7,7 @@ namespace OutOfSchool.WebApi.Models
 {
     public class ChildDto
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
         [StringLength(30, MinimumLength = 1)]
@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(500)]
         public string PlaceOfStudy { get; set; } = string.Empty;
 
-        public long ParentId { get; set; } = default;
+        public Guid ParentId { get; set; } = default;
 
         public long? SocialGroupId { get; set; } = default;
 

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Services
 {
-    public interface ICRUDService<TEntity>
+    public interface ICRUDService<TEntity, TKey>
         where TEntity : class, new()
     {
         /// <summary>
@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
         /// The task result contains the entity that was found, or null.</returns>
-        Task<TEntity> GetById(long id);
+        Task<TEntity> GetById(TKey id);
 
         /// <summary>
         /// Update existing entity in the database.
@@ -35,6 +35,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(long id);
+        Task Delete(TKey id);
     }
 }

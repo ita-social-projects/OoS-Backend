@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.WebApi.Extensions;
+
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -63,13 +64,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
             var chatMessageDto = new ChatMessageDto()
             {
                 UserId = senderUserId,
-                ChatRoomId = 0,
+                ChatRoomId = default,
                 Text = chatNewMessageDto.Text,
                 CreatedTime = DateTimeOffset.UtcNow,
                 IsRead = false,
             };
 
-            if (chatNewMessageDto.ChatRoomId > 0)
+            if (chatNewMessageDto.ChatRoomId != default)
             {
                 var existingChatRoom = await roomService.GetById(chatNewMessageDto.ChatRoomId).ConfigureAwait(false);
                 if (!(existingChatRoom is null) && existingChatRoom.Users.Any(u => u.Id == senderUserId))
@@ -115,10 +116,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMessageById(long id)
+        public async Task<IActionResult> GetMessageById(Guid id)
         {
-            this.ValidateId(id, localizer);
-
             var message = await messageService.GetById(id).ConfigureAwait(false);
 
             if (message is null)
@@ -150,10 +149,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetRoomById(long id)
+        public async Task<IActionResult> GetRoomById(Guid id)
         {
-            this.ValidateId(id, localizer);
-
             var userId = User.FindFirst("sub")?.Value;
 
             var chatRoom = await roomService.GetById(id).ConfigureAwait(false);
@@ -211,10 +208,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateMessagesStatus(long chatRoomId)
+        public async Task<IActionResult> UpdateMessagesStatus(Guid chatRoomId)
         {
-            this.ValidateId(chatRoomId, localizer);
-
             var userId = User.FindFirst("sub")?.Value;
 
             var room = await roomService.GetById(chatRoomId).ConfigureAwait(false);
@@ -256,8 +251,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateMessage(ChatMessageDto chatMessageDto)
         {
-            this.ValidateId(chatMessageDto.Id, localizer);
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -306,10 +299,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteMessage(long id)
+        public async Task<IActionResult> DeleteMessage(Guid id)
         {
-            this.ValidateId(id, localizer);
-
             var userId = User.FindFirst("sub")?.Value;
 
             var oldChatMessage = await messageService.GetById(id).ConfigureAwait(false);
@@ -346,10 +337,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteRoom(long id)
+        public async Task<IActionResult> DeleteRoom(Guid id)
         {
-            this.ValidateId(id, localizer);
-
             var userId = User.FindFirst("sub")?.Value;
 
             var room = await roomService.GetById(id).ConfigureAwait(false);

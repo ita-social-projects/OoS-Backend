@@ -78,7 +78,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<bool> Delete(long id)
+        public async Task<bool> Delete(Guid id)
         {
             try
             {

@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{parentId}")]
-        public async Task<IActionResult> GetByParentIdForAdmin([Range(1, long.MaxValue)] long parentId, [FromQuery] OffsetFilter offsetFilter)
+        public async Task<IActionResult> GetByParentIdForAdmin([Range(1, long.MaxValue)] Guid parentId, [FromQuery] OffsetFilter offsetFilter)
         {
             return Ok(await service.GetByParentIdOrderedByFirstName(parentId, offsetFilter).ConfigureAwait(false));
         }
@@ -99,7 +99,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUsersChildById([Range(1, long.MaxValue)] long id)
+        public async Task<IActionResult> GetUsersChildById(Guid id)
         {
             string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
@@ -161,7 +161,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([Range(1, long.MaxValue)] long id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
