@@ -228,7 +228,7 @@ namespace OutOfSchool.WebApi.Services
             return result;
         }
 
-        public async Task<SearchResult<WorkshopCard>> NearestGetByFilter(decimal lat, decimal lon, WorkshopFilter filter = null)
+        public async Task<SearchResult<WorkshopCard>> NearestGetByFilter(WorkshopFilter filter = null)
         {
             logger.LogInformation("Getting Workshops by filter started.");
             if (filter is null)
@@ -238,7 +238,7 @@ namespace OutOfSchool.WebApi.Services
 
             int count = 10;
             int kRing = 1;
-            var geo = new GeoCoord(lat, lon);
+            var geo = new GeoCoord(filter.Latitude, filter.Longitude);
             var h3Location = H3Lib.Api.GeoToH3(geo, 6);
             Api.KRing(h3Location, kRing, out var neighbours);
 

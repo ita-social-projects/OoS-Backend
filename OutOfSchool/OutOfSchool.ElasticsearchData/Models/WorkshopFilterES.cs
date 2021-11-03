@@ -38,5 +38,9 @@ namespace OutOfSchool.ElasticsearchData.Models
         public int Size { get; set; } = 12;
 
         public int From { get; set; } = 0;
+
+        public decimal Latitude { get; set; } = 0;
+
+        public decimal Longitude { get; set; } = 0;
     }
 }

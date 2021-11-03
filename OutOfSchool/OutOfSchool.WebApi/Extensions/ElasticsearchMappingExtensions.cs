@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using Nest;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Models;
 
@@ -15,8 +16,16 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<WorkshopDTO, WorkshopES>(workshopDto, cfg =>
             {
                 cfg.CreateMap<WorkshopDTO, WorkshopES>()
-                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())));
-                cfg.CreateMap<AddressDto, AddressES>();
+                    .ForMember(
+                        dest => dest.Keywords,
+                        opt =>
+                            opt.MapFrom(src =>
+                                string.Join('¤', src.Keywords.Distinct())));
+                cfg.CreateMap<AddressDto, AddressES>()
+                    .ForMember(
+                        dest => dest.Point,
+                        opt =>
+                            opt.MapFrom(a => new GeoLocation(a.Latitude, a.Longitude)));
                 cfg.CreateMap<TeacherDTO, TeacherES>();
                 cfg.CreateMap<DateTimeRangeDto, DateTimeRangeES>()
                     .ForMember(dest => dest.Workdays, opt => opt.MapFrom(src => string.Join(' ', src.Workdays)));

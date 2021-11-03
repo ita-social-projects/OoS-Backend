@@ -112,14 +112,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilter filter, decimal? latitude = null, decimal? longitude = null)
+        public async Task<IActionResult> GetByFilter([FromQuery] WorkshopFilter filter)
         {
             if (string.IsNullOrWhiteSpace(filter.City))
             {
                 filter.City = options.City;
             }
 
-            var result = await combinedWorkshopService.GetByFilter(filter, latitude, longitude).ConfigureAwait(false);
+            var result = await combinedWorkshopService.GetByFilter(filter).ConfigureAwait(false);
 
             if (result.TotalAmount < 1)
             {

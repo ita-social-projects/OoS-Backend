@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter, decimal? latitude = null, decimal? longitude = null)
+        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter)
         {
             if (!IsFilterValid(filter))
             {
@@ -118,11 +118,12 @@ namespace OutOfSchool.WebApi.Services
             {
                 return result.ToSearchResult();
             }
-            else if (filter.OrderByField == OrderBy.Nearest.ToString() && latitude.HasValue && longitude.HasValue)
-            {
-                var databaseResult = await databaseService.NearestGetByFilter(latitude.Value, longitude.Value, filter).ConfigureAwait(false);
-                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
-            }
+
+            // if (filter.OrderByField == OrderBy.Nearest.ToString())
+            // {
+            //     var databaseResult = await databaseService.NearestGetByFilter(filter).ConfigureAwait(false);
+            //     return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
+            // }
             else
             {
                 var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);

@@ -35,6 +35,6 @@ namespace OutOfSchool.WebApi.Services
         /// The task result contains the <see cref="SearchResult{WorkshopCard}"/> that contains found elements.</returns>
         Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null);
 
-        Task<SearchResult<WorkshopCard>> NearestGetByFilter(decimal lat, decimal lon, WorkshopFilter filter = null);
+        Task<SearchResult<WorkshopCard>> NearestGetByFilter(WorkshopFilter filter = null);
     }
 }
