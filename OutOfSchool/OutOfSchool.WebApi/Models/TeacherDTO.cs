@@ -35,6 +35,6 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(256)]
         public string Image { get; set; } = string.Empty;
 
-        public long WorkshopId { get; set; }
+        public Guid WorkshopId { get; set; }
     }
 }
