@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>Provider.</returns>
-        Task<ProviderDto> GetById(long id);
+        Task<ProviderDto> GetById(Guid id);
 
         /// <summary>
         /// Get entity by User id.
@@ -52,6 +52,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(long id);
+        Task Delete(Guid id);
     }
 }
