@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
@@ -91,6 +92,8 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
+
+            CreateMap<ProviderAdminDto, CreateUserDto>().ReverseMap();
         }
     }
 }

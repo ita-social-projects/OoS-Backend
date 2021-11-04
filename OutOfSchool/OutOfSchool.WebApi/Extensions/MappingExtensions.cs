@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
@@ -168,6 +169,12 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<Provider, ProviderDto>();
                 cfg.CreateMap<Teacher, TeacherDTO>();
             });
+        }
+
+        public static CreateUserDto ToModel(this ProviderAdminDto providerAdminDto)
+        {
+            return Mapper<ProviderAdminDto, CreateUserDto>(
+                providerAdminDto, cfg => { cfg.CreateMap<ProviderAdminDto, CreateUserDto>(); });
         }
 
         public static WorkshopCard ToModelSimple(this Workshop workshop)

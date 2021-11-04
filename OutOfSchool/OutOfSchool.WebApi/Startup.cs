@@ -98,6 +98,7 @@ namespace OutOfSchool.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<AppDefaultsConfig>(Configuration.GetSection(AppDefaultsConfig.Name));
+            services.Configure<IdentityServerConfig>(Configuration.GetSection(IdentityServerConfig.Name));
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
@@ -117,6 +118,10 @@ namespace OutOfSchool.WebApi
                         .AllowCredentials()));
 
             services.AddControllers().AddNewtonsoftJson();
+
+            services.AddHttpClient<IProviderAdminService, ProviderAdminService>();
+
+            services.AddScoped<IProviderAdminService, ProviderAdminService>();
 
             // TODO: Ask frontend if all enums as strings are fine by adding serializer project wide
             // .AddJsonOptions(options =>
@@ -171,6 +176,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<InstitutionStatus>, EntityRepository<InstitutionStatus>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
+            services.AddTransient<IEntityRepository<ProviderAdmin>, EntityRepository<ProviderAdmin>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
