@@ -180,7 +180,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="providerModel">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(ProviderDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
