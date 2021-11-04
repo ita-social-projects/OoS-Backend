@@ -1,29 +1,26 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using AutoMapper;
-using FluentAssertions.Common;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using Moq;
-using NUnit.Framework;
-using OutOfSchool.Services;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.Tests;
-using OutOfSchool.Tests.Common;
-using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Util;
-
-namespace OutOfSchool.WebApi.Tests.IntegrationTests.ProviderServiceIntergrationTests
+namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Threading.Tasks;
+    using AutoMapper;
+    using FluentAssertions.Common;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Localization;
+    using Microsoft.Extensions.Logging;
+    using Moq;
+    using NUnit.Framework;
+    using OutOfSchool.Services;
+    using OutOfSchool.Services.Models;
+    using OutOfSchool.Services.Repository;
+    using OutOfSchool.Tests;
+    using OutOfSchool.Tests.Common.TestDataGenerators;
+    using OutOfSchool.WebApi.Models;
+    using OutOfSchool.WebApi.Services;
+    using OutOfSchool.WebApi.Util;
+
     [TestFixture]
     public class ProviderServiceUpdate
     {
@@ -34,6 +31,7 @@ namespace OutOfSchool.WebApi.Tests.IntegrationTests.ProviderServiceIntergrationT
         // private Mock<IProviderRepository> providersRepositoryMock;
         private Mock<IEntityRepository<User>> usersRepositoryMock;
         private Mock<IRatingService> ratingService;
+        private Mock<IEntityRepository<Address>> adkressRepository;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger<ProviderService>> logger;
 
@@ -62,9 +60,10 @@ namespace OutOfSchool.WebApi.Tests.IntegrationTests.ProviderServiceIntergrationT
             ratingService = new Mock<IRatingService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ProviderService>>();
+            adkressRepository = new Mock<IEntityRepository<Address>>();
             providerRepository = new ProviderRepository(GetContext);
             providerService = new ProviderService(providerRepository, usersRepositoryMock.Object, ratingService.Object,
-                logger.Object, localizer.Object, mapper);
+                logger.Object, localizer.Object, mapper, adkressRepository.Object);
         }
 
         [Test]
