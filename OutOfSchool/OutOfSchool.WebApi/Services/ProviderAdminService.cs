@@ -17,14 +17,17 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IdentityServerConfig identityServerConfig;
+        private readonly IEntityRepository<ProviderAdmin> repositoryProviderAdmin;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,
-            IOptions<IdentityServerConfig> identityServerConfig)
+            IOptions<IdentityServerConfig> identityServerConfig,
+            IEntityRepository<ProviderAdmin> repositoryProviderAdmin)
             : base(httpClientFactory)
         {
             this.httpClientFactory = httpClientFactory;
             this.identityServerConfig = identityServerConfig.Value;
+            this.repositoryProviderAdmin = repositoryProviderAdmin;
         }
 
         public async Task<ResponseDto> CreateProviderAdminAsync(string userId, ProviderAdminDto providerAdminDto, string token)
@@ -46,6 +49,16 @@ namespace OutOfSchool.WebApi.Services
             {
                 var user = JsonConvert.DeserializeObject<CreateUserDto>(response.Result.ToString());
                 providerAdminDto.UserId = user.UserId;
+
+                var adminprovider = new ProviderAdmin()
+                {
+                    UserId = user.UserId,
+                    ProviderId = providerAdminDto.ProviderId,
+                    CityId = providerAdminDto.CityId,
+                };
+
+                await repositoryProviderAdmin.Create(adminprovider)
+                    .ConfigureAwait(false);
 
                 return new ResponseDto()
                 {

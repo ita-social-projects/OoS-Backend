@@ -44,11 +44,7 @@ namespace OutOfSchool.WebApi.Controllers
                 if (response.IsSuccess)
                 {
                     return JsonConvert.DeserializeObject<ProviderAdminDto>(response.Result.ToString());
-
-                    //repository and creation provideradmin
                 }
-
-                throw new Exception();
             }
 
             throw new ArgumentException($"Input data was not valid.");
