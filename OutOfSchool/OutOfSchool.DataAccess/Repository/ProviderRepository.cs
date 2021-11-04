@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
 {
-    public class ProviderRepository : EntityRepository<Provider>, IProviderRepository
+    public class ProviderRepository : SensitiveEntityRepository<Provider>, IProviderRepository
     {
         private readonly OutOfSchoolDbContext db;
 

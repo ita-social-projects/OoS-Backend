@@ -119,7 +119,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDto> GetById(long id)
+        public async Task<ProviderDto> GetById(Guid id)
         {
             logger.LogInformation($"Getting Provider by Id started. Looking Id = {id}.");
 
@@ -193,7 +193,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             // BUG: Possible bug with deleting provider not owned by the user itself.
             // TODO: add unit tests to check ownership functionality
