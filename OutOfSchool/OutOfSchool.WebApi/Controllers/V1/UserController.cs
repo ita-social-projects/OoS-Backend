@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +12,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class UserController : ControllerBase
     {
@@ -32,7 +32,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <returns>List of all users.</returns>
         [Authorize(Roles = "admin")]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ShortUserDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetUsers()
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <returns>User element with some id.</returns>
         [Authorize(Roles = "parent,provider,admin")]
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <returns>Updated Provider.</returns>
         [Authorize(AuthenticationSchemes = "Bearer")]
         [Authorize(Roles = "parent,provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

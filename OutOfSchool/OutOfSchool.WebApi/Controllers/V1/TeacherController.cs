@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +20,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
     public class TeacherController : ControllerBase
     {
         private readonly ITeacherService service;
@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all teachers from the database.
         /// </summary>
         /// <returns>List of teachers.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TeacherDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Teacher's id.</param>
         /// <returns>Teacher.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TeacherDTO))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
@@ -105,7 +105,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <returns>Teacher.</returns>
         [Authorize(Roles = "provider,admin")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TeacherDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]

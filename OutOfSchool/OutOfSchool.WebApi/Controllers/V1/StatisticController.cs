@@ -14,7 +14,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     /// </summary>
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Bearer")]
 
