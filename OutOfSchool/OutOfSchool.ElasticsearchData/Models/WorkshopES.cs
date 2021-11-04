@@ -8,6 +8,7 @@ namespace OutOfSchool.ElasticsearchData.Models
     public class WorkshopES
     {
         // TODO: check Nested attribute
+        [Keyword]
         public Guid Id { get; set; }
 
         public string Title { get; set; }
@@ -16,7 +17,8 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public float Rating { get; set; }
 
-        public long ProviderId { get; set; }
+        [Keyword]
+        public Guid ProviderId { get; set; }
 
         public string ProviderTitle { get; set; }
 
