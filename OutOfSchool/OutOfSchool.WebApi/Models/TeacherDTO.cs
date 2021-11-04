@@ -5,7 +5,7 @@ namespace OutOfSchool.WebApi.Models
 {
     public class TeacherDTO
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
         [DataType(DataType.Text)]
