@@ -15,7 +15,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class InstitutionStatusController : ControllerBase
     {
@@ -37,7 +36,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all Institution Statuses from the database.
         /// </summary>
         /// <returns>List of all Institution Statuses.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<InstitutionStatusDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -59,7 +58,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Institution Status id.</param>
         /// <returns>Institution Status.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionStatusDTO))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
@@ -97,7 +96,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="dto">Institution Status to update.</param>
         /// <returns>Institution Status.</returns>
         [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionStatusDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class AddressController : ControllerBase
     {
@@ -36,7 +36,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <returns>List of all addresses.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AddressDto>))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAddresses()
         {
@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="id">The key in the database.</param>
         /// <returns>Address element with some id.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAddressById(long id)
@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
         public async Task<IActionResult> Update(AddressDto addressDto)
         {
             if (!ModelState.IsValid)
@@ -126,7 +126,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Delete(long id)
         {
             this.ValidateId(id, localizer);

@@ -14,7 +14,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Route("[controller]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class CityController : ControllerBase
     {

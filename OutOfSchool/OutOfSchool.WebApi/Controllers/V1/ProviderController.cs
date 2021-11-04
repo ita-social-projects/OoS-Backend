@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +20,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ProviderController : ControllerBase
     {
@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all Provider from the database.
         /// </summary>
         /// <returns>List of all Providers.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
@@ -69,7 +69,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="providerId">Provider's id.</param>
         /// <returns>Provider.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{providerId:long}")]
         [AllowAnonymous]
@@ -180,7 +180,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="providerModel">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
         [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(ProviderDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
