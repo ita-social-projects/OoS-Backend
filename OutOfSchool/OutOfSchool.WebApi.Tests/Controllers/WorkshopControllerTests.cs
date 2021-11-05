@@ -435,7 +435,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 {
                     new TeacherDTO
                     {
-                        Id = 1,
+                        Id = Guid.NewGuid(),
                         FirstName = "Alex",
                         LastName = "Brown",
                         MiddleName = "SomeMiddleName",
@@ -446,7 +446,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     },
                     new TeacherDTO
                     {
-                        Id = 2,
+                        Id = Guid.NewGuid(),
                         FirstName = "John",
                         LastName = "Snow",
                         MiddleName = "SomeMiddleName",

@@ -25,59 +25,52 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
     public class ProviderServiceUpdate
     {
         private const string FakeUserId = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c";
+        private const string NOT_ADMIN_USER_ROLE = "Provider";
 
         private IProviderService providerService;
 
-        // private Mock<IProviderRepository> providersRepositoryMock;
-        private Mock<IEntityRepository<User>> usersRepositoryMock;
-        private Mock<IRatingService> ratingService;
-        private Mock<IEntityRepository<Address>> adkressRepository;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<ILogger<ProviderService>> logger;
-
-        private List<Provider> fakeProviders;
         private User fakeUser;
 
-        private IProviderRepository providerRepository;
         private Mapper mapper;
         private DbContextOptions<OutOfSchoolDbContext> unitTestDbOptions;
 
-        private OutOfSchoolDbContext GetContext => new OutOfSchoolDbContext(unitTestDbOptions);
+        private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(this.unitTestDbOptions);
 
         [SetUp]
         public async Task SetUp()
         {
-            unitTestDbOptions = UnitTestHelper.GetUnitTestDbOptions();
-            await using var context = GetContext;
-            fakeProviders = ProvidersGenerator.Generate(10);
-            await context.AddRangeAsync(fakeProviders);
+            this.unitTestDbOptions = UnitTestHelper.GetUnitTestDbOptions();
+            await using var context = this.GetContext();
+            var fakeProvider = ProvidersGenerator.Generate(1).First();
+            context.Add(fakeProvider);
             await context.SaveChangesAsync();
-            fakeUser = CreateFakeUser();
-            mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
-            // providersRepositoryMock = CreateProvidersRepositoryMock(fakeProviders);
-            usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
+            this.fakeUser = CreateFakeUser();
+            this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
 
-            ratingService = new Mock<IRatingService>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
-            logger = new Mock<ILogger<ProviderService>>();
-            adkressRepository = new Mock<IEntityRepository<Address>>();
-            providerRepository = new ProviderRepository(GetContext);
-            providerService = new ProviderService(providerRepository, usersRepositoryMock.Object, ratingService.Object,
-                logger.Object, localizer.Object, mapper, adkressRepository.Object);
+            var usersRepositoryMock = CreateUsersRepositoryMock(this.fakeUser);
+
+            var ratingService = new Mock<IRatingService>();
+            var localizer = new Mock<IStringLocalizer<SharedResource>>();
+            var logger = new Mock<ILogger<ProviderService>>();
+            var addressRepository = new Mock<IEntityRepository<Address>>();
+            var providerRepository = new ProviderRepository(this.GetContext());
+            this.providerService = new ProviderService(providerRepository, usersRepositoryMock.Object,
+                ratingService.Object, logger.Object, localizer.Object, this.mapper, addressRepository.Object);
         }
 
         [Test]
         public async Task UpdateWhenProviderHasSameAdresses_WithSameAddresses_UpdatesOneAddress()
         {
             // Arrange
-            await using var context = GetContext;
+            await using var context = this.GetContext();
             var provider = context.Providers.First();
             provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
             provider.ActualAddress = provider.LegalAddress;
 
             // Act
-            var result = await providerService.Update(mapper.Map<ProviderDto>(provider), provider.UserId, "Provider")
+            var result = await this.providerService
+                .Update(this.mapper.Map<ProviderDto>(provider), provider.UserId, NOT_ADMIN_USER_ROLE)
                 .ConfigureAwait(false);
 
             // Assert
@@ -90,15 +83,15 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
         public async Task UpdateWhenProviderHasSameAdresses_WithActualAddressNull_UpdatesOneAddress()
         {
             // Arrange
-            await using var context = GetContext;
+            await using var context = this.GetContext();
             var provider = context.Providers.First();
             provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
-            var providerDto = mapper.Map<ProviderDto>(provider);
+            var providerDto = this.mapper.Map<ProviderDto>(provider);
             providerDto.ActualAddress = null;
 
             // Act
-            var result = await providerService.Update(providerDto, provider.UserId, "Provider")
+            var result = await this.providerService.Update(providerDto, provider.UserId, NOT_ADMIN_USER_ROLE)
                 .ConfigureAwait(false);
 
             // Assert
@@ -108,22 +101,24 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
         }
 
         [Test]
-        public async Task UpdateWhenProviderHasSameAdresses_WithNewLegalAddressAndActualIsPreviousLegal_UpdatesOneAddress()
+        public async Task
+            UpdateWhenProviderHasSameAdresses_WithNewLegalAddressAndActualIsPreviousLegal_UpdatesOneAddress()
         {
             // Arrange
-            await using var context = GetContext;
+            await using var context = this.GetContext();
             var provider = context.Providers.First();
             provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
             await context.Entry(provider).ReloadAsync().ConfigureAwait(false);
-            var randomAddress = AddressGenerator.Generate();
-            randomAddress.Id = 0;
+            var randomAddressToAdd = AddressGenerator.Generate();
+            randomAddressToAdd.Id = 0;
+
             // provider.ActualAddress = provider.LegalAddress;
-            provider.LegalAddress = randomAddress;
-            var providerDto = mapper.Map<ProviderDto>(provider);
+            provider.LegalAddress = randomAddressToAdd;
+            var providerDto = this.mapper.Map<ProviderDto>(provider);
 
             // Act
-            var result = await providerService.Update(providerDto, provider.UserId, "Provider")
+            var result = await this.providerService.Update(providerDto, provider.UserId, NOT_ADMIN_USER_ROLE)
                 .ConfigureAwait(false);
 
             // Assert
@@ -136,19 +131,19 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
         public async Task UpdateWhenProviderHasSameAdresses_WithSameLegalAddressAndNewActual_UpdatesOneAddress()
         {
             // Arrange
-            await using var context = GetContext;
+            await using var context = this.GetContext();
             var provider = context.Providers.First();
             provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
             await context.Entry(provider).ReloadAsync().ConfigureAwait(false);
             var randomAddress = AddressGenerator.Generate();
             randomAddress.Id = 0;
-            // provider.ActualAddress = provider.LegalAddress;
+
             provider.ActualAddress = randomAddress;
-            var providerDto = mapper.Map<ProviderDto>(provider);
+            var providerDto = this.mapper.Map<ProviderDto>(provider);
 
             // Act
-            var result = await providerService.Update(providerDto, provider.UserId, "Provider")
+            var result = await this.providerService.Update(providerDto, provider.UserId, NOT_ADMIN_USER_ROLE)
                 .ConfigureAwait(false);
 
             // Assert
@@ -194,48 +189,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 .Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
 
             return usersRepository;
-        }
-
-        private static void AssertProvidersAreEqual(Provider expected, Provider result)
-        {
-            Assert.Multiple(() =>
-            {
-                Assert.AreEqual(expected.FullTitle, result.FullTitle);
-                Assert.AreEqual(expected.ShortTitle, result.ShortTitle);
-                Assert.AreEqual(expected.Website, result.Website);
-                Assert.AreEqual(expected.Facebook, result.Facebook);
-                Assert.AreEqual(expected.Email, result.Email);
-                Assert.AreEqual(expected.Instagram, result.Instagram);
-                Assert.AreEqual(expected.Description, result.Description);
-                Assert.AreEqual(expected.DirectorDateOfBirth, result.DirectorDateOfBirth);
-                Assert.AreEqual(expected.EdrpouIpn, result.EdrpouIpn);
-                Assert.AreEqual(expected.PhoneNumber, result.PhoneNumber);
-                Assert.AreEqual(expected.Founder, result.Founder);
-                Assert.AreEqual(expected.Ownership, result.Ownership);
-                Assert.AreEqual(expected.Type, result.Type);
-                Assert.AreEqual(expected.Status, result.Status);
-                Assert.AreEqual(expected.UserId, result.UserId);
-                Assert.AreEqual(expected.LegalAddress.City, result.LegalAddress.City);
-                Assert.AreEqual(expected.LegalAddress.BuildingNumber, result.LegalAddress.BuildingNumber);
-                Assert.AreEqual(expected.LegalAddress.Street, result.LegalAddress.Street);
-                Assert.AreEqual(expected.ActualAddress.City, result.ActualAddress.City);
-                Assert.AreEqual(expected.ActualAddress.BuildingNumber, result.ActualAddress.BuildingNumber);
-                Assert.AreEqual(expected.ActualAddress.Street, result.ActualAddress.Street);
-            });
-        }
-
-        private static void AssertAdressesAreEqual(Address expected, Address actual)
-        {
-            Assert.Multiple(() =>
-            {
-                Assert.AreEqual(expected.Region, actual.Region);
-                Assert.AreEqual(expected.District, actual.District);
-                Assert.AreEqual(expected.City, actual.City);
-                Assert.AreEqual(expected.Street, actual.Street);
-                Assert.AreEqual(expected.BuildingNumber, actual.BuildingNumber);
-                Assert.AreEqual(expected.Latitude, actual.Latitude);
-                Assert.AreEqual(expected.Longitude, actual.Longitude);
-            });
         }
     }
 }

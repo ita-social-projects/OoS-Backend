@@ -321,7 +321,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                         {
                             new TeacherDTO
                             {
-                                Id = 9,
+                                Id = Guid.NewGuid(),
                                 FirstName = "Alex",
                                 LastName = "Brown",
                                 MiddleName = "SomeMiddleName",
@@ -332,7 +332,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                             },
                             new TeacherDTO
                             {
-                                Id = 10,
+                                Id = Guid.NewGuid(),
                                 FirstName = "John",
                                 LastName = "Snow",
                                 MiddleName = "SomeMiddleName",
