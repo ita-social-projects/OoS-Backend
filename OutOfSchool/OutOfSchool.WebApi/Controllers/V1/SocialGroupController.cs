@@ -74,7 +74,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Social Group entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -96,7 +95,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Social Group to update.</param>
         /// <returns>Social Group.</returns>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SocialGroupDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -113,7 +111,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Social Group id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

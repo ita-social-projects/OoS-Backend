@@ -65,7 +65,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="addressDto">Element which must be added.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "provider,admin")]
         [HasPermission(Permissions.AddressAddNew)]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -104,7 +103,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="addressDto">Entity.</param>
         /// <returns>Address key.</returns>
-        // [Authorize(Roles = "provider,admin")]
         [HasPermission(Permissions.AddressEdit)]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -125,7 +123,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Address key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "provider,admin")]
         [HasPermission(Permissions.AddressRemove)]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

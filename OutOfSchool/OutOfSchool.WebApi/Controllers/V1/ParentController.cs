@@ -119,7 +119,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="shortUserDto">ShortUserDto object with new properties.</param>
         /// <returns>Parent's key.</returns>
-        // [Authorize(Roles = "parent,admin")]
         [HasPermission(Permissions.ParentEdit)]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
@@ -148,7 +147,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">The key in table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "parent,admin")]
         [HasPermission(Permissions.ParentRemove)]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -180,7 +178,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// To Get the Profile of authorized Parent.
         /// </summary>
         /// <returns>Authorized parent's profile.</returns>
-        // [Authorize(Roles = "parent,admin")]
         [HasPermission(Permissions.ParentRead)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]

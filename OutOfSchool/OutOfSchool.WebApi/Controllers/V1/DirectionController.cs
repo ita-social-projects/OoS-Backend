@@ -89,7 +89,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [HttpPost]
         [Consumes(MediaTypeNames.Application.Json)]
@@ -132,7 +131,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DirectionDto))]
@@ -159,7 +157,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

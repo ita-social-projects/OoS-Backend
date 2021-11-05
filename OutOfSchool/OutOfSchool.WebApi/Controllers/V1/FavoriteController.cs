@@ -36,7 +36,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all Favorites from the database.
         /// </summary>
         /// <returns>List of all Favorites.</returns>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FavoriteDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -59,7 +58,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Favorite id.</param>
         /// <returns>Favorite.</returns>
-        // [Authorize(Roles = "parent,admin")]
         [HasPermission(Permissions.FavoriteRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FavoriteDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -75,7 +73,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all Favorites from the database by UserId.
         /// </summary>
         /// <returns>List of all User Favorites.</returns>
-        // [Authorize(Roles = "parent,admin")]
         [HasPermission(Permissions.FavoriteRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FavoriteDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -100,7 +97,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="offsetFilter">Filter to get spesified portion of entities.</param>
         /// <returns>List of all User favorite Workshops.</returns>
-        // [Authorize(Roles = "parent,admin")]
         [HasPermission(Permissions.FavoriteRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<WorkshopCard>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -125,7 +121,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Favorite entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "parent,admin")]
         [HasPermission(Permissions.FavoriteAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -147,7 +142,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Favorite to update.</param>
         /// <returns>Favorite.</returns>
-        // [Authorize(Roles = "parent,admin")]
         [HasPermission(Permissions.FavoriteEdit)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -164,7 +158,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Favorite id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "parent,admin")]
         [HasPermission(Permissions.FavoriteRemove)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

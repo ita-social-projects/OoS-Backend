@@ -75,7 +75,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Institution Status entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -97,7 +96,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Institution Status to update.</param>
         /// <returns>Institution Status.</returns>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionStatusDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -114,7 +112,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Institution Status id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        // [Authorize(Roles = "admin")]
         [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
