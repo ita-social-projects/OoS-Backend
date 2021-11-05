@@ -70,7 +70,10 @@ namespace OutOfSchool.WebApi
 
             app.UseSwaggerWithVersioning(provider, proxyOptions);
 
-            app.UseHttpsRedirection();
+            if (!env.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
 
             app.UseSerilogRequestLogging();
 
