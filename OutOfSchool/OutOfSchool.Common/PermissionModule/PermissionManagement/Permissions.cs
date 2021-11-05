@@ -111,7 +111,7 @@ namespace OutOfSchool.Common.PermissionsModule
         #region Workshop Control permissions #10
         [Display(GroupName = "Workshop", Name = "Read", Description = "Can read Workshop")]
         WorkshopRead = 90,
-        [Display(GroupName = "Workshop", Name = "Add new", Description = "Can edit a Workshop item")]
+        [Display(GroupName = "Workshop", Name = "Edit", Description = "Can edit a Workshop item")]
         WorkshopEdit = 91,
         [Display(GroupName = "Workshop", Name = "Add new", Description = "Can add a new Workshop item")]
         WorkshopAddNew = 92,

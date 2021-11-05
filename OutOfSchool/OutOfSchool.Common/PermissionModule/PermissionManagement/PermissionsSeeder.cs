@@ -2,7 +2,6 @@
 
 namespace OutOfSchool.Common.PermissionsModule
 {
-    // permissions for role seeding class.
     public static class PermissionsSeeder
     {
         // basic seed for PermissionsToRole table in DB due to current state of application
@@ -41,7 +40,6 @@ namespace OutOfSchool.Common.PermissionsModule
             Permissions.UserRead, Permissions.UserEdit,
         };
 
-        // method which returns set of packed permissions for specific role
         public static string SeedPermissions(string role)
         {
             switch (role)

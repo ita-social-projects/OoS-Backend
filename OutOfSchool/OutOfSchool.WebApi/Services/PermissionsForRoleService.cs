@@ -59,26 +59,20 @@ namespace OutOfSchool.WebApi.Services
             }
 
             logger.LogInformation($"Successfully got a permissionsForRole with name  {permissionsForRole.FirstOrDefault().RoleName}.");
-
             return permissionsForRole.FirstOrDefault().ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<PermissionsForRoleDTO> Create(PermissionsForRoleDTO dto)
         {
-            logger.LogInformation($"Permissions for Role - {dto?.RoleName} creating was started.");
-
-            var allPermissions = await repository.GetAll().ConfigureAwait(false);
-            if (allPermissions.Any(p => p.RoleName == dto.RoleName))
+            logger.LogInformation($"Permissions for Role entity creating was started.");
+            if (repository.GetByFilterNoTracking(p => p.RoleName == dto.RoleName).Any())
             {
-                // TODO: add more specific expception
-                throw new Exception("There are entity with packed permissions for this role, you can't create one more");
+                throw new ArgumentException("Permissions for this role exist in DB, you can't create one more", dto.RoleName);
             }
 
             var permissionsForRole = dto.ToDomain();
-
             var newPermissionsForRole = await repository.Create(permissionsForRole).ConfigureAwait(false);
-
             logger.LogInformation($"Permissions for role with name {newPermissionsForRole.RoleName} created successfully.");
 
             return newPermissionsForRole.ToModel();
