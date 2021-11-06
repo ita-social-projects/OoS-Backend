@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Controllers
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class ProviderAdminController : Controller
+    public class ProviderAdminController : ControllerBase
     {
         private readonly IProviderAdminService providerAdminService;
 
@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "provider,provideradmin")]
         [HttpPost]
         public async Task<ProviderAdminDto> Create(ProviderAdminDto providerAdmin)
         {
@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Controllers
 
                 if (response.IsSuccess)
                 {
-                    return JsonConvert.DeserializeObject<ProviderAdminDto>(response.Result.ToString());
+                    return (ProviderAdminDto)response.Result;
                 }
             }
 

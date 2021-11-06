@@ -1,6 +1,8 @@
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,8 +50,6 @@ namespace OutOfSchool.Services
         public DbSet<Address> Addresses { get; set; }
 
         public DbSet<Application> Applications { get; set; }
-
-        public DbSet<ProviderAdmin> ProviderAdmins { get; set; }
 
         public DbSet<Rating> Ratings { get; set; }
 
@@ -122,6 +122,22 @@ namespace OutOfSchool.Services
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasForeignKey(x => x.ActualAddressId)
                 .IsRequired(false);
+
+            builder.Entity<Provider>()
+                .HasMany(pa => pa.ProviderAdmins)
+                .WithOne(p => p.Provider)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<City>()
+                .HasMany(pa => pa.ProviderAdmins)
+                .WithOne(c => c.City)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ProviderAdmin>()
+                .HasOne(pa => pa.User)
+                .WithOne(u => u.ProviderAdmin)
+                .HasForeignKey<ProviderAdmin>(pa => pa.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<DateTimeRange>()
                 .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");

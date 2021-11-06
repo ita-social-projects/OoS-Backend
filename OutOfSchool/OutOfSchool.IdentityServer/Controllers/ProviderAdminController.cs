@@ -15,19 +15,23 @@ namespace OutOfSchool.IdentityServer.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class ProviderAdminController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> userManager;
+        private readonly UserManager<User> userManager;
+        private ResponseDto response;
 
-        public ProviderAdminController(UserManager<IdentityUser> userManager)
+        public ProviderAdminController(UserManager<User> userManager)
         {
             this.userManager = userManager;
+            this.response = new ResponseDto();
         }
 
         [HttpPost]
+        [Authorize(Roles = "provider")]
         public async Task<ResponseDto> Create(CreateUserDto createUserDto)
         {
             //TODO:
             // Let's think about expediency of using mapper here.
 
+            //generate guid password here
             var user = new User()
             {
                 UserName = createUserDto.Email,
@@ -43,25 +47,23 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             IdentityResult result = await userManager.CreateAsync(user);
 
-            ResponseDto responseDto = new ResponseDto();
+            // send  activating mail to user here
 
             if (result.Succeeded)
             {
                 createUserDto.UserId = user.Id;
 
-                return new ResponseDto()
-                {
-                    IsSuccess = true,
-                    Result = createUserDto,
-                };
+                response.IsSuccess = true;
+                response.Result = createUserDto;
+
+                return response;
             }
 
-            return new ResponseDto()
-            {
-                IsSuccess = false,
-                ErrorMessages =
-                    result.Errors.Select(error => error.Description),
-            };
+            response.IsSuccess = false;
+            response.ErrorMessages =
+                    result.Errors.Select(error => error.Description);
+
+            return response;
         }
     }
 }

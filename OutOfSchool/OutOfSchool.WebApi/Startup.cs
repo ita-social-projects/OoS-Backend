@@ -186,6 +186,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
+            services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
 
             //Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

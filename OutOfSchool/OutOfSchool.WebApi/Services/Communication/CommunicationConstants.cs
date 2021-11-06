@@ -2,6 +2,6 @@
 {
     public static class CommunicationConstants
     {
-        public const string CreateProviderAdmin = "assistant/createprovideradmin";
+        public const string CreateProviderAdmin = "provideradmin/create";
     }
 }

@@ -125,6 +125,7 @@ namespace OutOfSchool.IdentityServer
                 new IdentityRole {Name = "parent"},
                 new IdentityRole {Name = "provider"},
                 new IdentityRole {Name = "admin"},
+                new IdentityRole {Name = "provideradmin"},
             };
             foreach (var role in roles)
             {

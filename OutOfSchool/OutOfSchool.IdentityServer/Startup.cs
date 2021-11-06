@@ -57,6 +57,16 @@ namespace OutOfSchool.IdentityServer
 
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
+            // TODO: Move authority to config
+            services.AddAuthentication("Bearer")
+                .AddIdentityServerAuthentication("Bearer", options =>
+                {
+                    options.ApiName = "outofschoolapi";
+                    options.Authority = "http://localhost:5443";
+
+                    options.RequireHttpsMetadata = false;
+                });
+
             services.AddIdentity<User, IdentityRole>(options =>
                 {
                     options.Password.RequireDigit = false;

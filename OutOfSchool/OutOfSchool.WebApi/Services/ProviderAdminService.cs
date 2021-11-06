@@ -17,57 +17,83 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IdentityServerConfig identityServerConfig;
-        private readonly IEntityRepository<ProviderAdmin> repositoryProviderAdmin;
+        private readonly IProviderAdminRepository providerAdminRepository;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,
             IOptions<IdentityServerConfig> identityServerConfig,
-            IEntityRepository<ProviderAdmin> repositoryProviderAdmin)
+            IProviderAdminRepository providerAdminRepository)
             : base(httpClientFactory)
         {
             this.httpClientFactory = httpClientFactory;
             this.identityServerConfig = identityServerConfig.Value;
-            this.repositoryProviderAdmin = repositoryProviderAdmin;
+            this.providerAdminRepository = providerAdminRepository;
         }
 
         public async Task<ResponseDto> CreateProviderAdminAsync(string userId, ProviderAdminDto providerAdminDto, string token)
         {
-            // TODO:
             // Check if user entitled to work with this specific provider (vericifaction)
+            var checkAccess = await IsAllowed(providerAdminDto.ProviderId, userId)
+                .ConfigureAwait(true);
 
-            var createUserDto = providerAdminDto.ToModel();
+            var numberProviderAdminsLessThanMax = await providerAdminRepository
+                .GetNumberProviderAdminsAsync(providerAdminDto.ProviderId)
+                .ConfigureAwait(false);
 
-            var response = await SendRequest<ResponseDto>(new Request()
+            if (checkAccess && numberProviderAdminsLessThanMax < Constants.MaxNumberProviderAdmins)
             {
-                HttpMethodType = HttpMethodType.Post,
-                Url = new Uri(identityServerConfig.Authority, Communication.Constants.CreateAssistant),
-                Token = token,
-                Data = createUserDto,
-            }).ConfigureAwait(false);
+                var createUserDto = providerAdminDto.ToModel();
 
-            if (response.IsSuccess)
-            {
-                var user = JsonConvert.DeserializeObject<CreateUserDto>(response.Result.ToString());
-                providerAdminDto.UserId = user.UserId;
-
-                var adminprovider = new ProviderAdmin()
+                var response = await SendRequest<ResponseDto>(new Request()
                 {
-                    UserId = user.UserId,
-                    ProviderId = providerAdminDto.ProviderId,
-                    CityId = providerAdminDto.CityId,
-                };
+                    HttpMethodType = HttpMethodType.Post,
+                    Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
+                    Token = token,
+                    Data = createUserDto,
+                }).ConfigureAwait(false);
 
-                await repositoryProviderAdmin.Create(adminprovider)
-                    .ConfigureAwait(false);
-
-                return new ResponseDto()
+                if (response.IsSuccess)
                 {
-                    IsSuccess = true,
-                    Result = providerAdminDto,
-                };
+                    var user = JsonConvert.DeserializeObject<CreateUserDto>(response.Result.ToString());
+                    providerAdminDto.UserId = user.UserId;
+
+                    var adminprovider = new ProviderAdmin()
+                    {
+                        UserId = user.UserId,
+                        ProviderId = providerAdminDto.ProviderId,
+                        CityId = providerAdminDto.CityId,
+                    };
+
+                    await providerAdminRepository.Create(adminprovider)
+                        .ConfigureAwait(false);
+
+                    return new ResponseDto()
+                    {
+                        IsSuccess = true,
+                        Result = providerAdminDto,
+                    };
+                }
+
+                return response;
             }
 
-            return response;
+            throw new UnauthorizedAccessException();
+        }
+
+        public async Task<bool> IsAllowed(long providerId, string userId)
+        {
+            bool providerAdmin = await providerAdminRepository.IsExistProviderAdminWithUserIdAsync(providerId, userId)
+                .ConfigureAwait(false);
+
+            bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(providerId, userId)
+                .ConfigureAwait(false);
+
+            if (providerAdmin || provider)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
