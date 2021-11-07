@@ -50,16 +50,15 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Permissions for role by roleName started. Looking role = {roleName}.");
 
-            var permissionsForRole = await repository.GetByFilter(p => p.RoleName == roleName).ConfigureAwait(false);
+            var permissionsForRole = (await repository.GetByFilter(p => p.RoleName == roleName).ConfigureAwait(false)).FirstOrDefault();
             if (permissionsForRole == null)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(roleName),
-                    localizer["There are no packed permissions for role with such name"]);
+                throw new ArgumentNullException(
+                    localizer[$"There are no packed permissions for role with such name - {roleName}"]);
             }
 
-            logger.LogInformation($"Successfully got a permissionsForRole with name  {permissionsForRole.FirstOrDefault().RoleName}.");
-            return permissionsForRole.FirstOrDefault().ToModel();
+            logger.LogInformation($"Successfully got a permissionsForRole with name  {permissionsForRole.RoleName}.");
+            return permissionsForRole.ToModel();
         }
 
         /// <inheritdoc/>

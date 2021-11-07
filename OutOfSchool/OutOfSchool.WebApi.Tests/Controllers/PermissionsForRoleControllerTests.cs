@@ -13,6 +13,7 @@ using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
+    [TestFixture]
     public class PermissionsForRoleControllerTests
     {
         private PermissionsForRoleController controller;
