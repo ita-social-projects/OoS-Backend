@@ -8,6 +8,7 @@ using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 
@@ -50,6 +51,11 @@ namespace OutOfSchool.IdentityServer
         private async Task<string> GetPermissionsForRole(string roleName)
         {
             var permissionsForRole = (await repository.GetByFilter(p => p.RoleName == roleName)).FirstOrDefault();
+            if (permissionsForRole == null)
+            {
+                return new List<Permissions>() { Permissions.NotSet }.PackPermissionsIntoString();
+            }
+
             return permissionsForRole.PackedPermissions;
         }
     }
