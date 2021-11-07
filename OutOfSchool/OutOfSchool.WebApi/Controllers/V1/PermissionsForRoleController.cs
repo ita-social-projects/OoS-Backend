@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all PermissionsForRole entities from the database.
         /// </summary>
         /// <returns>List of all PermissionsForRole entities in DB.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<PermissionsForRoleDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="roleName">PermissionsForRole entity roleName.</param>
         /// <returns>PermissionsForRole entity.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PermissionsForRoleDTO))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{roleName}")]
