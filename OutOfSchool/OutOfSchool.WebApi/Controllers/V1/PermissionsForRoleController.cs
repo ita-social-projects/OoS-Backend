@@ -112,5 +112,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             return Ok(await service.Update(dto).ConfigureAwait(false));
         }
+
+        /// <summary>
+        /// Gets all currently existing permissions from system and returns friendly response for admin person.
+        /// </summary>
+        /// <returns>List of all Permissions  DB.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        public IActionResult GetAllPermissions()
+        {
+            var resultQuery = Enum.GetValues(typeof(Permissions)).Cast<Permissions>();
+            var resultValues = resultQuery.Select(p => p.ToString() + $". Use code - [{(int)p}] to add permission.");
+            return Ok(resultValues);
+        }
+
     }
 }
