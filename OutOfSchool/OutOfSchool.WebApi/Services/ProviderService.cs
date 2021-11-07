@@ -115,12 +115,12 @@ namespace OutOfSchool.WebApi.Services
             var averageRatings =
                 ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
 
-            //foreach (var provider in providersDTO)
-            //{
-            //    var (_, (rating, numberOfVotes)) = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
-            //    provider.Rating = rating;
-            //    provider.NumberOfRatings = numberOfVotes;
-            //}
+            foreach (var provider in providersDTO)
+            {
+                var (_, (rating, numberOfVotes)) = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
+                provider.Rating = rating;
+                provider.NumberOfRatings = numberOfVotes;
+            }
 
             return providersDTO;
         }

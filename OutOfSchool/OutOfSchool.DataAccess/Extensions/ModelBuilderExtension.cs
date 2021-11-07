@@ -104,7 +104,6 @@ namespace OutOfSchool.Services.Extensions
                     .HasMaxLength(84);
 
                 // TODO: Don't work with these changes
-
                 //u.Property(user => user.ConcurrencyStamp)
                 //    .IsUnicode(false)
                 //    .IsFixedLength(true)
@@ -119,7 +118,6 @@ namespace OutOfSchool.Services.Extensions
             });
 
             // TODO: Don't work with these changes
-
             //builder.Entity<IdentityRole>(r =>
             //{
             //    r.Property(role => role.ConcurrencyStamp)
