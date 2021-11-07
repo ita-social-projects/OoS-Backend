@@ -121,8 +121,11 @@ namespace OutOfSchool.WebApi
             // .AddJsonOptions(options =>
             //     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
+            var serverVersion = ServerVersion.AutoDetect(connectionString);
+
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")))
+                builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion))
                 .AddCustomDataProtection("WebApi");
 
             // Add Elasticsearch client

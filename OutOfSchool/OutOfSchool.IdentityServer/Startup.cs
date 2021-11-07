@@ -44,12 +44,14 @@ namespace OutOfSchool.IdentityServer
         {
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-            var connString = config["ConnectionStrings:DefaultConnection"];
+            var connectionString = config["ConnectionStrings:DefaultConnection"];
+            var serverVersion = ServerVersion.AutoDetect(connectionString);
 
             services
                 .AddDbContext<OutOfSchoolDbContext>(options => options
-                    .UseSqlServer(
-                        connString,
+                    .UseMySql(
+                        connectionString,
+                        serverVersion,
                         optionsBuilder =>
                             optionsBuilder.MigrationsAssembly("OutOfSchool.IdentityServer")));
 
@@ -82,22 +84,25 @@ namespace OutOfSchool.IdentityServer
                 .AddConfigurationStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
-                        builder.UseSqlServer(
-                            connString,
+                        builder.UseMySql(
+                            connectionString,
+                            serverVersion,
                             sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 .AddOperationalStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
-                        builder.UseSqlServer(
-                            connString,
+                        builder.UseMySql(
+                            connectionString,
+                            serverVersion,
                             sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 .AddAspNetIdentity<User>()
                 .AddProfileService<ProfileService>()
                 .AddCustomKeyManagement<CertificateDbContext>(builder =>
-                    builder.UseSqlServer(
-                        connString,
+                    builder.UseMySql(
+                        connectionString,
+                        serverVersion,
                         sql => sql.MigrationsAssembly(migrationsAssembly)));
 
             services.AddEmailSender(
