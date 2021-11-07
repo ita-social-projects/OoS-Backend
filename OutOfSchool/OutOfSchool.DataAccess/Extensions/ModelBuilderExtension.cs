@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System;
+using System.Linq;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
@@ -89,30 +91,34 @@ namespace OutOfSchool.Services.Extensions
         /// <param name="builder">Model Builder.</param>
         public static void UpdateIdentityTables(this ModelBuilder builder)
         {
-            //builder.Entity<User>(u =>
-            //{
-            //    u.Property(user => user.PhoneNumber)
-            //        .IsUnicode(false)
-            //        .IsFixedLength(false)
-            //        .HasMaxLength(15);
+            builder.Entity<User>(u =>
+            {
+                u.Property(user => user.PhoneNumber)
+                    .IsUnicode(false)
+                    .IsFixedLength(false)
+                    .HasMaxLength(15);
 
-            //    u.Property(user => user.PasswordHash)
-            //        .IsUnicode(false)
-            //        .IsFixedLength(true)
-            //        .HasMaxLength(84);
+                u.Property(user => user.PasswordHash)
+                    .IsUnicode(false)
+                    .IsFixedLength(true)
+                    .HasMaxLength(84);
 
-            //    u.Property(user => user.ConcurrencyStamp)
-            //        .IsUnicode(false)
-            //        .IsFixedLength(true)
-            //        .HasMaxLength(36)
-            //        .IsRequired(true);
+                // TODO: Don't work with these changes
 
-            //    u.Property(user => user.SecurityStamp)
-            //        .IsUnicode(false)
-            //        .IsFixedLength(false)
-            //        .HasMaxLength(36)
-            //        .IsRequired(true);
-            //});
+                //u.Property(user => user.ConcurrencyStamp)
+                //    .IsUnicode(false)
+                //    .IsFixedLength(true)
+                //    .HasMaxLength(36)
+                //    .IsRequired(true);
+
+                u.Property(user => user.SecurityStamp)
+                    .IsUnicode(false)
+                    .IsFixedLength(false)
+                    .HasMaxLength(36)
+                    .IsRequired(true);
+            });
+
+            // TODO: Don't work with these changes
 
             //builder.Entity<IdentityRole>(r =>
             //{
@@ -122,6 +128,20 @@ namespace OutOfSchool.Services.Extensions
             //        .HasMaxLength(36)
             //        .IsRequired(true);
             //});
+        }
+
+        /// <summary>
+        /// Add configuration to convert Guid into binary(16).
+        /// </summary>
+        /// <param name="builder">Model Builder.</param>
+        public static void ConvertGuidTypeToBinary(this ModelBuilder builder)
+        {
+            foreach (var property in builder.Model.GetEntityTypes()
+                .SelectMany(t => t.GetProperties())
+                .Where(p => p.ClrType == typeof(Guid)))
+            {
+                property.SetColumnType("binary(16)");
+            }
         }
     }
 }

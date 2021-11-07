@@ -204,26 +204,29 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Application", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<byte[]>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("binary(16)");
 
-                    b.Property<Guid>("ChildId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("ChildId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.Property<DateTimeOffset>("CreationTime")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("ParentId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(1);
 
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("WorkshopId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.HasKey("Id")
                         .HasAnnotation("SqlServer:Clustered", false);
@@ -239,12 +242,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatMessage", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<byte[]>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("binary(16)");
 
-                    b.Property<Guid>("ChatRoomId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("ChatRoomId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.Property<DateTimeOffset>("CreatedTime")
                         .HasColumnType("datetime(6)");
@@ -273,12 +277,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatRoom", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<byte[]>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("binary(16)");
 
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("WorkshopId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.HasKey("Id")
                         .HasAnnotation("SqlServer:Clustered", false);
@@ -290,12 +295,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatRoomUser", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<byte[]>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("binary(16)");
 
-                    b.Property<Guid>("ChatRoomId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("ChatRoomId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -313,9 +319,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<byte[]>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("binary(16)");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("date");
@@ -340,8 +346,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("ParentId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.Property<string>("PlaceOfStudy")
                         .HasMaxLength(500)
@@ -429,8 +436,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<byte>("Workdays")
                         .HasColumnType("tinyint unsigned");
 
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("WorkshopId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.HasKey("Id");
 
@@ -496,8 +504,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("WorkshopId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.HasKey("Id");
 
@@ -542,9 +551,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<byte[]>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("binary(16)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -559,9 +568,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<byte[]>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("binary(16)");
 
                     b.Property<long?>("ActualAddressId")
                         .HasColumnType("bigint");
@@ -665,11 +674,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<DateTimeOffset>("CreationTime")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("ParentId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.Property<int>("Rate")
                         .HasColumnType("int");
@@ -728,9 +739,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<byte[]>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("binary(16)");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("date");
@@ -759,8 +770,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("WorkshopId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.HasKey("Id")
                         .HasAnnotation("SqlServer:Clustered", false);
@@ -827,10 +839,16 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(84)
+                        .IsUnicode(false)
+                        .HasColumnType("char(84)")
+                        .IsFixedLength(true);
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(15)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(15)")
+                        .IsFixedLength(false);
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
@@ -840,7 +858,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("longtext");
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(36)")
+                        .IsFixedLength(false);
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("tinyint(1)");
@@ -863,9 +885,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<byte[]>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("binary(16)");
 
                     b.Property<long>("AddressId")
                         .HasColumnType("bigint");
@@ -934,8 +956,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("ProviderId")
-                        .HasColumnType("char(36)");
+                    b.Property<byte[]>("ProviderId")
+                        .IsRequired()
+                        .HasColumnType("binary(16)");
 
                     b.Property<string>("ProviderTitle")
                         .IsRequired()

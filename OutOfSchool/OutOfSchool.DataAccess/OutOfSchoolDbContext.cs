@@ -77,6 +77,8 @@ namespace OutOfSchool.Services
 
             builder.Seed();
             builder.UpdateIdentityTables();
+
+            builder.ConvertGuidTypeToBinary();
         }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }

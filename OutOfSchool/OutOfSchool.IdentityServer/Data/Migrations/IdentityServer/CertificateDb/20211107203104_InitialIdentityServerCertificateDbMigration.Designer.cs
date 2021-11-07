@@ -9,7 +9,7 @@ using OutOfSchool.IdentityServer.KeyManagement;
 namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.CertificateDb
 {
     [DbContext(typeof(CertificateDbContext))]
-    [Migration("20211107073924_InitialIdentityServerCertificateDbMigration")]
+    [Migration("20211107203104_InitialIdentityServerCertificateDbMigration")]
     partial class InitialIdentityServerCertificateDbMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
