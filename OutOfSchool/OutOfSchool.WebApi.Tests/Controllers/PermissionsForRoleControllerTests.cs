@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetPermissionsForAllRoles_WhenCalled_ReturnsOkResultObject()
+        public async Task GetsAllPermissionsForRoles_WhenCalled_ReturnsOkResultObject()
         {
             // Arrange
             service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles);
@@ -49,6 +49,21 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(200, result.StatusCode);
+        }
+
+        [Test]
+        public void GetAllPermissions_WhenCalled_ReturnsAllSystemPermissions()
+        {
+            // Arrange
+            var allPermissions = Enum.GetValues(typeof(Permissions)).Cast<Permissions>();
+
+            // Act
+            var response = controller.GetAllPermissions() as OkObjectResult;
+            var returnData = response.Value as IEnumerable<string>;
+
+            // Assert
+            Assert.That(allPermissions.Count() == returnData.Count());
+            Assert.That(returnData.First().StartsWith("NotSet"));
         }
 
         [Test]
