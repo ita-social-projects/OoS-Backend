@@ -15,8 +15,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
+    [HasPermission(Permissions.SystemManagement)]
     public class PermissionsForRoleController : ControllerBase
     {
         private readonly IPermissionsForRoleService service;
@@ -65,8 +65,17 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet("{roleName}")]
         public async Task<IActionResult> GetByRoleName(string roleName)
         {
-            var permissionsForRole = await service.GetByRole(roleName).ConfigureAwait(false);
-            return Ok(permissionsForRole);
+            var taskToDo = service.GetByRole(roleName);
+            PermissionsForRoleDTO result;
+            try
+            {
+                result = await taskToDo.ConfigureAwait(false);
+            }
+            catch (ArgumentNullException e)
+            {
+                return Ok(new { e.ParamName });
+            }
+            return Ok(result);
         }
 
         /// <summary>
@@ -74,7 +83,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">PermissionsForRole entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -95,7 +103,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">PermissionsForRole to update.</param>
         /// <returns>PermissionsForRole</returns>
-        [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -93,7 +93,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Act
             var result = await controller.GetByRoleName(roleName).ConfigureAwait(false) as OkObjectResult;
-
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Value, Is.Null);
