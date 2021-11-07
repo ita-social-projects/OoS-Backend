@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
+using OutOfSchool.IdentityServer.Services;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.IdentityServer.Controllers
@@ -25,13 +26,12 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "provider")]
+        [Authorize(Roles = "provider, provideradmin")]
         public async Task<ResponseDto> Create(CreateUserDto createUserDto)
         {
-            //TODO:
+            // TODO:
             // Let's think about expediency of using mapper here.
 
-            //generate guid password here
             var user = new User()
             {
                 UserName = createUserDto.Email,
@@ -45,9 +45,10 @@ namespace OutOfSchool.IdentityServer.Controllers
                 IsRegistered = false,
             };
 
-            IdentityResult result = await userManager.CreateAsync(user);
+            var password = PasswordGenerator
+                .GenerateRandomPassword(userManager.Options.Password);
 
-            // send  activating mail to user here
+            IdentityResult result = await userManager.CreateAsync(user, password);
 
             if (result.Succeeded)
             {
@@ -55,6 +56,8 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                 response.IsSuccess = true;
                 response.Result = createUserDto;
+
+                // send  activating mail to user here
 
                 return response;
             }

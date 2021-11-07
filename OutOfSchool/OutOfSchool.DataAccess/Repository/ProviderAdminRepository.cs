@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
@@ -15,7 +16,7 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public async Task<bool> IsExistProviderAdminWithUserIdAsync(long providerId, string userId)
+        public async Task<bool> IsExistProviderAdminWithUserIdAsync(Guid providerId, string userId)
         {
             var providerAdmin = await db.ProviderAdmins
                 .Where(pa => pa.ProviderId == providerId)
@@ -24,7 +25,7 @@ namespace OutOfSchool.Services.Repository
             return providerAdmin != null;
         }
 
-        public async Task<bool> IsExistProviderWithUserIdAsync(long providerId, string userId)
+        public async Task<bool> IsExistProviderWithUserIdAsync(Guid providerId, string userId)
         {
             var provider = await db.Providers
                 .Where(p => p.Id == providerId)
@@ -33,7 +34,7 @@ namespace OutOfSchool.Services.Repository
             return provider != null;
         }
 
-        public async Task<int> GetNumberProviderAdminsAsync(long providerId)
+        public async Task<int> GetNumberProviderAdminsAsync(Guid providerId)
         {
             var number = await db.ProviderAdmins
                 .Where(pa => pa.ProviderId == providerId)

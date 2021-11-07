@@ -730,10 +730,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long?>("CityId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("ProviderId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("UserId");
+                    b.HasKey("UserId")
+                        .IsClustered(false);
 
                     b.HasIndex("CityId");
 
@@ -1311,8 +1312,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.City", "City")
                         .WithMany("ProviderAdmins")
-                        .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CityId");
 
                     b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
                         .WithMany("ProviderAdmins")

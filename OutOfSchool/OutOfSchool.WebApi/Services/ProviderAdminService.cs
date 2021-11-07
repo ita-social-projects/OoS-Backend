@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Services
             throw new UnauthorizedAccessException();
         }
 
-        public async Task<bool> IsAllowed(long providerId, string userId)
+        public async Task<bool> IsAllowed(Guid providerId, string userId)
         {
             bool providerAdmin = await providerAdminRepository.IsExistProviderAdminWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);

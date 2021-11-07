@@ -36,7 +36,7 @@ namespace OutOfSchool.Common.Models
 
         public string Role { get; set; }
 
-        public long ProviderId { get; set; }
+        public Guid ProviderId { get; set; }
 
         public long CityId { get; set; }
 
