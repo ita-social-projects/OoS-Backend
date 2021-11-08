@@ -17,16 +17,19 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IdentityServerConfig identityServerConfig;
+        private readonly ProviderAdminConfig providerAdminConfig;
         private readonly IProviderAdminRepository providerAdminRepository;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,
             IOptions<IdentityServerConfig> identityServerConfig,
+            IOptions<ProviderAdminConfig> providerAdminConfig,
             IProviderAdminRepository providerAdminRepository)
             : base(httpClientFactory)
         {
             this.httpClientFactory = httpClientFactory;
             this.identityServerConfig = identityServerConfig.Value;
+            this.providerAdminConfig = providerAdminConfig.Value;
             this.providerAdminRepository = providerAdminRepository;
         }
 
@@ -40,7 +43,7 @@ namespace OutOfSchool.WebApi.Services
                 .ConfigureAwait(false);
 
             if (checkAccess &&
-                numberProviderAdminsLessThanMax < Constants.MaxNumberProviderAdmins)
+                numberProviderAdminsLessThanMax < providerAdminConfig.MaxNumberAdmins)
             {
                 var response = await SendRequest<ResponseDto>(new Request()
                 {

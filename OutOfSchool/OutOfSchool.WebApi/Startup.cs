@@ -99,6 +99,8 @@ namespace OutOfSchool.WebApi
         {
             services.Configure<AppDefaultsConfig>(Configuration.GetSection(AppDefaultsConfig.Name));
             services.Configure<IdentityServerConfig>(Configuration.GetSection(IdentityServerConfig.Name));
+            services.Configure<ProviderAdminConfig>(Configuration.GetSection(ProviderAdminConfig.Name));
+
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
