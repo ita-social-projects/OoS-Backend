@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             await using (var context = this.GetContext())
             {
                 await context.SaveChangesAsync();
-                var fakeProvider = ProvidersGenerator.Generate(1).First();
+                var fakeProvider = ProvidersGenerator.Generate();
                 fakeProvider.ActualAddress.Id = 5;
                 fakeProvider.LegalAddress.Id = 6;
                 context.Add(fakeProvider);
