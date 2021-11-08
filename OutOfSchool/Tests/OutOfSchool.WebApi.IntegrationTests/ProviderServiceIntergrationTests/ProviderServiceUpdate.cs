@@ -113,7 +113,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             var provider = context.Providers.First();
             provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
-            await context.Entry(provider).ReloadAsync().ConfigureAwait(false);
 
             var randomAddressToAdd = GenerateAddressToAdd();
 
@@ -138,7 +137,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             var provider = context.Providers.First();
             provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
-            await context.Entry(provider).ReloadAsync().ConfigureAwait(false);
 
             var randomAddressToAdd = GenerateAddressToAdd();
 
