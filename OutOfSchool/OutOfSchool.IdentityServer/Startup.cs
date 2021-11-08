@@ -126,6 +126,7 @@ namespace OutOfSchool.IdentityServer
 
             services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
+            services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

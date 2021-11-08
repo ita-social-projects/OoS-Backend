@@ -52,6 +52,7 @@ namespace OutOfSchool.WebApi.Services.Communication
                 requestMessage.Method = HttpMethodService.GetHttpMethodType(request);
 
                 var response = await httpClient.SendAsync(requestMessage).ConfigureAwait(false);
+
                 response.EnsureSuccessStatusCode();
 
                 // TODO:

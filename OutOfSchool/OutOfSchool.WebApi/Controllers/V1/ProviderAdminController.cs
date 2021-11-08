@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Authorize(Roles = "provider,provideradmin")]
         [HttpPost]
-        public async Task<ProviderAdminDto> Create(ProviderAdminDto providerAdmin)
+        public async Task<ActionResult> Create(ProviderAdminDto providerAdmin)
         {
             if (ModelState.IsValid)
             {
@@ -43,11 +43,11 @@ namespace OutOfSchool.WebApi.Controllers
 
                 if (response.IsSuccess)
                 {
-                    return (ProviderAdminDto)response.Result;
+                    return Ok((ProviderAdminDto)response.Result);
                 }
             }
 
-            throw new ArgumentException($"Input data was not valid.");
+            return BadRequest();
         }
     }
 }

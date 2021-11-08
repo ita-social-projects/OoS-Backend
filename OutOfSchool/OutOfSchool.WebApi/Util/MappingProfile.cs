@@ -92,8 +92,6 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
-
-            CreateMap<ProviderAdminDto, CreateUserDto>();
         }
     }
 }

@@ -32,7 +32,6 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<ResponseDto> CreateProviderAdminAsync(string userId, ProviderAdminDto providerAdminDto, string token)
         {
-            // Check if user entitled to work with this specific provider (vericifaction)
             var checkAccess = await IsAllowed(providerAdminDto.ProviderId, userId)
                 .ConfigureAwait(true);
 
@@ -40,32 +39,20 @@ namespace OutOfSchool.WebApi.Services
                 .GetNumberProviderAdminsAsync(providerAdminDto.ProviderId)
                 .ConfigureAwait(false);
 
-            if (checkAccess && numberProviderAdminsLessThanMax < Constants.MaxNumberProviderAdmins)
+            if (checkAccess &&
+                numberProviderAdminsLessThanMax < Constants.MaxNumberProviderAdmins)
             {
-                var createUserDto = providerAdminDto.ToModel();
-
                 var response = await SendRequest<ResponseDto>(new Request()
                 {
                     HttpMethodType = HttpMethodType.Post,
                     Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
                     Token = token,
-                    Data = createUserDto,
+                    Data = providerAdminDto,
                 }).ConfigureAwait(false);
 
                 if (response.IsSuccess)
                 {
-                    var user = JsonConvert.DeserializeObject<CreateUserDto>(response.Result.ToString());
-                    providerAdminDto.UserId = user.UserId;
-
-                    var adminprovider = new ProviderAdmin()
-                    {
-                        UserId = user.UserId,
-                        ProviderId = providerAdminDto.ProviderId,
-                        CityId = providerAdminDto.CityId,
-                    };
-
-                    await providerAdminRepository.Create(adminprovider)
-                        .ConfigureAwait(false);
+                    var user = JsonConvert.DeserializeObject<ProviderAdminDto>(response.Result.ToString());
 
                     return new ResponseDto()
                     {
@@ -85,10 +72,15 @@ namespace OutOfSchool.WebApi.Services
             bool providerAdmin = await providerAdminRepository.IsExistProviderAdminWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);
 
+            if (providerAdmin)
+            {
+                return true;
+            }
+
             bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);
 
-            if (providerAdmin || provider)
+            if (provider)
             {
                 return true;
             }

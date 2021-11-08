@@ -171,12 +171,6 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static CreateUserDto ToModel(this ProviderAdminDto providerAdminDto)
-        {
-            return Mapper<ProviderAdminDto, CreateUserDto>(
-                providerAdminDto, cfg => { cfg.CreateMap<ProviderAdminDto, CreateUserDto>(); });
-        }
-
         public static WorkshopCard ToModelSimple(this Workshop workshop)
         {
             return Mapper<Workshop, WorkshopCard>(workshop, cfg =>

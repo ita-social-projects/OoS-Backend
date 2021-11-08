@@ -37,8 +37,7 @@ namespace OutOfSchool.Services.Repository
         public async Task<int> GetNumberProviderAdminsAsync(Guid providerId)
         {
             var number = await db.ProviderAdmins
-                .Where(pa => pa.ProviderId == providerId)
-                .CountAsync();
+                .CountAsync(pa => pa.ProviderId == providerId);
 
             return number;
         }
