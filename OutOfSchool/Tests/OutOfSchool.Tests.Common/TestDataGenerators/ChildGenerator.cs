@@ -19,7 +19,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.MiddleName, f => f.Name.FirstName())
             .RuleFor(x => x.LastName, f => f.Person.LastName)
             .RuleFor(x => x.DateOfBirth, f => f.Person.DateOfBirth)
-            .RuleFor(x => x.Gender, f => f.Random.EnumValues<Gender>().RandomItem())
+            .RuleFor(x => x.Gender, f => f.PickRandom<Gender>())
             .RuleFor(x => x.PlaceOfStudy, f => f.Company.CompanyName());
 
         /// <summary>

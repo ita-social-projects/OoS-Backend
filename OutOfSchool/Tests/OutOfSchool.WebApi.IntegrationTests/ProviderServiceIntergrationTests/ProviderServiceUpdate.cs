@@ -24,12 +24,9 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
     [TestFixture]
     public class ProviderServiceUpdate
     {
-        private const string FakeUserId = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c";
         private const string NOT_ADMIN_USER_ROLE = "Provider";
 
         private IProviderService providerService;
-
-        private User fakeUser;
 
         private Mapper mapper;
         private DbContextOptions<OutOfSchoolDbContext> unitTestDbOptions;
@@ -40,21 +37,26 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
         public async Task SetUp()
         {
             this.unitTestDbOptions = UnitTestHelper.GetUnitTestDbOptions();
-            await using var context = this.GetContext();
-            var fakeProvider = ProvidersGenerator.Generate(1).First();
-            context.Add(fakeProvider);
-            await context.SaveChangesAsync();
-            this.fakeUser = CreateFakeUser();
-            this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
 
-            var usersRepositoryMock = CreateUsersRepositoryMock(this.fakeUser);
+            await using (var context = this.GetContext())
+            {
+                await context.SaveChangesAsync();
+                var fakeProvider = ProvidersGenerator.Generate(1).First();
+                fakeProvider.ActualAddress.Id = 5;
+                fakeProvider.LegalAddress.Id = 6;
+                context.Add(fakeProvider);
+                await context.SaveChangesAsync();
+            }
+
+            this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
 
             var ratingService = new Mock<IRatingService>();
             var localizer = new Mock<IStringLocalizer<SharedResource>>();
             var logger = new Mock<ILogger<ProviderService>>();
             var addressRepository = new Mock<IEntityRepository<Address>>();
             var providerRepository = new ProviderRepository(this.GetContext());
-            this.providerService = new ProviderService(providerRepository, usersRepositoryMock.Object,
+            var userRepository = new Mock<IEntityRepository<User>>();
+            this.providerService = new ProviderService(providerRepository, userRepository.Object,
                 ratingService.Object, logger.Object, localizer.Object, this.mapper, addressRepository.Object);
         }
 
@@ -63,8 +65,10 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
         {
             // Arrange
             await using var context = this.GetContext();
+
             var provider = context.Providers.First();
             provider.ActualAddressId = null;
+
             await context.SaveChangesAsync().ConfigureAwait(false);
             provider.ActualAddress = provider.LegalAddress;
 
@@ -84,9 +88,12 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
         {
             // Arrange
             await using var context = this.GetContext();
+
             var provider = context.Providers.First();
             provider.ActualAddressId = null;
+
             await context.SaveChangesAsync().ConfigureAwait(false);
+
             var providerDto = this.mapper.Map<ProviderDto>(provider);
             providerDto.ActualAddress = null;
 
@@ -110,10 +117,9 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
             await context.Entry(provider).ReloadAsync().ConfigureAwait(false);
-            var randomAddressToAdd = AddressGenerator.Generate();
-            randomAddressToAdd.Id = 0;
 
-            // provider.ActualAddress = provider.LegalAddress;
+            var randomAddressToAdd = GenerateAddressToAdd();
+
             provider.LegalAddress = randomAddressToAdd;
             var providerDto = this.mapper.Map<ProviderDto>(provider);
 
@@ -136,10 +142,29 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             provider.ActualAddressId = null;
             await context.SaveChangesAsync().ConfigureAwait(false);
             await context.Entry(provider).ReloadAsync().ConfigureAwait(false);
-            var randomAddress = AddressGenerator.Generate();
-            randomAddress.Id = 0;
 
-            provider.ActualAddress = randomAddress;
+            var randomAddressToAdd = GenerateAddressToAdd();
+
+            provider.ActualAddress = randomAddressToAdd;
+            var providerDto = this.mapper.Map<ProviderDto>(provider);
+
+            // Act
+            var result = await this.providerService.Update(providerDto, provider.UserId, NOT_ADMIN_USER_ROLE)
+                .ConfigureAwait(false);
+
+            // Assert
+            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
+            Assert.IsNotNull(result.LegalAddress);
+            Assert.IsNotNull(result.ActualAddress);
+        }
+
+        [Test]
+        public async Task UpdateWhenProviderDifferentActualAdresses_WithSameLegalAddressAndNewActual_RemovesActual()
+        {
+            // Arrange
+            await using var context = this.GetContext();
+            var provider = context.Providers.First();
+            provider.ActualAddress = provider.LegalAddress;
             var providerDto = this.mapper.Map<ProviderDto>(provider);
 
             // Act
@@ -152,43 +177,11 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             Assert.IsNull(result.ActualAddress);
         }
 
-        private static User CreateFakeUser()
+        private static Address GenerateAddressToAdd()
         {
-            return new User
-            {
-                Id = FakeUserId,
-                CreatingTime = default,
-                LastLogin = default,
-                MiddleName = "MiddleName",
-                FirstName = "FirstName",
-                LastName = "LastName",
-                UserName = "user@gmail.com",
-                NormalizedUserName = "USER@GMAIL.COM",
-                Email = "user@gmail.com",
-                NormalizedEmail = "USER@GMAIL.COM",
-                EmailConfirmed = false,
-                PasswordHash = "AQAAAAECcQAAAAEPXMPMbzuDZIKJUN4pBhRWMtf35Q3RN4QOll7UfnTdmfXHEcgswabznBezJmeTMvEw==",
-                SecurityStamp = "   CCCJIYDFRG236HXFKGYS7H6QT2DE2LFF",
-                ConcurrencyStamp = "cb54f60f-6282-4416-874c-d1edce844d07",
-                PhoneNumber = "0965679725",
-                Role = "provider",
-                PhoneNumberConfirmed = false,
-                TwoFactorEnabled = false,
-                LockoutEnabled = true,
-                AccessFailedCount = 0,
-                IsRegistered = false,
-            };
-        }
-
-        private static Mock<IEntityRepository<User>> CreateUsersRepositoryMock(User fakeUser)
-        {
-            var usersRepository = new Mock<IEntityRepository<User>>();
-            usersRepository.Setup(r => r.GetAll())
-                .Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
-            usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty))
-                .Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
-
-            return usersRepository;
+            var randomAddress = AddressGenerator.Generate();
+            randomAddress.Id = 0;
+            return randomAddress;
         }
     }
 }
