@@ -9,9 +9,11 @@ using Moq;
 using NUnit.Framework;
 
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Extensions
@@ -23,14 +25,14 @@ namespace OutOfSchool.WebApi.Tests.Extensions
         public void Mapping_ChatMessageDtoToDomain_IsCorrect()
         {
             // Arrange
-            ChatMessageDto chatMessageDTO = new ChatMessageDto()
+            ChatMessageWorkshopDto chatMessageDTO = new ChatMessageWorkshopDto()
             {
                 Id = Guid.NewGuid(),
-                UserId = "test",
                 ChatRoomId = Guid.NewGuid(),
                 Text = "test mess",
-                IsRead = true,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                SenderRoleIsProvider = true,
+                ReadDateTime = null,
+                CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
             };
 
             // Act
@@ -40,15 +42,14 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             Assert.Multiple(() =>
             {
                 Assert.IsNotNull(result);
-                Assert.IsInstanceOf<ChatMessage>(result);
+                Assert.IsInstanceOf<ChatMessageWorkshop>(result);
                 Assert.IsNotNull(result.Text);
                 Assert.AreEqual(chatMessageDTO.Id, result.Id);
-                Assert.AreEqual(chatMessageDTO.UserId, result.UserId);
                 Assert.AreEqual(chatMessageDTO.ChatRoomId, result.ChatRoomId);
                 Assert.AreEqual(chatMessageDTO.Text, result.Text);
-                Assert.AreEqual(chatMessageDTO.CreatedTime, result.CreatedTime);
-                Assert.AreEqual(chatMessageDTO.IsRead, result.IsRead);
-                Assert.IsNull(result.User);
+                Assert.AreEqual(chatMessageDTO.SenderRoleIsProvider, result.SenderRoleIsProvider);
+                Assert.AreEqual(chatMessageDTO.CreatedDateTime, result.CreatedDateTime);
+                Assert.AreEqual(chatMessageDTO.ReadDateTime, result.ReadDateTime);
                 Assert.IsNull(result.ChatRoom);
             });
         }
@@ -57,16 +58,15 @@ namespace OutOfSchool.WebApi.Tests.Extensions
         public void Mapping_ChatMessageToModel_IsCorrect()
         {
             // Arrange
-            ChatMessage chatMessage = new ChatMessage()
+            ChatMessageWorkshop chatMessage = new ChatMessageWorkshop()
             {
                 Id = Guid.NewGuid(),
-                UserId = "test",
                 ChatRoomId = Guid.NewGuid(),
                 Text = "test mess",
-                IsRead = true,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
-                User = Mock.Of<User>(),
-                ChatRoom = Mock.Of<ChatRoom>(),
+                SenderRoleIsProvider = true,
+                ReadDateTime = DateTimeOffset.Parse("2021-05-25T12:15:12", new CultureInfo("uk-UA", false)),
+                CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                ChatRoom = Mock.Of<ChatRoomWorkshop>(),
             };
 
             // Act
@@ -76,76 +76,14 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             Assert.Multiple(() =>
             {
                 Assert.IsNotNull(result);
-                Assert.IsInstanceOf<ChatMessageDto>(result);
+                Assert.IsInstanceOf<ChatMessageWorkshopDto>(result);
                 Assert.IsNotNull(result.Text);
                 Assert.AreEqual(chatMessage.Id, result.Id);
-                Assert.AreEqual(chatMessage.UserId, result.UserId);
                 Assert.AreEqual(chatMessage.ChatRoomId, result.ChatRoomId);
                 Assert.AreEqual(chatMessage.Text, result.Text);
-                Assert.AreEqual(chatMessage.CreatedTime, result.CreatedTime);
-                Assert.AreEqual(chatMessage.IsRead, result.IsRead);
-            });
-        }
-
-        [Test]
-        public void Mapping_ChatRoomDtoToDomain_IsCorrect()
-        {
-            // Arrange
-            var user1 = new UserDto() { Id = "test" };
-            var user2 = new UserDto() { Id = "test2" };
-
-            var chatMessage1 = new ChatMessageDto()
-            {
-                Id = Guid.NewGuid(),
-                UserId = "test",
-                ChatRoomId = Guid.NewGuid(),
-                Text = "test mess",
-                IsRead = true,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
-            };
-            var chatMessage2 = new ChatMessageDto()
-            {
-                Id = Guid.NewGuid(),
-                UserId = "test2",
-                ChatRoomId = Guid.NewGuid(),
-                Text = "test mess",
-                IsRead = false,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
-            };
-
-            var listOfUsers = new List<UserDto>() { user1, user2 };
-
-            var listOfMessages = new List<ChatMessageDto>() { chatMessage1, chatMessage2 };
-
-            var chatRoomDto = new ChatRoomDto()
-            {
-                Id = Guid.NewGuid(),
-                WorkshopId = Guid.NewGuid(),
-                ChatMessages = listOfMessages,
-                Users = listOfUsers,
-                NotReadMessagesCount = 4,
-            };
-
-            // Act
-            var result = chatRoomDto.ToDomain();
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOf<ChatRoom>(result);
-                Assert.IsNull(result.Workshop);
-                Assert.IsNotNull(result.ChatMessages);
-                Assert.IsInstanceOf<ICollection<ChatMessage>>(result.ChatMessages);
-                Assert.IsNotNull(result.Users);
-                Assert.IsInstanceOf<ICollection<User>>(result.Users);
-                Assert.IsNull(result.ChatRoomUsers);
-                Assert.AreEqual(chatRoomDto.Id, result.Id);
-                Assert.AreEqual(chatRoomDto.WorkshopId, result.WorkshopId);
-                foreach (var el in result.ChatMessages)
-                {
-                    Assert.AreEqual(chatMessage1.Text, el.Text);
-                }
+                Assert.AreEqual(chatMessage.SenderRoleIsProvider, result.SenderRoleIsProvider);
+                Assert.AreEqual(chatMessage.CreatedDateTime, result.CreatedDateTime);
+                Assert.AreEqual(chatMessage.ReadDateTime, result.ReadDateTime);
             });
         }
 
@@ -153,44 +91,50 @@ namespace OutOfSchool.WebApi.Tests.Extensions
         public void Mapping_ChatRoomToModel_IsCorrect()
         {
             // Arrange
-            var user1 = new User() { Id = "test" };
-            var user2 = new User() { Id = "test2" };
-
-            var chatMessage1 = new ChatMessage()
+            var chatMessage1 = new ChatMessageWorkshop()
             {
                 Id = Guid.NewGuid(),
-                UserId = "test",
                 ChatRoomId = Guid.NewGuid(),
                 Text = "test mess",
-                IsRead = true,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
-                User = Mock.Of<User>(),
-                ChatRoom = Mock.Of<ChatRoom>(),
+                SenderRoleIsProvider = true,
+                ReadDateTime = DateTimeOffset.Parse("2021-05-25T12:15:12", new CultureInfo("uk-UA", false)),
+                CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                ChatRoom = Mock.Of<ChatRoomWorkshop>(),
             };
-            var chatMessage2 = new ChatMessage()
+            var chatMessage2 = new ChatMessageWorkshop()
             {
                 Id = Guid.NewGuid(),
-                UserId = "test2",
                 ChatRoomId = Guid.NewGuid(),
                 Text = "test mess",
-                IsRead = false,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
-                User = Mock.Of<User>(),
-                ChatRoom = Mock.Of<ChatRoom>(),
+                SenderRoleIsProvider = false,
+                ReadDateTime = null,
+                CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
+                ChatRoom = Mock.Of<ChatRoomWorkshop>(),
             };
 
-            var listOfUsers = new List<User>() { user1, user2 };
+            var listOfMessages = new List<ChatMessageWorkshop>() { chatMessage1, chatMessage2 };
 
-            var listOfMessages = new List<ChatMessage>() { chatMessage1, chatMessage2 };
-
-            var chatRoom = new ChatRoom()
+            var chatRoom = new ChatRoomWorkshop()
             {
                 Id = Guid.NewGuid(),
                 WorkshopId = Guid.NewGuid(),
-                Workshop = Mock.Of<Workshop>(),
+                ParentId = Guid.NewGuid(),
                 ChatMessages = listOfMessages,
-                Users = listOfUsers,
-                ChatRoomUsers = new List<ChatRoomUser>(),
+                Parent = new Parent()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = "userParent",
+                    User = new User()
+                    {
+                        Id = "userParent",
+                        PhoneNumber = "123456734",
+                        Email = "email",
+                        FirstName = "Jack",
+                        MiddleName = "Pirate",
+                        LastName = "Sparrow",
+                    },
+                },
+                Workshop = new Workshop() { Id = Guid.NewGuid() },
             };
 
             // Act
@@ -200,79 +144,94 @@ namespace OutOfSchool.WebApi.Tests.Extensions
             Assert.Multiple(() =>
             {
                 Assert.IsNotNull(result);
-                Assert.IsInstanceOf<ChatRoomDto>(result);
-                Assert.IsNotNull(result.ChatMessages);
-                Assert.IsInstanceOf<IEnumerable<ChatMessageDto>>(result.ChatMessages);
-                Assert.IsNotNull(result.Users);
-                Assert.IsInstanceOf<IEnumerable<UserDto>>(result.Users);
+                Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
+                Assert.IsNotNull(result.Parent);
+                Assert.IsNotNull(result.Workshop);
+                Assert.IsInstanceOf<ParentDtoWithContactInfo>(result.Parent);
+                Assert.IsInstanceOf<WorkshopInfoForChatListDto>(result.Workshop);
                 Assert.AreEqual(chatRoom.Id, result.Id);
                 Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
-                Assert.Zero(result.NotReadMessagesCount);
-                foreach (var el in result.ChatMessages)
-                {
-                    Assert.AreEqual(chatMessage1.Text, el.Text);
-                }
+                Assert.AreEqual(chatRoom.Workshop.Id, result.Workshop.Id);
+                Assert.AreEqual(chatRoom.Workshop.ProviderId, result.Workshop.ProviderId);
+                Assert.AreEqual(chatRoom.Workshop.Title, result.Workshop.Title);
+                Assert.AreEqual(chatRoom.Workshop.ProviderTitle, result.Workshop.ProviderTitle);
+                Assert.AreEqual(chatRoom.ParentId, result.ParentId);
+                Assert.AreEqual(chatRoom.Parent.UserId, result.Parent.UserId);
+                Assert.AreEqual(chatRoom.Parent.Id, result.Parent.Id);
+                Assert.AreEqual(chatRoom.Parent.User.LastName, result.Parent.LastName);
+                Assert.AreEqual(chatRoom.Parent.User.MiddleName, result.Parent.MiddleName);
+                Assert.AreEqual(chatRoom.Parent.User.FirstName, result.Parent.FirstName);
+                Assert.AreEqual(chatRoom.Parent.User.Email, result.Parent.Email);
+                Assert.AreEqual(chatRoom.Parent.User.PhoneNumber, result.Parent.PhoneNumber);
             });
         }
 
         [Test]
-        public void Mapping_ChatRoomToModelWithoutCHatMessages_IsCorrect()
+        public void Mapping_ChatRoomWorkshopForChatList_IsCorrect()
         {
             // Arrange
-            var user1 = new User() { Id = "test" };
-            var user2 = new User() { Id = "test2" };
-
-            var chatMessage1 = new ChatMessage()
-            {
-                Id = Guid.NewGuid(),
-                UserId = "test",
-                ChatRoomId = Guid.NewGuid(),
-                Text = "test mess",
-                IsRead = true,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
-                User = Mock.Of<User>(),
-                ChatRoom = Mock.Of<ChatRoom>(),
-            };
-            var chatMessage2 = new ChatMessage()
-            {
-                Id = Guid.NewGuid(),
-                UserId = "test2",
-                ChatRoomId = Guid.NewGuid(),
-                Text = "test mess",
-                IsRead = false,
-                CreatedTime = DateTimeOffset.Parse("2021-05-24T12:15:20", new CultureInfo("uk-UA", false)),
-                User = Mock.Of<User>(),
-                ChatRoom = Mock.Of<ChatRoom>(),
-            };
-
-            var listOfUsers = new List<User>() { user1, user2 };
-
-            var listOfMessages = new List<ChatMessage>() { chatMessage1, chatMessage2 };
-
-            var chatRoom = new ChatRoom()
+            var chatRoom = new ChatRoomWorkshopForChatList()
             {
                 Id = Guid.NewGuid(),
                 WorkshopId = Guid.NewGuid(),
-                Workshop = Mock.Of<Workshop>(),
-                ChatMessages = listOfMessages,
-                Users = listOfUsers,
-                ChatRoomUsers = new List<ChatRoomUser>(),
+                ParentId = Guid.NewGuid(),
+                LastMessage = new ChatMessageInfoForChatList()
+                {
+                    Id = Guid.NewGuid(),
+                    ChatRoomId = Guid.NewGuid(),
+                    Text = "test mess",
+                    SenderRoleIsProvider = true,
+                    ReadDateTime = DateTimeOffset.Parse("2021-05-25T12:15:12", new CultureInfo("uk-UA", false)),
+                    CreatedDateTime = DateTimeOffset.Parse("2021-05-24T12:15:12", new CultureInfo("uk-UA", false)),
+                },
+                NotReadByCurrentUserMessagesCount = 2,
+                Parent = new ParentInfoForChatList()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = "userId",
+                    PhoneNumber = "123456734",
+                    Email = "email",
+                    FirstName = "Jack",
+                    MiddleName = "Pirate",
+                    LastName = "Sparrow",
+                },
+                Workshop = new WorkshopInfoForChatList()
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "workshop",
+                    ProviderId = Guid.NewGuid(),
+                    ProviderTitle = "provider",
+                },
             };
 
             // Act
-            var result = chatRoom.ToModelWithoutChatMessages();
+            var result = chatRoom.ToModel();
 
             // Assert
             Assert.Multiple(() =>
             {
                 Assert.IsNotNull(result);
-                Assert.IsInstanceOf<ChatRoomDto>(result);
-                Assert.IsNull(result.ChatMessages);
-                Assert.IsNotNull(result.Users);
-                Assert.IsInstanceOf<IEnumerable<UserDto>>(result.Users);
+                Assert.IsInstanceOf<ChatRoomWorkshopDto>(result);
+                Assert.IsNotNull(result.Parent);
+                Assert.IsNotNull(result.Workshop);
+                Assert.IsInstanceOf<ParentDtoWithContactInfo>(result.Parent);
+                Assert.IsInstanceOf<WorkshopInfoForChatListDto>(result.Workshop);
                 Assert.AreEqual(chatRoom.Id, result.Id);
                 Assert.AreEqual(chatRoom.WorkshopId, result.WorkshopId);
-                Assert.Zero(result.NotReadMessagesCount);
+                Assert.AreEqual(chatRoom.Workshop.Id, result.Workshop.Id);
+                Assert.AreEqual(chatRoom.Workshop.ProviderId, result.Workshop.ProviderId);
+                Assert.AreEqual(chatRoom.Workshop.Title, result.Workshop.Title);
+                Assert.AreEqual(chatRoom.Workshop.ProviderTitle, result.Workshop.ProviderTitle);
+                Assert.AreEqual(chatRoom.ParentId, result.ParentId);
+                Assert.AreEqual(chatRoom.Parent.UserId, result.Parent.UserId);
+                Assert.AreEqual(chatRoom.Parent.Id, result.Parent.Id);
+                Assert.AreEqual(chatRoom.Parent.LastName, result.Parent.LastName);
+                Assert.AreEqual(chatRoom.Parent.MiddleName, result.Parent.MiddleName);
+                Assert.AreEqual(chatRoom.Parent.FirstName, result.Parent.FirstName);
+                Assert.AreEqual(chatRoom.Parent.Email, result.Parent.Email);
+                Assert.AreEqual(chatRoom.Parent.PhoneNumber, result.Parent.PhoneNumber);
+                Assert.AreEqual(chatRoom.NotReadByCurrentUserMessagesCount, result.NotReadByCurrentUserMessagesCount);
+                Assert.AreEqual(chatRoom.LastMessage.Text, result.LastMessage.Text);
             });
         }
 
