@@ -9,7 +9,8 @@ using OutOfSchool.ElasticsearchData.Models;
 namespace OutOfSchool.ElasticsearchData
 {
     /// <inheritdoc/>
-    public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilterES>, IElasticsearchProvider<WorkshopES, WorkshopFilterES>
+    public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilterES>,
+        IElasticsearchProvider<WorkshopES, WorkshopFilterES>
     {
         public ESWorkshopProvider(ElasticClient elasticClient)
             : base(elasticClient)
@@ -214,31 +215,60 @@ namespace OutOfSchool.ElasticsearchData
             switch (filter.OrderByField)
             {
                 case nameof(OrderBy.Rating):
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Rating),
+                        Order = SortOrder.Descending,
+                    });
                     break;
 
                 case nameof(OrderBy.Statistic):
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Rating),
+                        Order = SortOrder.Descending,
+                    });
                     break;
 
                 case nameof(OrderBy.PriceAsc):
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Ascending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price),
+                        Order = SortOrder.Ascending,
+                    });
                     break;
 
                 case nameof(OrderBy.PriceDesc):
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Descending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price),
+                        Order = SortOrder.Descending,
+                    });
                     break;
 
                 case nameof(OrderBy.Alphabet):
-                    sorts.Add(new FieldSort() { Field = "title.keyword", Order = SortOrder.Ascending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = "title.keyword",
+                        Order = SortOrder.Ascending,
+                    });
                     break;
 
                 case nameof(OrderBy.Nearest):
-                    sorts.Add(new GeoDistanceSort() {Field = Infer.Field<WorkshopES>(w => w.Address.Point), Points = new[] {new GeoLocation((double)filter.Latitude, (double)filter.Longitude)}, Order = SortOrder.Ascending});
+                    sorts.Add(new GeoDistanceSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Address.Point),
+                        Points = new[] { new GeoLocation((double)filter.Latitude, (double)filter.Longitude) },
+                        Order = SortOrder.Ascending,
+                    });
                     break;
 
                 default:
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Id), Order = SortOrder.Ascending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Id),
+                        Order = SortOrder.Ascending,
+                    });
                     break;
             }
 

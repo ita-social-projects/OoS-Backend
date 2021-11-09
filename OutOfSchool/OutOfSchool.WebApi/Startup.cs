@@ -186,6 +186,8 @@ namespace OutOfSchool.WebApi
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
+            services.AddHostedService<ElasticPinger>();
+
             services.AddSingleton(Log.Logger);
             services.AddVersioning();
             var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();

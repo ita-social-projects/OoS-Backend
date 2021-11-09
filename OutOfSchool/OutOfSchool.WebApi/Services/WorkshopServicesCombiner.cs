@@ -89,10 +89,14 @@ namespace OutOfSchool.WebApi.Services
                 OrderByField = OrderBy.Id.ToString(),
             };
 
-            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
-
-            if (result.TotalAmount > 0 || await elasticsearchService.PingServer().ConfigureAwait(false))
+            if (elasticsearchService.IsElasticAlive)
             {
+                var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
+                if (result.TotalAmount <= 0)
+                {
+                    logger.LogInformation($"Result was {result.TotalAmount}");
+                }
+
                 return result.ToSearchResult();
             }
             else
@@ -110,20 +114,17 @@ namespace OutOfSchool.WebApi.Services
             {
                 return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
             }
-
-            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
-
-            // TODO: ElasticPing logic (bool IsHealthy)
-            if (result.TotalAmount > 0 || await elasticsearchService.PingServer().ConfigureAwait(false))
+            
+            if (elasticsearchService.IsElasticAlive)
             {
+                var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
+                if (result.TotalAmount <= 0)
+                {
+                    logger.LogInformation($"Result was {result.TotalAmount}");
+                }
+
                 return result.ToSearchResult();
             }
-
-            // if (filter.OrderByField == OrderBy.Nearest.ToString())
-            // {
-            //     var databaseResult = await databaseService.NearestGetByFilter(filter).ConfigureAwait(false);
-            //     return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
-            // }
             else
             {
                 var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
