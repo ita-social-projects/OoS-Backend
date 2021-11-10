@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using OutOfSchool.Common.PermissionsModule;
 
 namespace OutOfSchool.Common.PermissionsModule
 {
     public static class PermissionChecker
     {
-        public static bool ThisPermissionIsAllowed(this string packedPermissions, string permissionName)
+        public static bool ThisPermissionIsAllowed(this string packedPermissions, PermissionRequirement requirement)
         {
             var usersPermissions = packedPermissions.UnpackPermissionsFromString().ToArray();
 
-            if (!Enum.TryParse(permissionName, true, out Permissions permissionToCheck))
+            if (!Enum.TryParse(requirement.PermissionName, true, out Permissions permissionToCheck))
             {
-                throw new InvalidEnumArgumentException($"{permissionName} could not be converted to a {nameof(Permissions)}.");
+                throw new InvalidEnumArgumentException($"{requirement.PermissionName} could not be converted to a {nameof(Permissions)}.");
             }
 
             return usersPermissions.UserHasThisPermission(permissionToCheck);

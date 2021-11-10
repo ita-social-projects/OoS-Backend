@@ -20,17 +20,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
     public class PermissionsForRoleController : ControllerBase
     {
         private readonly IPermissionsForRoleService service;
-        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PermissionsForRoleController"/> class.
         /// </summary>
         /// <param name="service">Service for PermissionsForRole model.</param>
-        /// <param name="localizer">Localizer.</param>
-        public PermissionsForRoleController(IPermissionsForRoleService service, IStringLocalizer<SharedResource> localizer)
+        public PermissionsForRoleController(IPermissionsForRoleService service)
         {
             this.service = service;
-            this.localizer = localizer;
         }
 
         /// <summary>
@@ -42,7 +39,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetAllPermissionsForRoles()
         {
             var permissionsForRoles = await service.GetAll().ConfigureAwait(false);
 
@@ -60,6 +57,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="roleName">PermissionsForRole entity roleName.</param>
         /// <returns>PermissionsForRole entity.</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PermissionsForRoleDTO))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{roleName}")]

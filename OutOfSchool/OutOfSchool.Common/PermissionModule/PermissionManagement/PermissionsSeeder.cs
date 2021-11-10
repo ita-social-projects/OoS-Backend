@@ -42,7 +42,7 @@ namespace OutOfSchool.Common.PermissionsModule
 
         public static string SeedPermissions(string role)
         {
-            switch (role)
+            switch (role.ToLower())
             {
                 case "admin":
                     return SeedAdminPermissions.PackPermissionsIntoString();

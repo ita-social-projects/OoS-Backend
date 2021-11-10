@@ -18,7 +18,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private PermissionsForRoleController controller;
         private Mock<IPermissionsForRoleService> service;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private IEnumerable<PermissionsForRoleDTO> permissionsForAllRoles;
         private PermissionsForRoleDTO permissionsForRoleDTO;
@@ -29,9 +28,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void Setup()
         {
             service = new Mock<IPermissionsForRoleService>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new PermissionsForRoleController(service.Object, localizer.Object);
+            controller = new PermissionsForRoleController(service.Object);
 
             permissionsForAllRoles = FakePermissionsForAllRoles();
             permissionsForRoleDTO = FakePermissionsForRole();
@@ -44,7 +42,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles);
 
             // Act
-            var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetAllPermissionsForRoles().ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -73,7 +71,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(new List<PermissionsForRoleDTO>());
 
             // Act
-            var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetAllPermissionsForRoles().ConfigureAwait(false) as NoContentResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -88,7 +86,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName));
 
             // Act
-            var result = await controller.GetByRoleName(roleName).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByRoleName(roleName).ConfigureAwait(false) as BadRequestObjectResult;
             var data = result.Value as PermissionsForRoleDTO;
 
             // Assert

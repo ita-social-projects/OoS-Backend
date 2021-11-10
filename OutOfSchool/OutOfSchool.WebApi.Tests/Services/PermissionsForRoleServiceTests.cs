@@ -9,6 +9,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
@@ -20,10 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     public class PermissionsForRoleServiceTests
     {
         private IPermissionsForRoleService service;
-        private OutOfSchoolDbContext context;
         private IEntityRepository<PermissionsForRole> repository;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<ILogger<PermissionsForRoleService>> logger;
         private DbContextOptions<OutOfSchoolDbContext> options;
 
         [SetUp]
@@ -34,10 +32,10 @@ namespace OutOfSchool.WebApi.Tests.Services
                     databaseName: "OutOfSchoolTestDB");
 
             options = builder.Options;
-            context = new OutOfSchoolDbContext(options);
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
+            var context = new OutOfSchoolDbContext(options);
+            var localizer = new Mock<IStringLocalizer<SharedResource>>();
             repository = new EntityRepository<PermissionsForRole>(context);
-            logger = new Mock<ILogger<PermissionsForRoleService>>();
+            var logger = new Mock<ILogger<PermissionsForRoleService>>();
             service = new PermissionsForRoleService(repository, logger.Object, localizer.Object);
 
             SeedDatabase();
@@ -54,14 +52,14 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Assert
 
-            Assert.IsTrue(result.Any(r => r.RoleName == "admin"));
-            Assert.IsTrue(result.Any(r => r.RoleName == "provider"));
-            Assert.IsTrue(result.Any(r => r.RoleName == "parent"));
+            Assert.IsTrue(result.Any(r => r.RoleName == Role.Admin.ToString()));
+            Assert.IsTrue(result.Any(r => r.RoleName == Role.Provider.ToString()));
+            Assert.IsTrue(result.Any(r => r.RoleName == Role.Parent.ToString()));
             Assert.AreEqual(result.ToList().Count(), expected.Count());
         }
 
         [Test]
-        [TestCase("admin")]
+        [TestCase("Admin")]
         public async Task GetByRole_WhenIdIsValid_ReturnsPermissionsForRole(string roleName)
         {
             // Arrange
@@ -75,7 +73,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase("user")]
+        [TestCase("User")]
         public void GetByRole_WhenNoSuchRole_ThrowsArgumentNullException(string roleName)
         {
             // Arrange
@@ -111,7 +109,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var changedEntity = new PermissionsForRoleDTO()
             {
                 Id = 1,
-                RoleName = "admin",
+                RoleName = Role.Admin.ToString(),
                 Permissions = new List<Permissions>
                 {
                     Permissions.AccessAll,
@@ -162,19 +160,20 @@ namespace OutOfSchool.WebApi.Tests.Services
                     new PermissionsForRole()
                     {
                     Id = 1,
-                    RoleName = "admin",
-                    PackedPermissions = PermissionsSeeder.SeedPermissions("admin"),
+                    RoleName = Role.Admin.ToString(),
+                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Admin.ToString()),
                     },
                     new PermissionsForRole()
                     {
                     Id = 2,
-                    RoleName = "provider",
-                    PackedPermissions = PermissionsSeeder.SeedPermissions("provider"),
+                    RoleName = Role.Provider.ToString(),
+                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Provider.ToString()),
                     },
                     new PermissionsForRole()
                     {
                     Id = 3,
-                    PackedPermissions = PermissionsSeeder.SeedPermissions("parent"),
+                    RoleName = Role.Parent.ToString(),
+                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Parent.ToString()),
 
                     },
                 };

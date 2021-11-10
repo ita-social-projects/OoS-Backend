@@ -11,13 +11,7 @@ namespace OutOfSchool.Common.PermissionsModule
             var permissionsClaim =
                 context.User.Claims.SingleOrDefault(c => c.Type == IdentityResourceClaimsTypes.Permissions);
 
-            // If user does not have the scope claim, get out of here.
-            if (permissionsClaim == null)
-            {
-                return Task.CompletedTask;
-            }
-
-            if (permissionsClaim.Value.ThisPermissionIsAllowed(requirement.PermissionName))
+            if (permissionsClaim?.Value.ThisPermissionIsAllowed(requirement) ?? false)
             {
                 context.Succeed(requirement);
             }

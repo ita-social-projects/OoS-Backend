@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Extensions
@@ -62,22 +63,22 @@ namespace OutOfSchool.Services.Extensions
                 new PermissionsForRole
                 {
                     Id = 1,
-                    RoleName = "admin",
-                    PackedPermissions = PermissionsSeeder.SeedPermissions("admin"),
+                    RoleName = Role.Admin.ToString(),
+                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Admin.ToString()),
                     Description = "admin permissions",
                 },
                 new PermissionsForRole
                 {
                     Id = 2,
-                    RoleName = "provider",
-                    PackedPermissions = PermissionsSeeder.SeedPermissions("provider"),
+                    RoleName = Role.Provider.ToString(),
+                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Provider.ToString()),
                     Description = "provider permissions",
                 },
                 new PermissionsForRole
                 {
                     Id = 3,
-                    RoleName = "parent",
-                    PackedPermissions = PermissionsSeeder.SeedPermissions("parent"),
+                    RoleName = Role.Parent.ToString(),
+                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Parent.ToString()),
                     Description = "parent permissions",
                 });
         }
