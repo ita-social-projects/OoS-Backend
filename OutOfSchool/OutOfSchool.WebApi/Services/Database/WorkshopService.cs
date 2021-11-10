@@ -95,8 +95,8 @@ namespace OutOfSchool.WebApi.Services
                 ? "Workshop table is empty."
                 : $"All {workshops.Count} records were successfully received from the Workshop table");
 
-            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
-            var workshopsWithRating = GetWorkshopsWithAverageRating(workshopsDTO);
+            var dtos = mapper.Map<List<WorkshopDTO>>(workshops);
+            var workshopsWithRating = GetWorkshopsWithAverageRating(dtos);
             return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
         }
 
@@ -125,7 +125,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(Guid id)
+        public async Task<IEnumerable<WorkshopCard>> GetByProviderId(Guid id)
         {
             logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -135,9 +135,9 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There aren't Workshops for Provider with Id = {id}."
                 : $"From Workshop table were successfully received {workshops.Count()} records.");
 
-            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
+            var cards = mapper.Map<List<WorkshopCard>>(workshops);
 
-            return GetWorkshopsWithAverageRating(workshopsDTO);
+            return cards;
         }
 
         /// <inheritdoc/>
@@ -192,9 +192,10 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null)
+        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter = null)
         {
             logger.LogInformation("Getting Workshops by filter started.");
+
             if (filter is null)
             {
                 filter = new WorkshopFilter();
@@ -217,18 +218,18 @@ namespace OutOfSchool.WebApi.Services
                 ? "There was no matching entity found."
                 : $"All matching {workshops.Count} records were successfully received from the Workshop table");
 
-            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
+            var workshopCards = mapper.Map<List<WorkshopCard>>(workshops);
 
-            var result = new SearchResult<WorkshopDTO>()
+            var result = new SearchResult<WorkshopCard>()
             {
                 TotalAmount = workshopsCount,
-                Entities = GetWorkshopsWithAverageRating(workshopsDTO),
+                Entities = GetWorkshopsWithAverageRating(workshopCards),
             };
 
             return result;
         }
 
-        public async Task<SearchResult<WorkshopCard>> NearestGetByFilter(WorkshopFilter filter = null)
+        public async Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null)
         {
             logger.LogInformation("Getting Workshops by filter started.");
             if (filter is null)
@@ -427,14 +428,31 @@ namespace OutOfSchool.WebApi.Services
             dto.DirectionId = classEntity.Department.DirectionId;
         }
 
-        private List<WorkshopDTO> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshopsDTOs)
+        private List<WorkshopCard> GetWorkshopsWithAverageRating(List<WorkshopCard> workshops)
         {
             var averageRatings =
-                ratingService.GetAverageRatingForRange(workshopsDTOs.Select(p => p.Id), RatingType.Workshop);
+                ratingService.GetAverageRatingForRange(workshops.Select(p => p.WorkshopId), RatingType.Workshop);
 
             if (averageRatings != null)
             {
-                foreach (var workshop in workshopsDTOs)
+                foreach (var workshop in workshops)
+                {
+                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.WorkshopId);
+                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
+                }
+            }
+
+            return workshops;
+        }
+
+        private List<WorkshopDTO> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshops)
+        {
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(workshops.Select(p => p.Id), RatingType.Workshop);
+
+            if (averageRatings != null)
+            {
+                foreach (var workshop in workshops)
                 {
                     var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
                     workshop.Rating = ratingTuple.Value?.Item1 ?? default;
@@ -442,7 +460,7 @@ namespace OutOfSchool.WebApi.Services
                 }
             }
 
-            return workshopsDTOs;
+            return workshops;
         }
     }
 }

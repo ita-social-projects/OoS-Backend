@@ -103,7 +103,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
-                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = DtoModelsToWorkshopCards(databaseResult.Entities) };
+                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
             }
         }
 
@@ -136,9 +136,9 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<List<WorkshopCard>> GetByProviderId(Guid id)
         {
-            var workshopCards = DtoModelsToWorkshopCards(await workshopService.GetByProviderId(id).ConfigureAwait(false));
+            var workshopCards = await workshopService.GetByProviderId(id).ConfigureAwait(false);
 
-            return workshopCards;
+            return workshopCards.ToList();
         }
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
