@@ -187,7 +187,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             {
                 new Workshop
                 {
-                    Id = 1,
+                    Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     Title = "w1",
                     DirectionId = 1,
                     Address = new Address
@@ -196,12 +196,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                     Applications = new List<Application>
                     {
-                        new Application { Id = 1 },
+                        new Application { Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb") },
                     },
                 },
                 new Workshop
                 {
-                    Id = 2,
+                    Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"),
                     Title = "w2",
                     DirectionId = 2,
                     Address = new Address
@@ -210,13 +210,13 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                     Applications = new List<Application>
                     {
-                        new Application { Id = 2 },
-                        new Application { Id = 3 },
+                        new Application { Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be") },
+                        new Application { Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd") },
                     },
                 },
                 new Workshop
                 {
-                    Id = 3,
+                    Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"),
                     Title = "w3",
                     DirectionId = 3,
                     Address = new Address
@@ -225,9 +225,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                     Applications = new List<Application>
                     {
-                        new Application { Id = 4 },
-                        new Application { Id = 5 },
-                        new Application { Id = 6 },
+                        new Application { Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d") },
+                        new Application { Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d") },
+                        new Application { Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771") },
                     },
                 },
             };
@@ -247,12 +247,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             return new List<Application>
             {
-                new Application { Id = 1, WorkshopId = 1, Workshop = new Workshop { Id = 1, DirectionId = 1 } },
-                new Application { Id = 2, WorkshopId = 2, Workshop = new Workshop { Id = 2, DirectionId = 2 } },
-                new Application { Id = 3, WorkshopId = 2, Workshop = new Workshop { Id = 2, DirectionId = 2 } },
-                new Application { Id = 4, WorkshopId = 3, Workshop = new Workshop { Id = 3, DirectionId = 3 } },
-                new Application { Id = 5, WorkshopId = 3, Workshop = new Workshop { Id = 3, DirectionId = 3 } },
-                new Application { Id = 6, WorkshopId = 3, Workshop = new Workshop { Id = 3, DirectionId = 3 } },
+                new Application { Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"), WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), Workshop = new Workshop { Id = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), DirectionId = 1 } },
+                new Application { Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"), WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Workshop = new Workshop { Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), DirectionId = 2 } },
+                new Application { Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"), WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Workshop = new Workshop { Id = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), DirectionId = 2 } },
+                new Application { Id = new Guid("af628dd5-e9b6-4ad4-9d12-e87063d8707d"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop { Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), DirectionId = 3 } },
+                new Application { Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop { Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), DirectionId = 3 } },
+                new Application { Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop { Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), DirectionId = 3 } },
             };
         }
 
@@ -264,8 +264,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             return new List<WorkshopCard>
             {
-                new WorkshopCard {WorkshopId = 3, Title = "w3", Address = new AddressDto {City = "Одеса"}},
-                new WorkshopCard {WorkshopId = 2, Title = "w2", Address = new AddressDto {City = "Київ"}},
+                new WorkshopCard {WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Title = "w3", Address = new AddressDto {City = "Одеса"}},
+                new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {City = "Київ"}},
             };
         }
 
@@ -273,8 +273,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             return new List<WorkshopCard>
             {
-                new WorkshopCard {WorkshopId = 2, Title = "w2", Address = new AddressDto {City = "Київ"}},
-                new WorkshopCard {WorkshopId = 1, Title = "w1", Address = new AddressDto {City = "Київ"}},
+                new WorkshopCard {WorkshopId = new Guid("3a2fbb29-e097-4184-ad02-26ed1e5f5057"), Title = "w2", Address = new AddressDto {City = "Київ"}},
+                new WorkshopCard {WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"), Title = "w1", Address = new AddressDto {City = "Київ"}},
             };
         }
 

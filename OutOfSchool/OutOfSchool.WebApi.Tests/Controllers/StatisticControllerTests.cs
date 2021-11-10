@@ -267,13 +267,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             {
                 new WorkshopCard()
                 {
-                    WorkshopId = 1,
+                    WorkshopId = new Guid("cb40c32f-aed6-478d-bf13-d52d61d52d32"),
                     Title = "w1",
                 },
 
                 new WorkshopCard()
                 {
-                    WorkshopId = 2,
+                    WorkshopId = new Guid("dae7f9f7-300f-4eac-9909-4a939ecaf8fb"),
                     Title = "w2",
                 },
             };
@@ -289,13 +289,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             {
                 new WorkshopCard()
                 {
-                    WorkshopId = 1,
+                    WorkshopId = new Guid("cb40c32f-aed6-478d-bf13-d52d61d52d32"),
                     Title = "w1",
                 },
 
                 new WorkshopCard()
                 {
-                    WorkshopId = 2,
+                    WorkshopId = new Guid("dae7f9f7-300f-4eac-9909-4a939ecaf8fb"),
                     Title = "w2",
                 },
             };

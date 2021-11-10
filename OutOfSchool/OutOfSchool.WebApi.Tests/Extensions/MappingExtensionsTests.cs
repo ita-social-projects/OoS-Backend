@@ -328,7 +328,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                                 Description = "Description",
                                 Image = "Image",
                                 DateOfBirth = DateTime.Parse("1990-01-01"),
-                                WorkshopId = 5,
+                                WorkshopId = new Guid("3a217d24-4945-477b-9381-e9ee8dc1f338"),
                             },
                             new TeacherDTO
                             {
@@ -339,7 +339,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                                 Description = "Description",
                                 Image = "Image",
                                 DateOfBirth = DateTime.Parse("1990-01-01"),
-                                WorkshopId = 5,
+                                WorkshopId = new Guid("3a217d24-4945-477b-9381-e9ee8dc1f338"),
                             },
                         },
                 Keywords = new List<string>()
