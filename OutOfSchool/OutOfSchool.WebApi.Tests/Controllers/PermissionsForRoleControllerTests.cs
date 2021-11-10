@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -36,32 +36,31 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetsAllPermissionsForRoles_WhenCalled_ReturnsOkResultObject()
+        public async Task GetsAllPermissionsForRoles_WhenCalled_ReturnsOkObjectResult()
         {
             // Arrange
             service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles);
 
             // Act
-            var result = await controller.GetAllPermissionsForRoles().ConfigureAwait(false) as OkObjectResult;
+            var response = await controller.GetAll().ConfigureAwait(false) as ObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.IsInstanceOf<OkObjectResult>(response);
+            Assert.IsInstanceOf<IEnumerable<PermissionsForRoleDTO>>(response.Value);
+            Assert.That(response.Value, Is.Not.Null);
+            Assert.AreEqual(200, response.StatusCode);
         }
 
         [Test]
         public void GetAllPermissions_WhenCalled_ReturnsAllSystemPermissions()
         {
-            // Arrange
-            var allPermissions = Enum.GetValues(typeof(Permissions)).Cast<Permissions>();
-
             // Act
-            var response = controller.GetAllPermissions() as OkObjectResult;
-            var returnData = response.Value as IEnumerable<string>;
+            var response = controller.GetAllPermissions() as ObjectResult;
 
             // Assert
-            Assert.That(allPermissions.Count() == returnData.Count());
-            Assert.That(returnData.First().StartsWith("NotSet"));
+            Assert.IsInstanceOf<OkObjectResult>(response);
+            Assert.That(response.Value, Is.Not.Null);
+            Assert.That(response.Value, Is.Ordered);
         }
 
         [Test]
@@ -71,45 +70,42 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(new List<PermissionsForRoleDTO>());
 
             // Act
-            var result = await controller.GetAllPermissionsForRoles().ConfigureAwait(false) as NoContentResult;
+            var response = await controller.GetAll().ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.IsInstanceOf<NoContentResult>(response);
         }
 
         [Test]
-        [TestCase("admin")]
+        [TestCase("Admin")]
         public async Task GetByRoleName_WhenRoleNameIsValid_ReturnOkResultObject(string roleName)
         {
             // Arrange
             service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName));
 
             // Act
-            var result = await controller.GetByRoleName(roleName).ConfigureAwait(false) as BadRequestObjectResult;
-            var data = result.Value as PermissionsForRoleDTO;
+            var response = await controller.GetByRoleName(roleName).ConfigureAwait(false) as ObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(data.RoleName == "admin"
-                && data.Permissions.Any(x => x == Permissions.AccessAll));
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.IsInstanceOf<OkObjectResult>(response);
+            Assert.IsInstanceOf<PermissionsForRoleDTO>(response.Value);
+            Assert.That(response.Value, Is.Not.Null);
         }
-
 
         [Test]
         [TestCase("fakeRole")]
-        public async Task GetByRoleName_NotExistingRoleName_ReturnsEmptyObject(string roleName)
+        public async Task GetByRoleName_NotExistingRoleName_ReturnsBadRequest(string roleName)
         {
             // Arrange
-            service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName));
+            service.Setup(x => x.GetByRole(roleName)).Throws<ArgumentNullException>();
 
             // Act
-            var result = await controller.GetByRoleName(roleName).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByRoleName(roleName).ConfigureAwait(false) as ObjectResult;
+
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.Value, Is.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+            Assert.That(result.Value, Is.Not.Null);
+
         }
 
         [Test]
@@ -119,11 +115,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Create(permissionsForRoleDTO)).ReturnsAsync(permissionsForRoleDTO);
 
             // Act
-            var result = await controller.Create(permissionsForRoleDTO).ConfigureAwait(false) as CreatedAtActionResult;
+            var result = await controller.Create(permissionsForRoleDTO).ConfigureAwait(false) as ActionResult;
 
             // Assert
+            Assert.IsInstanceOf<CreatedAtActionResult>(result);
             Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(201, result.StatusCode);
         }
 
 
@@ -136,11 +132,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Update(permissionsForRoleDTO)).ReturnsAsync(permissionsForRoleDTO);
 
             // Act
-            var result = await controller.Update(permissionsForRoleDTO).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.Update(permissionsForRoleDTO).ConfigureAwait(false) as ObjectResult;
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            Assert.IsInstanceOf<OkObjectResult>(result);
+            Assert.IsInstanceOf<PermissionsForRoleDTO>(result.Value);
+            Assert.That(result.Value, Is.Not.Null);
         }
 
         /// <summary>
@@ -163,20 +160,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 new PermissionsForRoleDTO()
                 {
                 Id = 1,
-                RoleName = "admin",
+                RoleName = Role.Admin.ToString(),
                 Permissions = new List<Permissions> { Permissions.SystemManagement, Permissions.AccessAll, },
                 },
                 new PermissionsForRoleDTO()
                 {
                 Id = 2,
-                RoleName = "provider",
+                RoleName = Role.Provider.ToString(),
                 Permissions = new List<Permissions> { Permissions.WorkshopAddNew, Permissions.TeacherAddNew, Permissions.ProviderAddNew, },
 
                 },
                 new PermissionsForRoleDTO()
                 {
                 Id = 3,
-                RoleName = "perent",
+                RoleName = Role.Parent.ToString(),
                 Permissions = new List<Permissions> { Permissions.FavoriteAddNew, Permissions.ApplicationAddNew, Permissions.ChildAddNew, },
 
                 },

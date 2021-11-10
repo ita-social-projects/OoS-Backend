@@ -15,7 +15,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     [HasPermission(Permissions.SystemManagement)]
     public class PermissionsForRoleController : ControllerBase
     {
@@ -39,7 +38,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<IActionResult> GetAllPermissionsForRoles()
+        public async Task<IActionResult> GetAll()
         {
             var permissionsForRoles = await service.GetAll().ConfigureAwait(false);
 
@@ -63,16 +62,16 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet("{roleName}")]
         public async Task<IActionResult> GetByRoleName(string roleName)
         {
-            var taskToDo = service.GetByRole(roleName);
             PermissionsForRoleDTO result;
             try
             {
-                result = await taskToDo.ConfigureAwait(false);
+                result = await service.GetByRole(roleName).ConfigureAwait(false);
             }
             catch (ArgumentNullException e)
             {
-                return Ok(new { e.ParamName });
+                return BadRequest(new { e.ParamName });
             }
+
             return Ok(result);
         }
 
@@ -122,7 +121,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public IActionResult GetAllPermissions()
         {
             var resultQuery = Enum.GetValues(typeof(Permissions)).Cast<Permissions>();
-            var resultValues = resultQuery.Select(p => p.ToString() + $". Use code - [{(int)p}] to add permission.");
+            var resultValues = resultQuery.Select(p => new { permission = p.ToString(), code = p });
             return Ok(resultValues);
         }
 
