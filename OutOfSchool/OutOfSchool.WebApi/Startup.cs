@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net.Http;
 using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -121,7 +122,13 @@ namespace OutOfSchool.WebApi
 
             services.AddControllers().AddNewtonsoftJson();
 
-            services.AddHttpClient<IProviderAdminService, ProviderAdminService>();
+            services.AddHttpClient<IProviderAdminService, ProviderAdminService>().ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                return new HttpClientHandler()
+                {
+                    AutomaticDecompression = System.Net.DecompressionMethods.GZip,
+                };
+            });
 
             services.AddScoped<IProviderAdminService, ProviderAdminService>();
 

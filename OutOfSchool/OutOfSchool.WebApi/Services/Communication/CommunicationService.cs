@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
+
 using OutOfSchool.Common;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
@@ -19,6 +19,8 @@ namespace OutOfSchool.WebApi.Services.Communication
     // httpRequest retries
     public class CommunicationService : ICommunicationService
     {
+        // HttpClient is intended to be instantiated once and re-used throughout the life of an application.
+        // Instantiating an HttpClient class for every request will exhaust the number of sockets available under heavy loads.
         private static HttpClient httpClient;
         private readonly IHttpClientFactory httpClientFactory;
 
@@ -43,18 +45,25 @@ namespace OutOfSchool.WebApi.Services.Communication
 
                 using var requestMessage = new HttpRequestMessage();
 
+                requestMessage.Headers
+                    .AcceptEncoding
+                    .Add(new StringWithQualityHeaderValue("gzip"));
+
                 requestMessage.RequestUri = new System.Uri(request.Url.ToString());
 
-                requestMessage.Content =
-                        new StringContent(
-                            JsonConvert.SerializeObject(request.Data),
-                            Encoding.UTF8,
-                            System.Net.Mime.MediaTypeNames.Application.Json);
+                if (request.Data != null)
+                {
+                    requestMessage.Content =
+                            new StringContent(
+                                JsonConvert.SerializeObject(request.Data),
+                                Encoding.UTF8,
+                                System.Net.Mime.MediaTypeNames.Application.Json);
+                }
 
                 requestMessage.Method = HttpMethodService.GetHttpMethodType(request);
 
-                var response = await httpClient.SendAsync(requestMessage).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead)
+                    .ConfigureAwait(false);
 
                 // TODO:
                 // We can have isuues with duplicates when request finished with:
@@ -63,9 +72,13 @@ namespace OutOfSchool.WebApi.Services.Communication
                 // ServiceUnavailable ?
                 // Error handling with additional request to the identity server and check if such user was created.
 
-                var responseApi = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                using (var stream = await response.Content.ReadAsStreamAsync()
+                    .ConfigureAwait(false))
+                {
+                    response.EnsureSuccessStatusCode();
 
-                return JsonConvert.DeserializeObject<T>(responseApi);
+                    return stream.ReadAndDeserializeFromJson<T>();
+                }
             }
             catch (Exception ex)
             {
