@@ -195,7 +195,6 @@ namespace OutOfSchool.WebApi.Services
         public async Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null)
         {
             logger.LogInformation("Getting Workshops by filter started.");
-
             if (filter is null)
             {
                 filter = new WorkshopFilter();
@@ -286,17 +285,21 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(x => x.WithDisabilityOptions);
             }
 
-            if (filter.StartHour > 0 || filter.EndHour < 23 || filter.Workdays.Any())
+            if (filter.Workdays.Any())
             {
                 var workdaysBitMask = filter.Workdays.Aggregate((prev, next) => prev | next);
 
-                if (workdaysBitMask > 0 && (byte)workdaysBitMask < byte.MaxValue)
+                if (workdaysBitMask > 0)
                 {
-                    predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
-                        (tr.Workdays & workdaysBitMask) > 0
-                        && tr.StartTime.Hours >= filter.StartHour
-                        && tr.StartTime.Hours <= filter.EndHour));
+                    predicate = predicate.And(x => x.DateTimeRanges.Any(tr => (tr.Workdays & workdaysBitMask) > 0));
                 }
+            }
+
+            if (filter.MinStartTime.TotalMinutes > 0 || filter.MaxStartTime.Hours < 23)
+            {
+                predicate = predicate.And(x => x.DateTimeRanges.Any(tr =>
+                    tr.StartTime >= filter.MinStartTime
+                        && tr.StartTime.Hours <= filter.MaxStartTime.Hours));
             }
 
             if (!string.IsNullOrWhiteSpace(filter.City))
