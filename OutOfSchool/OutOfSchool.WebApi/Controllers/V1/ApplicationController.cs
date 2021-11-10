@@ -21,7 +21,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ApplicationController : ControllerBase
     {
         private readonly IApplicationService applicationService;
@@ -59,6 +58,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">All entities were found.</response>
         /// <response code="204">No entity was found.</response>
         /// <response code="500">If any server error occures.</response>
+        [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -83,6 +83,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">The entity was found by given Id.</response>
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures.</response>
+        [HasPermission(Permissions.ApplicationRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -119,7 +120,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">Entities were found by given Id.</response>
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.ApplicationReadParent)]
+        [HasPermission(Permissions.ApplicationRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -156,7 +157,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">Entities were found by given Id.</response>
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.ApplicationReadManager)]
+        [HasPermission(Permissions.ApplicationRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -198,7 +199,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">Entities were found by given status.</response>
         /// <response code="204">No entity with given status was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.ApplicationReadManager)]
+        [HasPermission(Permissions.ApplicationRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -230,7 +231,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="applicationApiModel">Application api model with data to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        [HasPermission(Permissions.ApplicationAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -380,6 +381,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 await applicationService.Delete(id).ConfigureAwait(false);
                 return NoContent();
             }
+
             // TODO: update exception handling
             catch (ArgumentException ex)
             {

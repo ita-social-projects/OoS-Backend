@@ -92,7 +92,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.LogError($"Updating failed. PermissionsForRole with name = {dto.RoleName} doesn't exist in the system.");
+                logger.LogError($"Updating failed. PermissionsForRole with name = {dto?.RoleName} doesn't exist in the system.");
                 throw;
             }
         }

@@ -13,7 +13,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class UserController : ControllerBase
     {
         private readonly IUserService userService;
@@ -83,7 +82,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
-        [Authorize(AuthenticationSchemes = "Bearer")]
         [HasPermission(Permissions.UserEdit)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

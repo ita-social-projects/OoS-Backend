@@ -15,7 +15,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class CityController : ControllerBase
     {
         private const int MinimumNameLength = 3;
@@ -59,6 +58,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">City id.</param>
         /// <returns>City.</returns>
+        [HasPermission(Permissions.ImpersonalDataRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CityDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]

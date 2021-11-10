@@ -20,15 +20,13 @@ namespace OutOfSchool.Common.PermissionsModule
 
         #region Application Control permissions #2
         [Display(GroupName = "Application", Name = "Read", Description = "Can read Application")]
-        ApplicationReadManager = 10,
-        [Display(GroupName = "Application", Name = "Read", Description = "Can read Application")]
-        ApplicationReadParent = 11,
+        ApplicationRead = 10,
         [Display(GroupName = "Application", Name = "Edit", Description = "Can edit Application item")]
-        ApplicationEdit = 12,
+        ApplicationEdit = 11,
         [Display(GroupName = "Application", Name = "Add new", Description = "Can add a new Application item")]
-        ApplicationAddNew = 13,
+        ApplicationAddNew = 12,
         [Display(GroupName = "Application", Name = "Remove", Description = "Can remove Application data")]
-        ApplicationRemove = 14,
+        ApplicationRemove = 13,
         #endregion
 
         #region Children Control permissions #3
@@ -122,6 +120,8 @@ namespace OutOfSchool.Common.PermissionsModule
         #region System Management and admin permissions #11
         [Display(GroupName = "SystemManaging", Name = "SystemManagement", Description = "Permissions to manage system conditions and specific data")]
         SystemManagement = 100,
+        [Display(GroupName = "SystemManaging", Name = "ReadImpersonalData", Description = "For non-admin users to get specific data as city, class, status etc")]
+        ImpersonalDataRead = 101,
 
         [Display(GroupName = "SystemManaging", Name = "SuperAdmin", Description = "access to all actions covered with [HasPermission] attribute")]
         AccessAll = short.MaxValue,

@@ -40,6 +40,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all teachers from the database.
         /// </summary>
         /// <returns>List of teachers.</returns>
+        [HasPermission(Permissions.TeacherRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TeacherDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -61,6 +62,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Teacher's id.</param>
         /// <returns>Teacher.</returns>
+        [HasPermission(Permissions.TeacherRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TeacherDTO))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -78,7 +80,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HasPermission(Permissions.TeacherAddNew)]
-        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -104,7 +105,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="dto">Teacher to update.</param>
         /// <returns>Teacher.</returns>
         [HasPermission(Permissions.TeacherEdit)]
-        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TeacherDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -125,7 +125,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="id">Teacher's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HasPermission(Permissions.TeacherRemove)]
-        [Authorize(AuthenticationSchemes = "Bearer")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]

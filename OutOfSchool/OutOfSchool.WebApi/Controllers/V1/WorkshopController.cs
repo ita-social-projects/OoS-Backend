@@ -22,7 +22,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class WorkshopController : ControllerBase
     {
         private readonly IWorkshopServicesCombiner combinedWorkshopService;

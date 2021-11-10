@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -19,7 +18,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ParentController : ControllerBase
     {
         private readonly IParentService serviceParent;
@@ -47,6 +45,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// To get all Parents from DB.
         /// </summary>
         /// <returns>List of Parents.</returns>
+        [HasPermission(Permissions.SystemManagement)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -68,6 +67,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <returns>List of ParentCardDto.</returns>
         [HttpGet]
+        [HasPermission(Permissions.ParentRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ParentCard>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -107,6 +107,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="id">Key in table.</param>
         /// <returns>Parent with define id.</returns>
         [HttpGet("{id}")]
+        [HasPermission(Permissions.ParentRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ParentDTO))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(Guid id)

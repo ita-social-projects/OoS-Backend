@@ -15,8 +15,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = "Bearer")]
-
     public class StatisticController : ControllerBase
     {
         private readonly IStatisticService service;

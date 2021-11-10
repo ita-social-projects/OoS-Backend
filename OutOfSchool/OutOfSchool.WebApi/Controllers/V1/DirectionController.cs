@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [HasPermission(Permissions.SystemManagement)]
     public class DirectionController : ControllerBase
     {
         private readonly IDirectionService service;
@@ -89,7 +89,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.SystemManagement)]
         [HttpPost]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -131,7 +130,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.SystemManagement)]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DirectionDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -157,7 +155,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.SystemManagement)]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

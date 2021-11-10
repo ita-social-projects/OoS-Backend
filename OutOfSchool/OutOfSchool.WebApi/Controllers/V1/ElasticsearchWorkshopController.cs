@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData.Models;
@@ -12,7 +10,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     [HasPermission(Permissions.SystemManagement)]
     public class ElasticsearchWorkshopController : ControllerBase
     {

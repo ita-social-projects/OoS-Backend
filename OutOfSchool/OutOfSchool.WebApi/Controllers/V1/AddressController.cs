@@ -15,7 +15,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class AddressController : ControllerBase
     {
         private readonly IAddressService addressService;
@@ -37,6 +36,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <returns>List of all addresses.</returns>
         [HttpGet]
+        // TODO: who needs to use this endpoint, what level of it's access we should do?
+        [HasPermission(Permissions.AddressRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AddressDto>))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAddresses()
@@ -50,6 +51,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="id">The key in the database.</param>
         /// <returns>Address element with some id.</returns>
         [HttpGet("{id}")]
+        [HasPermission(Permissions.AddressRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -65,8 +67,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="addressDto">Element which must be added.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [HasPermission(Permissions.AddressAddNew)]
         [HttpPost]
+        [HasPermission(Permissions.AddressAddNew)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -103,8 +105,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="addressDto">Entity.</param>
         /// <returns>Address key.</returns>
-        [HasPermission(Permissions.AddressEdit)]
         [HttpPut]
+        [HasPermission(Permissions.AddressEdit)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
@@ -123,8 +125,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Address key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [HasPermission(Permissions.AddressRemove)]
         [HttpDelete("{id}")]
+        [HasPermission(Permissions.AddressRemove)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
