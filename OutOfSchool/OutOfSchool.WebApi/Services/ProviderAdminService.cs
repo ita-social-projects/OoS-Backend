@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.Options;
+
 using Newtonsoft.Json;
+
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services.Communication;
 
 namespace OutOfSchool.WebApi.Services
@@ -19,6 +20,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IdentityServerConfig identityServerConfig;
         private readonly ProviderAdminConfig providerAdminConfig;
         private readonly IProviderAdminRepository providerAdminRepository;
+        private ResponseDto responseDto;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,
@@ -31,6 +33,7 @@ namespace OutOfSchool.WebApi.Services
             this.identityServerConfig = identityServerConfig.Value;
             this.providerAdminConfig = providerAdminConfig.Value;
             this.providerAdminRepository = providerAdminRepository;
+            responseDto = new ResponseDto();
         }
 
         public async Task<ResponseDto> CreateProviderAdminAsync(string userId, ProviderAdminDto providerAdminDto, string token)
@@ -38,36 +41,45 @@ namespace OutOfSchool.WebApi.Services
             var checkAccess = await IsAllowed(providerAdminDto.ProviderId, userId)
                 .ConfigureAwait(true);
 
+            if (!checkAccess)
+            {
+                responseDto.IsSuccess = false;
+                responseDto.Message = "You are not allowed to do that.";
+
+                return responseDto;
+            }
+
             var numberProviderAdminsLessThanMax = await providerAdminRepository
                 .GetNumberProviderAdminsAsync(providerAdminDto.ProviderId)
                 .ConfigureAwait(false);
 
-            if (checkAccess &&
-                numberProviderAdminsLessThanMax < providerAdminConfig.MaxNumberAdmins)
+            if (numberProviderAdminsLessThanMax >= providerAdminConfig.MaxNumberAdmins)
             {
-                var response = await SendRequest<ResponseDto>(new Request()
-                {
-                    HttpMethodType = HttpMethodType.Post,
-                    Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
-                    Token = token,
-                    Data = providerAdminDto,
-                }).ConfigureAwait(false);
+                responseDto.IsSuccess = false;
+                responseDto.Message = $"You can't have more than {providerAdminConfig.MaxNumberAdmins} provider assistants.";
 
-                if (response.IsSuccess)
-                {
-                    var user = JsonConvert.DeserializeObject<ProviderAdminDto>(response.Result.ToString());
-
-                    return new ResponseDto()
-                    {
-                        IsSuccess = true,
-                        Result = providerAdminDto,
-                    };
-                }
-
-                return response;
+                return responseDto;
             }
 
-            throw new UnauthorizedAccessException();
+            var response = await SendRequest<ResponseDto>(new Request()
+            {
+                HttpMethodType = HttpMethodType.Post,
+                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
+                Token = token,
+                Data = providerAdminDto,
+            }).ConfigureAwait(false);
+
+            if (response.IsSuccess)
+            {
+                var createdProviderAdmin = JsonConvert.DeserializeObject<ProviderAdminDto>(response.Result.ToString());
+
+                responseDto.IsSuccess = true;
+                responseDto.Result = createdProviderAdmin;
+
+                return responseDto;
+            }
+
+            return response;
         }
 
         public async Task<bool> IsAllowed(Guid providerId, string userId)

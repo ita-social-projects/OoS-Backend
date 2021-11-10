@@ -103,10 +103,11 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                     if (!deletionResult.Succeeded)
                     {
-                        // Log error here (user create without role) 
+                        // Log error here (user create without role)
                     }
 
                     response.IsSuccess = false;
+                    response.Message = "User was not registered.";
                     response.ErrorMessages =
                             roleAssignResult.Errors.Select(error => error.Description);
 
@@ -114,6 +115,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 }
 
                 response.IsSuccess = false;
+                response.Message = "User was not registered.";
                 response.ErrorMessages =
                         result.Errors.Select(error => error.Description);
 
@@ -128,6 +130,9 @@ namespace OutOfSchool.IdentityServer.Controllers
                 // Log errors
 
                 response.IsSuccess = false;
+
+                response.Message = "User was not registered.";
+
                 response.ErrorMessages =
                     new List<string> { ex.Message };
 

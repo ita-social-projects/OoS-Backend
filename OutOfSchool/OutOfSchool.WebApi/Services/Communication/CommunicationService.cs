@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+
 using Newtonsoft.Json;
 using OutOfSchool.Common;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
@@ -18,11 +19,17 @@ namespace OutOfSchool.WebApi.Services.Communication
     // httpRequest retries
     public class CommunicationService : ICommunicationService
     {
+        private static HttpClient httpClient;
         private readonly IHttpClientFactory httpClientFactory;
 
         public CommunicationService(IHttpClientFactory httpClientFactory)
         {
             this.httpClientFactory = httpClientFactory;
+
+            httpClient = httpClientFactory.CreateClient();
+            httpClient.DefaultRequestHeaders.Clear();
+            httpClient.DefaultRequestHeaders
+                .Accept.Add(new MediaTypeWithQualityHeaderValue(System.Net.Mime.MediaTypeNames.Application.Json));
         }
 
         public async Task<T> SendRequest<T>(Request request)
@@ -31,8 +38,6 @@ namespace OutOfSchool.WebApi.Services.Communication
             {
                 // TODO:
                 // Setup number of parallel requests
-                using var httpClient = httpClientFactory.CreateClient();
-
                 httpClient.DefaultRequestHeaders.Authorization
                                 = new AuthenticationHeaderValue("Bearer", request.Token);
 
@@ -40,19 +45,15 @@ namespace OutOfSchool.WebApi.Services.Communication
 
                 requestMessage.RequestUri = new System.Uri(request.Url.ToString());
 
-                if (request.Data != null)
-                {
-                    requestMessage.Content =
+                requestMessage.Content =
                         new StringContent(
                             JsonConvert.SerializeObject(request.Data),
                             Encoding.UTF8,
                             System.Net.Mime.MediaTypeNames.Application.Json);
-                }
 
                 requestMessage.Method = HttpMethodService.GetHttpMethodType(request);
 
                 var response = await httpClient.SendAsync(requestMessage).ConfigureAwait(false);
-
                 response.EnsureSuccessStatusCode();
 
                 // TODO:

@@ -45,9 +45,11 @@ namespace OutOfSchool.WebApi.Controllers
                 {
                     return Ok((ProviderAdminDto)response.Result);
                 }
+
+                return BadRequest(response.Message);
             }
 
-            return BadRequest();
+            return BadRequest("Input data was not valid");
         }
     }
 }
