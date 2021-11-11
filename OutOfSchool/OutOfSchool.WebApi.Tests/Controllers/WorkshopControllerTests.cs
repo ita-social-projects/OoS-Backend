@@ -442,7 +442,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Description = "Description",
                         Image = "Image",
                         DateOfBirth = DateTime.Parse("2000-01-01"),
-                        WorkshopId = 6,
+                        WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },
                     new TeacherDTO
                     {
@@ -453,7 +453,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         Description = "Description",
                         Image = "Image",
                         DateOfBirth = DateTime.Parse("1990-01-01"),
-                        WorkshopId = 6,
+                        WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },
                 },
             };
