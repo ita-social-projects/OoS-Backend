@@ -7,12 +7,10 @@ namespace OutOfSchool.WebApi.Models.ChatWorkshop
     public class ChatMessageWorkshopCreateDto
     {
         [Required]
-        [Range(1, long.MaxValue)]
         [JsonProperty("WorkshopId", Required = Required.Always)]
         public Guid WorkshopId { get; set; }
 
         [Required]
-        [Range(1, long.MaxValue)]
         [JsonProperty("ParentId", Required = Required.Always)]
         public Guid ParentId { get; set; }
 
