@@ -6,7 +6,7 @@ namespace OutOfSchool.ElasticsearchData.Models
     public class TeacherES
     {
         [Keyword]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         public string FirstName { get; set; }
 
