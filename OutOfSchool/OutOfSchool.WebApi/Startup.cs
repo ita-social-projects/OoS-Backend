@@ -102,6 +102,7 @@ namespace OutOfSchool.WebApi
             services.Configure<AppDefaultsConfig>(Configuration.GetSection(AppDefaultsConfig.Name));
             services.Configure<IdentityServerConfig>(Configuration.GetSection(IdentityServerConfig.Name));
             services.Configure<ProviderAdminConfig>(Configuration.GetSection(ProviderAdminConfig.Name));
+            services.Configure<CommunicationConfig>(Configuration.GetSection(CommunicationConfig.Name));
 
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddAuthentication("Bearer")
@@ -123,7 +124,7 @@ namespace OutOfSchool.WebApi
 
             services.AddControllers().AddNewtonsoftJson();
 
-            services.AddHttpClient("WebApi")
+            services.AddHttpClient(Configuration["Communication:ClientName"])
                 .AddHttpMessageHandler(handler =>
                     new RetryPolicyDelegatingHandler(2))
                 .ConfigurePrimaryHttpMessageHandler(handler =>

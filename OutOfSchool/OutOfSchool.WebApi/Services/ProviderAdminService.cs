@@ -26,8 +26,9 @@ namespace OutOfSchool.WebApi.Services
             IHttpClientFactory httpClientFactory,
             IOptions<IdentityServerConfig> identityServerConfig,
             IOptions<ProviderAdminConfig> providerAdminConfig,
+            IOptions<CommunicationConfig> communicationConfig,
             IProviderAdminRepository providerAdminRepository)
-            : base(httpClientFactory)
+            : base(httpClientFactory, communicationConfig.Value)
         {
             this.httpClientFactory = httpClientFactory;
             this.identityServerConfig = identityServerConfig.Value;

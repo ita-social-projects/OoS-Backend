@@ -5,10 +5,11 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 using OutOfSchool.Common;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services.Communication
@@ -24,16 +25,18 @@ namespace OutOfSchool.WebApi.Services.Communication
         private static HttpClient httpClient;
         private readonly IHttpClientFactory httpClientFactory;
 
-        public CommunicationService(IHttpClientFactory httpClientFactory)
+        public CommunicationService(
+            IHttpClientFactory httpClientFactory,
+            CommunicationConfig communicationConfig)
         {
             this.httpClientFactory = httpClientFactory;
 
-            httpClient = httpClientFactory.CreateClient("WebApi");
+            httpClient = httpClientFactory.CreateClient(communicationConfig.ClientName);
             httpClient.DefaultRequestHeaders.Clear();
             httpClient.DefaultRequestHeaders
                 .Accept.Add(new MediaTypeWithQualityHeaderValue(System.Net.Mime.MediaTypeNames.Application.Json));
 
-            httpClient.Timeout = TimeSpan.FromSeconds(15);
+            //httpClient.Timeout = TimeSpan.FromSeconds(communicationConfig.TimeoutInSeconds);
         }
 
         public async Task<T> SendRequest<T>(Request request)
