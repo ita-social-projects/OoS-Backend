@@ -42,25 +42,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles);
 
             // Act
-            var response = await controller.GetAll().ConfigureAwait(false) as ObjectResult;
+            var response = await controller.GetAll().ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(response);
-            Assert.IsInstanceOf<IEnumerable<PermissionsForRoleDTO>>(response.Value);
-            Assert.That(response.Value, Is.Not.Null);
-            Assert.AreEqual(200, response.StatusCode);
+            Assert.IsInstanceOf<IEnumerable<PermissionsForRoleDTO>>((response as ObjectResult).Value);
+            Assert.That((response as ObjectResult).Value, Is.Not.Null);
+            Assert.AreEqual(200, (response as ObjectResult).StatusCode);
         }
 
         [Test]
         public void GetAllPermissions_WhenCalled_ReturnsAllSystemPermissions()
         {
             // Act
-            var response = controller.GetAllPermissions() as ObjectResult;
+            var response = controller.GetAllPermissions();
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(response);
-            Assert.That(response.Value, Is.Not.Null);
-            Assert.That(response.Value, Is.Ordered);
+            Assert.That((response as ObjectResult).Value, Is.Not.Null);
         }
 
         [Test]
@@ -84,12 +83,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName));
 
             // Act
-            var response = await controller.GetByRoleName(roleName).ConfigureAwait(false) as ObjectResult;
+            var response = await controller.GetByRoleName(roleName).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(response);
-            Assert.IsInstanceOf<PermissionsForRoleDTO>(response.Value);
-            Assert.That(response.Value, Is.Not.Null);
+            Assert.IsInstanceOf<PermissionsForRoleDTO>((response as ObjectResult).Value);
+            Assert.That((response as ObjectResult).Value, Is.Not.Null);
         }
 
         [Test]
@@ -100,11 +99,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetByRole(roleName)).Throws<ArgumentNullException>();
 
             // Act
-            var result = await controller.GetByRoleName(roleName).ConfigureAwait(false) as ObjectResult;
+            var response = await controller.GetByRoleName(roleName).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(result);
-            Assert.That(result.Value, Is.Not.Null);
+            Assert.IsInstanceOf<BadRequestObjectResult>(response);
+            Assert.That((response as ObjectResult).Value, Is.Not.Null);
 
         }
 
@@ -115,11 +114,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Create(permissionsForRoleDTO)).ReturnsAsync(permissionsForRoleDTO);
 
             // Act
-            var result = await controller.Create(permissionsForRoleDTO).ConfigureAwait(false) as ActionResult;
+            var response = await controller.Create(permissionsForRoleDTO).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<CreatedAtActionResult>(result);
-            Assert.That(result, Is.Not.Null);
+            Assert.IsInstanceOf<CreatedAtActionResult>(response);
+            Assert.That((response as CreatedAtActionResult).Value, Is.Not.Null);
         }
 
 
@@ -132,12 +131,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Update(permissionsForRoleDTO)).ReturnsAsync(permissionsForRoleDTO);
 
             // Act
-            var result = await controller.Update(permissionsForRoleDTO).ConfigureAwait(false) as ObjectResult;
+            var response = await controller.Update(permissionsForRoleDTO).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<OkObjectResult>(result);
-            Assert.IsInstanceOf<PermissionsForRoleDTO>(result.Value);
-            Assert.That(result.Value, Is.Not.Null);
+            Assert.IsInstanceOf<OkObjectResult>(response);
+            Assert.IsInstanceOf<PermissionsForRoleDTO>((response as ObjectResult).Value);
+            Assert.That((response as ObjectResult).Value, Is.Not.Null);
         }
 
         /// <summary>
