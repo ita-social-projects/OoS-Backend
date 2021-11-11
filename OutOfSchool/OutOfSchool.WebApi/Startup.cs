@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.FeatureManagement;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.ElasticsearchData;
@@ -177,6 +178,10 @@ namespace OutOfSchool.WebApi
             services.AddSingleton(Log.Logger);
             services.AddVersioning();
             var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
+
+            // Add feature management
+            services.AddFeatureManagement(Configuration.GetSection("FeatureManagement"));
+            services.AddSingleton<IConfiguration>(Configuration);
 
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
