@@ -28,10 +28,12 @@ namespace OutOfSchool.WebApi.Services.Communication
         {
             this.httpClientFactory = httpClientFactory;
 
-            httpClient = httpClientFactory.CreateClient();
+            httpClient = httpClientFactory.CreateClient("WebApi");
             httpClient.DefaultRequestHeaders.Clear();
             httpClient.DefaultRequestHeaders
                 .Accept.Add(new MediaTypeWithQualityHeaderValue(System.Net.Mime.MediaTypeNames.Application.Json));
+
+            httpClient.Timeout = TimeSpan.FromSeconds(15);
         }
 
         public async Task<T> SendRequest<T>(Request request)

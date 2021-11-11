@@ -27,6 +27,7 @@ using OutOfSchool.WebApi.Extensions.Startup;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Communication;
 using OutOfSchool.WebApi.Util;
 using Serilog;
 
@@ -122,13 +123,14 @@ namespace OutOfSchool.WebApi
 
             services.AddControllers().AddNewtonsoftJson();
 
-            services.AddHttpClient<IProviderAdminService, ProviderAdminService>().ConfigurePrimaryHttpMessageHandler(() =>
-            {
-                return new HttpClientHandler()
-                {
-                    AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-                };
-            });
+            services.AddHttpClient("WebApi")
+                .AddHttpMessageHandler(handler =>
+                    new RetryPolicyDelegatingHandler(2))
+                .ConfigurePrimaryHttpMessageHandler(handler =>
+                    new HttpClientHandler()
+                    {
+                        AutomaticDecompression = System.Net.DecompressionMethods.GZip,
+                    });
 
             services.AddScoped<IProviderAdminService, ProviderAdminService>();
 
