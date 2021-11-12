@@ -81,7 +81,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             var validProviderId = Guid.NewGuid();
             validationServiceMock.Setup(x => x.GetParentOrProviderIdByUserRoleAsync(UserId, Role.Provider)).ReturnsAsync(validProviderId);
 
-            var validChatRoomIds = new List<Guid> () { Guid.NewGuid(), Guid.NewGuid() };
+            var validChatRoomIds = new List<Guid>() { Guid.NewGuid(), Guid.NewGuid() };
             roomServiceMock.Setup(x => x.GetChatRoomIdsByProviderIdAsync(validProviderId))
                 .ReturnsAsync(validChatRoomIds);
 
