@@ -46,20 +46,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(response);
-            Assert.IsInstanceOf<IEnumerable<PermissionsForRoleDTO>>((response as ObjectResult).Value);
-            Assert.That((response as ObjectResult).Value, Is.Not.Null);
-            Assert.AreEqual(200, (response as ObjectResult).StatusCode);
-        }
-
-        [Test]
-        public void GetAllPermissions_WhenCalled_ReturnsAllSystemPermissions()
-        {
-            // Act
-            var response = controller.GetAllPermissions();
-
-            // Assert
-            Assert.IsInstanceOf<OkObjectResult>(response);
-            Assert.That((response as ObjectResult).Value, Is.Not.Null);
+            var objectResult = response as OkObjectResult;
+            Assert.IsInstanceOf<IEnumerable<PermissionsForRoleDTO>>(objectResult.Value);
+            Assert.That(objectResult.Value, Is.Not.Null);
+            Assert.AreEqual(200, objectResult.StatusCode);
         }
 
         [Test]
@@ -76,6 +66,18 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
+        public void GetAllPermissions_WhenCalled_ReturnsAllSystemPermissions()
+        {
+            // Act
+            var response = controller.GetAllPermissions();
+
+            // Assert
+            Assert.IsInstanceOf<OkObjectResult>(response);
+            var objectResult = response as OkObjectResult;
+            Assert.That(objectResult.Value, Is.Not.Null);
+        }
+
+        [Test]
         [TestCase("Admin")]
         public async Task GetByRoleName_WhenRoleNameIsValid_ReturnOkResultObject(string roleName)
         {
@@ -87,8 +89,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(response);
-            Assert.IsInstanceOf<PermissionsForRoleDTO>((response as ObjectResult).Value);
-            Assert.That((response as ObjectResult).Value, Is.Not.Null);
+            var objectResult = response as OkObjectResult;
+            Assert.IsInstanceOf<PermissionsForRoleDTO>(objectResult.Value);
+            Assert.That(objectResult.Value, Is.Not.Null);
         }
 
         [Test]
@@ -103,7 +106,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsInstanceOf<BadRequestObjectResult>(response);
-            Assert.That((response as ObjectResult).Value, Is.Not.Null);
+            var objectResult = response as ObjectResult;
+            Assert.That(objectResult.Value, Is.Not.Null);
 
         }
 
@@ -118,7 +122,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsInstanceOf<CreatedAtActionResult>(response);
-            Assert.That((response as CreatedAtActionResult).Value, Is.Not.Null);
+            var createdAtActionResult = response as CreatedAtActionResult;
+
+            Assert.That(createdAtActionResult.Value, Is.Not.Null);
         }
 
 
@@ -135,8 +141,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(response);
-            Assert.IsInstanceOf<PermissionsForRoleDTO>((response as ObjectResult).Value);
-            Assert.That((response as ObjectResult).Value, Is.Not.Null);
+            var objectResult = response as OkObjectResult;
+            Assert.IsInstanceOf<PermissionsForRoleDTO>(objectResult.Value);
+            Assert.That(objectResult.Value, Is.Not.Null);
         }
 
         /// <summary>
