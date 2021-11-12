@@ -45,11 +45,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var response = await controller.GetAll().ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<OkObjectResult>(response);
-            var objectResult = response as OkObjectResult;
-            Assert.IsInstanceOf<IEnumerable<PermissionsForRoleDTO>>(objectResult.Value);
-            Assert.That(objectResult.Value, Is.Not.Null);
-            Assert.AreEqual(200, objectResult.StatusCode);
+            GetAssertedResponseOkAndValidValue<IEnumerable<PermissionsForRoleDTO>>(response);
         }
 
         [Test]
@@ -88,10 +84,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var response = await controller.GetByRoleName(roleName).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<OkObjectResult>(response);
-            var objectResult = response as OkObjectResult;
-            Assert.IsInstanceOf<PermissionsForRoleDTO>(objectResult.Value);
-            Assert.That(objectResult.Value, Is.Not.Null);
+            GetAssertedResponseOkAndValidValue<PermissionsForRoleDTO>(response);
         }
 
         [Test]
@@ -140,10 +133,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var response = await controller.Update(permissionsForRoleDTO).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<OkObjectResult>(response);
-            var objectResult = response as OkObjectResult;
-            Assert.IsInstanceOf<PermissionsForRoleDTO>(objectResult.Value);
-            Assert.That(objectResult.Value, Is.Not.Null);
+            GetAssertedResponseOkAndValidValue<PermissionsForRoleDTO>(response);
         }
 
         /// <summary>
@@ -157,6 +147,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 RoleName = "TestAdmin",
                 Permissions = new List<Permissions> { Permissions.SystemManagement, Permissions.AddressAddNew, Permissions.AddressEdit, },
             };
+        }
+
+        private void GetAssertedResponseOkAndValidValue<TExpectedValue>(IActionResult response)
+        {
+            Assert.IsInstanceOf<OkObjectResult>(response);
+            var okResult = response as OkObjectResult;
+            Assert.IsInstanceOf<TExpectedValue>(okResult.Value);
+            Assert.That(okResult.Value, Is.Not.Null);
+            Assert.AreEqual(200, okResult.StatusCode);
         }
 
         private IEnumerable<PermissionsForRoleDTO> FakePermissionsForAllRoles()
