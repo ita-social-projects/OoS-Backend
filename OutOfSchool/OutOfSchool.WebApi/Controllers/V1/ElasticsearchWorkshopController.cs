@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -12,8 +10,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
-    [Authorize(Roles = "admin")]
+    [HasPermission(Permissions.SystemManagement)]
     public class ElasticsearchWorkshopController : ControllerBase
     {
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> esService;

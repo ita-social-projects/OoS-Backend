@@ -41,6 +41,10 @@ namespace OutOfSchool.Services
 
         public DbSet<SocialGroup> SocialGroups { get; set; }
 
+        public DbSet<InstitutionStatus> InstitutionStatuses { get; set; }
+
+        public DbSet<PermissionsForRole> PermissionsForRoles { get; set; }
+
         public DbSet<Address> Addresses { get; set; }
 
         public DbSet<Application> Applications { get; set; }
@@ -52,8 +56,6 @@ namespace OutOfSchool.Services
         public DbSet<Favorite> Favorites { get; set; }
 
         public DbSet<DateTimeRange> DateTimeRanges { get; set; }
-
-        public DbSet<InstitutionStatus> InstitutionStatuses { get; set; }
 
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 

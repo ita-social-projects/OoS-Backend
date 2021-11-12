@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
@@ -18,7 +19,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class RatingController : ControllerBase
     {
         private readonly IRatingService ratingService;
@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all ratings from the database.
         /// </summary>
         /// <returns>List of all ratings.</returns>
-        [Authorize(Roles = "admin")]
+        [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -65,7 +65,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Rating's id.</param>
         /// <returns>Rating.</returns>
-        [Authorize(Roles = "admin")]
+        [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RatingDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -131,7 +131,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="parentId">Id of Parent.</param>
         /// <param name="entityId">Id of Entity.</param>
         /// <returns>Parent rating for the specified entity.</returns>
-        [Authorize(Roles = "parent,admin")]
+        [HasPermission(Permissions.RatingRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RatingDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -156,7 +156,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Rating entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "parent,admin")]
+        [HasPermission(Permissions.RatingAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(RatingDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -188,7 +188,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Rating to update.</param>
         /// <returns>Rating.</returns>
-        [Authorize(Roles = "parent,admin")]
+        [HasPermission(Permissions.RatingEdit)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RatingDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -217,7 +217,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Rating's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "admin")]
+        [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

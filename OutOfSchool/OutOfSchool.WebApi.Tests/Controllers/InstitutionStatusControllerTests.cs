@@ -110,7 +110,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetInstitutionStatus_WhenModelIsValid_ReturnsCreatedAtActionResult()
+        public async Task CreateInstitutionStatus_WhenModelIsValid_ReturnsCreatedAtActionResult()
         {
             // Arrange
             service.Setup(x => x.Create(institutionStatus)).ReturnsAsync(institutionStatus);

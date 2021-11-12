@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -40,6 +40,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all teachers from the database.
         /// </summary>
         /// <returns>List of teachers.</returns>
+        [HasPermission(Permissions.TeacherRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TeacherDTO>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -61,6 +62,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Teacher's id.</param>
         /// <returns>Teacher.</returns>
+        [HasPermission(Permissions.TeacherRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TeacherDTO))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -77,8 +79,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [HasPermission(Permissions.TeacherAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -103,8 +104,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Teacher to update.</param>
         /// <returns>Teacher.</returns>
-        [Authorize(Roles = "provider,admin")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [HasPermission(Permissions.TeacherEdit)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TeacherDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -124,8 +124,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Teacher's id.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [HasPermission(Permissions.TeacherRemove)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
