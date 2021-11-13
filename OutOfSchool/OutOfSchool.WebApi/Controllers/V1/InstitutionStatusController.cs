@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetAll()
         {
             var institutionStatuses = await service.GetAll().ConfigureAwait(false);
 
@@ -67,18 +67,16 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            InstitutionStatusDTO result;
             try
             {
                 this.ValidateId(id, localizer);
-                result = await service.GetById(id).ConfigureAwait(false);
+                return Ok(await service.GetById(id).ConfigureAwait(false));
             }
             catch (ArgumentOutOfRangeException e)
             {
                 return BadRequest(new { e.Message });
             }
 
-            return Ok(result);
         }
 
         /// <summary>
