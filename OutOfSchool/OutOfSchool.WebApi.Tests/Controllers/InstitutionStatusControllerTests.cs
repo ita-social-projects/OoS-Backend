@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -44,11 +45,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(institutionStatuses);
 
             // Act
-            var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+            var response = await controller.GetAll().ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            response.GetAssertedResponseOkAndValidValue<IEnumerable<InstitutionStatusDTO>>();
         }
 
         [Test]
@@ -58,11 +58,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(new List<InstitutionStatusDTO>());
 
             // Act
-            var result = await controller.Get().ConfigureAwait(false) as NoContentResult;
+            var response = await controller.GetAll().ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.IsInstanceOf<NoContentResult>(response);
         }
 
         [Test]
@@ -73,40 +72,38 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id));
 
             // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+            var response = await controller.GetById(id).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            response.GetAssertedResponseOkAndValidValue<InstitutionStatusDTO>();
         }
 
         [Test]
         [TestCase(-50)]
-        public void GetInstitutionStatusById_WhenIdIsInvalid_ReturnsArgumentOutOfRangeException(long id)
-        {
-            // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id));
-
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await controller.GetById(id).ConfigureAwait(false));
-        }
-
-
-        [Test]
-        [TestCase(100)]
-        public async Task GetInstitutionStatusById_WhenIdIsNotValid_ReturnsEmptyObject(long id)
+        public async Task GetInstitutionStatusById_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessage(long id)
         {
             // Arrange
             service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id));
 
             // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+            var response = await controller.GetById(id).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.Value, Is.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+        }
+
+        [Test]
+        [TestCase(100)]
+        public async Task GetById_WhenIdDoesntExist_ReturnsBadRequestWithExceptionMessage(long id)
+        {
+            // Arrange
+            service.Setup(x => x.GetById(id)).Throws<ArgumentOutOfRangeException>();
+
+            // Act
+            var response = await controller.GetById(id).ConfigureAwait(false);
+
+            // Assert
+            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
         [Test]
@@ -116,15 +113,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Create(institutionStatus)).ReturnsAsync(institutionStatus);
 
             // Act
-            var result = await controller.Create(institutionStatus).ConfigureAwait(false) as CreatedAtActionResult;
+            var response = await controller.Create(institutionStatus).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(201, result.StatusCode);
+            response.GetAssertedResponseValidateValueNotEmpty<CreatedAtActionResult>();
         }
-
-
-
 
         [Test]
         public async Task UpdateInstitutionStatus_WhenModelIsValid_ReturnsOkObjectResult()
@@ -133,11 +126,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Update(institutionStatus)).ReturnsAsync(institutionStatus);
 
             // Act
-            var result = await controller.Update(institutionStatus).ConfigureAwait(false) as OkObjectResult;
+            var response = await controller.Update(institutionStatus).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
+            response.GetAssertedResponseOkAndValidValue<InstitutionStatusDTO>();
         }
 
 
@@ -149,37 +141,38 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.Delete(id));
 
             // Act
-            var result = await controller.Delete(id) as NoContentResult;
+            var response = await controller.Delete(id);
 
             // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
+            Assert.IsInstanceOf<NoContentResult>(response);
         }
 
         [Test]
         [TestCase(-50)]
-        public void DeleteInstitutionStatus_WhenIdIsInvalid_ReturnsArgumentOutOfRangeException(long id)
-        {
-            // Arrange
-            service.Setup(x => x.Delete(id));
-
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await controller.Delete(id).ConfigureAwait(false));
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task DeleteInstitutionStatus_WhenIdIsInvalid_ReturnsNull(long id)
+        public async Task Delete_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessageAsync(long id)
         {
             // Arrange
             service.Setup(x => x.Delete(id));
 
             // Act
-            var result = await controller.Delete(id) as OkObjectResult;
+            var response = await controller.Delete(id).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Null);
+            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task DeleteInstitutionStatus_WhenIdDoesntExists_ReturnsBadRequestWithMessage(long id)
+        {
+            // Arrange
+            service.Setup(x => x.Delete(id)).Throws<ArgumentOutOfRangeException>();
+
+            // Act
+            var response = await controller.Delete(id).ConfigureAwait(false);
+
+            // Assert
+            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
 

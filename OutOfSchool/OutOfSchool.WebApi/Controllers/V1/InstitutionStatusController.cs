@@ -128,11 +128,18 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            this.ValidateId(id, localizer);
+            try
+            {
+                this.ValidateId(id, localizer);
+                await service.Delete(id).ConfigureAwait(false);
+                return NoContent();
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                return BadRequest(new { e.Message });
+            }
 
-            await service.Delete(id).ConfigureAwait(false);
 
-            return NoContent();
         }
 
     }
