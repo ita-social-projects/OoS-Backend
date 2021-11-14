@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(institutionStatuses);
 
             // Act
-            var response = await controller.GetAll().ConfigureAwait(false);
+            var response = await controller.Get().ConfigureAwait(false);
 
             // Assert
             response.GetAssertedResponseOkAndValidValue<IEnumerable<InstitutionStatusDTO>>();
@@ -58,7 +58,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(new List<InstitutionStatusDTO>());
 
             // Act
-            var response = await controller.GetAll().ConfigureAwait(false);
+            var response = await controller.Get().ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<NoContentResult>(response);
