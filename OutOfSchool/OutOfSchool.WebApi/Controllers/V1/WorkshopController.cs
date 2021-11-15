@@ -26,7 +26,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     {
         private readonly IWorkshopServicesCombiner combinedWorkshopService;
         private readonly IProviderService providerService;
-        private readonly H3GeoService geoService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
 

@@ -256,24 +256,6 @@ namespace OutOfSchool.WebApi.Services
                     .Select(n => n.Value)
                     .Any(hash => hash == w.Address.GeoHash));
 
-            // var closestWorkshops = workshops
-            //     .Include(w => w.Address)
-            //     .Where(w => neighbours
-            //         .Select(n => n.Value)
-            //         .Any(hash => hash == w.Address.GeoHash));
-
-            // while (closestWorkshops.Count() < count && kRing < 10)
-            // {
-            //     Api.KRing(h3Location, ++kRing, out neighbours);
-            //     neighbours.Add(h3Location);
-            //
-            //     closestWorkshops = workshops
-            //         .Include(w => w.Address)
-            //         .Where(w => neighbours
-            //             .Select(n => n.Value)
-            //             .Any(hash => hash == w.Address.GeoHash));
-            // }
-
             var workshopsCount = await closestWorkshops.CountAsync().ConfigureAwait(false);
 
             var enumerableWorkshops = closestWorkshops.AsEnumerable();

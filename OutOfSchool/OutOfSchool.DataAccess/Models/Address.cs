@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using H3Lib;
 
 namespace OutOfSchool.Services.Models
 {
@@ -30,7 +31,8 @@ namespace OutOfSchool.Services.Models
 
         public double Longitude { get; set; }
 
-        public ulong GeoHash { get; set; } = default;
+        // parameter r means size (resolution) of hexagon
+        public ulong GeoHash => H3Lib.Api.GeoToH3(new GeoCoord((decimal)Latitude, (decimal)Longitude), 6);
 
         public override bool Equals(object obj)
         {

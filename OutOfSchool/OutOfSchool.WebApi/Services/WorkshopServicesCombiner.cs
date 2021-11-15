@@ -114,7 +114,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
             }
-            
+
             if (elasticsearchService.IsElasticAlive)
             {
                 var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
-                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = DtoModelsToWorkshopCards(databaseResult.Entities) };
+                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
             }
         }
 
