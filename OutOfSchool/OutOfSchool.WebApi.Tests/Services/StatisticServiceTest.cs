@@ -23,22 +23,17 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private Mock<IApplicationRepository> applicationRepository;
         private Mock<IWorkshopRepository> workshopRepository;
-        private Mock<IRatingService> ratingService;
         private Mock<IEntityRepository<Direction>> directionRepository;
-
-        private Mock<ILogger<StatisticService>> logger;
-        private Mock<IMapper> mapper;
 
         [SetUp]
         public void SetUp()
         {
             applicationRepository = new Mock<IApplicationRepository>();
             workshopRepository = new Mock<IWorkshopRepository>();
-            ratingService = new Mock<IRatingService>();
             directionRepository = new Mock<IEntityRepository<Direction>>();
-
-            logger = new Mock<ILogger<StatisticService>>();
-            mapper = new Mock<IMapper>();
+            var ratingService = new Mock<IRatingService>();
+            var logger = new Mock<ILogger<StatisticService>>();
+            var mapper = new Mock<IMapper>();
 
             service = new StatisticService(
                 applicationRepository.Object,
