@@ -4,6 +4,12 @@ namespace OutOfSchool.Common
 {
     public static class GeoMathHelper
     {
+        public const int Resolution = 6;
+
+        public const int KRingForResolution = 1;
+
+        public const string ElasticRadius = "5000m";
+
         public static decimal GetDistanceFromLatLonInKm(double lat1, double lon1, double lat2, double lon2)
         {
             var r = 6371e3; // Radius of the earth in m

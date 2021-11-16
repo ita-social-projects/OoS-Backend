@@ -237,11 +237,9 @@ namespace OutOfSchool.WebApi.Services
                 filter = new WorkshopFilter();
             }
 
-            int count = 10;
-            int kRing = 1;
             var geo = new GeoCoord(filter.Latitude, filter.Longitude);
-            var h3Location = H3Lib.Api.GeoToH3(geo, 6);
-            Api.KRing(h3Location, kRing, out var neighbours);
+            var h3Location = H3Lib.Api.GeoToH3(geo, GeoMathHelper.Resolution);
+            Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
 
             var filterPredicate = PredicateBuild(filter);
 
@@ -271,7 +269,7 @@ namespace OutOfSchool.WebApi.Services
                             (double)geo.Latitude,
                             (double)geo.Longitude),
                 })
-                .OrderBy(p => p.Distance).Take(count).Select(a => a.w);
+                .OrderBy(p => p.Distance).Take(filter.Size).Select(a => a.w);
 
             var workshopsDTO = mapper.Map<List<WorkshopCard>>(nearestWorkshops);
 

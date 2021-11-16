@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nest;
+using OutOfSchool.Common;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
 
@@ -167,7 +168,7 @@ namespace OutOfSchool.ElasticsearchData
                     },
                 };
             }
-            
+
             if (Equals(OrderBy.Nearest.ToString(), filter.OrderByField))
             {
                 queryContainer &= new GeoDistanceQuery()
@@ -177,7 +178,7 @@ namespace OutOfSchool.ElasticsearchData
                     Field = Infer.Field<WorkshopES>(w => w.Address.Point),
                     DistanceType = GeoDistanceType.Arc,
                     Location = new GeoLocation((double)filter.Latitude, (double)filter.Longitude),
-                    Distance = "5000m",
+                    Distance = GeoMathHelper.ElasticRadius,
                     ValidationMethod = GeoValidationMethod.IgnoreMalformed,
                 };
             }
