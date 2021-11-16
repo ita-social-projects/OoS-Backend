@@ -18,7 +18,7 @@ namespace OutOfSchool.Services.Repository
 
         public async Task<bool> IsExistProviderAdminWithUserIdAsync(Guid providerId, string userId)
         {
-            var providerAdmin = await db.ProviderAdmins
+            var providerAdmin = await db.ProviderAdmins //single query to db
                 .Where(pa => pa.ProviderId == providerId)
                 .SingleOrDefaultAsync(pa => pa.UserId == userId);
 

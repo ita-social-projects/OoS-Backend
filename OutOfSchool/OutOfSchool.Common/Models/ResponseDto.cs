@@ -8,6 +8,7 @@ namespace OutOfSchool.Common
 
         public IEnumerable<string> ErrorMessages { get; set; }
 
+        // status code
         public string Message { get; set; }
 
         public bool IsSuccess { get; set; }

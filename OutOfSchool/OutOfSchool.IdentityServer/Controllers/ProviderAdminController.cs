@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authorization;
@@ -63,7 +62,10 @@ namespace OutOfSchool.IdentityServer.Controllers
             try
             {
                 IdentityResult result = await userManager.CreateAsync(user, password);
+                // RequestId
+                // loggs
 
+                // transaction
                 if (result.Succeeded)
                 {
                     IdentityResult roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
@@ -85,6 +87,8 @@ namespace OutOfSchool.IdentityServer.Controllers
                         response.IsSuccess = true;
                         response.Result = providerAdminDto;
 
+                        //TODO:
+                        // move to other place))
                         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
                         var confirmationLink = Url.Action("EmailConfirmation", "Account", new { userId = user.Id, token = token }, Request.Scheme);
                         var subject = "Запрошення!";

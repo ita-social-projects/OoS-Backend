@@ -62,6 +62,9 @@ namespace OutOfSchool.WebApi.Services
                 return responseDto;
             }
 
+            //RequestId
+            //logg
+
             var response = await SendRequest<ResponseDto>(new Request()
             {
                 HttpMethodType = HttpMethodType.Post,
