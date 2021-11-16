@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Newtonsoft.Json;
@@ -16,10 +17,10 @@ namespace OutOfSchool.WebApi.Services
 {
     public class ProviderAdminService : CommunicationService, IProviderAdminService
     {
-        private readonly IHttpClientFactory httpClientFactory;
         private readonly IdentityServerConfig identityServerConfig;
         private readonly ProviderAdminConfig providerAdminConfig;
         private readonly IProviderAdminRepository providerAdminRepository;
+        private readonly ILogger<ProviderAdminService> logger;
         private ResponseDto responseDto;
 
         public ProviderAdminService(
@@ -27,25 +28,30 @@ namespace OutOfSchool.WebApi.Services
             IOptions<IdentityServerConfig> identityServerConfig,
             IOptions<ProviderAdminConfig> providerAdminConfig,
             IOptions<CommunicationConfig> communicationConfig,
-            IProviderAdminRepository providerAdminRepository)
+            IProviderAdminRepository providerAdminRepository,
+            ILogger<ProviderAdminService> logger)
             : base(httpClientFactory, communicationConfig.Value)
         {
-            this.httpClientFactory = httpClientFactory;
             this.identityServerConfig = identityServerConfig.Value;
             this.providerAdminConfig = providerAdminConfig.Value;
             this.providerAdminRepository = providerAdminRepository;
+            this.logger = logger;
             responseDto = new ResponseDto();
         }
 
         public async Task<ResponseDto> CreateProviderAdminAsync(string userId, ProviderAdminDto providerAdminDto, string token)
         {
+            logger.LogDebug($"AdminProvider creating was started for User(id): {userId}");
+
             var checkAccess = await IsAllowed(providerAdminDto.ProviderId, userId)
                 .ConfigureAwait(true);
 
             if (!checkAccess)
             {
+                logger.LogError($"User(id): {userId} doesn't have permission to create provider admin.");
+
                 responseDto.IsSuccess = false;
-                responseDto.Message = "You are not allowed to do that.";
+                responseDto.HttpStatusCode = HttpStatusCode.Forbidden;
 
                 return responseDto;
             }
@@ -56,22 +62,29 @@ namespace OutOfSchool.WebApi.Services
 
             if (numberProviderAdminsLessThanMax >= providerAdminConfig.MaxNumberAdmins)
             {
+                logger.LogError($"Admin was not created by User(id): {userId}. " +
+                    $"Limit on the number of admins has been exceeded for the Provider(id): {providerAdminDto.ProviderId}.");
+
                 responseDto.IsSuccess = false;
-                responseDto.Message = $"You can't have more than {providerAdminConfig.MaxNumberAdmins} provider assistants.";
+                responseDto.HttpStatusCode = HttpStatusCode.MethodNotAllowed;
 
                 return responseDto;
             }
 
-            //RequestId
-            //logg
-
-            var response = await SendRequest<ResponseDto>(new Request()
+            var request = new Request()
             {
                 HttpMethodType = HttpMethodType.Post,
                 Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
                 Token = token,
                 Data = providerAdminDto,
-            }).ConfigureAwait(false);
+                RequestId = Guid.NewGuid(),
+            };
+
+            logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
+                $"was sent by User(id): {userId}. Url: {request.Url}");
+
+            var response = await SendRequest<ResponseDto>(request)
+                    .ConfigureAwait(false);
 
             if (response.IsSuccess)
             {
@@ -83,6 +96,8 @@ namespace OutOfSchool.WebApi.Services
                 return responseDto;
             }
 
+            // TODO:
+            // Deserialize?
             return response;
         }
 

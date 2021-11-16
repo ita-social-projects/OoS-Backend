@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 
 namespace OutOfSchool.Common
 {
@@ -6,10 +8,9 @@ namespace OutOfSchool.Common
     {
         public object Result { get; set; }
 
-        public IEnumerable<string> ErrorMessages { get; set; }
-
-        // status code
         public string Message { get; set; }
+
+        public HttpStatusCode HttpStatusCode { get; set; }
 
         public bool IsSuccess { get; set; }
     }

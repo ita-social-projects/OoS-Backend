@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,6 +7,8 @@ namespace OutOfSchool.WebApi.Services.Communication
 {
     public class RetryPolicyDelegatingHandler : DelegatingHandler
     {
+        // TODO:
+        // Move to config
         private readonly int maximumAmountOfRetries = 3;
 
         public RetryPolicyDelegatingHandler(int maximumAmountOfRetries)

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -7,8 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-
-using Newtonsoft.Json;
 
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
@@ -28,9 +25,12 @@ namespace OutOfSchool.WebApi.Controllers
         private string path;
         private string userId;
 
-        public ProviderAdminController(IProviderAdminService providerAdminService)
+        public ProviderAdminController(
+            IProviderAdminService providerAdminService,
+            ILogger<ProviderAdminController> logger)
         {
             this.providerAdminService = providerAdminService;
+            this.logger = logger;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
