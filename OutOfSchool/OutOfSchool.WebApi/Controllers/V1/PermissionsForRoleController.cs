@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> Get()
         {
             var permissionsForRoles = await service.GetAll().ConfigureAwait(false);
 
@@ -62,17 +62,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet("{roleName}")]
         public async Task<IActionResult> GetByRoleName(string roleName)
         {
-            PermissionsForRoleDTO result;
             try
             {
-                result = await service.GetByRole(roleName).ConfigureAwait(false);
+                return Ok(await service.GetByRole(roleName).ConfigureAwait(false));
             }
             catch (ArgumentNullException e)
             {
                 return BadRequest(new { e.ParamName });
             }
 
-            return Ok(result);
         }
 
         /// <summary>
@@ -118,12 +116,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        public IActionResult GetAllPermissions()
-        {
-            var resultQuery = Enum.GetValues(typeof(Permissions)).Cast<Permissions>();
-            var resultValues = resultQuery.Select(p => new { permission = p.ToString(), code = p });
-            return Ok(resultValues);
-        }
-
+        public IActionResult GetAllPermissions() =>
+            Ok(Enum.GetValues(typeof(Permissions))
+                .Cast<Permissions>()
+                .Select(p => new { permission = p.ToString(), code = p }));
     }
 }
