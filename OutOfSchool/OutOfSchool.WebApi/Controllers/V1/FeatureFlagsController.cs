@@ -8,6 +8,7 @@ using OutOfSchool.WebApi.Models;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1
 {
@@ -30,7 +31,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">All entities were found.</response>
         /// <response code="204">No entity was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Feature>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
