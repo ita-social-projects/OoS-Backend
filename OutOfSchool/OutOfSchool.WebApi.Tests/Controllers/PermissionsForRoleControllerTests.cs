@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles);
 
             // Act
-            var response = await controller.GetAll().ConfigureAwait(false);
+            var response = await controller.Get().ConfigureAwait(false);
 
             // Assert
             response.GetAssertedResponseOkAndValidValue<IEnumerable<PermissionsForRoleDTO>>();
@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(new List<PermissionsForRoleDTO>());
 
             // Act
-            var response = await controller.GetAll().ConfigureAwait(false);
+            var response = await controller.Get().ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<NoContentResult>(response);
