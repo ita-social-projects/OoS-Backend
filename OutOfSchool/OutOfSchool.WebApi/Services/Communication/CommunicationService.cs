@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -38,7 +37,7 @@ namespace OutOfSchool.WebApi.Services.Communication
             //httpClient.Timeout = TimeSpan.FromSeconds(communicationConfig.TimeoutInSeconds);
         }
 
-        public async Task<T> SendRequest<T>(Request request)
+        public async Task<ResponseDto> SendRequest(Request request)
         {
             try
             {
@@ -46,6 +45,9 @@ namespace OutOfSchool.WebApi.Services.Communication
                 // Setup number of parallel requests
                 httpClient.DefaultRequestHeaders.Authorization
                                 = new AuthenticationHeaderValue("Bearer", request.Token);
+
+                httpClient.DefaultRequestHeaders
+                    .Add("X-Request-ID", request.RequestId.ToString());
 
                 using var requestMessage = new HttpRequestMessage();
 
@@ -81,7 +83,7 @@ namespace OutOfSchool.WebApi.Services.Communication
                 {
                     response.EnsureSuccessStatusCode();
 
-                    return stream.ReadAndDeserializeFromJson<T>();
+                    return stream.ReadAndDeserializeFromJson<ResponseDto>();
                 }
             }
             catch (Exception ex)
@@ -89,15 +91,13 @@ namespace OutOfSchool.WebApi.Services.Communication
                 var responseDto = new ResponseDto
                 {
                     Message = "Error",
-                    ErrorMessages = new List<string> { ex.Message },
+                    //ErrorMessages = new List<string> { ex.Message },
                     IsSuccess = false,
                 };
 
                 // TODO:
                 // I had better refactor it
-                var result = JsonConvert.SerializeObject(responseDto);
-
-                return JsonConvert.DeserializeObject<T>(result);
+                return responseDto;
             }
         }
     }

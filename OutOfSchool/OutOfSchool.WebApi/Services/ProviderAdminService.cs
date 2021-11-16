@@ -81,23 +81,20 @@ namespace OutOfSchool.WebApi.Services
             };
 
             logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
-                $"was sent by User(id): {userId}. Url: {request.Url}");
+                $"was sent. User(id): {userId}. Url: {request.Url}");
 
-            var response = await SendRequest<ResponseDto>(request)
+            var response = await SendRequest(request)
                     .ConfigureAwait(false);
 
             if (response.IsSuccess)
             {
-                var createdProviderAdmin = JsonConvert.DeserializeObject<ProviderAdminDto>(response.Result.ToString());
-
                 responseDto.IsSuccess = true;
-                responseDto.Result = createdProviderAdmin;
+                responseDto.Result = JsonConvert
+                    .DeserializeObject<ProviderAdminDto>(response.Result.ToString());
 
                 return responseDto;
             }
 
-            // TODO:
-            // Deserialize?
             return response;
         }
 
@@ -106,20 +103,10 @@ namespace OutOfSchool.WebApi.Services
             bool providerAdmin = await providerAdminRepository.IsExistProviderAdminWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);
 
-            if (providerAdmin)
-            {
-                return true;
-            }
-
             bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);
 
-            if (provider)
-            {
-                return true;
-            }
-
-            return false;
+            return (providerAdmin || provider) ? true : false;
         }
     }
 }

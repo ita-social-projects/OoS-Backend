@@ -65,9 +65,11 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (response.IsSuccess)
             {
-                logger.LogError($"Succesfully created.");
+                ProviderAdminDto providerAdminDto = (ProviderAdminDto)response.Result;
 
-                return Ok((ProviderAdminDto)response.Result);
+                logger.LogInformation($"Succesfully created ProviderAdmin(id): {providerAdminDto.UserId} by User(id): {userId}.");
+
+                return Ok(providerAdminDto);
             }
 
             return BadRequest(response.Message);

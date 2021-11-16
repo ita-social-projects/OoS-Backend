@@ -28,7 +28,6 @@ namespace OutOfSchool.Services.Repository
         public async Task<bool> IsExistProviderWithUserIdAsync(Guid providerId, string userId)
         {
             var provider = await db.Providers
-                .Where(p => p.Id == providerId)
                 .SingleOrDefaultAsync(p => p.UserId == userId);
 
             return provider != null;
@@ -36,10 +35,8 @@ namespace OutOfSchool.Services.Repository
 
         public async Task<int> GetNumberProviderAdminsAsync(Guid providerId)
         {
-            var number = await db.ProviderAdmins
+            return await db.ProviderAdmins
                 .CountAsync(pa => pa.ProviderId == providerId);
-
-            return number;
         }
     }
 }
