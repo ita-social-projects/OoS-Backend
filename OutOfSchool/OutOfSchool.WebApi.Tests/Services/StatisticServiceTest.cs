@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -22,24 +23,30 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private Mock<IApplicationRepository> applicationRepository;
         private Mock<IWorkshopRepository> workshopRepository;
+        private Mock<IRatingService> ratingService;
         private Mock<IEntityRepository<Direction>> directionRepository;
 
         private Mock<ILogger<StatisticService>> logger;
+        private Mock<IMapper> mapper;
 
         [SetUp]
         public void SetUp()
         {
             applicationRepository = new Mock<IApplicationRepository>();
             workshopRepository = new Mock<IWorkshopRepository>();
+            ratingService = new Mock<IRatingService>();
             directionRepository = new Mock<IEntityRepository<Direction>>();
 
             logger = new Mock<ILogger<StatisticService>>();
+            mapper = new Mock<IMapper>();
 
             service = new StatisticService(
                 applicationRepository.Object,
                 workshopRepository.Object,
+                ratingService.Object,
                 directionRepository.Object,
-                logger.Object);
+                logger.Object,
+                mapper.Object);
         }
 
         [Test]
