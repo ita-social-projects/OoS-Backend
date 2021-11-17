@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -18,26 +20,34 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
+        private readonly IRatingService ratingService;
         private readonly IEntityRepository<Direction> directionRepository;
         private readonly ILogger<StatisticService> logger;
+        private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StatisticService"/> class.
         /// </summary>
         /// <param name="applicationRepository">Application repository.</param>
         /// <param name="workshopRepository">Workshop repository.</param>
+        /// <param name="ratingService">Rating service.</param>
         /// <param name="directionRepository">Direction repository.</param>
         /// <param name="logger">Logger.</param>
+        /// <param name="mapper">Automapper DI service.</param>
         public StatisticService(
             IApplicationRepository applicationRepository,
             IWorkshopRepository workshopRepository,
+            IRatingService ratingService,
             IEntityRepository<Direction> directionRepository,
-            ILogger<StatisticService> logger)
+            ILogger<StatisticService> logger,
+            IMapper mapper)
         {
             this.applicationRepository = applicationRepository;
             this.workshopRepository = workshopRepository;
+            this.ratingService = ratingService;
             this.directionRepository = directionRepository;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         // Return categories with 1 SQL query
@@ -101,7 +111,7 @@ namespace OutOfSchool.WebApi.Services
                     directionsWithCounts,
                     direction => direction.Id,
                     directionWithCounts => directionWithCounts.DirectionId,
-                    (direction, localDirectionsWithCounts) => new {direction, localDirectionsWithCounts})
+                    (direction, localDirectionsWithCounts) => new { direction, localDirectionsWithCounts })
                 .SelectMany(
                     x => x.localDirectionsWithCounts,
                     (x, y) => new DirectionStatistic
@@ -151,7 +161,28 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"All {popularWorkshopsList.Count} records were successfully received");
 
-            return popularWorkshopsList.Select(w => w.ToCard());
+            var workshopsCard = mapper.Map<List<WorkshopCard>>(popularWorkshopsList);
+
+            var result = GetWorkshopsWithAverageRating(workshopsCard);
+
+            return result;
+        }
+
+        private List<WorkshopCard> GetWorkshopsWithAverageRating(List<WorkshopCard> workshopsCards)
+        {
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(workshopsCards.Select(p => p.WorkshopId), RatingType.Workshop);
+
+            if (averageRatings != null)
+            {
+                foreach (var workshop in workshopsCards)
+                {
+                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.WorkshopId);
+                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
+                }
+            }
+
+            return workshopsCards;
         }
     }
 }
