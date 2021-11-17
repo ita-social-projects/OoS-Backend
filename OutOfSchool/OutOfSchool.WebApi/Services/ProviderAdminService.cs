@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Services
             bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);
 
-            return (providerAdmin || provider) ? true : false;
+            return providerAdmin || provider;
         }
     }
 }

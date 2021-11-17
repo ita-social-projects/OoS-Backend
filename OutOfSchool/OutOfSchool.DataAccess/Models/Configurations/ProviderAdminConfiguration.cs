@@ -13,6 +13,8 @@ namespace OutOfSchool.Services.Models.Configurations
             builder.Property(x => x.ProviderId)
                 .IsRequired();
 
+            // TODO:
+            // DeleteBehavior.Cascade causes cycles or multiple cascade paths
             builder
                 .HasOne(pa => pa.User)
                 .WithOne(u => u.ProviderAdmin)

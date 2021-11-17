@@ -86,11 +86,10 @@ namespace OutOfSchool.IdentityServer.Controllers
                             $"User(id): {userId}" +
                             $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
-                        return new ResponseDto
-                        {
-                            IsSuccess = false,
-                            HttpStatusCode = HttpStatusCode.InternalServerError,
-                        };
+                        response.IsSuccess = false;
+                        response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                        return response;
                     }
 
                     var roleAssignResult = await userManager.AddToRoleAsync(user, user.Role);
@@ -103,11 +102,10 @@ namespace OutOfSchool.IdentityServer.Controllers
                             $"User(id): {userId}" +
                             $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
-                        return new ResponseDto
-                        {
-                            IsSuccess = false,
-                            HttpStatusCode = HttpStatusCode.InternalServerError,
-                        };
+                        response.IsSuccess = false;
+                        response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                        return response;
                     }
 
                     providerAdminDto.UserId = user.Id;
@@ -143,11 +141,10 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                     logger.LogError($"{path} {ex.Message} User(id): {userId}.");
 
-                    return new ResponseDto
-                    {
-                        IsSuccess = false,
-                        HttpStatusCode = HttpStatusCode.InternalServerError,
-                    };
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
                 }
             }
         }

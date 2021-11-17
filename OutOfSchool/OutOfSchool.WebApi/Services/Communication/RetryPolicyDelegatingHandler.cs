@@ -9,7 +9,7 @@ namespace OutOfSchool.WebApi.Services.Communication
 {
     public class RetryPolicyDelegatingHandler : DelegatingHandler
     {
-        private int maximumAmountOfRetries = 3;
+        private readonly int maximumAmountOfRetries = 3;
 
         public RetryPolicyDelegatingHandler(int maximumAmountOfRetries)
             : base()

@@ -15,8 +15,8 @@ namespace OutOfSchool.WebApi.Services.Communication
 {
     public class CommunicationService : ICommunicationService
     {
-        private static HttpClient httpClient;
         private readonly IHttpClientFactory httpClientFactory;
+        private HttpClient httpClient;
 
         public CommunicationService(
             IHttpClientFactory httpClientFactory,
