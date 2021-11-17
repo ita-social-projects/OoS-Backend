@@ -33,7 +33,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly ILogger<ProviderAdminController> logger;
         private readonly OutOfSchoolDbContext db;
         private readonly IMapper mapper;
-        private ResponseDto response;
+        private readonly ResponseDto response;
         private string path;
         private string userId;
 

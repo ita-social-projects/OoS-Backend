@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ProviderAdminConfig providerAdminConfig;
         private readonly IProviderAdminRepository providerAdminRepository;
         private readonly ILogger<ProviderAdminService> logger;
-        private ResponseDto responseDto;
+        private readonly ResponseDto responseDto;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using AutoMapper;
+
 using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
