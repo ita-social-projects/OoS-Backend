@@ -123,7 +123,7 @@ namespace OutOfSchool.IdentityServer
                 });
 
             services.AddProxy();
-
+            services.AddAutoMapper(typeof(MappingProfile));
             services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();

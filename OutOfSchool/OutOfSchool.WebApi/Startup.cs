@@ -126,7 +126,8 @@ namespace OutOfSchool.WebApi
 
             services.AddHttpClient(Configuration["Communication:ClientName"])
                 .AddHttpMessageHandler(handler =>
-                    new RetryPolicyDelegatingHandler(2))
+                    new RetryPolicyDelegatingHandler(
+                        int.Parse(Configuration["Communication:MaxNumberOfRetries"])))
                 .ConfigurePrimaryHttpMessageHandler(handler =>
                     new HttpClientHandler()
                     {

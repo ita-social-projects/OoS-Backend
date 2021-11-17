@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -12,14 +13,8 @@ using OutOfSchool.WebApi.Services.Communication.ICommunication;
 
 namespace OutOfSchool.WebApi.Services.Communication
 {
-    // TODO:
-    // Add config section with:
-    // httpRequest timeout
-    // httpRequest retries
     public class CommunicationService : ICommunicationService
     {
-        // HttpClient is intended to be instantiated once and re-used throughout the life of an application.
-        // Instantiating an HttpClient class for every request will exhaust the number of sockets available under heavy loads.
         private static HttpClient httpClient;
         private readonly IHttpClientFactory httpClientFactory;
 
@@ -33,8 +28,7 @@ namespace OutOfSchool.WebApi.Services.Communication
             httpClient.DefaultRequestHeaders.Clear();
             httpClient.DefaultRequestHeaders
                 .Accept.Add(new MediaTypeWithQualityHeaderValue(System.Net.Mime.MediaTypeNames.Application.Json));
-
-            //httpClient.Timeout = TimeSpan.FromSeconds(communicationConfig.TimeoutInSeconds);
+            httpClient.Timeout = TimeSpan.FromSeconds(communicationConfig.TimeoutInSeconds);
         }
 
         public async Task<ResponseDto> SendRequest(Request request)
@@ -71,13 +65,6 @@ namespace OutOfSchool.WebApi.Services.Communication
                 var response = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead)
                     .ConfigureAwait(false);
 
-                // TODO:
-                // We can have isuues with duplicates when request finished with:
-                // RequestTimeout
-                // GatewayTimeout
-                // ServiceUnavailable ?
-                // Error handling with additional request to the identity server and check if such user was created.
-
                 using (var stream = await response.Content.ReadAsStreamAsync()
                     .ConfigureAwait(false))
                 {
@@ -90,13 +77,10 @@ namespace OutOfSchool.WebApi.Services.Communication
             {
                 var responseDto = new ResponseDto
                 {
-                    Message = "Error",
-                    //ErrorMessages = new List<string> { ex.Message },
                     IsSuccess = false,
+                    HttpStatusCode = HttpStatusCode.InternalServerError,
                 };
 
-                // TODO:
-                // I had better refactor it
                 return responseDto;
             }
         }

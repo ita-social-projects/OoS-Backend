@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<ResponseDto> CreateProviderAdminAsync(string userId, ProviderAdminDto providerAdminDto, string token)
         {
-            logger.LogDebug($"AdminProvider creating was started for User(id): {userId}");
+            logger.LogDebug($"AdminProvider creating was started. User(id): {userId}");
 
             var checkAccess = await IsAllowed(providerAdminDto.ProviderId, userId)
                 .ConfigureAwait(true);

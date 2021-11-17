@@ -43,6 +43,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Authorize(Roles = "provider,provideradmin")]
         [HttpPost]
@@ -54,7 +55,7 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 logger.LogError($"Input data was not valid for User(id): {userId}");
 
-                return BadRequest("Input data was not valid");
+                return StatusCode(StatusCodes.Status422UnprocessableEntity);
             }
 
             var response = await providerAdminService.CreateProviderAdminAsync(
@@ -72,7 +73,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return Ok(providerAdminDto);
             }
 
-            return BadRequest(response.Message);
+            return StatusCode((int)response.HttpStatusCode);
         }
     }
 }

@@ -3,6 +3,8 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
+using AutoMapper;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +32,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly IEmailSender emailSender;
         private readonly ILogger<ProviderAdminController> logger;
         private readonly OutOfSchoolDbContext db;
+        private readonly IMapper mapper;
         private ResponseDto response;
         private string path;
         private string userId;
@@ -39,7 +42,8 @@ namespace OutOfSchool.IdentityServer.Controllers
             IProviderAdminRepository providerAdminRepository,
             IEmailSender emailSender,
             ILogger<ProviderAdminController> logger,
-            OutOfSchoolDbContext db)
+            OutOfSchoolDbContext db,
+            IMapper mapper)
         {
             this.userManager = userManager;
             this.response = new ResponseDto();
@@ -47,6 +51,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             this.db = db;
             this.emailSender = emailSender;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -62,20 +67,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             logger.LogDebug($"Received request " +
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
-            // TODO:
-            // Let's think about expediency of using mapper here.
-            var user = new User()
-            {
-                UserName = providerAdminDto.Email,
-                Email = providerAdminDto.Email,
-                PhoneNumber = providerAdminDto.PhoneNumber,
-                Role = providerAdminDto.Role,
-                FirstName = providerAdminDto.FirstName,
-                LastName = providerAdminDto.LastName,
-                MiddleName = providerAdminDto.MiddleName,
-                CreatingTime = DateTimeOffset.UtcNow,
-                IsRegistered = false,
-            };
+            var user = mapper.Map<User>(providerAdminDto);
 
             var password = PasswordGenerator
                 .GenerateRandomPassword(userManager.Options.Password);
@@ -118,17 +110,12 @@ namespace OutOfSchool.IdentityServer.Controllers
                         };
                     }
 
-                    var adminprovider = new ProviderAdmin()
-                    {
-                        UserId = user.Id,
-                        ProviderId = providerAdminDto.ProviderId,
-                        CityId = providerAdminDto.CityId,
-                    };
-
-                    await providerAdminRepository.Create(adminprovider)
-                            .ConfigureAwait(false);
-
                     providerAdminDto.UserId = user.Id;
+
+                    var providerAdmin = mapper.Map<ProviderAdmin>(providerAdminDto);
+
+                    await providerAdminRepository.Create(providerAdmin)
+                            .ConfigureAwait(false);
 
                     response.IsSuccess = true;
                     response.Result = providerAdminDto;
@@ -154,7 +141,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 {
                     transaction.Rollback();
 
-                    logger.LogError($"{path} User(id): {userId}. {ex.Message}");
+                    logger.LogError($"{path} {ex.Message} User(id): {userId}.");
 
                     return new ResponseDto
                     {

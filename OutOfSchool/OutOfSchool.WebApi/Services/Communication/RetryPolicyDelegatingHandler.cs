@@ -3,13 +3,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using OutOfSchool.WebApi.Config;
+
 namespace OutOfSchool.WebApi.Services.Communication
 {
     public class RetryPolicyDelegatingHandler : DelegatingHandler
     {
-        // TODO:
-        // Move to config
-        private readonly int maximumAmountOfRetries = 3;
+        private int maximumAmountOfRetries = 3;
 
         public RetryPolicyDelegatingHandler(int maximumAmountOfRetries)
             : base()
