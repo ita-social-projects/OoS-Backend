@@ -58,9 +58,9 @@ namespace OutOfSchool.WebApi.Models
 
         [DataType(DataType.PhoneNumber)]
         [RegularExpression(
-            @"([\d]{10})",
-            ErrorMessage = "Phone number format is incorrect. Example: 0501234567")]
-        [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
+            @"([\d]{9})",
+            ErrorMessage = "Phone number format is incorrect. Example: 501234567")]
+        [DisplayFormat(DataFormatString = "{0:+380 XX-XXX-XX-XX}")]
         [MaxLength(15)]
         public string PhoneNumber { get; set; } = string.Empty;
 
