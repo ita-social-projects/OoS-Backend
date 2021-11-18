@@ -41,12 +41,12 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<ResponseDto> CreateProviderAdminAsync(string userId, ProviderAdminDto providerAdminDto, string token)
         {
-            logger.LogDebug($"AdminProvider creating was started. User(id): {userId}");
+            logger.LogDebug($"ProviderAdmin creating was started. User(id): {userId}");
 
-            var checkAccess = await IsAllowed(providerAdminDto.ProviderId, userId)
+            var hasAccess = await IsAllowedCreateAsync(providerAdminDto.ProviderId, userId)
                 .ConfigureAwait(true);
 
-            if (!checkAccess)
+            if (!hasAccess)
             {
                 logger.LogError($"User(id): {userId} doesn't have permission to create provider admin.");
 
@@ -98,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
             return response;
         }
 
-        public async Task<bool> IsAllowed(Guid providerId, string userId)
+        public async Task<bool> IsAllowedCreateAsync(Guid providerId, string userId)
         {
             bool providerAdmin = await providerAdminRepository.IsExistProviderAdminWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);

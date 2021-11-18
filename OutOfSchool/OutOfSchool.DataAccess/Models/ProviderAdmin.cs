@@ -13,9 +13,5 @@ namespace OutOfSchool.Services.Models
         public Guid ProviderId { get; set; }
 
         public virtual Provider Provider { get; set; }
-
-        public long? CityId { get; set; }
-
-        public virtual City City { get; set; }
     }
 }

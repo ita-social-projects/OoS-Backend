@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -39,6 +40,11 @@ namespace OutOfSchool.WebApi.Controllers
             userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
         }
 
+        /// <summary>
+        /// Method for creating new ProviderAdmin.
+        /// </summary>
+        /// <param name="providerAdmin">Entity to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ProviderAdminDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

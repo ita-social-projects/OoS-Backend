@@ -38,8 +38,6 @@ namespace OutOfSchool.Common.Models
 
         public Guid ProviderId { get; set; }
 
-        public long CityId { get; set; }
-
         public string UserId { get; set; }
     }
 }

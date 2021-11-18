@@ -121,6 +121,9 @@ namespace OutOfSchool.IdentityServer.Controllers
                     transaction.Commit();
 
                     // TODO:
+                    // Endpoint with sending new password
+
+                    // TODO:
                     // Use template instead
                     var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
                     var confirmationLink = Url.Action("EmailConfirmation", "Account", new { userId = user.Id, token = token }, Request.Scheme);
