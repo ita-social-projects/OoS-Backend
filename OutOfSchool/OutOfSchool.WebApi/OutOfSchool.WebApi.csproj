@@ -13,6 +13,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="H3Lib" Version="3.7.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.17" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.6">
@@ -51,9 +52,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
     <ProjectReference Include="..\OutOfSchool.ElasticsearchData\OutOfSchool.ElasticsearchData.csproj" />
-    <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="stylecop.json" />

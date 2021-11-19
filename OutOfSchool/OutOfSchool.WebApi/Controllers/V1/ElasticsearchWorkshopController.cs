@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData.Models;

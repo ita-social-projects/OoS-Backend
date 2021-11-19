@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
@@ -46,5 +46,10 @@ namespace OutOfSchool.WebApi.Models
         [Range(typeof(TimeSpan), "00:00:00", "23:59:59")]
         [JsonConverter(typeof(TimespanConverter))]
         public TimeSpan MaxStartTime { get; set; } = new TimeSpan(23, 59, 59);
+        [Range(0, 23, ErrorMessage = "Field value should be in a range from 0 to 23")]
+
+        public decimal Latitude { get; set; } = 0;
+
+        public decimal Longitude { get; set; } = 0;
     }
 }

@@ -14,6 +14,12 @@ namespace OutOfSchool.WebApi.Services
         where TSearch : class, new()
     {
         /// <summary>
+        /// Gets a value indicating whether is Elasticsearch server is available.
+        /// </summary>
+        /// <returns>A <see cref="bool"/> representing the result of the synchronous operation.</returns>
+        bool IsElasticAlive { get; }
+
+        /// <summary>
         /// Use this method to add entity to the index.
         /// </summary>
         /// <param name="entity">The entity that will be stored as a document.</param>
@@ -40,12 +46,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task<bool> ReIndex();
-
-        /// <summary>
-        /// Use this method to see if Elasticsearch server is availiable.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task<bool> PingServer();
 
         /// <summary>
         /// Use this method to search entities that match the filter's parameters.

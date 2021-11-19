@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -24,8 +23,8 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="IEnumerable{WorkshopDTO}"/> that contains elements from the input sequence.</returns>
-        Task<IEnumerable<WorkshopDTO>> GetByProviderId(Guid id);
+        /// The task result contains a <see cref="IEnumerable{WorkshopCard}"/> that contains elements from the input sequence.</returns>
+        Task<IEnumerable<WorkshopCard>> GetByProviderId(Guid id);
 
         /// <summary>
         /// Get entities from the database that match filter's parameters.
@@ -33,6 +32,14 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="filter">Filter with specified searching parameters.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains the <see cref="SearchResult{WorkshopCard}"/> that contains found elements.</returns>
-        Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null);
+        Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter = null);
+
+        /// <summary>
+        /// Get entities from the database that match filter's parameters and sorts by distance.
+        /// </summary>
+        /// <param name="filter">Filter with specified searching parameters.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the <see cref="SearchResult{WorkshopCard}"/> that contains found elements.</returns>
+        Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null);
     }
 }
