@@ -120,6 +120,9 @@
   <data name="Address is null." xml:space="preserve">
     <value>Адреса null (пуста).</value>
   </data>
+  <data name="Error! Please check the number is correct" xml:space="preserve">
+    <value>Помилка!Перевірте будь ласка правильність номеру</value>
+  </data>
   <data name="Id cannot be 0 or less than 0." xml:space="preserve">
     <value>Id не може бути 0 або меншим за 0.</value>
   </data>

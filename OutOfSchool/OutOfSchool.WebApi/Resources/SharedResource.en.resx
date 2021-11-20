@@ -121,6 +121,10 @@
     <value>Address is null.</value>
     <comment>AdressController</comment>
   </data>
+  <data name="Error! Please check the number is correct" xml:space="preserve">
+    <value>Error! Please check the number is correct</value>
+    <comment>PhoneNumberValidation</comment>
+  </data>
   <data name="Id cannot be 0 or less than 0." xml:space="preserve">
     <value>Id cannot be 0 or less than 0.</value>
     <comment>AdressController</comment>

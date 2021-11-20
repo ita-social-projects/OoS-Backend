@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.IdentityServer.ViewModels
 {
@@ -33,7 +34,7 @@ namespace OutOfSchool.IdentityServer.ViewModels
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(
             @"([0-9]{2})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})",
-            ErrorMessage = "Phone number format is incorrect. Example: +380XX-XXX-XX-XX")]
+            ErrorMessage = Constants.PhoneErrorMessage)]
         public string PhoneNumber { get; set; }
 
         [DataType(DataType.DateTime)]

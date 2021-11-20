@@ -23,9 +23,9 @@ namespace OutOfSchool.Services.Models
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(
             @"([\d]{9})",
-            ErrorMessage = "Phone number format is incorrect. Example: 501234567")]
-        [DisplayFormat(DataFormatString = "{0:+380 XX-XXX-XX-XX}")]
-        [MaxLength(15)]
+            ErrorMessage = Constants.PhoneErrorMessage)]
+        [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+        [MaxLength(Constants.UnifiedPhoneLength)]
         public string Phone { get; set; } = string.Empty;
 
         [DataType(DataType.EmailAddress)]
