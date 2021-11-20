@@ -127,19 +127,5 @@ namespace OutOfSchool.Services.Extensions
             //        .IsRequired(true);
             //});
         }
-
-        /// <summary>
-        /// Add configuration to convert Guid into binary(16).
-        /// </summary>
-        /// <param name="builder">Model Builder.</param>
-        public static void ConvertGuidTypeToBinary(this ModelBuilder builder)
-        {
-            foreach (var property in builder.Model.GetEntityTypes()
-                .SelectMany(t => t.GetProperties())
-                .Where(p => p.ClrType == typeof(Guid)))
-            {
-                property.SetColumnType("binary(16)");
-            }
-        }
     }
 }
