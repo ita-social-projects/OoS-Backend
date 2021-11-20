@@ -9,8 +9,7 @@ namespace OutOfSchool.Services.Models.Configurations
     {
         public void Configure(EntityTypeBuilder<ChatMessageWorkshop> builder)
         {
-            builder.HasKey(x => x.Id)
-                .IsClustered(false);
+            builder.HasKey(x => x.Id);
 
             builder
                 .HasOne(m => m.ChatRoom)

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -16,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.EmailSender;
@@ -45,7 +48,19 @@ namespace OutOfSchool.IdentityServer
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             var connectionString = config["ConnectionStrings:DefaultConnection"];
-            var serverVersion = ServerVersion.AutoDetect(connectionString);
+            var connectionStringBuilder = new DbConnectionStringBuilder();
+            connectionStringBuilder.ConnectionString = connectionString;
+            if (!connectionStringBuilder.ContainsKey("guidformat") || connectionStringBuilder["guidformat"].ToString().ToLower() != "binary16")
+            {
+                throw new Exception("The connection string should have a key: \"guidformat\" and a value: \"binary16\"");
+            }
+
+            var mySQLServerVersion = config["MySQLServerVersion"];
+            var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
+            if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
+            {
+                throw new Exception("MySQL Server version should be 8 or higher.");
+            }
 
             services
                 .AddDbContext<OutOfSchoolDbContext>(options => options
