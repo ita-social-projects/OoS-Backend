@@ -15,7 +15,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
-using OutOfSchool.IdentityServer.Services;
+using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;

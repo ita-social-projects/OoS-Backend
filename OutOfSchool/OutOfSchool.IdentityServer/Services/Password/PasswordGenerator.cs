@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.AspNetCore.Identity;
 
-namespace OutOfSchool.IdentityServer.Services
+namespace OutOfSchool.IdentityServer.Services.Password
 {
     public static class PasswordGenerator
     {
@@ -25,7 +24,7 @@ namespace OutOfSchool.IdentityServer.Services
                 "!@$?_-",                       // non-alphanumeric
             };
 
-            Random rand = new Random(Environment.TickCount);
+            CryptoRandom rand = new CryptoRandom();
 
             List<char> chars = new List<char>();
 
