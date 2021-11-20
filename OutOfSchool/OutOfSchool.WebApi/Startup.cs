@@ -185,7 +185,8 @@ namespace OutOfSchool.WebApi
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
-            services.AddHostedService<ElasticPinger>();
+            services.AddSingleton<ElasticPinger>();
+            services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
 
             services.AddSingleton(Log.Logger);
             services.AddVersioning();
