@@ -81,5 +81,42 @@ namespace OutOfSchool.WebApi.Controllers
 
             return StatusCode((int)response.HttpStatusCode);
         }
+
+        /// <summary>
+        /// Method for deleting ProviderAdmin.
+        /// </summary>
+        /// <param name="providerAdminId">Entity's id to delete.</param>
+        /// <param name="providerId">Provider's id for which operation perform.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Roles = "provider")]
+        [HttpDelete]
+        public async Task<ActionResult> Delete(string providerAdminId, Guid providerId)
+        {
+            logger.LogDebug($"{path} started. User(id): {userId}.");
+
+            var response = await providerAdminService.DeleteProviderAdminAsync(
+                    providerAdminId,
+                    userId,
+                    providerId,
+                    await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+                        .ConfigureAwait(false);
+
+            if (response.IsSuccess)
+            {
+                ProviderAdminDto providerAdminDto = (ProviderAdminDto)response.Result;
+
+                logger.LogInformation($"Succesfully deleted ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
+
+                return Ok();
+            }
+
+            return StatusCode((int)response.HttpStatusCode);
+        }
     }
 }

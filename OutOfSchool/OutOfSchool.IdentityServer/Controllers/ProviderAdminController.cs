@@ -151,5 +151,66 @@ namespace OutOfSchool.IdentityServer.Controllers
                 }
             }
         }
+
+        [HttpDelete]
+        [Authorize(Roles = "provider")]
+        public async Task<ResponseDto> Delete(DeleteProviderAdminDto deleteProviderAdminDto)
+        {
+            logger.LogDebug($"Received request " +
+                $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    var providerAdmin = db.ProviderAdmins
+                        .SingleOrDefault(pa => pa.UserId == deleteProviderAdminDto.ProviderAdminId);
+
+                    if (providerAdmin is null)
+                    {
+                        response.IsSuccess = false;
+                        response.HttpStatusCode = HttpStatusCode.NotFound;
+                    }
+
+                    db.ProviderAdmins.Remove(providerAdmin);
+
+                    var user = await userManager.FindByIdAsync(deleteProviderAdminDto.ProviderAdminId);
+                    var result = await userManager.DeleteAsync(user);
+
+                    if (!result.Succeeded)
+                    {
+                        transaction.Rollback();
+
+                        logger.LogError($"{path} Error happened while deleting ProviderAdmin. Request(id): {Request.Headers["X-Request-ID"]}" +
+                            $"User(id): {userId}" +
+                            $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
+
+                        response.IsSuccess = false;
+                        response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                        return response;
+                    }
+
+                    response.IsSuccess = true;
+                    response.HttpStatusCode = HttpStatusCode.OK;
+
+                    transaction.Commit();
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+
+                    logger.LogError($"{path} Error happened while deleting ProviderAdmin. Request(id): {Request.Headers["X-Request-ID"]}" +
+                            $"User(id): {userId} {ex.Message}");
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
+            }
+        }
     }
 }

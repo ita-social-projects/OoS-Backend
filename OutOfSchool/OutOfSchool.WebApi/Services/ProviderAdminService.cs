@@ -2,6 +2,8 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -98,6 +100,58 @@ namespace OutOfSchool.WebApi.Services
             return response;
         }
 
+        public async Task<ResponseDto> DeleteProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token)
+        {
+            logger.LogDebug($"ProviderAdmin(id): {providerAdminId} deleting was started. User(id): {userId}");
+
+            var hasAccess = await IsAllowedDeleteAsync(providerId, userId)
+                .ConfigureAwait(true);
+
+            if (!hasAccess)
+            {
+                logger.LogError($"User(id): {userId} doesn't have permission to delete provider admin.");
+
+                responseDto.IsSuccess = false;
+                responseDto.HttpStatusCode = HttpStatusCode.Forbidden;
+
+                return responseDto;
+            }
+
+            var request = new Request()
+            {
+                HttpMethodType = HttpMethodType.Delete,
+                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteProviderAdmin),
+                Token = token,
+                Data = new DeleteProviderAdminDto()
+                {
+                    ProviderAdminId = providerAdminId,
+                },
+                RequestId = Guid.NewGuid(),
+            };
+
+            logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
+                $"was sent. User(id): {userId}. Url: {request.Url}");
+
+            var response = await SendRequest(request)
+                    .ConfigureAwait(false);
+
+            if (response.IsSuccess)
+            {
+                responseDto.IsSuccess = true;
+                if (!(responseDto.Result is null))
+                {
+                    responseDto.Result = JsonConvert
+                    .DeserializeObject<ActionResult>(response.Result.ToString());
+
+                    return responseDto;
+                }
+
+                return responseDto;
+            }
+
+            return response;
+        }
+
         public async Task<bool> IsAllowedCreateAsync(Guid providerId, string userId)
         {
             bool providerAdmin = await providerAdminRepository.IsExistProviderAdminWithUserIdAsync(providerId, userId)
@@ -107,6 +161,14 @@ namespace OutOfSchool.WebApi.Services
                 .ConfigureAwait(false);
 
             return providerAdmin || provider;
+        }
+
+        public async Task<bool> IsAllowedDeleteAsync(Guid providerId, string userId)
+        {
+            bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(providerId, userId)
+                .ConfigureAwait(false);
+
+            return provider;
         }
     }
 }
