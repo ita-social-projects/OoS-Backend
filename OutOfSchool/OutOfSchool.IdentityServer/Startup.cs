@@ -21,6 +21,8 @@ using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.EmailSender;
 using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.KeyManagement;
+using OutOfSchool.IdentityServer.Services;
+using OutOfSchool.IdentityServer.Services.Intefaces;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
@@ -127,6 +129,7 @@ namespace OutOfSchool.IdentityServer
             services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
+            services.AddTransient<IProviderAdminService, ProviderAdminService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

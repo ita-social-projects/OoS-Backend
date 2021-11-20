@@ -73,7 +73,7 @@ namespace OutOfSchool.WebApi.Services.Communication
                     return stream.ReadAndDeserializeFromJson<ResponseDto>();
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 var responseDto = new ResponseDto
                 {
