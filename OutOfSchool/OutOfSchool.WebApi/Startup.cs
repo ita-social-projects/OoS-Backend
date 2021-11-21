@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.FeatureManagement;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.ElasticsearchData;
@@ -180,7 +181,7 @@ namespace OutOfSchool.WebApi
             var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
 
             // Add feature management
-            services.AddFeatureManagement(Configuration.GetSection("FeatureManagement"));
+            services.AddFeatureManagement(Configuration.GetSection(Constants.SectionName));
             services.AddSingleton<IConfiguration>(Configuration);
 
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class

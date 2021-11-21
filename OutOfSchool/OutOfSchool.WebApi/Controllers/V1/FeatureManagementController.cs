@@ -1,27 +1,25 @@
 ﻿using System;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.FeatureManagement;
-using Microsoft.FeatureManagement.Mvc;
-using OutOfSchool.WebApi.Models;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
-using OutOfSchool.WebApi.Enums;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using OutOfSchool.Common;
+using OutOfSchool.WebApi.Config;
 
 namespace OutOfSchool.WebApi.Controllers.V1
 {
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    public class FeatureFlagsController : ControllerBase
+    public class FeatureManagementController : ControllerBase
     {
-        private readonly IConfiguration _config;
+        private readonly IConfiguration config;
 
-        public FeatureFlagsController(IConfiguration configuration, ILogger<FeatureFlagsController> logger)
+        public FeatureManagementController(IConfiguration config)
         {
-            _config = configuration;
+            this.config = config;
         }
 
         /// <summary>
@@ -31,14 +29,19 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">All entities were found.</response>
         /// <response code="204">No entity was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Feature>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Enums.Feature>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public IActionResult Get()
         {
-            var releases = _config.GetSection("FeatureManagement").GetChildren().Where(x => x.Value.Equals("True")).ToList();
-            return Ok(releases);
+            var enabledReleases =
+                config.GetSection(Constants.SectionName)
+                    .GetChildren()
+                    .Where(x => x.Value.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+            return Ok(enabledReleases);
         }
     }
 }
