@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -101,11 +100,12 @@ namespace OutOfSchool.Services.Extensions
                     .IsFixedLength(true)
                     .HasMaxLength(84);
 
-                u.Property(user => user.ConcurrencyStamp)
-                    .IsUnicode(false)
-                    .IsFixedLength(true)
-                    .HasMaxLength(36)
-                    .IsRequired(true);
+                // TODO: Don't work with these changes
+                //u.Property(user => user.ConcurrencyStamp)
+                //    .IsUnicode(false)
+                //    .IsFixedLength(true)
+                //    .HasMaxLength(36)
+                //    .IsRequired(true);
 
                 u.Property(user => user.SecurityStamp)
                     .IsUnicode(false)
@@ -114,14 +114,15 @@ namespace OutOfSchool.Services.Extensions
                     .IsRequired(true);
             });
 
-            builder.Entity<IdentityRole>(r =>
-            {
-                r.Property(role => role.ConcurrencyStamp)
-                    .IsUnicode(false)
-                    .IsFixedLength(true)
-                    .HasMaxLength(36)
-                    .IsRequired(true);
-            });
+            // TODO: Don't work with these changes
+            //builder.Entity<IdentityRole>(r =>
+            //{
+            //    r.Property(role => role.ConcurrencyStamp)
+            //        .IsUnicode(false)
+            //        .IsFixedLength(true)
+            //        .HasMaxLength(36)
+            //        .IsRequired(true);
+            //});
         }
     }
 }

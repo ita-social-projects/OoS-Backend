@@ -1,3 +1,5 @@
+using System;
+using System.Data.Common;
 using System.Globalization;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Common.PermissionsModule;
@@ -121,8 +124,23 @@ namespace OutOfSchool.WebApi
             // .AddJsonOptions(options =>
             //     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
+            var connectionStringBuilder = new DbConnectionStringBuilder();
+            connectionStringBuilder.ConnectionString = connectionString;
+            if (!connectionStringBuilder.ContainsKey("guidformat") || connectionStringBuilder["guidformat"].ToString().ToLower() != "binary16")
+            {
+                throw new Exception("The connection string should have a key: \"guidformat\" and a value: \"binary16\"");
+            }
+
+            var mySQLServerVersion = Configuration["MySQLServerVersion"];
+            var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
+            if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
+            {
+                throw new Exception("MySQL Server version should be 8 or higher.");
+            }
+
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")))
+                builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion))
                 .AddCustomDataProtection("WebApi");
 
             // Add Elasticsearch client
