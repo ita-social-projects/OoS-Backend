@@ -14,6 +14,7 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Pictures;
 
 namespace OutOfSchool.WebApi.Tests.Controllers
 {
@@ -36,6 +37,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
         private Mock<IProviderService> providerServiceMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
+        private Mock<IPictureService> pictureServiceMock;
 
         private string userId;
         private Mock<HttpContext> httpContextMoq;
@@ -67,8 +69,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             workshopServiceMoq = new Mock<IWorkshopServicesCombiner>();
             providerServiceMoq = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
+            pictureServiceMock = new Mock<IPictureService>();
 
-            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object, options.Object)
+            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, pictureServiceMock.Object,localizer.Object, options.Object)
             {
                 ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
             };

@@ -6,6 +6,8 @@ using System.Linq;
 using Castle.Core.Internal;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.Pictures;
 
 namespace OutOfSchool.WebApi.Models
 {

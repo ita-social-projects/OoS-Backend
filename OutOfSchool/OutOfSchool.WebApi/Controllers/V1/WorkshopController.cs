@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -9,10 +10,15 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.Pictures;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Pictures;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Pictures;
+using OutOfSchool.WebApi.Util.Pictures;
 
 namespace OutOfSchool.WebApi.Controllers.V1
 {
@@ -26,6 +32,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     {
         private readonly IWorkshopServicesCombiner combinedWorkshopService;
         private readonly IProviderService providerService;
+        private readonly IPictureService pictureService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
 
@@ -39,12 +46,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public WorkshopController(
             IWorkshopServicesCombiner combinedWorkshopService,
             IProviderService providerService,
+            IPictureService pictureService,
             IStringLocalizer<SharedResource> localizer,
             IOptions<AppDefaultsConfig> options)
         {
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
+            this.pictureService = pictureService;
             this.options = options.Value;
         }
 
@@ -138,37 +147,57 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.WorkshopAddNew)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopDTO))]
+        //[HasPermission(Permissions.WorkshopAddNew)] //TODO: change
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(WorkshopDTO dto)
+        public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            //if (!ModelState.IsValid)
+            //{
+            //    return BadRequest(ModelState);
+            //}
 
-            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
-            if (!userHasRights)
-            {
-                return StatusCode(403, "Forbidden to create workshops for another providers.");
-            }
+            //var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            //if (!userHasRights)
+            //{
+            //    return StatusCode(403, "Forbidden to create workshops for another providers.");
+            //}
 
-            dto.Id = default;
-            dto.Address.Id = default;
-            if (dto.Teachers.Any())
+            //dto.Id = default;
+            //dto.Address.Id = default;
+            //if (dto.Teachers.Any())
+            //{
+            //    foreach (var teacher in dto.Teachers)
+            //    {
+            //        teacher.Id = default;
+            //    }
+            //}
+
+            //var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
+            var workshop = new WorkshopDTO();
+            workshop.Id = new Guid("12316600-66DB-4236-9271-1F037FFE3105");
+            // TODO: check max count of files
+            List<PictureOperationResult> results = new List<PictureOperationResult>();
+            foreach (var picture in dto.PicturesFiles)
             {
-                foreach (var teacher in dto.Teachers)
+                await using var stream = picture.OpenReadStream();
+                var pictureStorageModel = new PictureStorageModel
                 {
-                    teacher.Id = default;
-                }
+                    ContentStream = stream,
+                    ContentType = picture.ContentType,
+                };
+                results.Add(await pictureService.UploadWorkshopPicture(workshop.Id, pictureStorageModel).ConfigureAwait(false));
             }
 
-            var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
+            var badResults = results.GetFailedResults();
+            if (badResults.Any())
+            {
+                return Ok(badResults); // Ok()?
+            }
 
             return CreatedAtAction(
                 nameof(GetById),

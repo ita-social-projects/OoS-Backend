@@ -8,6 +8,7 @@ using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Configurations;
+using OutOfSchool.Services.Models.Pictures;
 
 namespace OutOfSchool.Services
 {
@@ -56,6 +57,10 @@ namespace OutOfSchool.Services
 
         public DbSet<DateTimeRange> DateTimeRanges { get; set; }
 
+        public DbSet<Picture<Workshop>> WorkshopPictures { get; set; } 
+
+        public DbSet<PictureMetadata> PicturesMetadata { get; set; }
+
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();
@@ -66,6 +71,18 @@ namespace OutOfSchool.Services
 
             builder.Entity<DateTimeRange>()
                 .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
+
+            builder.Entity<Picture<Workshop>>().HasKey(nameof(Picture<Workshop>.Id), nameof(Picture<Workshop>.PictureId));
+
+            builder.Entity<Picture<Workshop>>()
+                .HasOne(x => x.Entity)
+                .WithMany(x => x.WorkshopPictures)
+                .HasForeignKey(x => x.Id);
+
+            builder.Entity<Picture<Workshop>>()
+                .HasOne(x => x.PictureMetadata)
+                .WithOne(x => x.WorkshopPicture)
+                .HasForeignKey<Picture<Workshop>>(x => x.PictureId);
 
             builder.ApplyConfiguration(new TeacherConfiguration());
             builder.ApplyConfiguration(new ApplicationConfiguration());
