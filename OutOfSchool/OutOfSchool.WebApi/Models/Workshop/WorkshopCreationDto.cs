@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Http;
 
 namespace OutOfSchool.WebApi.Models.Workshop
 {
-    public class WorkshopCreationDto //: WorkshopDTO
+    public class WorkshopCreationDto : WorkshopDTO
     {
-        public IFormFileCollection PicturesFiles { get; set; }
+        public List<IFormFile> ImageFiles { get; set; }
     }
 }

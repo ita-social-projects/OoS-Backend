@@ -7,7 +7,7 @@ using Castle.Core.Internal;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.Pictures;
+using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -114,6 +114,8 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         public List<DateTimeRangeDto> DateTimeRanges { get; set; }
+
+        public ICollection<Guid> ImageIds { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

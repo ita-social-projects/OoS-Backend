@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 using Newtonsoft.Json;
 using OutOfSchool.Common;
-using OutOfSchool.Services.Models.Pictures;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.ChatWorkshop;
 
 namespace OutOfSchool.Services.Models
@@ -122,6 +122,6 @@ namespace OutOfSchool.Services.Models
         // These properties are only for navigation EF Core.
         public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
 
-        public virtual ICollection<Picture<Workshop>> WorkshopPictures { get; set; }
+        public virtual List<Image<Workshop>> WorkshopImages { get; set; }
     }
 }

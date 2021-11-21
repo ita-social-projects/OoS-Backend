@@ -22,18 +22,19 @@ using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Config.Pictures;
+using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Extensions.Startup;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.Pictures;
+using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 using Serilog;
 
@@ -124,11 +125,17 @@ namespace OutOfSchool.WebApi
                         .AllowAnyHeader()
                         .AllowCredentials()));
 
-            // Picture options
-            services.Configure<PictureOptions<Workshop>>(Configuration.GetSection($"Pictures:{nameof(Workshop)}"));
             services.AddControllers().AddNewtonsoftJson()
                 .AddJsonOptions(options =>
-                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+            // Request options
+            services.Configure<RequestLimitsOptions>(Configuration.GetSection(RequestLimitsOptions.Name));
+
+            // Picture options
+            services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
+            services.AddSingleton<MongoDb>();
+            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}"));
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -180,8 +187,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
-            services.AddTransient<IPictureService, PictureService>();
-            services.AddTransient<IPictureValidatorService<Workshop>, PictureValidatorService<Workshop>>();
+            services.AddTransient<IImageService, ImageService>();
+            services.AddTransient<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -206,8 +213,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
-            services.AddTransient<IPictureStorage, PictureStorage>();
-            services.AddTransient<IPictureRepository, PictureRepository>();
+            services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
+            services.AddTransient<IImageRepository, ImageRepository>();
 
             //Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

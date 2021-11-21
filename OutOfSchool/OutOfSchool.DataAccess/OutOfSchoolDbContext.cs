@@ -8,7 +8,7 @@ using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Configurations;
-using OutOfSchool.Services.Models.Pictures;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services
 {
@@ -57,9 +57,9 @@ namespace OutOfSchool.Services
 
         public DbSet<DateTimeRange> DateTimeRanges { get; set; }
 
-        public DbSet<Picture<Workshop>> WorkshopPictures { get; set; } 
+        public DbSet<Image<Workshop>> WorkshopImages { get; set; }
 
-        public DbSet<PictureMetadata> PicturesMetadata { get; set; }
+        public DbSet<ImageMetadata> ImagesMetadata { get; set; }
 
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
@@ -72,17 +72,17 @@ namespace OutOfSchool.Services
             builder.Entity<DateTimeRange>()
                 .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
 
-            builder.Entity<Picture<Workshop>>().HasKey(nameof(Picture<Workshop>.Id), nameof(Picture<Workshop>.PictureId));
+            builder.Entity<Image<Workshop>>().HasKey(nameof(Image<Workshop>.Id), nameof(Image<Workshop>.ImageId));
 
-            builder.Entity<Picture<Workshop>>()
+            builder.Entity<Image<Workshop>>()
                 .HasOne(x => x.Entity)
-                .WithMany(x => x.WorkshopPictures)
+                .WithMany(x => x.WorkshopImages)
                 .HasForeignKey(x => x.Id);
 
-            builder.Entity<Picture<Workshop>>()
-                .HasOne(x => x.PictureMetadata)
-                .WithOne(x => x.WorkshopPicture)
-                .HasForeignKey<Picture<Workshop>>(x => x.PictureId);
+            builder.Entity<Image<Workshop>>()
+                .HasOne(x => x.ImageMetadata)
+                .WithOne(x => x.WorkshopImage)
+                .HasForeignKey<Image<Workshop>>(x => x.ImageId);
 
             builder.ApplyConfiguration(new TeacherConfiguration());
             builder.ApplyConfiguration(new ApplicationConfiguration());

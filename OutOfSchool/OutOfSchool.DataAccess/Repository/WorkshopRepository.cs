@@ -51,6 +51,7 @@ namespace OutOfSchool.Services.Repository
                 .Include(ws => ws.Address)
                 .Include(ws => ws.Teachers)
                 .Include(ws => ws.DateTimeRanges)
+                .Include(ws => ws.WorkshopImages)
                 .SingleOrDefaultAsync(ws => ws.Id == id);
         }
 

@@ -10,15 +10,15 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models.Pictures;
+using OutOfSchool.Services.Models.Images;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Pictures;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
-using OutOfSchool.WebApi.Services.Pictures;
-using OutOfSchool.WebApi.Util.Pictures;
+using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Util.Images;
 
 namespace OutOfSchool.WebApi.Controllers.V1
 {
@@ -32,9 +32,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
     {
         private readonly IWorkshopServicesCombiner combinedWorkshopService;
         private readonly IProviderService providerService;
-        private readonly IPictureService pictureService;
+        private readonly IImageService pictureService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
+        private readonly RequestLimitsOptions requestLimitsOptions; // will be moved into a common class
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
@@ -46,15 +47,17 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public WorkshopController(
             IWorkshopServicesCombiner combinedWorkshopService,
             IProviderService providerService,
-            IPictureService pictureService,
+            IImageService pictureService,
             IStringLocalizer<SharedResource> localizer,
-            IOptions<AppDefaultsConfig> options)
+            IOptions<AppDefaultsConfig> options,
+            IOptions<RequestLimitsOptions> requestLimitsOptions)
         {
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
             this.pictureService = pictureService;
             this.options = options.Value;
+            this.requestLimitsOptions = requestLimitsOptions.Value;
         }
 
         /// <summary>
@@ -146,63 +149,55 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
+        /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
-        //[HasPermission(Permissions.WorkshopAddNew)] //TODO: change
+        [HasPermission(Permissions.WorkshopAddNew)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto)
+        public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto) // TODO: validate by request size
         {
-            //if (!ModelState.IsValid)
-            //{
-            //    return BadRequest(ModelState);
-            //}
-
-            //var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
-            //if (!userHasRights)
-            //{
-            //    return StatusCode(403, "Forbidden to create workshops for another providers.");
-            //}
-
-            //dto.Id = default;
-            //dto.Address.Id = default;
-            //if (dto.Teachers.Any())
-            //{
-            //    foreach (var teacher in dto.Teachers)
-            //    {
-            //        teacher.Id = default;
-            //    }
-            //}
-
-            //var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
-            var workshop = new WorkshopDTO();
-            workshop.Id = new Guid("12316600-66DB-4236-9271-1F037FFE3105");
-            // TODO: check max count of files
-            List<PictureOperationResult> results = new List<PictureOperationResult>();
-            foreach (var picture in dto.PicturesFiles)
+            if (!ModelState.IsValid)
             {
-                await using var stream = picture.OpenReadStream();
-                var pictureStorageModel = new PictureStorageModel
-                {
-                    ContentStream = stream,
-                    ContentType = picture.ContentType,
-                };
-                results.Add(await pictureService.UploadWorkshopPicture(workshop.Id, pictureStorageModel).ConfigureAwait(false));
+                return BadRequest(ModelState);
             }
+
+            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            if (!userHasRights)
+            {
+                return StatusCode(403, "Forbidden to create workshops for another providers.");
+            }
+
+            dto.Id = default;
+            dto.Address.Id = default;
+            if (dto.Teachers.Any())
+            {
+                foreach (var teacher in dto.Teachers)
+                {
+                    teacher.Id = default;
+                }
+            }
+
+            var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
+
+            if (!ValidCountOfFiles(dto.ImageFiles.Count))
+            {
+                return StatusCode(StatusCodes.Status413PayloadTooLarge);
+            }
+
+            var results = await pictureService.UploadManyWorkshopImagesWithUpdatingEntityAsync(workshop.Id, dto.ImageFiles)
+            .ConfigureAwait(false);
 
             var badResults = results.GetFailedResults();
-            if (badResults.Any())
-            {
-                return Ok(badResults); // Ok()?
-            }
 
             return CreatedAtAction(
                 nameof(GetById),
                 new { id = workshop.Id, },
-                workshop);
+                new { Id = workshop.Id, ImagesBadResults = badResults});
         }
 
         /// <summary>
@@ -289,6 +284,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
 
             return true;
+        }
+
+        private bool ValidCountOfFiles(int fileAmount)
+        {
+            return fileAmount <= requestLimitsOptions.MaxCountOfAttachedFiles;
         }
     }
 }
