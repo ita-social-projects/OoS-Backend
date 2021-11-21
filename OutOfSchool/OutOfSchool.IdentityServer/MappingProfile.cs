@@ -8,9 +8,9 @@ namespace OutOfSchool.IdentityServer
     {
         public MappingProfile()
         {
-            CreateMap<ProviderAdminDto, User>()
+            CreateMap<CreateProviderAdminDto, User>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
-            CreateMap<ProviderAdminDto, ProviderAdmin>();
+            CreateMap<CreateProviderAdminDto, ProviderAdmin>();
         }
     }
 }

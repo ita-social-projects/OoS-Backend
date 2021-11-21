@@ -30,6 +30,9 @@ namespace OutOfSchool.Services.Models
 
         public bool IsRegistered { get; set; }
 
+        // If the flag is set, that user can no longer do anything to website.
+        public bool IsEnabled { get; set; }
+
         // These properties are only for navigation EF Core.
         public virtual ICollection<ChatRoom> ChatRooms { get; set; }
 

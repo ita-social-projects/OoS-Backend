@@ -137,6 +137,15 @@ namespace OutOfSchool.IdentityServer.Controllers
                 });
             }
 
+            var user = await userManager.FindByEmailAsync(model.Username);
+
+            if (user != null && !user.IsEnabled)
+            {
+                logger.LogInformation($"{path} User is blocked. Login was failed.");
+
+                return BadRequest();
+            }
+
             var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
 
             if (result.Succeeded)
@@ -217,6 +226,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 CreatingTime = DateTimeOffset.UtcNow,
                 Role = model.Role,
                 IsRegistered = false,
+                IsEnabled = true,
             };
 
             try

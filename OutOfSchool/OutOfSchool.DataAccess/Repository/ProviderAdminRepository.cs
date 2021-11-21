@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
+
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -16,11 +18,16 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
+        public async Task<ProviderAdmin> GetByIdAsync(string id, Guid providerId)
+        {
+            return await db.ProviderAdmins
+                .Where(pa => pa.ProviderId == providerId)
+                .SingleOrDefaultAsync(pa => pa.UserId == id);
+        }
+
         public async Task<bool> IsExistProviderAdminWithUserIdAsync(Guid providerId, string userId)
         {
-            var providerAdmin = await db.ProviderAdmins
-                .Where(pa => pa.ProviderId == providerId)
-                .SingleOrDefaultAsync(pa => pa.UserId == userId);
+            var providerAdmin = await GetByIdAsync(userId, providerId);
 
             return providerAdmin != null;
         }

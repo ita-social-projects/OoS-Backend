@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -11,5 +12,7 @@ namespace OutOfSchool.Services.Repository
         Task<bool> IsExistProviderWithUserIdAsync(Guid providerId, string userId);
 
         Task<int> GetNumberProviderAdminsAsync(Guid providerId);
+
+        Task<ProviderAdmin> GetByIdAsync(string id, Guid providerId);
     }
 }

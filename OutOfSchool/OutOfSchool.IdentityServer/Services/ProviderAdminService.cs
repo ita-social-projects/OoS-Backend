@@ -50,7 +50,7 @@ namespace OutOfSchool.IdentityServer.Services
         }
 
         public async Task<ResponseDto> CreateProviderAdminAsync(
-            ProviderAdminDto providerAdminDto,
+            CreateProviderAdminDto providerAdminDto,
             HttpRequest request,
             IUrlHelper url,
             string path,
@@ -65,6 +65,8 @@ namespace OutOfSchool.IdentityServer.Services
             {
                 try
                 {
+                    user.IsEnabled = true;
+
                     IdentityResult result = await userManager.CreateAsync(user, password);
 
                     if (!result.Succeeded)
@@ -161,6 +163,10 @@ namespace OutOfSchool.IdentityServer.Services
                     {
                         response.IsSuccess = false;
                         response.HttpStatusCode = HttpStatusCode.NotFound;
+
+                        logger.LogError($"{path} ProviderAdmin(id) {deleteProviderAdminDto.ProviderAdminId} not found. " +
+                            $"Request(id): {request.Headers["X-Request-ID"]}" +
+                                $"User(id): {userId}");
                     }
 
                     context.ProviderAdmins.Remove(providerAdmin);
@@ -205,6 +211,62 @@ namespace OutOfSchool.IdentityServer.Services
                     return response;
                 }
             }
+        }
+
+        public async Task<ResponseDto> BlockProviderAdminAsync(
+            BlockProviderAdminDto blockProviderAdminDto,
+            HttpRequest request,
+            string path,
+            string userId)
+        {
+            var user = await userManager.FindByIdAsync(blockProviderAdminDto.ProviderAdminId);
+
+            if (user is null)
+            {
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.NotFound;
+
+                logger.LogError($"{path} ProviderAdmin(id) {blockProviderAdminDto.ProviderAdminId} not found. " +
+                            $"Request(id): {request.Headers["X-Request-ID"]}" +
+                                $"User(id): {userId}");
+            }
+
+            user.IsEnabled = false;
+            var updateResult = await userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                logger.LogError($"{path} Error happened while blocking ProviderAdmin. Request(id): {request.Headers["X-Request-ID"]}" +
+                            $"User(id): {userId}" +
+                            $"{string.Join(System.Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                return response;
+            }
+
+            var updateSecurityStamp = await userManager.UpdateSecurityStampAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                logger.LogError($"{path} Error happened while updating security stamp. ProviderAdmin. Request(id): {request.Headers["X-Request-ID"]}" +
+                            $"User(id): {userId}" +
+                            $"{string.Join(System.Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                return response;
+            }
+
+            logger.LogInformation($"ProviderAdmin(id):{blockProviderAdminDto.ProviderAdminId} was successfully blocked by " +
+                        $"User(id): {userId}. Request(id): {request.Headers["X-Request-ID"]}");
+
+            response.IsSuccess = true;
+            response.HttpStatusCode = HttpStatusCode.OK;
+
+            return response;
         }
     }
 }

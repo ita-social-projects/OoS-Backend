@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -43,7 +40,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
         [HttpPost]
         [Authorize(Roles = "provider, provideradmin")]
-        public async Task<ResponseDto> Create(ProviderAdminDto providerAdminDto)
+        public async Task<ResponseDto> Create(CreateProviderAdminDto providerAdminDto)
         {
             logger.LogDebug($"Received request " +
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
@@ -61,6 +58,17 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             return await providerAdminService
                 .DeleteProviderAdminAsync(deleteProviderAdminDto, Request, path, userId);
+        }
+
+        [HttpPut]
+        [Authorize(Roles = "provider")]
+        public async Task<ResponseDto> Block(BlockProviderAdminDto blockProviderAdminDto)
+        {
+            logger.LogDebug($"Received request " +
+                $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+
+            return await providerAdminService
+                .BlockProviderAdminAsync(blockProviderAdminDto, Request, path, userId);
         }
     }
 }

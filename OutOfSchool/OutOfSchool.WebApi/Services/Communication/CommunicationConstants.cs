@@ -6,6 +6,8 @@
 
         public const string DeleteProviderAdmin = "provideradmin/delete";
 
+        public const string BlockProviderAdmin = "provideradmin/block";
+
         public const int BufferSize = 1024;
     }
 }

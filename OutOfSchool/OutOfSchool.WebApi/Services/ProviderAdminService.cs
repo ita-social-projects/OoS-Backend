@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Services
             responseDto = new ResponseDto();
         }
 
-        public async Task<ResponseDto> CreateProviderAdminAsync(string userId, ProviderAdminDto providerAdminDto, string token)
+        public async Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
         {
             logger.LogDebug($"ProviderAdmin creating was started. User(id): {userId}");
 
@@ -92,7 +92,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 responseDto.IsSuccess = true;
                 responseDto.Result = JsonConvert
-                    .DeserializeObject<ProviderAdminDto>(response.Result.ToString());
+                    .DeserializeObject<CreateProviderAdminDto>(response.Result.ToString());
 
                 return responseDto;
             }
@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogDebug($"ProviderAdmin(id): {providerAdminId} deleting was started. User(id): {userId}");
 
-            var hasAccess = await IsAllowedDeleteAsync(providerId, userId)
+            var hasAccess = await IsAllowedAsync(providerId, userId)
                 .ConfigureAwait(true);
 
             if (!hasAccess)
@@ -117,12 +117,90 @@ namespace OutOfSchool.WebApi.Services
                 return responseDto;
             }
 
+            var provideradmin = await providerAdminRepository.GetByIdAsync(providerAdminId, providerId)
+                .ConfigureAwait(false);
+
+            if (provideradmin is null)
+            {
+                logger.LogError($"ProviderAdmin(id) {providerAdminId} not found. User(id): {userId}.");
+
+                responseDto.IsSuccess = false;
+                responseDto.HttpStatusCode = HttpStatusCode.NotFound;
+
+                return responseDto;
+            }
+
             var request = new Request()
             {
                 HttpMethodType = HttpMethodType.Delete,
                 Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteProviderAdmin),
                 Token = token,
                 Data = new DeleteProviderAdminDto()
+                {
+                    ProviderAdminId = providerAdminId,
+                },
+                RequestId = Guid.NewGuid(),
+            };
+
+            logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
+                $"was sent. User(id): {userId}. Url: {request.Url}");
+
+            var response = await SendRequest(request)
+                    .ConfigureAwait(false);
+
+            if (response.IsSuccess)
+            {
+                responseDto.IsSuccess = true;
+                if (!(responseDto.Result is null))
+                {
+                    responseDto.Result = JsonConvert
+                    .DeserializeObject<ActionResult>(response.Result.ToString());
+
+                    return responseDto;
+                }
+
+                return responseDto;
+            }
+
+            return response;
+        }
+
+        public async Task<ResponseDto> BlockProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token)
+        {
+            logger.LogDebug($"ProviderAdmin(id): {providerAdminId} blocking was started. User(id): {userId}");
+
+            var hasAccess = await IsAllowedAsync(providerId, userId)
+                .ConfigureAwait(true);
+
+            if (!hasAccess)
+            {
+                logger.LogError($"User(id): {userId} doesn't have permission to block provider admin.");
+
+                responseDto.IsSuccess = false;
+                responseDto.HttpStatusCode = HttpStatusCode.Forbidden;
+
+                return responseDto;
+            }
+
+            var provideradmin = await providerAdminRepository.GetByIdAsync(providerAdminId, providerId)
+                .ConfigureAwait(false);
+
+            if (provideradmin is null)
+            {
+                logger.LogError($"ProviderAdmin(id) {providerAdminId} not found. User(id): {userId}.");
+
+                responseDto.IsSuccess = false;
+                responseDto.HttpStatusCode = HttpStatusCode.NotFound;
+
+                return responseDto;
+            }
+
+            var request = new Request()
+            {
+                HttpMethodType = HttpMethodType.Put,
+                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.BlockProviderAdmin),
+                Token = token,
+                Data = new BlockProviderAdminDto()
                 {
                     ProviderAdminId = providerAdminId,
                 },
@@ -163,7 +241,7 @@ namespace OutOfSchool.WebApi.Services
             return providerAdmin || provider;
         }
 
-        public async Task<bool> IsAllowedDeleteAsync(Guid providerId, string userId)
+        public async Task<bool> IsAllowedAsync(Guid providerId, string userId)
         {
             bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);

@@ -45,7 +45,7 @@ namespace OutOfSchool.WebApi.Controllers
         /// </summary>
         /// <param name="providerAdmin">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ProviderAdminDto))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateProviderAdminDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -53,7 +53,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Authorize(Roles = "provider,provideradmin")]
         [HttpPost]
-        public async Task<ActionResult> Create(ProviderAdminDto providerAdmin)
+        public async Task<ActionResult> Create(CreateProviderAdminDto providerAdmin)
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
@@ -72,7 +72,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (response.IsSuccess)
             {
-                ProviderAdminDto providerAdminDto = (ProviderAdminDto)response.Result;
+                CreateProviderAdminDto providerAdminDto = (CreateProviderAdminDto)response.Result;
 
                 logger.LogInformation($"Succesfully created ProviderAdmin(id): {providerAdminDto.UserId} by User(id): {userId}.");
 
@@ -109,9 +109,34 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (response.IsSuccess)
             {
-                ProviderAdminDto providerAdminDto = (ProviderAdminDto)response.Result;
-
                 logger.LogInformation($"Succesfully deleted ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
+
+                return Ok();
+            }
+
+            return StatusCode((int)response.HttpStatusCode);
+        }
+
+        [Authorize(Roles = "provider")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpPut]
+        public async Task<ActionResult> Block(string providerAdminId, Guid providerId)
+        {
+            logger.LogDebug($"{path} started. User(id): {userId}.");
+
+            var response = await providerAdminService.BlockProviderAdminAsync(
+                    providerAdminId,
+                    userId,
+                    providerId,
+                    await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
+                        .ConfigureAwait(false);
+
+            if (response.IsSuccess)
+            {
+                logger.LogInformation($"Succesfully blocked ProviderAdmin(id): {providerAdminId} by User(id): {userId}.");
 
                 return Ok();
             }
