@@ -89,48 +89,68 @@ namespace OutOfSchool.WebApi.Services
                 OrderByField = OrderBy.Id.ToString(),
             };
 
-            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
-
-            if (result.TotalAmount > 0 || await elasticsearchService.PingServer().ConfigureAwait(false))
+            if (elasticsearchService.IsElasticAlive)
             {
+                var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
+                if (result.TotalAmount <= 0)
+                {
+                    logger.LogInformation($"Result was {result.TotalAmount}");
+                }
+
                 return result.ToSearchResult();
             }
             else
             {
                 var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
-                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = DtoModelsToWorkshopCards(databaseResult.Entities) };
+                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
             }
         }
 
         /// <inheritdoc/>
         public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter)
         {
-            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
-
-            if (result.TotalAmount > 0 || await elasticsearchService.PingServer().ConfigureAwait(false))
+            if (!IsFilterValid(filter))
             {
+                return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
+            }
+
+            if (elasticsearchService.IsElasticAlive)
+            {
+                var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
+                if (result.TotalAmount <= 0)
+                {
+                    logger.LogInformation($"Result was {result.TotalAmount}");
+                }
+
                 return result.ToSearchResult();
             }
             else
             {
                 var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
-                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = DtoModelsToWorkshopCards(databaseResult.Entities) };
+                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
             }
         }
 
         /// <inheritdoc/>
         public async Task<List<WorkshopCard>> GetByProviderId(Guid id)
         {
-            var workshopCards = DtoModelsToWorkshopCards(await workshopService.GetByProviderId(id).ConfigureAwait(false));
+            var workshopCards = await workshopService.GetByProviderId(id).ConfigureAwait(false);
 
-            return workshopCards;
+            return workshopCards.ToList();
         }
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {
             return source.Select(currentElement => currentElement.ToCardDto()).ToList();
+        }
+
+        private bool IsFilterValid(WorkshopFilter filter)
+        {
+            return filter != null && filter.MaxStartTime >= filter.MinStartTime
+                                  && filter.MaxAge >= filter.MinAge
+                                  && filter.MaxPrice >= filter.MinPrice;
         }
     }
 }

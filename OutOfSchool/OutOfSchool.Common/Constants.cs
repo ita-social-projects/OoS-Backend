@@ -9,5 +9,7 @@ namespace OutOfSchool.Common
         public const int UnifiedUrlLength = 256;
 
         public const string SectionName = "FeatureManagement";
+
+        public const int MySQLServerMinimalMajorVersion = 8;
     }
 }

@@ -16,11 +16,9 @@ namespace OutOfSchool.WebApi.Models
         public RatingType Type { get; set; }
 
         [Required]
-        [Range(1, long.MaxValue, ErrorMessage = "The EntityId field should be bigger than 0")]
         public Guid EntityId { get; set; }
 
         [Required]
-        [Range(1, long.MaxValue, ErrorMessage = "The ParentId field should be bigger than 0")]
         public Guid ParentId { get; set; }
 
         public DateTimeOffset CreationTime { get; set; } = DateTimeOffset.UtcNow;

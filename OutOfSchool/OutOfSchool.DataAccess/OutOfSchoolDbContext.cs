@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Configurations;
 
 namespace OutOfSchool.Services
@@ -21,11 +22,9 @@ namespace OutOfSchool.Services
 
         public DbSet<Provider> Providers { get; set; }
 
-        public DbSet<ChatRoom> ChatRooms { get; set; }
+        public DbSet<ChatRoomWorkshop> ChatRoomWorkshops { get; set; }
 
-        public DbSet<ChatRoomUser> ChatRoomUsers { get; set; }
-
-        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<ChatMessageWorkshop> ChatMessageWorkshops { get; set; }
 
         public DbSet<Child> Children { get; set; }
 
@@ -41,6 +40,10 @@ namespace OutOfSchool.Services
 
         public DbSet<SocialGroup> SocialGroups { get; set; }
 
+        public DbSet<InstitutionStatus> InstitutionStatuses { get; set; }
+
+        public DbSet<PermissionsForRole> PermissionsForRoles { get; set; }
+
         public DbSet<Address> Addresses { get; set; }
 
         public DbSet<Application> Applications { get; set; }
@@ -53,8 +56,6 @@ namespace OutOfSchool.Services
 
         public DbSet<DateTimeRange> DateTimeRanges { get; set; }
 
-        public DbSet<InstitutionStatus> InstitutionStatuses { get; set; }
-
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();
@@ -64,14 +65,13 @@ namespace OutOfSchool.Services
             base.OnModelCreating(builder);
 
             builder.Entity<DateTimeRange>()
-                .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "[EndTime] >= [StartTime]");
+                .HasCheckConstraint("CK_DateTimeRanges_EndTimeIsAfterStartTime", "EndTime >= StartTime");
 
             builder.ApplyConfiguration(new TeacherConfiguration());
             builder.ApplyConfiguration(new ApplicationConfiguration());
+            builder.ApplyConfiguration(new ChatMessageWorkshopConfiguration());
+            builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
             builder.ApplyConfiguration(new ChildConfiguration());
-            builder.ApplyConfiguration(new ChatMessageConfiguration());
-            builder.ApplyConfiguration(new ChatRoomConfiguration());
-            builder.ApplyConfiguration(new ChatRoomUserConfiguration());
             builder.ApplyConfiguration(new ProviderConfiguration());
             builder.ApplyConfiguration(new WorkshopConfiguration());
 

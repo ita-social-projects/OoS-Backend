@@ -16,7 +16,7 @@ namespace OutOfSchool.Tests
         public static DbContextOptions<OutOfSchoolDbContext> GetUnitTestDbOptions()
         {
             var options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .UseInMemoryDatabase(Guid.NewGuid().ToString()).EnableSensitiveDataLogging()
                 .UseLazyLoadingProxies()
                 .Options;
 

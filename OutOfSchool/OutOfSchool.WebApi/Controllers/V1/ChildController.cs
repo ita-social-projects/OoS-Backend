@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -17,9 +18,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
-    [Authorize(Roles = "admin,parent")]
     public class ChildController : ControllerBase
     {
         private readonly IChildService service;
@@ -38,7 +36,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
         /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-        [Authorize(Roles = "admin")]
+        [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -56,14 +54,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="parentId">Id of the parent.</param>
         /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
         /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-        [Authorize(Roles = "admin")]
+        [HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{parentId}")]
-        public async Task<IActionResult> GetByParentIdForAdmin([Range(1, long.MaxValue)] Guid parentId, [FromQuery] OffsetFilter offsetFilter)
+        public async Task<IActionResult> GetByParentIdForAdmin(Guid parentId, [FromQuery] OffsetFilter offsetFilter)
         {
             return Ok(await service.GetByParentIdOrderedByFirstName(parentId, offsetFilter).ConfigureAwait(false));
         }
@@ -73,7 +71,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
         /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-        [Authorize(Roles = "parent")]
+        [HasPermission(Permissions.ChildRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -92,7 +90,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">The child's id.</param>
         /// <returns>The <see cref="ChildDto"/> that was found or null.</returns>
-        [Authorize(Roles = "parent")]
+        [HasPermission(Permissions.ChildRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChildDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -111,7 +109,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="childDto">Child entity to add.</param>
         /// <returns>The child that was created.</returns>
-        [Authorize(Roles = "parent")]
+        [HasPermission(Permissions.ChildAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -135,7 +133,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Child entity to update.</param>
         /// <returns>The child that was updated.</returns>
-        [Authorize(Roles = "parent")]
+        [HasPermission(Permissions.ChildEdit)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChildDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -154,7 +152,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">The child's id.</param>
         /// <returns>If deletion was successful, the result will be Status Code 204.</returns>
-        [Authorize(Roles = "parent")]
+        [HasPermission(Permissions.ChildRemove)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

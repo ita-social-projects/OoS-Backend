@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There aren't Favorites for User with Id = {userId}."
                 : $"All {workshops.TotalAmount} records were successfully received from the Favorites table");
 
-            return new SearchResult<WorkshopCard>() { TotalAmount = workshops.TotalAmount, Entities = DtoModelsToWorkshopCards(workshops.Entities) };
+            return new SearchResult<WorkshopCard>() { TotalAmount = workshops.TotalAmount, Entities = workshops.Entities };
         }
 
         /// <inheritdoc/>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,9 @@ namespace OutOfSchool.WebApi.Services
         private readonly IRatingService ratingService;
         private readonly ILogger<ProviderService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IMapper mapper;
+        private readonly IEntityRepository<Address> addressRepository;
+        private readonly IAddressService addressService;
 
         // TODO: It should be removed after models revision.
         //       Temporary instance to fill 'Provider' model 'User' property
@@ -42,9 +46,11 @@ namespace OutOfSchool.WebApi.Services
             IEntityRepository<User> usersRepository,
             IRatingService ratingService,
             ILogger<ProviderService> logger,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer, IMapper mapper, IEntityRepository<Address> addressRepository)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+            this.mapper = mapper;
+            this.addressRepository = addressRepository;
             this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
             this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
             this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
@@ -106,7 +112,8 @@ namespace OutOfSchool.WebApi.Services
             var providersDTO = providers.Select(provider => provider.ToModel()).ToList();
 
             // TODO: move ratings calculations out of getting all providers.
-            var averageRatings = ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
 
             foreach (var provider in providersDTO)
             {
@@ -119,7 +126,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDto> GetById(long id)
+        public async Task<ProviderDto> GetById(Guid id)
         {
             logger.LogInformation($"Getting Provider by Id started. Looking Id = {id}.");
 
@@ -170,30 +177,55 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var checkProvider = providerRepository.GetByFilterNoTracking(p => p.Id == providerDto.Id).FirstOrDefault();
+                var checkProvider =
+                    (await providerRepository.GetByFilter(p => p.Id == providerDto.Id).ConfigureAwait(false))
+                    .FirstOrDefault();
 
-                if (checkProvider?.UserId == userId || userRole == AdminRole)
-                {
-                    var provider = await providerRepository.Update(providerDto.ToDomain()).ConfigureAwait(false);
-
-                    logger.LogInformation($"Provider with Id = {provider?.Id} updated succesfully.");
-
-                    return provider.ToModel();
-                }
-                else
+                if (checkProvider?.UserId != userId && userRole != AdminRole)
                 {
                     return null;
                 }
+
+                providerDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
+
+                if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
+                {
+                    providerDto.ActualAddress = null;
+                }
+
+                if (providerDto.ActualAddress is null && checkProvider.ActualAddress is { })
+                {
+                    var checkProviderActualAddress = checkProvider.ActualAddress;
+                    checkProvider.ActualAddressId = null;
+                    checkProvider.ActualAddress = null;
+                    mapper.Map(providerDto, checkProvider);
+                    await addressRepository.Delete(checkProviderActualAddress).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (providerDto.ActualAddress != null)
+                    {
+                        providerDto.ActualAddress.Id = checkProvider.ActualAddress?.Id ?? 0;
+                    }
+
+                    mapper.Map(providerDto, checkProvider);
+                    await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+                }
+
+                logger.LogInformation($"Provider with Id = {checkProvider?.Id} updated succesfully.");
+
+                return mapper.Map<ProviderDto>(checkProvider);
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.LogError($"Updating failed. Provider with Id = {providerDto?.Id} doesn't exist in the system.");
+                logger.LogError(
+                    $"Updating failed. Provider with Id = {providerDto?.Id} doesn't exist in the system.");
                 throw;
             }
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task Delete(Guid id)
         {
             // BUG: Possible bug with deleting provider not owned by the user itself.
             // TODO: add unit tests to check ownership functionality

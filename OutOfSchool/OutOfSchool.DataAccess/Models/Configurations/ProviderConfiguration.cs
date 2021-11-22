@@ -9,8 +9,7 @@ namespace OutOfSchool.Services.Models.Configurations
     {
         public void Configure(EntityTypeBuilder<Provider> builder)
         {
-            builder.HasKey(x => x.Id)
-                .IsClustered(false);
+            builder.HasKey(x => x.Id);
 
             builder.Property(x => x.FullTitle)
                 .IsRequired()

@@ -31,12 +31,16 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string Workdays { get; set; } = string.Empty;
 
-        public int StartHour { get; set; } = 0;
+        public TimeSpan MinStartTime { get; set; } = new TimeSpan(0, 0, 0);
 
-        public int EndHour { get; set; } = 23;
+        public TimeSpan MaxStartTime { get; set; } = new TimeSpan(23, 59, 59);
 
         public int Size { get; set; } = 12;
 
         public int From { get; set; } = 0;
+
+        public decimal Latitude { get; set; } = 0;
+
+        public decimal Longitude { get; set; } = 0;
     }
 }
