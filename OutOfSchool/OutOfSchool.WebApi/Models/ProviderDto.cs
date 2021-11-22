@@ -58,7 +58,7 @@ namespace OutOfSchool.WebApi.Models
 
         [DataType(DataType.PhoneNumber)]
         [RegularExpression(
-            @"([\d]{9})",
+            Constants.PhoneNumberRegexModel,
             ErrorMessage = Constants.PhoneErrorMessage)]
         [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
         [MaxLength(Constants.UnifiedPhoneLength)]

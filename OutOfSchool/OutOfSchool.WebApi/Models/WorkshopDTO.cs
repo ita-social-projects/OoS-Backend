@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(
-            @"([\d]{9})",
+            Constants.PhoneNumberRegexModel,
             ErrorMessage = Constants.PhoneErrorMessage)]
         [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
         [MaxLength(Constants.UnifiedPhoneLength)]
