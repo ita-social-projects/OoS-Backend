@@ -7,6 +7,7 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -36,16 +37,16 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetsAllPermissionsForRoles_WhenCalled_ReturnsOkObjectResult()
+        public async Task GetsAllPermissionsForRoles_ReturnsOkAllEnititiesInValue()
         {
             // Arrange
             service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles);
 
             // Act
-            var response = await controller.GetAll().ConfigureAwait(false);
+            var response = await controller.Get().ConfigureAwait(false);
 
             // Assert
-            GetAssertedResponseOkAndValidValue<IEnumerable<PermissionsForRoleDTO>>(response);
+            response.GetAssertedResponseOkAndValidValue<IEnumerable<PermissionsForRoleDTO>>();
         }
 
         [Test]
@@ -55,7 +56,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service.Setup(x => x.GetAll()).ReturnsAsync(new List<PermissionsForRoleDTO>());
 
             // Act
-            var response = await controller.GetAll().ConfigureAwait(false);
+            var response = await controller.Get().ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<NoContentResult>(response);
@@ -68,9 +69,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var response = controller.GetAllPermissions();
 
             // Assert
-            Assert.IsInstanceOf<OkObjectResult>(response);
-            var objectResult = response as OkObjectResult;
-            Assert.That(objectResult.Value, Is.Not.Null);
+            response.GetAssertedResponseValidateValueNotEmpty<OkObjectResult>();
         }
 
         [Test]
@@ -84,7 +83,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var response = await controller.GetByRoleName(roleName).ConfigureAwait(false);
 
             // Assert
-            GetAssertedResponseOkAndValidValue<PermissionsForRoleDTO>(response);
+            response.GetAssertedResponseOkAndValidValue<PermissionsForRoleDTO>();
         }
 
         [Test]
@@ -98,10 +97,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var response = await controller.GetByRoleName(roleName).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<BadRequestObjectResult>(response);
-            var objectResult = response as ObjectResult;
-            Assert.That(objectResult.Value, Is.Not.Null);
-
+            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
         [Test]
@@ -114,14 +110,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var response = await controller.Create(permissionsForRoleDTO).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<CreatedAtActionResult>(response);
-            var createdAtActionResult = response as CreatedAtActionResult;
-
-            Assert.That(createdAtActionResult.Value, Is.Not.Null);
+            response.GetAssertedResponseValidateValueNotEmpty<CreatedAtActionResult>();
         }
-
-
-
 
         [Test]
         public async Task UpdatePermissionsForRole_WhenModelIsValid_ReturnsOkObjectResult()
@@ -133,7 +123,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var response = await controller.Update(permissionsForRoleDTO).ConfigureAwait(false);
 
             // Assert
-            GetAssertedResponseOkAndValidValue<PermissionsForRoleDTO>(response);
+            response.GetAssertedResponseOkAndValidValue<PermissionsForRoleDTO>();
         }
 
         /// <summary>
@@ -149,14 +139,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private void GetAssertedResponseOkAndValidValue<TExpectedValue>(IActionResult response)
-        {
-            Assert.IsInstanceOf<OkObjectResult>(response);
-            var okResult = response as OkObjectResult;
-            Assert.IsInstanceOf<TExpectedValue>(okResult.Value);
-            Assert.That(okResult.Value, Is.Not.Null);
-            Assert.AreEqual(200, okResult.StatusCode);
-        }
+
 
         private IEnumerable<PermissionsForRoleDTO> FakePermissionsForAllRoles()
         {

@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-
 using AutoMapper;
-
+using H3Lib;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
+using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -24,6 +23,7 @@ namespace OutOfSchool.WebApi.Services
     public class WorkshopService : IWorkshopService
     {
         private readonly string includingPropertiesForMappingDtoModel = $"{nameof(Workshop.Address)},{nameof(Workshop.Teachers)},{nameof(Workshop.DateTimeRanges)},{nameof(Workshop.Direction)}";
+        private readonly string includingPropertiesForMappingWorkShopCard = $"{nameof(Workshop.Address)}";
 
         private readonly IWorkshopRepository workshopRepository;
         private readonly IClassRepository classRepository;
@@ -95,8 +95,8 @@ namespace OutOfSchool.WebApi.Services
                 ? "Workshop table is empty."
                 : $"All {workshops.Count} records were successfully received from the Workshop table");
 
-            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
-            var workshopsWithRating = GetWorkshopsWithAverageRating(workshopsDTO);
+            var dtos = mapper.Map<List<WorkshopDTO>>(workshops);
+            var workshopsWithRating = GetWorkshopsWithAverageRating(dtos);
             return new SearchResult<WorkshopDTO>() { TotalAmount = count, Entities = workshopsWithRating };
         }
 
@@ -125,7 +125,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<WorkshopDTO>> GetByProviderId(Guid id)
+        public async Task<IEnumerable<WorkshopCard>> GetByProviderId(Guid id)
         {
             logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
 
@@ -135,9 +135,9 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There aren't Workshops for Provider with Id = {id}."
                 : $"From Workshop table were successfully received {workshops.Count()} records.");
 
-            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
+            var cards = mapper.Map<List<WorkshopCard>>(workshops);
 
-            return GetWorkshopsWithAverageRating(workshopsDTO);
+            return cards;
         }
 
         /// <inheritdoc/>
@@ -192,9 +192,10 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopDTO>> GetByFilter(WorkshopFilter filter = null)
+        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter = null)
         {
             logger.LogInformation("Getting Workshops by filter started.");
+
             if (filter is null)
             {
                 filter = new WorkshopFilter();
@@ -217,12 +218,65 @@ namespace OutOfSchool.WebApi.Services
                 ? "There was no matching entity found."
                 : $"All matching {workshops.Count} records were successfully received from the Workshop table");
 
-            var workshopsDTO = mapper.Map<List<WorkshopDTO>>(workshops);
+            var workshopCards = mapper.Map<List<WorkshopCard>>(workshops);
 
-            var result = new SearchResult<WorkshopDTO>()
+            var result = new SearchResult<WorkshopCard>()
             {
                 TotalAmount = workshopsCount,
-                Entities = GetWorkshopsWithAverageRating(workshopsDTO),
+                Entities = GetWorkshopsWithAverageRating(workshopCards),
+            };
+
+            return result;
+        }
+
+        public async Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null)
+        {
+            logger.LogInformation("Getting Workshops by filter started.");
+            if (filter is null)
+            {
+                filter = new WorkshopFilter();
+            }
+
+            var geo = new GeoCoord(filter.Latitude, filter.Longitude);
+            var h3Location = H3Lib.Api.GeoToH3(geo, GeoMathHelper.Resolution);
+            Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
+
+            var filterPredicate = PredicateBuild(filter);
+
+            var closestWorkshops = workshopRepository.Get<dynamic>(
+                skip: 0,
+                take: 0,
+                includeProperties: includingPropertiesForMappingWorkShopCard,
+                where: filterPredicate,
+                orderBy: null,
+                ascending: true)
+                .Where(w => neighbours
+                    .Select(n => n.Value)
+                    .Any(hash => hash == w.Address.GeoHash));
+
+            var workshopsCount = await closestWorkshops.CountAsync().ConfigureAwait(false);
+
+            var enumerableWorkshops = closestWorkshops.AsEnumerable();
+
+            var nearestWorkshops = enumerableWorkshops
+                .Select(w => new
+                {
+                    w,
+                    Distance = GeoMathHelper
+                        .GetDistanceFromLatLonInKm(
+                            w.Address.Latitude,
+                            w.Address.Longitude,
+                            (double)geo.Latitude,
+                            (double)geo.Longitude),
+                })
+                .OrderBy(p => p.Distance).Take(filter.Size).Select(a => a.w);
+
+            var workshopsDTO = mapper.Map<List<WorkshopCard>>(nearestWorkshops);
+
+            var result = new SearchResult<WorkshopCard>()
+            {
+                TotalAmount = workshopsCount,
+                Entities = workshopsDTO,
             };
 
             return result;
@@ -354,14 +408,31 @@ namespace OutOfSchool.WebApi.Services
             dto.DirectionId = classEntity.Department.DirectionId;
         }
 
-        private List<WorkshopDTO> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshopsDTOs)
+        private List<WorkshopCard> GetWorkshopsWithAverageRating(List<WorkshopCard> workshops)
         {
             var averageRatings =
-                ratingService.GetAverageRatingForRange(workshopsDTOs.Select(p => p.Id), RatingType.Workshop);
+                ratingService.GetAverageRatingForRange(workshops.Select(p => p.WorkshopId), RatingType.Workshop);
 
             if (averageRatings != null)
             {
-                foreach (var workshop in workshopsDTOs)
+                foreach (var workshop in workshops)
+                {
+                    var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.WorkshopId);
+                    workshop.Rating = ratingTuple.Value?.Item1 ?? default;
+                }
+            }
+
+            return workshops;
+        }
+
+        private List<WorkshopDTO> GetWorkshopsWithAverageRating(List<WorkshopDTO> workshops)
+        {
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(workshops.Select(p => p.Id), RatingType.Workshop);
+
+            if (averageRatings != null)
+            {
+                foreach (var workshop in workshops)
                 {
                     var ratingTuple = averageRatings.FirstOrDefault(r => r.Key == workshop.Id);
                     workshop.Rating = ratingTuple.Value?.Item1 ?? default;
@@ -369,7 +440,7 @@ namespace OutOfSchool.WebApi.Services
                 }
             }
 
-            return workshopsDTOs;
+            return workshops;
         }
     }
 }

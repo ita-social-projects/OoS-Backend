@@ -61,14 +61,22 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <returns>Institution Status.</returns>
         [HasPermission(Permissions.ImpersonalDataRead)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionStatusDTO))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            this.ValidateId(id, localizer);
+            try
+            {
+                this.ValidateId(id, localizer);
+                return Ok(await service.GetById(id).ConfigureAwait(false));
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                return BadRequest(new { e.Message });
+            }
 
-            return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -120,11 +128,18 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            this.ValidateId(id, localizer);
+            try
+            {
+                this.ValidateId(id, localizer);
+                await service.Delete(id).ConfigureAwait(false);
+                return NoContent();
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                return BadRequest(new { e.Message });
+            }
 
-            await service.Delete(id).ConfigureAwait(false);
 
-            return NoContent();
         }
 
     }

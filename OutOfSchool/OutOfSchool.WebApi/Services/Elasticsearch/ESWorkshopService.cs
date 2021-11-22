@@ -17,18 +17,24 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopService workshopService;
         private readonly IRatingService ratingService;
         private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
+        private readonly ElasticPinger esPinger;
+
+        /// <inheritdoc/>
+        public bool IsElasticAlive => esPinger.IsHealthy;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ESWorkshopService"/> class.
         /// </summary>
         /// <param name="workshopService">Service that provides access to Workshops in the database.</param>
         /// <param name="ratingService">Service that provides access to Ratings in the database.</param>
-        /// <param name="esProvider">Povider to the Elasticsearch workshops index.</param>
-        public ESWorkshopService(IWorkshopService workshopService, IRatingService ratingService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider)
+        /// <param name="esProvider">Provider to the Elasticsearch workshops index.</param>
+        /// <param name="elasticPinger">Background worker pings the Elasticsearch.</param>
+        public ESWorkshopService(IWorkshopService workshopService, IRatingService ratingService, IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider, ElasticPinger elasticPinger)
         {
             this.workshopService = workshopService;
             this.ratingService = ratingService;
             this.esProvider = esProvider;
+            this.esPinger = elasticPinger;
         }
 
         /// <inheritdoc/>
@@ -146,12 +152,6 @@ namespace OutOfSchool.WebApi.Services
             {
                 return new SearchResultES<WorkshopES>();
             }
-        }
-
-        /// <inheritdoc/>
-        public async Task<bool> PingServer()
-        {
-            return await esProvider.PingServerAsync().ConfigureAwait(false);
         }
 
         private void NullCheck(WorkshopES entity)

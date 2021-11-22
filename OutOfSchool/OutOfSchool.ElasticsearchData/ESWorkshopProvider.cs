@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nest;
+using OutOfSchool.Common;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
 
 namespace OutOfSchool.ElasticsearchData
 {
     /// <inheritdoc/>
-    public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilterES>, IElasticsearchProvider<WorkshopES, WorkshopFilterES>
+    public class ESWorkshopProvider : ElasticsearchProvider<WorkshopES, WorkshopFilterES>,
+        IElasticsearchProvider<WorkshopES, WorkshopFilterES>
     {
         public ESWorkshopProvider(ElasticClient elasticClient)
             : base(elasticClient)
@@ -26,14 +28,16 @@ namespace OutOfSchool.ElasticsearchData
 
             var query = this.CreateQueryFromFilter(filter);
             var sorts = this.CreateSortFromFilter(filter);
-
-            var resp = await ElasticClient.SearchAsync<WorkshopES>(new SearchRequest<WorkshopES>()
+            var req = new SearchRequest<WorkshopES>()
             {
                 Query = query,
                 Sort = sorts,
                 From = filter.From,
                 Size = filter.Size,
-            });
+
+            };
+
+            var resp = await ElasticClient.SearchAsync<WorkshopES>(req);
 
             return new SearchResultES<WorkshopES>() { TotalAmount = (int)resp.Total, Entities = resp.Documents };
         }
@@ -165,6 +169,20 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
+            if (Equals(OrderBy.Nearest.ToString(), filter.OrderByField))
+            {
+                queryContainer &= new GeoDistanceQuery()
+                {
+                    Boost = 1.1,
+                    Name = "named_query",
+                    Field = Infer.Field<WorkshopES>(w => w.Address.Point),
+                    DistanceType = GeoDistanceType.Arc,
+                    Location = new GeoLocation((double)filter.Latitude, (double)filter.Longitude),
+                    Distance = GeoMathHelper.ElasticRadius,
+                    ValidationMethod = GeoValidationMethod.IgnoreMalformed,
+                };
+            }
+
             if (filter.MinStartTime.TotalMinutes > 0 || filter.MaxStartTime.Hours < 23)
             {
                 queryContainer &= new NestedQuery()
@@ -198,31 +216,60 @@ namespace OutOfSchool.ElasticsearchData
             switch (filter.OrderByField)
             {
                 case nameof(OrderBy.Rating):
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Rating),
+                        Order = SortOrder.Descending,
+                    });
                     break;
 
                 case nameof(OrderBy.Statistic):
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Rating),
+                        Order = SortOrder.Descending,
+                    });
                     break;
 
                 case nameof(OrderBy.PriceAsc):
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Ascending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price),
+                        Order = SortOrder.Ascending,
+                    });
                     break;
 
                 case nameof(OrderBy.PriceDesc):
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Price), Order = SortOrder.Descending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Price),
+                        Order = SortOrder.Descending,
+                    });
                     break;
 
                 case nameof(OrderBy.Alphabet):
-                    sorts.Add(new FieldSort() { Field = "title.keyword", Order = SortOrder.Ascending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = "title.keyword",
+                        Order = SortOrder.Ascending,
+                    });
                     break;
 
                 case nameof(OrderBy.Nearest):
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Rating), Order = SortOrder.Descending });
+                    sorts.Add(new GeoDistanceSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Address.Point),
+                        Points = new[] { new GeoLocation((double)filter.Latitude, (double)filter.Longitude) },
+                        Order = SortOrder.Ascending,
+                    });
                     break;
 
                 default:
-                    sorts.Add(new FieldSort() { Field = Infer.Field<WorkshopES>(w => w.Id), Order = SortOrder.Ascending });
+                    sorts.Add(new FieldSort()
+                    {
+                        Field = Infer.Field<WorkshopES>(w => w.Id),
+                        Order = SortOrder.Ascending,
+                    });
                     break;
             }
 

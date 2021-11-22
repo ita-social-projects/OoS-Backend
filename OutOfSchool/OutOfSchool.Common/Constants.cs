@@ -17,5 +17,7 @@ namespace OutOfSchool.Common
         public const string PhoneErrorMessage = "Error! Please check the number is correct";
 
         public const int UnifiedPhoneLength = 15;
+
+        public const int MySQLServerMinimalMajorVersion = 8;
     }
 }

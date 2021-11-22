@@ -1,7 +1,5 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models.Configurations
@@ -10,8 +8,7 @@ namespace OutOfSchool.Services.Models.Configurations
     {
         public void Configure(EntityTypeBuilder<Application> builder)
         {
-            builder.HasKey(x => x.Id)
-                .IsClustered(false);
+            builder.HasKey(x => x.Id);
 
             builder.Property(x => x.Status)
                 .HasDefaultValue(ApplicationStatus.Pending);

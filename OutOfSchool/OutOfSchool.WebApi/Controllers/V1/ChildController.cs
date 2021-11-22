@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{parentId}")]
-        public async Task<IActionResult> GetByParentIdForAdmin([Range(1, long.MaxValue)] Guid parentId, [FromQuery] OffsetFilter offsetFilter)
+        public async Task<IActionResult> GetByParentIdForAdmin(Guid parentId, [FromQuery] OffsetFilter offsetFilter)
         {
             return Ok(await service.GetByParentIdOrderedByFirstName(parentId, offsetFilter).ConfigureAwait(false));
         }

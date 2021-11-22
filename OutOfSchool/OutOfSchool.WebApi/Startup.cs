@@ -1,9 +1,9 @@
+using System;
+using System.Data.Common;
 using System.Globalization;
-using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Common.PermissionsModule;
@@ -19,6 +20,7 @@ using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
@@ -90,7 +92,7 @@ namespace OutOfSchool.WebApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<ChatHub>("/chathub");
+                endpoints.MapHub<ChatWorkshopHub>("/chathub/workshop");
             });
         }
 
@@ -122,8 +124,23 @@ namespace OutOfSchool.WebApi
             // .AddJsonOptions(options =>
             //     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
+            var connectionStringBuilder = new DbConnectionStringBuilder();
+            connectionStringBuilder.ConnectionString = connectionString;
+            if (!connectionStringBuilder.ContainsKey("guidformat") || connectionStringBuilder["guidformat"].ToString().ToLower() != "binary16")
+            {
+                throw new Exception("The connection string should have a key: \"guidformat\" and a value: \"binary16\"");
+            }
+
+            var mySQLServerVersion = Configuration["MySQLServerVersion"];
+            var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
+            if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
+            {
+                throw new Exception("MySQL Server version should be 8 or higher.");
+            }
+
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")))
+                builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion))
                 .AddCustomDataProtection("WebApi");
 
             // Add Elasticsearch client
@@ -137,8 +154,8 @@ namespace OutOfSchool.WebApi
             // entities services
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
-            services.AddTransient<IChatMessageService, ChatMessageService>();
-            services.AddTransient<IChatRoomService, ChatRoomService>();
+            services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
+            services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<ICityService, CityService>();
             services.AddTransient<IClassService, ClassService>();
@@ -153,6 +170,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IStatisticService, StatisticService>();
             services.AddTransient<ITeacherService, TeacherService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IValidationService, ValidationService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
@@ -160,9 +178,8 @@ namespace OutOfSchool.WebApi
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
             services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
-            services.AddTransient<IEntityRepository<ChatMessage>, EntityRepository<ChatMessage>>();
-            services.AddTransient<IEntityRepository<ChatRoom>, EntityRepository<ChatRoom>>();
-            services.AddTransient<IEntityRepository<ChatRoomUser>, EntityRepository<ChatRoomUser>>();
+            services.AddTransient<IEntityRepository<ChatMessageWorkshop>, EntityRepository<ChatMessageWorkshop>>();
+            services.AddTransient<IEntityRepository<ChatRoomWorkshop>, EntityRepository<ChatRoomWorkshop>>();
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
             services.AddTransient<IEntityRepository<Favorite>, EntityRepository<Favorite>>();
@@ -174,6 +191,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
+            services.AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository>();
             services.AddTransient<IClassRepository, ClassRepository>();
             services.AddTransient<IDepartmentRepository, DepartmentRepository>();
             services.AddTransient<IParentRepository, ParentRepository>();
@@ -184,6 +202,9 @@ namespace OutOfSchool.WebApi
             //Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+
+            services.AddSingleton<ElasticPinger>();
+            services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
 
             services.AddSingleton(Log.Logger);
             services.AddVersioning();

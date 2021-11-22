@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
+using OutOfSchool.Services.Models.ChatWorkshop;
+
 namespace OutOfSchool.Services.Models
 {
     public class Parent
@@ -19,5 +21,7 @@ namespace OutOfSchool.Services.Models
         public string UserId { get; set; }
 
         public virtual User User { get; set; }
+
+        public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
     }
 }
