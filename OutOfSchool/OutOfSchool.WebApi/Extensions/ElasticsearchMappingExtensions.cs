@@ -49,7 +49,13 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<WorkshopES, WorkshopCard>()
                     .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                     .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo));
-                cfg.CreateMap<AddressES, AddressDto>();
+                cfg.CreateMap<AddressES, AddressDto>()
+                    .ForMember(
+                        dest => dest.Latitude,
+                        opt => opt.MapFrom(src => src.Point.Latitude))
+                    .ForMember(
+                        dest => dest.Longitude,
+                        opt => opt.MapFrom(src => src.Point.Longitude));
             });
         }
 
@@ -61,7 +67,15 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<WorkshopES, WorkshopCard>()
                     .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                     .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo));
-                cfg.CreateMap<AddressES, AddressDto>();
+                cfg.CreateMap<AddressES, AddressDto>()
+                    .ForMember(
+                        dest => dest.Latitude,
+                        opt =>
+                            opt.MapFrom(src => src.Point.Latitude))
+                    .ForMember(
+                        dest => dest.Longitude,
+                        opt =>
+                            opt.MapFrom(src => src.Point.Longitude));
             });
         }
 
