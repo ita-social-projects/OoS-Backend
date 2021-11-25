@@ -1,4 +1,5 @@
 using System;
+using Nest;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {
@@ -10,7 +11,8 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public TimeSpan EndTime { get; set; }
 
-        public long WorkshopId { get; set; }
+        [Keyword]
+        public Guid WorkshopId { get; set; }
 
         public string Workdays { get; set; }
     }

@@ -18,6 +18,5 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         [GeoPoint]
         public GeoLocation Point { get; set; }
-
     }
 }
