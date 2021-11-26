@@ -96,11 +96,11 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="providerRegistration"> bool used to redirect on registration page and prepare page for provider registration.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpGet]
-        public async Task<IActionResult> Login(string returnUrl = "Login", bool providerRegistration = false)
+        public async Task<IActionResult> Login(string returnUrl = "Login", bool? providerRegistration = null)
         {
-            if (providerRegistration)
+            if (providerRegistration ?? GetProviderRegistrationFromUri(returnUrl))
             {
-                return RedirectToAction("Register", new { providerRegistration });
+                return RedirectToAction("Register", new { returnUrl, providerRegistration });
             }
 
             logger.LogDebug($"{path} started.");
@@ -170,9 +170,9 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="providerRegistration"> bool used to prepare page for provider registration.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpGet]
-        public IActionResult Register(string returnUrl = "Login", bool providerRegistration = false)
+        public IActionResult Register(string returnUrl = "Login", bool? providerRegistration = null)
         {
-            return View(new RegisterViewModel { ReturnUrl = returnUrl, ProviderRegistration = providerRegistration });
+            return View(new RegisterViewModel { ReturnUrl = returnUrl, ProviderRegistration = providerRegistration ?? GetProviderRegistrationFromUri(returnUrl) });
         }
 
         /// <summary>
@@ -297,6 +297,20 @@ namespace OutOfSchool.IdentityServer.Controllers
         public Task<IActionResult> ExternalLogin(string provider, string returnUrl)
         {
             throw new NotImplementedException();
+        }
+
+        private bool GetProviderRegistrationFromUri(string returnUrl)
+        {
+            var parsedQuery = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(returnUrl);
+            if (parsedQuery.TryGetValue("providerregistration", out var providerRegistration))
+            {
+                if (bool.TryParse(providerRegistration.FirstOrDefault(), out bool result))
+                {
+                    return result;
+                }
+            }
+
+            return false;
         }
     }
 }
