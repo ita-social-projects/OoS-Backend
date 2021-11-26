@@ -100,8 +100,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
             try
             {
                 await CheckUserRights(
-                    parentId: application.ParentId,
-                    providerId: application.Workshop.ProviderId)
+                        parentId: application.ParentId,
+                        providerId: application.Workshop.ProviderId)
                     .ConfigureAwait(false);
 
                 return Ok(application);
@@ -254,9 +254,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 var ids = newApplications.Select(a => a.Id);
 
                 return CreatedAtAction(
-                     nameof(GetById),
-                     new { id = ids, },
-                     newApplications);
+                    nameof(GetById),
+                    new { id = ids, },
+                    newApplications);
             }
             catch (ArgumentException ex)
             {
@@ -304,9 +304,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 var application = await applicationService.Create(applicationDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
-                     nameof(GetById),
-                     new { id = application.Id, },
-                     application);
+                    nameof(GetById),
+                    new { id = application.Id, },
+                    application);
             }
             catch (ArgumentException ex)
             {
@@ -344,6 +344,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
 
             application.Status = applicationDto.Status;
+            application.RejectionMessage = applicationDto.RejectionMessage;
 
             try
             {
