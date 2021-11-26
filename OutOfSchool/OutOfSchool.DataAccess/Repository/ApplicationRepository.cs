@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -50,6 +51,13 @@ namespace OutOfSchool.Services.Repository
 
             dbContext.Entry(application).State = EntityState.Modified;
 
+            if (application.Status != ApplicationStatus.Rejected)
+            {
+                dbContext.Entry(application).Property("RejectionMessage").IsModified = false;
+                await this.dbContext.SaveChangesAsync();
+                return entity;
+            }
+
             await this.dbContext.SaveChangesAsync();
             return entity;
         }
@@ -58,7 +66,7 @@ namespace OutOfSchool.Services.Repository
         /// Get count of applications by workshop id.
         /// </summary>
         /// <param name="workshopId">Workshop id.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns
         public Task<int> GetCountByWorkshop(Guid workshopId)
         {
             var applications = dbSet.Where(a => a.WorkshopId == workshopId);
