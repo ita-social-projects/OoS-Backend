@@ -113,11 +113,9 @@ namespace OutOfSchool.WebApi
                         .AllowAnyHeader()
                         .AllowCredentials()));
 
-            services.AddControllers().AddNewtonsoftJson();
-
-            // TODO: Ask frontend if all enums as strings are fine by adding serializer project wide
-            // .AddJsonOptions(options =>
-            //     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            services.AddControllers().AddNewtonsoftJson()
+                .AddJsonOptions(options =>
+                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                 builder.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("DefaultConnection")))
