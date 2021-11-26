@@ -214,7 +214,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpDelete("{uid:guid}")]
         public async Task<IActionResult> Delete(Guid uid)
         {
-            await providerService.Delete(uid).ConfigureAwait(false);
+            try 
+            {
+                await providerService.Delete(uid).ConfigureAwait(false);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex);
+            }
 
             return NoContent();
         }

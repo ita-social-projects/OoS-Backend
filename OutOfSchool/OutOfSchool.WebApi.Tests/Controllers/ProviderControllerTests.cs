@@ -105,11 +105,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(FakeProviderIdTestCase)]
-        public async Task GetProvidersById_WhenIdIsValid_ReturnsOkObjectResult(string id)
+        public async Task GetProvidersById_WhenIdIsValid_ReturnsOkObjectResult()
         {
             // Arrange
-            var existingGuid = Guid.Parse(id);
+            var existingGuid = Guid.Parse(FakeProviderIdTestCase);
             serviceProvider.Setup(x => x.GetById(existingGuid)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == existingGuid));
 
             // Act
@@ -211,11 +210,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(FakeProviderIdTestCase)]
-        public async Task DeleteProvider_WhenIdIsValid_ReturnsNoContentResult(string id)
+        public async Task DeleteProvider_WhenIdIsValid_ReturnsNoContentResult()
         {
             // Arrange
-            var guid = Guid.Parse(id);
+            var guid = Guid.Parse(FakeProviderIdTestCase);
             serviceProvider.Setup(x => x.Delete(guid));
 
             // Act
@@ -225,31 +223,19 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.IsInstanceOf<NoContentResult>(result);
         }
 
-        //[Test]
-        //[TestCase(0)]
-        //public void DeleteProvider_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
-        //{
-        //    // Arrange
-        //    serviceProvider.Setup(x => x.Delete(id));
+        [Test]
+        public async Task DeleteProvider_WhenIdIsInvalid_ReturnsBadRequestObjectResultAsync()
+        {
+            // Arrange
+            var guid = Guid.NewGuid();
+            serviceProvider.Setup(x => x.Delete(guid)).ThrowsAsync(new ArgumentNullException());
 
-        //    // Act and Assert
-        //    Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-        //        async () => await controller.Delete(id).ConfigureAwait(false));
-        //}
+            // Act
+            var result = await controller.Delete(guid).ConfigureAwait(false);
 
-        //[Test]
-        //[TestCase(10)]
-        //public async Task DeleteProvider_WhenIdIsInvalid_ReturnsNull(long id)
-        //{
-        //    // Arrange
-        //    serviceProvider.Setup(x => x.Delete(id));
-
-        //    // Act
-        //    var result = await controller.Delete(id) as OkObjectResult;
-
-        //    // Assert
-        //    Assert.That(result, Is.Null);
-        //}
+            // Assert
+            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+        }
 
         private ProviderDto FakeProvider()
         {
