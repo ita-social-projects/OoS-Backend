@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.Globalization;
+using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.FeatureManagement;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions.Startup;
@@ -118,11 +120,9 @@ namespace OutOfSchool.WebApi
                         .AllowAnyHeader()
                         .AllowCredentials()));
 
-            services.AddControllers().AddNewtonsoftJson();
-
-            // TODO: Ask frontend if all enums as strings are fine by adding serializer project wide
-            // .AddJsonOptions(options =>
-            //     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            services.AddControllers().AddNewtonsoftJson()
+                .AddJsonOptions(options =>
+                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -209,6 +209,10 @@ namespace OutOfSchool.WebApi
             services.AddSingleton(Log.Logger);
             services.AddVersioning();
             var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
+
+            // Add feature management
+            services.AddFeatureManagement(Configuration.GetSection(Constants.SectionName));
+            services.AddSingleton<IConfiguration>(Configuration);
 
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
