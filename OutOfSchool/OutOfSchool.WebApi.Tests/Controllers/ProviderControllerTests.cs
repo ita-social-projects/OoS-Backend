@@ -186,8 +186,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Id = Guid.NewGuid(),
                 FullTitle = "ChangedTitle",
             };
-            ProviderDto nullProvider = null;
-            serviceProvider.Setup(x => x.Update(providerEntityToUpdate, "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c", "provider")).ReturnsAsync(nullProvider);
+            serviceProvider.Setup(x => x.Update(providerEntityToUpdate, "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c", "provider")).ReturnsAsync(providerEntityToUpdate);
 
             // Act
             var result = await controller.Update(providerEntityToUpdate).ConfigureAwait(false);
