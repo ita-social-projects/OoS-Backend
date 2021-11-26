@@ -4,7 +4,7 @@ steps:
   entrypoint: 'pack'
   args:
     - build
-    - gcr.io/$PROJECT_ID/oos-api:$TAG_NAME
+    - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --builder=paketobuildpacks/builder:base
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
@@ -17,7 +17,7 @@ steps:
     - deploy
     - apiservice
     - --image
-    - gcr.io/$PROJECT_ID/oos-api:$TAG_NAME
+    - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
     - --region
     - $_REGION
     - --platform
@@ -28,14 +28,15 @@ steps:
     - --cpu=2
     - --memory=512Mi
     - --max-instances=2
-    - --concurrency=40
-    - --set-env-vars
-    - ASPNETCORE_ENVIRONMENT=Google
-    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET
+    - --concurrency=80
+    - --set-env-vars=ASPNETCORE_ENVIRONMENT=Google
+    - --set-env-vars=Elasticsearch__User=oos_api
+    # Cloud Run fails to set the variable as an array :(
+    # Using index instead
+    - --set-env-vars=Elasticsearch__Urls__0=https://elastic.dmytrominochkin.cloud/
+    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Elasticsearch__Password=$_ES_PASSWORD
     # Disable http2 because prod will be http1.1 for now
     - --no-use-http2
-    - --vpc-connector
-    - central-serverless
 # Clean old versions except previous Cloud Run
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash

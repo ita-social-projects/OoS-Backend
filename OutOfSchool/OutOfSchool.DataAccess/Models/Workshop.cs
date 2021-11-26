@@ -23,10 +23,10 @@ namespace OutOfSchool.Services.Models
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(
-            @"([\d]{10})",
-            ErrorMessage = "Phone number format is incorrect. Example: 0501234567")]
-        [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
-        [MaxLength(15)]
+            Constants.PhoneNumberRegexModel,
+            ErrorMessage = Constants.PhoneErrorMessage)]
+        [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+        [MaxLength(Constants.UnifiedPhoneLength)]
         public string Phone { get; set; } = string.Empty;
 
         [DataType(DataType.EmailAddress)]

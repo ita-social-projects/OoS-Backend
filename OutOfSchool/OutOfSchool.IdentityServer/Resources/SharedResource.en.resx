@@ -288,8 +288,8 @@
   <data name="Passwords doesn't match" xml:space="preserve">
     <value>Passwords doesn't match</value>
   </data>
-  <data name="Phone number format is incorrect. Example: +38XXX-XXX-XX-XX" xml:space="preserve">
-    <value>Phone number format is incorrect. Example: +38XXX-XXX-XX-XX</value>
+  <data name="Error! Please check the number is correct" xml:space="preserve">
+    <value>Error! Please check the number is correct</value>
   </data>
   <data name="Phone number is required" xml:space="preserve">
     <value>Phone number is required</value>

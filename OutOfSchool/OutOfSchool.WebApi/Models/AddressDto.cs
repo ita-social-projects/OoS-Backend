@@ -26,9 +26,9 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(15)]
         public string BuildingNumber { get; set; } = string.Empty;
 
-        public double Latitude { get; set; } = default;
+        public double Latitude { get; set; }
 
-        public double Longitude { get; set; } = default;
+        public double Longitude { get; set; }
 
         // Note: implementation taken from the OutOfSchool.Services.Models.Address
         public override int GetHashCode()
