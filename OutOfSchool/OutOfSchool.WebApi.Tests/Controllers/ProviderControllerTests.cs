@@ -74,7 +74,21 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetProfile().ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.InstanceOf<NoContentResult>());
+            Assert.IsInstanceOf<NoContentResult>(result);
+        }
+
+        [Test]
+        public async Task GetProfile_WhenProviderForUserIdExists_ReturnsOkObjectResult()
+        {
+            // Arrange
+            var existingProvider = provider;
+            serviceProvider.Setup(x => x.GetByUserId(FakeUserId)).ReturnsAsync(existingProvider);
+
+            // Act
+            var result = await controller.GetProfile().ConfigureAwait(false);
+
+            // Assert
+            result.GetAssertedResponseOkAndValidValue<ProviderDto>();
         }
 
         [Test]
@@ -84,11 +98,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             serviceProvider.Setup(x => x.GetAll()).ReturnsAsync(providers);
 
             // Act
-            var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.Get().ConfigureAwait(false);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
+            result.GetAssertedResponseOkAndValidValue<IEnumerable<ProviderDto>>();
         }
 
         [Test]
@@ -100,11 +113,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             serviceProvider.Setup(x => x.GetById(existingGuid)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == existingGuid));
 
             // Act
-            var result = await controller.GetById(existingGuid).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetById(existingGuid).ConfigureAwait(false);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.AreEqual(OkStatusCode, result.StatusCode);
+            result.GetAssertedResponseOkAndValidValue<ProviderDto>();
         }
 
         [Test]
@@ -118,22 +130,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.GetById(invalidUserId).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-        }
-
-        [Test]
-        public async Task GetProviderById_WhenIdIsValid_ReturnsOkResult()
-        {
-            // Arrange
-            var existingProvider = providers.RandomItem();
-            serviceProvider.Setup(x => x.GetById(existingProvider.Id)).ReturnsAsync(existingProvider);
-
-            // Act
-            var result = await controller.GetById(existingProvider.Id).ConfigureAwait(false);
-
-            // Assert
-            Assert.That(result, Is.InstanceOf<OkObjectResult>());
-            Assert.IsInstanceOf<ProviderDto>((result as ObjectResult).Value);
+            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
         [Test]
@@ -143,11 +140,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             serviceProvider.Setup(x => x.Create(provider)).ReturnsAsync(provider);
 
             // Act
-            var result = await controller.Create(provider).ConfigureAwait(false) as CreatedAtActionResult;
+            var result = await controller.Create(provider).ConfigureAwait(false);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.AreEqual(CreateStatusCode, result.StatusCode);
+            result.GetAssertedResponseValidateValueNotEmpty<CreatedAtActionResult>();
         }
 
         [Test]
@@ -160,8 +156,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Create(provider).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
+            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
         [Test]
@@ -180,27 +175,26 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Update(changedProvider).ConfigureAwait(false);
 
             // Assert
-            Assert.IsInstanceOf<OkObjectResult>(result);
-            Assert.AreEqual(OkStatusCode, (result as ObjectResult).StatusCode);
+            result.GetAssertedResponseOkAndValidValue<ProviderDto>();
         }
 
         [Test]
         public async Task UpdateProvider_WhenUserIsNotAdminAndUpdateNotOwnProvider_ReturnsBadRequestResult()
         {
             // Arrange
-            var changedProvider = new ProviderDto()
+            var providerEntityToUpdate = new ProviderDto()
             {
                 Id = Guid.NewGuid(),
                 FullTitle = "ChangedTitle",
             };
-            serviceProvider.Setup(x => x.Update(changedProvider, "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c", "provider")).ReturnsAsync(changedProvider);
+            ProviderDto nullProvider = null;
+            serviceProvider.Setup(x => x.Update(providerEntityToUpdate, "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c", "provider")).ReturnsAsync(nullProvider);
 
             // Act
-            var result = await controller.Update(changedProvider).ConfigureAwait(false);
+            var result = await controller.Update(providerEntityToUpdate).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
+            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
         [Test]
@@ -213,8 +207,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await controller.Update(provider).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
+            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
         [Test]
@@ -226,11 +219,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             serviceProvider.Setup(x => x.Delete(guid));
 
             // Act
-            var result = await controller.Delete(guid) as NoContentResult;
+            var result = await controller.Delete(guid);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
+            Assert.IsInstanceOf<NoContentResult>(result);
         }
 
         //[Test]
