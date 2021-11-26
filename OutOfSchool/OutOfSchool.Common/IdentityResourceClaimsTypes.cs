@@ -16,5 +16,10 @@
         /// </summary>
         // TODO: find more meaningful name.
         public const string Role = "role";
+
+        /// <summary>
+        /// Contains the 'permissions' name.
+        /// </summary>
+        public const string Permissions = "permissions";
     }
 }

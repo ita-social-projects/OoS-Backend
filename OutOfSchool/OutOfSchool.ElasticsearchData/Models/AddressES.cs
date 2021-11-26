@@ -1,4 +1,6 @@
-﻿namespace OutOfSchool.ElasticsearchData.Models
+﻿using Nest;
+
+namespace OutOfSchool.ElasticsearchData.Models
 {
     public class AddressES
     {
@@ -14,8 +16,7 @@
 
         public string BuildingNumber { get; set; }
 
-        public double Latitude { get; set; }
-
-        public double Longitude { get; set; }
+        [GeoPoint]
+        public GeoLocation Point { get; set; }
     }
 }

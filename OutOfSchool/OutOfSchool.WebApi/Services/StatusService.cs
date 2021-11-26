@@ -121,8 +121,5 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"InstitutionStatus with Id = {id} succesfully deleted.");
         }
-
-
-
     }
 }

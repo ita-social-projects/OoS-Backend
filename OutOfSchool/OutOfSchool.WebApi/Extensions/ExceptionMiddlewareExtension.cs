@@ -2,9 +2,9 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MySqlConnector;
 
 namespace OutOfSchool.WebApi.Extensions
 {
@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Extensions
 
                 await HandleExceptionAsync(context, messageForUser, StatusCodes.Status500InternalServerError).ConfigureAwait(false);
             }
-            catch (SqlException ex)
+            catch (MySqlException ex)
             {
                 logger.LogError($"Exception information: {ex}");
 

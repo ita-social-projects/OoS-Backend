@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Logging;
 
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -19,8 +21,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ProviderController : ControllerBase
     {
         private readonly IProviderService providerService;
@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all Provider from the database.
         /// </summary>
         /// <returns>List of all Providers.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
@@ -69,23 +69,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="providerId">Provider's id.</param>
         /// <returns>Provider.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{providerId:long}")]
+        [HttpGet("{providerId:Guid}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetById(long providerId)
+        public async Task<IActionResult> GetById(Guid providerId)
         {
-            try
-            {
-                this.ValidateId(providerId, localizer);
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                logger.LogError(ex, $"Validation failed for provider ID: {providerId}");
-
-                return BadRequest("Provider data is missing or invalid.");
-            }
-
             var provider = await providerService.GetById(providerId).ConfigureAwait(false);
 
             if (provider == null)
@@ -100,7 +89,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// To Get the Profile of authorized Provider.
         /// </summary>
         /// <returns>Authorized provider's profile.</returns>
-        [Authorize(Roles = "provider,admin")]
+        [HasPermission(Permissions.ProviderRead)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -127,7 +116,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="providerModel">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]
+        [HasPermission(Permissions.ProviderAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -179,8 +168,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="providerModel">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
-        [Authorize(Roles = "provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HasPermission(Permissions.ProviderEdit)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -210,18 +199,16 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <summary>
         /// Delete a specific Provider from the database.
         /// </summary>
-        /// <param name="id">Provider's key.</param>
+        /// <param name="uid">Provider's key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]
+        [HasPermission(Permissions.ProviderRemove)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(long id)
+        [HttpDelete("{uid:guid}")]
+        public async Task<IActionResult> Delete(Guid uid)
         {
-            this.ValidateId(id, localizer);
-
-            await providerService.Delete(id).ConfigureAwait(false);
+            await providerService.Delete(uid).ConfigureAwait(false);
 
             return NoContent();
         }

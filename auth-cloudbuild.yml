@@ -4,7 +4,7 @@ steps:
   entrypoint: 'pack'
   args:
     - build
-    - gcr.io/$PROJECT_ID/oos-auth:$TAG_NAME
+    - gcr.io/$PROJECT_ID/oos-auth:$SHORT_SHA
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --builder=paketobuildpacks/builder:base
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.IdentityServer/
@@ -17,7 +17,7 @@ steps:
     - deploy
     - authservice
     - --image
-    - gcr.io/$PROJECT_ID/oos-auth:$TAG_NAME
+    - gcr.io/$PROJECT_ID/oos-auth:$SHORT_SHA
     - --region
     - $_REGION
     - --platform
@@ -28,14 +28,11 @@ steps:
     - --cpu=2
     - --memory=512Mi
     - --max-instances=2
-    - --concurrency=40
-    - --set-env-vars
-    - ASPNETCORE_ENVIRONMENT=Google
+    - --concurrency=80
+    - --set-env-vars=ASPNETCORE_ENVIRONMENT=Google
     - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET
     # Disable http2 because prod will be http1.1 for now
     - --no-use-http2
-    - --vpc-connector
-    - central-serverless
 # Clean old versions except previous Cloud Run
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash

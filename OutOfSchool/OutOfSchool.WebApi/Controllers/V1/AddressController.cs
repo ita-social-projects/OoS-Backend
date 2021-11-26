@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -13,8 +15,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class AddressController : ControllerBase
     {
         private readonly IAddressService addressService;
@@ -36,7 +36,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <returns>List of all addresses.</returns>
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        // TODO: who needs to use this endpoint, what level of it's access we should do?
+        [HasPermission(Permissions.AddressRead)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AddressDto>))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAddresses()
         {
@@ -49,7 +51,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="id">The key in the database.</param>
         /// <returns>Address element with some id.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HasPermission(Permissions.AddressRead)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAddressById(long id)
@@ -64,8 +67,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="addressDto">Element which must be added.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]
         [HttpPost]
+        [HasPermission(Permissions.AddressAddNew)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -102,11 +105,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="addressDto">Entity.</param>
         /// <returns>Address key.</returns>
-        [Authorize(Roles = "provider,admin")]
         [HttpPut]
+        [HasPermission(Permissions.AddressEdit)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
         public async Task<IActionResult> Update(AddressDto addressDto)
         {
             if (!ModelState.IsValid)
@@ -122,11 +125,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Address key.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Authorize(Roles = "provider,admin")]
         [HttpDelete("{id}")]
+        [HasPermission(Permissions.AddressRemove)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Delete(long id)
         {
             this.ValidateId(id, localizer);

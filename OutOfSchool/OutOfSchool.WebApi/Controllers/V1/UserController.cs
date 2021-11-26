@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -11,8 +13,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
     public class UserController : ControllerBase
     {
         private readonly IUserService userService;
@@ -30,9 +30,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all users from the database.
         /// </summary>
         /// <returns>List of all users.</returns>
-        [Authorize(Roles = "admin")]
+        [HasPermission(Permissions.SystemManagement)]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ShortUserDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetUsers()
@@ -52,9 +52,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">The key in the database.</param>
         /// <returns>User element with some id.</returns>
-        [Authorize(Roles = "parent,provider,admin")]
+        [HasPermission(Permissions.UserRead)]
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             if (userId != id)
             {
-                 return StatusCode(403, "Forbidden to get another user.");
+                return StatusCode(403, "Forbidden to get another user.");
             }
 
             var user = await userService.GetById(id).ConfigureAwait(false);
@@ -82,9 +82,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="dto">Entity to update.</param>
         /// <returns>Updated Provider.</returns>
-        [Authorize(AuthenticationSchemes = "Bearer")]
-        [Authorize(Roles = "parent,provider,admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HasPermission(Permissions.UserEdit)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ShortUserDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

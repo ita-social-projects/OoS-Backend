@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.ChatWorkshop;
 
 namespace OutOfSchool.WebApi.Extensions
 {
@@ -31,28 +34,36 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static ChatMessageDto ToModel(this ChatMessage chatMessage)
+        public static ChatMessageWorkshopDto ToModel(this ChatMessageWorkshop chatMessage)
         {
-            return Mapper<ChatMessage, ChatMessageDto>(chatMessage, cfg => { cfg.CreateMap<ChatMessage, ChatMessageDto>(); });
+            return Mapper<ChatMessageWorkshop, ChatMessageWorkshopDto>(chatMessage, cfg => { cfg.CreateMap<ChatMessageWorkshop, ChatMessageWorkshopDto>(); });
         }
 
-        public static ChatRoomDto ToModel(this ChatRoom chatRoom)
+        public static ChatRoomWorkshopDto ToModel(this ChatRoomWorkshop chatRoom)
         {
-            return Mapper<ChatRoom, ChatRoomDto>(chatRoom, cfg =>
+            return Mapper<ChatRoomWorkshop, ChatRoomWorkshopDto>(chatRoom, cfg =>
             {
-                cfg.CreateMap<ChatRoom, ChatRoomDto>();
-                cfg.CreateMap<ChatMessage, ChatMessageDto>();
-                cfg.CreateMap<User, UserDto>();
+                cfg.CreateMap<ChatRoomWorkshop, ChatRoomWorkshopDto>();
+                cfg.CreateMap<Workshop, WorkshopInfoForChatListDto>();
+                cfg.CreateMap<Parent, ParentDtoWithContactInfo>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(p => p.Id))
+                    .ForMember(dest => dest.UserId, opt => opt.MapFrom(p => p.UserId))
+                    .ForMember(dest => dest.Email, opt => opt.MapFrom(p => p.User.Email))
+                    .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(p => p.User.PhoneNumber))
+                    .ForMember(dest => dest.LastName, opt => opt.MapFrom(p => p.User.LastName))
+                    .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(p => p.User.MiddleName))
+                    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(p => p.User.FirstName));
             });
         }
 
-        public static ChatRoomDto ToModelWithoutChatMessages(this ChatRoom chatRoom)
+        public static ChatRoomWorkshopDtoWithLastMessage ToModel(this ChatRoomWorkshopForChatList chatRoom)
         {
-            return Mapper<ChatRoom, ChatRoomDto>(chatRoom, cfg =>
+            return Mapper<ChatRoomWorkshopForChatList, ChatRoomWorkshopDtoWithLastMessage>(chatRoom, cfg =>
             {
-                cfg.CreateMap<ChatRoom, ChatRoomDto>()
-                .ForMember(cr => cr.ChatMessages, m => m.Ignore());
-                cfg.CreateMap<User, UserDto>();
+                cfg.CreateMap<ChatRoomWorkshopForChatList, ChatRoomWorkshopDtoWithLastMessage>();
+                cfg.CreateMap<WorkshopInfoForChatList, WorkshopInfoForChatListDto>();
+                cfg.CreateMap<ParentInfoForChatList, ParentDtoWithContactInfo>();
+                cfg.CreateMap<ChatMessageInfoForChatList, ChatMessageWorkshopDto>();
             });
         }
 
@@ -143,6 +154,15 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<InstitutionStatus, InstitutionStatusDTO>(status, cfg => { cfg.CreateMap<InstitutionStatus, InstitutionStatusDTO>(); });
         }
 
+        public static PermissionsForRoleDTO ToModel(this PermissionsForRole permissionsForRole)
+        {
+            return Mapper<PermissionsForRole, PermissionsForRoleDTO>(permissionsForRole, cfg =>
+            {
+                cfg.CreateMap<PermissionsForRole, PermissionsForRoleDTO>()
+                      .ForMember(dest => dest.Permissions, opt => opt.MapFrom(c => c.PackedPermissions.UnpackPermissionsFromString()));
+            });
+        }
+
         public static TeacherDTO ToModel(this Teacher teacher)
         {
             return Mapper<Teacher, TeacherDTO>(teacher, cfg => { cfg.CreateMap<Teacher, TeacherDTO>(); });
@@ -193,19 +213,9 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static ChatMessage ToDomain(this ChatMessageDto chatMessageDTO)
+        public static ChatMessageWorkshop ToDomain(this ChatMessageWorkshopDto chatMessageDTO)
         {
-            return Mapper<ChatMessageDto, ChatMessage>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageDto, ChatMessage>(); });
-        }
-
-        public static ChatRoom ToDomain(this ChatRoomDto chatRoomDTO)
-        {
-            return Mapper<ChatRoomDto, ChatRoom>(chatRoomDTO, cfg =>
-            {
-                cfg.CreateMap<ChatRoomDto, ChatRoom>();
-                cfg.CreateMap<ChatMessageDto, ChatMessage>();
-                cfg.CreateMap<UserDto, User>();
-            });
+            return Mapper<ChatMessageWorkshopDto, ChatMessageWorkshop>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageWorkshopDto, ChatMessageWorkshop>(); });
         }
 
         public static Child ToDomain(this ChildDto childDto)
@@ -275,6 +285,15 @@ namespace OutOfSchool.WebApi.Extensions
         public static InstitutionStatus ToDomain(this InstitutionStatusDTO statusDTO)
         {
             return Mapper<InstitutionStatusDTO, InstitutionStatus>(statusDTO, cfg => { cfg.CreateMap<InstitutionStatusDTO, InstitutionStatus>(); });
+        }
+
+        public static PermissionsForRole ToDomain(this PermissionsForRoleDTO permissionsDTO)
+        {
+            return Mapper<PermissionsForRoleDTO, PermissionsForRole>(permissionsDTO, cfg =>
+            {
+                cfg.CreateMap<PermissionsForRoleDTO, PermissionsForRole>()
+                  .ForMember(dest => dest.PackedPermissions, opt => opt.MapFrom(c => c.Permissions.PackPermissionsIntoString()));
+            });
         }
 
         public static Teacher ToDomain(this TeacherDTO teacherDto)
@@ -373,6 +392,7 @@ namespace OutOfSchool.WebApi.Extensions
         }
 
         #endregion
+
         private static TDestination Mapper<TSource, TDestination>(
             this TSource source,
             Action<IMapperConfigurationExpression> configure)

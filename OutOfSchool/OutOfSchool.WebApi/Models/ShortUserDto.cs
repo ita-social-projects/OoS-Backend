@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -12,9 +13,9 @@ namespace OutOfSchool.WebApi.Models
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(
-            @"([\d]{10})",
-            ErrorMessage = "Phone number format is incorrect. Example: 0501234567")]
-        [DisplayFormat(DataFormatString = "{0:+38 XXX-XXX-XX-XX}")]
+            Constants.PhoneNumberRegexModel,
+            ErrorMessage = Constants.PhoneErrorMessage)]
+        [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
         public string PhoneNumber { get; set; }
 
         [DataType(DataType.EmailAddress)]

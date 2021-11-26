@@ -286,8 +286,8 @@
   <data name="Passwords doesn't match" xml:space="preserve">
     <value>Паролі не збігаються</value>
   </data>
-  <data name="Phone number format is incorrect. Example: +38XXX-XXX-XX-XX" xml:space="preserve">
-    <value>Формат номера телефону неправильний. Приклад: +38XXX-XXX-XX-XX</value>
+  <data name="Error! Please check the number is correct" xml:space="preserve">
+    <value>Помилка!Перевірте будь ласка правильність номеру</value>
   </data>
   <data name="Phone number is required" xml:space="preserve">
     <value>Номер телефону обов’язковий</value>

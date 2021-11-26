@@ -3,53 +3,49 @@ using System.Collections.Generic;
 
 using Bogus;
 
-using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators
 {
     public static class ChatMessagesGenerator
     {
-        private static readonly Faker<ChatMessage> faker = new Faker<ChatMessage>()
+        private static readonly Faker<ChatMessageWorkshop> faker = new Faker<ChatMessageWorkshop>()
             .RuleFor(x => x.Id, _ => Guid.NewGuid())
             .RuleFor(x => x.Text, f => f.Random.Words())
-            .RuleFor(x => x.CreatedTime, f => f.Date.RecentOffset());
+            .RuleFor(x => x.CreatedDateTime, f => f.Date.RecentOffset());
 
         /// <summary>
-        /// Creates new instance of the <see cref="ChatMessage"/> class with random data.
+        /// Creates new instance of the <see cref="ChatMessageWorkshop"/> class with random data.
         /// </summary>
-        /// <returns><see cref="ChatMessage"/> object.</returns>
-        public static ChatMessage Generate() => faker.Generate();
+        /// <returns><see cref="ChatMessageWorkshop"/> object.</returns>
+        public static ChatMessageWorkshop Generate() => faker.Generate();
 
         /// <summary>
         /// Generates a list of the <see cref="ChatMessage"/> objects.
         /// </summary>
         /// <param name="count">count of instances to generate.</param>
         /// <returns>A <see cref="List{T}"/> of <see cref="ChatMessage"/> objects.</returns>
-        public static List<ChatMessage> Generate(int count) => faker.Generate(count);
+        public static List<ChatMessageWorkshop> Generate(int count) => faker.Generate(count);
 
-        public static ChatMessage WithUser(this ChatMessage chatMessage, User user)
+        public static ChatMessageWorkshop WithSenderRoleIsProvider(this ChatMessageWorkshop chatMessage, bool isProvider)
         {
             _ = chatMessage ?? throw new ArgumentNullException(nameof(chatMessage));
 
-            chatMessage.User = user;
-            chatMessage.UserId = user?.Id ?? default;
+            chatMessage.SenderRoleIsProvider = isProvider;
 
             return chatMessage;
         }
 
-        public static List<ChatMessage> WithUser(this List<ChatMessage> chatMessages, User user)
+        public static List<ChatMessageWorkshop> WithUser(this List<ChatMessageWorkshop> chatMessages, bool isProvider)
         {
             _ = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
-            chatMessages.ForEach(chatMessage =>
-            {
-                chatMessage.User = user;
-                chatMessage.UserId = user?.Id ?? default;
-            });
+
+            chatMessages.ForEach(x => x.WithSenderRoleIsProvider(isProvider));
 
             return chatMessages;
         }
 
-        public static ChatMessage WithChatRoom(this ChatMessage chatMessage, ChatRoom chatRoom)
+        public static ChatMessageWorkshop WithChatRoom(this ChatMessageWorkshop chatMessage, ChatRoomWorkshop chatRoom)
         {
             _ = chatMessage ?? throw new ArgumentNullException(nameof(chatMessage));
 
@@ -59,7 +55,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             return chatMessage;
         }
 
-        public static List<ChatMessage> WithChatRoom(this List<ChatMessage> chatMessages, ChatRoom chatRoom)
+        public static List<ChatMessageWorkshop> WithChatRoom(this List<ChatMessageWorkshop> chatMessages, ChatRoomWorkshop chatRoom)
         {
             _ = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
             chatMessages.ForEach(x => x.WithChatRoom(chatRoom));

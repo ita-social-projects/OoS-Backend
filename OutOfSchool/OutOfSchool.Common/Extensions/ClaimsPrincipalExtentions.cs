@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security.Claims;
+using OutOfSchool.Common.PermissionsModule;
 
 namespace OutOfSchool.Common.Extensions
 {

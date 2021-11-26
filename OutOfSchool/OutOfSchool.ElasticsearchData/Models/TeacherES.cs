@@ -1,10 +1,12 @@
 ﻿using System;
+using Nest;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {
     public class TeacherES
     {
-        public long Id { get; set; }
+        [Keyword]
+        public Guid Id { get; set; }
 
         public string FirstName { get; set; }
 
@@ -18,6 +20,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string Image { get; set; }
 
-        public long WorkshopId { get; set; }
+        [Keyword]
+        public Guid WorkshopId { get; set; }
     }
 }
