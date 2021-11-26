@@ -58,7 +58,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">All entities were found.</response>
         /// <response code="204">No entity was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.SystemManagement)]
+        //[HasPermission(Permissions.SystemManagement)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -352,8 +352,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
                     parentId: application.ParentId,
                     providerId: application.Workshop.ProviderId).ConfigureAwait(false);
 
-                var updatedApplication = await applicationService.Update(application).ConfigureAwait(false);
-                return Ok(updatedApplication);
+                var updatedApplicationRejected = await applicationService.Update(application).ConfigureAwait(false);
+                return Ok(updatedApplicationRejected);
             }
             catch (ArgumentException ex)
             {
