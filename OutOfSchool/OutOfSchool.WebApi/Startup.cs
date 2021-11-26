@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.Globalization;
+using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
