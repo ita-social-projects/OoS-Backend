@@ -105,7 +105,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetProvidersById_WhenIdIsValid_ReturnsOkObjectResult()
+        public async Task GetProviders_WhenNoRecordsInDB_ReturnsNoContentResult()
+        {
+            // Arrange
+            serviceProvider.Setup(x => x.GetAll()).ReturnsAsync(Enumerable.Empty<ProviderDto>());
+
+            // Act
+            var result = await controller.Get().ConfigureAwait(false);
+
+            // Assert
+            Assert.IsInstanceOf<NoContentResult>(result);
+        }
+
+        [Test]
+        public async Task GetProviderById_WhenIdIsValid_ReturnsOkObjectResult()
         {
             // Arrange
             var existingGuid = Guid.Parse(FakeProviderIdTestCase);
@@ -119,7 +132,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetProvidersById_WhenIdIsInvalid_ReturnsBadRequest()
+        public async Task GetProviderById_WhenIdIsInvalid_ReturnsBadRequest()
         {
             // Arrange
             var invalidUserId = Guid.NewGuid();
@@ -178,7 +191,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task UpdateProvider_WhenUserIsNotAdminAndUpdateNotOwnProvider_ReturnsBadRequestResult()
+        public async Task UpdateProvider_WhenUserUpdateNotOwnProvider_ReturnsBadRequestResult()
         {
             // Arrange
             var providerEntityToUpdate = new ProviderDto()
