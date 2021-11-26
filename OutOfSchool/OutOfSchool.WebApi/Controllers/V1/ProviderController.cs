@@ -75,14 +75,20 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [AllowAnonymous]
         public async Task<IActionResult> GetById(Guid providerId)
         {
+            try
+            { 
             var provider = await providerService.GetById(providerId).ConfigureAwait(false);
-
             if (provider == null)
             {
                 return NoContent();
             }
 
             return Ok(provider);
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                return BadRequest(new {e.Message});
+            }
         }
 
         /// <summary>
