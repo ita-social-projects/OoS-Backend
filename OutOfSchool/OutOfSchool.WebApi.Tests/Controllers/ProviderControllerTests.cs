@@ -23,10 +23,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     [TestFixture]
     public class ProviderControllerTests
     {
-        private const int OkStatusCode = 200;
-        private const int CreateStatusCode = 201;
-        private const int NoContentStatusCode = 204;
-        private const int BadRequestStatusCode = 400;
         private const string FakeProviderIdTestCase = "69c0a240-728f-452e-807f-70074e261a8f";
         private const string FakeUserId = "de909f35-5eb7-4b7a-bda8-40a5bfda67a6";
         private ProviderController controller;
