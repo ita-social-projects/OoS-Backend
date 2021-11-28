@@ -177,7 +177,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 FullTitle = "ChangedTitle",
                 UserId = FakeUserId,
             };
-            serviceProvider.Setup(x => x.Update(changedProvider, changedProvider.UserId, "provider")).ReturnsAsync(changedProvider);
+            serviceProvider.Setup(x => x.Update(changedProvider, changedProvider.UserId)).ReturnsAsync(changedProvider);
 
             // Act
             var result = await controller.Update(changedProvider).ConfigureAwait(false);
@@ -195,7 +195,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Id = Guid.NewGuid(),
                 FullTitle = "ChangedTitle",
             };
-            serviceProvider.Setup(x => x.Update(providerEntityToUpdate, "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c", "provider")).ReturnsAsync(providerEntityToUpdate);
+            serviceProvider.Setup(x => x.Update(providerEntityToUpdate, "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c")).ReturnsAsync(providerEntityToUpdate);
 
             // Act
             var result = await controller.Update(providerEntityToUpdate).ConfigureAwait(false);

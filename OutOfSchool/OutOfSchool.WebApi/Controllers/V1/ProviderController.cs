@@ -181,12 +181,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 return BadRequest(ModelState);
             }
-
             var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-
-            var userRole = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
-
-            var provider = await providerService.Update(providerModel, userId, userRole).ConfigureAwait(false);
+            var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
 
             if (provider == null)
             {

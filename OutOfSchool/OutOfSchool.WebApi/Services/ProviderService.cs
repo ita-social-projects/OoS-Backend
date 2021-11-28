@@ -20,7 +20,6 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ProviderService : IProviderService
     {
-        private const string AdminRole = "admin";
         private readonly IProviderRepository providerRepository;
         private readonly IRatingService ratingService;
         private readonly ILogger<ProviderService> logger;
@@ -171,7 +170,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDto> Update(ProviderDto providerDto, string userId, string userRole)
+        public async Task<ProviderDto> Update(ProviderDto providerDto, string userId)
         {
             logger.LogDebug($"Updating Provider with Id = {providerDto?.Id} started.");
 
@@ -181,7 +180,7 @@ namespace OutOfSchool.WebApi.Services
                     (await providerRepository.GetByFilter(p => p.Id == providerDto.Id).ConfigureAwait(false))
                     .FirstOrDefault();
 
-                if (checkProvider?.UserId != userId && userRole != AdminRole)
+                if (checkProvider?.UserId != userId)
                 {
                     return null;
                 }

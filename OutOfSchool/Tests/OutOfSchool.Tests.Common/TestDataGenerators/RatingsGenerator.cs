@@ -13,7 +13,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         public static Tuple<float, int> GetAverageRatingForProvider()
             => new Tuple<float, int>(faker.Random.Float(), faker.Random.Int());
 
-        public static Dictionary<long, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<long> items)
+        public static Dictionary<Guid, Tuple<float, int>> GetAverageRatingForRange(IEnumerable<Guid> items)
             => items.ToDictionary(i => i, i => GetAverageRatingForProvider());
     }
 }
