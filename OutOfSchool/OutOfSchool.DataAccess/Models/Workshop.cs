@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
-
 using Newtonsoft.Json;
 using OutOfSchool.Common;
-using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models
 {
