@@ -1,0 +1,24 @@
+{
+    "name": "OutOfSchool Backend",
+    "image": "mcr.microsoft.com/vscode/devcontainers/dotnetcore:3.1",
+    "settings": {},
+    "extensions": [
+        "ms-dotnettools.csharp"
+    ],
+    "portsAttributes": {
+        "5000": {
+            "label": "WebApi",
+            "onAutoForward": "notify"
+        },
+        "5443": {
+            "label": "Identity",
+            "onAutoForward": "notify"
+        }
+    },
+    "containerEnv": {
+        "ConnectionStrings__DefaultConnection": "server=host.docker.internal;user=root;password=rootPassword;database=out_of_school;guidformat=binary16",
+        "ASPNETCORE_Environment": "Development",
+        "DOTNET_USE_POLLING_FILE_WATCHER": "true"
+    },
+    "postCreateCommand": "dotnet restore"
+}

@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "identity-watch",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "--project",
+                "${workspaceFolder}/OutOfSchool.IdentityServer/OutOfSchool.IdentityServer.csproj",
+                "--",
+                "run",
+                "--launch-profile",
+                "DevContainer"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "webapi-watch",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "--project ${workspaceFolder}/OutOfSchool.WebApi/OutOfSchool.WebApi.csproj",
+                "--",
+                "run",
+                "--launch-profile",
+                "DevContainer"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
