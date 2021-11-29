@@ -40,20 +40,32 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<ImageStorageModel> GetByIdAsync(Guid imageId)
+        public async Task<Result<ImageStorageModel>> GetByIdAsync(Guid imageId)
         {
             logger.LogInformation($"Getting image by id = {imageId} was started.");
             var imageMetadata = await imageRepository.GetMetadataById(imageId).ConfigureAwait(false);
-            ValidateImageMetadata(imageMetadata);
-
-            var contentStream = await externalStorage.GetByIdAsync(imageMetadata.StorageId).ConfigureAwait(false);
-            logger.LogInformation($"Image with id {imageId} was successfully got");
-
-            return new ImageStorageModel
+            if (!IsImageMetadataValid(imageMetadata))
             {
-                ContentStream = contentStream,
-                ContentType = imageMetadata.ContentType,
-            };
+                return Result<ImageStorageModel>.Failed(new OperationError { Code = ImageResourceCodes.NotFoundError, Description = Resources.ImageResource.NotFoundError });
+            }
+
+            try
+            {
+                var contentStream = await externalStorage.GetByIdAsync(imageMetadata.StorageId).ConfigureAwait(false);
+
+                var imageStorageModel = new ImageStorageModel
+                {
+                    ContentStream = contentStream,
+                    ContentType = imageMetadata.ContentType,
+                };
+
+                logger.LogInformation($"Image with id {imageId} was successfully got");
+                return Result<ImageStorageModel>.Success(imageStorageModel);
+            }
+            catch (ImageStorageException ex)
+            {
+                return Result<ImageStorageModel>.Failed(new OperationError { Code = ImageResourceCodes.NotFoundError, Description = Resources.ImageResource.NotFoundError });
+            }
         }
 
         // compare this variant with below
@@ -63,41 +75,59 @@ namespace OutOfSchool.WebApi.Services.Images
             Guid workshopId,
             List<IFormFile> fileCollection)
         {
+            _ = fileCollection ?? throw new ArgumentNullException(nameof(fileCollection));
+
             logger.LogInformation($"Uploading {fileCollection.Count} images for workshopId = {workshopId} was started.");
             var workshopRepository = GetWorkshopRepository();
-            var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
-            ValidateEntity(workshop);
-            logger.LogInformation($"Workshop with id = {workshopId} was found.");
             var validator = GetValidator<Workshop>();
-
+            var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
             var savingMetadata = new List<ImageMetadata>();
             var uploadImageResults = new Dictionary<short, OperationResult>();
-            for (short i = 0; i < fileCollection.Count; i++)
+
+            try
             {
-                logger.LogInformation($"Started uploading process for {nameof(fileCollection)} id number {i}.");
-                await using var stream = fileCollection[i].OpenReadStream();
+                ValidateEntity(workshop);
+                logger.LogInformation($"Workshop with id = {workshopId} was found.");
 
-                logger.LogInformation($"Started validating process for {nameof(fileCollection)} id number {i}.");
-                var validationResult = validator.Validate(stream);
-                if (!validationResult.Succeeded)
+                for (short i = 0; i < fileCollection.Count; i++)
                 {
-                    logger.LogError($"Image with {nameof(fileCollection)} id = {i} isn't valid.");
-                    uploadImageResults.Add(i, validationResult);
-                    continue;
-                }
+                    logger.LogInformation($"Started uploading process for {nameof(fileCollection)} id number {i}.");
+                    await using var stream = fileCollection[i].OpenReadStream();
 
-                logger.LogInformation($"Started uploading process into an external storage for {nameof(fileCollection)} id number {i}.");
-                var imageUploadResult = await UploadImageProcess(stream).ConfigureAwait(false);
-                uploadImageResults.Add(i, validationResult);
-                if (imageUploadResult.Succeeded)
-                {
-                    logger.LogInformation($"Image with {nameof(fileCollection)} id number {i} was successfully uploaded into an external storage.");
-                    savingMetadata.Add(new ImageMetadata
+                    logger.LogInformation($"Started validating process for {nameof(fileCollection)} id number {i}.");
+                    var validationResult = validator.Validate(stream);
+                    if (!validationResult.Succeeded)
                     {
-                        ContentType = fileCollection[i].ContentType,
-                        StorageId = imageUploadResult.Value,
-                    });
+                        logger.LogError($"Image with {nameof(fileCollection)} id = {i} isn't valid.");
+                        uploadImageResults.Add(i, validationResult);
+                        continue;
+                    }
+
+                    logger.LogInformation(
+                        $"Started uploading process into an external storage for {nameof(fileCollection)} id number {i}.");
+                    var imageUploadResult = await UploadImageProcess(stream).ConfigureAwait(false);
+                    uploadImageResults.Add(i, validationResult);
+                    if (imageUploadResult.Succeeded)
+                    {
+                        logger.LogInformation(
+                            $"Image with {nameof(fileCollection)} id number {i} was successfully uploaded into an external storage.");
+                        savingMetadata.Add(new ImageMetadata
+                        {
+                            ContentType = fileCollection[i].ContentType,
+                            StorageId = imageUploadResult.Value,
+                        });
+                    }
                 }
+            }
+            catch (EntityNotFoundException ex)
+            {
+                logger.LogError($"Cannot find entity [workshopId = {workshopId}] in order to upload images, message: {ex.Message}");
+                return new Dictionary<short, OperationResult> { { -1, OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UpdateImagesError, Description = ImageResourceCodes.UpdateImagesError }) } };
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
+                return new Dictionary<short, OperationResult> { { -1, OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UpdateImagesError, Description = ImageResourceCodes.UpdateImagesError }) } };
             }
 
             try
@@ -123,34 +153,51 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <inheritdoc/>
         public async Task<OperationResult> UploadWorkshopImageWithUpdatingEntityAsync(Guid workshopId, ImageStorageModel imageModel)
         {
+            _ = imageModel ?? throw new ArgumentNullException(nameof(imageModel));
+
             logger.LogInformation($"Uploading an image for workshopId = {workshopId} was started.");
             var workshopRepository = GetWorkshopRepository();
-            var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
-            ValidateEntity(workshop);
-            logger.LogInformation($"Workshop [id = {workshopId}] was found.");
-
             var validator = GetValidator<Workshop>();
-            logger.LogInformation("Started validating process for a given image.");
-            var validationResult = validator.Validate(imageModel.ContentStream);
-            if (!validationResult.Succeeded)
-            {
-                logger.LogError("Image with isn't valid.");
-                return validationResult;
-            }
+            var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
+            ImageMetadata imageMetadata;
 
-            logger.LogInformation("Started uploading process into an external storage for a given image.");
-            var imageUploadResult = await UploadImageProcess(imageModel.ContentStream).ConfigureAwait(false);
-            if (!imageUploadResult.Succeeded)
+            try
             {
-                logger.LogInformation("The image was successfully uploaded into an external storage.");
-                return imageUploadResult.OperationResult;
-            }
+                ValidateEntity(workshop);
+                logger.LogInformation($"Workshop [id = {workshopId}] was found.");
 
-            var imageMetadata = new ImageMetadata
+                logger.LogInformation("Started validating process for a given image.");
+                var validationResult = validator.Validate(imageModel.ContentStream);
+                if (!validationResult.Succeeded)
+                {
+                    logger.LogError("Image isn't valid.");
+                    return validationResult;
+                }
+
+                logger.LogInformation("Started uploading process into an external storage for a given image.");
+                var imageUploadResult = await UploadImageProcess(imageModel.ContentStream).ConfigureAwait(false);
+                if (!imageUploadResult.Succeeded)
+                {
+                    logger.LogInformation("The image was successfully uploaded into an external storage.");
+                    return imageUploadResult.OperationResult;
+                }
+
+                imageMetadata = new ImageMetadata
+                {
+                    ContentType = imageModel.ContentType,
+                    StorageId = imageUploadResult.Value,
+                };
+            }
+            catch (EntityNotFoundException ex)
             {
-                ContentType = imageModel.ContentType,
-                StorageId = imageUploadResult.Value,
-            };
+                logger.LogError($"Cannot find entity [workshopId = {workshopId}] in order to upload images, message: {ex.Message}");
+                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UpdateImagesError, Description = ImageResourceCodes.UpdateImagesError });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
+                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UpdateImagesError, Description = ImageResourceCodes.UpdateImagesError });
+            }
 
             try
             {
@@ -159,7 +206,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 await workshopRepository.Update(workshop).ConfigureAwait(false);
                 logger.LogInformation($"Workshop [id = {workshopId}] was successfully updated.");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // TODO: mark image id in order to delete
                 logger.LogError($"Cannot update workshop with id = {workshopId} because of {ex.Message}");
@@ -178,12 +225,9 @@ namespace OutOfSchool.WebApi.Services.Images
             }
         }
 
-        private static void ValidateImageMetadata(ImageMetadata imageMetadata)
+        private static bool IsImageMetadataValid(ImageMetadata imageMetadata)
         {
-            if (imageMetadata == null)
-            {
-                throw new ImageNotFoundException($" {nameof(imageMetadata)}");
-            }
+            return imageMetadata != null;
         }
 
         private async Task<Result<string>> UploadImageProcess(Stream contentStream)

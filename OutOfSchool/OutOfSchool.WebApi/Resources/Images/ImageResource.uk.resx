@@ -129,6 +129,9 @@
   <data name="InvalidImageSizeError" xml:space="preserve">
     <value>Некоректний розмір фото</value>
   </data>
+  <data name="NotFoundError" xml:space="preserve">
+    <value>Зображення не знайдено</value>
+  </data>
   <data name="UnexpectedValidationError" xml:space="preserve">
     <value>Будь-ласка, переконайтесь у коректності фото</value>
   </data>

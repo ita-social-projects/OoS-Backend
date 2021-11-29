@@ -12,6 +12,7 @@ namespace OutOfSchool.WebApi.Common.Resources.Codes
     {
         internal const string UpdateImagesError = "UpdateImagesError";
         internal const string ImageStorageError = "ImageStorageError";
+        internal const string NotFoundError = "NotFoundError";
         internal const string UnexpectedValidationError = "UnexpectedValidationError";
         internal const string InvalidImageSizeError = "InvalidImageSizeError";
         internal const string InvalidImageFormatError = "InvalidImageFormatError";

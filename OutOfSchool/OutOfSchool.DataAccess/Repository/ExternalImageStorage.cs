@@ -23,7 +23,14 @@ namespace OutOfSchool.Services.Repository
 
         public async Task<Stream> GetByIdAsync(string pictureId)
         {
-            return await gridFsBucket.OpenDownloadStreamAsync(new ObjectId(pictureId));
+            try
+            {
+                return await gridFsBucket.OpenDownloadStreamAsync(new ObjectId(pictureId));
+            }
+            catch (Exception ex)
+            {
+                throw new ImageStorageException(ex);
+            }
         }
 
         public async Task<string> UploadImageAsync(Stream contentStream, CancellationToken cancellationToken = default)

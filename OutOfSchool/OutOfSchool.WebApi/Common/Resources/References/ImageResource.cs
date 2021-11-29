@@ -24,6 +24,8 @@ namespace OutOfSchool.WebApi.Common.Resources.References
 
         internal string ImageStorageError => GetResourceString(ImageResourceCodes.ImageStorageError);
 
+        internal string NotFoundError => GetResourceString(ImageResourceCodes.NotFoundError);
+
         internal string UnexpectedValidationError => GetResourceString(ImageResourceCodes.UnexpectedValidationError);
 
         internal string InvalidImageSizeError => GetResourceString(ImageResourceCodes.InvalidImageSizeError);

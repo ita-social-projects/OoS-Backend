@@ -18,8 +18,8 @@ namespace OutOfSchool.WebApi.Services.Images
         /// Gets image by id.
         /// </summary>
         /// <param name="imageId">Image id.</param>
-        /// <returns>The instance of <see cref="ImageStorageModel"/>.</returns>
-        Task<ImageStorageModel> GetByIdAsync(Guid imageId);
+        /// <returns>The instance of <see cref="Result{ImageStorageModel}"/>.</returns>
+        Task<Result<ImageStorageModel>> GetByIdAsync(Guid imageId);
 
         /// <summary>
         /// Uploads images for the chosen workshop and then updates it.

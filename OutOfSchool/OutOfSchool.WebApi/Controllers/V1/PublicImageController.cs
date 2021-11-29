@@ -38,7 +38,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             var pictureData = await pictureService.GetByIdAsync(pictureId).ConfigureAwait(false);
 
-            return new FileStreamResult(pictureData.ContentStream, pictureData.ContentType);
+            if (pictureData.Succeeded)
+            {
+                return new FileStreamResult(pictureData.Value.ContentStream, pictureData.Value.ContentType);
+            }
+
+            return BadRequest(pictureData.OperationResult);
         }
     }
 }

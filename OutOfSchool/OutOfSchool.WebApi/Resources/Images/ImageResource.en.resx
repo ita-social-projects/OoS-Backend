@@ -129,6 +129,9 @@
   <data name="InvalidImageSizeError" xml:space="preserve">
     <value>Invalid image size</value>
   </data>
+  <data name="NotFoundError" xml:space="preserve">
+    <value>Image was not found</value>
+  </data>
   <data name="UnexpectedValidationError" xml:space="preserve">
     <value>Please, be sure that your image is correct</value>
   </data>
