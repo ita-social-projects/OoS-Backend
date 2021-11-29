@@ -483,39 +483,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Favorites");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ImageId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id", "ImageId");
-
-                    b.HasIndex("ImageId")
-                        .IsUnique();
-
-                    b.ToTable("WorkshopImages");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.ImageMetadata", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ContentType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StorageId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ImagesMetadata");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
                 {
                     b.Property<long>("Id")
@@ -1205,25 +1172,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", "Entity")
-                        .WithMany("WorkshopImages")
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Images.ImageMetadata", "ImageMetadata")
-                        .WithOne("WorkshopImage")
-                        .HasForeignKey("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", "ImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Entity");
-
-                    b.Navigation("ImageMetadata");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
@@ -1338,11 +1286,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Departments");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.ImageMetadata", b =>
-                {
-                    b.Navigation("WorkshopImage");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
                 {
                     b.Navigation("Providers");
@@ -1374,8 +1317,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("DateTimeRanges");
 
                     b.Navigation("Teachers");
-
-                    b.Navigation("WorkshopImages");
                 });
 #pragma warning restore 612, 618
         }
