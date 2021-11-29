@@ -12,7 +12,7 @@ namespace OutOfSchool.Common
 
         public const string PhoneNumberFormat = "{0:+380 XX-XXX-XX-XX}";
 
-        public const string PhoneNumberRegexViewModel = @"([0 - 9]{2})([-]?) ([0 - 9]{3})([-] ?)([0 - 9]{ 2})([-] ?)([0 - 9]{ 2})";
+        public const string PhoneNumberRegexViewModel = @"([0-9]{2})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})";
 
         public const string PhoneNumberRegexModel = @"([\d]{9})";
 
