@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using OutOfSchool.Services.Enums;
@@ -18,7 +19,6 @@ namespace OutOfSchool.Services.Repository
         bool ClassExists(long id);
 
         Task<Workshop> GetWithNavigations(Guid id);
-        Task<Workshop> GetWithNavigations(long id);
 
         Task<IEnumerable<Workshop>> GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation operation);
 

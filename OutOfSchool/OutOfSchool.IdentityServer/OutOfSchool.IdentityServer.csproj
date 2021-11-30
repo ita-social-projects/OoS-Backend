@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20210727132218_BackupOperation.cs" />
+    <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20210727132218_BackupOperation.Designer.cs" />
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101082648_InitialMigration.cs" />
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101082648_InitialMigration.Designer.cs" />
   </ItemGroup>
