@@ -14,7 +14,6 @@ namespace OutOfSchool.Tests.Common
             var okResult = response as OkObjectResult;
             Assert.IsInstanceOf<TExpectedValue>(okResult.Value);
             Assert.That(okResult.Value, Is.Not.Null);
-            Assert.AreEqual(200, okResult.StatusCode);
         }
 
         public static void GetAssertedResponseValidateValueNotEmpty<TExpectedResponseType>(this IActionResult response)

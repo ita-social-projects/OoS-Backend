@@ -128,14 +128,11 @@ namespace OutOfSchool.WebApi.Services
         public async Task<ProviderDto> GetById(Guid id)
         {
             logger.LogInformation($"Getting Provider by Id started. Looking Id = {id}.");
-
             var provider = await providerRepository.GetById(id).ConfigureAwait(false);
 
             if (provider == null)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be greater than number of table entities."]);
+                return null;
             }
 
             logger.LogInformation($"Successfully got a Provider with Id = {id}.");

@@ -184,13 +184,17 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException()
+        public async Task GetById_WhenNoRecordsInDbWithSuchId_ReturnsNullAsync()
         {
+            // Arrange
             var noneExistingId = Guid.NewGuid();
 
+            // Act
+            var result = await providerService.GetById(noneExistingId).ConfigureAwait(false);
+
+
             // Act and Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await providerService.GetById(noneExistingId).ConfigureAwait(false));
+            Assert.That(result, Is.Null);
         }
 
         // TODO: providerService.Update method should be fixed before

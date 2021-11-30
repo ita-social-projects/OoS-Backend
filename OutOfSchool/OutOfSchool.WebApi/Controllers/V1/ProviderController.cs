@@ -75,15 +75,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [AllowAnonymous]
         public async Task<IActionResult> GetById(Guid providerId)
         {
-            try
-            {
             var provider = await providerService.GetById(providerId).ConfigureAwait(false);
-            return Ok(provider);
-            }
-            catch (ArgumentOutOfRangeException ex)
+            if (provider == null)
             {
-                return BadRequest(ex.Message);
+                return NotFound($"There is no Provider in DB with {nameof(provider.Id)} - {providerId}");
             }
+
+            return Ok(provider);
         }
 
         /// <summary>
