@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 using Bogus;
 
@@ -38,27 +37,30 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         public static List<Workshop> Generate(int count) => faker.Generate(count);
 
         public static Workshop WithProvider(this Workshop workshop, Provider provider)
-            => TestDataHelper.ApplyOnItem(workshop, (workshop, provider) => { workshop.Provider = provider; workshop.ProviderId = provider.Id; }, provider);
+            => workshop.ApplyOnItem(x => x.Provider = provider)
+                       .ApplyOnItem(x => x.ProviderId = provider.Id);
 
         public static List<Workshop> WithProvider(this List<Workshop> workshops, Provider provider)
-            => TestDataHelper.ApplyOnCollection(workshops, (workshop, provider) => WithProvider(workshop, provider), provider);
+            => workshops.ApplyOnCollection(x => x.WithProvider(provider));
 
         public static Workshop WithAddress(this Workshop workshop, Address address)
-            => TestDataHelper.ApplyOnItem(workshop, (workshop, address) => { workshop.Address = address; workshop.AddressId = address.Id; }, address);
+            => workshop.ApplyOnItem(x => x.Address = address)
+                       .ApplyOnItem(x => x.AddressId = address.Id);
 
         public static List<Workshop> WithAddress(this List<Workshop> workshops, Address address)
-            => TestDataHelper.ApplyOnCollection(workshops, (workshop, address) => WithAddress(workshop, address), address);
+            => workshops.ApplyOnCollection(x => x.WithAddress(address));
 
         public static Workshop WithDirection(this Workshop workshop, Direction direction)
-            => TestDataHelper.ApplyOnItem(workshop, (workshop, direction) => { workshop.Direction = direction; workshop.DirectionId = direction.Id; }, direction);
+            => workshop.ApplyOnItem(x => x.Direction = direction)
+                       .ApplyOnItem(x => x.DirectionId = direction.Id);
 
         public static List<Workshop> WithDirection(this List<Workshop> workshops, Direction direction)
-            => TestDataHelper.ApplyOnCollection(workshops, (workshop, direction) => WithDirection(workshop, direction), direction);
+            => workshops.ApplyOnCollection(x => x.WithDirection(direction));
 
         public static Workshop WithDepartment(this Workshop workshop, Department department)
-            => TestDataHelper.ApplyOnItem(workshop, (item, value) => { item.DepartmentId = value.Id; }, department);
+            => workshop.ApplyOnItem(x => x.DepartmentId = department.Id);
 
         public static List<Workshop> WithDepartment(this List<Workshop> workshops, Department department)
-            => TestDataHelper.ApplyOnCollection(workshops, (item, value) => WithDepartment(item, value), department);
+            => workshops.ApplyOnCollection(x => x.WithDepartment(department));
     }
 }
