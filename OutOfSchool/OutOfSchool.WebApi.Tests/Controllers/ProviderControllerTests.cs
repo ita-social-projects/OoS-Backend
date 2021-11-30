@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
@@ -16,7 +17,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -170,8 +170,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
-        /// TO DO ????
-        /// Since we have a mock here - we also must check that controller received a proper argument when updating the provider.
         [Test]
         public async Task UpdateProvider_WhenModelIsValidAndProviderExists_ReturnsOkObjectResult()
         {
@@ -189,7 +187,25 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task UpdateProvider_WhenUserUpdateNotOwnProvider_ReturnsBadRequestResult()
+        public async Task UpdateProvider_WhenModelWithErrorsReceived_BadRequest_And_ModelsIsValid_False()
+        {
+            // Arrange
+            var providerToUpdateDto = new ProviderDto();
+            providerController.ModelState.AddModelError("UpdateError", "bad model state");
+
+            providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>()))
+                .ReturnsAsync(providerToUpdateDto);
+
+            // Act
+            var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
+
+            // Assert
+            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            Assert.That(!providerController.ModelState.IsValid);
+        }
+
+        [Test]
+        public async Task UpdateProvider_WhenCorrectData_AND_WrongUserId_ModelIsValid_But_BadRequest()
         {
             // Arrange
             var providerToUpdateDto = providerDtos.FirstOrDefault();
@@ -200,20 +216,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
 
             // Assert
+            Assert.That(providerController.ModelState.IsValid);
             result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
         [Test]
-        public async Task UpdateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+        public async Task UpdateProvider_ServiceCantGetRequestedProvider_BadRequest_WithExceptionAsValue()
         {
             // Arrange
-            providerController.ModelState.AddModelError("UpdateProvider", "Invalid model state.");
+            var providerToUpdateDto = ProviderDtoGenerator.Generate();
+            providerToUpdateDto.FullTitle = "New Title for changed provider";
+            providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>())).ThrowsAsync(new DbUpdateConcurrencyException());
 
             // Act
-            var result = await providerController.Update(providerDto).ConfigureAwait(false);
+            var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
 
             // Assert
             result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            Assert.IsInstanceOf<DbUpdateConcurrencyException>((result as ObjectResult).Value);
         }
 
         [Test]

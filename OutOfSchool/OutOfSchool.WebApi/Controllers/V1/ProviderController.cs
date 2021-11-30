@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
@@ -179,16 +180,26 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 return BadRequest(ModelState);
             }
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-            var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
 
-            if (provider == null)
+            try
             {
-                return BadRequest("Can't change Provider with such parameters.\n" +
-                    "Please check that information are valid.");
+                var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+                var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
+
+                if (provider == null)
+                {
+                    return BadRequest("Can't change Provider with such parameters.\n" +
+                        "Please check that information are valid.");
+                }
+
+                return Ok(provider);
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                return BadRequest(e);
             }
 
-            return Ok(provider);
+
         }
 
         /// <summary>
