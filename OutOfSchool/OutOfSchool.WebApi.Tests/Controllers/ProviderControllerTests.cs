@@ -83,7 +83,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetProviders_WhenCalled_ReturnsOkResultObject()
+        public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithColletionOfDTosValue()
         {
             // Arrange
             providerService.Setup(x => x.GetAll()).ReturnsAsync(providerDtos);
@@ -100,7 +100,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [Test]
         public async Task GetProviders_ReturnsExpectedCollectionOfDtos()
         {
+            // Arrange
+            providerService.Setup(x => x.GetAll()).ReturnsAsync(providerDtos);
 
+
+            // Act
+            var result = (await providerController.Get().ConfigureAwait(false) as ObjectResult).Value as IEnumerable<ProviderDto>;
+
+            // Assert
+            Assert.That(providerDtos.Union(result).Count, Is.EqualTo(providerDtos.Count()));
         }
 
         [Test]
@@ -128,6 +136,21 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.GetAssertedResponseOkAndValidValue<ProviderDto>();
+        }
+
+        [Test]
+        public async Task GetProviderById_WhenProviderWithIdExistsInDb_ReturnsExpectedProviderDto()
+        {
+            // Arrange
+            var existingId = providerDtos.Select(x => x.Id).FirstOrDefault();
+            var expectedProvider = providerDtos.SingleOrDefault(x => x.Id == existingId);
+            providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(providerDtos.SingleOrDefault(x => x.Id == existingId));
+
+            // Act
+            var result = (await providerController.GetById(existingId).ConfigureAwait(false) as ObjectResult).Value as ProviderDto;
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expectedProvider));
         }
 
         [Test]
