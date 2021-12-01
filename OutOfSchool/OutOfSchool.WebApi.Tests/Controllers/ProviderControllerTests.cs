@@ -59,8 +59,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProfile_WhenNoProviderWithSuchUserId_ReturnsNoContent()
         {
             // Arrange
-            ProviderDto nullProvider = null;
-            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(nullProvider);
+            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(null as ProviderDto);
 
             // Act
             var result = await providerController.GetProfile().ConfigureAwait(false);
@@ -86,7 +85,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProfile_WhenProviderForUserExists_ReturnsValidProviderDto()
         {
             // Arrange
-            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(CloneProviderDto(providerDto));
+            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(providerDto.GetDeepCopyProviderDto());
 
             // Act
             var resultValue = (await providerController.GetProfile().ConfigureAwait(false) as ObjectResult).Value as ProviderDto;
@@ -96,7 +95,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithCollectionOfProviders()
+        public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithCollectionDtos()
         {
             // Arrange
             providerService.Setup(x => x.GetAll()).ReturnsAsync(providerDtos);
@@ -109,7 +108,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
 
-        // write test to compare collection returned
         [Test]
         public async Task GetProviders_ReturnsExpectedCollectionOfDtos()
         {
@@ -184,7 +182,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task CreateProvider_WhenModelIsValid_ReturnsCreatedAtActionResult()
         {
             // Arrange
-            providerService.Setup(x => x.Create(It.IsAny<ProviderDto>())).ReturnsAsync(providerDto);
+            providerService.Setup(x => x.Create(It.IsAny<ProviderDto>())).ReturnsAsync(providerDto.GetDeepCopyProviderDto());
 
             // Act
             var result = await providerController.Create(providerDto).ConfigureAwait(false);
@@ -213,12 +211,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var providerToUpdateDto = providerDtos.FirstOrDefault();
             providerToUpdateDto.FullTitle = "New Title for changed provider";
             providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>()))
-                .ReturnsAsync(providerToUpdateDto);
+                .ReturnsAsync(providerToUpdateDto.GetDeepCopyProviderDto());
 
             // Act
             var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
+            var value = (result as ObjectResult).Value as ProviderDto;
 
             // Assert
+            AssertProviderDtosAreEqual(providerToUpdateDto, value);
             result.GetAssertedResponseOkAndValidValue<ProviderDto>();
         }
 
@@ -226,7 +226,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateProvider_WhenModelWithErrorsReceived_BadRequest_And_ModelsIsValid_False()
         {
             // Arrange
-            var providerToUpdateDto = new ProviderDto();
+            var providerToUpdateDto = providerDto.GetDeepCopyProviderDto();
             providerController.ModelState.AddModelError("UpdateError", "bad model state");
 
             providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>()))
@@ -303,50 +303,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private static IEnumerable<ProviderDto> CreateProviderCollectionDuplicate(IEnumerable<ProviderDto> originalCollection)
         {
             var resultCollection = new List<ProviderDto>();
-            resultCollection.AddRange(originalCollection.Select(x => CloneProviderDto(x)));
+            resultCollection.AddRange(originalCollection.Select(x => x.GetDeepCopyProviderDto()));
             return resultCollection;
         }
 
-        private static ProviderDto CloneProviderDto(ProviderDto originalDto)
-        {
-            var copiedEntity = new ProviderDto();
-            copiedEntity.Id = originalDto.Id;
-            copiedEntity.FullTitle = originalDto.FullTitle;
-            copiedEntity.ShortTitle = originalDto.ShortTitle;
-            copiedEntity.Website = originalDto.Website;
-            copiedEntity.Email = originalDto.Email;
-            copiedEntity.PhoneNumber = originalDto.PhoneNumber;
-            copiedEntity.Facebook = originalDto.Facebook;
-            copiedEntity.Instagram = originalDto.Instagram;
-            copiedEntity.Description = originalDto.Description;
-            copiedEntity.Director = originalDto.Director;
-            copiedEntity.DirectorDateOfBirth = originalDto.DirectorDateOfBirth;
-            copiedEntity.EdrpouIpn = originalDto.EdrpouIpn;
-            copiedEntity.UserId = originalDto.UserId;
-            copiedEntity.Ownership = originalDto.Ownership;
-            copiedEntity.Founder = originalDto.Founder;
-            copiedEntity.Status = originalDto.Status;
-            copiedEntity.Type = originalDto.Type;
-            copiedEntity.Rating = originalDto.Rating;
-            copiedEntity.NumberOfRatings = originalDto.NumberOfRatings;
-
-
-            copiedEntity.ActualAddress = new AddressDto
-            {
-                Street = originalDto.ActualAddress.Street,
-                City = originalDto.ActualAddress.City,
-                BuildingNumber = originalDto.ActualAddress.BuildingNumber,
-            };
-
-            copiedEntity.LegalAddress = new AddressDto
-            {
-                Street = originalDto.LegalAddress.Street,
-                City = originalDto.LegalAddress.City,
-                BuildingNumber = originalDto.LegalAddress.BuildingNumber,
-            };
-
-            return copiedEntity;
-        }
+  
 
         private static void AssertTwoCollectionsEqualByValues(IEnumerable<ProviderDto> expected, IEnumerable<ProviderDto> actual)
         {
@@ -362,9 +323,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             );
         }
 
-
-
-        private static void AssertProviderDtosAreEqual(ProviderDto expected, ProviderDto result)
+        public static void AssertProviderDtosAreEqual(ProviderDto expected, ProviderDto result)
         {
             Assert.Multiple(() =>
             {
@@ -386,13 +345,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Assert.AreEqual(expected.UserId, result.UserId);
                 Assert.AreEqual(expected.Rating, result.Rating);
                 Assert.AreEqual(expected.NumberOfRatings, result.NumberOfRatings);
+                Assert.AreEqual(expected.ActualAddress, result.ActualAddress);
+                Assert.AreEqual(expected.LegalAddress, result.LegalAddress);
                 Assert.AreEqual(expected.InstitutionStatusId, result.InstitutionStatusId);
-                Assert.AreEqual(expected.LegalAddress.City, result.LegalAddress.City);
-                Assert.AreEqual(expected.LegalAddress.BuildingNumber, result.LegalAddress.BuildingNumber);
-                Assert.AreEqual(expected.LegalAddress.Street, result.LegalAddress.Street);
-                Assert.AreEqual(expected.ActualAddress.City, result.ActualAddress.City);
-                Assert.AreEqual(expected.ActualAddress.BuildingNumber, result.ActualAddress.BuildingNumber);
-                Assert.AreEqual(expected.ActualAddress.Street, result.ActualAddress.Street);
             });
         }
     }
