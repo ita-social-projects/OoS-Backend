@@ -17,7 +17,7 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 }
 
 resource "google_sql_database_instance" "storage" {
-  name                = "cluster-store-${var.random_number}"
+  name                = "k3s-store-${var.random_number}"
   database_version    = "MYSQL_8_0"
   region              = var.region
   deletion_protection = false
