@@ -83,7 +83,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithColletionOfDTosValue()
+        public async Task GetProfile_WhenProviderForUserExists_ReturnsValidProviderDto()
+        {
+            // Arrange
+            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(CloneProviderDto(providerDto));
+
+            // Act
+            var resultValue = (await providerController.GetProfile().ConfigureAwait(false) as ObjectResult).Value as ProviderDto;
+
+            // Assert
+            AssertProviderDtosAreEqual(providerDto, resultValue);
+        }
+
+        [Test]
+        public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithCollectionOfProviders()
         {
             // Arrange
             providerService.Setup(x => x.GetAll()).ReturnsAsync(providerDtos);
@@ -101,14 +114,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProviders_ReturnsExpectedCollectionOfDtos()
         {
             // Arrange
-            providerService.Setup(x => x.GetAll()).ReturnsAsync(providerDtos);
+            providerService.Setup(x => x.GetAll()).ReturnsAsync(CreateProviderCollectionDuplicate(providerDtos));
 
 
             // Act
             var result = (await providerController.Get().ConfigureAwait(false) as ObjectResult).Value as IEnumerable<ProviderDto>;
 
             // Assert
-            Assert.That(providerDtos.Union(result).Count, Is.EqualTo(providerDtos.Count()));
+            AssertTwoCollectionsEqualByValues(providerDtos,result);
         }
 
         [Test]
@@ -147,10 +160,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(providerDtos.SingleOrDefault(x => x.Id == existingId));
 
             // Act
-            var result = (await providerController.GetById(existingId).ConfigureAwait(false) as ObjectResult).Value as ProviderDto;
+            var resultValue = (await providerController.GetById(existingId).ConfigureAwait(false) as ObjectResult).Value as ProviderDto;
 
             // Assert
-            Assert.That(result, Is.EqualTo(expectedProvider));
+            AssertProviderDtosAreEqual(expectedProvider, resultValue);
         }
 
         [Test]
@@ -286,5 +299,102 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
+
+        private static IEnumerable<ProviderDto> CreateProviderCollectionDuplicate(IEnumerable<ProviderDto> originalCollection)
+        {
+            var resultCollection = new List<ProviderDto>();
+            resultCollection.AddRange(originalCollection.Select(x => CloneProviderDto(x)));
+            return resultCollection;
+        }
+
+        private static ProviderDto CloneProviderDto(ProviderDto originalDto)
+        {
+            var copiedEntity = new ProviderDto();
+            copiedEntity.Id = originalDto.Id;
+            copiedEntity.FullTitle = originalDto.FullTitle;
+            copiedEntity.ShortTitle = originalDto.ShortTitle;
+            copiedEntity.Website = originalDto.Website;
+            copiedEntity.Email = originalDto.Email;
+            copiedEntity.PhoneNumber = originalDto.PhoneNumber;
+            copiedEntity.Facebook = originalDto.Facebook;
+            copiedEntity.Instagram = originalDto.Instagram;
+            copiedEntity.Description = originalDto.Description;
+            copiedEntity.Director = originalDto.Director;
+            copiedEntity.DirectorDateOfBirth = originalDto.DirectorDateOfBirth;
+            copiedEntity.EdrpouIpn = originalDto.EdrpouIpn;
+            copiedEntity.UserId = originalDto.UserId;
+            copiedEntity.Ownership = originalDto.Ownership;
+            copiedEntity.Founder = originalDto.Founder;
+            copiedEntity.Status = originalDto.Status;
+            copiedEntity.Type = originalDto.Type;
+            copiedEntity.Rating = originalDto.Rating;
+            copiedEntity.NumberOfRatings = originalDto.NumberOfRatings;
+
+
+            copiedEntity.ActualAddress = new AddressDto
+            {
+                Street = originalDto.ActualAddress.Street,
+                City = originalDto.ActualAddress.City,
+                BuildingNumber = originalDto.ActualAddress.BuildingNumber,
+            };
+
+            copiedEntity.LegalAddress = new AddressDto
+            {
+                Street = originalDto.LegalAddress.Street,
+                City = originalDto.LegalAddress.City,
+                BuildingNumber = originalDto.LegalAddress.BuildingNumber,
+            };
+
+            return copiedEntity;
+        }
+
+        private static void AssertTwoCollectionsEqualByValues(IEnumerable<ProviderDto> expected, IEnumerable<ProviderDto> actual)
+        {
+            var expectedArray = CreateProviderCollectionDuplicate(expected).ToArray();
+            var actualArray = CreateProviderCollectionDuplicate(actual).ToArray();
+            Assert.Multiple(() =>
+            {
+                for (var i = 0; i < expectedArray.Length; i++)
+                {
+                    AssertProviderDtosAreEqual(expectedArray[i], actualArray[i]);
+                }
+            }
+            );
+        }
+
+
+
+        private static void AssertProviderDtosAreEqual(ProviderDto expected, ProviderDto result)
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(expected.FullTitle, result.FullTitle);
+                Assert.AreEqual(expected.ShortTitle, result.ShortTitle);
+                Assert.AreEqual(expected.PhoneNumber, result.PhoneNumber);
+                Assert.AreEqual(expected.Website, result.Website);
+                Assert.AreEqual(expected.Facebook, result.Facebook);
+                Assert.AreEqual(expected.Email, result.Email);
+                Assert.AreEqual(expected.Instagram, result.Instagram);
+                Assert.AreEqual(expected.Description, result.Description);
+                Assert.AreEqual(expected.Director, result.Director);
+                Assert.AreEqual(expected.DirectorDateOfBirth, result.DirectorDateOfBirth);
+                Assert.AreEqual(expected.EdrpouIpn, result.EdrpouIpn);
+                Assert.AreEqual(expected.Founder, result.Founder);
+                Assert.AreEqual(expected.Ownership, result.Ownership);
+                Assert.AreEqual(expected.Type, result.Type);
+                Assert.AreEqual(expected.Status, result.Status);
+                Assert.AreEqual(expected.UserId, result.UserId);
+                Assert.AreEqual(expected.Rating, result.Rating);
+                Assert.AreEqual(expected.NumberOfRatings, result.NumberOfRatings);
+                Assert.AreEqual(expected.InstitutionStatusId, result.InstitutionStatusId);
+                Assert.AreEqual(expected.LegalAddress.City, result.LegalAddress.City);
+                Assert.AreEqual(expected.LegalAddress.BuildingNumber, result.LegalAddress.BuildingNumber);
+                Assert.AreEqual(expected.LegalAddress.Street, result.LegalAddress.Street);
+                Assert.AreEqual(expected.ActualAddress.City, result.ActualAddress.City);
+                Assert.AreEqual(expected.ActualAddress.BuildingNumber, result.ActualAddress.BuildingNumber);
+                Assert.AreEqual(expected.ActualAddress.Street, result.ActualAddress.Street);
+            });
+        }
     }
 }
+

@@ -22,7 +22,6 @@ namespace OutOfSchool.WebApi.Tests.Services
     [TestFixture]
     public class ProviderServiceTests
     {
-        private const string FakeUserId = "cqQQ876a-BBfb-4e9e-9c78-a0880286ae3c";
 
         private IProviderService providerService;
 
@@ -71,12 +70,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_ValidEntity_UpdatesOwnerIsRegisteredField()
         {
             // Arrange
-            var provider = ProvidersGenerator.Generate();
+            var provider = ProviderDtoGenerator.Generate();
             provider.UserId = fakeUser.Id;
             fakeUser.IsRegistered = false;
 
             // Act
-            await providerService.Create(provider.ToModel()).ConfigureAwait(false);
+            await providerService.Create(provider).ConfigureAwait(false);
 
             // Assert
             Assert.That(fakeUser.IsRegistered, Is.True);
@@ -93,12 +92,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Create_WhenUserIdExists_ThrowsInvalidOperationException()
         {
             // Arrange
-            var expected = ProvidersGenerator.Generate();
+            var expected = ProviderDtoGenerator.Generate();
             fakeProviders.RandomItem().UserId = expected.UserId;
 
             // Act and Assert
             Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await providerService.Create(expected.ToModel()).ConfigureAwait(false));
+                async () => await providerService.Create(expected).ConfigureAwait(false));
         }
 
         [Test]
@@ -129,7 +128,8 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Act
             await providerService.Create(expected.ToModel());
 
-            // Act & Assert
+            // Assert
+            Assert.That(receivedProvider.ActualAddress, Is.Not.Null);
             AssertAdressesAreEqual(expected.ActualAddress, receivedProvider.ActualAddress);
         }
 
@@ -138,15 +138,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             providersRepositoryMock.Setup(r => r.SameExists(It.IsAny<Provider>())).Returns(true);
-
             var randomProvider = fakeProviders.RandomItem();
-            var existingProvider = new ProviderDto
-            {
-                LegalAddress = new AddressDto(),
-            };
 
             // Act & Assert
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(existingProvider));
+            Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(randomProvider.ToModel()));
         }
 
         [Test]
@@ -197,7 +192,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.That(result, Is.Null);
         }
 
-        // TODO: providerService.Update method should be fixed before
         [Test]
         public async Task Update_UserCanUpdateExistingEntityOfRelatedProvider_UpdatesExistedEntity()
         {
@@ -318,7 +312,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             return new User()
             {
-                Id = FakeUserId,
+                Id = Guid.NewGuid().ToString(),
                 CreatingTime = default,
                 LastLogin = default,
                 MiddleName = "MiddleName",
