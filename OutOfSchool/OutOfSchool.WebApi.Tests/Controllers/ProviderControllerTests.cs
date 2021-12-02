@@ -14,9 +14,11 @@ using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -28,8 +30,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         private ProviderController providerController;
         private Mock<IProviderService> providerService;
-        private List<ProviderDto> providerDtos;
-        private ProviderDto providerDto;
+        private List<Provider> providers;
+        private Provider provider;
 
         [SetUp]
         public void Setup()
@@ -51,8 +53,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
 
             providerController.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
-            providerDtos = ProviderDtoGenerator.Generate(10);
-            providerDto = ProviderDtoGenerator.Generate();
+            providers = ProvidersGenerator.Generate(10);
+            provider = ProvidersGenerator.Generate();
         }
 
         [Test]
@@ -72,7 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProfile_WhenProviderForUserIdExists_ReturnsOkObjectResult()
         {
             // Arrange
-            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(providerDto);
+            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider.ToModel());
 
             // Act
             var result = await providerController.GetProfile().ConfigureAwait(false);
@@ -85,20 +87,20 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProfile_WhenProviderForUserExists_ReturnsValidProviderDto()
         {
             // Arrange
-            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(providerDto.GetDeepCopyProviderDto());
+            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider.ToModel());
 
             // Act
             var resultValue = (await providerController.GetProfile().ConfigureAwait(false) as ObjectResult).Value as ProviderDto;
 
             // Assert
-            AssertProviderDtosAreEqual(providerDto, resultValue);
+            AssertProviderDtosAreEqual(provider.ToModel(), resultValue);
         }
 
         [Test]
         public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithCollectionDtos()
         {
             // Arrange
-            providerService.Setup(x => x.GetAll()).ReturnsAsync(providerDtos);
+            providerService.Setup(x => x.GetAll()).ReturnsAsync(providers.Select(p => p.ToModel()));
 
             // Act
             var result = await providerController.Get().ConfigureAwait(false);
@@ -112,14 +114,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProviders_ReturnsExpectedCollectionOfDtos()
         {
             // Arrange
-            providerService.Setup(x => x.GetAll()).ReturnsAsync(CreateProviderCollectionDuplicate(providerDtos));
+            var expected = providers.Select(p => p.ToModel()).ToList();
+            providerService.Setup(x => x.GetAll()).ReturnsAsync(providers.Select(p => p.ToModel()));
 
 
             // Act
             var result = (await providerController.Get().ConfigureAwait(false) as ObjectResult).Value as IEnumerable<ProviderDto>;
 
             // Assert
-            AssertTwoCollectionsEqualByValues(providerDtos,result);
+            AssertTwoCollectionsEqualByValues(expected,result);
         }
 
         [Test]
@@ -139,8 +142,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProviderById_WhenProviderWithIdExistsInDb_ReturnsOkObjectResultWithDtoAsValue()
         {
             // Arrange
-            var existingId = providerDtos.Select(x => x.Id).FirstOrDefault();
-            providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(providerDtos.SingleOrDefault(x => x.Id == existingId));
+            var existingId = providers.Select(x => x.Id).FirstOrDefault();
+            providerService.Setup(x => x.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(providers.SingleOrDefault(x => x.Id == existingId).ToModel());
 
             // Act
             var result = await providerController.GetById(existingId).ConfigureAwait(false);
@@ -153,9 +157,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProviderById_WhenProviderWithIdExistsInDb_ReturnsExpectedProviderDto()
         {
             // Arrange
-            var existingId = providerDtos.Select(x => x.Id).FirstOrDefault();
-            var expectedProvider = providerDtos.SingleOrDefault(x => x.Id == existingId);
-            providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(providerDtos.SingleOrDefault(x => x.Id == existingId));
+            var existingId = providers.Select(x => x.Id).FirstOrDefault();
+            var expectedProvider = providers.SingleOrDefault(x => x.Id == existingId).ToModel();
+            providerService.Setup(x => x.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(providers.SingleOrDefault(x => x.Id == existingId).ToModel());
 
             // Act
             var resultValue = (await providerController.GetById(existingId).ConfigureAwait(false) as ObjectResult).Value as ProviderDto;
@@ -182,10 +187,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task CreateProvider_WhenModelIsValid_ReturnsCreatedAtActionResult()
         {
             // Arrange
-            providerService.Setup(x => x.Create(It.IsAny<ProviderDto>())).ReturnsAsync(providerDto.GetDeepCopyProviderDto());
+            providerService.Setup(x => x.Create(It.IsAny<ProviderDto>())).ReturnsAsync(provider.ToModel());
 
             // Act
-            var result = await providerController.Create(providerDto).ConfigureAwait(false);
+            var result = await providerController.Create(provider.ToModel()).ConfigureAwait(false);
 
             // Assert
             result.GetAssertedResponseValidateValueNotEmpty<CreatedAtActionResult>();
@@ -198,7 +203,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerController.ModelState.AddModelError("CreateProvider", "Invalid model state.");
 
             // Act
-            var result = await providerController.Create(providerDto).ConfigureAwait(false);
+            var result = await providerController.Create(provider.ToModel()).ConfigureAwait(false);
 
             // Assert
             result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
@@ -208,17 +213,18 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateProvider_WhenModelIsValidAndProviderExists_ReturnsOkObjectResult()
         {
             // Arrange
-            var providerToUpdateDto = providerDtos.FirstOrDefault();
-            providerToUpdateDto.FullTitle = "New Title for changed provider";
-            providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>()))
-                .ReturnsAsync(providerToUpdateDto.GetDeepCopyProviderDto());
+            var providerToUpdate = providers.FirstOrDefault();
+            providerToUpdate.FullTitle = "New Title for changed provider";
+            var providerDto = providerToUpdate.ToModel();   
+            providerService.Setup(x => x.Update(providerDto, It.IsAny<string>()))
+                .ReturnsAsync(providerToUpdate.ToModel());
 
             // Act
-            var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
+            var result = await providerController.Update(providerDto).ConfigureAwait(false);
             var value = (result as ObjectResult).Value as ProviderDto;
 
             // Assert
-            AssertProviderDtosAreEqual(providerToUpdateDto, value);
+            AssertProviderDtosAreEqual(providerDto, value);
             result.GetAssertedResponseOkAndValidValue<ProviderDto>();
         }
 
@@ -226,11 +232,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateProvider_WhenModelWithErrorsReceived_BadRequest_And_ModelsIsValid_False()
         {
             // Arrange
-            var providerToUpdateDto = providerDto.GetDeepCopyProviderDto();
+            var providerToUpdateDto = provider.ToModel();
             providerController.ModelState.AddModelError("UpdateError", "bad model state");
 
             providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>()))
-                .ReturnsAsync(providerToUpdateDto);
+                .ReturnsAsync(provider.ToModel());
 
             // Act
             var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
@@ -244,7 +250,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateProvider_WhenCorrectData_AND_WrongUserId_ModelIsValid_But_BadRequest()
         {
             // Arrange
-            var providerToUpdateDto = providerDtos.FirstOrDefault();
+            var providerToUpdateDto = providers.FirstOrDefault().ToModel();
             providerToUpdateDto.FullTitle = "New Title for changed provider";
             providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>())).ReturnsAsync(null as ProviderDto);
 
@@ -276,7 +282,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteProvider_WhenIdIsValid_ReturnsNoContentResult()
         {
             // Arrange
-            var existingProviderGuid = providerDtos.Select(p => p.Id).FirstOrDefault();
+            var existingProviderGuid = providers.Select(p => p.Id).FirstOrDefault();
             providerService.Setup(x => x.Delete(existingProviderGuid));
 
             // Act
@@ -300,19 +306,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
         }
 
-        private static IEnumerable<ProviderDto> CreateProviderCollectionDuplicate(IEnumerable<ProviderDto> originalCollection)
-        {
-            var resultCollection = new List<ProviderDto>();
-            resultCollection.AddRange(originalCollection.Select(x => x.GetDeepCopyProviderDto()));
-            return resultCollection;
-        }
-
-  
-
         private static void AssertTwoCollectionsEqualByValues(IEnumerable<ProviderDto> expected, IEnumerable<ProviderDto> actual)
         {
-            var expectedArray = CreateProviderCollectionDuplicate(expected).ToArray();
-            var actualArray = CreateProviderCollectionDuplicate(actual).ToArray();
+            var expectedArray = expected.ToArray();
+            var actualArray = actual.ToArray();
             Assert.Multiple(() =>
             {
                 for (var i = 0; i < expectedArray.Length; i++)
@@ -323,7 +320,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             );
         }
 
-        public static void AssertProviderDtosAreEqual(ProviderDto expected, ProviderDto result)
+        private static void AssertProviderDtosAreEqual(ProviderDto expected, ProviderDto result)
         {
             Assert.Multiple(() =>
             {
