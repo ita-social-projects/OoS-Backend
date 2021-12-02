@@ -17,3 +17,11 @@ output "es_admin_pass" {
 output "es_api_pass" {
   value = random_password.es_api_pass.result
 }
+
+output "mongo_root_pass" {
+  value = random_password.mongo_root_pass.result
+}
+
+output "mongo_pass" {
+  value = random_password.mongo_pass.result
+}

@@ -18,3 +18,11 @@ variable "labels" {
 variable "sql_hostname" {
   type = string
 }
+
+variable "mongo_root_pass" {
+  type = string
+}
+
+variable "mongo_pass" {
+  type = string
+}
