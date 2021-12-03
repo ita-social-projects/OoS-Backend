@@ -199,7 +199,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
 
-            //Register the Permission policy handlers
+            // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
@@ -211,8 +211,11 @@ namespace OutOfSchool.WebApi
             var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
 
             // Add feature management
-            services.AddFeatureManagement(Configuration.GetSection(Constants.SectionName));
-            services.AddSingleton<IConfiguration>(Configuration);
+            services.AddFeatureManagement(Configuration.GetSection(FeatureManagementConfig.Name));
+            services.AddSingleton<FeatureManagementConfig>((serviceProvider) =>
+            {
+                return Configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();
+            });
 
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
