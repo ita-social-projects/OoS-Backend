@@ -18,7 +18,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Util.Images;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Controllers.V1
 {
@@ -32,7 +32,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     {
         private readonly IWorkshopServicesCombiner combinedWorkshopService;
         private readonly IProviderService providerService;
-        private readonly IImageService pictureService;
+        private readonly IImageService imageService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
         private readonly RequestLimitsOptions requestLimitsOptions; // will be moved into a common class
@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public WorkshopController(
             IWorkshopServicesCombiner combinedWorkshopService,
             IProviderService providerService,
-            IImageService pictureService,
+            IImageService imageService,
             IStringLocalizer<SharedResource> localizer,
             IOptions<AppDefaultsConfig> options,
             IOptions<RequestLimitsOptions> requestLimitsOptions)
@@ -55,7 +55,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
-            this.pictureService = pictureService;
+            this.imageService = imageService;
             this.options = options.Value;
             this.requestLimitsOptions = requestLimitsOptions.Value;
         }
@@ -184,20 +184,24 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
-            if (!ValidCountOfFiles(dto.ImageFiles.Count))
+            IDictionary<short, OperationResult> imageBadResults = new Dictionary<short, OperationResult>();
+            if (dto.ImageFiles != null && dto.ImageFiles.Count > 0)
             {
-                return StatusCode(StatusCodes.Status413PayloadTooLarge);
+                if (!ValidCountOfFiles(dto.ImageFiles.Count))
+                {
+                    return StatusCode(StatusCodes.Status413PayloadTooLarge);
+                }
+
+                var results = await imageService.UploadManyWorkshopImagesWithUpdatingEntityAsync(workshop.Id, dto.ImageFiles)
+                    .ConfigureAwait(false);
+
+                imageBadResults = results.GetFailedResults();
             }
-
-            var results = await pictureService.UploadManyWorkshopImagesWithUpdatingEntityAsync(workshop.Id, dto.ImageFiles)
-            .ConfigureAwait(false);
-
-            var badResults = results.GetFailedResults();
 
             return CreatedAtAction(
                 nameof(GetById),
                 new { id = workshop.Id, },
-                new { Id = workshop.Id, ImagesBadResults = badResults});
+                new { Id = workshop.Id, ImagesBadResults = imageBadResults });
         }
 
         /// <summary>

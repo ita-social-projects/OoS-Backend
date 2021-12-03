@@ -21,6 +21,7 @@ using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Contexts;
+using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -130,7 +131,7 @@ namespace OutOfSchool.WebApi
             // Request options
             services.Configure<RequestLimitsOptions>(Configuration.GetSection(RequestLimitsOptions.Name));
 
-            // Picture options
+            // Image options
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
             services.AddSingleton<MongoDb>();
             services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}"));

@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
+using OutOfSchool.Services.Contexts.Configuration;
 
 namespace OutOfSchool.Services.Contexts
 {
@@ -12,20 +13,30 @@ namespace OutOfSchool.Services.Contexts
     /// </summary>
     public class MongoDb // will be deleted because of moving into mysql
     {
-        private readonly string server;
+        private readonly string serverName;
 
-        private readonly string database;
+        private readonly string databaseName;
 
         public MongoDb(IOptions<ExternalImageSourceConfig> config)
         {
-            server = config.Value.Server ?? throw new InvalidOperationException( "Server name cannot be null");
-            database = config.Value.Database ?? throw new InvalidOperationException("Database name cannot be null");
+            if (string.IsNullOrEmpty(config.Value.ServerName))
+            {
+                throw new InvalidOperationException("Server name is null or invalid");
+            }
+
+            if (string.IsNullOrEmpty(config.Value.DatabaseName))
+            {
+                throw new InvalidOperationException("Database name is null or invalid");
+            }
+
+            serverName = config.Value.ServerName;
+            databaseName = config.Value.DatabaseName;
         }
 
         public IGridFSBucket GetContext()
         {
-            var client = new MongoClient(server);
-            var databaseInstance = client.GetDatabase(database) ?? throw new InvalidOperationException($"Cannot get an instance of MongoDb database: {database}");
+            var client = new MongoClient(serverName);
+            var databaseInstance = client.GetDatabase(databaseName) ?? throw new InvalidOperationException($"Cannot get an instance of MongoDb databaseName: {databaseName}");
 
             return new GridFSBucket(databaseInstance);
         }

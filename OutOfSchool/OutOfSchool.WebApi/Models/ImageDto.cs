@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class ImageStorageModelDto
+    public class ImageDto
     {
         public Stream ContentStream { get; set; }
 

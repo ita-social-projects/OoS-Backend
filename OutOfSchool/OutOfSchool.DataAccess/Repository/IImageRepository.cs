@@ -8,6 +8,5 @@ namespace OutOfSchool.Services.Repository
 {
     public interface IImageRepository
     {
-        public Task<ImageMetadata> GetMetadataById(Guid id);
     }
 }

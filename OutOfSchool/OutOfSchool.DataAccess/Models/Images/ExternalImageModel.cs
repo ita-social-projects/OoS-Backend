@@ -1,11 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace OutOfSchool.Services.Models.Images
 {
-    /// <summary>
-    /// Represents image model with Stream and ContentType.
-    /// </summary>
-    public class ImageStorageModel
+    public class ExternalImageModel
     {
         public Stream ContentStream { get; set; }
 

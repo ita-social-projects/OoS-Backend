@@ -18,32 +18,32 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]")]
     public class PublicImageController : ControllerBase
     {
-        private readonly IImageService pictureService;
+        private readonly IImageService imageService;
 
-        public PublicImageController(IImageService pictureService)
+        public PublicImageController(IImageService imageService)
         {
-            this.pictureService = pictureService;
+            this.imageService = imageService;
         }
 
         /// <summary>
         /// Gets <see cref="FileStreamResult"/> for a given pictureId.
         /// </summary>
-        /// <param name="pictureId">This is the image id.</param>
+        /// <param name="imageMetadataId">This is the image id.</param>
         /// <returns>The result of <see cref="FileStreamResult"/>.</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileStreamResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{pictureId}")]
-        public async Task<IActionResult> GetByIdAsync(Guid pictureId)
+        [HttpGet("{imageMetadataId}")]
+        public async Task<IActionResult> GetByIdAsync(string imageMetadataId)
         {
-            var pictureData = await pictureService.GetByIdAsync(pictureId).ConfigureAwait(false);
+            var imageData = await imageService.GetByIdAsync(imageMetadataId).ConfigureAwait(false);
 
-            if (pictureData.Succeeded)
+            if (imageData.Succeeded)
             {
-                return new FileStreamResult(pictureData.Value.ContentStream, pictureData.Value.ContentType);
+                return new FileStreamResult(imageData.Value.ContentStream, imageData.Value.ContentType);
             }
 
-            return BadRequest(pictureData.OperationResult);
+            return BadRequest(imageData.OperationResult);
         }
     }
 }

@@ -8,12 +8,10 @@ namespace OutOfSchool.Services.Models.Images
     /// <typeparam name="TEntity">This is an entity for which you can operate with images.</typeparam>
     public class Image<TEntity>
     {
-        public Guid Id { get; set; }
+        public Guid EntityId { get; set; }
 
         public virtual TEntity Entity { get; set; }
 
-        public Guid ImageId { get; set; }
-
-        public virtual ImageMetadata ImageMetadata { get; set; }
+        public string ExternalStorageId { get; set; }
     }
 }

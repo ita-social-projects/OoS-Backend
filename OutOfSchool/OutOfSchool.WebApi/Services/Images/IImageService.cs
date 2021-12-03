@@ -18,8 +18,8 @@ namespace OutOfSchool.WebApi.Services.Images
         /// Gets image by id.
         /// </summary>
         /// <param name="imageId">Image id.</param>
-        /// <returns>The instance of <see cref="Result{ImageStorageModel}"/>.</returns>
-        Task<Result<ImageStorageModel>> GetByIdAsync(Guid imageId);
+        /// <returns>The instance of <see cref="Result{ImageDto}"/>.</returns>
+        Task<Result<ImageDto>> GetByIdAsync(string imageId);
 
         /// <summary>
         /// Uploads images for the chosen workshop and then updates it.
@@ -29,15 +29,16 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <returns>The instance of <see cref="Dictionary{TKey,TValue}"/> that contains results (type of <see cref="OperationResult"/>) for uploading any image.
         /// This is the pair of keys from fileCollection and appropriate OperationResult.
         /// It returns the pair of (-1, <see cref="OperationResult"/>) if there are no ways to update the current workshop.</returns>
-        public Task<IDictionary<short, OperationResult>> UploadManyWorkshopImagesWithUpdatingEntityAsync(Guid workshopId,
+        Task<IDictionary<short, OperationResult>> UploadManyWorkshopImagesWithUpdatingEntityAsync(
+            Guid workshopId,
             List<IFormFile> fileCollection);
 
         /// <summary>
         /// Uploads the given image for the chosen workshop and then updates it.
         /// </summary>
         /// <param name="workshopId">It's an Id of Workshop.</param>
-        /// <param name="imageModel">Contains the image.</param>
+        /// <param name="imageDto">Contains the image.</param>
         /// <returns>The instance of <see cref="OperationResult"/> that describes the result of uploading.</returns>
-        Task<OperationResult> UploadWorkshopImageWithUpdatingEntityAsync(Guid workshopId, ImageStorageModel imageModel);
+        Task<OperationResult> UploadWorkshopImageWithUpdatingEntityAsync(Guid workshopId, ImageDto imageDto);
     }
 }

@@ -129,13 +129,19 @@
   <data name="InvalidImageSizeError" xml:space="preserve">
     <value>Invalid image size</value>
   </data>
+  <data name="NoImagesForUploading" xml:space="preserve">
+    <value>There're no images for uploading</value>
+  </data>
   <data name="NotFoundError" xml:space="preserve">
     <value>Image was not found</value>
   </data>
   <data name="UnexpectedValidationError" xml:space="preserve">
     <value>Please, be sure that your image is correct</value>
   </data>
-  <data name="UpdateImagesError" xml:space="preserve">
+  <data name="UploadImagesError" xml:space="preserve">
     <value>An error while uploading images</value>
+  </data>
+  <data name="WorkshopEntityNotFoundWhileUploadingError" xml:space="preserve">
+    <value>Unreal to find a workshop for uploading images</value>
   </data>
 </root>

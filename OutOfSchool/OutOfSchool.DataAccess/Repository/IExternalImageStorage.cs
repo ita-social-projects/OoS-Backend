@@ -4,13 +4,14 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Repository
 {
     public interface IExternalImageStorage
     {
-        Task<Stream> GetByIdAsync(string pictureId);
+        Task<ExternalImageModel> GetByIdAsync(string imageId);
 
-        public Task<string> UploadImageAsync(Stream contentStream, CancellationToken cancellationToken = default);
+        Task<string> UploadImageAsync(ExternalImageModel imageModel, CancellationToken cancellationToken = default);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace OutOfSchool.Services.Contexts
+﻿namespace OutOfSchool.Services.Contexts.Configuration
 {
     /// <summary>
     /// Encapsulates connecting options for an external image storage.
@@ -7,8 +7,8 @@
     {
         public const string Name = "ConnectionStrings:ExternalImageStorage";
 
-        public string Server { get; set; }
+        public string ServerName { get; set; }
 
-        public string Database { get; set; }
+        public string DatabaseName { get; set; }
     }
 }

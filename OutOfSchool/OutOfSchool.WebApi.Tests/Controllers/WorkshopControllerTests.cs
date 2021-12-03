@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
         private Mock<IProviderService> providerServiceMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<IImageService> pictureServiceMock;
+        private Mock<IImageService> imageServiceMock;
         private Mock<IOptions<RequestLimitsOptions>> requestLimitOptionsMock;
 
         private string userId;
@@ -72,9 +72,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             workshopServiceMoq = new Mock<IWorkshopServicesCombiner>();
             providerServiceMoq = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
-            pictureServiceMock = new Mock<IImageService>();
+            imageServiceMock = new Mock<IImageService>();
 
-            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, pictureServiceMock.Object,localizer.Object, options.Object, requestLimitOptionsMock.Object)
+            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, imageServiceMock.Object,localizer.Object, options.Object, requestLimitOptionsMock.Object)
             {
                 ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
             };

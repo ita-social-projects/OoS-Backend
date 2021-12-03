@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Util
                     dest => dest.Keywords,
                     opt => opt.MapFrom(src => src.Keywords.Split(SEPARATOR, StringSplitOptions.None)))
                 .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
-                .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.WorkshopImages.Select(x => x.ImageId)));
+                .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.WorkshopImages.Select(x => x.ExternalStorageId)));
             CreateMap<Address, AddressDto>().ReverseMap();
 
             CreateMap<Provider, ProviderDto>()

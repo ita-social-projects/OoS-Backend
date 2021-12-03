@@ -485,35 +485,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("EntityId")
                         .HasColumnType("binary(16)");
 
-                    b.Property<Guid>("ImageId")
-                        .HasColumnType("binary(16)");
+                    b.Property<string>("ExternalStorageId")
+                        .HasColumnType("varchar(255)");
 
-                    b.HasKey("Id", "ImageId");
-
-                    b.HasIndex("ImageId")
-                        .IsUnique();
+                    b.HasKey("EntityId", "ExternalStorageId");
 
                     b.ToTable("WorkshopImages");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.ImageMetadata", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("ContentType")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("StorageId")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ImagesMetadata");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
@@ -1209,19 +1189,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Entity")
                         .WithMany("WorkshopImages")
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Images.ImageMetadata", "ImageMetadata")
-                        .WithOne("WorkshopImage")
-                        .HasForeignKey("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", "ImageId")
+                        .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Entity");
-
-                    b.Navigation("ImageMetadata");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
@@ -1336,11 +1308,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Direction", b =>
                 {
                     b.Navigation("Departments");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.ImageMetadata", b =>
-                {
-                    b.Navigation("WorkshopImage");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>

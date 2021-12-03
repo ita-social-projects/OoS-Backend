@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OutOfSchool.WebApi.Common;
 
-namespace OutOfSchool.WebApi.Util.Images
+namespace OutOfSchool.WebApi.Util
 {
     public static class OperationResultHelper
     {
@@ -14,7 +14,7 @@ namespace OutOfSchool.WebApi.Util.Images
                 throw new ArgumentNullException(nameof(results));
             }
 
-            return results.Where(por => por.Succeeded == false);
+            return results.Where(x => !x.Succeeded);
         }
 
         public static IDictionary<TKey, OperationResult> GetFailedResults<TKey>(this IDictionary<TKey, OperationResult> results)
@@ -24,7 +24,7 @@ namespace OutOfSchool.WebApi.Util.Images
                 throw new ArgumentNullException(nameof(results));
             }
 
-            return results.Where(por => por.Value.Succeeded == false).ToDictionary(x => x.Key, x => x.Value);
+            return results.Where(x => !x.Value.Succeeded).ToDictionary(x => x.Key, x => x.Value);
         }
     }
 }

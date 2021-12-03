@@ -115,7 +115,7 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
-        public ICollection<Guid> ImageIds { get; set; }
+        public ICollection<string> ImageIds { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

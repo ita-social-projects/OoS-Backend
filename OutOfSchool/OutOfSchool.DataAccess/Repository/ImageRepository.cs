@@ -16,10 +16,5 @@ namespace OutOfSchool.Services.Repository
         {
             this.dbContext = dbContext;
         }
-
-        public async Task<ImageMetadata> GetMetadataById(Guid id)
-        {
-            return await dbContext.ImagesMetadata.FirstOrDefaultAsync(x => x.Id == id);
-        }
     }
 }
