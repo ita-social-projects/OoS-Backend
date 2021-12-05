@@ -9,9 +9,9 @@ namespace OutOfSchool.Services.Models
 
         public ElasticsearchSyncEntity Entity { get; set; }
 
-        public long RecordId { get; set; }
+        public Guid RecordId { get; set; }
 
-        public DateTime OperationDate { get; set; }
+        public DateTimeOffset OperationDate { get; set; }
 
         public ElasticsearchSyncOperation Operation { get; set; }
     }

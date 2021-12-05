@@ -85,7 +85,7 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<long>> GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation operation)
+        public async Task<IEnumerable<Guid>> GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation operation)
         {
             var esSyncRecords = db.ElasticsearchSyncRecords;
 

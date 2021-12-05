@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
@@ -11,7 +12,7 @@ namespace OutOfSchool.WebApi.Services
 
         Task Create(ElasticsearchSyncRecordDto dto);
 
-        Task AddNewRecordToElasticsearchSynchronizationTable(ElasticsearchSyncEntity entity, long id, ElasticsearchSyncOperation operation);
+        Task AddNewRecordToElasticsearchSynchronizationTable(ElasticsearchSyncEntity entity, Guid id, ElasticsearchSyncOperation operation);
 
         Task Synchronize(CancellationToken cancellationToken);
     }

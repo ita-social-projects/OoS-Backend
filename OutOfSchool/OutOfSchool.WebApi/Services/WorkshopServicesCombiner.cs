@@ -156,19 +156,5 @@ namespace OutOfSchool.WebApi.Services
                                   && filter.MaxAge >= filter.MinAge
                                   && filter.MaxPrice >= filter.MinPrice;
         }
-
-        private async void AddRecordToBackupTracker(long id, BackupOperation operation)
-        private async void AddNewRecordToElasticsearchSynchronizationTable(long id, ElasticsearchSyncOperation operation)
-        private async Task<ElasticsearchSyncRecordDto> AddNewRecordToElasticsearchSynchronizationTable(long id, ElasticsearchSyncOperation operation)
-        private async Task AddNewRecordToElasticsearchSynchronizationTable(long id, ElasticsearchSyncOperation operation)
-        {
-            ElasticsearchSyncRecordDto elasticsearchSyncRecordDto = new ElasticsearchSyncRecordDto()
-            {
-                Operation = operation,
-                OperationDate = DateTime.UtcNow,
-                RecordId = id,
-            };
-            await elasticsearchSynchronizationService.Create(elasticsearchSyncRecordDto).ConfigureAwait(false);
-        }
     }
 }

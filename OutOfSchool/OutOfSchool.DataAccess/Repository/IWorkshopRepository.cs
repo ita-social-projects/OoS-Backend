@@ -22,6 +22,6 @@ namespace OutOfSchool.Services.Repository
 
         Task<IEnumerable<Workshop>> GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation operation);
 
-        Task<IEnumerable<long>> GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation operation);
+        Task<IEnumerable<Guid>> GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation operation);
     }
 }
