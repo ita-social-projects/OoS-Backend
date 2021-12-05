@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -73,7 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             //Arrange
             var expectedValue = Enum.GetValues(typeof(Permissions))
                 .Cast<Permissions>()
-                .Select(p => new { permission = p.ToString(), code = p });
+                .Select(p => (p, p.ToString()));
 
             // Act
             var response = controller.GetAllPermissions();
@@ -81,6 +82,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             response.AssertResponseOkResultAndValidateValue(expectedValue);
         }
+
 
         [Test]
         [TestCase("Admin")]

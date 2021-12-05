@@ -55,15 +55,16 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
-            var entityToBeCreated = ProviderDtoGenerator.Generate(); // argument for service's Create method
-            providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>())).ReturnsAsync(entityToBeCreated.ToDomain());
+            var entityToBeCreated = ProvidersGenerator.Generate(); // argument for service's Create method
+            var expected = entityToBeCreated.ToModel();
+            providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>())).ReturnsAsync(entityToBeCreated);
 
             // Act
-            var result = await providerService.Create(entityToBeCreated).ConfigureAwait(false);
+            var result = await providerService.Create(entityToBeCreated.ToModel()).ConfigureAwait(false);
             var actualProvider = result;
 
             // Assert
-            TestHelper.AssertDtosAreEqual(entityToBeCreated, actualProvider);
+            TestHelper.AssertDtosAreEqual(expected, actualProvider);
         }
 
         [Test]

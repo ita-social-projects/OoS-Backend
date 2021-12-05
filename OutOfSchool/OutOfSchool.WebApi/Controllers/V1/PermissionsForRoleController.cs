@@ -127,6 +127,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public IActionResult GetAllPermissions() =>
             Ok(Enum.GetValues(typeof(Permissions))
                 .Cast<Permissions>()
-                .Select(p => new { permission = p.ToString(), code = p }));
+                .Select(p => (p, p.ToString())));
     }
 }
