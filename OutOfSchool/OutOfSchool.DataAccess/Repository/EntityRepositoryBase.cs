@@ -67,6 +67,14 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
+        public async Task DeleteAll()
+        {
+            dbSet.RemoveRange(dbSet);
+
+            await dbContext.SaveChangesAsync();
+        }
+
+        /// <inheritdoc/>
         public virtual async Task<IEnumerable<TValue>> GetAll()
         {
             return await dbSet.ToListAsync().ConfigureAwait(false);
