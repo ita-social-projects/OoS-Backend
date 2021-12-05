@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -21,8 +23,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IStatusService> service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
-        private IEnumerable<InstitutionStatusDTO> institutionStatuses;
-        private InstitutionStatusDTO institutionStatus;
+        private IEnumerable<InstitutionStatus> institutionStatuses;
+        private InstitutionStatus institutionStatus;
 
 
 
@@ -42,13 +44,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetInstitutionStatuses_WhenCalled_ReturnsOkResultObject()
         {
             // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(institutionStatuses);
+            var expected = institutionStatuses.Select(x => x.ToModel());
+            service.Setup(x => x.GetAll()).ReturnsAsync(institutionStatuses.Select(x => x.ToModel()));
 
             // Act
             var response = await controller.Get().ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseOkAndValidValue<IEnumerable<InstitutionStatusDTO>>();
+            response.AssertResponseOkResultAndValidateValue(expected);
         }
 
         [Test]
@@ -69,13 +72,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetInstitutionStatusById_WhenIdIsValid_ReturnOkResultObject(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id));
+            var expected = institutionStatuses.SingleOrDefault(x => x.Id == id).ToModel();
+            service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id).ToModel());
 
             // Act
             var response = await controller.GetById(id).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseOkAndValidValue<InstitutionStatusDTO>();
+            response.AssertResponseOkResultAndValidateValue(expected);
         }
 
         [Test]
@@ -83,13 +87,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetInstitutionStatusById_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessage(long id)
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id));
+            var exceptedResponse = new BadRequestObjectResult("error message");
+            service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id).ToModel());
 
             // Act
             var response = await controller.GetById(id).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(exceptedResponse);
         }
 
         [Test]
@@ -97,39 +102,43 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetById_WhenIdDoesntExist_ReturnsBadRequestWithExceptionMessage(long id)
         {
             // Arrange
+            var expectedResponse = new BadRequestObjectResult("Argument out of range");
             service.Setup(x => x.GetById(id)).Throws<ArgumentOutOfRangeException>();
 
             // Act
             var response = await controller.GetById(id).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expectedResponse);
         }
 
         [Test]
         public async Task CreateInstitutionStatus_WhenModelIsValid_ReturnsCreatedAtActionResult()
         {
             // Arrange
-            service.Setup(x => x.Create(institutionStatus)).ReturnsAsync(institutionStatus);
+            var expected = institutionStatus.ToModel();
+            var expectedResponse = new CreatedAtActionResult(nameof(controller.GetById), nameof(controller), new { id = expected.Id }, expected);
+            service.Setup(x => x.Create(expected)).ReturnsAsync(institutionStatus.ToModel());
 
             // Act
-            var response = await controller.Create(institutionStatus).ConfigureAwait(false);
+            var response = await controller.Create(expected).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<CreatedAtActionResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<CreatedAtActionResult>(expectedResponse);
         }
 
         [Test]
         public async Task UpdateInstitutionStatus_WhenModelIsValid_ReturnsOkObjectResult()
         {
             // Arrange
-            service.Setup(x => x.Update(institutionStatus)).ReturnsAsync(institutionStatus);
+            var expected = institutionStatus.ToModel();
+            service.Setup(x => x.Update(expected)).ReturnsAsync(institutionStatus.ToModel());
 
             // Act
-            var response = await controller.Update(institutionStatus).ConfigureAwait(false);
+            var response = await controller.Update(expected).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseOkAndValidValue<InstitutionStatusDTO>();
+            response.AssertResponseOkResultAndValidateValue(expected);
         }
 
 
@@ -152,13 +161,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task Delete_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessageAsync(long id)
         {
             // Arrange
+            var expected = new BadRequestObjectResult("The id cannot be less than 1.");
             service.Setup(x => x.Delete(id));
 
             // Act
             var response = await controller.Delete(id).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
         }
 
         [Test]
@@ -166,43 +176,44 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteInstitutionStatus_WhenIdDoesntExists_ReturnsBadRequestWithMessage(long id)
         {
             // Arrange
+            var expected = new BadRequestObjectResult("message error1");
             service.Setup(x => x.Delete(id)).Throws<ArgumentOutOfRangeException>();
 
             // Act
             var response = await controller.Delete(id).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
         }
 
 
         /// <summary>
         /// faking data for testing.
         /// </summary>
-        private InstitutionStatusDTO FakeInstitutionStatus()
+        private InstitutionStatus FakeInstitutionStatus()
         {
-            return new InstitutionStatusDTO()
+            return new InstitutionStatus()
             {
                 Id = 1,
                 Name = "Test",
             };
         }
 
-        private IEnumerable<InstitutionStatusDTO> FakeInstitutionStatuses()
+        private IEnumerable<InstitutionStatus> FakeInstitutionStatuses()
         {
-            return new List<InstitutionStatusDTO>()
+            return new List<InstitutionStatus>()
             {
-                new InstitutionStatusDTO()
+                new InstitutionStatus()
                 {
                 Id = 1,
                 Name = "NoName",
                 },
-                new InstitutionStatusDTO()
+                new InstitutionStatus()
                 {
                 Id = 2,
                 Name = "HaveName",
                 },
-                new InstitutionStatusDTO()
+                new InstitutionStatus()
                 {
                 Id = 3,
                 Name = "MissName",

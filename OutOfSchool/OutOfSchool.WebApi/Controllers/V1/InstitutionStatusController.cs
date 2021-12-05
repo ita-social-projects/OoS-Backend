@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
             catch (ArgumentOutOfRangeException e)
             {
-                return BadRequest(new { e.Message });
+                return BadRequest(e.Message);
             }
 
         }
@@ -136,7 +136,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
             catch (ArgumentOutOfRangeException e)
             {
-                return BadRequest(new { e.Message });
+                return BadRequest(e.Message);
             }
 
 

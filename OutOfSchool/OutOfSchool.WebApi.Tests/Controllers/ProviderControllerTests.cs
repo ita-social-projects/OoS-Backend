@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -71,58 +72,32 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetProfile_WhenProviderForUserIdExists_ReturnsOkObjectResult()
+        public async Task GetProfile_WhenProviderForUserIdExists_ReturnsOkObjectResult_WithExpectedValue()
         {
             // Arrange
+            var expected = provider.ToModel();
             providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider.ToModel());
 
             // Act
             var result = await providerController.GetProfile().ConfigureAwait(false);
 
             // Assert
-            result.GetAssertedResponseOkAndValidValue<ProviderDto>();
+            result.AssertResponseOkResultAndValidateValue(expected);
         }
 
-        [Test]
-        public async Task GetProfile_WhenProviderForUserExists_ReturnsValidProviderDto()
-        {
-            // Arrange
-            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider.ToModel());
-
-            // Act
-            var resultValue = (await providerController.GetProfile().ConfigureAwait(false) as ObjectResult).Value as ProviderDto;
-
-            // Assert
-            AssertProviderDtosAreEqual(provider.ToModel(), resultValue);
-        }
 
         [Test]
-        public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithCollectionDtos()
+        public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
         {
             // Arrange
+            var expected = providers.Select(x => x.ToModel());
             providerService.Setup(x => x.GetAll()).ReturnsAsync(providers.Select(p => p.ToModel()));
 
             // Act
             var result = await providerController.Get().ConfigureAwait(false);
 
             // Assert
-            result.GetAssertedResponseOkAndValidValue<IEnumerable<ProviderDto>>();
-        }
-
-
-        [Test]
-        public async Task GetProviders_ReturnsExpectedCollectionOfDtos()
-        {
-            // Arrange
-            var expected = providers.Select(p => p.ToModel()).ToList();
-            providerService.Setup(x => x.GetAll()).ReturnsAsync(providers.Select(p => p.ToModel()));
-
-
-            // Act
-            var result = (await providerController.Get().ConfigureAwait(false) as ObjectResult).Value as IEnumerable<ProviderDto>;
-
-            // Assert
-            AssertTwoCollectionsEqualByValues(expected,result);
+            result.AssertResponseOkResultAndValidateValue(expected);
         }
 
         [Test]
@@ -139,10 +114,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetProviderById_WhenProviderWithIdExistsInDb_ReturnsOkObjectResultWithDtoAsValue()
+        public async Task GetProviderById_WhenProviderWithIdExistsInDb_ReturnsOkObjectResult_WithExpectedValue()
         {
             // Arrange
-            var existingId = providers.Select(x => x.Id).FirstOrDefault();
+            var expectedDto = providers.RandomItem().ToModel();
+            var existingId = expectedDto.Id;
             providerService.Setup(x => x.GetById(It.IsAny<Guid>()))
                 .ReturnsAsync(providers.SingleOrDefault(x => x.Id == existingId).ToModel());
 
@@ -150,23 +126,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await providerController.GetById(existingId).ConfigureAwait(false);
 
             // Assert
-            result.GetAssertedResponseOkAndValidValue<ProviderDto>();
-        }
-
-        [Test]
-        public async Task GetProviderById_WhenProviderWithIdExistsInDb_ReturnsExpectedProviderDto()
-        {
-            // Arrange
-            var existingId = providers.Select(x => x.Id).FirstOrDefault();
-            var expectedProvider = providers.SingleOrDefault(x => x.Id == existingId).ToModel();
-            providerService.Setup(x => x.GetById(It.IsAny<Guid>()))
-                .ReturnsAsync(providers.SingleOrDefault(x => x.Id == existingId).ToModel());
-
-            // Act
-            var resultValue = (await providerController.GetById(existingId).ConfigureAwait(false) as ObjectResult).Value as ProviderDto;
-
-            // Assert
-            AssertProviderDtosAreEqual(expectedProvider, resultValue);
+            result.AssertResponseOkResultAndValidateValue(expectedDto);
         }
 
         [Test]
@@ -174,39 +134,49 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var invalidUserId = Guid.NewGuid();
+            var expected = new NotFoundObjectResult($"There is no Provider in DB with {nameof(invalidUserId)} - {invalidUserId}");
             providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(null as ProviderDto);
 
             // Act
             var result = await providerController.GetById(invalidUserId).ConfigureAwait(false);
 
             // Assert
-            result.GetAssertedResponseValidateValueNotEmpty<NotFoundObjectResult>();
+            result.AssertExpectedResponseTypeAndCheckDataInside<NotFoundObjectResult>(expected);
         }
 
         [Test]
         public async Task CreateProvider_WhenModelIsValid_ReturnsCreatedAtActionResult()
         {
             // Arrange
+            var expectedCreated = provider.ToModel();
+            var expectedResponse = new CreatedAtActionResult(
+                nameof(providerController.GetById),
+                nameof(ProviderController),
+                new { providerId = expectedCreated.Id, },
+                expectedCreated);
             providerService.Setup(x => x.Create(It.IsAny<ProviderDto>())).ReturnsAsync(provider.ToModel());
 
             // Act
             var result = await providerController.Create(provider.ToModel()).ConfigureAwait(false);
 
             // Assert
-            result.GetAssertedResponseValidateValueNotEmpty<CreatedAtActionResult>();
+            result.AssertExpectedResponseTypeAndCheckDataInside<CreatedAtActionResult>(expectedResponse);
         }
 
         [Test]
         public async Task CreateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
         {
             // Arrange
+            var dictionary = new ModelStateDictionary();
+            dictionary.AddModelError("CreateProvider", "Invalid model state.");
+            var expected = new BadRequestObjectResult(new ModelStateDictionary(dictionary));
             providerController.ModelState.AddModelError("CreateProvider", "Invalid model state.");
 
             // Act
             var result = await providerController.Create(provider.ToModel()).ConfigureAwait(false);
 
             // Assert
-            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
         }
 
         [Test]
@@ -224,8 +194,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var value = (result as ObjectResult).Value as ProviderDto;
 
             // Assert
-            AssertProviderDtosAreEqual(providerDto, value);
-            result.GetAssertedResponseOkAndValidValue<ProviderDto>();
+            result.AssertResponseOkResultAndValidateValue(providerDto);
         }
 
         [Test]
@@ -233,6 +202,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var providerToUpdateDto = provider.ToModel();
+            var dictionary = new ModelStateDictionary();
+            dictionary.AddModelError("UpdateError", "bad model state");
+            var expected = new BadRequestObjectResult(new ModelStateDictionary(dictionary));
             providerController.ModelState.AddModelError("UpdateError", "bad model state");
 
             providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>()))
@@ -242,7 +214,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
 
             // Assert
-            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
             Assert.That(!providerController.ModelState.IsValid);
         }
 
@@ -252,6 +224,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var providerToUpdateDto = providers.FirstOrDefault().ToModel();
             providerToUpdateDto.FullTitle = "New Title for changed provider";
+            var expected = new BadRequestObjectResult("Can't change Provider with such parameters.\n" +
+                        "Please check that information are valid.");
             providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>())).ReturnsAsync(null as ProviderDto);
 
             // Act
@@ -259,7 +233,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             Assert.That(providerController.ModelState.IsValid);
-            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
         }
 
         [Test]
@@ -268,14 +242,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var providerToUpdateDto = ProviderDtoGenerator.Generate();
             providerToUpdateDto.FullTitle = "New Title for changed provider";
+            var expected = new BadRequestObjectResult(new DbUpdateConcurrencyException());
             providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>())).ThrowsAsync(new DbUpdateConcurrencyException());
 
             // Act
             var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
 
             // Assert
-            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
-            Assert.IsInstanceOf<DbUpdateConcurrencyException>((result as ObjectResult).Value);
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
         }
 
         [Test]
@@ -297,56 +271,19 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var guid = Guid.NewGuid();
+            var expected = new BadRequestObjectResult("string exception");
             providerService.Setup(x => x.Delete(guid)).ThrowsAsync(new ArgumentNullException());
 
             // Act
             var result = await providerController.Delete(guid).ConfigureAwait(false);
 
             // Assert
-            result.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
         }
 
-        private static void AssertTwoCollectionsEqualByValues(IEnumerable<ProviderDto> expected, IEnumerable<ProviderDto> actual)
-        {
-            var expectedArray = expected.ToArray();
-            var actualArray = actual.ToArray();
-            Assert.Multiple(() =>
-            {
-                for (var i = 0; i < expectedArray.Length; i++)
-                {
-                    AssertProviderDtosAreEqual(expectedArray[i], actualArray[i]);
-                }
-            }
-            );
-        }
 
-        private static void AssertProviderDtosAreEqual(ProviderDto expected, ProviderDto result)
-        {
-            Assert.Multiple(() =>
-            {
-                Assert.AreEqual(expected.FullTitle, result.FullTitle);
-                Assert.AreEqual(expected.ShortTitle, result.ShortTitle);
-                Assert.AreEqual(expected.PhoneNumber, result.PhoneNumber);
-                Assert.AreEqual(expected.Website, result.Website);
-                Assert.AreEqual(expected.Facebook, result.Facebook);
-                Assert.AreEqual(expected.Email, result.Email);
-                Assert.AreEqual(expected.Instagram, result.Instagram);
-                Assert.AreEqual(expected.Description, result.Description);
-                Assert.AreEqual(expected.Director, result.Director);
-                Assert.AreEqual(expected.DirectorDateOfBirth, result.DirectorDateOfBirth);
-                Assert.AreEqual(expected.EdrpouIpn, result.EdrpouIpn);
-                Assert.AreEqual(expected.Founder, result.Founder);
-                Assert.AreEqual(expected.Ownership, result.Ownership);
-                Assert.AreEqual(expected.Type, result.Type);
-                Assert.AreEqual(expected.Status, result.Status);
-                Assert.AreEqual(expected.UserId, result.UserId);
-                Assert.AreEqual(expected.Rating, result.Rating);
-                Assert.AreEqual(expected.NumberOfRatings, result.NumberOfRatings);
-                Assert.AreEqual(expected.ActualAddress, result.ActualAddress);
-                Assert.AreEqual(expected.LegalAddress, result.LegalAddress);
-                Assert.AreEqual(expected.InstitutionStatusId, result.InstitutionStatusId);
-            });
-        }
+
+
     }
 }
 

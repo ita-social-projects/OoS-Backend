@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Models;
@@ -68,7 +69,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
             catch (ArgumentNullException e)
             {
-                return BadRequest(new { e.ParamName });
+                return BadRequest(e.Message);
             }
 
         }
@@ -105,8 +106,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPut]
         public async Task<IActionResult> Update(PermissionsForRoleDTO dto)
         {
-            return Ok(await service.Update(dto).ConfigureAwait(false));
-        }
+            try
+            {
+                return Ok(await service.Update(dto).ConfigureAwait(false));
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                return BadRequest(e.Message);
+            }
+         }
 
         /// <summary>
         /// Gets all currently existing permissions from system and returns friendly response for admin person.
