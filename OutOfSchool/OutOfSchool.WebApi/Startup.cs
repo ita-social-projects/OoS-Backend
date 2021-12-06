@@ -212,10 +212,7 @@ namespace OutOfSchool.WebApi
 
             // Add feature management
             services.AddFeatureManagement(Configuration.GetSection(FeatureManagementConfig.Name));
-            services.AddSingleton<FeatureManagementConfig>((serviceProvider) =>
-            {
-                return Configuration.GetSection(FeatureManagementConfig.Name).Get<FeatureManagementConfig>();
-            });
+            services.Configure<FeatureManagementConfig>(Configuration.GetSection(FeatureManagementConfig.Name));
 
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);

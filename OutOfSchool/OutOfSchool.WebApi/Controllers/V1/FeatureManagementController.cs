@@ -20,9 +20,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
     {
         private readonly FeatureManagementConfig featureManagementConfig;
 
-        public FeatureManagementController(FeatureManagementConfig featureManagementConfig)
+        public FeatureManagementController(IOptions<FeatureManagementConfig> featureManagementConfig)
         {
-            this.featureManagementConfig = featureManagementConfig;
+            this.featureManagementConfig = featureManagementConfig.Value;
 
         }
 
