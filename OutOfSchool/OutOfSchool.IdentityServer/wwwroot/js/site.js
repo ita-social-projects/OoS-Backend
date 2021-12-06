@@ -81,9 +81,9 @@ confirmPasswordEye.addEventListener('click', function () {
         repeatPassword.style.fontSize = "20px";
         repeatPassword.setAttribute("type", "Text");  
     }
-})
+});
 
-function validateForm(form) {
+function validateFormMaturity(form) {
     if (!form.maturity.checked) {
         document.getElementById('maturity').style.visibility = 'visible';
         return false;
@@ -91,7 +91,24 @@ function validateForm(form) {
     else {
         document.getElementById('maturity').style.visibility = 'hidden';
         return true;
+    }    
+}
+
+function validateFormAccept(form) {
+    if (!form.accept.checked) {
+        document.getElementById('accept').style.visibility = 'visible';
+        return false;
+    } else {
+        document.getElementById('accept').style.visibility = 'hidden';
+        return true;
     }
+}
+
+function validateForm(form) {
+    let isValidMature = validateFormMaturity(form);
+    let isValidAccept = validateFormAccept(form);
+
+    return (isValidMature && isValidAccept) ? true : false;
 }
 
 function validateFormOnKeyUp(form) {

@@ -126,6 +126,9 @@
   <data name="By registering I agree with" xml:space="preserve">
     <value>Реєструючись я погоджуюсь з</value>
   </data>
+  <data name="You must be agreed with 'Terms of use' to register!" xml:space="preserve">
+    <value>Для реєстрації Ви повинні погодитись з Правилами користування.</value>
+  </data>
   <data name="Confirm password" xml:space="preserve">
     <value>Повторити пароль</value>
   </data>
