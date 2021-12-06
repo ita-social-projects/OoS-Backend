@@ -294,26 +294,26 @@ namespace OutOfSchool.WebApi.Services
         //    return (IEnumerable<T>)workshops.Select(x => x.ToModel()).ToList();
         //}
 
-        //public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForCreate()
-        //{
-        //    var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation.Create).ConfigureAwait(false);
+        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForCreate()
+        {
+            var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation.Create).ConfigureAwait(false);
 
-        //    return workshops.Select(x => x.ToModel()).ToList();
-        //}
+            return mapper.Map<List<WorkshopDTO>>(workshops);
+        }
 
-        //public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForUpdate()
-        //{
-        //    var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation.Update).ConfigureAwait(false);
+        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForUpdate()
+        {
+            var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation.Update).ConfigureAwait(false);
 
-        //    return workshops.Select(x => x.ToModel()).ToList();
-        //}
+            return mapper.Map<List<WorkshopDTO>>(workshops);
+        }
 
-        //public async Task<IEnumerable<long>> GetWorkshopsForDelete()
-        //{
-        //    var workshopIds = await workshopRepository.GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation.Delete).ConfigureAwait(false);
+        public async Task<IEnumerable<Guid>> GetWorkshopsForDelete()
+        {
+            var workshopIds = await workshopRepository.GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation.Delete).ConfigureAwait(false);
 
-        //    return workshopIds;
-        //}
+            return workshopIds;
+        }
 
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
         {

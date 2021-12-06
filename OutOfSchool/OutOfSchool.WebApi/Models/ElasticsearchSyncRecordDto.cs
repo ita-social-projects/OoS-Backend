@@ -11,7 +11,7 @@ namespace OutOfSchool.WebApi.Models
 
         public Guid RecordId { get; set; }
 
-        public DateTime OperationDate { get; set; }
+        public DateTimeOffset OperationDate { get; set; }
 
         public ElasticsearchSyncOperation Operation { get; set; }
     }

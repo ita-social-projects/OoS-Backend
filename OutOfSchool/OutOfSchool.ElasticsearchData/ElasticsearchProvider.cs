@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -52,7 +53,7 @@ namespace OutOfSchool.ElasticsearchData
             return resp.Result;
         }
 
-        public virtual async Task<Result> DeleteRangeOfEntitiesByIdsAsync(IEnumerable<long> ids)
+        public virtual async Task<Result> DeleteRangeOfEntitiesByIdsAsync(IEnumerable<Guid> ids)
         {
             var bulkResponse = await ElasticClient.BulkAsync(new BulkRequest
             {

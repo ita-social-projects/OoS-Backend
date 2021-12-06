@@ -40,36 +40,36 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<bool> Synchronize()
         {
-            //logger.LogInformation($"Synchronization of elasticsearch has started.");
+            logger.LogInformation($"Synchronization of elasticsearch has started.");
 
-            //var sourceDtoForCreate = await databaseService.GetWorkshopsForCreate().ConfigureAwait(false);
-            //var sourceDtoForUpdate = await databaseService.GetWorkshopsForUpdate().ConfigureAwait(false);
+            var sourceDtoForCreate = await databaseService.GetWorkshopsForCreate().ConfigureAwait(false);
+            var sourceDtoForUpdate = await databaseService.GetWorkshopsForUpdate().ConfigureAwait(false);
 
-            //var sourceDto = new List<WorkshopDTO>();
-            //sourceDto.AddRange(sourceDtoForCreate);
-            //sourceDto.AddRange(sourceDtoForUpdate);
+            var sourceDto = new List<WorkshopDTO>();
+            sourceDto.AddRange(sourceDtoForCreate);
+            sourceDto.AddRange(sourceDtoForUpdate);
 
-            //var source = sourceDto.Select(entity => entity.ToESModel());
+            var source = sourceDto.Select(entity => entity.ToESModel());
 
-            //Result result;
+            Result result;
 
-            //result = await esProvider.IndexAll(source).ConfigureAwait(false);
+            result = await esProvider.IndexAll(source).ConfigureAwait(false);
 
-            //if (result == Result.Error)
-            //{
-            //    logger.LogError($"Error happend while trying to update indexes in Elasticsearch.");
-            //    return false;
-            //}
+            if (result == Result.Error)
+            {
+                logger.LogError($"Error happend while trying to update indexes in Elasticsearch.");
+                return false;
+            }
 
-            //var workshopIds = await databaseService.GetWorkshopsForDelete().ConfigureAwait(false);
+            var workshopIds = await databaseService.GetWorkshopsForDelete().ConfigureAwait(false);
 
-            //result = await esProvider.DeleteRangeOfEntitiesByIdsAsync(workshopIds).ConfigureAwait(false);
+            result = await esProvider.DeleteRangeOfEntitiesByIdsAsync(workshopIds).ConfigureAwait(false);
 
-            //if (result == Result.Error)
-            //{
-            //    logger.LogError($"Error happend while trying to delete indexes in Elasticsearch.");
-            //    return false;
-            //}
+            if (result == Result.Error)
+            {
+                logger.LogError($"Error happend while trying to delete indexes in Elasticsearch.");
+                return false;
+            }
 
             //try
             //{
@@ -81,7 +81,7 @@ namespace OutOfSchool.WebApi.Services
             //    return false;
             //}
 
-            //logger.LogInformation($"Synchronization of elasticsearch has finished successfully.");
+            logger.LogInformation($"Synchronization of elasticsearch has finished successfully.");
 
             return true;
         }
@@ -108,7 +108,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 Entity = entity,
                 RecordId = id,
-                OperationDate = DateTime.UtcNow,
+                OperationDate = DateTimeOffset.UtcNow,
                 Operation = operation,
             };
 

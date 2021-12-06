@@ -42,10 +42,10 @@ namespace OutOfSchool.WebApi.Services
         /// The task result contains the <see cref="SearchResult{WorkshopCard}"/> that contains found elements.</returns>
         Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null);
 
-        //Task<IEnumerable<WorkshopDTO>> GetWorkshopsForCreate();
+        Task<IEnumerable<WorkshopDTO>> GetWorkshopsForCreate();
 
-        //Task<IEnumerable<WorkshopDTO>> GetWorkshopsForUpdate();
+        Task<IEnumerable<WorkshopDTO>> GetWorkshopsForUpdate();
 
-        //Task<IEnumerable<long>> GetWorkshopsForDelete();
+        Task<IEnumerable<Guid>> GetWorkshopsForDelete();
     }
 }
