@@ -71,6 +71,7 @@ namespace OutOfSchool.WebApi.Services
                 return false;
             }
 
+            // TODO: Rewrite correct deletion
             //try
             //{
             //    await repository.DeleteAll().ConfigureAwait(false);
