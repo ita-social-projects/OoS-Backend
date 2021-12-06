@@ -346,6 +346,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
             application.Status = applicationDto.Status;
             application.RejectionMessage = applicationDto.RejectionMessage;
 
+            if (application.Status != ApplicationStatus.Rejected)
+            {
+                application.RejectionMessage = null;
+            }
+
             try
             {
                 await CheckUserRights(
@@ -353,6 +358,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                     providerId: application.Workshop.ProviderId).ConfigureAwait(false);
 
                 var updatedApplication = await applicationService.Update(application).ConfigureAwait(false);
+
                 return Ok(updatedApplication);
             }
             catch (ArgumentException ex)

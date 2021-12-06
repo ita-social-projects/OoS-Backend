@@ -51,13 +51,6 @@ namespace OutOfSchool.Services.Repository
 
             dbContext.Entry(application).State = EntityState.Modified;
 
-            if (application.Status != ApplicationStatus.Rejected)
-            {
-                dbContext.Entry(application).Property("RejectionMessage").IsModified = false;
-                await this.dbContext.SaveChangesAsync();
-                return entity;
-            }
-
             await this.dbContext.SaveChangesAsync();
             return entity;
         }
