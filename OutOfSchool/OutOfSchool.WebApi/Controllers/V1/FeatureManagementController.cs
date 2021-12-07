@@ -5,8 +5,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement.Mvc;
 using OutOfSchool.Common;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Controllers.V1
 {
@@ -15,11 +18,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     public class FeatureManagementController : ControllerBase
     {
-        private readonly IConfiguration config;
+        private readonly FeatureManagementConfig featureManagementConfig;
 
-        public FeatureManagementController(IConfiguration config)
+        public FeatureManagementController(IOptions<FeatureManagementConfig> featureManagementConfig)
         {
-            this.config = config;
+            this.featureManagementConfig = featureManagementConfig.Value;
+
         }
 
         /// <summary>
@@ -29,19 +33,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">All entities were found.</response>
         /// <response code="204">No entity was found.</response>
         /// <response code="500">If any server error occures.</response>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Enums.Feature>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FeatureManagementConfig))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public IActionResult Get()
         {
-            var enabledReleases =
-                config.GetSection(Constants.SectionName)
-                    .GetChildren()
-                    .Where(x => x.Value.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+            var isEnabledRelease = featureManagementConfig;
 
-            return Ok(enabledReleases);
+            return Ok(isEnabledRelease);
         }
     }
 }
