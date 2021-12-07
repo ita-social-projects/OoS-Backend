@@ -192,7 +192,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
-            services.AddTransient<IEntityRepository<ElasticsearchSyncRecord>, EntityRepository<ElasticsearchSyncRecord>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services.AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository>();
@@ -202,8 +201,9 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
+            services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
 
-            //Register the Permission policy handlers
+            // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 

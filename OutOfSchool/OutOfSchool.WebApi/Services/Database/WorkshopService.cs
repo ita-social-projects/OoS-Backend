@@ -282,37 +282,11 @@ namespace OutOfSchool.WebApi.Services
             return result;
         }
 
-        //public async Task<IEnumerable<T>> GetWorkshops<T>(ElasticsearchSyncOperation operation)
-        //{
-        //    if (operation == ElasticsearchSyncOperation.Delete)
-        //    {
-        //        return (IEnumerable<T>)(await workshopRepository.GetListOfWorkshopIdsForSynchronizationByOperation(operation).ConfigureAwait(false));
-        //    }
-
-        //    var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(operation).ConfigureAwait(false);
-
-        //    return (IEnumerable<T>)workshops.Select(x => x.ToModel()).ToList();
-        //}
-
-        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForCreate()
+        public async Task<IEnumerable<WorkshopDTO>> GetByIds(IEnumerable<Guid> ids)
         {
-            var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation.Create).ConfigureAwait(false);
+            var workshops = await workshopRepository.GetByIds(ids).ConfigureAwait(false);
 
             return mapper.Map<List<WorkshopDTO>>(workshops);
-        }
-
-        public async Task<IEnumerable<WorkshopDTO>> GetWorkshopsForUpdate()
-        {
-            var workshops = await workshopRepository.GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation.Update).ConfigureAwait(false);
-
-            return mapper.Map<List<WorkshopDTO>>(workshops);
-        }
-
-        public async Task<IEnumerable<Guid>> GetWorkshopsForDelete()
-        {
-            var workshopIds = await workshopRepository.GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation.Delete).ConfigureAwait(false);
-
-            return workshopIds;
         }
 
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)

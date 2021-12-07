@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Microsoft.EntityFrameworkCore;
-
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -59,55 +56,9 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public bool ClassExists(long id) => db.Classes.Any(x => x.Id == id);
 
-        /// <inheritdoc/>
-        public async Task<IEnumerable<Workshop>> GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation operation)
+        public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
         {
-            var esSyncRecords = db.ElasticsearchSyncRecords;
-
-            var result = esSyncRecords
-                .Where(x => x.Entity == ElasticsearchSyncEntity.Workshop)
-                .GroupBy(
-                    x => x.RecordId,
-                    x => x.OperationDate,
-                    (id, op) => new
-                    {
-                        RecordId = id,
-                        OperationDate = op.Max(),
-                    })
-                .Join(
-                    esSyncRecords,
-                    maxDates => new { maxDates.RecordId, maxDates.OperationDate },
-                    esRecords => new { esRecords.RecordId, esRecords.OperationDate },
-                    (maxDates, esRecords) => esRecords)
-                .Where(es => es.Operation == operation);
-
-            return await db.Workshops.Join(result, workshop => workshop.Id, result => result.RecordId, (workshop, result) => workshop).ToListAsync();
-        }
-
-        /// <inheritdoc/>
-        public async Task<IEnumerable<Guid>> GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation operation)
-        {
-            var esSyncRecords = db.ElasticsearchSyncRecords;
-
-            var result = esSyncRecords
-                .Where(x => x.Entity == ElasticsearchSyncEntity.Workshop)
-                .GroupBy(
-                    x => x.RecordId,
-                    x => x.OperationDate,
-                    (id, op) => new
-                    {
-                        RecordId = id,
-                        OperationDate = op.Max(),
-                    })
-                .Join(
-                    esSyncRecords,
-                    maxDates => new { maxDates.RecordId, maxDates.OperationDate },
-                    esRecords => new { esRecords.RecordId, esRecords.OperationDate },
-                    (maxDates, esRecords) => esRecords)
-                .Where(es => es.Operation == operation)
-                .Select(es => es.RecordId);
-
-            return await result.ToListAsync();
+            return await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
         }
     }
 }

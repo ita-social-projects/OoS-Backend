@@ -47,14 +47,6 @@ namespace OutOfSchool.Services.Repository
         Task Delete(TEntity entity);
 
         /// <summary>
-        /// Delete all elements.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
-        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        Task DeleteAll();
-
-        /// <summary>
         /// Get all elements.
         /// </summary>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.

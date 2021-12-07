@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -20,8 +18,6 @@ namespace OutOfSchool.Services.Repository
 
         Task<Workshop> GetWithNavigations(Guid id);
 
-        Task<IEnumerable<Workshop>> GetListOfWorkshopsForSynchronizationByOperation(ElasticsearchSyncOperation operation);
-
-        Task<IEnumerable<Guid>> GetListOfWorkshopIdsForSynchronizationByOperation(ElasticsearchSyncOperation operation);
+        Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
     }
 }

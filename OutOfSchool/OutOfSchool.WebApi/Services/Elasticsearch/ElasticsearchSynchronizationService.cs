@@ -21,19 +21,22 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ElasticsearchSynchronizationService : IElasticsearchSynchronizationService
     {
+        // TODO: move to config
+        private const int NumberOfOperation = 2;
+
         private readonly IWorkshopService databaseService;
-        private readonly IEntityRepository<ElasticsearchSyncRecord> repository;
+        private readonly IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository;
         private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
         private readonly ILogger<ElasticsearchSynchronizationService> logger;
 
         public ElasticsearchSynchronizationService(
             IWorkshopService workshopService,
-            IEntityRepository<ElasticsearchSyncRecord> repository,
+            IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository,
             IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
             ILogger<ElasticsearchSynchronizationService> logger)
         {
             this.databaseService = workshopService;
-            this.repository = repository;
+            this.elasticsearchSyncRecordRepository = elasticsearchSyncRecordRepository;
             this.esProvider = esProvider;
             this.logger = logger;
         }
@@ -42,45 +45,33 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Synchronization of elasticsearch has started.");
 
-            var sourceDtoForCreate = await databaseService.GetWorkshopsForCreate().ConfigureAwait(false);
-            var sourceDtoForUpdate = await databaseService.GetWorkshopsForUpdate().ConfigureAwait(false);
+            var elasticsearchSyncRecords = await elasticsearchSyncRecordRepository.GetByEntity(
+                ElasticsearchSyncEntity.Workshop,
+                NumberOfOperation).ConfigureAwait(false);
 
-            var sourceDto = new List<WorkshopDTO>();
-            sourceDto.AddRange(sourceDtoForCreate);
-            sourceDto.AddRange(sourceDtoForUpdate);
-
-            var source = sourceDto.Select(entity => entity.ToESModel());
-
-            Result result;
-
-            result = await esProvider.IndexAll(source).ConfigureAwait(false);
-
-            if (result == Result.Error)
+            var resultCreate = await Synchronize(elasticsearchSyncRecords, ElasticsearchSyncOperation.Create).ConfigureAwait(false);
+            if (resultCreate)
             {
-                logger.LogError($"Error happend while trying to update indexes in Elasticsearch.");
-                return false;
+                await elasticsearchSyncRecordRepository.DeleteRange(
+                    elasticsearchSyncRecords.Where(es => es.Operation == ElasticsearchSyncOperation.Create)
+                    .Select(es => es.Id)).ConfigureAwait(false);
             }
 
-            var workshopIds = await databaseService.GetWorkshopsForDelete().ConfigureAwait(false);
-
-            result = await esProvider.DeleteRangeOfEntitiesByIdsAsync(workshopIds).ConfigureAwait(false);
-
-            if (result == Result.Error)
+            var resultUpdate = await Synchronize(elasticsearchSyncRecords, ElasticsearchSyncOperation.Update).ConfigureAwait(false);
+            if (resultUpdate)
             {
-                logger.LogError($"Error happend while trying to delete indexes in Elasticsearch.");
-                return false;
+                await elasticsearchSyncRecordRepository.DeleteRange(
+                    elasticsearchSyncRecords.Where(es => es.Operation == ElasticsearchSyncOperation.Update)
+                    .Select(es => es.Id)).ConfigureAwait(false);
             }
 
-            // TODO: Rewrite correct deletion
-            //try
-            //{
-            //    await repository.DeleteAll().ConfigureAwait(false);
-            //}
-            //catch (DbUpdateConcurrencyException)
-            //{
-            //    logger.LogError($"Delete all records in ElasticsearchSyncRecords is failed.");
-            //    return false;
-            //}
+            var resultDelete = await Synchronize(elasticsearchSyncRecords, ElasticsearchSyncOperation.Delete).ConfigureAwait(false);
+            if (resultDelete)
+            {
+                await elasticsearchSyncRecordRepository.DeleteRange(
+                    elasticsearchSyncRecords.Where(es => es.Operation == ElasticsearchSyncOperation.Delete)
+                    .Select(es => es.Id)).ConfigureAwait(false);
+            }
 
             logger.LogInformation($"Synchronization of elasticsearch has finished successfully.");
 
@@ -92,7 +83,7 @@ namespace OutOfSchool.WebApi.Services
             var elasticsearchSyncRecord = dto.ToDomain();
             try
             {
-                await repository.Create(elasticsearchSyncRecord).ConfigureAwait(false);
+                await elasticsearchSyncRecordRepository.Create(elasticsearchSyncRecord).ConfigureAwait(false);
 
                 logger.LogInformation("ElasticsearchSyncRecord created successfully.");
             }
@@ -128,6 +119,43 @@ namespace OutOfSchool.WebApi.Services
 
                 await Task.Delay(10000, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        private async Task<bool> Synchronize(IEnumerable<ElasticsearchSyncRecord> elasticsearchSyncRecords, ElasticsearchSyncOperation elasticsearchSyncOperation)
+        {
+            var ids = elasticsearchSyncRecords.Where(es => es.Operation == elasticsearchSyncOperation).Select(es => es.RecordId);
+
+            if (!ids.Any())
+            {
+                return true;
+            }
+
+            if (elasticsearchSyncOperation == ElasticsearchSyncOperation.Delete)
+            {
+                var result = await esProvider.DeleteRangeOfEntitiesByIdsAsync(ids).ConfigureAwait(false);
+
+                if (result == Result.Error)
+                {
+                    logger.LogError($"Error happend while trying to delete indexes in Elasticsearch.");
+                    return false;
+                }
+            }
+            else
+            {
+                var workshops = await databaseService.GetByIds(ids).ConfigureAwait(false);
+
+                var sourse = workshops.Select(entity => entity.ToESModel());
+
+                var result = await esProvider.IndexAll(sourse).ConfigureAwait(false);
+
+                if (result == Result.Error)
+                {
+                    logger.LogError($"Error happend while trying to update indexes in Elasticsearch.");
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
