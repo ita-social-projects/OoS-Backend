@@ -81,7 +81,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task Create(ElasticsearchSyncRecordDto dto)
         {
-            var elasticsearchSyncRecord = dto.ToDomain();
+            var elasticsearchSyncRecord = mapper.Map<ElasticsearchSyncRecord>(dto);
             try
             {
                 await elasticsearchSyncRecordRepository.Create(elasticsearchSyncRecord).ConfigureAwait(false);

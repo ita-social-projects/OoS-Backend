@@ -177,7 +177,6 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>();
                 cfg.CreateMap<Teacher, TeacherDTO>();
-                cfg.CreateMap<DateTimeRange, DateTimeRangeDto>();
             });
         }
 
@@ -189,11 +188,6 @@ namespace OutOfSchool.WebApi.Extensions
                     .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id))
                     .ForMember(w => w.Address, m => m.Ignore());
             });
-        }
-
-        public static ElasticsearchSyncRecordDto ToModel(this ElasticsearchSyncRecord elasticsearchSyncRecord)
-        {
-            return Mapper<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>(elasticsearchSyncRecord, cfg => { cfg.CreateMap<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>(); });
         }
 
         #endregion
@@ -346,13 +340,7 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
                 cfg.CreateMap<TeacherDTO, Teacher>();
-                cfg.CreateMap<DateTimeRangeDto, DateTimeRange>();
             });
-        }
-
-        public static ElasticsearchSyncRecord ToDomain(this ElasticsearchSyncRecordDto elasticsearchSyncRecordDto)
-        {
-            return Mapper<ElasticsearchSyncRecordDto, ElasticsearchSyncRecord>(elasticsearchSyncRecordDto, cfg => { cfg.CreateMap<ElasticsearchSyncRecordDto, ElasticsearchSyncRecord>(); });
         }
 
         #endregion
