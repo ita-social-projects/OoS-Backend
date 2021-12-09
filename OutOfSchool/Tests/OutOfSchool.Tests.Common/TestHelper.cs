@@ -52,7 +52,7 @@ namespace OutOfSchool.Tests.Common
             {
                 foreach (var collection in expected.Zip(actual))
                 {
-                    AssertDtosAreEqual<TValue>(collection.First, collection.Second);
+                    AssertDtosAreEqual(collection.First, collection.Second);
                 }
             }
             );

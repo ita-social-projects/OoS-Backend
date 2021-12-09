@@ -102,6 +102,8 @@ namespace OutOfSchool.Tests.Common
         /// </summary>
         public static string GetRandomRole() => faker.Name.JobArea();
         public static string GetRandomWords() => faker.Random.Words(3);
+
+        public static string GetRandomEmail() => faker.Internet.Email();
         public static string GetFakePackedPermissions() =>
             faker.Random.ArrayElements((Permissions[])Enum.GetValues(typeof(Permissions)), 10).PackPermissionsIntoString();
     }

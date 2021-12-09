@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void SetUp()
         {
             fakeProviders = ProvidersGenerator.Generate(10);
-            fakeUser = CreateFakeUser();
+            fakeUser = UserGenerator.Generate();
 
             providersRepositoryMock = CreateProvidersRepositoryMock(fakeProviders);
             usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
@@ -304,35 +304,5 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             return providersRepository;
         }
-
-        private static User CreateFakeUser()
-        {
-            return new User()
-            {
-                Id = Guid.NewGuid().ToString(),
-                CreatingTime = default,
-                LastLogin = default,
-                MiddleName = "MiddleName",
-                FirstName = "FirstName",
-                LastName = "LastName",
-                UserName = "user@gmail.com",
-                NormalizedUserName = "USER@GMAIL.COM",
-                Email = "user@gmail.com",
-                NormalizedEmail = "USER@GMAIL.COM",
-                EmailConfirmed = false,
-                PasswordHash = "AQAAAAECcQAAAAEPXMPMbzuDZIKJUN4pBhRWMtf35Q3RN4QOll7UfnTdmfXHEcgswabznBezJmeTMvEw==",
-                SecurityStamp = "   CCCJIYDFRG236HXFKGYS7H6QT2DE2LFF",
-                ConcurrencyStamp = "cb54f60f-6282-4416-874c-d1edce844d07",
-                PhoneNumber = "0965679725",
-                Role = "provider",
-                PhoneNumberConfirmed = false,
-                TwoFactorEnabled = false,
-                LockoutEnabled = true,
-                AccessFailedCount = 0,
-                IsRegistered = false,
-            };
-        }
-
-
     }
 }
