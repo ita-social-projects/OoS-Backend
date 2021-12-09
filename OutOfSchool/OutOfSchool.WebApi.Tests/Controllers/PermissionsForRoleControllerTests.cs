@@ -88,7 +88,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var roleName = Role.Admin.ToString();
-            var expected = permissionsForAllRoles.Where(s => s.RoleName == roleName).Select(p => p.ToModel()).FirstOrDefault();
+            var expected = permissionsForAllRoles.Where(s => s.RoleName == roleName).Select(p => p.ToModel()).First();
             service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName).ToModel());
 
             // Act
