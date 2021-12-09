@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
-            var entityToCreate = new InstitutionStatus() { Name = "TestName" };
+            var entityToCreate = new InstitutionStatus() { Name = TestDataHelper.GetRandomWords() };
             var expected = entityToCreate.ToModel();
             expected.Id = await repository.Count() + 1;
 
@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var entityToUpdate = new InstitutionStatus()
             {
                 Id = 1,
-                Name = "TestName",
+                Name = TestDataHelper.GetRandomWords(),
             };
 
             var expected = entityToUpdate.ToModel();
@@ -120,7 +120,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var changedEntity = new InstitutionStatusDTO()
             {
-                Name = "TestName",
+                Name = TestDataHelper.GetRandomWords(),
             };
 
             // Act and Assert
@@ -177,17 +177,17 @@ namespace OutOfSchool.WebApi.Tests.Services
                 new InstitutionStatus()
                 {
                     Id = 1,
-                    Name = "NoName",
+                    Name = TestDataHelper.GetRandomWords(),
                 },
                 new InstitutionStatus()
                 {
                     Id = 2,
-                    Name = "HaveName",
+                    Name = TestDataHelper.GetRandomWords(),
                 },
                 new InstitutionStatus()
                 {
                     Id = 3,
-                    Name = "MissName",
+                    Name = TestDataHelper.GetRandomWords(),
                 },
             };
         }

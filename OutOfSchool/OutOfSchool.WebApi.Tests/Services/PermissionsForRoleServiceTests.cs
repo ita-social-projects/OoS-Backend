@@ -58,10 +58,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase("Admin")]
-        public async Task GetByRole_WhenIdIsValid_ReturnsPermissionsForRole(string roleName)
+        public async Task GetByRole_WhenIdIsValid_ReturnsPermissionsForRole()
         {
             // Arrange
+            var roleName = Role.Admin.ToString();
             var expected = (await repository.GetByFilter(r => r.RoleName == roleName))
                 .FirstOrDefault().ToModel();
 
@@ -73,10 +73,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase("User")]
-        public void GetByRole_WhenNoSuchRole_ThrowsArgumentNullException(string roleName)
+        public void GetByRole_WhenNoSuchRole_ThrowsArgumentNullException()
         {
             // Arrange
+            var roleName = TestDataHelper.GetRandomRole();
             var taskToGetPermissionsForRole = service.GetByRole(roleName);
 
             // Act and Assert
@@ -96,7 +96,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var entityToBeCreated = new PermissionsForRole()
             {
                 Id = 4,
-                RoleName = "workshopAdmin",
+                RoleName = TestDataHelper.GetRandomRole(),
                 PackedPermissions = permissions.PackPermissionsIntoString(),
             };
 
@@ -152,7 +152,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var changedEntity = new PermissionsForRoleDTO()
             {
-                RoleName = "TestName",
+                RoleName = TestDataHelper.GetRandomRole(),
             };
 
             // Act and Assert
@@ -184,19 +184,19 @@ namespace OutOfSchool.WebApi.Tests.Services
                     {
                     Id = 1,
                     RoleName = Role.Admin.ToString(),
-                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Admin.ToString()),
+                    PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
                     },
                     new PermissionsForRole()
                     {
                     Id = 2,
                     RoleName = Role.Provider.ToString(),
-                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Provider.ToString()),
+                    PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
                     },
                     new PermissionsForRole()
                     {
                     Id = 3,
                     RoleName = Role.Parent.ToString(),
-                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Parent.ToString()),
+                    PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
 
                     },
                 };

@@ -87,7 +87,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetInstitutionStatusById_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessage(long id)
         {
             // Arrange
-            var exceptedResponse = new BadRequestObjectResult("error message");
+
+            var exceptedResponse = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
             service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id).ToModel());
 
             // Act
@@ -102,7 +103,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetById_WhenIdDoesntExist_ReturnsBadRequestWithExceptionMessage(long id)
         {
             // Arrange
-            var expectedResponse = new BadRequestObjectResult("Argument out of range");
+            var expectedResponse = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
             service.Setup(x => x.GetById(id)).Throws<ArgumentOutOfRangeException>();
 
             // Act
@@ -161,7 +162,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task Delete_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessageAsync(long id)
         {
             // Arrange
-            var expected = new BadRequestObjectResult("The id cannot be less than 1.");
+            var expected = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
             service.Setup(x => x.Delete(id));
 
             // Act
@@ -176,7 +177,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteInstitutionStatus_WhenIdDoesntExists_ReturnsBadRequestWithMessage(long id)
         {
             // Arrange
-            var expected = new BadRequestObjectResult("message error1");
+            var expected = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
             service.Setup(x => x.Delete(id)).Throws<ArgumentOutOfRangeException>();
 
             // Act
@@ -195,7 +196,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             return new InstitutionStatus()
             {
                 Id = 1,
-                Name = "Test",
+                Name = TestDataHelper.GetRandomWords(),
             };
         }
 
@@ -206,17 +207,17 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 new InstitutionStatus()
                 {
                 Id = 1,
-                Name = "NoName",
+                Name = TestDataHelper.GetRandomWords(),
                 },
                 new InstitutionStatus()
                 {
                 Id = 2,
-                Name = "HaveName",
+                Name = TestDataHelper.GetRandomWords(),
                 },
                 new InstitutionStatus()
                 {
                 Id = 3,
-                Name = "MissName",
+                Name = TestDataHelper.GetRandomWords(),
                 },
             };
         }

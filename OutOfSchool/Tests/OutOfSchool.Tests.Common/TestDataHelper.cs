@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Bogus;
+using OutOfSchool.Common.PermissionsModule;
 
 namespace OutOfSchool.Tests.Common
 {
@@ -95,5 +96,13 @@ namespace OutOfSchool.Tests.Common
         /// Gets random Edrpou/Ipn string.
         /// </summary>
         public static string EdrpouIpnString => faker.Random.ReplaceNumbers(faker.PickRandom(EdrpouIpnFormats));
+
+        /// <summary>
+        /// Gets random "job area" string to use as fake role name in our test cases
+        /// </summary>
+        public static string GetRandomRole() => faker.Name.JobArea();
+        public static string GetRandomWords() => faker.Random.Words(3);
+        public static string GetFakePackedPermissions() =>
+            faker.Random.ArrayElements((Permissions[])Enum.GetValues(typeof(Permissions)), 10).PackPermissionsIntoString();
     }
 }

@@ -184,8 +184,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var providerToUpdate = providers.FirstOrDefault();
-            providerToUpdate.FullTitle = "New Title for changed provider";
-            var providerDto = providerToUpdate.ToModel();   
+            providerToUpdate.FullTitle = TestDataHelper.GetRandomWords();
+            var providerDto = providerToUpdate.ToModel();
             providerService.Setup(x => x.Update(providerDto, It.IsAny<string>()))
                 .ReturnsAsync(providerToUpdate.ToModel());
 
@@ -223,7 +223,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var providerToUpdateDto = providers.FirstOrDefault().ToModel();
-            providerToUpdateDto.FullTitle = "New Title for changed provider";
+            providerToUpdateDto.FullTitle = TestDataHelper.GetRandomWords();
             var expected = new BadRequestObjectResult("Can't change Provider with such parameters.\n" +
                         "Please check that information are valid.");
             providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>())).ReturnsAsync(null as ProviderDto);
@@ -241,7 +241,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var providerToUpdateDto = ProviderDtoGenerator.Generate();
-            providerToUpdateDto.FullTitle = "New Title for changed provider";
+            providerToUpdateDto.FullTitle = TestDataHelper.GetRandomWords();
             var expected = new BadRequestObjectResult(new DbUpdateConcurrencyException());
             providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>())).ThrowsAsync(new DbUpdateConcurrencyException());
 
@@ -271,7 +271,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var guid = Guid.NewGuid();
-            var expected = new BadRequestObjectResult("string exception");
+            var expected = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
             providerService.Setup(x => x.Delete(guid)).ThrowsAsync(new ArgumentNullException());
 
             // Act

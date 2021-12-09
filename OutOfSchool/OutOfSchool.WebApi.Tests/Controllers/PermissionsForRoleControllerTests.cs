@@ -34,7 +34,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void Setup()
         {
             service = new Mock<IPermissionsForRoleService>();
-
             controller = new PermissionsForRoleController(service.Object);
 
             permissionsForAllRoles = FakePermissionsForAllRoles();
@@ -71,7 +70,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [Test]
         public void GetAllPermissions_WhenCalled_ReturnsAllSystemPermissions()
         {
-            //Arrange
+            // Arrange
             var expectedValue = Enum.GetValues(typeof(Permissions))
                 .Cast<Permissions>()
                 .Select(p => (p, p.ToString()));
@@ -85,10 +84,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
 
         [Test]
-        [TestCase("Admin")]
-        public async Task GetByRoleName_WhenRoleNameIsValid_ReturnOkResultObject(string roleName)
+        public async Task GetByRoleName_WhenRoleNameIsValid_ReturnOkResultObject()
         {
             // Arrange
+            var roleName = Role.Admin.ToString();
             var expected = permissionsForAllRoles.Where(s => s.RoleName == roleName).Select(p => p.ToModel()).FirstOrDefault();
             service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName).ToModel());
 
@@ -100,11 +99,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase("fakeRole")]
-        public async Task GetByRoleName_NotExistingRoleName_ReturnsBadRequest(string roleName)
+        public async Task GetByRoleName_NotExistingRoleName_ReturnsBadRequest()
         {
             // Arrange
-            var expectedResponse = new BadRequestObjectResult("roleName");
+            var roleName = TestDataHelper.GetRandomRole();
+            var expectedResponse = new BadRequestObjectResult(nameof(roleName));
             service.Setup(x => x.GetByRole(roleName)).ThrowsAsync(new ArgumentNullException());
 
             // Act
@@ -137,7 +136,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdatePermissionsForRole_WhenModelIsValid_ReturnsOkObjectResult()
         {
             // Arrange
-            permissionsForRoleEntity.Description = "new";
+            permissionsForRoleEntity.Description = TestDataHelper.GetRandomWords();
             var expected = permissionsForRoleEntity.ToModel();
             service.Setup(x => x.Update(expected)).ReturnsAsync(permissionsForRoleEntity.ToModel());
 
@@ -153,8 +152,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var expected = permissionsForRoleEntity.ToModel();
-            var expectedResponse = new BadRequestObjectResult("message error");
-            service.Setup(x => x.Update(expected)).ThrowsAsync(new DbUpdateConcurrencyException("message error"));
+            var errorMessage = TestDataHelper.GetRandomWords();
+            var expectedResponse = new BadRequestObjectResult(errorMessage);
+            service.Setup(x => x.Update(expected)).ThrowsAsync(new DbUpdateConcurrencyException(errorMessage));
 
             // Act
             var response = await controller.Update(expected).ConfigureAwait(false);
@@ -168,12 +168,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         /// </summary>
         private PermissionsForRole FakePermissionsForRole()
         {
-            var permissions = new List<Permissions> { Permissions.SystemManagement, Permissions.AddressAddNew, Permissions.AddressEdit, };
             return new PermissionsForRole()
             {
                 Id = 1,
-                RoleName = "TestAdmin",
-                PackedPermissions = permissions.PackPermissionsIntoString(),
+                RoleName = TestDataHelper.GetRandomRole(),
+                PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
             };
         }
 
@@ -181,28 +180,25 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
         private IEnumerable<PermissionsForRole> FakePermissionsForAllRoles()
         {
-            var permissions1 = new List<Permissions> { Permissions.SystemManagement, Permissions.AccessAll, };
-            var permissions2 = new List<Permissions> { Permissions.WorkshopAddNew, Permissions.TeacherAddNew, Permissions.ProviderAddNew, };
-            var permissions3 = new List<Permissions> { Permissions.FavoriteAddNew, Permissions.ApplicationAddNew, Permissions.ChildAddNew, };
-
             return new List<PermissionsForRole>()
             {
                 new PermissionsForRole()
                 {
                 Id = 1,
                 RoleName = Role.Admin.ToString(),
-                PackedPermissions = permissions1.PackPermissionsIntoString(),  },
+                PackedPermissions = TestDataHelper.GetFakePackedPermissions(),  
+                },
                 new PermissionsForRole()
                 {
                 Id = 2,
                 RoleName = Role.Provider.ToString(),
-                PackedPermissions = permissions2.PackPermissionsIntoString(),
+                PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
                 },
                 new PermissionsForRole()
                 {
                 Id = 3,
                 RoleName = Role.Parent.ToString(),
-                PackedPermissions = permissions3.PackPermissionsIntoString(),
+                PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
 
                 },
             };
