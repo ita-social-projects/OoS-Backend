@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private readonly IImageService imageService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
-        private readonly RequestLimitsOptions requestLimitsOptions; // will be moved into a common class
+        private readonly CommonImagesRequestLimits commonImagesRequestLimits; // will be moved into a common class
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
@@ -44,20 +44,22 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="options">Application default values.</param>
+        /// <param name="imageService">Service for operations with images.</param>
+        /// <param name="commonImagesRequestLimits">Describes common limits of requests with images.</param>
         public WorkshopController(
             IWorkshopServicesCombiner combinedWorkshopService,
             IProviderService providerService,
             IImageService imageService,
             IStringLocalizer<SharedResource> localizer,
             IOptions<AppDefaultsConfig> options,
-            IOptions<RequestLimitsOptions> requestLimitsOptions)
+            IOptions<CommonImagesRequestLimits> commonImagesRequestLimits)
         {
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
             this.imageService = imageService;
             this.options = options.Value;
-            this.requestLimitsOptions = requestLimitsOptions.Value;
+            this.commonImagesRequestLimits = commonImagesRequestLimits.Value;
         }
 
         /// <summary>
@@ -166,6 +168,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(ModelState);
             }
 
+            if (!ValidCountOfFiles(dto.ImageFiles.Count))
+            {
+                return StatusCode(StatusCodes.Status413PayloadTooLarge);
+            }
+
             var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
@@ -184,24 +191,35 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
-            IDictionary<short, OperationResult> imageBadResults = new Dictionary<short, OperationResult>();
-            if (dto.ImageFiles != null && dto.ImageFiles.Count > 0)
+            if (dto.ImageFiles == null || dto.ImageFiles.Count <= 0)
             {
-                if (!ValidCountOfFiles(dto.ImageFiles.Count))
-                {
-                    return StatusCode(StatusCodes.Status413PayloadTooLarge);
-                }
-
-                var results = await imageService.UploadManyWorkshopImagesWithUpdatingEntityAsync(workshop.Id, dto.ImageFiles)
-                    .ConfigureAwait(false);
-
-                imageBadResults = results.GetFailedResults();
+                return CreatedAtAction(
+                    nameof(GetById),
+                    new { id = workshop.Id, },
+                    new
+                    {
+                        WorkshopId = workshop.Id,
+                        UploadingImagesResults = (string)null,
+                    });
             }
+
+            var results = await imageService.UploadManyWorkshopImagesWithUpdatingEntityAsync(workshop.Id, dto.ImageFiles)
+                .ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
                 new { id = workshop.Id, },
-                new { Id = workshop.Id, ImagesBadResults = imageBadResults });
+                new
+                {
+                    WorkshopId = workshop.Id,
+                    UploadingImagesResults = new
+                    {
+                        AllImagesUploaded = results.HasResults && !results.HasBadResults,
+                        GeneralMessage = results.GeneralResultMessage,
+                        HasResults = results.HasResults,
+                        Results = results.HasResults ? results.Results : null,
+                    },
+                });
         }
 
         /// <summary>
@@ -290,9 +308,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return true;
         }
 
-        private bool ValidCountOfFiles(int fileAmount)
+        private bool ValidCountOfFiles(int fileAmount) // will be moved into common realization
         {
-            return fileAmount <= requestLimitsOptions.MaxCountOfAttachedFiles;
+            return fileAmount <= commonImagesRequestLimits.MaxCountOfAttachedFiles;
         }
     }
 }

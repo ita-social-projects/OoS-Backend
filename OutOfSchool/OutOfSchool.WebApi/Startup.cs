@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
             // Request options
-            services.Configure<RequestLimitsOptions>(Configuration.GetSection(RequestLimitsOptions.Name));
+            services.Configure<CommonImagesRequestLimits>(Configuration.GetSection(CommonImagesRequestLimits.Name));
 
             // Image options
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));

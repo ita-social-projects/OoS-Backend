@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <returns>The instance of <see cref="Dictionary{TKey,TValue}"/> that contains results (type of <see cref="OperationResult"/>) for uploading any image.
         /// This is the pair of keys from fileCollection and appropriate OperationResult.
         /// It returns the pair of (-1, <see cref="OperationResult"/>) if there are no ways to update the current workshop.</returns>
-        Task<IDictionary<short, OperationResult>> UploadManyWorkshopImagesWithUpdatingEntityAsync(
+        Task<MultipleKeyValueOperationResult> UploadManyWorkshopImagesWithUpdatingEntityAsync(
             Guid workshopId,
             List<IFormFile> fileCollection);
 

@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Config
 {
-    public class RequestLimitsOptions
+    /// <summary>
+    /// Describes common limits of requests with images.
+    /// </summary>
+    public class CommonImagesRequestLimits
     {
-        public const string Name = "RequestLimits";
+        public const string Name = "CommonImagesRequestLimits";
 
         public byte MaxCountOfAttachedFiles { get; set; }
     }

@@ -69,16 +69,15 @@ namespace OutOfSchool.WebApi.Services.Images
             }
         }
 
-        // compare this variant with below
-
         /// <inheritdoc/>
-        public async Task<IDictionary<short, OperationResult>> UploadManyWorkshopImagesWithUpdatingEntityAsync(
+        // TODO: check the workshop's images limit in order to prevent uploading too many images into 1 workshop
+        public async Task<MultipleKeyValueOperationResult> UploadManyWorkshopImagesWithUpdatingEntityAsync(
             Guid workshopId,
             List<IFormFile> fileCollection)
         {
-            if (fileCollection == null)
+            if (fileCollection == null || fileCollection.Count <= 0)
             {
-                return new Dictionary<short, OperationResult> { { -1, OperationResult.Failed(new OperationError {Code = ImageResourceCodes.NoImagesForUploading, Description = Resources.ImageResource.NoImagesForUploading}) }};
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.NoImagesForUploading };
             }
 
             logger.LogDebug($"Uploading {fileCollection.Count} images for workshopId = {workshopId} was started.");
@@ -88,13 +87,13 @@ namespace OutOfSchool.WebApi.Services.Images
 
             if (workshop == null)
             {
-                return new Dictionary<short, OperationResult> { { -1, OperationResult.Failed(new OperationError {Code = ImageResourceCodes.WorkshopEntityNotFoundWhileUploadingError, Description = Resources.ImageResource.WorkshopEntityNotFoundWhileUploadingError}) } };
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.WorkshopEntityNotFoundWhileUploadingError };
             }
 
             logger.LogDebug($"Workshop with id = {workshopId} was found.");
 
             var savingExternalImageIds = new List<string>();
-            var uploadImageResults = new Dictionary<short, OperationResult>();
+            var uploadImageResults = new MultipleKeyValueOperationResult();
 
             try
             {
@@ -108,14 +107,14 @@ namespace OutOfSchool.WebApi.Services.Images
                     if (!validationResult.Succeeded)
                     {
                         logger.LogError($"Image with {nameof(fileCollection)} id = {i} isn't valid.");
-                        uploadImageResults.Add(i, validationResult);
+                        uploadImageResults.Results.Add(i, validationResult);
                         continue;
                     }
 
                     logger.LogDebug(
                         $"Started uploading process into an external storage for {nameof(fileCollection)} id number {i}.");
                     var imageUploadResult = await UploadImageProcessAsync(stream, fileCollection[i].ContentType).ConfigureAwait(false);
-                    uploadImageResults.Add(i, validationResult);
+                    uploadImageResults.Results.Add(i, imageUploadResult.OperationResult);
                     if (imageUploadResult.Succeeded)
                     {
                         logger.LogDebug(
@@ -127,7 +126,7 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (Exception ex)
             {
                 logger.LogError($"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
-                return new Dictionary<short, OperationResult> { { -1, OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UploadImagesError, Description = ImageResourceCodes.UploadImagesError }) } };
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.UploadImagesError };
             }
 
             try
@@ -141,16 +140,15 @@ namespace OutOfSchool.WebApi.Services.Images
             {
                 // TODO: mark image ids in order to delete
                 logger.LogError($"Cannot update workshop with id = {workshopId} because of {ex.Message}");
-                return new Dictionary<short, OperationResult> { { -1, OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UploadImagesError, Description = ImageResourceCodes.UploadImagesError }) } };
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.UploadImagesError };
             }
 
             logger.LogInformation($"Uploading images for workshopId = {workshopId} was finished.");
             return uploadImageResults;
         }
 
-        // compare this variant with upper
-
         /// <inheritdoc/>
+        // TODO: check the workshop's images limit in order to prevent uploading too many images into 1 workshop
         public async Task<OperationResult> UploadWorkshopImageWithUpdatingEntityAsync(Guid workshopId, ImageDto imageDto)
         {
             if (imageDto == null)
