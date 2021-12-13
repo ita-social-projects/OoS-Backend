@@ -183,7 +183,7 @@
                     <div class="title registered_question">
                         <span>@SharedLocalizer["Already registered?"]</span>
                         <a class="link" asp-controller="Auth" asp-action="Login"
-                            asp-route-returnUrl="@Model.ReturnUrl">@SharedLocalizer["Sign In"]</a>
+                            asp-route-returnUrl="@Model.ReturnUrl", asp-route-providerRegistration="false">@SharedLocalizer["Sign In"]</a>
                     </div>
                 </ul>
             </form>
