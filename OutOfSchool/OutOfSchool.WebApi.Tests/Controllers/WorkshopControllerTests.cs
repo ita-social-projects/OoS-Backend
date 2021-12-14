@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             imageServiceMock = new Mock<IImageService>();
 
-            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, imageServiceMock.Object,localizer.Object, options.Object, requestLimitOptionsMock.Object)
+            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object, options.Object)
             {
                 ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
             };
