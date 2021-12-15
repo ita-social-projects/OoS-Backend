@@ -343,16 +343,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(localizer[$"There is no application with Id = {applicationDto.Id}."]);
             }
 
-            application.Status = applicationDto.Status;
-            application.RejectionMessage = applicationDto.RejectionMessage;
-
-            if (application.Status != ApplicationStatus.Rejected)
-            {
-                application.RejectionMessage = null;
-            }
-
             try
             {
+                UpdateStatus(applicationDto, application);
+
                 await CheckUserRights(
                     parentId: application.ParentId,
                     providerId: application.Workshop.ProviderId).ConfigureAwait(false);
@@ -464,6 +458,31 @@ namespace OutOfSchool.WebApi.Controllers.V1
             if (!userHasRights)
             {
                 throw new ArgumentException(localizer["User has no rights to perform operation"]);
+            }
+        }
+
+        private void UpdateStatus(ShortApplicationDto applicationDto, ApplicationDto application)
+        {
+            if (application.Status == ApplicationStatus.Completed || application.Status == ApplicationStatus.Rejected || application.Status == ApplicationStatus.Left)
+            {
+                if (User.IsInRole("provider") == false)
+                {
+                    throw new ArgumentException("Forbidden to update application.");
+                }
+            }
+
+            application.Status = applicationDto.Status;
+            application.RejectionMessage = applicationDto.RejectionMessage;
+            var approvedTime = DateTimeOffset.UtcNow;
+
+            if (application.Status != ApplicationStatus.Rejected)
+            {
+                application.RejectionMessage = null;
+            }
+
+            if (application.Status == ApplicationStatus.Approved)
+            {
+                application.ApprovedTime = approvedTime;
             }
         }
     }

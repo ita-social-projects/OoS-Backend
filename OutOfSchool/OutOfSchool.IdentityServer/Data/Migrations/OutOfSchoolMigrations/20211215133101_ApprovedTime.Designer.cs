@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211215133101_ApprovedTime")]
+    partial class ApprovedTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -468,29 +470,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Directions");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.ElasticsearchSyncRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<int>("Entity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Operation")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("OperationDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid>("RecordId")
-                        .HasColumnType("binary(16)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ElasticsearchSyncRecords");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Favorite", b =>
                 {
                     b.Property<long>("Id")
@@ -511,42 +490,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("WorkshopId");
 
                     b.ToTable("Favorites");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
-                {
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("ExternalStorageId")
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("EntityId", "ExternalStorageId");
-
-                    b.ToTable("WorkshopImages");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.InformationAboutPortal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(3000)
-                        .HasColumnType("varchar(3000)");
-
-                    b.Property<string>("SectionName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("InformationAboutPortal");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
@@ -1238,17 +1181,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", "Entity")
-                        .WithMany("WorkshopImages")
-                        .HasForeignKey("EntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Entity");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
@@ -1394,8 +1326,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("DateTimeRanges");
 
                     b.Navigation("Teachers");
-
-                    b.Navigation("WorkshopImages");
                 });
 #pragma warning restore 612, 618
         }
