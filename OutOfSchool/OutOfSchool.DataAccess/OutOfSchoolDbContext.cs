@@ -8,6 +8,8 @@ using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Configurations;
+using OutOfSchool.Services.Models.Configurations.Images;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services
 {
@@ -56,6 +58,10 @@ namespace OutOfSchool.Services
 
         public DbSet<DateTimeRange> DateTimeRanges { get; set; }
 
+        public DbSet<Image<Workshop>> WorkshopImages { get; set; }
+
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();
@@ -74,11 +80,10 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ChildConfiguration());
             builder.ApplyConfiguration(new ProviderConfiguration());
             builder.ApplyConfiguration(new WorkshopConfiguration());
+            builder.ApplyConfiguration(new WorkshopImagesConfiguration());
 
             builder.Seed();
             builder.UpdateIdentityTables();
         }
-
-        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     }
 }

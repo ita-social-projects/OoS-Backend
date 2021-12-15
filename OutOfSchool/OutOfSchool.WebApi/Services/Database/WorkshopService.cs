@@ -13,6 +13,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services

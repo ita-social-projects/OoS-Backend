@@ -66,6 +66,9 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </AdditionalFiles>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Common\Exceptions\" />
+  </ItemGroup>
 
 
 </Project>
