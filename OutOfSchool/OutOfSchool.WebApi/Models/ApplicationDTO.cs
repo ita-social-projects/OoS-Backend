@@ -20,6 +20,8 @@ namespace OutOfSchool.WebApi.Models
 
         public DateTimeOffset CreationTime { get; set; }
 
+        public DateTimeOffset? ApprovedTime { get; set; }
+
         [Required]
         public Guid WorkshopId { get; set; }
 

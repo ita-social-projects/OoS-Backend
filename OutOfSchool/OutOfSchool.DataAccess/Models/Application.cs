@@ -15,6 +15,8 @@ namespace OutOfSchool.Services.Models
 
         public DateTimeOffset CreationTime { get; set; }
 
+        public DateTimeOffset? ApprovedTime { get; set; }
+
         public Guid WorkshopId { get; set; }
 
         public Guid ChildId { get; set; }
