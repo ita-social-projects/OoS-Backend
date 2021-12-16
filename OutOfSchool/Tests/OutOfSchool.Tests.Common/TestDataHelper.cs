@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Bogus;
 using OutOfSchool.Common.PermissionsModule;
 
@@ -29,8 +30,6 @@ namespace OutOfSchool.Tests.Common
                 ? throw new ArgumentNullException(nameof(collection))
                 : faker.Random.CollectionItem(collection);
 
-
-
         /// <summary>
         /// Gets the negative (int.MinValue .. -1) number.
         /// </summary>
@@ -56,6 +55,7 @@ namespace OutOfSchool.Tests.Common
         /// Gets the collection of the positive (1 .. int.MaxValue) numbers.
         /// </summary>
         public static int[] GetPositiveInts(int count) => faker.Random.Digits(count, 1, 9);
+
 
         /// <summary>
         /// Applies an <paramref name="setter"/> on the given <paramref name="item"/>

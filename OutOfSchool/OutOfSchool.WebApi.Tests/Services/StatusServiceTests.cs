@@ -12,6 +12,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -27,19 +28,17 @@ namespace OutOfSchool.WebApi.Tests.Services
         private DbContextOptions<OutOfSchoolDbContext> options;
 
         [SetUp]
-        public void SetUp()
+        public void Setup()
         {
-            var builder =
-                new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
-                    databaseName: "OutOfSchoolTestDB");
+            var builder = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+                .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB");
 
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
-            var localizer = new Mock<IStringLocalizer<SharedResource>>();
             repository = new EntityRepository<InstitutionStatus>(context);
             var logger = new Mock<ILogger<StatusService>>();
+            var localizer = new Mock<IStringLocalizer<SharedResource>>();
             service = new StatusService(repository, logger.Object, localizer.Object);
-
             SeedDatabase();
         }
 
@@ -58,35 +57,40 @@ namespace OutOfSchool.WebApi.Tests.Services
 
 
         [Test]
-        [TestCase(2)]
-        public async Task GetById_WhenIdIsValid_ReturnsInstitutionStatus(long id)
+        public async Task GetById_WhenIdIsValid_ReturnsInstitutionStatus()
         {
             // Arrange
-            var expected = (await repository.GetById(id)).ToModel();
+            var existingId = (await repository.GetAll()).First().Id;
+            var expected = (await repository.GetById(existingId)).ToModel();
 
             // Act
-            var result = await service.GetById(id).ConfigureAwait(false);
+            var result = await service.GetById(existingId).ConfigureAwait(false);
 
             // Assert
             TestHelper.AssertDtosAreEqual(expected, result);
         }
 
         [Test]
-        [TestCase(13)]
-        public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
+        public async Task GetById_WhenIdDoesntExists_ThrowsArgumentOutOfRangeException()
         {
+            // Arrange
+            var lastIndex = (await repository.GetAll()).Last().Id;
+            var notExistingId = TestDataHelper.GetPositiveInt((int)lastIndex + 1, int.MaxValue);
+
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await service.GetById(id).ConfigureAwait(false));
+                async () => await service.GetById(notExistingId).ConfigureAwait(false));
         }
 
+
+        // research why test is failing from time to time
         [Test]
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
             var entityToCreate = new InstitutionStatus() { Name = TestDataHelper.GetRandomWords() };
             var expected = entityToCreate.ToModel();
-            expected.Id = await repository.Count() + 1;
+            expected.Id = (await repository.GetAll()).Last().Id + 1;
 
             // Act
             var result = await service.Create(entityToCreate.ToModel()).ConfigureAwait(false);
@@ -129,31 +133,35 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
+        public async Task Delete_WhenIdIsValid_DeletesEntityFromRepository()
         {
             // Arrange
-            var expected = await context.InstitutionStatuses.CountAsync();
+            var existingId = (await repository.GetAll()).Last().Id;
+            var expectedCollection = (await repository.GetByFilter(x => x.Id != existingId)).ToList();
 
             // Act
-            await service.Delete(id).ConfigureAwait(false);
+            await service.Delete(existingId).ConfigureAwait(false);
+            var actualCollection = await repository.GetAll();
 
             // Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await service.GetById(id).ConfigureAwait(false));
+            TestHelper.AssertTwoCollectionsEqualByValues(expectedCollection, actualCollection);
         }
 
         [Test]
-        [TestCase(13)]
-        public void Delete_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
+        public async Task Delete_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException()
         {
+            // Arrange
+            var notExistingId = TestDataHelper.GetPositiveInt(
+                (int)(await repository.GetAll()).Last().Id
+                , int.MaxValue);
+
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await service.Delete(id).ConfigureAwait(false));
+                async () => await service.Delete(notExistingId).ConfigureAwait(false));
         }
 
         /// <summary>
-        /// method to seed repository with entities to test.
+        /// method to seed in memory db to retrieve entities with repository methods.
         /// </summary>
 
         private void SeedDatabase()
@@ -163,33 +171,11 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                var institutionStatuses = SeedFakeStatuses();
+                var institutionStatuses = InstitutionStatusGenerator.Generate(5);
                 context.InstitutionStatuses.AddRangeAsync(institutionStatuses);
 
                 context.SaveChangesAsync();
             }
-        }
-
-        private IEnumerable<InstitutionStatus> SeedFakeStatuses()
-        {
-            return new List<InstitutionStatus>()
-            {
-                new InstitutionStatus()
-                {
-                    Id = 1,
-                    Name = TestDataHelper.GetRandomWords(),
-                },
-                new InstitutionStatus()
-                {
-                    Id = 2,
-                    Name = TestDataHelper.GetRandomWords(),
-                },
-                new InstitutionStatus()
-                {
-                    Id = 3,
-                    Name = TestDataHelper.GetRandomWords(),
-                },
-            };
         }
     }
 }

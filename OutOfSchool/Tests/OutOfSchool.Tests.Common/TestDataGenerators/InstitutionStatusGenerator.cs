@@ -14,7 +14,8 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
 
         private static Faker<InstitutionStatus> faker = new Faker<InstitutionStatus>()
             .RuleFor(x => x.Id, f => f.IndexFaker)
-            .RuleFor(x => x.Name, f => f.Name.JobDescriptor());
+            .RuleFor(x => x.Name, f => f.Name.JobDescriptor())
+            .RuleFor(x => x.Providers, ProvidersGenerator.Generate(3));
 
         /// <summary>
         /// Generates new instance of the <see cref="InstitutionStatus"/> class.

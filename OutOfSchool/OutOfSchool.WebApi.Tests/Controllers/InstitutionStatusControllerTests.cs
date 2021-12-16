@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             controller = new InstitutionStatusController(service.Object, localizer.Object);
 
             // generate random collection of statuses and single entity to use in test cases.
-            institutionStatuses = InstitutionStatusGenerator.Generate(3);
+            institutionStatuses = InstitutionStatusGenerator.Generate(5);
             institutionStatus = InstitutionStatusGenerator.Generate();
         }
 
@@ -69,9 +69,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetInstitutionStatusById_WhenIdIsValid_ReturnOkResultObject()
         {
             // Arrange
-            var existingId = institutionStatuses.First().Id;
-            var expected = institutionStatuses.SingleOrDefault(x => x.Id == existingId).ToModel();
-            service.Setup(x => x.GetById(existingId)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == existingId).ToModel());
+            var existingId = institutionStatuses.Last().Id;
+            var expected = institutionStatuses.Where(x => x.Id == existingId).First().ToModel();
+            service.Setup(x => x.GetById(existingId)).ReturnsAsync(institutionStatuses.First(x => x.Id == existingId).ToModel());
 
             // Act
             var response = await controller.GetById(existingId).ConfigureAwait(false);
@@ -144,7 +144,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteInstitutionStatus_WhenIdIsValid_ReturnsNoContentResult()
         {
             // Arrange
-            var idToDelete = TestDataHelper.GetPositiveInt(institutionStatuses.Count() - 1);
+            var idToDelete = TestDataHelper.GetPositiveInt(institutionStatuses.Count());
             service.Setup(x => x.Delete(idToDelete));
 
             // Act
