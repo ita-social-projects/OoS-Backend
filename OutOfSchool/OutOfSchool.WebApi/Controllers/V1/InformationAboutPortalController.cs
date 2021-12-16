@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly ILogger<InformationAboutPortalController> logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InformationAboutPortalController"/> class.
+        /// </summary>
+        /// <param name="informationAboutPortalService">Service for InformationAboutPortal model.</param>
+        /// <param name="localizer">Localizer.</param>
+        /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
         public InformationAboutPortalController(
             IInformationAboutPortalService informationAboutPortalService,
             IStringLocalizer<SharedResource> localizer,
@@ -28,6 +35,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <summary>
+        /// Get information about Portal from the database.
+        /// </summary>
+        /// <returns>Information about Portal.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InformationAboutPortalDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Get()
@@ -42,6 +56,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return Ok(informationAboutPortal);
         }
 
+        /// <summary>
+        /// Update information about Portal.
+        /// </summary>
+        /// <param name="informationAboutPortalModel">Entity to update.</param>
+        /// <returns>Updated information about Portal.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InformationAboutPortalDto))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
         public async Task<IActionResult> Update(InformationAboutPortalDto informationAboutPortalModel)
         {
