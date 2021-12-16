@@ -29,10 +29,23 @@ namespace OutOfSchool.Tests.Common
                 ? throw new ArgumentNullException(nameof(collection))
                 : faker.Random.CollectionItem(collection);
 
+
+
+        /// <summary>
+        /// Gets the negative (int.MinValue .. -1) number.
+        /// </summary>
+        public static int GetNegativeInt() => faker.Random.Number(int.MinValue, -1);
+
         /// <summary>
         /// Gets the positive (1 .. int.MaxValue) number.
         /// </summary>
         public static int GetPositiveInt() => faker.Random.Number(1, int.MaxValue);
+
+        /// <summary>
+        /// Gets the positive (min .. max) number.
+        /// </summary>
+        public static int GetPositiveInt(int min,int max) => faker.Random.Number(min, max);
+
 
         /// <summary>
         /// Gets the positive (1 .. max) number.
