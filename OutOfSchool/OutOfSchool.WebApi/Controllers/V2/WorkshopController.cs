@@ -168,7 +168,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return BadRequest(ModelState);
             }
 
-            if (!ValidCountOfFiles(dto.ImageFiles.Count))
+            if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
             {
                 return StatusCode(StatusCodes.Status413PayloadTooLarge);
             }
