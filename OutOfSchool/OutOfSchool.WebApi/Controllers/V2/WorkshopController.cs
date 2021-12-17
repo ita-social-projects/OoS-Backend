@@ -161,6 +161,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto) // TODO: validate by request size
         {
             if (!ModelState.IsValid)

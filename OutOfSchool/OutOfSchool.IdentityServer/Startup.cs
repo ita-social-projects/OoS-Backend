@@ -68,7 +68,9 @@ namespace OutOfSchool.IdentityServer
                         connectionString,
                         serverVersion,
                         optionsBuilder =>
-                            optionsBuilder.MigrationsAssembly("OutOfSchool.IdentityServer")));
+                            optionsBuilder
+                                .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+                                .MigrationsAssembly("OutOfSchool.IdentityServer")));
 
             services.AddCustomDataProtection("IdentityServer");
 
