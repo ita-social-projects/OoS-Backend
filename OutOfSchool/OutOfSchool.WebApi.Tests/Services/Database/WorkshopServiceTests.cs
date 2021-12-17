@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -101,7 +103,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Create_WhenThereIsNoClassId_ShouldThrowArgumentException()
         {
             // Arrange
-            SetupCreate(WithNoClassEntity());
+            SetupCreate(WithNullClassEntity());
             var newWorkshop = new Workshop()
             {
                 DepartmentId = 1,
@@ -196,7 +198,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         #region Update
         [Test]
-        public async Task Update_WhenEntityIsValid_ShouldReturnUpdatedEntity([Random(2,5,1)] int teachersInWorkshop, [Random(1, 100, 1)] long classId)
+        public async Task Update_WhenEntityIsValid_ShouldReturnUpdatedEntity([Random(2, 5, 1)] int teachersInWorkshop, [Random(1, 100, 1)] long classId)
         {
             // Arrange
             var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
@@ -219,10 +221,58 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var id = new Guid("f1b73d56-ce9f-47fc-85fe-94bf72ebd3e4");
             var changedEntity = WithWorkshop(id);
-            SetupUpdate(changedEntity, WithNoClassEntity());
+            SetupUpdate(changedEntity, WithNullClassEntity());
 
             // Act and Assert
             workshopService.Invoking(w => w.Update(changedEntity.ToModel())).Should().Throw<ArgumentException>();
+        }
+
+        #endregion
+
+        #region Delete
+
+        [Test]
+        public async Task Delete_WhenEntityWithIdExists_ShouldTryToDelete()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            SetupDelete(WithWorkshop(id));
+
+            // Act
+            await workshopService.Delete(id).ConfigureAwait(false);
+
+            // Assert
+            workshopRepository.Verify(w => w.Delete(It.IsAny<Workshop>()), Times.Once);
+        }
+        #endregion
+
+        #region GetByFilter
+        [Test]
+        public async Task GetByFilter_WhenFilterIsNull_ShouldBuildPredicateAndReturnEntities()
+        {
+            // Arrange
+            var guids = WithWorkshopsList().Select(w => w.Id);
+            SetupGetByFilter(WithWorkshopsList(), WithAvarageRatings(guids));
+
+            // Act
+            var result = await workshopService.GetByFilter(null).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeEquivalentTo(ExpectedSearchResultGetByFilter(WithWorkshopsList()));
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenFilterIsNotNull_ShouldBuildPredicateAndReturnEntities()
+        {
+            // Arrange
+            var guids = WithWorkshopsList().Select(w => w.Id);
+            SetupGetByFilter(WithWorkshopsList(), WithAvarageRatings(guids));
+
+            // Act
+            var result = await workshopService.GetByFilter(It.IsAny<WorkshopFilter>()).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeEquivalentTo(ExpectedSearchResultGetByFilter(WithWorkshopsList()));
         }
 
         #endregion
@@ -314,6 +364,35 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Returns(workshop.ToModel());
         }
 
+        private void SetupDelete(Workshop workshop)
+        {
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
+            workshopRepository.Setup(w => w.Delete(It.IsAny<Workshop>())).Returns(Task.CompletedTask);
+        }
+
+        private void SetupGetByFilter(IEnumerable<Workshop> workshops, Dictionary<Guid, Tuple<float, int>> ratings)
+        {
+            var queryableWorkshops = workshops.AsQueryable();
+            workshopRepository.Setup(w => w
+                    .Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
+                .ReturnsAsync(workshops.Count());
+            workshopRepository.Setup(w => w
+                .Get<dynamic>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Workshop, bool>>>(),
+                    It.IsAny<Expression<Func<Workshop, dynamic>>>(),
+                    It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
+            ratingService.Setup(r => r
+                    .GetAverageRatingForRange(It.IsAny<IEnumerable<Guid>>(), RatingType.Workshop))
+                .Returns(ratings).Verifiable();
+            mapper
+                .Setup(m => m.Map<List<WorkshopCard>>(workshops))
+                .Returns(workshops
+                .Select(w => new WorkshopCard() {ProviderId = w.ProviderId}).ToList());
+        }
+
         #endregion
 
         #region With
@@ -328,7 +407,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
         }
 
-        private Class WithNoClassEntity()
+        private Class WithNullClassEntity()
         {
             return null;
         }
@@ -405,6 +484,11 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
         }
 
+        private Workshop WithNullWorkshopEntity()
+        {
+            return null;
+        }
+
         #endregion
 
         #region Expected
@@ -449,6 +533,24 @@ namespace OutOfSchool.WebApi.Tests.Services
                     ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
                 },
             };
+        }
+
+        private SearchResult<WorkshopCard> ExpectedSearchResultGetByFilter(IEnumerable<Workshop> workshops)
+        {
+            var mappeddtos = workshops
+                .Select(w => new WorkshopCard()
+                {
+                    ProviderId = w.ProviderId,
+                });
+            return new SearchResult<WorkshopCard>()
+                {Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
+        }
+
+        private Expression<Func<Workshop, bool>> ExpectedPredicateWithIds(WorkshopFilter filter)
+        {
+            var predicate = PredicateBuilder.True<Workshop>();
+            predicate = predicate.And(x => filter.Ids.Any(g => g == x.Id));
+            return predicate;
         }
 
         #endregion
