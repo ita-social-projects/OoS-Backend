@@ -12,6 +12,7 @@ using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -36,8 +37,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             service = new Mock<IPermissionsForRoleService>();
             controller = new PermissionsForRoleController(service.Object);
 
-            permissionsForAllRoles = FakePermissionsForAllRoles();
-            permissionsForRoleEntity = FakePermissionsForRole();
+            permissionsForAllRoles = PermissionsForRolesGenerator.GenerateForExistingRoles();
+            permissionsForRoleEntity = PermissionsForRolesGenerator.Generate();
         }
 
         [Test]
@@ -162,47 +163,5 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Assert
             response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expectedResponse);
         }
-
-        /// <summary>
-        /// faking data for testing.
-        /// </summary>
-        private PermissionsForRole FakePermissionsForRole()
-        {
-            return new PermissionsForRole()
-            {
-                Id = 1,
-                RoleName = TestDataHelper.GetRandomRole(),
-                PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
-            };
-        }
-
-
-
-        private IEnumerable<PermissionsForRole> FakePermissionsForAllRoles()
-        {
-            return new List<PermissionsForRole>()
-            {
-                new PermissionsForRole()
-                {
-                Id = 1,
-                RoleName = Role.Admin.ToString(),
-                PackedPermissions = TestDataHelper.GetFakePackedPermissions(),  
-                },
-                new PermissionsForRole()
-                {
-                Id = 2,
-                RoleName = Role.Provider.ToString(),
-                PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
-                },
-                new PermissionsForRole()
-                {
-                Id = 3,
-                RoleName = Role.Parent.ToString(),
-                PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
-
-                },
-            };
-        }
-
     }
 }

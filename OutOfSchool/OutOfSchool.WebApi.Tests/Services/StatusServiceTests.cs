@@ -160,9 +160,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 async () => await service.Delete(notExistingId).ConfigureAwait(false));
         }
 
-        /// <summary>
-        /// method to seed in memory db to retrieve entities with repository methods.
-        /// </summary>
 
         private void SeedDatabase()
         {
