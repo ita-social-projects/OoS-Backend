@@ -79,9 +79,8 @@ namespace OutOfSchool.WebApi.Services
             else
             {
                 InformationAboutPortal currentInformationAboutPortal = infoAboutPortals.Single();
-                var newInformationAboutPortal = mapper.Map<InformationAboutPortal>(informationAboutPortalDto);
-                newInformationAboutPortal.Id = currentInformationAboutPortal.Id;
-                var informationAboutPortal = await informationAboutPortalRepository.Update(newInformationAboutPortal).ConfigureAwait(false);
+                mapper.Map(informationAboutPortalDto, currentInformationAboutPortal);
+                var informationAboutPortal = await informationAboutPortalRepository.Update(currentInformationAboutPortal).ConfigureAwait(false);
                 updatedInformationAboutPortalDto = mapper.Map<InformationAboutPortalDto>(informationAboutPortal);
             }
 

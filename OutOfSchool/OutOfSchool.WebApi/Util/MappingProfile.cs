@@ -93,7 +93,8 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
 
-            CreateMap<InformationAboutPortal, InformationAboutPortalDto>().ReverseMap();
+            CreateMap<InformationAboutPortal, InformationAboutPortalDto>().ReverseMap()
+                .ForMember(c => c.Id, m => m.Ignore());
         }
     }
 }
