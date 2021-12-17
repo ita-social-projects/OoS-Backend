@@ -123,10 +123,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
-            var changedEntity = new InstitutionStatusDTO()
-            {
-                Name = TestDataHelper.GetRandomWords(),
-            };
+            var changedEntity = InstitutionStatusGenerator.Generate().ToModel();
 
             // Act and Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(
@@ -170,7 +167,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                var institutionStatuses = InstitutionStatusGenerator.GenerateWithoutIds(5);
+                var institutionStatuses = InstitutionStatusGenerator.Generate(5);
                 context.InstitutionStatuses.AddRangeAsync(institutionStatuses);
 
                 context.SaveChangesAsync();
