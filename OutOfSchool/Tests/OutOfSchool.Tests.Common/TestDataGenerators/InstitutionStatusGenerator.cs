@@ -13,7 +13,6 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
     {
 
         private static Faker<InstitutionStatus> faker = new Faker<InstitutionStatus>()
-            .RuleFor(x => x.Id, f => f.IndexFaker)
             .RuleFor(x => x.Name, f => f.Name.JobDescriptor())
             .RuleFor(x => x.Providers, ProvidersGenerator.Generate(3));
 
@@ -21,7 +20,15 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// Generates new instance of the <see cref="InstitutionStatus"/> class.
         /// </summary>
         /// <returns><see cref="InstitutionStatus"/> object with random data.</returns>
-        public static InstitutionStatus Generate() => faker.Generate();
+        public static InstitutionStatus Generate() => faker.RuleFor(x => x.Id, f => f.IndexVariable++)
+            .Generate();
+
+        /// <summary>
+        /// Generates a list of the <see cref="InstitutionStatus"/> objects without Id.
+        /// For using with in-memory DB and repository, where indexes are generated automatically
+        /// </summary>
+        /// <returns><see cref="InstitutionStatus"/> object with random data.</returns>
+        public static List<InstitutionStatus> GenerateWithoutIds(int count) => faker.Generate(count);
 
         /// <summary>
         /// Generates a list of the <see cref="InstitutionStatus"/> objects.

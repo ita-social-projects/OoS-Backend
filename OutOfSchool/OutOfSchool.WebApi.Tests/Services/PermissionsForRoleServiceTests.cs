@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -7,14 +6,13 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services
@@ -61,9 +59,11 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetByRole_WhenIdIsValid_ReturnsPermissionsForRole()
         {
             // Arrange
-            var roleName = Role.Admin.ToString();
-            var expected = (await repository.GetByFilter(r => r.RoleName == roleName))
-                .FirstOrDefault().ToModel();
+            var roleName = nameof(Role.Admin);
+            var expected = repository
+                .GetByFilterNoTracking(r => r.RoleName == roleName)
+                .First()
+                .ToModel();
 
             // Act
             var result = await service.GetByRole(roleName).ConfigureAwait(false);
@@ -88,19 +88,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
-            var permissions = new List<Permissions> 
-            { 
-                Permissions.ChildAddNew,
-                Permissions.FavoriteEdit,
-            };
-            var entityToBeCreated = new PermissionsForRole()
-            {
-                Id = 4,
-                RoleName = TestDataHelper.GetRandomRole(),
-                PackedPermissions = permissions.PackPermissionsIntoString(),
-            };
-
+            var lastIndex = (await repository.GetAll()).Last().Id;
+            var entityToBeCreated = PermissionsForRolesGenerator.Generate();
             var expected = entityToBeCreated.ToModel();
+            expected.Id = lastIndex + 1;
 
             // Act
             var result = await service.Create(entityToBeCreated.ToModel()).ConfigureAwait(false);
@@ -113,30 +104,21 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Create_WhenPermissionsForRoleExistsInDb_ThrowsArgumentException()
         {
             // Arrange
-            var newPermissionsForRole = new PermissionsForRoleDTO()
-            {
-                RoleName = Role.Admin.ToString(),
-            };
+            var newPermissionsForRole = PermissionsForRolesGenerator.Generate(nameof(Role.Admin));
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Create(newPermissionsForRole).ConfigureAwait(false));
+                async () => await service.Create(newPermissionsForRole.ToModel()).ConfigureAwait(false));
         }
 
         [Test]
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
-            var expectedPermissions = new List<Permissions> 
-            { Permissions.AccessAll,
-                Permissions.SystemManagement,
-            };
-            var entityToChange = new PermissionsForRole()
-            {
-                Id = 1,
-                RoleName = Role.Admin.ToString(),
-                PackedPermissions = expectedPermissions.PackPermissionsIntoString(),
-            };
+            var entityToChange = repository
+                .GetByFilterNoTracking(x => x.RoleName == nameof(Role.Admin))
+                .First();
+            entityToChange.PackedPermissions = TestDataHelper.GetFakePackedPermissions();
             var expected = entityToChange.ToModel();
 
             // Act
@@ -150,14 +132,11 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
-            var changedEntity = new PermissionsForRoleDTO()
-            {
-                RoleName = TestDataHelper.GetRandomRole(),
-            };
+            var changedEntity = PermissionsForRolesGenerator.Generate();
 
             // Act and Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-                async () => await service.Update(changedEntity).ConfigureAwait(false));
+                async () => await service.Update(changedEntity.ToModel()).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -170,36 +149,10 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                var permissionsForRoles = FakeRolesPermissions();
+                var permissionsForRoles = PermissionsForRolesGenerator.GenerateForExistingRoles();
                 context.PermissionsForRoles.AddRangeAsync(permissionsForRoles);
                 context.SaveChangesAsync();
             }
-        }
-
-        private List<PermissionsForRole> FakeRolesPermissions()
-        {
-            return new List<PermissionsForRole>()
-                {
-                    new PermissionsForRole()
-                    {
-                    Id = 1,
-                    RoleName = Role.Admin.ToString(),
-                    PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
-                    },
-                    new PermissionsForRole()
-                    {
-                    Id = 2,
-                    RoleName = Role.Provider.ToString(),
-                    PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
-                    },
-                    new PermissionsForRole()
-                    {
-                    Id = 3,
-                    RoleName = Role.Parent.ToString(),
-                    PackedPermissions = TestDataHelper.GetFakePackedPermissions(),
-
-                    },
-                };
         }
     }
 }

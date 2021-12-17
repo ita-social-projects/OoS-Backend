@@ -10,8 +10,6 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
     public class PermissionsForRolesGenerator
     {
         private static Faker<PermissionsForRole> faker = new Faker<PermissionsForRole>()
-            .RuleFor(x => x.Id, f => f.IndexFaker)
-            .RuleFor(x => x.RoleName, _ => TestDataHelper.GetRandomRole())
             .RuleFor(x => x.PackedPermissions, _ => TestDataHelper.GetFakePackedPermissions())
             .RuleFor(x => x.Description, _ => TestDataHelper.GetRandomWords());
 
@@ -19,7 +17,9 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// Generates new instance of the <see cref="PermissionsForRole"/> class.
         /// </summary>
         /// <returns><see cref="PermissionsForRole"/> object with random data for one of the existing roles.</returns>
-        public static PermissionsForRole Generate() => faker.Generate();
+        public static PermissionsForRole Generate() => faker
+            .RuleFor(x => x.RoleName, _ => TestDataHelper.GetRandomRole())
+            .Generate();
 
         /// <summary>
         /// Generates a list of the <see cref="PermissionsForRole"/> objects with random role names.
@@ -33,7 +33,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// Generates new instance of the <see cref="PermissionsForRole"/> class for predifined role.
         /// </summary>
         /// <returns><see cref="PermissionsForRole"/> object with random data.</returns>
-        private static PermissionsForRole Generate(string roleName) => faker
+        public static PermissionsForRole Generate(string roleName) => faker
             .RuleFor(x => x.RoleName, _ => roleName);
 
         /// <summary>

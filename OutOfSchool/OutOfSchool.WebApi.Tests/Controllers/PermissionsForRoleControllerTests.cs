@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -88,7 +87,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByRoleName_WhenRoleNameIsValid_ReturnOkResultObject()
         {
             // Arrange
-            var roleName = Role.Admin.ToString();
+            var roleName = nameof(Role.Admin);
             var expected = permissionsForAllRoles.Where(s => s.RoleName == roleName).Select(p => p.ToModel()).First();
             service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName).ToModel());
 

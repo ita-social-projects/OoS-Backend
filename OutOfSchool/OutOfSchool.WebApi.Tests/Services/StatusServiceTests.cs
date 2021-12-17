@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -60,7 +59,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetById_WhenIdIsValid_ReturnsInstitutionStatus()
         {
             // Arrange
-            var existingId = (await repository.GetAll()).First().Id;
+            var collection = await repository.GetAll() as ICollection<InstitutionStatus>;
+            var existingId = TestDataHelper.RandomItem(collection).Id;
             var expected = (await repository.GetById(existingId)).ToModel();
 
             // Act
@@ -88,9 +88,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
+            var lastIndex = (await repository.GetAll()).Last().Id;
             var entityToCreate = new InstitutionStatus() { Name = TestDataHelper.GetRandomWords() };
             var expected = entityToCreate.ToModel();
-            expected.Id = (await repository.GetAll()).Last().Id + 1;
+            expected.Id = lastIndex + 1;
 
             // Act
             var result = await service.Create(entityToCreate.ToModel()).ConfigureAwait(false);
@@ -136,7 +137,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Delete_WhenIdIsValid_DeletesEntityFromRepository()
         {
             // Arrange
-            var existingId = (await repository.GetAll()).Last().Id;
+            var collection = await repository.GetAll() as ICollection<InstitutionStatus>;
+            var existingId = TestDataHelper.RandomItem(collection).Id;
             var expectedCollection = (await repository.GetByFilter(x => x.Id != existingId)).ToList();
 
             // Act
@@ -168,7 +170,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                var institutionStatuses = InstitutionStatusGenerator.Generate(5);
+                var institutionStatuses = InstitutionStatusGenerator.GenerateWithoutIds(5);
                 context.InstitutionStatuses.AddRangeAsync(institutionStatuses);
 
                 context.SaveChangesAsync();

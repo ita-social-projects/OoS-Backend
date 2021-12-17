@@ -43,6 +43,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var expected = institutionStatuses.Select(x => x.ToModel());
+
             service.Setup(x => x.GetAll()).ReturnsAsync(institutionStatuses.Select(x => x.ToModel()));
 
             // Act
@@ -69,9 +70,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetInstitutionStatusById_WhenIdIsValid_ReturnOkResultObject()
         {
             // Arrange
-            var existingId = institutionStatuses.Last().Id;
-            var expected = institutionStatuses.Where(x => x.Id == existingId).First().ToModel();
-            service.Setup(x => x.GetById(existingId)).ReturnsAsync(institutionStatuses.First(x => x.Id == existingId).ToModel());
+            var existingId = TestDataHelper.RandomItem(institutionStatuses as ICollection<InstitutionStatus>).Id;
+            var expected = institutionStatuses.Where(x => x.Id == existingId)
+                .First().ToModel();
+
+            service.Setup(x => x.GetById(existingId))
+                .ReturnsAsync(institutionStatuses.First(x => x.Id == existingId)
+                .ToModel());
 
             // Act
             var response = await controller.GetById(existingId).ConfigureAwait(false);
@@ -86,7 +91,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var invalidId = TestDataHelper.GetNegativeInt();
             var exceptedResponse = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
-            service.Setup(x => x.GetById(invalidId)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == invalidId).ToModel());
+            service.Setup(x => x.GetById(invalidId))
+                .ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == invalidId)
+                .ToModel());
 
             // Act
             var response = await controller.GetById(invalidId).ConfigureAwait(false);
@@ -101,6 +108,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var notExistId = TestDataHelper.GetPositiveInt(institutionStatuses.Count(), int.MaxValue);
             var expectedResponse = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
+
             service.Setup(x => x.GetById(notExistId)).Throws<ArgumentOutOfRangeException>();
 
             // Act
@@ -115,7 +123,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var expected = institutionStatus.ToModel();
-            var expectedResponse = new CreatedAtActionResult(nameof(controller.GetById), nameof(controller), new { id = expected.Id }, expected);
+            var expectedResponse = new CreatedAtActionResult(
+                nameof(controller.GetById),
+                nameof(controller),
+                new { id = expected.Id },
+                expected);
             service.Setup(x => x.Create(expected)).ReturnsAsync(institutionStatus.ToModel());
 
             // Act
@@ -144,7 +156,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task DeleteInstitutionStatus_WhenIdIsValid_ReturnsNoContentResult()
         {
             // Arrange
-            var idToDelete = TestDataHelper.GetPositiveInt(institutionStatuses.Count());
+            var idToDelete = TestDataHelper.RandomItem(institutionStatuses as ICollection<InstitutionStatus>).Id;
             service.Setup(x => x.Delete(idToDelete));
 
             // Act
