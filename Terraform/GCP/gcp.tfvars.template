@@ -1,0 +1,16 @@
+project="your_project"
+region="europe-west1"
+zone="europe-west1-b"
+credentials="/path/to/admin/creds.json"
+access_group_email="you_users@googlegroups.com"
+
+admin_ips = ["127.0.0.1"]
+labels = {
+    environment = "oos-staging"
+}
+ssh_user="your_username_"
+ssh_key="/path/to/.ssh/id_rsa.pub"
+letsencrypt_email="your@email.com"
+sql_hostname="sql.example.com"
+mongo_hostname="mongo.example.com"
+k8s_api_hostname="k3s.example.com"
