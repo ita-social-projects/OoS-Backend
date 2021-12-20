@@ -55,7 +55,7 @@ resource "google_secret_manager_secret" "secret-mongo-connection" {
 
 resource "google_secret_manager_secret_version" "secret-mongo-connection" {
   secret      = google_secret_manager_secret.secret-mongo-connection.id
-  secret_data = "mongodb://oos:${var.mongo_pass}@${var.mongo_hostname}:27017/outofschool"
+  secret_data = "mongodb://oos:${var.mongo_pass}@${var.mongo_hostname}:27017/outofschool?authSource=outofschool"
 }
 
 locals {
