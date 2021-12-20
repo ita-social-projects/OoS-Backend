@@ -7,6 +7,7 @@ set -uo pipefail
 # sudo bash add-monitoring-agent-repo.sh --also-install
 # sudo service stackdriver-agent start
 
+export INSTALL_K3S_VERSION=v1.21.6+k3s1
 export K3S_DATASTORE_ENDPOINT="mysql://${db_username}:${db_password}@tcp(${db_host}:3306)/k3s"
 export K3S_TOKEN=${token}
 
@@ -305,6 +306,7 @@ spec:
 EOF
 
 sleep 5
+# Need to restart Kubelet after CCM install
 sudo systemctl restart k3s
 
 NAME=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")

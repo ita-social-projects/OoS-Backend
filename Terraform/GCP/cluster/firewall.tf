@@ -14,6 +14,22 @@ resource "google_compute_firewall" "health" {
   target_tags   = var.tags
 }
 
+resource "google_compute_firewall" "ccm-lb-health" {
+  project = var.project
+  name    = "fw-allow-k3s-ccm-checks-${var.random_number}"
+  network = "default"
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["10256"]
+  }
+
+  source_ranges = ["35.191.0.0/16", "130.211.0.0/22", "209.85.152.0/22", "209.85.204.0/22"]
+  target_tags   = var.tags
+}
+
 resource "google_compute_firewall" "admin" {
   project = var.project
   name    = "fw-allow-k3s-admin-access-${var.random_number}"

@@ -7,6 +7,7 @@ set -uo pipefail
 # sudo bash add-monitoring-agent-repo.sh --also-install
 # sudo service stackdriver-agent start
 
+export INSTALL_K3S_VERSION=v1.21.6+k3s1
 export K3S_TOKEN=${token}
 
 curl -sfL https://get.k3s.io | sh -s - agent \
