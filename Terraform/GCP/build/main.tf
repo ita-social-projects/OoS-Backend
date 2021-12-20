@@ -12,6 +12,7 @@ resource "google_cloudbuild_trigger" "backend-api" {
     _REGION             = var.region
     _SERVICE_ACCOUNT    = var.app_sa_email
     _CONN_STRING_SECRET = var.api_secret
+    _MONGO_SECRET       = var.mongo_secret
     _ES_PASSWORD        = var.es_api_pass_secret
   }
 

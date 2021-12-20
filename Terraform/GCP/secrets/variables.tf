@@ -19,10 +19,10 @@ variable "sql_hostname" {
   type = string
 }
 
-variable "mongo_root_pass" {
+variable "mongo_pass" {
   type = string
 }
 
-variable "mongo_pass" {
+variable "mongo_hostname" {
   type = string
 }

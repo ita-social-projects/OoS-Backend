@@ -43,9 +43,24 @@ resource "google_secret_manager_secret_version" "secret-auth-connection" {
   secret_data = "server=${var.sql_hostname};user=oos;password=${var.sql_auth_pass};database=outofschool;guidformat=binary16"
 }
 
+resource "google_secret_manager_secret" "secret-mongo-connection" {
+  secret_id = "mongo-connection"
+
+  labels = var.labels
+
+  replication {
+    automatic = true
+  }
+}
+
+resource "google_secret_manager_secret_version" "secret-mongo-connection" {
+  secret      = google_secret_manager_secret.secret-mongo-connection.id
+  secret_data = "mongodb://oos:${var.mongo_pass}@${var.mongo_hostname}:27017/outofschool"
+}
 
 locals {
   api_list    = split("/", google_secret_manager_secret_version.secret-app-connection.name)
   auth_list   = split("/", google_secret_manager_secret_version.secret-auth-connection.name)
   es_api_list = split("/", google_secret_manager_secret_version.secret-es-api.name)
+  mongo_list  = split("/", google_secret_manager_secret_version.secret-mongo-connection.name)
 }
