@@ -4,10 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Castle.Core.Internal;
+using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -82,6 +84,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
 
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public IEnumerable<string> Keywords { get; set; } = default;
 
         [Required]
@@ -108,13 +111,17 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long ClassId { get; set; }
 
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public AddressDto Address { get; set; }
 
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public IEnumerable<TeacherDTO> Teachers { get; set; }
 
         [Required]
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public ICollection<string> ImageIds { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

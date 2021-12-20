@@ -164,6 +164,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto) // TODO: validate by request size
         {
+            // TODO: Also should check for AddressDto == null
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
