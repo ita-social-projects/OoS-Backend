@@ -36,11 +36,11 @@ namespace OutOfSchool.WebApi.Extensions
 
             var settings = new ConnectionSettings(pool)
                     .DefaultIndex(config.DefaultIndex)
-                    .BasicAuthentication(config.User, config.Password)
+                    .BasicAuthentication(config.User, config.Password);
 
-                    // TODO: Configure this to run only in Dev and Test environments
-                    // TODO: Need this now to debug role permissions for Elastic
-                    // TODO: Use decent logger
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {
+                settings
                     .EnableDebugMode(details =>
                     {
                         if (details.RequestBodyInBytes != null)
@@ -70,6 +70,7 @@ namespace OutOfSchool.WebApi.Extensions
                             Console.Error.WriteLine($"Reason: {details.OriginalException}");
                         }
                     });
+            }
 
             AddDefaultMappings(settings, config.DefaultIndex);
 

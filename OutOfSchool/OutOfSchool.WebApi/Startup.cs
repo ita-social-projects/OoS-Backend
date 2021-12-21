@@ -3,6 +3,8 @@ using System.Data.Common;
 using System.Globalization;
 using System.Text.Json.Serialization;
 using AutoMapper;
+using Google.Cloud.Diagnostics.AspNetCore3;
+using Google.Cloud.Diagnostics.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
@@ -85,7 +88,10 @@ namespace OutOfSchool.WebApi
                 app.UseHttpsRedirection();
             }
 
-            app.UseSerilogRequestLogging();
+            if (!env.IsEnvironment("Google"))
+            {
+                app.UseSerilogRequestLogging();
+            }
 
             app.UseRouting();
 
@@ -105,6 +111,16 @@ namespace OutOfSchool.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+            if (environment == "Google")
+            {
+                services.AddGoogleDiagnosticsForAspNetCore(loggingOptions: new LoggingServiceOptions
+                {
+                    Options = LoggingOptions.Create(LogLevel.Debug),
+                });
+            }
+
             services.Configure<AppDefaultsConfig>(Configuration.GetSection(AppDefaultsConfig.Name));
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddAuthentication("Bearer")
