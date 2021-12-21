@@ -13,7 +13,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -29,20 +28,17 @@ namespace OutOfSchool.WebApi.Services
         private readonly IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository;
         private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
         private readonly ILogger<ElasticsearchSynchronizationService> logger;
-        private readonly IMapper mapper;
 
         public ElasticsearchSynchronizationService(
             IWorkshopService workshopService,
             IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository,
             IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
-            ILogger<ElasticsearchSynchronizationService> logger,
-            IMapper mapper)
+            ILogger<ElasticsearchSynchronizationService> logger)
         {
             this.databaseService = workshopService;
             this.elasticsearchSyncRecordRepository = elasticsearchSyncRecordRepository;
             this.esProvider = esProvider;
             this.logger = logger;
-            this.mapper = mapper;
         }
 
         public async Task<bool> Synchronize()
@@ -79,9 +75,16 @@ namespace OutOfSchool.WebApi.Services
             return true;
         }
 
-        public async Task Create(ElasticsearchSyncRecordDto dto)
+        public async Task AddNewRecordToElasticsearchSynchronizationTable(ElasticsearchSyncEntity entity, Guid id, ElasticsearchSyncOperation operation)
         {
-            var elasticsearchSyncRecord = mapper.Map<ElasticsearchSyncRecord>(dto);
+            ElasticsearchSyncRecord elasticsearchSyncRecord = new ElasticsearchSyncRecord()
+            {
+                Entity = entity,
+                RecordId = id,
+                OperationDate = DateTimeOffset.UtcNow,
+                Operation = operation,
+            };
+
             try
             {
                 await elasticsearchSyncRecordRepository.Create(elasticsearchSyncRecord).ConfigureAwait(false);
@@ -93,19 +96,6 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Creating new record to ElasticserchSyncRecord failed.");
                 throw;
             }
-        }
-
-        public async Task AddNewRecordToElasticsearchSynchronizationTable(ElasticsearchSyncEntity entity, Guid id, ElasticsearchSyncOperation operation)
-        {
-            ElasticsearchSyncRecordDto elasticsearchSyncRecordDto = new ElasticsearchSyncRecordDto()
-            {
-                Entity = entity,
-                RecordId = id,
-                OperationDate = DateTimeOffset.UtcNow,
-                Operation = operation,
-            };
-
-            await Create(elasticsearchSyncRecordDto).ConfigureAwait(false);
         }
 
         public async Task Synchronize(CancellationToken cancellationToken)
