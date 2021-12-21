@@ -5,8 +5,9 @@ steps:
   args:
     - build
     - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
-    - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --builder=paketobuildpacks/builder:base
+    - --buildpack=fagiani/apt
+    - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
     - --publish
 # Deploy container image to Cloud Run
