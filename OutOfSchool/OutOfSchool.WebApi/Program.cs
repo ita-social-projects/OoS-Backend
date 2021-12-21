@@ -11,32 +11,14 @@ namespace OutOfSchool.WebApi
     {
         public static void Main(string[] args)
         {
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
             var config = new ConfigurationBuilder()
-                .AddJsonFile($"appsettings.{environment}.json")
+                .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", true)
                 .AddEnvironmentVariables()
                 .Build();
 
             var loggerConfigBuilder = new LoggerConfiguration()
-                .ReadFrom.Configuration(config, sectionName: "Logging")
-                .Enrich.FromLogContext()
-                .WriteTo.Debug();
-
-            if (environment != "Azure" && environment != "Google")
-            {
-                loggerConfigBuilder
-                    .WriteTo.Console()
-                    .WriteTo.File(
-                    path: config.GetSection("Logging:FilePath").Value,
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 2,
-                    fileSizeLimitBytes: null);
-            }
-            else
-            {
-                loggerConfigBuilder.WriteTo.Console(new RenderedCompactJsonFormatter());
-            }
+                .ReadFrom.Configuration(config);
 
             Log.Logger = loggerConfigBuilder.CreateLogger();
 
