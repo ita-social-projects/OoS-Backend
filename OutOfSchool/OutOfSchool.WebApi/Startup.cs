@@ -193,6 +193,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
             services.AddTransient<IImageService, ImageService>();
             services.AddTransient<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
+            services.AddTransient<IInformationAboutPortalService, InformationAboutPortalService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -208,6 +209,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
+            services.AddTransient<IEntityRepository<InformationAboutPortal>, EntityRepository<InformationAboutPortal>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services
