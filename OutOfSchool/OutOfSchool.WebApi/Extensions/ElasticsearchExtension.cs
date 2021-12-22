@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Extensions
                 .DefaultIndex(config.DefaultIndex)
                 .BasicAuthentication(config.User, config.Password);
 
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            if (config.EnableDebugMode)
             {
                 settings
                     .EnableDebugMode(details =>
