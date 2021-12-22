@@ -68,6 +68,8 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <inheritdoc/>
         public bool ValidateImageSize(long size)
         {
+            logger.LogDebug($"Image size: {size}");
+            logger.LogDebug($"Max size: {options.MaxSizeBytes}");
             return size <= options.MaxSizeBytes;
         }
 
