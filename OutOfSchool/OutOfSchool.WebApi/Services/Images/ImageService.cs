@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Services.Images
                     var validationResult = validator.Validate(stream);
                     if (!validationResult.Succeeded)
                     {
-                        logger.LogError($"Image with {nameof(fileCollection)} id = {i} isn't valid.");
+                        logger.LogError($"Image with {nameof(fileCollection)} id = {i} isn't valid: {validationResult.Errors}");
                         uploadImageResults.Results.Add(i, validationResult);
                         continue;
                     }
