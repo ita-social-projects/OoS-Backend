@@ -54,13 +54,14 @@ namespace OutOfSchool.WebApi.Util
 
                     return dtoTeachers;
                 }))
-                ;
+                .ForMember(dest => dest.WorkshopImages, opt => opt.Ignore());
 
             CreateMap<Workshop, WorkshopDTO>()
                 .ForMember(
                     dest => dest.Keywords,
                     opt => opt.MapFrom(src => src.Keywords.Split(SEPARATOR, StringSplitOptions.None)))
-                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title));
+                .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
+                .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.WorkshopImages.Select(x => x.ExternalStorageId)));
             CreateMap<Address, AddressDto>().ReverseMap();
 
             CreateMap<Provider, ProviderDto>()
@@ -91,6 +92,9 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
+
+            CreateMap<InformationAboutPortal, InformationAboutPortalDto>().ReverseMap()
+                .ForMember(c => c.Id, m => m.Ignore());
 
             CreateMap<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>().ReverseMap();
 

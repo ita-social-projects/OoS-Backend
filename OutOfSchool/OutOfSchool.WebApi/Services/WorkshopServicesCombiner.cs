@@ -8,6 +8,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.WebApi.Services
 {

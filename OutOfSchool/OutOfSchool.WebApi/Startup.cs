@@ -20,16 +20,20 @@ using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
+using OutOfSchool.Services.Contexts;
+using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Extensions.Startup;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 using Serilog;
 
@@ -122,14 +126,24 @@ namespace OutOfSchool.WebApi
 
             services.AddControllers().AddNewtonsoftJson()
                 .AddJsonOptions(options =>
-                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+            // Request options
+            services.Configure<CommonImagesRequestLimits>(Configuration.GetSection(CommonImagesRequestLimits.Name));
+
+            // Image options
+            services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
+            services.AddSingleton<MongoDb>();
+            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}"));
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             var connectionStringBuilder = new DbConnectionStringBuilder();
             connectionStringBuilder.ConnectionString = connectionString;
-            if (!connectionStringBuilder.ContainsKey("guidformat") || connectionStringBuilder["guidformat"].ToString().ToLower() != "binary16")
+            if (!connectionStringBuilder.ContainsKey("guidformat") ||
+                connectionStringBuilder["guidformat"].ToString().ToLower() != "binary16")
             {
-                throw new Exception("The connection string should have a key: \"guidformat\" and a value: \"binary16\"");
+                throw new Exception(
+                    "The connection string should have a key: \"guidformat\" and a value: \"binary16\"");
             }
 
             var mySQLServerVersion = Configuration["MySQLServerVersion"];
@@ -140,7 +154,10 @@ namespace OutOfSchool.WebApi
             }
 
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion))
+                    builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
+                    {
+                        mySqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+                    }))
                 .AddCustomDataProtection("WebApi");
 
             // Add Elasticsearch client
@@ -177,6 +194,9 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
+            services.AddTransient<IImageService, ImageService>();
+            services.AddTransient<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
+            services.AddTransient<IInformationAboutPortalService, InformationAboutPortalService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -192,15 +212,20 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
+            services.AddTransient<IEntityRepository<InformationAboutPortal>, EntityRepository<InformationAboutPortal>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
-            services.AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository>();
+            services
+                .AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository
+                >();
             services.AddTransient<IClassRepository, ClassRepository>();
             services.AddTransient<IDepartmentRepository, DepartmentRepository>();
             services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
+            services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
+            services.AddTransient<IImageRepository, ImageRepository>();
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
 
             // Register the Permission policy handlers
@@ -215,8 +240,8 @@ namespace OutOfSchool.WebApi
             var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
 
             // Add feature management
-            services.AddFeatureManagement(Configuration.GetSection(Constants.SectionName));
-            services.AddSingleton<IConfiguration>(Configuration);
+            services.AddFeatureManagement(Configuration.GetSection(FeatureManagementConfig.Name));
+            services.Configure<FeatureManagementConfig>(Configuration.GetSection(FeatureManagementConfig.Name));
 
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);

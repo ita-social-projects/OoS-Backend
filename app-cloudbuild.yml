@@ -5,8 +5,9 @@ steps:
   args:
     - build
     - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
-    - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --builder=paketobuildpacks/builder:base
+    - --buildpack=fagiani/apt
+    - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
     - --publish
 # Deploy container image to Cloud Run
@@ -31,10 +32,11 @@ steps:
     - --concurrency=80
     - --set-env-vars=ASPNETCORE_ENVIRONMENT=Google
     - --set-env-vars=Elasticsearch__User=oos_api
+    - --set-env-vars=ConnectionStrings__ExternalImageStorage__DatabaseName=outofschool
     # Cloud Run fails to set the variable as an array :(
     # Using index instead
     - --set-env-vars=Elasticsearch__Urls__0=https://elastic.dmytrominochkin.cloud/
-    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Elasticsearch__Password=$_ES_PASSWORD
+    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Elasticsearch__Password=$_ES_PASSWORD,ConnectionStrings__ExternalImageStorage__ServerName=$_MONGO_SECRET
     # Disable http2 because prod will be http1.1 for now
     - --no-use-http2
 # Clean old versions except previous Cloud Run

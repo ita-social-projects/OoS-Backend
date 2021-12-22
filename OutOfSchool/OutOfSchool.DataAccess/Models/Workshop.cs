@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
-
 using Newtonsoft.Json;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models
 {
@@ -120,5 +119,7 @@ namespace OutOfSchool.Services.Models
 
         // These properties are only for navigation EF Core.
         public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
+
+        public virtual List<Image<Workshop>> WorkshopImages { get; set; }
     }
 }
