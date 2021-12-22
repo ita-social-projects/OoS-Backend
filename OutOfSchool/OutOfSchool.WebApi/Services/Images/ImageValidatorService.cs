@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common;
@@ -68,8 +67,6 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <inheritdoc/>
         public bool ValidateImageSize(long size)
         {
-            logger.LogDebug($"Image size: {size}");
-            logger.LogDebug($"Max size: {options.MaxSizeBytes}");
             return size <= options.MaxSizeBytes;
         }
 
