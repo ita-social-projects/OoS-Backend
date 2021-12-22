@@ -35,12 +35,12 @@ namespace OutOfSchool.WebApi.Extensions
             var pool = new StaticConnectionPool(uris);
 
             var settings = new ConnectionSettings(pool)
-                    .DefaultIndex(config.DefaultIndex)
-                    .BasicAuthentication(config.User, config.Password)
+                .DefaultIndex(config.DefaultIndex)
+                .BasicAuthentication(config.User, config.Password);
 
-                    // TODO: Configure this to run only in Dev and Test environments
-                    // TODO: Need this now to debug role permissions for Elastic
-                    // TODO: Use decent logger
+            if (config.EnableDebugMode)
+            {
+                settings
                     .EnableDebugMode(details =>
                     {
                         if (details.RequestBodyInBytes != null)
@@ -70,6 +70,7 @@ namespace OutOfSchool.WebApi.Extensions
                             Console.Error.WriteLine($"Reason: {details.OriginalException}");
                         }
                     });
+            }
 
             AddDefaultMappings(settings, config.DefaultIndex);
 

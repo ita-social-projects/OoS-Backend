@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common;
@@ -55,12 +54,12 @@ namespace OutOfSchool.WebApi.Services.Images
             }
             catch (ArgumentException ex)
             {
-                logger.LogError($"Unable to validate stream {ex.Message}");
+                logger.LogError(ex, $"Unable to validate stream {ex.Message}");
                 return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.InvalidImageFormatError, Description = Resources.ImageResource.InvalidImageFormatError });
             }
             catch (Exception ex)
             {
-                logger.LogError($"Unable to validate stream {ex.Message}");
+                logger.LogError(ex, $"Unable to validate stream {ex.Message}");
                 return OperationResult.Failed(new OperationError {Code = ImageResourceCodes.UnexpectedValidationError, Description = Resources.ImageResource.UnexpectedValidationError});
             }
         }

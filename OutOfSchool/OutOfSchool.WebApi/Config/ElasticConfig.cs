@@ -9,6 +9,8 @@ namespace OutOfSchool.WebApi.Config
 
         public bool EnsureIndex { get; set; }
 
+        public bool EnableDebugMode { get; set; }
+
         [Required]
         public string DefaultIndex { get; set; }
 
