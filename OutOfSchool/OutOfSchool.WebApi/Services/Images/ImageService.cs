@@ -125,7 +125,7 @@ namespace OutOfSchool.WebApi.Services.Images
             }
             catch (Exception ex)
             {
-                logger.LogError($"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
+                logger.LogError(ex, $"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
                 return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.UploadImagesError };
             }
 
@@ -139,7 +139,7 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (Exception ex)
             {
                 // TODO: mark image ids in order to delete
-                logger.LogError($"Cannot update workshop with id = {workshopId} because of {ex.Message}");
+                logger.LogError(ex, $"Cannot update workshop with id = {workshopId} because of {ex.Message}");
                 return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.UploadImagesError };
             }
 
@@ -190,7 +190,7 @@ namespace OutOfSchool.WebApi.Services.Images
             }
             catch (Exception ex)
             {
-                logger.LogError($"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
+                logger.LogError(ex, $"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
                 return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UploadImagesError, Description = ImageResourceCodes.UploadImagesError });
             }
 
@@ -204,7 +204,7 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (Exception ex)
             {
                 // TODO: mark image id in order to delete
-                logger.LogError($"Cannot update workshop with id = {workshopId} because of {ex.Message}");
+                logger.LogError(ex, $"Cannot update workshop with id = {workshopId} because of {ex.Message}");
                 return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UploadImagesError, Description = Resources.ImageResource.UploadImagesError });
             }
 
@@ -224,7 +224,7 @@ namespace OutOfSchool.WebApi.Services.Images
             }
             catch (ImageStorageException ex)
             {
-                logger.LogError($"Unable to upload image into an external storage because of {ex.Message}.");
+                logger.LogError(ex, $"Unable to upload image into an external storage because of {ex.Message}.");
                 return Result<string>.Failed(new OperationError { Code = ImageResourceCodes.ImageStorageError, Description = Resources.ImageResource.ImageStorageError });
             }
         }

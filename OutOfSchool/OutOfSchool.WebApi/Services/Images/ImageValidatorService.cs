@@ -55,12 +55,12 @@ namespace OutOfSchool.WebApi.Services.Images
             }
             catch (ArgumentException ex)
             {
-                logger.LogError($"Unable to validate stream {ex.Message}");
+                logger.LogError(ex, $"Unable to validate stream {ex.Message}");
                 return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.InvalidImageFormatError, Description = Resources.ImageResource.InvalidImageFormatError });
             }
             catch (Exception ex)
             {
-                logger.LogError($"Unable to validate stream {ex.Message}");
+                logger.LogError(ex, $"Unable to validate stream {ex.Message}");
                 return OperationResult.Failed(new OperationError {Code = ImageResourceCodes.UnexpectedValidationError, Description = Resources.ImageResource.UnexpectedValidationError});
             }
         }
