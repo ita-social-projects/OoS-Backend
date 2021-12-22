@@ -10,14 +10,14 @@ namespace OutOfSchool.WebApi.Common.Resources.Codes
     /// </summary>
     internal static class ImageResourceCodes
     {
-        internal const string UploadImagesError = "UploadImagesError";
-        internal const string ImageStorageError = "ImageStorageError";
-        internal const string NotFoundError = "NotFoundError";
-        internal const string UnexpectedValidationError = "UnexpectedValidationError";
-        internal const string InvalidImageSizeError = "InvalidImageSizeError";
-        internal const string InvalidImageFormatError = "InvalidImageFormatError";
-        internal const string InvalidImageResolutionError = "InvalidImageResolutionError";
-        internal const string WorkshopEntityNotFoundWhileUploadingError = "WorkshopEntityNotFoundWhileUploadingError";
-        internal const string NoImagesForUploading = "NoImagesForUploading";
+        internal const string UploadImagesError = nameof(UploadImagesError);
+        internal const string ImageStorageError = nameof(ImageStorageError);
+        internal const string NotFoundError = nameof(NotFoundError);
+        internal const string UnexpectedValidationError = nameof(UnexpectedValidationError);
+        internal const string InvalidImageSizeError = nameof(InvalidImageSizeError);
+        internal const string InvalidImageFormatError = nameof(InvalidImageFormatError);
+        internal const string InvalidImageResolutionError = nameof(InvalidImageResolutionError);
+        internal const string WorkshopEntityNotFoundWhileUploadingError = nameof(WorkshopEntityNotFoundWhileUploadingError);
+        internal const string NoImagesForUploading = nameof(NoImagesForUploading);
     }
 }

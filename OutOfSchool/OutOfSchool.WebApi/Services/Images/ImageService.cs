@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -83,8 +84,7 @@ namespace OutOfSchool.WebApi.Services.Images
             logger.LogDebug($"Uploading {fileCollection.Count} images for workshopId = {workshopId} was started.");
             var workshopRepository = GetWorkshopRepository();
             var validator = GetValidator<Workshop>();
-            var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
-
+            var workshop = (await workshopRepository.GetByFilter(x => x.Id == workshopId, nameof(Workshop.WorkshopImages)).ConfigureAwait(false)).FirstOrDefault();
             if (workshop == null)
             {
                 return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.WorkshopEntityNotFoundWhileUploadingError };
