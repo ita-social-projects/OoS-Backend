@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util.CustomComparers;
@@ -93,6 +93,8 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Parent, ParentDTO>().ReverseMap();
 
             CreateMap<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>().ReverseMap();
+
+            CreateMap<Workshop, WorkshopES>().ReverseMap();
         }
     }
 }

@@ -12,7 +12,6 @@ using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -28,17 +27,20 @@ namespace OutOfSchool.WebApi.Services
         private readonly IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository;
         private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
         private readonly ILogger<ElasticsearchSynchronizationService> logger;
+        private readonly IMapper mapper;
 
         public ElasticsearchSynchronizationService(
             IWorkshopService workshopService,
             IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository,
             IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
-            ILogger<ElasticsearchSynchronizationService> logger)
+            ILogger<ElasticsearchSynchronizationService> logger,
+            IMapper mapper)
         {
             this.databaseService = workshopService;
             this.elasticsearchSyncRecordRepository = elasticsearchSyncRecordRepository;
             this.esProvider = esProvider;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         public async Task<bool> Synchronize()
@@ -135,7 +137,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var workshops = await databaseService.GetByIds(ids).ConfigureAwait(false);
 
-                var sourse = workshops.Select(entity => entity.ToESModel());
+                var sourse = mapper.Map<List<WorkshopES>>(workshops);
 
                 var result = await esProvider.IndexAll(sourse).ConfigureAwait(false);
 

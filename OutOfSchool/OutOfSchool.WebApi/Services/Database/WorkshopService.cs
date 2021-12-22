@@ -282,11 +282,9 @@ namespace OutOfSchool.WebApi.Services
             return result;
         }
 
-        public async Task<IEnumerable<WorkshopDTO>> GetByIds(IEnumerable<Guid> ids)
+        public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
         {
-            var workshops = await workshopRepository.GetByIds(ids).ConfigureAwait(false);
-
-            return mapper.Map<List<WorkshopDTO>>(workshops);
+            return await workshopRepository.GetByIds(ids).ConfigureAwait(false);
         }
 
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)

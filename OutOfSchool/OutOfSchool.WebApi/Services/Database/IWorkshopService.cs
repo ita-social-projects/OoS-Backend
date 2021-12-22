@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -42,6 +43,6 @@ namespace OutOfSchool.WebApi.Services
         /// The task result contains the <see cref="SearchResult{WorkshopCard}"/> that contains found elements.</returns>
         Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null);
 
-        Task<IEnumerable<WorkshopDTO>> GetByIds(IEnumerable<Guid> ids);
+        Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
     }
 }
