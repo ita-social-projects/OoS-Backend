@@ -461,29 +461,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Directions");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.ElasticsearchSyncRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<int>("Entity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Operation")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("OperationDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid>("RecordId")
-                        .HasColumnType("binary(16)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ElasticsearchSyncRecords");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Favorite", b =>
                 {
                     b.Property<long>("Id")
