@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services
     public class ElasticsearchSynchronizationService : IElasticsearchSynchronizationService
     {
         // TODO: move to config
-        private const int NumberOfOperation = 2;
+        private const int NumberOfOperation = 10;
 
         private readonly IWorkshopService databaseService;
         private readonly IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository;
@@ -159,7 +159,7 @@ namespace OutOfSchool.WebApi.Services
                 if (result)
                 {
                     await elasticsearchSyncRecordRepository.DeleteRange(
-                        elasticsearchSyncRecords.Where(es => es.Operation == ElasticsearchSyncOperation.Create)
+                        elasticsearchSyncRecords.Where(es => es.Operation == elasticsearchSyncOperation)
                         .Select(es => es.Id)).ConfigureAwait(false);
                 }
             }
