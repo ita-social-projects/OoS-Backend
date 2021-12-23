@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,6 +53,16 @@ namespace OutOfSchool.ElasticsearchData
             return resp.Result;
         }
 
+        public virtual async Task<Result> DeleteRangeOfEntitiesByIdsAsync(IEnumerable<Guid> ids)
+        {
+            var bulkResponse = await ElasticClient.BulkAsync(new BulkRequest
+            {
+                Operations = ids.Select(x => new BulkDeleteOperation<TEntity>(x)).Cast<IBulkOperation>().ToList(),
+            });
+
+            return Result.Deleted;
+        }
+
         /// <inheritdoc/>
         public virtual async Task<Result> ReIndexAll(IEnumerable<TEntity> source)
         {
@@ -84,6 +96,41 @@ namespace OutOfSchool.ElasticsearchData
             waitHandle.WaitOne();
 
             exceptionDispatchInfo?.Throw();
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task<Result> IndexAll(IEnumerable<TEntity> source)
+        {
+            var bulkAllObservable = ElasticClient.BulkAll<TEntity>(source, b => b
+                .MaxDegreeOfParallelism(4)
+                .BackOffTime("10s")
+                .BackOffRetries(2)
+                .RefreshOnCompleted()
+                .Size(1000));
+
+            var waitHandle = new ManualResetEvent(false);
+            ExceptionDispatchInfo exceptionDispatchInfo = null;
+            Result result = Result.Error;
+
+            var observer = new BulkAllObserver(
+                onError: exception =>
+                {
+                    exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
+                    waitHandle.Set();
+                },
+                onCompleted: () =>
+                {
+                    result = Result.Updated;
+                    waitHandle.Set();
+                });
+
+            bulkAllObservable.Subscribe(observer);
+
+            waitHandle.WaitOne();
+
+            //exceptionDispatchInfo?.Throw();
 
             return result;
         }

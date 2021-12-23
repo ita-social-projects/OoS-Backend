@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Microsoft.EntityFrameworkCore;
-
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -57,5 +56,10 @@ namespace OutOfSchool.Services.Repository
 
         /// <inheritdoc/>
         public bool ClassExists(long id) => db.Classes.Any(x => x.Id == id);
+
+        public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
+        {
+            return await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
+        }
     }
 }

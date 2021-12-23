@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -16,12 +17,18 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopService workshopService;
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly ILogger<WorkshopServicesCombiner> logger;
+        private readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService;
 
-        public WorkshopServicesCombiner(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger<WorkshopServicesCombiner> logger)
+        public WorkshopServicesCombiner(
+            IWorkshopService workshopService,
+            IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
+            ILogger<WorkshopServicesCombiner> logger,
+            IElasticsearchSynchronizationService elasticsearchSynchronizationService)
         {
             this.workshopService = workshopService;
             this.elasticsearchService = elasticsearchService;
             this.logger = logger;
+            this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
         }
 
         /// <inheritdoc/>
@@ -29,12 +36,11 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Index(workshop.ToESModel()).ConfigureAwait(false);
-
-            if (!esResultIsValid)
-            {
-                logger.LogWarning($"Error happend while trying to index {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
-            }
+            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                    ElasticsearchSyncEntity.Workshop,
+                    workshop.Id,
+                    ElasticsearchSyncOperation.Create)
+                    .ConfigureAwait(false);
 
             return workshop;
         }
@@ -52,12 +58,11 @@ namespace OutOfSchool.WebApi.Services
         {
             var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Update(workshop.ToESModel()).ConfigureAwait(false);
-
-            if (!esResultIsValid)
-            {
-                logger.LogWarning($"Error happend while trying to update {nameof(workshop)}:{workshop.Id} in Elasticsearch.");
-            }
+            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                    ElasticsearchSyncEntity.Workshop,
+                    workshop.Id,
+                    ElasticsearchSyncOperation.Update)
+                    .ConfigureAwait(false);
 
             return workshop;
         }
@@ -67,12 +72,11 @@ namespace OutOfSchool.WebApi.Services
         {
             await workshopService.Delete(id).ConfigureAwait(false);
 
-            var esResultIsValid = await elasticsearchService.Delete(id).ConfigureAwait(false);
-
-            if (!esResultIsValid)
-            {
-                logger.LogWarning($"Error happend while trying to delete Workshop:{id} in Elasticsearch.");
-            }
+            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                    ElasticsearchSyncEntity.Workshop,
+                    id,
+                    ElasticsearchSyncOperation.Delete)
+                    .ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

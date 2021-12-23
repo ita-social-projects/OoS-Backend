@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util.CustomComparers;
@@ -15,7 +15,8 @@ namespace OutOfSchool.WebApi.Util
         {
             const char SEPARATOR = '¤';
             CreateMap<WorkshopDTO, Workshop>()
-                .ForMember(dest => dest.Keywords,
+                .ForMember(
+                    dest => dest.Keywords,
                     opt => opt.MapFrom(src => string.Join(SEPARATOR, src.Keywords.Distinct())))
                 .ForMember(dest => dest.Direction, opt => opt.Ignore())
                 .ForMember(dest => dest.DateTimeRanges, opt => opt.MapFrom((dto, entity, dest, ctx) =>
@@ -95,6 +96,24 @@ namespace OutOfSchool.WebApi.Util
 
             CreateMap<InformationAboutPortal, InformationAboutPortalDto>().ReverseMap()
                 .ForMember(c => c.Id, m => m.Ignore());
+
+            CreateMap<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>().ReverseMap();
+
+            CreateMap<Address, AddressES>()
+                .ForMember(
+                    dest => dest.Point,
+                    opt => opt.MapFrom(gl => new Nest.GeoLocation(gl.Latitude, gl.Longitude)));
+
+            CreateMap<DateTimeRange, DateTimeRangeES>()
+                .ForMember(
+                    dest => dest.Workdays,
+                    opt => opt.MapFrom(dtr => string.Join(" ", dtr.Workdays.ToDaysBitMaskEnumerable())));
+
+            CreateMap<Teacher, TeacherES>();
+
+            CreateMap<Workshop, WorkshopES>()
+                .ForMember(dest => dest.Rating, opt => opt.Ignore())
+                .ForMember(dest => dest.Direction, opt => opt.Ignore());
         }
     }
 }

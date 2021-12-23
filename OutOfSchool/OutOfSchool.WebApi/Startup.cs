@@ -168,6 +168,9 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
+            services.AddHostedService<ElasticsearchSynchronizationHostedService>();
+            services.AddTransient<IElasticsearchSynchronizationService, ElasticsearchSynchronizationService>();
+
             // entities services
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
@@ -223,6 +226,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
             services.AddTransient<IImageRepository, ImageRepository>();
+            services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

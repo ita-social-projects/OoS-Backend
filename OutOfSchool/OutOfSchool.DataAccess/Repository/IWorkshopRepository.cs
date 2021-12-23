@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
@@ -17,5 +17,7 @@ namespace OutOfSchool.Services.Repository
         bool ClassExists(long id);
 
         Task<Workshop> GetWithNavigations(Guid id);
+
+        Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
     }
 }

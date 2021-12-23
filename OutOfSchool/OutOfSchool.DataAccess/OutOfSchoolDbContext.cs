@@ -64,6 +64,8 @@ namespace OutOfSchool.Services
 
         public DbSet<InformationAboutPortal> InformationAboutPortal { get; set; }
 
+        public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
+
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();
