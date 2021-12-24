@@ -14,6 +14,6 @@ namespace OutOfSchool.WebApi.Common.Resources
     {
         private static ResourceManager imageResourceManager;
 
-        internal static ResourceManager ImageResourceManager => imageResourceManager ??= new ResourceManager(ResourceNames.Images, Assembly.GetExecutingAssembly());
+        internal static ResourceManager ImageResourceManager => imageResourceManager ??= WebApi.Resources.Images.ImageResource.ResourceManager;
     }
 }

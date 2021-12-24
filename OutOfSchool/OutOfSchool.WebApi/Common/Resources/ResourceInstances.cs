@@ -12,7 +12,7 @@ namespace OutOfSchool.WebApi.Common.Resources
     /// <summary>
     /// Provides access to all resource instances.
     /// </summary>
-    internal static class Resources
+    internal static class ResourceInstances
     {
         internal static ImageResource ImageResource => ImageResource.Instance;
     }

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using OutOfSchool.Services.CombinedProviders;
 using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
@@ -29,15 +30,15 @@ namespace OutOfSchool.WebApi.Services.Images
     public class ImageService : IImageService
     {
         private readonly IExternalImageStorage externalStorage;
-        private readonly IImageRepository imageRepository;
         private readonly IServiceProvider serviceProvider;
+        private readonly IImageDependentRepositoriesProvider repositories;
         private readonly ILogger<ImageService> logger;
 
-        public ImageService(IExternalImageStorage externalStorage, IWorkshopRepository workshopRepository, IImageRepository imageRepository, IServiceProvider serviceProvider, ILogger<ImageService> logger)
+        public ImageService(IExternalImageStorage externalStorage, IServiceProvider serviceProvider, IImageDependentRepositoriesProvider repositories, ILogger<ImageService> logger)
         {
             this.externalStorage = externalStorage;
-            this.imageRepository = imageRepository;
             this.serviceProvider = serviceProvider;
+            this.repositories = repositories;
             this.logger = logger;
         }
 
@@ -46,7 +47,7 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (imageId == null)
             {
-                return Result<ImageDto>.Failed(new OperationError { Code = ImageResourceCodes.NotFoundError, Description = Resources.ImageResource.NotFoundError });
+                return Result<ImageDto>.Failed(new OperationError { Code = ImageResourceCodes.NotFoundError, Description = ResourceInstances.ImageResource.NotFoundError });
             }
 
             logger.LogDebug($"Getting image by id = {imageId} was started.");
@@ -66,7 +67,7 @@ namespace OutOfSchool.WebApi.Services.Images
             }
             catch (ImageStorageException ex)
             {
-                return Result<ImageDto>.Failed(new OperationError { Code = ImageResourceCodes.NotFoundError, Description = Resources.ImageResource.NotFoundError });
+                return Result<ImageDto>.Failed(new OperationError { Code = ImageResourceCodes.NotFoundError, Description = ResourceInstances.ImageResource.NotFoundError });
             }
         }
 
@@ -78,16 +79,16 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (fileCollection == null || fileCollection.Count <= 0)
             {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.NoImagesForUploading };
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.NoImagesForUploading };
             }
 
             logger.LogDebug($"Uploading {fileCollection.Count} images for workshopId = {workshopId} was started.");
-            var workshopRepository = GetWorkshopRepository();
+            var workshopRepository = repositories.WorkshopRepository;
             var validator = GetValidator<Workshop>();
             var workshop = (await workshopRepository.GetByFilter(x => x.Id == workshopId, nameof(Workshop.WorkshopImages)).ConfigureAwait(false)).FirstOrDefault();
             if (workshop == null)
             {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.WorkshopEntityNotFoundWhileUploadingError };
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.WorkshopEntityNotFoundWhileUploadingError };
             }
 
             logger.LogDebug($"Workshop with id = {workshopId} was found.");
@@ -126,7 +127,7 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.UploadImagesError };
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadImagesError };
             }
 
             try
@@ -140,7 +141,7 @@ namespace OutOfSchool.WebApi.Services.Images
             {
                 // TODO: mark image ids in order to delete
                 logger.LogError(ex, $"Cannot update workshop with id = {workshopId} because of {ex.Message}");
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.UploadImagesError };
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadImagesError };
             }
 
             logger.LogInformation($"Uploading images for workshopId = {workshopId} was finished.");
@@ -153,16 +154,16 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (imageDto == null)
             {
-                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.NoImagesForUploading, Description = Resources.ImageResource.NoImagesForUploading});
+                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.NoImagesForUploading, Description = ResourceInstances.ImageResource.NoImagesForUploading});
             }
 
             logger.LogDebug($"Uploading an image for workshopId = {workshopId} was started.");
-            var workshopRepository = GetWorkshopRepository();
+            var workshopRepository = repositories.WorkshopRepository;
             var validator = GetValidator<Workshop>();
             var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
             if (workshop == null)
             {
-                return OperationResult.Failed(new OperationError{Code = ImageResourceCodes.WorkshopEntityNotFoundWhileUploadingError, Description = Resources.ImageResource.WorkshopEntityNotFoundWhileUploadingError});
+                return OperationResult.Failed(new OperationError{Code = ImageResourceCodes.WorkshopEntityNotFoundWhileUploadingError, Description = ResourceInstances.ImageResource.WorkshopEntityNotFoundWhileUploadingError});
             }
 
             logger.LogDebug($"Workshop [id = {workshopId}] was found.");
@@ -205,12 +206,17 @@ namespace OutOfSchool.WebApi.Services.Images
             {
                 // TODO: mark image id in order to delete
                 logger.LogError(ex, $"Cannot update workshop with id = {workshopId} because of {ex.Message}");
-                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UploadImagesError, Description = Resources.ImageResource.UploadImagesError });
+                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UploadImagesError, Description = ResourceInstances.ImageResource.UploadImagesError });
             }
 
             logger.LogInformation($"Uploading an image for workshopId = {workshopId} was finished.");
             return OperationResult.Success;
         }
+
+        //public async Task<OperationResult> RemoveWorkshopImagesByIdsAsync(IEnumerable<string> ids)
+        //{
+
+        //}
 
         private async Task<Result<string>> UploadImageProcessAsync(Stream contentStream, string contentType)
         {
@@ -225,7 +231,7 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (ImageStorageException ex)
             {
                 logger.LogError(ex, $"Unable to upload image into an external storage because of {ex.Message}.");
-                return Result<string>.Failed(new OperationError { Code = ImageResourceCodes.ImageStorageError, Description = Resources.ImageResource.ImageStorageError });
+                return Result<string>.Failed(new OperationError { Code = ImageResourceCodes.ImageStorageError, Description = ResourceInstances.ImageResource.ImageStorageError });
             }
         }
 
@@ -233,13 +239,6 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             return (IImageValidatorService<T>)serviceProvider.GetService(typeof(IImageValidatorService<T>))
                 ?? throw new NullReferenceException($"Unable to receive ImageValidatorService of type {nameof(T)}");
-        }
-
-        private IWorkshopRepository GetWorkshopRepository()
-        {
-            return (IWorkshopRepository)serviceProvider.GetService(typeof(IWorkshopRepository))
-                   ?? throw new NullReferenceException(
-                       $"Unable to receive service instance of {nameof(IWorkshopRepository)}");
         }
     }
 }

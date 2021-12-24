@@ -20,6 +20,7 @@ using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
+using OutOfSchool.Services.CombinedProviders;
 using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
@@ -226,8 +227,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
-            services.AddTransient<IImageRepository, ImageRepository>();
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
+            services.AddTransient<IImageDependentRepositoriesProvider, ImageDependentRepositoriesProvider>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
