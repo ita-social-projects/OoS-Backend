@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Bogus;
+using OutOfSchool.Common.PermissionsModule;
 
 namespace OutOfSchool.Tests.Common
 {
@@ -29,9 +31,20 @@ namespace OutOfSchool.Tests.Common
                 : faker.Random.CollectionItem(collection);
 
         /// <summary>
+        /// Gets the negative (int.MinValue .. -1) number.
+        /// </summary>
+        public static int GetNegativeInt() => faker.Random.Number(int.MinValue, -1);
+
+        /// <summary>
         /// Gets the positive (1 .. int.MaxValue) number.
         /// </summary>
         public static int GetPositiveInt() => faker.Random.Number(1, int.MaxValue);
+
+        /// <summary>
+        /// Gets the positive (min .. max) number.
+        /// </summary>
+        public static int GetPositiveInt(int min,int max) => faker.Random.Number(min, max);
+
 
         /// <summary>
         /// Gets the positive (1 .. max) number.
@@ -42,6 +55,7 @@ namespace OutOfSchool.Tests.Common
         /// Gets the collection of the positive (1 .. int.MaxValue) numbers.
         /// </summary>
         public static int[] GetPositiveInts(int count) => faker.Random.Digits(count, 1, 9);
+
 
         /// <summary>
         /// Applies an <paramref name="setter"/> on the given <paramref name="item"/>
@@ -95,5 +109,15 @@ namespace OutOfSchool.Tests.Common
         /// Gets random Edrpou/Ipn string.
         /// </summary>
         public static string EdrpouIpnString => faker.Random.ReplaceNumbers(faker.PickRandom(EdrpouIpnFormats));
+
+        /// <summary>
+        /// Gets random "job area" string to use as fake role name in our test cases
+        /// </summary>
+        public static string GetRandomRole() => faker.Name.JobArea();
+        public static string GetRandomWords() => faker.Random.Words(3);
+
+        public static string GetRandomEmail() => faker.Internet.Email();
+        public static string GetFakePackedPermissions() =>
+            faker.Random.ArrayElements((Permissions[])Enum.GetValues(typeof(Permissions)), 10).PackPermissionsIntoString();
     }
 }

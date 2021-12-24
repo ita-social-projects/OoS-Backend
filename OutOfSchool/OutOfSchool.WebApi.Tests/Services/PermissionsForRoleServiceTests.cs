@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -7,12 +6,13 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services
@@ -45,38 +45,38 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAll_WhenCalled_ReturnsGrouppedPermissionsForAllRoles()
         {
             // Arrange
-            var expected = await repository.GetAll();
+            var expected = (await repository.GetAll()).Select(p => p.ToModel());
+
 
             // Act
             var result = await service.GetAll().ConfigureAwait(false);
 
             // Assert
-
-            Assert.IsTrue(result.Any(r => r.RoleName == Role.Admin.ToString()));
-            Assert.IsTrue(result.Any(r => r.RoleName == Role.Provider.ToString()));
-            Assert.IsTrue(result.Any(r => r.RoleName == Role.Parent.ToString()));
-            Assert.AreEqual(result.ToList().Count(), expected.Count());
+            TestHelper.AssertTwoCollectionsEqualByValues(expected, result);
         }
 
         [Test]
-        [TestCase("Admin")]
-        public async Task GetByRole_WhenIdIsValid_ReturnsPermissionsForRole(string roleName)
+        public async Task GetByRole_WhenIdIsValid_ReturnsPermissionsForRole()
         {
             // Arrange
-            var expected = (await repository.GetByFilter(r => r.RoleName == roleName)).FirstOrDefault();
+            var roleName = nameof(Role.Admin);
+            var expected = repository
+                .GetByFilterNoTracking(r => r.RoleName == roleName)
+                .First()
+                .ToModel();
 
             // Act
             var result = await service.GetByRole(roleName).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.PackedPermissions, result.Permissions.PackPermissionsIntoString());
+            TestHelper.AssertDtosAreEqual(expected, result);
         }
 
         [Test]
-        [TestCase("User")]
-        public void GetByRole_WhenNoSuchRole_ThrowsArgumentNullException(string roleName)
+        public void GetByRole_WhenNoSuchRole_ThrowsArgumentNullException()
         {
             // Arrange
+            var roleName = TestDataHelper.GetRandomRole();
             var taskToGetPermissionsForRole = service.GetByRole(roleName);
 
             // Act and Assert
@@ -88,61 +88,55 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
-            var expected = new PermissionsForRoleDTO()
-            {
-                RoleName = "workshopAdmin",
-                Permissions = new List<Permissions> { Permissions.ChildAddNew, Permissions.FavoriteEdit, },
-            };
+            var lastIndex = (await repository.GetAll()).Last().Id;
+            var entityToBeCreated = PermissionsForRolesGenerator.Generate();
+            var expected = entityToBeCreated.ToModel();
+            expected.Id = lastIndex + 1;
 
             // Act
-            var result = await service.Create(expected).ConfigureAwait(false);
+            var result = await service.Create(entityToBeCreated.ToModel()).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.RoleName, result.RoleName);
-            Assert.That(await repository.Count() == 4);
+            TestHelper.AssertDtosAreEqual(expected, result);
+        }
+
+        [Test]
+        public void Create_WhenPermissionsForRoleExistsInDb_ThrowsArgumentException()
+        {
+            // Arrange
+            var newPermissionsForRole = PermissionsForRolesGenerator.Generate(nameof(Role.Admin));
+
+            // Act and Assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Create(newPermissionsForRole.ToModel()).ConfigureAwait(false));
         }
 
         [Test]
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
-            var changedEntity = new PermissionsForRoleDTO()
-            {
-                Id = 1,
-                RoleName = Role.Admin.ToString(),
-                Permissions = new List<Permissions>
-                {
-                    Permissions.AccessAll,
-                    Permissions.SystemManagement,
-                },
-            };
-
-            var expectedPermissions = new List<Permissions>
-            {
-                Permissions.AccessAll,
-                Permissions.SystemManagement,
-            };
+            var entityToChange = repository
+                .GetByFilterNoTracking(x => x.RoleName == nameof(Role.Admin))
+                .First();
+            entityToChange.PackedPermissions = TestDataHelper.GetFakePackedPermissions();
+            var expected = entityToChange.ToModel();
 
             // Act
-            var result = await service.Update(changedEntity).ConfigureAwait(false);
+            var result = await service.Update(entityToChange.ToModel()).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result.Permissions.Count() == expectedPermissions.Count());
-            Assert.That(changedEntity.RoleName, Is.EqualTo(result.RoleName));
+            TestHelper.AssertDtosAreEqual(expected, result);
         }
 
         [Test]
         public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
-            var changedEntity = new PermissionsForRoleDTO()
-            {
-                RoleName = "TestName",
-            };
+            var changedEntity = PermissionsForRolesGenerator.Generate();
 
             // Act and Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-                async () => await service.Update(changedEntity).ConfigureAwait(false));
+                async () => await service.Update(changedEntity.ToModel()).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -155,29 +149,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                var permissionsForRoles = new List<PermissionsForRole>()
-                {
-                    new PermissionsForRole()
-                    {
-                    Id = 1,
-                    RoleName = Role.Admin.ToString(),
-                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Admin.ToString()),
-                    },
-                    new PermissionsForRole()
-                    {
-                    Id = 2,
-                    RoleName = Role.Provider.ToString(),
-                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Provider.ToString()),
-                    },
-                    new PermissionsForRole()
-                    {
-                    Id = 3,
-                    RoleName = Role.Parent.ToString(),
-                    PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Parent.ToString()),
-
-                    },
-                };
-
+                var permissionsForRoles = PermissionsForRolesGenerator.GenerateForExistingRoles();
                 context.PermissionsForRoles.AddRangeAsync(permissionsForRoles);
                 context.SaveChangesAsync();
             }

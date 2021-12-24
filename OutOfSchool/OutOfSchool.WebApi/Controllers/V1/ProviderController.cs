@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
@@ -76,10 +77,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public async Task<IActionResult> GetById(Guid providerId)
         {
             var provider = await providerService.GetById(providerId).ConfigureAwait(false);
-
             if (provider == null)
             {
-                return NoContent();
+                return NotFound($"There is no Provider in DB with {nameof(provider.Id)} - {providerId}");
             }
 
             return Ok(provider);
@@ -181,19 +181,25 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(ModelState);
             }
 
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-
-            var userRole = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
-
-            var provider = await providerService.Update(providerModel, userId, userRole).ConfigureAwait(false);
-
-            if (provider == null)
+            try
             {
-                return BadRequest("Can't change Provider with such parameters.\n" +
-                    "Please check that information are valid.");
+                var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+                var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
+
+                if (provider == null)
+                {
+                    return BadRequest("Can't change Provider with such parameters.\n" +
+                        "Please check that information are valid.");
+                }
+
+                return Ok(provider);
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                return BadRequest(e);
             }
 
-            return Ok(provider);
+
         }
 
         /// <summary>
@@ -208,7 +214,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpDelete("{uid:guid}")]
         public async Task<IActionResult> Delete(Guid uid)
         {
-            await providerService.Delete(uid).ConfigureAwait(false);
+            try 
+            {
+                await providerService.Delete(uid).ConfigureAwait(false);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             return NoContent();
         }

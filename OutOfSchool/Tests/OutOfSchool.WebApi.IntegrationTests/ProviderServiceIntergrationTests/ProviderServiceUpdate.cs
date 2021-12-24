@@ -21,8 +21,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
     [TestFixture]
     public class ProviderServiceUpdate
     {
-        private const string NOT_ADMIN_USER_ROLE = "Provider";
-
         private IProviderService providerService;
 
         private Mapper mapper;
@@ -71,7 +69,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
 
             // Act
             var result = await this.providerService
-                .Update(this.mapper.Map<ProviderDto>(provider), provider.UserId, NOT_ADMIN_USER_ROLE)
+                .Update(this.mapper.Map<ProviderDto>(provider), provider.UserId)
                 .ConfigureAwait(false);
 
             // Assert
@@ -95,7 +93,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             providerDto.ActualAddress = null;
 
             // Act
-            var result = await this.providerService.Update(providerDto, provider.UserId, NOT_ADMIN_USER_ROLE)
+            var result = await this.providerService.Update(providerDto, provider.UserId)
                 .ConfigureAwait(false);
 
             // Assert
@@ -120,7 +118,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             var providerDto = this.mapper.Map<ProviderDto>(provider);
 
             // Act
-            var result = await this.providerService.Update(providerDto, provider.UserId, NOT_ADMIN_USER_ROLE)
+            var result = await this.providerService.Update(providerDto, provider.UserId)
                 .ConfigureAwait(false);
 
             // Assert
@@ -144,7 +142,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             var providerDto = this.mapper.Map<ProviderDto>(provider);
 
             // Act
-            var result = await this.providerService.Update(providerDto, provider.UserId, NOT_ADMIN_USER_ROLE)
+            var result = await this.providerService.Update(providerDto, provider.UserId)
                 .ConfigureAwait(false);
 
             // Assert
@@ -163,7 +161,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             var providerDto = this.mapper.Map<ProviderDto>(provider);
 
             // Act
-            var result = await this.providerService.Update(providerDto, provider.UserId, NOT_ADMIN_USER_ROLE)
+            var result = await this.providerService.Update(providerDto, provider.UserId)
                 .ConfigureAwait(false);
 
             // Assert

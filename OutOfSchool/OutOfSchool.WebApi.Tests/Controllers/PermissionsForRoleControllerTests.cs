@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -20,8 +25,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private PermissionsForRoleController controller;
         private Mock<IPermissionsForRoleService> service;
 
-        private IEnumerable<PermissionsForRoleDTO> permissionsForAllRoles;
-        private PermissionsForRoleDTO permissionsForRoleDTO;
+        private IEnumerable<PermissionsForRole> permissionsForAllRoles;
+        private PermissionsForRole permissionsForRoleEntity;
 
 
 
@@ -29,24 +34,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void Setup()
         {
             service = new Mock<IPermissionsForRoleService>();
-
             controller = new PermissionsForRoleController(service.Object);
 
-            permissionsForAllRoles = FakePermissionsForAllRoles();
-            permissionsForRoleDTO = FakePermissionsForRole();
+            permissionsForAllRoles = PermissionsForRolesGenerator.GenerateForExistingRoles();
+            permissionsForRoleEntity = PermissionsForRolesGenerator.Generate();
         }
 
         [Test]
         public async Task GetsAllPermissionsForRoles_ReturnsOkAllEnititiesInValue()
         {
             // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles);
+            var expected = permissionsForAllRoles.Select(s => s.ToModel());
+            service.Setup(x => x.GetAll()).ReturnsAsync(permissionsForAllRoles.Select(s => s.ToModel()));
 
             // Act
             var response = await controller.Get().ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseOkAndValidValue<IEnumerable<PermissionsForRoleDTO>>();
+            response.AssertResponseOkResultAndValidateValue(expected);
         }
 
         [Test]
@@ -65,108 +70,97 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [Test]
         public void GetAllPermissions_WhenCalled_ReturnsAllSystemPermissions()
         {
+            // Arrange
+            var expectedValue = Enum.GetValues(typeof(Permissions))
+                .Cast<Permissions>()
+                .Select(p => (p, p.ToString()));
+
             // Act
             var response = controller.GetAllPermissions();
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<OkObjectResult>();
+            response.AssertResponseOkResultAndValidateValue(expectedValue);
         }
 
+
         [Test]
-        [TestCase("Admin")]
-        public async Task GetByRoleName_WhenRoleNameIsValid_ReturnOkResultObject(string roleName)
+        public async Task GetByRoleName_WhenRoleNameIsValid_ReturnOkResultObject()
         {
             // Arrange
-            service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName));
+            var roleName = nameof(Role.Admin);
+            var expected = permissionsForAllRoles.Where(s => s.RoleName == roleName).Select(p => p.ToModel()).First();
+            service.Setup(x => x.GetByRole(roleName)).ReturnsAsync(permissionsForAllRoles.SingleOrDefault(x => x.RoleName == roleName).ToModel());
 
             // Act
             var response = await controller.GetByRoleName(roleName).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseOkAndValidValue<PermissionsForRoleDTO>();
+            response.AssertResponseOkResultAndValidateValue(expected);
         }
 
         [Test]
-        [TestCase("fakeRole")]
-        public async Task GetByRoleName_NotExistingRoleName_ReturnsBadRequest(string roleName)
+        public async Task GetByRoleName_NotExistingRoleName_ReturnsBadRequest()
         {
             // Arrange
-            service.Setup(x => x.GetByRole(roleName)).Throws<ArgumentNullException>();
+            var roleName = TestDataHelper.GetRandomRole();
+            var expectedResponse = new BadRequestObjectResult(nameof(roleName));
+            service.Setup(x => x.GetByRole(roleName)).ThrowsAsync(new ArgumentNullException());
 
             // Act
             var response = await controller.GetByRoleName(roleName).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expectedResponse);
         }
 
         [Test]
         public async Task CreatePermissionsForRole_WhenModelIsValid_ReturnsCreatedAtActionResult()
         {
             // Arrange
-            service.Setup(x => x.Create(permissionsForRoleDTO)).ReturnsAsync(permissionsForRoleDTO);
+            var expected = permissionsForRoleEntity.ToModel();
+            var expectedResponse = new CreatedAtActionResult(
+                nameof(controller.GetByRoleName),
+                nameof(ProviderController),
+                new { id = expected.Id, roleName = expected.RoleName },
+                expected);
+            service.Setup(x => x.Create(expected)).ReturnsAsync(permissionsForRoleEntity.ToModel());
 
             // Act
-            var response = await controller.Create(permissionsForRoleDTO).ConfigureAwait(false);
+            var response = await controller.Create(expected).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<CreatedAtActionResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<CreatedAtActionResult>(expectedResponse);
         }
 
         [Test]
         public async Task UpdatePermissionsForRole_WhenModelIsValid_ReturnsOkObjectResult()
         {
             // Arrange
-            service.Setup(x => x.Update(permissionsForRoleDTO)).ReturnsAsync(permissionsForRoleDTO);
+            permissionsForRoleEntity.Description = TestDataHelper.GetRandomWords();
+            var expected = permissionsForRoleEntity.ToModel();
+            service.Setup(x => x.Update(expected)).ReturnsAsync(permissionsForRoleEntity.ToModel());
 
             // Act
-            var response = await controller.Update(permissionsForRoleDTO).ConfigureAwait(false);
+            var response = await controller.Update(expected).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseOkAndValidValue<PermissionsForRoleDTO>();
+            response.AssertResponseOkResultAndValidateValue(expected);
         }
 
-        /// <summary>
-        /// faking data for testing.
-        /// </summary>
-        private PermissionsForRoleDTO FakePermissionsForRole()
+        [Test]
+        public async Task UpdatePermissionsForRole_WhenProblemsWithDb_ReturnsBadRequestWithError()
         {
-            return new PermissionsForRoleDTO()
-            {
-                Id = 1,
-                RoleName = "TestAdmin",
-                Permissions = new List<Permissions> { Permissions.SystemManagement, Permissions.AddressAddNew, Permissions.AddressEdit, },
-            };
+            // Arrange
+            var expected = permissionsForRoleEntity.ToModel();
+            var errorMessage = TestDataHelper.GetRandomWords();
+            var expectedResponse = new BadRequestObjectResult(errorMessage);
+            service.Setup(x => x.Update(expected)).ThrowsAsync(new DbUpdateConcurrencyException(errorMessage));
+
+            // Act
+            var response = await controller.Update(expected).ConfigureAwait(false);
+
+            // Assert
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expectedResponse);
         }
-
-
-
-        private IEnumerable<PermissionsForRoleDTO> FakePermissionsForAllRoles()
-        {
-            return new List<PermissionsForRoleDTO>()
-            {
-                new PermissionsForRoleDTO()
-                {
-                Id = 1,
-                RoleName = Role.Admin.ToString(),
-                Permissions = new List<Permissions> { Permissions.SystemManagement, Permissions.AccessAll, },
-                },
-                new PermissionsForRoleDTO()
-                {
-                Id = 2,
-                RoleName = Role.Provider.ToString(),
-                Permissions = new List<Permissions> { Permissions.WorkshopAddNew, Permissions.TeacherAddNew, Permissions.ProviderAddNew, },
-
-                },
-                new PermissionsForRoleDTO()
-                {
-                Id = 3,
-                RoleName = Role.Parent.ToString(),
-                Permissions = new List<Permissions> { Permissions.FavoriteAddNew, Permissions.ApplicationAddNew, Permissions.ChildAddNew, },
-
-                },
-            };
-        }
-
     }
 }

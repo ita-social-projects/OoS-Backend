@@ -1,519 +1,289 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Security.Claims;
-//using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.Extensions.Localization;
-//using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 
-//using Moq;
-//using NUnit.Framework;
+using Moq;
+using NUnit.Framework;
+using OutOfSchool.Common;
+using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Services;
 
-//using OutOfSchool.Services.Enums;
-//using OutOfSchool.Tests.Common;
-//using OutOfSchool.WebApi.Controllers.V1;
-//using OutOfSchool.WebApi.Models;
-//using OutOfSchool.WebApi.Services;
+namespace OutOfSchool.WebApi.Tests.Controllers
+{
+    [TestFixture]
+    public class ProviderControllerTests
+    {
 
-//namespace OutOfSchool.WebApi.Tests.Controllers
-//{
-//    [TestFixture]
-//    public class ProviderControllerTests
-//    {
-//        private const int OkStatusCode = 200;
-//        private const int CreateStatusCode = 201;
-//        private const int NoContentStatusCode = 204;
-//        private const int BadRequestStatusCode = 400;
-//        private const string FakeUserId = "de909f35-5eb7-4b7a-bda8-40a5bfda67a6";
-//        private ProviderController controller;
-//        private Mock<IProviderService> serviceProvider;
-//        private ClaimsPrincipal user;
-//        private Mock<IStringLocalizer<SharedResource>> localizer;
+        private ProviderController providerController;
+        private Mock<IProviderService> providerService;
+        private List<Provider> providers;
+        private Provider provider;
 
-//        private List<ProviderDto> providers;
-//        private ProviderDto provider;
+        [SetUp]
+        public void Setup()
+        {
 
-//        [SetUp]
-//        public void Setup()
-//        {
-//            serviceProvider = new Mock<IProviderService>();
-//            localizer = new Mock<IStringLocalizer<SharedResource>>();
+            var localizer = new Mock<IStringLocalizer<SharedResource>>();
+            var user = new ClaimsPrincipal
+                (new ClaimsIdentity(
+                    new Claim[]
+                    {
+                        new Claim(IdentityResourceClaimsTypes.Sub, Guid.NewGuid().ToString()),
+                        new Claim(IdentityResourceClaimsTypes.Role, Role.Provider.ToString()),
+                    },
+                    IdentityResourceClaimsTypes.Sub));
 
-//            controller = new ProviderController(serviceProvider.Object, localizer.Object, new Mock<ILogger<ProviderController>>().Object);
-//            user = new ClaimsPrincipal(new ClaimsIdentity(
-//                new Claim[]
-//                {
-//                    new Claim("sub", FakeUserId),
-//                    new Claim("role", "provider"),
-//                }, "sub"));
-//            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+            providerService = new Mock<IProviderService>();
+            providerController = new ProviderController(providerService.Object, localizer.Object, new Mock<ILogger<ProviderController>>().Object);
 
-//            providers = FakeProviders();
-//            provider = FakeProvider();
-//        }
 
-//        [Test]
-//        public async Task GetProfile_WhenCalledForEmptyRepository_ReturnsNoContent()
-//        {
-//            // Arrange
-//            serviceProvider.Setup(x => x.GetAll()).ReturnsAsync(Enumerable.Empty<ProviderDto>());
 
-//            // Act
-//            var result = await controller.GetProfile().ConfigureAwait(false);
+            providerController.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+            providers = ProvidersGenerator.Generate(10);
+            provider = ProvidersGenerator.Generate();
+        }
 
-//            // Assert
-//            Assert.That(result, Is.InstanceOf<NoContentResult>());
-//        }
+        [Test]
+        public async Task GetProfile_WhenNoProviderWithSuchUserId_ReturnsNoContent()
+        {
+            // Arrange
+            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(null as ProviderDto);
 
-//        [Test]
-//        public async Task GetProfile_NoRepositoryForUser_ReturnsNoContent()
-//        {
-//            // Arrange
-//            serviceProvider.Setup(x => x.GetAll()).ReturnsAsync(providers);
+            // Act
+            var result = await providerController.GetProfile().ConfigureAwait(false);
 
-//            // Act
-//            var result = await controller.GetProfile().ConfigureAwait(false);
+            // Assert
+            Assert.IsInstanceOf<NoContentResult>(result);
+        }
 
-//            // Assert
-//            Assert.That(result, Is.InstanceOf<NoContentResult>());
-//        }
+        [Test]
+        public async Task GetProfile_WhenProviderForUserIdExists_ReturnsOkObjectResult_WithExpectedValue()
+        {
+            // Arrange
+            var expected = provider.ToModel();
+            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider.ToModel());
 
-//        [Test]
-//        public async Task GetProviders_WhenCalled_ReturnsOkResultObject()
-//        {
-//            // Arrange
-//            serviceProvider.Setup(x => x.GetAll()).ReturnsAsync(providers);
+            // Act
+            var result = await providerController.GetProfile().ConfigureAwait(false);
 
-//            // Act
-//            var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+            // Assert
+            result.AssertResponseOkResultAndValidateValue(expected);
+        }
 
-//            // Assert
-//            Assert.NotNull(result);
-//            Assert.AreEqual(OkStatusCode, result.StatusCode);
-//        }
 
-//        [Test]
-//        [TestCase(1)]
-//        public async Task GetProvidersById_WhenIdIsValid_ReturnsOkObjectResult(long id)
-//        {
-//            // Arrange
-//            serviceProvider.Setup(x => x.GetById(id)).ReturnsAsync(providers.SingleOrDefault(x => x.Id == id));
+        [Test]
+        public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
+        {
+            // Arrange
+            var expected = providers.Select(x => x.ToModel());
+            providerService.Setup(x => x.GetAll()).ReturnsAsync(providers.Select(p => p.ToModel()));
 
-//            // Act
-//            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+            // Act
+            var result = await providerController.Get().ConfigureAwait(false);
 
-//            // Assert
-//            Assert.NotNull(result);
-//            Assert.AreEqual(OkStatusCode, result.StatusCode);
-//        }
+            // Assert
+            result.AssertResponseOkResultAndValidateValue(expected);
+        }
 
-//        [Test]
-//        public async Task GetProvidersById_WhenIdIsInvalid_ReturnsBadRequest()
-//        {
-//            // Arrange
-//            const int invalidUserId = 0;
+        [Test]
+        public async Task GetProviders_WhenNoRecordsInDB_ReturnsNoContentResult()
+        {
+            // Arrange
+            providerService.Setup(x => x.GetAll()).ReturnsAsync(Enumerable.Empty<ProviderDto>());
 
-//            // Act
-//            var result = await controller.GetById(invalidUserId).ConfigureAwait(false);
+            // Act
+            var result = await providerController.Get().ConfigureAwait(false);
 
-//            // Assert
-//            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-//        }
+            // Assert
+            Assert.IsInstanceOf<NoContentResult>(result);
+        }
 
-//        [Test]
-//        public async Task GetProvidersById_WhenIdIsValid_ReturnsOkResult()
-//        {
-//            // Arrange
-//            var existingProvider = providers.RandomItem();
-//            serviceProvider.Setup(x => x.GetById(existingProvider.Id)).ReturnsAsync(existingProvider);
+        [Test]
+        public async Task GetProviderById_WhenProviderWithIdExistsInDb_ReturnsOkObjectResult_WithExpectedValue()
+        {
+            // Arrange
+            var expectedDto = providers.RandomItem().ToModel();
+            var existingId = expectedDto.Id;
+            providerService.Setup(x => x.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(providers.SingleOrDefault(x => x.Id == existingId).ToModel());
 
-//            // Act
-//            var result = await controller.GetById(existingProvider.Id).ConfigureAwait(false) as OkObjectResult;
+            // Act
+            var result = await providerController.GetById(existingId).ConfigureAwait(false);
 
-//            // Assert
-//            Assert.That(result, Is.InstanceOf<OkObjectResult>());
-//        }
+            // Assert
+            result.AssertResponseOkResultAndValidateValue(expectedDto);
+        }
 
-//        [Test]
-//        public async Task CreateProvider_WhenModelIsValid_ReturnsCreatedAtActionResult()
-//        {
-//            // Arrange
-//            serviceProvider.Setup(x => x.Create(provider)).ReturnsAsync(provider);
+        [Test]
+        public async Task GetProviderById_WhenIdDoesntExistsInDb_ReturnsNotFoundResult()
+        {
+            // Arrange
+            var invalidUserId = Guid.NewGuid();
+            var expected = new NotFoundObjectResult($"There is no Provider in DB with {nameof(invalidUserId)} - {invalidUserId}");
+            providerService.Setup(x => x.GetById(It.IsAny<Guid>())).ReturnsAsync(null as ProviderDto);
 
-//            // Act
-//            var result = await controller.Create(provider).ConfigureAwait(false) as CreatedAtActionResult;
+            // Act
+            var result = await providerController.GetById(invalidUserId).ConfigureAwait(false);
 
-//            // Assert
-//            Assert.NotNull(result);
-//            Assert.AreEqual(CreateStatusCode, result.StatusCode);
-//        }
+            // Assert
+            result.AssertExpectedResponseTypeAndCheckDataInside<NotFoundObjectResult>(expected);
+        }
 
-//        [Test]
-//        public async Task CreateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-//        {
-//            // Arrange
-//            controller.ModelState.AddModelError("CreateProvider", "Invalid model state.");
+        [Test]
+        public async Task CreateProvider_WhenModelIsValid_ReturnsCreatedAtActionResult()
+        {
+            // Arrange
+            var expectedCreated = provider.ToModel();
+            var expectedResponse = new CreatedAtActionResult(
+                nameof(providerController.GetById),
+                nameof(ProviderController),
+                new { providerId = expectedCreated.Id, },
+                expectedCreated);
+            providerService.Setup(x => x.Create(It.IsAny<ProviderDto>())).ReturnsAsync(provider.ToModel());
 
-//            // Act
-//            var result = await controller.Create(provider).ConfigureAwait(false);
+            // Act
+            var result = await providerController.Create(provider.ToModel()).ConfigureAwait(false);
 
-//            // Assert
-//            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-//            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
-//        }
+            // Assert
+            result.AssertExpectedResponseTypeAndCheckDataInside<CreatedAtActionResult>(expectedResponse);
+        }
 
-//        [Test]
-//        public async Task UpdateProvider_WhenModelIsValid_ReturnsOkObjectResult()
-//        {
-//            // Arrange
-//            var changedProvider = new ProviderDto()
-//            {
-//                Id = 1,
-//                FullTitle = "ChangedTitle",
-//                UserId = FakeUserId,
-//            };
-//            serviceProvider.Setup(x => x.Update(changedProvider, changedProvider.UserId, "provider")).ReturnsAsync(changedProvider);
+        [Test]
+        public async Task CreateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            dictionary.AddModelError("CreateProvider", "Invalid model state.");
+            var expected = new BadRequestObjectResult(new ModelStateDictionary(dictionary));
+            providerController.ModelState.AddModelError("CreateProvider", "Invalid model state.");
 
-//            // Act
-//            var result = await controller.Update(changedProvider).ConfigureAwait(false) as OkObjectResult;
+            // Act
+            var result = await providerController.Create(provider.ToModel()).ConfigureAwait(false);
 
-//            // Assert
-//            Assert.NotNull(result);
-//            Assert.AreEqual(OkStatusCode, result.StatusCode);
-//        }
+            // Assert
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
+        }
 
-//        [Test]
-//        public async Task UpdateProvider_WhenUserIsNotAdminAndUpdateNotOwnProvider_ReturnsBadRequestResult()
-//        {
-//            // Arrange
-//            var changedProvider = new ProviderDto()
-//            {
-//                Id = 1,
-//                FullTitle = "ChangedTitle",
-//            };
-//            serviceProvider.Setup(x => x.Update(changedProvider, "CVc4a6876a-77fb-4ecnne-9c78-a0880286ae3c", "provider")).ReturnsAsync(changedProvider);
+        [Test]
+        public async Task UpdateProvider_WhenModelIsValidAndProviderExists_ReturnsOkObjectResult()
+        {
+            // Arrange
+            var providerToUpdate = providers.FirstOrDefault();
+            providerToUpdate.FullTitle = TestDataHelper.GetRandomWords();
+            var providerDto = providerToUpdate.ToModel();
+            providerService.Setup(x => x.Update(providerDto, It.IsAny<string>()))
+                .ReturnsAsync(providerToUpdate.ToModel());
 
-//            // Act
-//            var result = await controller.Update(changedProvider).ConfigureAwait(false);
+            // Act
+            var result = await providerController.Update(providerDto).ConfigureAwait(false);
+            var value = (result as ObjectResult).Value as ProviderDto;
 
-//            // Assert
-//            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-//            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
-//        }
+            // Assert
+            result.AssertResponseOkResultAndValidateValue(providerDto);
+        }
 
-//        [Test]
-//        public async Task UpdateProvider_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-//        {
-//            // Arrange
-//            controller.ModelState.AddModelError("UpdateProvider", "Invalid model state.");
+        [Test]
+        public async Task UpdateProvider_WhenModelWithErrorsReceived_BadRequest_And_ModelsIsValid_False()
+        {
+            // Arrange
+            var providerToUpdateDto = provider.ToModel();
+            var dictionary = new ModelStateDictionary();
+            dictionary.AddModelError("UpdateError", "bad model state");
+            var expected = new BadRequestObjectResult(new ModelStateDictionary(dictionary));
+            providerController.ModelState.AddModelError("UpdateError", "bad model state");
 
-//            // Act
-//            var result = await controller.Update(provider).ConfigureAwait(false);
+            providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>()))
+                .ReturnsAsync(provider.ToModel());
 
-//            // Assert
-//            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-//            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(BadRequestStatusCode));
-//        }
+            // Act
+            var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
 
-//        [Test]
-//        [TestCase(1)]
-//        public async Task DeleteProvider_WhenIdIsValid_ReturnsNoContentResult(long id)
-//        {
-//            // Arrange
-//            serviceProvider.Setup(x => x.Delete(id));
+            // Assert
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
+            Assert.That(!providerController.ModelState.IsValid);
+        }
 
-//            // Act
-//            var result = await controller.Delete(id) as NoContentResult;
+        [Test]
+        public async Task UpdateProvider_WhenCorrectData_AND_WrongUserId_ModelIsValid_But_BadRequest()
+        {
+            // Arrange
+            var providerToUpdateDto = providers.FirstOrDefault().ToModel();
+            providerToUpdateDto.FullTitle = TestDataHelper.GetRandomWords();
+            var expected = new BadRequestObjectResult("Can't change Provider with such parameters.\n" +
+                        "Please check that information are valid.");
+            providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>())).ReturnsAsync(null as ProviderDto);
 
-//            // Assert
-//            Assert.NotNull(result);
-//            Assert.AreEqual(NoContentStatusCode, result.StatusCode);
-//        }
+            // Act
+            var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
 
-//        [Test]
-//        [TestCase(0)]
-//        public void DeleteProvider_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
-//        {
-//            // Arrange
-//            serviceProvider.Setup(x => x.Delete(id));
+            // Assert
+            Assert.That(providerController.ModelState.IsValid);
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
+        }
 
-//            // Act and Assert
-//            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-//                async () => await controller.Delete(id).ConfigureAwait(false));
-//        }
+        [Test]
+        public async Task UpdateProvider_ServiceCantGetRequestedProvider_BadRequest_WithExceptionAsValue()
+        {
+            // Arrange
+            var providerToUpdateDto = ProviderDtoGenerator.Generate();
+            providerToUpdateDto.FullTitle = TestDataHelper.GetRandomWords();
+            var expected = new BadRequestObjectResult(new DbUpdateConcurrencyException());
+            providerService.Setup(x => x.Update(providerToUpdateDto, It.IsAny<string>())).ThrowsAsync(new DbUpdateConcurrencyException());
 
-//        [Test]
-//        [TestCase(10)]
-//        public async Task DeleteProvider_WhenIdIsInvalid_ReturnsNull(long id)
-//        {
-//            // Arrange
-//            serviceProvider.Setup(x => x.Delete(id));
+            // Act
+            var result = await providerController.Update(providerToUpdateDto).ConfigureAwait(false);
 
-//            // Act
-//            var result = await controller.Delete(id) as OkObjectResult;
+            // Assert
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
+        }
 
-//            // Assert
-//            Assert.That(result, Is.Null);
-//        }
+        [Test]
+        public async Task DeleteProvider_WhenIdIsValid_ReturnsNoContentResult()
+        {
+            // Arrange
+            var existingProviderGuid = providers.Select(p => p.Id).FirstOrDefault();
+            providerService.Setup(x => x.Delete(existingProviderGuid));
 
-//        private ProviderDto FakeProvider()
-//        {
-//            return new ProviderDto()
-//            {
-//                Id = 6,
-//                FullTitle = "Title6",
-//                ShortTitle = "ShortTitle6",
-//                Website = "Website6",
-//                Facebook = "Facebook6",
-//                Email = "user6@example.com",
-//                Instagram = "Instagram6",
-//                Description = "Description6",
-//                DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
-//                EdrpouIpn = "12345656",
-//                PhoneNumber = "1111111111",
-//                Founder = "Founder",
-//                Ownership = OwnershipType.Private,
-//                Type = ProviderType.TOV,
-//                Status = false,
-//                UserId = FakeUserId,
-//                LegalAddress = new AddressDto
-//                {
-//                    Id = 11,
-//                    Region = "Region11",
-//                    District = "District11",
-//                    City = "City11",
-//                    Street = "Street11",
-//                    BuildingNumber = "BuildingNumber11",
-//                    Latitude = 0,
-//                    Longitude = 0,
-//                },
-//                ActualAddress = new AddressDto
-//                {
-//                    Id = 12,
-//                    Region = "Region12",
-//                    District = "District12",
-//                    City = "City12",
-//                    Street = "Street12",
-//                    BuildingNumber = "BuildingNumber12",
-//                    Latitude = 0,
-//                    Longitude = 0,
-//                },
-//            };
-//        }
+            // Act
+            var result = await providerController.Delete(existingProviderGuid);
 
-//        private List<ProviderDto> FakeProviders()
-//        {
-//            return new List<ProviderDto>()
-//            {
-//                new ProviderDto()
-//                {
-//                        Id = 1,
-//                        FullTitle = "Title1",
-//                        ShortTitle = "ShortTitle1",
-//                        Website = "Website1",
-//                        Facebook = "Facebook1",
-//                        Email = "user1@example.com",
-//                        Instagram = "Instagram1",
-//                        Description = "Description1",
-//                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
-//                        EdrpouIpn = "12345678",
-//                        PhoneNumber = "1111111111",
-//                        Founder = "Founder",
-//                        Ownership = OwnershipType.Private,
-//                        Type = ProviderType.TOV,
-//                        Status = false,
-//                        UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
-//                        LegalAddress = new AddressDto
-//                        {
-//                            Id = 1,
-//                            Region = "Region1",
-//                            District = "District1",
-//                            City = "City1",
-//                            Street = "Street1",
-//                            BuildingNumber = "BuildingNumber1",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        ActualAddress = new AddressDto
-//                        {
-//                            Id = 2,
-//                            Region = "Region2",
-//                            District = "District2",
-//                            City = "City2",
-//                            Street = "Street2",
-//                            BuildingNumber = "BuildingNumber2",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                },
-//                new ProviderDto()
-//                {
-//                        Id = 2,
-//                        FullTitle = "Title2",
-//                        ShortTitle = "ShortTitle2",
-//                        Website = "Website2",
-//                        Facebook = "Facebook2",
-//                        Email = "user2@example.com",
-//                        Instagram = "Instagram2",
-//                        Description = "Description2",
-//                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
-//                        EdrpouIpn = "12345645",
-//                        PhoneNumber = "1111111111",
-//                        Founder = "Founder",
-//                        Ownership = OwnershipType.Private,
-//                        Type = ProviderType.TOV,
-//                        Status = false,
-//                        UserId = "de909VV5-5eb7-4b7a-bda8-40a5bfda96a6",
-//                        LegalAddress = new AddressDto
-//                        {
-//                            Id = 3,
-//                            Region = "Region3",
-//                            District = "District3",
-//                            City = "City3",
-//                            Street = "Street3",
-//                            BuildingNumber = "BuildingNumber3",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        ActualAddress = new AddressDto
-//                        {
-//                            Id = 4,
-//                            Region = "Region4",
-//                            District = "District4",
-//                            City = "City4",
-//                            Street = "Street4",
-//                            BuildingNumber = "BuildingNumber4",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                },
-//                new ProviderDto()
-//                {
-//                        Id = 3,
-//                        FullTitle = "Title3",
-//                        ShortTitle = "ShortTitle3",
-//                        Website = "Website3",
-//                        Facebook = "Facebook3",
-//                        Email = "user3@example.com",
-//                        Instagram = "Instagram3",
-//                        Description = "Description3",
-//                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
-//                        EdrpouIpn = "12345000",
-//                        PhoneNumber = "1111111111",
-//                        Founder = "Founder",
-//                        Ownership = OwnershipType.Private,
-//                        Type = ProviderType.TOV,
-//                        Status = false,
-//                        UserId = "de909f35-5eb7-4b7a-bda8-40a5bfda96a6",
-//                        LegalAddress = new AddressDto
-//                        {
-//                            Id = 5,
-//                            Region = "Region5",
-//                            District = "District5",
-//                            City = "City5",
-//                            Street = "Street5",
-//                            BuildingNumber = "BuildingNumber5",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        ActualAddress = new AddressDto
-//                        {
-//                            Id = 6,
-//                            Region = "Region6",
-//                            District = "District6",
-//                            City = "City6",
-//                            Street = "Street6",
-//                            BuildingNumber = "BuildingNumber6",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                },
-//                new ProviderDto()
-//                {
-//                        Id = 4,
-//                        FullTitle = "Title4",
-//                        ShortTitle = "ShortTitle4",
-//                        Website = "Website4",
-//                        Facebook = "Facebook4",
-//                        Email = "user4@example.com",
-//                        Instagram = "Instagram4",
-//                        Description = "Description4",
-//                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
-//                        EdrpouIpn = "10045678",
-//                        PhoneNumber = "1111111111",
-//                        Founder = "Founder",
-//                        Ownership = OwnershipType.Private,
-//                        Type = ProviderType.TOV,
-//                        Status = false,
-//                        UserId = "de909f35-5eb7-4BBa-bda8-40a5bfda96a6",
-//                        LegalAddress = new AddressDto
-//                        {
-//                            Id = 7,
-//                            Region = "Region7",
-//                            District = "District7",
-//                            City = "City7",
-//                            Street = "Street7",
-//                            BuildingNumber = "BuildingNumber7",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        ActualAddress = new AddressDto
-//                        {
-//                            Id = 8,
-//                            Region = "Region8",
-//                            District = "District8",
-//                            City = "City8",
-//                            Street = "Street8",
-//                            BuildingNumber = "BuildingNumber8",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                },
-//                new ProviderDto()
-//                {
-//                        Id = 5,
-//                        FullTitle = "Title5",
-//                        ShortTitle = "ShortTitle5",
-//                        Website = "Website5",
-//                        Facebook = "Facebook5",
-//                        Email = "user5@example.com",
-//                        Instagram = "Instagram5",
-//                        Description = "Description5",
-//                        DirectorDateOfBirth = new DateTime(1975, month: 10, 5),
-//                        EdrpouIpn = "12374678",
-//                        PhoneNumber = "1111111111",
-//                        Founder = "Founder",
-//                        Ownership = OwnershipType.Private,
-//                        Type = ProviderType.TOV,
-//                        Status = false,
-//                        UserId = "de909f35-5eb7-4b7a-bda8-40a5bfdaEEa6",
-//                        LegalAddress = new AddressDto
-//                        {
-//                            Id = 9,
-//                            Region = "Region9",
-//                            District = "District9",
-//                            City = "City9",
-//                            Street = "Street9",
-//                            BuildingNumber = "BuildingNumber9",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                        ActualAddress = new AddressDto
-//                        {
-//                            Id = 10,
-//                            Region = "Region10",
-//                            District = "District10",
-//                            City = "City10",
-//                            Street = "Street10",
-//                            BuildingNumber = "BuildingNumber10",
-//                            Latitude = 0,
-//                            Longitude = 0,
-//                        },
-//                },
-//            };
-//        }
-//    }
-//}
+            // Assert
+            Assert.IsInstanceOf<NoContentResult>(result);
+        }
+
+        [Test]
+        public async Task DeleteProvider_WhenIdIsInvalid_ReturnsBadRequestObjectResultAsync()
+        {
+            // Arrange
+            var guid = Guid.NewGuid();
+            var expected = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
+            providerService.Setup(x => x.Delete(guid)).ThrowsAsync(new ArgumentNullException());
+
+            // Act
+            var result = await providerController.Delete(guid).ConfigureAwait(false);
+
+            // Assert
+            result.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
+        }
+
+
+
+
+    }
+}
+

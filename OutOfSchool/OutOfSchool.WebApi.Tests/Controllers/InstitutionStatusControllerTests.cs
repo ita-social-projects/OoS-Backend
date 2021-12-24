@@ -7,8 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Tests.Common;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -19,36 +22,35 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private InstitutionStatusController controller;
         private Mock<IStatusService> service;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
-
-        private IEnumerable<InstitutionStatusDTO> institutionStatuses;
-        private InstitutionStatusDTO institutionStatus;
-
-
+        private IEnumerable<InstitutionStatus> institutionStatuses;
+        private InstitutionStatus institutionStatus;
 
         [SetUp]
         public void Setup()
         {
+            // setup controller
             service = new Mock<IStatusService>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
-
+            var localizer = new Mock<IStringLocalizer<SharedResource>>();
             controller = new InstitutionStatusController(service.Object, localizer.Object);
 
-            institutionStatuses = FakeInstitutionStatuses();
-            institutionStatus = FakeInstitutionStatus();
+            // generate random collection of statuses and single entity to use in test cases.
+            institutionStatuses = InstitutionStatusGenerator.Generate(5);
+            institutionStatus = InstitutionStatusGenerator.Generate();
         }
 
         [Test]
         public async Task GetInstitutionStatuses_WhenCalled_ReturnsOkResultObject()
         {
             // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(institutionStatuses);
+            var expected = institutionStatuses.Select(x => x.ToModel());
+
+            service.Setup(x => x.GetAll()).ReturnsAsync(institutionStatuses.Select(x => x.ToModel()));
 
             // Act
             var response = await controller.Get().ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseOkAndValidValue<IEnumerable<InstitutionStatusDTO>>();
+            response.AssertResponseOkResultAndValidateValue(expected);
         }
 
         [Test]
@@ -65,149 +67,133 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task GetInstitutionStatusById_WhenIdIsValid_ReturnOkResultObject(long id)
+        public async Task GetInstitutionStatusById_WhenIdIsValid_ReturnOkResultObject()
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id));
+            var existingId = TestDataHelper.RandomItem(institutionStatuses as ICollection<InstitutionStatus>).Id;
+            var expected = institutionStatuses.Where(x => x.Id == existingId)
+                .First().ToModel();
+
+            service.Setup(x => x.GetById(existingId))
+                .ReturnsAsync(institutionStatuses.First(x => x.Id == existingId)
+                .ToModel());
 
             // Act
-            var response = await controller.GetById(id).ConfigureAwait(false);
+            var response = await controller.GetById(existingId).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseOkAndValidValue<InstitutionStatusDTO>();
+            response.AssertResponseOkResultAndValidateValue(expected);
         }
 
         [Test]
-        [TestCase(-50)]
-        public async Task GetInstitutionStatusById_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessage(long id)
+        public async Task GetInstitutionStatusById_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessage()
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == id));
+            var invalidId = TestDataHelper.GetNegativeInt();
+            var exceptedResponse = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
+            service.Setup(x => x.GetById(invalidId))
+                .ReturnsAsync(institutionStatuses.SingleOrDefault(x => x.Id == invalidId)
+                .ToModel());
 
             // Act
-            var response = await controller.GetById(id).ConfigureAwait(false);
+            var response = await controller.GetById(invalidId).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(exceptedResponse);
         }
 
         [Test]
-        [TestCase(100)]
-        public async Task GetById_WhenIdDoesntExist_ReturnsBadRequestWithExceptionMessage(long id)
+        public async Task GetById_WhenIdDoesntExist_ReturnsBadRequestWithExceptionMessage()
         {
             // Arrange
-            service.Setup(x => x.GetById(id)).Throws<ArgumentOutOfRangeException>();
+            var notExistId = TestDataHelper.GetPositiveInt(institutionStatuses.Count(), int.MaxValue);
+            var expectedResponse = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
+
+            service.Setup(x => x.GetById(notExistId)).Throws<ArgumentOutOfRangeException>();
 
             // Act
-            var response = await controller.GetById(id).ConfigureAwait(false);
+            var response = await controller.GetById(notExistId).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expectedResponse);
         }
 
         [Test]
         public async Task CreateInstitutionStatus_WhenModelIsValid_ReturnsCreatedAtActionResult()
         {
             // Arrange
-            service.Setup(x => x.Create(institutionStatus)).ReturnsAsync(institutionStatus);
+            var expected = institutionStatus.ToModel();
+            var expectedResponse = new CreatedAtActionResult(
+                nameof(controller.GetById),
+                nameof(controller),
+                new { id = expected.Id },
+                expected);
+            service.Setup(x => x.Create(expected)).ReturnsAsync(institutionStatus.ToModel());
 
             // Act
-            var response = await controller.Create(institutionStatus).ConfigureAwait(false);
+            var response = await controller.Create(expected).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<CreatedAtActionResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<CreatedAtActionResult>(expectedResponse);
         }
 
         [Test]
         public async Task UpdateInstitutionStatus_WhenModelIsValid_ReturnsOkObjectResult()
         {
             // Arrange
-            service.Setup(x => x.Update(institutionStatus)).ReturnsAsync(institutionStatus);
+            var expected = institutionStatus.ToModel();
+            service.Setup(x => x.Update(expected)).ReturnsAsync(institutionStatus.ToModel());
 
             // Act
-            var response = await controller.Update(institutionStatus).ConfigureAwait(false);
+            var response = await controller.Update(expected).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseOkAndValidValue<InstitutionStatusDTO>();
+            response.AssertResponseOkResultAndValidateValue(expected);
         }
 
 
         [Test]
-        [TestCase(1)]
-        public async Task DeleteInstitutionStatus_WhenIdIsValid_ReturnsNoContentResult(long id)
+        public async Task DeleteInstitutionStatus_WhenIdIsValid_ReturnsNoContentResult()
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            var idToDelete = TestDataHelper.RandomItem(institutionStatuses as ICollection<InstitutionStatus>).Id;
+            service.Setup(x => x.Delete(idToDelete));
 
             // Act
-            var response = await controller.Delete(id);
+            var response = await controller.Delete(idToDelete);
 
             // Assert
             Assert.IsInstanceOf<NoContentResult>(response);
         }
 
         [Test]
-        [TestCase(-50)]
-        public async Task Delete_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessageAsync(long id)
+        public async Task Delete_WhenIdIsInvalid_ReturnsBadRequestWithExceptionMessageAsync()
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            var invalidId = TestDataHelper.GetNegativeInt();
+            var expected = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
+            service.Setup(x => x.Delete(invalidId));
 
             // Act
-            var response = await controller.Delete(id).ConfigureAwait(false);
+            var response = await controller.Delete(invalidId).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
         }
 
         [Test]
-        [TestCase(10)]
-        public async Task DeleteInstitutionStatus_WhenIdDoesntExists_ReturnsBadRequestWithMessage(long id)
+        public async Task DeleteInstitutionStatus_WhenIdDoesntExists_ReturnsBadRequestWithMessage()
         {
             // Arrange
-            service.Setup(x => x.Delete(id)).Throws<ArgumentOutOfRangeException>();
+            var notExistId = TestDataHelper.GetPositiveInt(institutionStatuses.Count(), int.MaxValue);
+            var expected = new BadRequestObjectResult(TestDataHelper.GetRandomWords());
+            service.Setup(x => x.Delete(notExistId)).Throws<ArgumentOutOfRangeException>();
 
             // Act
-            var response = await controller.Delete(id).ConfigureAwait(false);
+            var response = await controller.Delete(notExistId).ConfigureAwait(false);
 
             // Assert
-            response.GetAssertedResponseValidateValueNotEmpty<BadRequestObjectResult>();
-        }
-
-
-        /// <summary>
-        /// faking data for testing.
-        /// </summary>
-        private InstitutionStatusDTO FakeInstitutionStatus()
-        {
-            return new InstitutionStatusDTO()
-            {
-                Id = 1,
-                Name = "Test",
-            };
-        }
-
-        private IEnumerable<InstitutionStatusDTO> FakeInstitutionStatuses()
-        {
-            return new List<InstitutionStatusDTO>()
-            {
-                new InstitutionStatusDTO()
-                {
-                Id = 1,
-                Name = "NoName",
-                },
-                new InstitutionStatusDTO()
-                {
-                Id = 2,
-                Name = "HaveName",
-                },
-                new InstitutionStatusDTO()
-                {
-                Id = 3,
-                Name = "MissName",
-                },
-            };
+            response.AssertExpectedResponseTypeAndCheckDataInside<BadRequestObjectResult>(expected);
         }
     }
 }
