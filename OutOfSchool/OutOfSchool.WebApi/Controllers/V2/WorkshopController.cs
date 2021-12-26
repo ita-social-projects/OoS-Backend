@@ -32,7 +32,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
     {
         private readonly IWorkshopServicesCombiner combinedWorkshopService;
         private readonly IProviderService providerService;
-        private readonly IImageService imageService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
         private readonly CommonImagesRequestLimits commonImagesRequestLimits; // will be moved into a common class
@@ -44,12 +43,10 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="options">Application default values.</param>
-        /// <param name="imageService">Service for operations with images.</param>
         /// <param name="commonImagesRequestLimits">Describes common limits of requests with images.</param>
         public WorkshopController(
             IWorkshopServicesCombiner combinedWorkshopService,
             IProviderService providerService,
-            IImageService imageService,
             IStringLocalizer<SharedResource> localizer,
             IOptions<AppDefaultsConfig> options,
             IOptions<CommonImagesRequestLimits> commonImagesRequestLimits)
@@ -57,7 +54,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
-            this.imageService = imageService;
             this.options = options.Value;
             this.commonImagesRequestLimits = commonImagesRequestLimits.Value;
         }
@@ -205,8 +201,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
                     });
             }
 
-            var results = await imageService.UploadManyWorkshopImagesWithUpdatingEntityAsync(workshop.Id, dto.ImageFiles)
-                .ConfigureAwait(false);
+            var results = await combinedWorkshopService.UploadImagesAsync(workshop.Id, dto.ImageFiles).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),

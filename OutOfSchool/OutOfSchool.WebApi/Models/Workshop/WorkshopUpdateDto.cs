@@ -8,6 +8,6 @@ namespace OutOfSchool.WebApi.Models.Workshop
 {
     public class WorkshopUpdateDto : WorkshopCreationDto
     {
-        public ICollection<Guid> ImageIds { get; set; }
+        public ICollection<string> ImageIds { get; set; }
     }
 }

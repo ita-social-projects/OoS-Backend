@@ -6,6 +6,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
@@ -22,23 +23,19 @@ namespace OutOfSchool.WebApi.Services.Images
         Task<Result<ImageDto>> GetByIdAsync(string imageId);
 
         /// <summary>
-        /// Uploads images for the chosen workshop and then updates it.
+        /// Uploads images into a storage.
         /// </summary>
-        /// <param name="workshopId">It's an Id of Workshop.</param>
+        /// <typeparam name="TEntity">The entity you wanna validate image specs.</typeparam>
         /// <param name="fileCollection">Contains images to upload.</param>
-        /// <returns>The instance of <see cref="Dictionary{TKey,TValue}"/> that contains results (type of <see cref="OperationResult"/>) for uploading any image.
-        /// This is the pair of keys from fileCollection and appropriate OperationResult.
-        /// It returns the pair of (-1, <see cref="OperationResult"/>) if there are no ways to update the current workshop.</returns>
-        Task<MultipleKeyValueOperationResult> UploadManyWorkshopImagesWithUpdatingEntityAsync(
-            Guid workshopId,
-            List<IFormFile> fileCollection);
+        /// <returns>The instance of <see cref="MultipleKeyValueOperationResult"/>.</returns>
+        Task<ImageUploadingResult> UploadManyImagesAsync<TEntity>(List<IFormFile> fileCollection);
 
         /// <summary>
-        /// Uploads the given image for the chosen workshop and then updates it.
+        /// Uploads the given image into a storage.
         /// </summary>
-        /// <param name="workshopId">It's an Id of Workshop.</param>
+        /// <typeparam name="TEntity">The entity you wanna validate image specs.</typeparam>
         /// <param name="imageDto">Contains the image.</param>
-        /// <returns>The instance of <see cref="OperationResult"/> that describes the result of uploading.</returns>
-        Task<OperationResult> UploadWorkshopImageWithUpdatingEntityAsync(Guid workshopId, ImageDto imageDto);
+        /// <returns>The instance of <see cref="Result{T}"/> that describes the result of uploading.</returns>
+        Task<Result<string>> UploadImageAsync<TEntity>(ImageDto imageDto);
     }
 }

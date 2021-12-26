@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <inheritdoc/>
         public OperationResult Validate(Stream stream)
         {
-            logger.LogInformation("Started validation process for stream.");
+            logger.LogDebug("Started validation process for stream.");
             if (!ValidateImageSize(stream.Length))
             {
                 return OperationResult.Failed(new OperationError {Code = ImageResourceCodes.InvalidImageSizeError, Description = ResourceInstances.ImageResource.InvalidImageSizeError });
@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Services.Images
                     return OperationResult.Failed(new OperationError {Code = ImageResourceCodes.InvalidImageResolutionError, Description = ResourceInstances.ImageResource.InvalidImageResolutionError});
                 }
 
-                logger.LogInformation("Validation process was successfully finished.");
+                logger.LogDebug("Validation process was successfully finished.");
                 return OperationResult.Success;
             }
             catch (ArgumentException ex)

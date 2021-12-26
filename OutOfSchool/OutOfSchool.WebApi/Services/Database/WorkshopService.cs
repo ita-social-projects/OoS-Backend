@@ -5,15 +5,20 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using H3Lib;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
@@ -31,6 +36,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IRatingService ratingService;
         private readonly ILogger<WorkshopService> logger;
         private readonly IMapper mapper;
+        private readonly IImageService imageService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -40,18 +46,21 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Automapper DI service.</param>
+        /// <param name="imageService">Image service.</param>
         public WorkshopService(
             IWorkshopRepository workshopRepository,
             IClassRepository classRepository,
             IRatingService ratingService,
             ILogger<WorkshopService> logger,
-            IMapper mapper)
+            IMapper mapper,
+            IImageService imageService)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
             this.ratingService = ratingService;
             this.logger = logger;
             this.mapper = mapper;
+            this.imageService = imageService;
         }
 
         /// <inheritdoc/>
@@ -286,6 +295,50 @@ namespace OutOfSchool.WebApi.Services
         public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
         {
             return await workshopRepository.GetByIds(ids).ConfigureAwait(false);
+        }
+
+        public async Task<MultipleKeyValueOperationResult> UploadImagesAsync(Guid entityId, List<IFormFile> images)
+        {
+            if (images == null || images.Count <= 0)
+            {
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.NoImagesForUploading };
+            }
+
+            var workshop = (await workshopRepository.GetByFilter(x => x.Id == entityId, nameof(Workshop.WorkshopImages)).ConfigureAwait(false)).FirstOrDefault();
+            if (workshop == null)
+            {
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.WorkshopEntityNotFoundWhileUploadingError };
+            }
+
+            var imageUploadingResult = await imageService.UploadManyImagesAsync<Workshop>(images).ConfigureAwait(false);
+            if (imageUploadingResult.SavedIds == null || imageUploadingResult.MultipleKeyValueOperationResult == null)
+            {
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadImagesError };
+            }
+
+            if (imageUploadingResult.SavedIds.Count > 0)
+            {
+                try
+                {
+                    logger.LogDebug($"Started updating workshop [id = {entityId}] with uploaded images.");
+                    imageUploadingResult.SavedIds.ForEach(id => workshop.WorkshopImages.Add(new Image<Workshop> { ExternalStorageId = id }));
+                    await workshopRepository.Update(workshop).ConfigureAwait(false);
+                    logger.LogDebug($"Workshop [id = {entityId}] was successfully updated.");
+                }
+                catch (Exception ex)
+                {
+                    // TODO: mark image ids in order to delete
+                    logger.LogError(ex, $"Cannot update workshop with id = {entityId} because of {ex.Message}");
+                    return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadImagesError };
+                }
+            }
+
+            return imageUploadingResult.MultipleKeyValueOperationResult;
+        }
+
+        public async Task<OperationResult> RemoveImagesByIdsAsync(Guid entityId, IEnumerable<string> imageIds)
+        {
+            throw new NotImplementedException();
         }
 
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)

@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -144,6 +150,22 @@ namespace OutOfSchool.WebApi.Services
             var workshopCards = await workshopService.GetByProviderId(id).ConfigureAwait(false);
 
             return workshopCards.ToList();
+        }
+
+        public async Task<MultipleKeyValueOperationResult> UploadImagesAsync(Guid entityId, List<IFormFile> images)
+        {
+            if (images == null || images.Count <= 0)
+            {
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.NoImagesForUploading };
+            }
+
+            var multipleResult = await workshopService.UploadImagesAsync(entityId, images).ConfigureAwait(false);
+            return multipleResult;
+        }
+
+        public async Task<OperationResult> RemoveImagesByIdsAsync(Guid entityId, IEnumerable<string> imageIds)
+        {
+            throw new NotImplementedException();
         }
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
