@@ -149,7 +149,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.WorkshopAddNew)]
+        //[HasPermission(Permissions.WorkshopAddNew)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -160,10 +160,14 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto) // TODO: validate by request size
         {
-            // TODO: Also should check for AddressDto == null
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            if (dto.Address == null)
+            {
+                return BadRequest("Address is required here."); // TODO: add localizer
             }
 
             if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
@@ -171,7 +175,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return StatusCode(StatusCodes.Status413PayloadTooLarge);
             }
 
-            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
                 return StatusCode(403, "Forbidden to create workshops for another providers.");
@@ -228,28 +232,39 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
+        /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.WorkshopEdit)]
+        //[HasPermission(Permissions.WorkshopEdit)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(WorkshopDTO dto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Update([FromForm] WorkshopUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
-            if (!userHasRights)
+            if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
             {
-                return StatusCode(403, "Forbidden to update workshops for another providers.");
+                return StatusCode(StatusCodes.Status413PayloadTooLarge);
             }
 
-            return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
+            var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            if (!userHasRights)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
+            }
+
+            var results = await combinedWorkshopService.ChangeImagesAsync(dto, dto.ImageFiles).ConfigureAwait(false);
+            var updatedWorkshop = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
+
+            return Ok();
         }
 
         /// <summary>

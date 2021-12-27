@@ -13,6 +13,7 @@ using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Images;
 
@@ -159,13 +160,24 @@ namespace OutOfSchool.WebApi.Services
                 return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.NoImagesForUploading };
             }
 
-            var multipleResult = await workshopService.UploadImagesAsync(entityId, images).ConfigureAwait(false);
-            return multipleResult;
+            return await workshopService.UploadImagesAsync(entityId, images).ConfigureAwait(false);
         }
 
-        public async Task<OperationResult> RemoveImagesByIdsAsync(Guid entityId, IEnumerable<string> imageIds)
+        public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopDTO dto, List<IFormFile> images)
         {
-            throw new NotImplementedException();
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            return await workshopService.ChangeImagesAsync(dto, images).ConfigureAwait(false);
+        }
+
+        public async Task<MultipleKeyValueOperationResult> RemoveImagesAsync(Guid entityId, List<string> imageIds)
+        {
+            if (imageIds == null || imageIds.Count <= 0)
+            {
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.NoImagesForDeleting };
+            }
+
+            return await workshopService.RemoveImagesAsync(entityId, imageIds).ConfigureAwait(false);
         }
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)

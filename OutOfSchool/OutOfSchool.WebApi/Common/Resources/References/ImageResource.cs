@@ -21,6 +21,7 @@ namespace OutOfSchool.WebApi.Common.Resources.References
         }
 
         internal string UploadImagesError => GetResourceString(ImageResourceCodes.UploadImagesError);
+        internal string RemoveImagesError => GetResourceString(ImageResourceCodes.RemoveImagesError);
 
         internal string ImageStorageError => GetResourceString(ImageResourceCodes.ImageStorageError);
 
@@ -34,8 +35,11 @@ namespace OutOfSchool.WebApi.Common.Resources.References
 
         internal string InvalidImageResolutionError => GetResourceString(ImageResourceCodes.InvalidImageResolutionError);
 
-        internal string WorkshopEntityNotFoundWhileUploadingError => GetResourceString(ImageResourceCodes.WorkshopEntityNotFoundWhileUploadingError);
+        internal string WorkshopEntityNotFoundError => GetResourceString(ImageResourceCodes.WorkshopEntityNotFoundError);
 
         internal string NoImagesForUploading => GetResourceString(ImageResourceCodes.NoImagesForUploading);
+
+        internal string NoImagesForDeleting => GetResourceString(ImageResourceCodes.NoImagesForDeleting);
+        internal string RemoveImageError => GetResourceString(ImageResourceCodes.RemoveImageError);
     }
 }

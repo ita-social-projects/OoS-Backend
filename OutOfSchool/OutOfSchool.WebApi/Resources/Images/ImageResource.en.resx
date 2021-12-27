@@ -129,11 +129,20 @@
   <data name="InvalidImageSizeError" xml:space="preserve">
     <value>Invalid image size</value>
   </data>
+  <data name="NoImagesForDeleting" xml:space="preserve">
+    <value>There were no given images for deleting</value>
+  </data>
   <data name="NoImagesForUploading" xml:space="preserve">
     <value>There're no images for uploading</value>
   </data>
   <data name="NotFoundError" xml:space="preserve">
     <value>Image was not found</value>
+  </data>
+  <data name="RemoveImageError" xml:space="preserve">
+    <value>Unreal to delete this image</value>
+  </data>
+  <data name="RemoveImagesError" xml:space="preserve">
+    <value>Sorry, we were not able to delete images</value>
   </data>
   <data name="UnexpectedValidationError" xml:space="preserve">
     <value>Please, be sure that your image is correct</value>
@@ -141,7 +150,7 @@
   <data name="UploadImagesError" xml:space="preserve">
     <value>An error while uploading images</value>
   </data>
-  <data name="WorkshopEntityNotFoundWhileUploadingError" xml:space="preserve">
-    <value>Unreal to find a workshop for uploading images</value>
+  <data name="WorkshopEntityNotFoundError" xml:space="preserve">
+    <value>Unreal to find a workshop for images this operation</value>
   </data>
 </root>

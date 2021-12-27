@@ -129,11 +129,20 @@
   <data name="InvalidImageSizeError" xml:space="preserve">
     <value>Некоректний розмір фото</value>
   </data>
+  <data name="NoImagesForDeleting" xml:space="preserve">
+    <value>Немає зображень для видалення</value>
+  </data>
   <data name="NoImagesForUploading" xml:space="preserve">
     <value>Немає зображень для завантаження</value>
   </data>
   <data name="NotFoundError" xml:space="preserve">
     <value>Зображення не знайдено</value>
+  </data>
+  <data name="RemoveImageError" xml:space="preserve">
+    <value>Неможливо видалити зображення</value>
+  </data>
+  <data name="RemoveImagesError" xml:space="preserve">
+    <value>Сталася помилка під час видалення зображень</value>
   </data>
   <data name="UnexpectedValidationError" xml:space="preserve">
     <value>Будь-ласка, переконайтесь у коректності фото</value>
@@ -141,7 +150,7 @@
   <data name="UploadImagesError" xml:space="preserve">
     <value>Виникла помилка під час завантаження</value>
   </data>
-  <data name="WorkshopEntityNotFoundWhileUploadingError" xml:space="preserve">
-    <value>Неможливо знайти гурток для завантаження зображення</value>
+  <data name="WorkshopEntityNotFoundError" xml:space="preserve">
+    <value>Неможливо знайти гурток для цієї операції</value>
   </data>
 </root>

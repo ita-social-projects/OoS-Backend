@@ -37,5 +37,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="imageDto">Contains the image.</param>
         /// <returns>The instance of <see cref="Result{T}"/> that describes the result of uploading.</returns>
         Task<Result<string>> UploadImageAsync<TEntity>(ImageDto imageDto);
+
+        Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(List<string> imageIds);
     }
 }

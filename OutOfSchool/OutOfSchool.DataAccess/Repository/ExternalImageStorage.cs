@@ -61,5 +61,18 @@ namespace OutOfSchool.Services.Repository
                 throw new ImageStorageException(ex);
             }
         }
+
+        public async Task DeleteImageAsync(string imageId, CancellationToken cancellationToken = default)
+        {
+            _ = imageId ?? throw new ArgumentNullException(nameof(imageId));
+            try
+            {
+                await gridFsBucket.DeleteAsync(new ObjectId(imageId), cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw new ImageStorageException(ex);
+            }
+        }
     }
 }

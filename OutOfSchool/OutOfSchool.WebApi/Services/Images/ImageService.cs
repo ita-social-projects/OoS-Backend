@@ -85,7 +85,7 @@ namespace OutOfSchool.WebApi.Services.Images
             var validator = GetValidator<TEntity>();
 
             var savingExternalImageIds = new List<string>();
-            var uploadImageResults = new MultipleKeyValueOperationResult();
+            var uploadingImagesResults = new MultipleKeyValueOperationResult();
 
             try
             {
@@ -99,14 +99,14 @@ namespace OutOfSchool.WebApi.Services.Images
                     if (!validationResult.Succeeded)
                     {
                         logger.LogError($"Image with {nameof(fileCollection)} id = {i} isn't valid: {string.Join(",", validationResult.Errors)}");
-                        uploadImageResults.Results.Add(i, validationResult);
+                        uploadingImagesResults.Results.Add(i, validationResult);
                         continue;
                     }
 
                     logger.LogDebug(
                         $"Started uploading process into an external storage for {nameof(fileCollection)} id number {i}.");
                     var imageUploadResult = await UploadImageProcessAsync(stream, fileCollection[i].ContentType).ConfigureAwait(false);
-                    uploadImageResults.Results.Add(i, imageUploadResult.OperationResult);
+                    uploadingImagesResults.Results.Add(i, imageUploadResult.OperationResult);
                     if (imageUploadResult.Succeeded)
                     {
                         logger.LogDebug(
@@ -124,7 +124,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
             logger.LogInformation($"Uploading {fileCollection.Count} images was finished.");
             return new ImageUploadingResult
-                { SavedIds = savingExternalImageIds, MultipleKeyValueOperationResult = uploadImageResults };
+                { SavedIds = savingExternalImageIds, MultipleKeyValueOperationResult = uploadingImagesResults };
         }
 
         /// <inheritdoc/>
@@ -170,9 +170,32 @@ namespace OutOfSchool.WebApi.Services.Images
             return Result<string>.Success(externalImageId);
         }
 
-        public async Task<OperationResult> RemoveWorkshopImagesByIdsAsync(IEnumerable<string> ids)
+        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(List<string> imageIds)
         {
-            throw new NotImplementedException();
+            if (imageIds == null || imageIds.Count == 0)
+            {
+                return new MultipleKeyValueOperationResult
+                    { GeneralResultMessage = ResourceInstances.ImageResource.NoImagesForUploading };
+            }
+
+            var removingImagesResults = new MultipleKeyValueOperationResult();
+
+            for (short i = 0; i < imageIds.Count; i++)
+            {
+                try
+                {
+                    await externalStorage.DeleteImageAsync(imageIds[i]).ConfigureAwait(false);
+                    logger.LogDebug($"Image with an external id = {imageIds[i]} was successfully deleted.");
+                    removingImagesResults.Results.Add(i, OperationResult.Success);
+                }
+                catch (ImageStorageException ex)
+                {
+                    logger.LogError(ex, $"Unreal to delete image with an external id = {imageIds[i]}.");
+                    removingImagesResults.Results.Add(i, OperationResult.Failed(new OperationError{Code = ImageResourceCodes.RemoveImageError, Description = ResourceInstances.ImageResource.RemoveImageError}));
+                }
+            }
+
+            return removingImagesResults;
         }
 
         private async Task<Result<string>> UploadImageProcessAsync(Stream contentStream, string contentType)
