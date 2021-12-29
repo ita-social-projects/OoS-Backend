@@ -205,7 +205,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
                     });
             }
 
-            var results = await combinedWorkshopService.UploadImagesAsync(workshop.Id, dto.ImageFiles).ConfigureAwait(false);
+            var results = await combinedWorkshopService.UploadManyImagesAsync(workshop.Id, dto.ImageFiles).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -261,7 +261,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
             }
 
-            var results = await combinedWorkshopService.ChangeImagesAsync(dto, dto.ImageFiles).ConfigureAwait(false);
             var updatedWorkshop = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
             return Ok();

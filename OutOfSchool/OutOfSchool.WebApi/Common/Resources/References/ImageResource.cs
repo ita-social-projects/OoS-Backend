@@ -4,7 +4,6 @@ using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
-using OutOfSchool.WebApi.Common.Resources.Codes;
 
 namespace OutOfSchool.WebApi.Common.Resources.References
 {
@@ -20,26 +19,28 @@ namespace OutOfSchool.WebApi.Common.Resources.References
         {
         }
 
-        internal string UploadImagesError => GetResourceString(ImageResourceCodes.UploadImagesError);
-        internal string RemoveImagesError => GetResourceString(ImageResourceCodes.RemoveImagesError);
+        internal string DefaultError => GetResourceString(nameof(DefaultError));
 
-        internal string ImageStorageError => GetResourceString(ImageResourceCodes.ImageStorageError);
+        internal string UploadingError => GetResourceString(nameof(UploadingError));
 
-        internal string NotFoundError => GetResourceString(ImageResourceCodes.NotFoundError);
+        internal string RemovingError => GetResourceString(nameof(RemovingError));
 
-        internal string UnexpectedValidationError => GetResourceString(ImageResourceCodes.UnexpectedValidationError);
+        internal string ImageStorageError => GetResourceString(nameof(ImageStorageError));
 
-        internal string InvalidImageSizeError => GetResourceString(ImageResourceCodes.InvalidImageSizeError);
+        internal string ImageNotFoundError => GetResourceString(nameof(ImageNotFoundError));
 
-        internal string InvalidImageFormatError => GetResourceString(ImageResourceCodes.InvalidImageFormatError);
+        internal string UnexpectedValidationError => GetResourceString(nameof(UnexpectedValidationError));
 
-        internal string InvalidImageResolutionError => GetResourceString(ImageResourceCodes.InvalidImageResolutionError);
+        internal string InvalidSizeError => GetResourceString(nameof(InvalidSizeError));
 
-        internal string WorkshopEntityNotFoundError => GetResourceString(ImageResourceCodes.WorkshopEntityNotFoundError);
+        internal string InvalidFormatError => GetResourceString(nameof(InvalidFormatError));
 
-        internal string NoImagesForUploading => GetResourceString(ImageResourceCodes.NoImagesForUploading);
+        internal string InvalidResolutionError => GetResourceString(nameof(InvalidResolutionError));
 
-        internal string NoImagesForDeleting => GetResourceString(ImageResourceCodes.NoImagesForDeleting);
-        internal string RemoveImageError => GetResourceString(ImageResourceCodes.RemoveImageError);
+        internal string EntityNotFoundError => GetResourceString(nameof(EntityNotFoundError));
+
+        internal string NoGivenImagesError => GetResourceString(nameof(NoGivenImagesError));
+
+        internal string UpdateEntityError => GetResourceString(nameof(UpdateEntityError));
     }
 }

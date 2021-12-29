@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.Resources.Describers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 
@@ -15,6 +16,8 @@ namespace OutOfSchool.WebApi.Services.Images
     /// </summary>
     public interface IImageService
     {
+        ImagesErrorDescriber ErrorDescriber { get; }
+
         /// <summary>
         /// Gets image by id.
         /// </summary>
@@ -34,10 +37,12 @@ namespace OutOfSchool.WebApi.Services.Images
         /// Uploads the given image into a storage.
         /// </summary>
         /// <typeparam name="TEntity">The entity you wanna validate image specs.</typeparam>
-        /// <param name="imageDto">Contains the image.</param>
+        /// <param name="image">Contains the image.</param>
         /// <returns>The instance of <see cref="Result{T}"/> that describes the result of uploading.</returns>
-        Task<Result<string>> UploadImageAsync<TEntity>(ImageDto imageDto);
+        Task<Result<string>> UploadImageAsync<TEntity>(IFormFile image);
 
-        Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(List<string> imageIds);
+        Task<ImageRemovingResult> RemoveManyImagesAsync(List<string> imageIds);
+
+        Task<OperationResult> RemoveImageAsync(string imageId);
     }
 }

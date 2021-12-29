@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
-using OutOfSchool.WebApi.Common.Resources.Codes;
+using OutOfSchool.WebApi.Common.Resources.Describers;
 using OutOfSchool.WebApi.Config.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
@@ -21,10 +21,13 @@ namespace OutOfSchool.WebApi.Services.Images
 
         private readonly ILogger<ImageValidatorService<TEntity>> logger;
 
-        public ImageValidatorService(IOptions<ImageOptions<TEntity>> options, ILogger<ImageValidatorService<TEntity>> logger)
+        private readonly ImagesErrorDescriber errorDescriber;
+
+        public ImageValidatorService(IOptions<ImageOptions<TEntity>> options, ILogger<ImageValidatorService<TEntity>> logger, ImagesErrorDescriber errorDescriber)
         {
             this.options = options.Value;
             this.logger = logger;
+            this.errorDescriber = errorDescriber;
         }
 
         /// <inheritdoc/>
@@ -33,7 +36,7 @@ namespace OutOfSchool.WebApi.Services.Images
             logger.LogDebug("Started validation process for stream.");
             if (!ValidateImageSize(stream.Length))
             {
-                return OperationResult.Failed(new OperationError {Code = ImageResourceCodes.InvalidImageSizeError, Description = ResourceInstances.ImageResource.InvalidImageSizeError });
+                return OperationResult.Failed(errorDescriber.InvalidSizeError());
             }
 
             try
@@ -41,12 +44,12 @@ namespace OutOfSchool.WebApi.Services.Images
                 using var image = Image.FromStream(stream); // check disposing, using memory
                 if (!ValidateImageFormat(image.RawFormat.ToString()))
                 {
-                    return OperationResult.Failed(new OperationError {Code = ImageResourceCodes.InvalidImageFormatError, Description = ResourceInstances.ImageResource.InvalidImageFormatError});
+                    return OperationResult.Failed(errorDescriber.InvalidFormatError());
                 }
 
                 if (!ValidateImageResolution(image.Width, image.Height))
                 {
-                    return OperationResult.Failed(new OperationError {Code = ImageResourceCodes.InvalidImageResolutionError, Description = ResourceInstances.ImageResource.InvalidImageResolutionError});
+                    return OperationResult.Failed(errorDescriber.InvalidResolutionError());
                 }
 
                 logger.LogDebug("Validation process was successfully finished.");
@@ -55,12 +58,12 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (ArgumentException ex)
             {
                 logger.LogError(ex, $"Unable to validate stream {ex.Message}");
-                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.InvalidImageFormatError, Description = ResourceInstances.ImageResource.InvalidImageFormatError });
+                return OperationResult.Failed(errorDescriber.InvalidFormatError());
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Unable to validate stream {ex.Message}");
-                return OperationResult.Failed(new OperationError {Code = ImageResourceCodes.UnexpectedValidationError, Description = ResourceInstances.ImageResource.UnexpectedValidationError});
+                return OperationResult.Failed(errorDescriber.UnexpectedValidationError());
             }
         }
 

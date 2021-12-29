@@ -153,32 +153,20 @@ namespace OutOfSchool.WebApi.Services
             return workshopCards.ToList();
         }
 
-        public async Task<MultipleKeyValueOperationResult> UploadImagesAsync(Guid entityId, List<IFormFile> images)
-        {
-            if (images == null || images.Count <= 0)
-            {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.NoImagesForUploading };
-            }
+        public async Task<OperationResult> UploadImageAsync(Guid entityId, IFormFile image) =>
+            await workshopService.UploadImageAsync(entityId, image).ConfigureAwait(false);
 
-            return await workshopService.UploadImagesAsync(entityId, images).ConfigureAwait(false);
-        }
+        public async Task<OperationResult> RemoveImageAsync(Guid entityId, string imageId) =>
+            await workshopService.RemoveImageAsync(entityId, imageId).ConfigureAwait(false);
 
-        public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopDTO dto, List<IFormFile> images)
-        {
-            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, List<IFormFile> images) =>
+            await workshopService.UploadManyImagesAsync(entityId, images).ConfigureAwait(false);
 
-            return await workshopService.ChangeImagesAsync(dto, images).ConfigureAwait(false);
-        }
+        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, List<string> imageIds) =>
+            await workshopService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
 
-        public async Task<MultipleKeyValueOperationResult> RemoveImagesAsync(Guid entityId, List<string> imageIds)
-        {
-            if (imageIds == null || imageIds.Count <= 0)
-            {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.NoImagesForDeleting };
-            }
-
-            return await workshopService.RemoveImagesAsync(entityId, imageIds).ConfigureAwait(false);
-        }
+        public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopUpdateDto dto) =>
+            await workshopService.ChangeImagesAsync(dto).ConfigureAwait(false);
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {

@@ -7,12 +7,14 @@ using OutOfSchool.WebApi.Models.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
-    public interface IImageInteractionService<in TKey, in TEntity>
+    public interface IImageInteractionService<in TKey>
     {
-        Task<MultipleKeyValueOperationResult> UploadImagesAsync(TKey entityId, List<IFormFile> images);
+        Task<OperationResult> UploadImageAsync(TKey entityId, IFormFile image);
 
-        Task<ImageChangingResult> ChangeImagesAsync(TEntity dto, List<IFormFile> images);
+        Task<OperationResult> RemoveImageAsync(TKey entityId, string imageId);
 
-        Task<MultipleKeyValueOperationResult> RemoveImagesAsync(TKey entityId, List<string> imageIds);
+        Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(TKey entityId, List<IFormFile> images);
+
+        Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(TKey entityId, List<string> imageIds);
     }
 }
