@@ -15,7 +15,12 @@ namespace OutOfSchool.WebApi.Models
         [JsonConverter(typeof(StringEnumConverter))]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
+        [MaxLength(500)]
+        public string RejectionMessage { get; set; }
+
         public DateTimeOffset CreationTime { get; set; }
+
+        public DateTimeOffset? ApprovedTime { get; set; }
 
         [Required]
         public Guid WorkshopId { get; set; }

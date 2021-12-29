@@ -11,6 +11,8 @@ namespace OutOfSchool.Services.Enums
         Pending = 1,
         AcceptedForSelection,
         Approved,
+        StudyingForYears,
+        Completed,
         Rejected,
         Left,
     }

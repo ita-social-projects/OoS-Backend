@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -10,7 +10,12 @@ namespace OutOfSchool.Services.Models
 
         public ApplicationStatus Status { get; set; }
 
+        [MaxLength(500)]
+        public string RejectionMessage { get; set; }
+
         public DateTimeOffset CreationTime { get; set; }
+
+        public DateTimeOffset? ApprovedTime { get; set; }
 
         public Guid WorkshopId { get; set; }
 

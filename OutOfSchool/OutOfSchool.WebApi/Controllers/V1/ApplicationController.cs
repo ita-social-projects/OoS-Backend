@@ -100,8 +100,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
             try
             {
                 await CheckUserRights(
-                    parentId: application.ParentId,
-                    providerId: application.Workshop.ProviderId)
+                        parentId: application.ParentId,
+                        providerId: application.Workshop.ProviderId)
                     .ConfigureAwait(false);
 
                 return Ok(application);
@@ -254,9 +254,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 var ids = newApplications.Select(a => a.Id);
 
                 return CreatedAtAction(
-                     nameof(GetById),
-                     new { id = ids, },
-                     newApplications);
+                    nameof(GetById),
+                    new { id = ids, },
+                    newApplications);
             }
             catch (ArgumentException ex)
             {
@@ -304,9 +304,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 var application = await applicationService.Create(applicationDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
-                     nameof(GetById),
-                     new { id = application.Id, },
-                     application);
+                    nameof(GetById),
+                    new { id = application.Id, },
+                    application);
             }
             catch (ArgumentException ex)
             {
@@ -343,15 +343,16 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(localizer[$"There is no application with Id = {applicationDto.Id}."]);
             }
 
-            application.Status = applicationDto.Status;
-
             try
             {
+                UpdateStatus(applicationDto, application);
+
                 await CheckUserRights(
                     parentId: application.ParentId,
                     providerId: application.Workshop.ProviderId).ConfigureAwait(false);
 
                 var updatedApplication = await applicationService.Update(application).ConfigureAwait(false);
+
                 return Ok(updatedApplication);
             }
             catch (ArgumentException ex)
@@ -457,6 +458,31 @@ namespace OutOfSchool.WebApi.Controllers.V1
             if (!userHasRights)
             {
                 throw new ArgumentException(localizer["User has no rights to perform operation"]);
+            }
+        }
+
+        private void UpdateStatus(ShortApplicationDto applicationDto, ApplicationDto application)
+        {
+            if (application.Status == ApplicationStatus.Completed || application.Status == ApplicationStatus.Rejected || application.Status == ApplicationStatus.Left)
+            {
+                if (User.IsInRole("provider") == false)
+                {
+                    throw new ArgumentException("Forbidden to update application.");
+                }
+            }
+
+            application.Status = applicationDto.Status;
+            application.RejectionMessage = applicationDto.RejectionMessage;
+            var approvedTime = DateTimeOffset.UtcNow;
+
+            if (application.Status != ApplicationStatus.Rejected)
+            {
+                application.RejectionMessage = null;
+            }
+
+            if (application.Status == ApplicationStatus.Approved)
+            {
+                application.ApprovedTime = approvedTime;
             }
         }
     }
