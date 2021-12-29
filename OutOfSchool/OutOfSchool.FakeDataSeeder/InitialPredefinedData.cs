@@ -13,7 +13,7 @@ namespace OutOfSchool.FakeDataSeeder
     {
         public static void Create()
         {
-            var connectionString = "";
+            var connectionString = "server=localhost;user=root;password=SolarSystem21;database=OutOfSchool;guidformat=binary16";
             var serverVersion = ServerVersion.AutoDetect(connectionString);
             var options = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
                 .UseMySql(connectionString, serverVersion)

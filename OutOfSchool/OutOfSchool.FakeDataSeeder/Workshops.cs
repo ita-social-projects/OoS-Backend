@@ -4,6 +4,7 @@ using System.Text;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Enums;
+using System.Linq;
 
 namespace OutOfSchool.FakeDataSeeder
 {
@@ -22,8 +23,8 @@ namespace OutOfSchool.FakeDataSeeder
             {
                 new Workshop()
                 {
-                    //Id = new Guid(""),
-                    Title = "Уроки аккордиону",
+                    Id = new Guid("08d9cab8-d40e-4abd-82f7-61e29f3eef03"),
+                    Title = "Уроки аккордиону ####",
                     Keywords = null,
                     Phone = "1234567890",
                     Email = "provider1@test.com",
@@ -49,7 +50,7 @@ namespace OutOfSchool.FakeDataSeeder
                 },
                 new Workshop()
                 {
-                    //Id = new Guid(""),
+                    Id = new Guid("08d9cab8-d425-4ba6-86ac-6ea59032f6d5"),
                     Title = "Уроки бандури",
                     Keywords = null,
                     Phone = "1234567890",
@@ -76,7 +77,7 @@ namespace OutOfSchool.FakeDataSeeder
                 },
                 new Workshop()
                 {
-                    //Id = new Guid(""),
+                    Id = new Guid("08d9cab8-d425-4cd2-8740-59cea15f439f"),
                     Title = "Гра на барабані",
                     Keywords = null,
                     Phone = "1234567890",
@@ -103,7 +104,7 @@ namespace OutOfSchool.FakeDataSeeder
                 },
                 new Workshop()
                 {
-                    //Id = new Guid(""),
+                    Id = new Guid("08d9cab8-d425-4d14-8a02-70a1d6e7622b"),
                     Title = "Уроки гри на флейті",
                     Keywords = null,
                     Phone = "1234567890",
@@ -130,8 +131,8 @@ namespace OutOfSchool.FakeDataSeeder
                 },
                 new Workshop()
                 {
-                    //Id = new Guid(""),
-                    Title = "Айкідо",
+                    Id = new Guid("08d9cab8-d425-4d5a-83ec-c91b1b061c59"),
+                    Title = "Айкідо 123",
                     Keywords = null,
                     Phone = "1234567890",
                     Email = "provider2@test.com",
@@ -157,7 +158,7 @@ namespace OutOfSchool.FakeDataSeeder
                 },
                 new Workshop()
                 {
-                    //Id = new Guid(""),
+                    Id = new Guid("08d9cab8-d425-4d95-8317-63716f9ed123"),
                     Title = "Плавання",
                     Keywords = null,
                     Phone = "1234567890",
@@ -184,7 +185,22 @@ namespace OutOfSchool.FakeDataSeeder
                 },
             };
 
-            context.Workshops.AddRange(workshops);
+            var entitiesForUpdate = context.Workshops.Where(w => workshops.Contains(w));
+            //if (entitiesForUpdate.Any())
+            //{
+            //    context.Workshops.UpdateRange(entitiesForUpdate.ToList());
+            //}
+
+            //var entitiesForAdd = context.Workshops.Where(w => !workshops.Contains(w));
+
+            //var entitiesForAdd = workshops.Except(entitiesForUpdate).ToList();
+            //if (entitiesForAdd.Any())
+            //{
+            //    context.Workshops.AddRange(entitiesForAdd);
+            //}
+
+            //context.Workshops.UpdateRange(existedEntities);
+            //context.Workshops.AddRange(workshops);
         }
     }
 }
