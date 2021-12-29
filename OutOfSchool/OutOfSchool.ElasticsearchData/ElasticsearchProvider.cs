@@ -130,7 +130,7 @@ namespace OutOfSchool.ElasticsearchData
 
             waitHandle.WaitOne();
 
-            //exceptionDispatchInfo?.Throw();
+            exceptionDispatchInfo?.Throw();
 
             return result;
         }

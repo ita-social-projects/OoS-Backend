@@ -106,7 +106,14 @@ namespace OutOfSchool.WebApi.Services
             {
                 logger.LogInformation("Elasticsearch synchronization started");
 
-                await Synchronize().ConfigureAwait(false);
+                try
+                {
+                    await Synchronize().ConfigureAwait(false);
+                }
+                catch
+                {
+                    logger.LogError("Elasticsearch synchronization failed");
+                }
 
                 logger.LogInformation("Elasticsearch synchronization finished");
 
