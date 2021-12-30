@@ -132,12 +132,20 @@ namespace OutOfSchool.WebApi.Services
 
             if (elasticsearchSyncOperation == ElasticsearchSyncOperation.Delete)
             {
-                var result = await esProvider.DeleteRangeOfEntitiesByIdsAsync(ids).ConfigureAwait(false);
-
-                if (result == Result.Error)
+                try
                 {
-                    logger.LogError($"Error happend while trying to delete indexes in Elasticsearch.");
-                    return false;
+                    var result = await esProvider.DeleteRangeOfEntitiesByIdsAsync(ids).ConfigureAwait(false);
+
+                    if (result == Result.Error)
+                    {
+                        logger.LogError($"Error happend while trying to delete indexes in Elasticsearch.");
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError($"Exception information: {ex}");
+                    throw;
                 }
             }
             else
@@ -146,12 +154,20 @@ namespace OutOfSchool.WebApi.Services
 
                 var sourse = mapper.Map<List<WorkshopES>>(workshops);
 
-                var result = await esProvider.IndexAll(sourse).ConfigureAwait(false);
-
-                if (result == Result.Error)
+                try
                 {
-                    logger.LogError($"Error happend while trying to update indexes in Elasticsearch.");
-                    return false;
+                    var result = await esProvider.IndexAll(sourse).ConfigureAwait(false);
+
+                    if (result == Result.Error)
+                    {
+                        logger.LogError($"Error happend while trying to update indexes in Elasticsearch.");
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError($"Exception information: {ex}");
+                    throw;
                 }
             }
 
