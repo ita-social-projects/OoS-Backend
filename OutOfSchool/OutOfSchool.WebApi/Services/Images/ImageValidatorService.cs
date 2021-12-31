@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Common.Resources.Describers;
 using OutOfSchool.WebApi.Config.Images;
 

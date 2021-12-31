@@ -168,8 +168,6 @@ namespace OutOfSchool.WebApi.Services
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
-            //dto.ImageIds = currentWorkshop.WorkshopImages.Select(x => x.ExternalStorageId).ToList();
-
             mapper.Map(dto, currentWorkshop);
             try
             {

@@ -19,6 +19,7 @@ using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.ControllersResultsHelpers;
 
 namespace OutOfSchool.WebApi.Controllers.V2
 {
@@ -193,19 +194,11 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
             var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
-            if (dto.ImageFiles == null || dto.ImageFiles.Count <= 0)
+            MultipleKeyValueOperationResult imagesResults = null;
+            if (dto.ImageFiles?.Count > 0)
             {
-                return CreatedAtAction(
-                    nameof(GetById),
-                    new { id = workshop.Id, },
-                    new
-                    {
-                        WorkshopId = workshop.Id,
-                        UploadingImagesResults = (string)null,
-                    });
+                imagesResults = await combinedWorkshopService.UploadManyImagesAsync(workshop.Id, dto.ImageFiles).ConfigureAwait(false);
             }
-
-            var results = await combinedWorkshopService.UploadManyImagesAsync(workshop.Id, dto.ImageFiles).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -213,13 +206,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 new
                 {
                     WorkshopId = workshop.Id,
-                    UploadingImagesResults = new
-                    {
-                        AllImagesUploaded = results.HasResults && !results.HasBadResults,
-                        GeneralMessage = results.GeneralResultMessage,
-                        HasResults = results.HasResults,
-                        Results = results.HasResults ? results.Results : null,
-                    },
+                    UploadingImagesResults = imagesResults?.CreateMultipleUploadingResult(),
                 });
         }
 
@@ -235,7 +222,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
         //[HasPermission(Permissions.WorkshopEdit)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -262,8 +249,14 @@ namespace OutOfSchool.WebApi.Controllers.V2
             }
 
             var updatedWorkshop = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
+            var imagesResults = await combinedWorkshopService.ChangeImagesAsync(dto).ConfigureAwait(false);
 
-            return Ok();
+            return Ok(new
+            {
+                UpdatedWorkshop = updatedWorkshop,
+                UploadingImagesResults = imagesResults.UploadedMultipleResult?.CreateMultipleUploadingResult(),
+                RemovingImagesResults = imagesResults.RemovedMultipleResult?.CreateMultipleRemovingResult(),
+            });
         }
 
         /// <summary>

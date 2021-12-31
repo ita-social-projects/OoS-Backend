@@ -104,23 +104,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.EntityNotFoundError };
             }
 
-            var imagesUploadingResult = await imageService.UploadManyImagesAsync<Workshop>(images).ConfigureAwait(false);
-            if (imagesUploadingResult.SavedIds == null || imagesUploadingResult.MultipleKeyValueOperationResult == null)
-            {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadingError };
-            }
-
-            if (imagesUploadingResult.SavedIds.Count > 0)
-            {
-                imagesUploadingResult.SavedIds.ForEach(id => workshop.WorkshopImages.Add(new Image<Workshop> { ExternalStorageId = id }));
-
-                if (!(await WorkshopUpdateAsync(workshop).ConfigureAwait(false)).Succeeded)
-                { // TODO: change response
-                    return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadingError };
-                }
-            }
-
-            return imagesUploadingResult.MultipleKeyValueOperationResult;
+            return await UploadManyImagesProcessAsync(workshop, images).ConfigureAwait(false);
         }
 
         public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, List<string> imageIds)
@@ -136,48 +120,14 @@ namespace OutOfSchool.WebApi.Services.Images
                 return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.EntityNotFoundError };
             }
 
-            var ableToRemove = !imageIds.Except(workshop.WorkshopImages.Select(x => x.ExternalStorageId)).Any();
-
-            if (!ableToRemove)
-            {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.RemovingError };
-            }
-
-            var imagesRemovingResult = await imageService.RemoveManyImagesAsync(imageIds).ConfigureAwait(false);
-
-            if (imagesRemovingResult.RemovedIds == null || imagesRemovingResult.MultipleKeyValueOperationResult == null)
-            {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadingError };
-            }
-
-            if (imagesRemovingResult.RemovedIds.Count > 0)
-            {
-                imagesRemovingResult.RemovedIds.ForEach(x =>
-                {
-                    workshop.WorkshopImages.RemoveAt(
-                        workshop.WorkshopImages.FindIndex(i => i.ExternalStorageId == x));
-                });
-
-                if (!(await WorkshopUpdateAsync(workshop).ConfigureAwait(false)).Succeeded)
-                {
-                    // TODO: change response
-                    return new MultipleKeyValueOperationResult
-                    { GeneralResultMessage = ResourceInstances.ImageResource.UploadingError };
-                }
-            }
-
-            return imagesRemovingResult.MultipleKeyValueOperationResult;
+            return await RemoveManyImagesProcessAsync(workshop, imageIds).ConfigureAwait(false);
         }
 
         public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopUpdateDto dto)
         {
             ValidateWorkshopUpdateDto(dto);
 
-            var workshop = await GetWorkshopWithIncludedImages(dto.Id).ConfigureAwait(false);
-            if (workshop == null)
-            {
-                throw new InvalidOperationException($"Workshop with id = {dto.Id} not found.");
-            }
+            var workshop = await GetRequiredWorkshopWithIncludedImages(dto.Id).ConfigureAwait(false);
 
             var result = new ImageChangingResult();
 
@@ -186,13 +136,17 @@ namespace OutOfSchool.WebApi.Services.Images
             if (shouldRemove)
             {
                 var removingList = workshop.WorkshopImages.Select(x => x.ExternalStorageId).Except(dto.ImageIds).ToList();
-                result.RemovedMultipleResult = await RemoveManyImagesAsync(dto.Id, removingList).ConfigureAwait(false);
+                result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(workshop, removingList).ConfigureAwait(false);
             }
 
-            if (dto.ImageFiles.Count > 0)
+            if (result.RemovedMultipleResult is { HasResults: true })
             {
-                result.UploadedMultipleResult =
-                    await UploadManyImagesAsync(dto.Id, dto.ImageFiles).ConfigureAwait(false);
+                workshop = await GetRequiredWorkshopWithIncludedImages(workshop.Id).ConfigureAwait(false);
+            }
+
+            if (dto.ImageFiles?.Count > 0)
+            {
+                result.UploadedMultipleResult = await UploadManyImagesProcessAsync(workshop, dto.ImageFiles).ConfigureAwait(false);
             }
 
             return result;
@@ -211,16 +165,80 @@ namespace OutOfSchool.WebApi.Services.Images
             }
         }
 
+        private async Task<MultipleKeyValueOperationResult> UploadManyImagesProcessAsync(
+            Workshop workshop,
+            List<IFormFile> images)
+        {
+            var imagesUploadingResult = await imageService.UploadManyImagesAsync<Workshop>(images).ConfigureAwait(false);
+            if (imagesUploadingResult.SavedIds == null || imagesUploadingResult.MultipleKeyValueOperationResult == null)
+            {
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadingError };
+            }
+
+            if (imagesUploadingResult.SavedIds.Count > 0)
+            {
+                imagesUploadingResult.SavedIds.ForEach(id => workshop.WorkshopImages.Add(new Image<Workshop> { ExternalStorageId = id }));
+
+                var updatingResult = await WorkshopUpdateAsync(workshop).ConfigureAwait(false);
+                if (!updatingResult.Succeeded)
+                { // TODO: change response
+                    return new MultipleKeyValueOperationResult { GeneralResultMessage = updatingResult.Errors.FirstOrDefault()?.Description };
+                }
+            }
+
+            return imagesUploadingResult.MultipleKeyValueOperationResult;
+        }
+
+        private async Task<MultipleKeyValueOperationResult> RemoveManyImagesProcessAsync(
+            Workshop workshop,
+            List<string> imageIds)
+        {
+            var ableToRemove = !imageIds.Except(workshop.WorkshopImages.Select(x => x.ExternalStorageId)).Any();
+
+            if (!ableToRemove)
+            {
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.RemovingError };
+            }
+
+            var imagesRemovingResult = await imageService.RemoveManyImagesAsync(imageIds).ConfigureAwait(false);
+
+            if (imagesRemovingResult.RemovedIds == null || imagesRemovingResult.MultipleKeyValueOperationResult == null)
+            {
+                return new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.RemovingError };
+            }
+
+            if (imagesRemovingResult.RemovedIds.Count > 0)
+            {
+                imagesRemovingResult.RemovedIds.ForEach(x =>
+                {
+                    workshop.WorkshopImages.RemoveAt(
+                        workshop.WorkshopImages.FindIndex(i => i.ExternalStorageId == x));
+                });
+
+                var updatingResult = await WorkshopUpdateAsync(workshop).ConfigureAwait(false);
+                if (!updatingResult.Succeeded)
+                { // TODO: change response
+                    return new MultipleKeyValueOperationResult { GeneralResultMessage = updatingResult.Errors.FirstOrDefault()?.Description };
+                }
+            }
+
+            return imagesRemovingResult.MultipleKeyValueOperationResult;
+        }
+
         private void ValidateWorkshopUpdateDto(WorkshopUpdateDto dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto)); // TODO: think about another result
             _ = dto.ImageIds ?? throw new InvalidOperationException($"{nameof(dto.ImageIds)} cannot be null.");
-            _ = dto.ImageFiles ?? throw new InvalidOperationException($"{nameof(dto.ImageFiles)} cannot be null.");
         }
 
         private async Task<Workshop> GetWorkshopWithIncludedImages(Guid entityId)
         {
             return (await workshopRepository.GetByFilter(x => x.Id == entityId, nameof(Workshop.WorkshopImages)).ConfigureAwait(false)).FirstOrDefault();
+        }
+
+        private async Task<Workshop> GetRequiredWorkshopWithIncludedImages(Guid entityId)
+        {
+            return (await workshopRepository.GetByFilter(x => x.Id == entityId, nameof(Workshop.WorkshopImages)).ConfigureAwait(false)).First();
         }
     }
 }
