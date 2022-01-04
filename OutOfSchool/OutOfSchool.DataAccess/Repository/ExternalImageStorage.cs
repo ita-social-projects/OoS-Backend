@@ -15,6 +15,7 @@ using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Repository
 {
+    // TODO: think about disposing streams, contexts in future
     public class ExternalImageStorage : IExternalImageStorage
     {
         private const string ContentType = "ContentType";
@@ -32,7 +33,7 @@ namespace OutOfSchool.Services.Repository
             try
             {
                 var result = await gridFsBucket.OpenDownloadStreamAsync(new ObjectId(imageId))
-                    ?? throw new InvalidOperationException($"Unreal to get non-nullable {nameof(GridFSDownloadStream)} instance."); // think about searching by file name
+                             ?? throw new InvalidOperationException($"Unreal to get non-nullable {nameof(GridFSDownloadStream)} instance."); // think about searching by file name
                 var contentType = result.FileInfo.Metadata[ContentType].AsString;
                 return new ExternalImageModel { ContentStream = result, ContentType = contentType };
             }

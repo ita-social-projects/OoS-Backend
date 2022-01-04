@@ -20,7 +20,6 @@ using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services;
-using OutOfSchool.Services.CombinedProviders;
 using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
@@ -130,13 +129,13 @@ namespace OutOfSchool.WebApi
                 .AddJsonOptions(options =>
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-            // Request options
-            services.Configure<CommonImagesRequestLimits>(Configuration.GetSection(CommonImagesRequestLimits.Name));
+            // Images limits options
+            services.Configure<ImagesLimits<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
 
             // Image options
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
             services.AddSingleton<MongoDb>();
-            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}"));
+            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -230,7 +229,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
-            services.AddTransient<IImageDependentRepositoriesProvider, ImageDependentRepositoriesProvider>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

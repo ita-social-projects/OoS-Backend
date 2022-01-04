@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
@@ -42,5 +43,10 @@ namespace OutOfSchool.WebApi.Common.Resources.References
         internal string NoGivenImagesError => GetResourceString(nameof(NoGivenImagesError));
 
         internal string UpdateEntityError => GetResourceString(nameof(UpdateEntityError));
+
+        internal string ExceedingCountOfImagesError(int countOfImages)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetResourceString(nameof(ExceedingCountOfImagesError)), countOfImages);
+        }
     }
 }

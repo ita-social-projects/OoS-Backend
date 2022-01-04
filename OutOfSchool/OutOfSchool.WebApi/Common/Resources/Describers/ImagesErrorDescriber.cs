@@ -111,5 +111,14 @@ namespace OutOfSchool.WebApi.Common.Resources.Describers
                 Description = ResourceInstances.ImageResource.UpdateEntityError,
             };
         }
+
+        public virtual OperationError ExceedingCountOfImagesError(int countOfImages)
+        {
+            return new OperationError
+            {
+                Code = nameof(ExceedingCountOfImagesError),
+                Description = ResourceInstances.ImageResource.ExceedingCountOfImagesError(countOfImages),
+            };
+        }
     }
 }
