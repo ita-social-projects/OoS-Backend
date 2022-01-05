@@ -19,6 +19,8 @@ using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
+    // TODO: make synchronization to remove incorrect operations' ids
+
     /// <summary>
     /// Provides APIs for making operations with <see cref="Workshop"/> images.
     /// </summary>
@@ -64,7 +66,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 return OperationResult.Failed(ErrorDescriber.EntityNotFoundError());
             }
 
-            if (!AllowedToUploadFiles(workshop, 1))
+            if (!AllowedToUploadGivenAmountOfFiles(workshop, 1))
             {
                 return OperationResult.Failed(ErrorDescriber.ExceedingCountOfImagesError(1));
             }
@@ -186,6 +188,7 @@ namespace OutOfSchool.WebApi.Services.Images
             }
             catch (DbUpdateException ex)
             {
+                logger.LogError(ex, $"Unreal to update workshop with id = {workshop.Id}.");
                 return OperationResult.Failed(ErrorDescriber.UpdateEntityError());
             }
         }
@@ -194,7 +197,7 @@ namespace OutOfSchool.WebApi.Services.Images
             Workshop workshop,
             List<IFormFile> images)
         {
-            if (!AllowedToUploadFiles(workshop, images.Count))
+            if (!AllowedToUploadGivenAmountOfFiles(workshop, images.Count))
             {
                 return new MultipleKeyValueOperationResult
                     { GeneralResultMessage = ResourceInstances.ImageResource.ExceedingCountOfImagesError(images.Count) };
@@ -212,7 +215,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
                 var updatingResult = await WorkshopUpdateAsync(workshop).ConfigureAwait(false);
                 if (!updatingResult.Succeeded)
-                { // TODO: change response
+                {
                     return new MultipleKeyValueOperationResult { GeneralResultMessage = updatingResult.Errors.FirstOrDefault()?.Description };
                 }
             }
@@ -248,7 +251,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
                 var updatingResult = await WorkshopUpdateAsync(workshop).ConfigureAwait(false);
                 if (!updatingResult.Succeeded)
-                { // TODO: change response
+                {
                     return new MultipleKeyValueOperationResult { GeneralResultMessage = updatingResult.Errors.FirstOrDefault()?.Description };
                 }
             }
@@ -272,7 +275,7 @@ namespace OutOfSchool.WebApi.Services.Images
             return (await workshopRepository.GetByFilter(x => x.Id == entityId, nameof(Workshop.WorkshopImages)).ConfigureAwait(false)).First();
         }
 
-        private bool AllowedToUploadFiles(Workshop workshop, int countOfFiles)
+        private bool AllowedToUploadGivenAmountOfFiles(Workshop workshop, int countOfFiles)
         {
             return workshop.WorkshopImages.Count + countOfFiles < limits.MaxCountOfFiles;
         }

@@ -10,9 +10,11 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -35,7 +37,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
-        private readonly CommonImagesRequestLimits commonImagesRequestLimits; // will be moved into a common class
+        private readonly ImagesLimits<Workshop> limits;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
@@ -44,19 +46,19 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="options">Application default values.</param>
-        /// <param name="commonImagesRequestLimits">Describes common limits of requests with images.</param>
+        /// <param name="limits">Describes limits of workshop images.</param>
         public WorkshopController(
             IWorkshopServicesCombiner combinedWorkshopService,
             IProviderService providerService,
             IStringLocalizer<SharedResource> localizer,
             IOptions<AppDefaultsConfig> options,
-            IOptions<CommonImagesRequestLimits> commonImagesRequestLimits)
+            IOptions<ImagesLimits<Workshop>> limits)
         {
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
             this.options = options.Value;
-            this.commonImagesRequestLimits = commonImagesRequestLimits.Value;
+            this.limits = limits.Value;
         }
 
         /// <summary>
@@ -150,7 +152,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden.</response>
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
-        //[HasPermission(Permissions.WorkshopAddNew)]
+        [HasPermission(Permissions.WorkshopAddNew)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -221,7 +223,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
-        //[HasPermission(Permissions.WorkshopEdit)]
+        [HasPermission(Permissions.WorkshopEdit)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -248,8 +250,8 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
             }
 
-            var updatedWorkshop = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
             var imagesResults = await combinedWorkshopService.ChangeImagesAsync(dto).ConfigureAwait(false);
+            var updatedWorkshop = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
             return Ok(new
             {
@@ -312,9 +314,9 @@ namespace OutOfSchool.WebApi.Controllers.V2
             return true;
         }
 
-        private bool ValidCountOfFiles(int fileAmount) // will be moved into common realization
+        private bool ValidCountOfFiles(int fileAmount)
         {
-            return fileAmount <= commonImagesRequestLimits.MaxCountOfAttachedFiles;
+            return fileAmount <= limits.MaxCountOfFiles;
         }
     }
 }
