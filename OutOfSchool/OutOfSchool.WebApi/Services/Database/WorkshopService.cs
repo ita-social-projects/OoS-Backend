@@ -314,59 +314,6 @@ namespace OutOfSchool.WebApi.Services
         public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopUpdateDto dto) =>
             await workshopImagesService.ChangeImagesAsync(dto).ConfigureAwait(false);
 
-        //public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopDTO dto, List<IFormFile> images)
-        //{
-        //    _ = dto ?? throw new ArgumentNullException(nameof(dto));
-
-        //    var workshop = (await workshopRepository.GetByFilter(x => x.Id == dto.Id, nameof(Workshop.WorkshopImages)).ConfigureAwait(false)).FirstOrDefault();
-        //    if (workshop == null)
-        //    {
-        //        throw new InvalidOperationException($"Workshop with id = {dto.Id} not found.");
-        //    }
-
-        //    var result = new ImageChangingResult();
-        //    if (dto.ImageIds?.Count > 0)
-        //    {
-        //        var deletingList = workshop.WorkshopImages.Select(x => x.ExternalStorageId).Except(dto.ImageIds).ToList();
-
-        //        if (deletingList.Any())
-        //        {
-        //            deletingList.ForEach(x =>
-        //            {
-        //                workshop.WorkshopImages.RemoveAt(workshop.WorkshopImages.FindIndex(i => i.ExternalStorageId == x));
-        //            });
-
-        //            var deletingResults = await imageService.RemoveManyImagesAsync(deletingList).ConfigureAwait(false);
-
-        //            result.RemovedMultipleResult = deletingResults;
-        //        }
-        //    }
-
-        //    if (images?.Count > 0)
-        //    {
-        //        var uploadingResult = await imageService.UploadManyImagesAsync<Workshop>(images).ConfigureAwait(false);
-        //        if (uploadingResult.SavedIds == null || uploadingResult.MultipleKeyValueOperationResult == null)
-        //        {
-        //            result.UploadedMultipleResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadImagesError };
-        //        }
-        //        else
-        //        {
-        //            uploadingResult.SavedIds.ForEach(id => workshop.WorkshopImages.Add(new Image<Workshop> { ExternalStorageId = id }));
-        //        }
-        //    }
-
-        //    try
-        //    {
-        //        await workshopRepository.Update(workshop).ConfigureAwait(false);
-        //        return result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        logger.LogError(ex, $"Changing images failed. Exception message: {ex.Message}");
-        //        throw;
-        //    }
-        //}
-
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
         {
             var predicate = PredicateBuilder.True<Workshop>();
