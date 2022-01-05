@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Enums;
-using System.Linq;
 
 namespace OutOfSchool.FakeDataSeeder
 {
@@ -24,7 +21,7 @@ namespace OutOfSchool.FakeDataSeeder
                 new Workshop()
                 {
                     Id = new Guid("08d9cab8-d40e-4abd-82f7-61e29f3eef03"),
-                    Title = "Уроки аккордиону ####",
+                    Title = "Уроки аккордиону",
                     Keywords = null,
                     Phone = "1234567890",
                     Email = "provider1@test.com",
@@ -185,22 +182,7 @@ namespace OutOfSchool.FakeDataSeeder
                 },
             };
 
-            var entitiesForUpdate = context.Workshops.Where(w => workshops.Contains(w));
-            //if (entitiesForUpdate.Any())
-            //{
-            //    context.Workshops.UpdateRange(entitiesForUpdate.ToList());
-            //}
-
-            //var entitiesForAdd = context.Workshops.Where(w => !workshops.Contains(w));
-
-            //var entitiesForAdd = workshops.Except(entitiesForUpdate).ToList();
-            //if (entitiesForAdd.Any())
-            //{
-            //    context.Workshops.AddRange(entitiesForAdd);
-            //}
-
-            //context.Workshops.UpdateRange(existedEntities);
-            //context.Workshops.AddRange(workshops);
+            context.Workshops.AddRange(workshops);
         }
     }
 }
