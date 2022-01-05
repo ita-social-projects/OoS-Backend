@@ -164,6 +164,7 @@ namespace OutOfSchool.WebApi
             var elasticConfig = Configuration
                 .GetSection(ElasticConfig.Name)
                 .Get<ElasticConfig>();
+            services.Configure<ElasticConfig>(Configuration.GetSection(ElasticConfig.Name));
             services.AddElasticsearch(elasticConfig);
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
