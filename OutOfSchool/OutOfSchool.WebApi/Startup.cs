@@ -170,7 +170,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
             services.AddElasticsearchSynchronization(
-                builder => builder.Bind(Configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.Name)));
+                builder => builder.Bind(Configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName)));
 
             // entities services
             services.AddTransient<IAddressService, AddressService>();
