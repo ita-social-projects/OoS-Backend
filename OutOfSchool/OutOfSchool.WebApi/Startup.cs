@@ -237,7 +237,7 @@ namespace OutOfSchool.WebApi
             services.AddSingleton<ElasticPinger>();
             services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
 
-            services.AddSingleton<ImagesErrorDescriber>();
+            services.AddScoped<ImagesErrorDescriber>();
 
             services.AddSingleton(Log.Logger);
             services.AddVersioning();
