@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Common.Resources.Describers;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 
@@ -16,11 +15,6 @@ namespace OutOfSchool.WebApi.Services.Images
     /// </summary>
     public interface IImageService
     {
-        /// <summary>
-        /// Gets descriptions of images errors.
-        /// </summary>
-        ImagesErrorDescriber ErrorDescriber { get; }
-
         /// <summary>
         /// Gets an image by its id.
         /// </summary>

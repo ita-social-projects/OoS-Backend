@@ -13,7 +13,8 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
-using OutOfSchool.WebApi.Common.Resources.Describers;
+using OutOfSchool.WebApi.Common.Resources.Codes;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 
@@ -34,24 +35,19 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="externalStorage">Storage for images.</param>
         /// <param name="serviceProvider">Provides access to the app services.</param>
         /// <param name="logger">Logger.</param>
-        /// <param name="errorDescriber">The instance which describes image errors.</param>
-        public ImageService(IExternalImageStorage externalStorage, IServiceProvider serviceProvider, ILogger<ImageService> logger, ImagesErrorDescriber errorDescriber)
+        public ImageService(IExternalImageStorage externalStorage, IServiceProvider serviceProvider, ILogger<ImageService> logger)
         {
             this.externalStorage = externalStorage;
             this.serviceProvider = serviceProvider;
             this.logger = logger;
-            ErrorDescriber = errorDescriber;
         }
-
-        /// <inheritdoc/>
-        public ImagesErrorDescriber ErrorDescriber { get; }
 
         /// <inheritdoc/>
         public async Task<Result<ImageDto>> GetByIdAsync(string imageId)
         {
             if (imageId == null)
             {
-                return Result<ImageDto>.Failed(ErrorDescriber.ImageNotFoundError());
+                return Result<ImageDto>.Failed(ImagesOperationErrorCode.ImageNotFoundError.GetOperationError());
             }
 
             logger.LogDebug($"Getting image by id = {imageId} was started.");
@@ -72,7 +68,7 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (ImageStorageException ex)
             {
                 logger.LogError(ex, $"Image with id {imageId} wasn't found.");
-                return Result<ImageDto>.Failed(ErrorDescriber.ImageNotFoundError());
+                return Result<ImageDto>.Failed(ImagesOperationErrorCode.ImageNotFoundError.GetOperationError());
             }
         }
 
@@ -82,7 +78,7 @@ namespace OutOfSchool.WebApi.Services.Images
             if (images == null || images.Count <= 0)
             {
                 return new ImageUploadingResult
-                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.NoGivenImagesError } };
+                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() } };
             }
 
             logger.LogDebug($"Uploading {images.Count} images was started.");
@@ -123,7 +119,7 @@ namespace OutOfSchool.WebApi.Services.Images
             {
                 logger.LogError(ex, $"Exception while uploading images, message: {ex.Message}");
                 return new ImageUploadingResult
-                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.UploadingError } };
+                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.UploadingError.GetResourceValue() } };
             }
 
             logger.LogDebug($"Uploading {images.Count} images was finished.");
@@ -136,7 +132,7 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (image == null)
             {
-                return Result<string>.Failed(ErrorDescriber.NoGivenImagesError());
+                return Result<string>.Failed(ImagesOperationErrorCode.NoGivenImagesError.GetOperationError());
             }
 
             logger.LogDebug("Uploading an image was started.");
@@ -167,7 +163,7 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Exception while uploading images, message: {ex.Message}");
-                return Result<string>.Failed(ErrorDescriber.UploadingError());
+                return Result<string>.Failed(ImagesOperationErrorCode.UploadingError.GetOperationError());
             }
 
             logger.LogDebug("Uploading an image was successfully finished.");
@@ -180,7 +176,7 @@ namespace OutOfSchool.WebApi.Services.Images
             if (imageIds == null || imageIds.Count == 0)
             {
                 return new ImageRemovingResult
-                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ResourceInstances.ImageResource.NoGivenImagesError } };
+                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() } };
             }
 
             logger.LogDebug($"Removing {imageIds.Count} images was started.");
@@ -207,7 +203,7 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (string.IsNullOrEmpty(imageId))
             {
-                OperationResult.Failed(ErrorDescriber.RemovingError());
+                OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
             }
 
             logger.LogDebug($"Deleting an image with external id = {imageId} was started.");
@@ -226,7 +222,7 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (ImageStorageException ex)
             {
                 logger.LogError(ex, $"Unable to upload image into an external storage because of {ex.Message}.");
-                return Result<string>.Failed(ErrorDescriber.ImageStorageError());
+                return Result<string>.Failed(ImagesOperationErrorCode.ImageStorageError.GetOperationError());
             }
         }
 
@@ -240,7 +236,7 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (ImageStorageException ex)
             {
                 logger.LogError(ex, $"Unreal to delete image with an external id = {imageId}.");
-                return OperationResult.Failed(ErrorDescriber.RemovingError());
+                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
             }
         }
 

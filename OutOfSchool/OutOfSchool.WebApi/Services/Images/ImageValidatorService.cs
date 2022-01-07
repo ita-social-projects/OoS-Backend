@@ -5,8 +5,9 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Common.Resources.Describers;
+using OutOfSchool.WebApi.Common.Resources.Codes;
 using OutOfSchool.WebApi.Config.Images;
+using OutOfSchool.WebApi.Extensions;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
@@ -20,19 +21,15 @@ namespace OutOfSchool.WebApi.Services.Images
 
         private readonly ILogger<ImageValidatorService<TEntity>> logger;
 
-        private readonly ImagesErrorDescriber errorDescriber;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageValidatorService{TEntity}"/> class.
         /// </summary>
         /// <param name="options">Image options.</param>
         /// <param name="logger">Logger.</param>
-        /// <param name="errorDescriber">The instance which describes image errors.</param>
-        public ImageValidatorService(IOptions<ImageOptions<TEntity>> options, ILogger<ImageValidatorService<TEntity>> logger, ImagesErrorDescriber errorDescriber)
+        public ImageValidatorService(IOptions<ImageOptions<TEntity>> options, ILogger<ImageValidatorService<TEntity>> logger)
         {
             this.options = options.Value;
             this.logger = logger;
-            this.errorDescriber = errorDescriber;
         }
 
         /// <inheritdoc/>
@@ -40,7 +37,7 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (!ImageSizeValid(stream.Length))
             {
-                return OperationResult.Failed(errorDescriber.InvalidSizeError());
+                return OperationResult.Failed(ImagesOperationErrorCode.InvalidSizeError.GetOperationError());
             }
 
             try
@@ -48,12 +45,12 @@ namespace OutOfSchool.WebApi.Services.Images
                 using var image = Image.FromStream(stream); // check disposing, using memory
                 if (!ImageFormatValid(image.RawFormat.ToString()))
                 {
-                    return OperationResult.Failed(errorDescriber.InvalidFormatError());
+                    return OperationResult.Failed(ImagesOperationErrorCode.InvalidFormatError.GetOperationError());
                 }
 
                 if (!ImageResolutionValid(image.Width, image.Height))
                 {
-                    return OperationResult.Failed(errorDescriber.InvalidResolutionError());
+                    return OperationResult.Failed(ImagesOperationErrorCode.InvalidResolutionError.GetOperationError());
                 }
 
                 return OperationResult.Success;
@@ -61,12 +58,12 @@ namespace OutOfSchool.WebApi.Services.Images
             catch (ArgumentException ex)
             {
                 logger.LogError(ex, $"Unable to validate stream: {ex.Message}");
-                return OperationResult.Failed(errorDescriber.InvalidFormatError());
+                return OperationResult.Failed(ImagesOperationErrorCode.InvalidFormatError.GetOperationError());
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Unable to validate stream: {ex.Message}");
-                return OperationResult.Failed(errorDescriber.UnexpectedValidationError());
+                return OperationResult.Failed(ImagesOperationErrorCode.UnexpectedValidationError.GetOperationError());
             }
         }
 

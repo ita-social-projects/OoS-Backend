@@ -124,7 +124,7 @@
     <value>Please, check that you try to do the right thing</value>
   </data>
   <data name="ExceedingCountOfImagesError" xml:space="preserve">
-    <value>You cannot upload {0} images more because of images' limits</value>
+    <value>You cannot upload so many images because of images' limits</value>
   </data>
   <data name="ImageNotFoundError" xml:space="preserve">
     <value>Image was not found</value>

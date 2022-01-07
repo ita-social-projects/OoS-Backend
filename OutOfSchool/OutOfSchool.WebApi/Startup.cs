@@ -26,7 +26,6 @@ using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Common.Resources.Describers;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
@@ -236,8 +235,6 @@ namespace OutOfSchool.WebApi
 
             services.AddSingleton<ElasticPinger>();
             services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
-
-            services.AddScoped<ImagesErrorDescriber>();
 
             services.AddSingleton(Log.Logger);
             services.AddVersioning();

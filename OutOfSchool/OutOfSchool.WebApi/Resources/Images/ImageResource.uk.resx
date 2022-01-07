@@ -124,7 +124,7 @@
     <value>Будь-ласка, переконайтесь, що ви здійснюєте правильну операцію</value>
   </data>
   <data name="ExceedingCountOfImagesError" xml:space="preserve">
-    <value>Неможливо завантажити ще {0} фото через обмеження на кількість зображень.</value>
+    <value>Неможливо завантажити так багато фото через обмеження на кількість зображень.</value>
   </data>
   <data name="ImageNotFoundError" xml:space="preserve">
     <value>Зображення не знайдено</value>
