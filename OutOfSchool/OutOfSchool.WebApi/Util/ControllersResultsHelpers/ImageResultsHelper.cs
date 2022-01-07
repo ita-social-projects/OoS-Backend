@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using MongoDB.Bson.IO;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Models.Images;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers
 {
     public static class ImageResultsHelper
     {
-        public static object CreateMultipleUploadingResult(this MultipleKeyValueOperationResult multipleResults)
+        public static MultipleImageUploadingResponse CreateMultipleUploadingResult(this MultipleKeyValueOperationResult multipleResults)
         {
             _ = multipleResults ?? throw new ArgumentNullException(nameof(multipleResults));
 
-            return new
+            return new MultipleImageUploadingResponse
             {
                 AllImagesUploaded = multipleResults.Succeeded,
                 GeneralMessage = multipleResults.GeneralResultMessage,
@@ -21,11 +22,11 @@ namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers
             };
         }
 
-        public static object CreateMultipleRemovingResult(this MultipleKeyValueOperationResult multipleResults)
+        public static MultipleImageRemovingResponse CreateMultipleRemovingResult(this MultipleKeyValueOperationResult multipleResults)
         {
             _ = multipleResults ?? throw new ArgumentNullException(nameof(multipleResults));
 
-            return new
+            return new MultipleImageRemovingResponse
             {
                 AllImagesRemoved = multipleResults.Succeeded,
                 GeneralMessage = multipleResults.GeneralResultMessage,

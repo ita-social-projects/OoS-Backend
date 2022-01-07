@@ -153,7 +153,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.WorkshopAddNew)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreationDto))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreationResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -166,11 +166,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
-            }
-
-            if (dto.Address == null)
-            {
-                return BadRequest("Address is required here."); // TODO: add localizer
             }
 
             if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
@@ -205,7 +200,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
             return CreatedAtAction(
                 nameof(GetById),
                 new { id = workshop.Id, },
-                new
+                new WorkshopCreationResponse
                 {
                     WorkshopId = workshop.Id,
                     UploadingImagesResults = imagesResults?.CreateMultipleUploadingResult(),
@@ -224,7 +219,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.WorkshopEdit)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopUpdateResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -253,7 +248,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
             var imagesResults = await combinedWorkshopService.ChangeImagesAsync(dto).ConfigureAwait(false);
             var updatedWorkshop = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
-            return Ok(new
+            return Ok(new WorkshopUpdateResponse
             {
                 UpdatedWorkshop = updatedWorkshop,
                 UploadingImagesResults = imagesResults.UploadedMultipleResult?.CreateMultipleUploadingResult(),
