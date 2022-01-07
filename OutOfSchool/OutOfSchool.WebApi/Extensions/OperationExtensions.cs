@@ -15,7 +15,7 @@ namespace OutOfSchool.WebApi.Extensions
             _ = resourceKey ?? throw new InvalidOperationException(
                     $"Unreal to get the resource key from {code} in {nameof(ImagesOperationErrorCode)}.");
 
-            return CreateOperationError(resourceKey, RetrievingResourcesExtensions.GetStringFromResources(ResourceManagers.ImageResourceManager, resourceKey));
+            return CreateOperationError(code.ToString(), RetrievingResourcesExtensions.GetStringFromResources(ResourceManagers.ImageResourceManager, resourceKey));
         }
 
         public static OperationError CreateOperationError(string code, string description)
