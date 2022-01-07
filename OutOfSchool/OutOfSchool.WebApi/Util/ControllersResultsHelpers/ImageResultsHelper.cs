@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers
                 AllImagesUploaded = multipleResults.Succeeded,
                 GeneralMessage = multipleResults.GeneralResultMessage,
                 HasResults = multipleResults.HasResults,
-                Results = multipleResults.HasResults ? multipleResults.Results : null,
+                Results = CreateResultsResponse(multipleResults),
             };
         }
 
@@ -31,8 +31,18 @@ namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers
                 AllImagesRemoved = multipleResults.Succeeded,
                 GeneralMessage = multipleResults.GeneralResultMessage,
                 HasResults = multipleResults.HasResults,
-                Results = multipleResults.HasResults ? multipleResults.Results : null,
+                Results = CreateResultsResponse(multipleResults),
             };
+        }
+
+        private static IDictionary<short, OperationResult> CreateResultsResponse(MultipleKeyValueOperationResult multipleResults)
+        {
+            if (multipleResults.Succeeded)
+            {
+                return null;
+            }
+
+            return multipleResults.HasResults ? multipleResults.Results : null;
         }
     }
 }
