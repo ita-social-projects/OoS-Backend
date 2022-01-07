@@ -272,7 +272,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
         private bool AllowedToUploadGivenAmountOfFiles(Workshop workshop, int countOfFiles)
         {
-            return workshop.WorkshopImages.Count + countOfFiles < limits.MaxCountOfFiles;
+            return workshop.WorkshopImages.Count + countOfFiles <= limits.MaxCountOfFiles;
         }
     }
 }
