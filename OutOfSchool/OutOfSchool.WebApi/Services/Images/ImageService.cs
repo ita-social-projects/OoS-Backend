@@ -73,7 +73,7 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<ImageUploadingResult> UploadManyImagesAsync<TEntity>(List<IFormFile> images)
+        public async Task<ImageUploadingResult> UploadManyImagesAsync<TEntity>(IList<IFormFile> images)
         {
             if (images == null || images.Count <= 0)
             {
@@ -171,7 +171,7 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<ImageRemovingResult> RemoveManyImagesAsync(List<string> imageIds)
+        public async Task<ImageRemovingResult> RemoveManyImagesAsync(IList<string> imageIds)
         {
             if (imageIds == null || imageIds.Count == 0)
             {

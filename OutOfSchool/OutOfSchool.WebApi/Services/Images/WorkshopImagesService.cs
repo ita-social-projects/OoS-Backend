@@ -111,7 +111,7 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, List<IFormFile> images)
+        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, IList<IFormFile> images)
         {
             if (images == null || images.Count <= 0)
             {
@@ -128,7 +128,7 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, List<string> imageIds)
+        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, IList<string> imageIds)
         {
             if (imageIds == null || imageIds.Count <= 0)
             {
@@ -190,7 +190,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
         private async Task<MultipleKeyValueOperationResult> UploadManyImagesProcessAsync(
             Workshop workshop,
-            List<IFormFile> images)
+            IList<IFormFile> images)
         {
             if (!AllowedToUploadGivenAmountOfFiles(workshop, images.Count))
             {
@@ -220,7 +220,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
         private async Task<MultipleKeyValueOperationResult> RemoveManyImagesProcessAsync(
             Workshop workshop,
-            List<string> imageIds)
+            IList<string> imageIds)
         {
             var ableToRemove = !imageIds.Except(workshop.WorkshopImages.Select(x => x.ExternalStorageId)).Any();
 

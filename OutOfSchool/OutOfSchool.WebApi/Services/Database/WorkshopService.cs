@@ -305,10 +305,10 @@ namespace OutOfSchool.WebApi.Services
         public async Task<OperationResult> RemoveImageAsync(Guid entityId, string imageId) =>
             await workshopImagesService.RemoveImageAsync(entityId, imageId).ConfigureAwait(false);
 
-        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, List<IFormFile> images) =>
+        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, IList<IFormFile> images) =>
             await workshopImagesService.UploadManyImagesAsync(entityId, images).ConfigureAwait(false);
 
-        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, List<string> imageIds) =>
+        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, IList<string> imageIds) =>
             await workshopImagesService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
 
         public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopUpdateDto dto) =>

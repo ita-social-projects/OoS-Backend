@@ -28,7 +28,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <typeparam name="TEntity">The entity you wanna validate image specs.</typeparam>
         /// <param name="images">Contains images to upload.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ImageUploadingResult"/> of the operation.</returns>
-        Task<ImageUploadingResult> UploadManyImagesAsync<TEntity>(List<IFormFile> images);
+        Task<ImageUploadingResult> UploadManyImagesAsync<TEntity>(IList<IFormFile> images);
 
         /// <summary>
         /// Uploads the given image into a storage.
@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// </summary>
         /// <param name="imageIds">Image Ids.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ImageRemovingResult"/> of the operation.</returns>
-        Task<ImageRemovingResult> RemoveManyImagesAsync(List<string> imageIds);
+        Task<ImageRemovingResult> RemoveManyImagesAsync(IList<string> imageIds);
 
         /// <summary>
         /// Uploads the given image into a storage.
