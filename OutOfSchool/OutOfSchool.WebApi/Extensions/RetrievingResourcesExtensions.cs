@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Resources;
 using Google.Protobuf.WellKnownTypes;
 using OutOfSchool.WebApi.Common;
@@ -21,6 +22,8 @@ namespace OutOfSchool.WebApi.Extensions
 
         internal static string GetStringFromResources(ResourceManager resourceManager, string resourceKey, CultureInfo culture = null)
         {
+            _ = resourceManager ?? throw new ArgumentNullException(nameof(resourceManager));
+
             return string.IsNullOrEmpty(resourceKey) ? null :
                 resourceManager.GetString(resourceKey, culture);
         }

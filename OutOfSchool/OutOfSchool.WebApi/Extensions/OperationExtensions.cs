@@ -10,19 +10,14 @@ namespace OutOfSchool.WebApi.Extensions
     {
         public static OperationError GetOperationError(this ImagesOperationErrorCode code)
         {
-            var resourceKey = code.GetResourceKey();
-
-            _ = resourceKey ?? throw new InvalidOperationException(
-                    $"Unreal to get the resource key from {code} in {nameof(ImagesOperationErrorCode)}.");
-
-            return CreateOperationError(code.ToString(), RetrievingResourcesExtensions.GetStringFromResources(ResourceManagers.ImageResourceManager, resourceKey));
+            return CreateOperationError(code.ToString(), code.GetResourceValue());
         }
 
         public static OperationError CreateOperationError(string code, string description)
         {
             if (string.IsNullOrEmpty(code))
             {
-                throw new ArgumentNullException(nameof(code));
+                throw new ArgumentException(@$"Code [{code}] cannot be null or empty.", nameof(code));
             }
 
             return new OperationError
