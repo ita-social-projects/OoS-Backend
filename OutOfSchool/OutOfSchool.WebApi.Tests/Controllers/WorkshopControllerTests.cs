@@ -421,7 +421,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 MaxAge = 10,
                 MinAge = 4,
                 Logo = "image6",
-                ProviderId = Guid.NewGuid(),
+                ProviderId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                 DirectionId = 1,
                 DepartmentId = 1,
                 ClassId = 1,
@@ -609,7 +609,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             return new ProviderDto()
             {
                 UserId = userId,
-                Id = Guid.NewGuid(),
+                Id = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
             };
         }
 
