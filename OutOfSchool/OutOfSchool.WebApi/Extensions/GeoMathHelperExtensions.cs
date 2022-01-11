@@ -8,7 +8,11 @@ namespace OutOfSchool.WebApi.Extensions
     {
         public static City AddGeoHash(this City city)
         {
-            city.GeoHash = Api.GeoToH3(new GeoCoord((decimal)city.Latitude, (decimal)city.Longitude), GeoMathHelper.ResolutionForCity);
+            if (!(city is null))
+            {
+                city.GeoHash = Api.GeoToH3(new GeoCoord((decimal)city.Latitude, (decimal)city.Longitude), GeoMathHelper.ResolutionForCity);
+            }
+
             return city;
         }
     }

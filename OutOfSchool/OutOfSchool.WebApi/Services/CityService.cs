@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<CityDto> GetNearestCityByFilter(CityFilter filter)
+        public async Task<CityDto> GetNearestCityByFilter(CityFilter filter = null)
         {
             logger.LogInformation("Getting the nearest city by the current filter started.");
             if (filter is null)
