@@ -6,6 +6,8 @@ namespace OutOfSchool.Common
     {
         public const int Resolution = 6;
 
+        public const int ResolutionForCity = 5;
+
         public const int KRingForResolution = 1;
 
         public const string ElasticRadius = "5000m";

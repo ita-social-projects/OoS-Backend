@@ -30,6 +30,14 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<CityDto>> GetByCityName(string name);
 
         /// <summary>
+        /// Get the nearest city by the filter from the database.
+        /// </summary>
+        /// <param name="filter">Filter with specified searching parameters.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the <see cref="CityDto"/> that contains found element.</returns>
+        Task<CityDto> GetNearestCityByFilter(CityFilter filter = null);
+
+        /// <summary>
         /// Add entity.
         /// </summary>
         /// <param name="dto">City entity to add.</param>

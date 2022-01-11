@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using H3Lib;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -82,17 +84,60 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<CityDto> GetNearestCityByFilter(CityFilter filter)
+        {
+            logger.LogInformation("Getting the nearest city by the current filter started.");
+            if (filter is null)
+            {
+                filter = new CityFilter();
+            }
+
+            var geo = new GeoCoord(filter.Latitude, filter.Longitude);
+            var h3Location = Api.GeoToH3(geo, GeoMathHelper.ResolutionForCity);
+            Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
+
+            var closestCities = await repository.GetByFilter(c => neighbours
+                                                .Select(n => n.Value)
+                                                .Any(hash => hash == c.GeoHash))
+                                                .ConfigureAwait(false);
+
+            var nearestCity = closestCities
+                .Select(city => new
+                {
+                    city,
+                    Distance = GeoMathHelper
+                        .GetDistanceFromLatLonInKm(
+                            (double)city.Latitude,
+                            (double)city.Longitude,
+                            (double)geo.Latitude,
+                            (double)geo.Longitude),
+                })
+                .OrderBy(p => p.Distance)
+                .Select(c => c.city)
+                .FirstOrDefault()
+                .ToModel();
+
+            string currentFilterText = $"(Latitude = {filter.Latitude}, Longitude = {filter.Longitude})";
+
+            logger.LogInformation(nearestCity is null
+                ? $"There is no the nearest city for the filter {currentFilterText}."
+                : $"The nearest city for the filter {currentFilterText} was successfully received.");
+
+            return nearestCity;
+        }
+
+        /// <inheritdoc/>
         public async Task<CityDto> Create(CityDto dto)
         {
             logger.LogInformation("City creating was started.");
 
-            var city = dto.ToDomain();
+            var city = dto.ToDomain().AddGeoHash();
 
-            var newcity = await repository.Create(city).ConfigureAwait(false);
+            var newCity = await repository.Create(city).ConfigureAwait(false);
 
-            logger.LogInformation($"City with Id = {newcity?.Id} created successfully.");
+            logger.LogInformation($"City with Id = {newCity?.Id} created successfully.");
 
-            return newcity.ToModel();
+            return newCity.ToModel();
         }
 
         /// <inheritdoc/>
@@ -102,11 +147,13 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var city = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var city = dto.ToDomain().AddGeoHash();
 
-                logger.LogInformation($"City with Id = {city?.Id} updated succesfully.");
+                var updatedCity = await repository.Update(city).ConfigureAwait(false);
 
-                return city.ToModel();
+                logger.LogInformation($"City with Id = {updatedCity?.Id} updated succesfully.");
+
+                return updatedCity.ToModel();
             }
             catch (DbUpdateConcurrencyException)
             {
