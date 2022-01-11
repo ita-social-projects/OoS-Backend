@@ -1,0 +1,430 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Google.Apis.Util;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Moq.Language.Flow;
+using NUnit.Framework;
+using OutOfSchool.Services.Common.Exceptions;
+using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.Resources.Codes;
+using OutOfSchool.WebApi.Services.Images;
+
+namespace OutOfSchool.WebApi.Tests.Services.Images
+{
+    [TestFixture]
+    internal class ImageServiceTests
+    {
+        #region TestData
+
+        private static readonly IReadOnlyList<Func<ExternalImageModel>> ExternalImageModelsWithMockedStreamTestDataSource;
+        private static readonly IReadOnlyList<Func<string>> ImageIdsTestDataSource;
+
+        #endregion
+
+        private Mock<IExternalImageStorage> externalStorageMock;
+        private Mock<IServiceProvider> serviceProviderMock;
+        private Mock<ILogger<ImageService>> loggerMock;
+        private IImageService imageService;
+
+        static ImageServiceTests()
+        {
+            ExternalImageModelsWithMockedStreamTestDataSource = InitializeExternalImageModelsWithMockedStreamsTestDataSource();
+            ImageIdsTestDataSource = InitializeImageIdsTestDataSource();
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            externalStorageMock = new Mock<IExternalImageStorage>();
+            serviceProviderMock = new Mock<IServiceProvider>();
+            loggerMock = new Mock<ILogger<ImageService>>();
+            imageService = new ImageService(
+                externalStorageMock.Object,
+                serviceProviderMock.Object,
+                loggerMock.Object);
+        }
+
+        #region Getting
+
+        [Test]
+        public async Task GetById_WhenImageWithThisIdExists_ShouldReturnSuccessfulResultOfImageDto()
+        {
+            // Arrange
+            var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
+            var externalImageModel = TakeFirstFromTestData(ExternalImageModelsWithMockedStreamTestDataSource);
+            externalStorageMock.Setup(x => x.GetByIdAsync(imageId)).
+                ReturnsAsync(externalImageModel);
+
+            // Act
+            var result = await imageService.GetByIdAsync(imageId);
+
+            // Assert
+            GenericResultShouldBeSuccess(result);
+            result.Value.ContentStream.Should().BeEquivalentTo(externalImageModel.ContentStream);
+            result.Value.ContentType.Should().BeEquivalentTo(externalImageModel.ContentType);
+        }
+
+        [Test]
+        public async Task GetById_WhenImageWithThisIdNotExists_ShouldReturnFailedResultOfImageDto()
+        {
+            // Arrange
+            var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
+            externalStorageMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ThrowsAsync(new ImageStorageException());
+
+            // Act
+            var result = await imageService.GetByIdAsync(imageId);
+
+            // Assert
+            GenericResultShouldBeFailed(result);
+            result.OperationResult.Errors.First().Code.Should().BeEquivalentTo(nameof(ImagesOperationErrorCode.ImageNotFoundError));
+        }
+
+        [Test]
+        public async Task GetById_WhenImageIdIsNull_ShouldReturnFailedResultOfImageDto()
+        {
+            // Arrange
+
+            // Act
+            var result = await imageService.GetByIdAsync(null);
+
+            // Assert
+            GenericResultShouldBeFailed(result);
+            result.OperationResult.Errors.First().Code.Should().BeEquivalentTo(nameof(ImagesOperationErrorCode.ImageNotFoundError));
+        }
+
+        #endregion
+
+        #region Uploading
+
+        [TestCaseSource(nameof(ImageIdsTestData))]
+        public async Task
+            UploadManyImages_WhenImageListContainsSomeValidImages_ShouldReturnSuccessfulImageUploadingResultWithAllSavedImages(IList<string> imageIds)
+        {
+            // Arrange
+            var images = CreateMockedFormFiles(imageIds.Count);
+            SetUpValidatorWithOperationResult(true);
+            var queue = new Queue<string>(imageIds);
+            externalStorageMock
+                .Setup(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(queue.Dequeue);
+
+            // Act
+            var result = await imageService.UploadManyImagesAsync<It.IsAnyType>(images);
+
+            // Assert
+            result.MultipleKeyValueOperationResult.Succeeded.Should().BeTrue();
+            result.SavedIds.Should().BeEquivalentTo(imageIds);
+        }
+
+        [Test]
+        public async Task
+            UploadManyImages_WhenImageListIsNull_ShouldReturnFailedImageUploadingResult()
+        {
+            // Arrange
+
+            // Act
+            var result = await imageService.UploadManyImagesAsync<It.IsAnyType>(null);
+
+            // Assert
+            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
+        }
+
+        [Test]
+        public async Task
+            UploadManyImages_WhenImageListIsEmpty_ShouldReturnFailedImageUploadingResult()
+        {
+            // Arrange
+            var list = new List<IFormFile>();
+
+            // Act
+            var result = await imageService.UploadManyImagesAsync<It.IsAnyType>(list);
+
+            // Assert
+            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
+        }
+
+        [Test]
+        public void
+            UploadManyImages_WhenTEntityCantOperateWithImages_ShouldThrowNullReferenceException()
+        {
+            // Arrange
+            var images = CreateMockedFormFiles(2);
+            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(null);
+
+            // Act & Assert
+            imageService.Invoking(x => x.UploadManyImagesAsync<It.IsAnyType>(images)).Should()
+                .Throw<NullReferenceException>();
+        }
+
+        [Test]
+        public async Task
+            UploadManyImages_WhenImageListContainsSomeInvalidImages_ShouldReturnImageUploadingResultWithSomeSavedImagesAndErrorInfoAboutOthers()
+        {
+            // Arrange
+            const byte countOfImages = 4, countOfValidImages = 2;
+            var images = CreateMockedFormFiles(countOfImages);
+            var imageIds = TakeFromTestData(ImageIdsTestDataSource, countOfValidImages);
+            var validator = new Mock<IImageValidatorService<It.IsAnyType>>();
+            validator.SetupSequence(x => x.Validate(It.IsAny<Stream>()))
+                .Returns(OperationResult.Success)
+                .Returns(OperationResult.Failed())
+                .Returns(OperationResult.Failed())
+                .Returns(OperationResult.Success);
+            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(validator.Object);
+            var queue = new Queue<string>(imageIds);
+            externalStorageMock
+                .Setup(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(queue.Dequeue);
+
+            // Act
+            var result = await imageService.UploadManyImagesAsync<It.IsAnyType>(images);
+
+            // Assert
+            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
+            result.SavedIds.Should().BeEquivalentTo(imageIds);
+            result.MultipleKeyValueOperationResult.Results.Should().NotBeNull()
+                .And.Subject.Values.Count(x => !x.Succeeded).Should().Be(countOfImages - countOfValidImages);
+        }
+
+        [Test]
+        public async Task
+            UploadManyImages_WhenSomeImagesWereNotUploadedIntoExternalStorage_ShouldReturnImageUploadingResultWithSomeSavedImagesAndErrorInfoAboutOthers()
+        {
+            // Arrange
+            const byte countOfImages = 4, countOfUploadedImages = 2;
+            var images = CreateMockedFormFiles(countOfImages);
+            var imageIds = TakeFromTestData(ImageIdsTestDataSource, countOfUploadedImages);
+            SetUpValidatorWithOperationResult(true);
+            externalStorageMock
+                .SetupSequence(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(imageIds[0])
+                .ThrowsAsync(new ImageStorageException())
+                .ThrowsAsync(new ImageStorageException())
+                .ReturnsAsync(imageIds[1]);
+
+            // Act
+            var result = await imageService.UploadManyImagesAsync<It.IsAnyType>(images);
+
+            // Assert
+            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
+            result.SavedIds.Should().BeEquivalentTo(imageIds);
+            result.MultipleKeyValueOperationResult.Results.Should().NotBeNull()
+                .And.Subject.Values.Count(x => !x.Succeeded).Should().Be(countOfImages - countOfUploadedImages);
+        }
+
+        [Test]
+        public async Task UploadImage_WhenImageIsValid_ShouldReturnSuccessfulResultWithSavedImageId()
+        {
+            // Arrange
+            var file = new Mock<IFormFile>().Object;
+            var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
+            SetUpValidatorWithOperationResult(true);
+            externalStorageMock
+                .Setup(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(imageId);
+
+            // Act
+            var result = await imageService.UploadImageAsync<It.IsAnyType>(file);
+
+            // Assert
+            GenericResultShouldBeSuccess(result);
+            result.Value.Should().BeEquivalentTo(imageId);
+        }
+
+        [Test]
+        public async Task
+            UploadImage_WhenImageIsNull_ShouldReturnFailedResult()
+        {
+            // Arrange
+
+            // Act
+            var result = await imageService.UploadImageAsync<It.IsAnyType>(null);
+
+            // Assert
+            GenericResultShouldBeFailed(result);
+        }
+
+        [Test]
+        public async Task
+            UploadImage_WhenImageIsInvalid_ShouldReturnFailedResult()
+        {
+            // Arrange
+            var file = new Mock<IFormFile>().Object;
+            SetUpValidatorWithOperationResult(false);
+
+            // Act
+            var result = await imageService.UploadImageAsync<It.IsAnyType>(file);
+
+            // Assert
+            GenericResultShouldBeFailed(result);
+        }
+
+        [Test]
+        public async Task
+            UploadImage_WhenWasNotUploadedIntoExternalStorage_ShouldReturnFailedResult()
+        {
+            // Arrange
+            var file = new Mock<IFormFile>().Object;
+            var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
+            SetUpValidatorWithOperationResult(true);
+            externalStorageMock
+                .Setup(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new ImageStorageException());
+
+            // Act
+            var result = await imageService.UploadImageAsync<It.IsAnyType>(file);
+
+            // Assert
+            GenericResultShouldBeFailed(result);
+        }
+
+        [Test]
+        public void
+            UploadImage_WhenTEntityCantOperateWithImages_ShouldThrowNullReferenceException()
+        {
+            // Arrange
+            var image = new Mock<IFormFile>().Object;
+            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(null);
+
+            // Act & Assert
+            imageService.Invoking(x => x.UploadImageAsync<It.IsAnyType>(image)).Should()
+                .Throw<NullReferenceException>();
+        }
+
+        #endregion
+
+        private static void GenericResultShouldBeSuccess<T>(Result<T> result)
+        {
+            result.Should().NotBeNull();
+            result.OperationResult.Succeeded.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+        }
+
+        private static void GenericResultShouldBeFailed<T>(Result<T> result)
+        {
+            result.Should().NotBeNull();
+            result.OperationResult.Succeeded.Should().BeFalse();
+        }
+
+        private void SetUpValidatorWithOperationResult(bool succeeded)
+        {
+            Func<OperationResult> result;
+            if (succeeded)
+            {
+                result = () => OperationResult.Success;
+            }
+            else
+            {
+                result = () => OperationResult.Failed();
+            }
+
+            var validator = new Mock<IImageValidatorService<It.IsAnyType>>();
+            validator.Setup(x => x.Validate(It.IsAny<Stream>())).Returns(result);
+            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(validator.Object);
+        }
+
+        //public static IReturnsResult<TMock> ReturnsValuesInOrder<TMock, TResult>(ISetup<TMock, TResult> setup, IList<TResult> values)
+        //    where TMock : class
+        //{
+        //    var queue = new Queue<TResult>(values);
+        //    return setup.();
+        //}
+
+        #region TestDataSets
+
+        private static IEnumerable<IList<string>> ImageIdsTestData()
+        {
+            yield return TakeFromTestData(ImageIdsTestDataSource, ImageIdsTestDataSource.Count);
+        }
+
+        #endregion
+
+        private static IList<IFormFile> CreateMockedFormFiles(int count)
+        {
+            var fileList = new List<IFormFile>();
+            for (var i = 0; i < count; i++)
+            {
+                var file = new Mock<IFormFile>();
+                file.Setup(x => x.OpenReadStream()).Returns(new Mock<Stream>().Object);
+                fileList.Add(file.Object);
+            }
+
+            return fileList;
+        }
+
+        private static IList<T> TakeFromTestData<T>(IReadOnlyList<Func<T>> testDataSource, int count = 1)
+        {
+            if (testDataSource == null || testDataSource.Count == 0)
+            {
+                throw new ArgumentException($"{nameof(testDataSource)} is null or empty.");
+            }
+
+            if (count < 1 || count > testDataSource.Count)
+            {
+                throw new InvalidOperationException($"Unreal to take {count} elements from {nameof(testDataSource)}. Count must be more than 0 and less than {testDataSource.Count}.");
+            }
+
+            var list = new List<T>();
+            for (var i = 0; i < count; i++)
+            {
+                list.Add(testDataSource[i].Invoke());
+            }
+
+            return list;
+        }
+
+        private static T TakeFirstFromTestData<T>(IReadOnlyList<Func<T>> testDataSource)
+        {
+            if (testDataSource == null || testDataSource.Count == 0)
+            {
+                throw new ArgumentException($"{nameof(testDataSource)} is null or empty.");
+            }
+
+            return testDataSource.First().Invoke();
+        }
+
+        #region Initializators
+
+        // Shouldn't make these collections smaller
+        private static IReadOnlyList<Func<ExternalImageModel>> InitializeExternalImageModelsWithMockedStreamsTestDataSource()
+        {
+            return new List<Func<ExternalImageModel>>
+            {
+                () => new ExternalImageModel
+                {
+                    ContentStream = new Mock<Stream>().Object,
+                    ContentType = "image/jpeg",
+                },
+                () => new ExternalImageModel
+                {
+                    ContentStream = new Mock<Stream>().Object,
+                    ContentType = "image/png",
+                },
+            }.AsReadOnly();
+        }
+
+        private static IReadOnlyList<Func<string>> InitializeImageIdsTestDataSource()
+        {
+            return new List<Func<string>>
+            {
+                () => "61d55214893839e7a516996b",
+                () => "61d574bffe6f597b3dea757b",
+                () => "61d574bffe6f597b3de08080",
+            }.AsReadOnly();
+        }
+
+        #endregion
+    }
+}
