@@ -10,32 +10,32 @@ namespace OutOfSchool.WebApi.Services.Images
     public interface IImageValidatorService<TEntityConf>
     {
         /// <summary>
-        /// Validate given <see cref="Stream"/> context.
+        /// Determines if the given <see cref="Stream"/> context is valid.
         /// </summary>
         /// <param name="stream">Describe image context.</param>
-        /// <returns>The instance of <see cref="OperationResult"/>.</returns>
+        /// <returns>The instance of <see cref="OperationResult"/> which shows the validation state..</returns>
         OperationResult Validate(Stream stream);
 
         /// <summary>
-        /// Validate given size.
+        /// Determines if the given size is valid.
         /// </summary>
         /// <param name="size">Image size.</param>
-        /// <returns>True if it's valid, else - false.</returns>
-        bool ValidateImageSize(long size);
+        /// <returns>The <see cref="bool"/> value which shows the validation state.</returns>
+        bool ImageSizeValid(long size);
 
         /// <summary>
-        /// Validate given Resolution.
+        /// Determines if the given resolution is valid.
         /// </summary>
         /// <param name="width">Image width.</param>
         /// <param name="height">Image height.</param>
-        /// <returns>True if it's valid, else - false.</returns>
-        bool ValidateImageResolution(int width, int height);
+        /// <returns>The <see cref="bool"/> value which shows the validation state.</returns>
+        bool ImageResolutionValid(int width, int height);
 
         /// <summary>
-        /// Validate given Format.
+        /// Determines if the given format is valid.
         /// </summary>
         /// <param name="format">Image format.</param>
-        /// <returns>True if it's valid, else - false.</returns>
-        bool ValidateImageFormat(string format);
+        /// <returns>The <see cref="bool"/> value which shows the validation state.</returns>
+        bool ImageFormatValid(string format);
     }
 }

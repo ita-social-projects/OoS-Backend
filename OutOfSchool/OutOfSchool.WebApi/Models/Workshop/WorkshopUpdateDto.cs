@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Http;
 
 namespace OutOfSchool.WebApi.Models.Workshop
 {
-    public class WorkshopUpdateDto : WorkshopCreationDto
+    public class WorkshopUpdateDto : WorkshopDTO
     {
-        public ICollection<Guid> ImageIds { get; set; }
+        public List<IFormFile> ImageFiles { get; set; }
     }
 }

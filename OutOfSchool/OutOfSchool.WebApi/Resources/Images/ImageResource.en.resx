@@ -117,31 +117,43 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ImageStorageError" xml:space="preserve">
-    <value>Unfortunately, we couldn't save your image</value>
+  <data name="DefaultError" xml:space="preserve">
+    <value>Unfortunately, we weren't able to complete it successfully</value>
   </data>
-  <data name="InvalidImageFormatError" xml:space="preserve">
+  <data name="EntityNotFoundError" xml:space="preserve">
+    <value>Please, check that you try to do the right thing</value>
+  </data>
+  <data name="ExceedingCountOfImagesError" xml:space="preserve">
+    <value>You cannot upload so many images because of images' limits</value>
+  </data>
+  <data name="ImageNotFoundError" xml:space="preserve">
+    <value>Image was not found</value>
+  </data>
+  <data name="ImageStorageError" xml:space="preserve">
+    <value>Something wrong has happened</value>
+  </data>
+  <data name="InvalidFormatError" xml:space="preserve">
     <value>Invalid image format</value>
   </data>
-  <data name="InvalidImageResolutionError" xml:space="preserve">
+  <data name="InvalidResolutionError" xml:space="preserve">
     <value>Invalid image width or height</value>
   </data>
-  <data name="InvalidImageSizeError" xml:space="preserve">
+  <data name="InvalidSizeError" xml:space="preserve">
     <value>Invalid image size</value>
   </data>
-  <data name="NoImagesForUploading" xml:space="preserve">
-    <value>There're no images for uploading</value>
+  <data name="NoGivenImagesError" xml:space="preserve">
+    <value>No images were given</value>
   </data>
-  <data name="NotFoundError" xml:space="preserve">
-    <value>Image was not found</value>
+  <data name="RemovingError" xml:space="preserve">
+    <value>An error while removing</value>
   </data>
   <data name="UnexpectedValidationError" xml:space="preserve">
     <value>Please, be sure that your image is correct</value>
   </data>
-  <data name="UploadImagesError" xml:space="preserve">
-    <value>An error while uploading images</value>
+  <data name="UpdateEntityError" xml:space="preserve">
+    <value>We have some troubles with your data</value>
   </data>
-  <data name="WorkshopEntityNotFoundWhileUploadingError" xml:space="preserve">
-    <value>Unreal to find a workshop for uploading images</value>
+  <data name="UploadingError" xml:space="preserve">
+    <value>An error while uploading</value>
   </data>
 </root>
