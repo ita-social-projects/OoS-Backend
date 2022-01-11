@@ -97,6 +97,9 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<InformationAboutPortal, InformationAboutPortalDto>().ReverseMap()
                 .ForMember(c => c.Id, m => m.Ignore());
 
+            CreateMap<SupportInformation, SupportInformationDto>().ReverseMap()
+                .ForMember(c => c.Id, m => m.Ignore());
+
             CreateMap<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>().ReverseMap();
 
             CreateMap<Address, AddressES>()
