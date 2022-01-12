@@ -27,8 +27,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
             ISupportInformationService supportInformationService,
             ILogger<SupportInformationController> logger)
         {
-            this.supportInformationService = supportInformationService ?? throw new ArgumentNullException(nameof(supportInformationService));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.supportInformationService = supportInformationService;
+            this.logger = logger;
         }
 
         /// <summary>
