@@ -444,23 +444,6 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             result.OperationResult.Succeeded.Should().BeFalse();
         }
 
-        private void SetUpValidatorWithOperationResult(bool succeeded)
-        {
-            Func<OperationResult> result;
-            if (succeeded)
-            {
-                result = () => OperationResult.Success;
-            }
-            else
-            {
-                result = () => OperationResult.Failed();
-            }
-
-            var validator = new Mock<IImageValidatorService<It.IsAnyType>>();
-            validator.Setup(x => x.Validate(It.IsAny<Stream>())).Returns(result);
-            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(validator.Object);
-        }
-
         #region TestDataSets
 
         private static IEnumerable<IList<string>> ImageIdsTestData()
@@ -545,5 +528,22 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         }
 
         #endregion
+
+        private void SetUpValidatorWithOperationResult(bool succeeded)
+        {
+            Func<OperationResult> result;
+            if (succeeded)
+            {
+                result = () => OperationResult.Success;
+            }
+            else
+            {
+                result = () => OperationResult.Failed();
+            }
+
+            var validator = new Mock<IImageValidatorService<It.IsAnyType>>();
+            validator.Setup(x => x.Validate(It.IsAny<Stream>())).Returns(result);
+            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(validator.Object);
+        }
     }
 }
