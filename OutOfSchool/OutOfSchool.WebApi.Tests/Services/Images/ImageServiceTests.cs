@@ -130,9 +130,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         public async Task
             UploadManyImages_WhenImageListIsNull_ShouldReturnFailedImageUploadingResultWithNullSavedIds()
         {
-            // Arrange
-
-            // Act
+            // Arrange & Act
             var result = await imageService.UploadManyImagesAsync<It.IsAnyType>(null);
 
             // Assert
@@ -246,9 +244,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         public async Task
             UploadImage_WhenImageIsNull_ShouldReturnFailedResult()
         {
-            // Arrange
-
-            // Act
+            // Arrange & Act
             var result = await imageService.UploadImageAsync<It.IsAnyType>(null);
 
             // Assert
@@ -327,9 +323,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         public async Task
             RemoveManyImages_WhenImageIdsListIsNull_ShouldReturnFailedImageRemovingResultWithNullRemovedIds()
         {
-            // Arrange
-
-            // Act
+            // Arrange & Act
             var result = await imageService.RemoveManyImagesAsync(null);
 
             // Assert
