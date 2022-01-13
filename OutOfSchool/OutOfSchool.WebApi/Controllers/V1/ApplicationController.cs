@@ -429,6 +429,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
         private async Task<IEnumerable<ApplicationDto>> GetByProviderId(Guid id, ApplicationFilter filter)
         {
+            var provider = await providerService.GetById(id).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                throw new ArgumentException(localizer[$"There is no provider with Id = {id}"]);
+            }
+
             await CheckUserRights(providerId: id).ConfigureAwait(false);
 
             var applications = await applicationService.GetAllByProvider(id, filter).ConfigureAwait(false);
