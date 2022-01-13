@@ -389,19 +389,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(ex.Message);
             }
         }
-
-        private static IEnumerable<ApplicationDto> CreateMultiple(ApplicationApiModel applicationApiModel)
-        {
-            var applications = applicationApiModel.Children.Select(child => new ApplicationDto
-            {
-                ChildId = child.Id,
-                CreationTime = DateTimeOffset.UtcNow,
-                WorkshopId = applicationApiModel.WorkshopId,
-            });
-
-            return applications.ToList();
-        }
-
+        
         // TODO: Ask Polina about status validation
         private void ValidateStatus(int status)
         {
