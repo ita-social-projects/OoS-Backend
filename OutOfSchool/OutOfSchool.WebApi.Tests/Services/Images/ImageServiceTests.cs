@@ -88,7 +88,6 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
 
             // Assert
             GenericResultShouldBeFailed(result);
-            result.OperationResult.Errors.First().Code.Should().BeEquivalentTo(nameof(ImagesOperationErrorCode.ImageNotFoundError));
         }
 
         [Test]
@@ -101,7 +100,6 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
 
             // Assert
             GenericResultShouldBeFailed(result);
-            result.OperationResult.Errors.First().Code.Should().BeEquivalentTo(nameof(ImagesOperationErrorCode.ImageNotFoundError));
         }
 
         #endregion
@@ -130,7 +128,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
 
         [Test]
         public async Task
-            UploadManyImages_WhenImageListIsNull_ShouldReturnFailedImageUploadingResult()
+            UploadManyImages_WhenImageListIsNull_ShouldReturnFailedImageUploadingResultWithNullSavedIds()
         {
             // Arrange
 
@@ -139,11 +137,12 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
 
             // Assert
             result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
+            result.SavedIds.Should().BeNull();
         }
 
         [Test]
         public async Task
-            UploadManyImages_WhenImageListIsEmpty_ShouldReturnFailedImageUploadingResult()
+            UploadManyImages_WhenImageListIsEmpty_ShouldReturnFailedImageUploadingResultWithNullSavedIds()
         {
             // Arrange
             var list = new List<IFormFile>();
@@ -153,6 +152,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
 
             // Assert
             result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
+            result.SavedIds.Should().BeNull();
         }
 
         [Test]
@@ -194,8 +194,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             // Assert
             result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
             result.SavedIds.Should().BeEquivalentTo(imageIds);
-            result.MultipleKeyValueOperationResult.Results.Should().NotBeNull()
-                .And.Subject.Values.Count(x => !x.Succeeded).Should().Be(countOfImages - countOfValidImages);
+            result.MultipleKeyValueOperationResult.Results.Values.Count(x => !x.Succeeded).Should().Be(countOfImages - countOfValidImages);
         }
 
         [Test]
@@ -305,6 +304,133 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
 
         #endregion
 
+        #region Removing
+
+        [TestCaseSource(nameof(ImageIdsTestData))]
+        public async Task
+            RemoveManyImages_WhenImageIdsListContainsRightValues_ShouldReturnSuccessfulImageRemovingResultWithAllRemovedImages(IList<string> imageIds)
+        {
+            // Arrange
+            externalStorageMock
+                .Setup(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await imageService.RemoveManyImagesAsync(imageIds);
+
+            // Assert
+            result.MultipleKeyValueOperationResult.Succeeded.Should().BeTrue();
+            result.RemovedIds.Should().BeEquivalentTo(imageIds);
+        }
+
+        [Test]
+        public async Task
+            RemoveManyImages_WhenImageIdsListIsNull_ShouldReturnFailedImageRemovingResultWithNullRemovedIds()
+        {
+            // Arrange
+
+            // Act
+            var result = await imageService.RemoveManyImagesAsync(null);
+
+            // Assert
+            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
+            result.RemovedIds.Should().BeNull();
+        }
+
+        [Test]
+        public async Task
+            RemoveManyImages_WhenImageIdsListIsEmpty_ShouldReturnFailedImageRemovingResultWithNullRemovedIds()
+        {
+            // Arrange
+            var list = new List<string>();
+
+            // Act
+            var result = await imageService.RemoveManyImagesAsync(list);
+
+            // Assert
+            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
+            result.RemovedIds.Should().BeNull();
+        }
+
+        [Test]
+        public async Task
+            RemoveManyImages_WhenSomeImageIdsWereNotRemoved_BecauseTheyAreIncorrectOrNotExist_ShouldReturnFailedImageRemovingResultWithNullRemovedIds()
+        {
+            // Arrange
+            const byte countOfImageIds = 3, countOfDeleted = 1;
+            var imageIds = TakeFromTestData(ImageIdsTestDataSource, countOfImageIds);
+            externalStorageMock
+                .SetupSequence(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask)
+                .Throws<ImageStorageException>()
+                .Throws<ImageStorageException>();
+
+            // Act
+            var result = await imageService.RemoveManyImagesAsync(imageIds);
+
+            // Assert
+            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
+            result.MultipleKeyValueOperationResult.Results.Count(x => !x.Value.Succeeded).Should()
+                .Be(countOfImageIds - countOfDeleted);
+            result.RemovedIds.Should().BeEquivalentTo(imageIds.First());
+        }
+
+        [Test]
+        public async Task RemoveImage_WhenImageIdIsRight_ShouldReturnSuccessfulOperationResult()
+        {
+            // Arrange
+            var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
+            externalStorageMock
+                .Setup(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await imageService.RemoveImageAsync(imageId);
+
+            // Assert
+            result.Succeeded.Should().BeTrue();
+        }
+
+        [Test]
+        public async Task RemoveImage_WhenImageIdIsNull_ShouldReturnFailedOperationResult()
+        {
+            // Arrange & Act
+            var result = await imageService.RemoveImageAsync(null);
+
+            // Assert
+            result.Succeeded.Should().BeFalse();
+        }
+
+        [Test]
+        public async Task RemoveImage_WhenImageIdIsEmpty_ShouldReturnFailedOperationResult()
+        {
+            // Arrange
+            var imageId = string.Empty;
+
+            // Act
+            var result = await imageService.RemoveImageAsync(imageId);
+
+            // Assert
+            result.Succeeded.Should().BeFalse();
+        }
+
+        [Test]
+        public async Task RemoveImage_WhenImageIdWasNotRemoved_BecauseItIsIncorrectOrNotExist_ShouldReturnFailedOperationResult()
+        {
+            // Arrange
+            var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
+            externalStorageMock
+                .Setup(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Throws<ImageStorageException>();
+
+            // Act
+            var result = await imageService.RemoveImageAsync(imageId);
+
+            // Assert
+            result.Succeeded.Should().BeFalse();
+        }
+
+        #endregion
         private static void GenericResultShouldBeSuccess<T>(Result<T> result)
         {
             result.Should().NotBeNull();
@@ -334,13 +460,6 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             validator.Setup(x => x.Validate(It.IsAny<Stream>())).Returns(result);
             serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(validator.Object);
         }
-
-        //public static IReturnsResult<TMock> ReturnsValuesInOrder<TMock, TResult>(ISetup<TMock, TResult> setup, IList<TResult> values)
-        //    where TMock : class
-        //{
-        //    var queue = new Queue<TResult>(values);
-        //    return setup.();
-        //}
 
         #region TestDataSets
 
