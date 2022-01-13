@@ -229,44 +229,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <summary>
         /// Method for creating a new application.
         /// </summary>
-        /// <param name="applicationApiModel">Application api model with data to add.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [HasPermission(Permissions.ApplicationAddNew)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpPost("multiple")]
-        [Obsolete("This method is obsolete. Call another Create instead", false)]
-        public async Task<IActionResult> Create([FromBody] ApplicationApiModel applicationApiModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            try
-            {
-                var applications = CreateMultiple(applicationApiModel);
-
-                var newApplications = await applicationService.Create(applications).ConfigureAwait(false);
-
-                var ids = newApplications.Select(a => a.Id);
-
-                return CreatedAtAction(
-                    nameof(GetById),
-                    new { id = ids, },
-                    newApplications);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Method for creating a new application.
-        /// </summary>
         /// <param name="applicationDto">Application entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         /// <response code="201">Entity was created and returned with Id.</response>
