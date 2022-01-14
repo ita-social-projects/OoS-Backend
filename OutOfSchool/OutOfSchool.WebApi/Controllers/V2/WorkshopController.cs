@@ -245,7 +245,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
             }
 
-            var imagesResults = await combinedWorkshopService.ChangeImagesAsync(dto).ConfigureAwait(false);
+            var imagesResults = await combinedWorkshopService.ChangeImagesAsync(dto.Id, dto.ImageIds, dto.ImageFiles).ConfigureAwait(false);
             var updatedWorkshop = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
             return Ok(new WorkshopUpdateResponse

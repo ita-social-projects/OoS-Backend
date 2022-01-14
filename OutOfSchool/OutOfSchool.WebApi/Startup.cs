@@ -200,6 +200,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IInformationAboutPortalService, InformationAboutPortalService>();
             services.AddTransient<ISupportInformationService, SupportInformationService>();
             services.AddTransient<IWorkshopImagesService, WorkshopImagesService>();
+            services.AddTransient<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();

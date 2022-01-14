@@ -123,7 +123,7 @@ namespace OutOfSchool.WebApi.Models
         public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
-        public ICollection<string> ImageIds { get; set; }
+        public IList<string> ImageIds { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

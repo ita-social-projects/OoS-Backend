@@ -165,8 +165,8 @@ namespace OutOfSchool.WebApi.Services
         public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, IList<string> imageIds) =>
             await workshopService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
 
-        public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopUpdateDto dto) =>
-            await workshopService.ChangeImagesAsync(dto).ConfigureAwait(false);
+        public async Task<ImageChangingResult> ChangeImagesAsync(Guid entityId, IList<string> oldImageIds, IList<IFormFile> newImages) =>
+            await workshopService.ChangeImagesAsync(entityId, oldImageIds, newImages).ConfigureAwait(false);
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {
