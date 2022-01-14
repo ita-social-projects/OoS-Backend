@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
@@ -6,10 +7,10 @@ namespace OutOfSchool.WebApi.Models
     public class ParentCard : WorkshopCard
     {
         [Required]
-        public long ChildId { get; set; }
+        public Guid ChildId { get; set; }
 
         [Required]
-        public long ApplicationId { get; set; }
+        public Guid ApplicationId { get; set; }
 
         public ApplicationStatus Status { get; set; }
     }

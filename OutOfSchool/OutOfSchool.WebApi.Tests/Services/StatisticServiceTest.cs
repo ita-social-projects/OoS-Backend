@@ -25,6 +25,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IWorkshopRepository> workshopRepository;
         private Mock<IEntityRepository<Direction>> directionRepository;
 
+        private Mock<IMapper> mapper;
+
         [SetUp]
         public void SetUp()
         {
@@ -33,7 +35,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             directionRepository = new Mock<IEntityRepository<Direction>>();
             var ratingService = new Mock<IRatingService>();
             var logger = new Mock<ILogger<StatisticService>>();
-            var mapper = new Mock<IMapper>();
+            mapper = new Mock<IMapper>();
 
             service = new StatisticService(
                 applicationRepository.Object,
@@ -48,7 +50,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetPopularWorkshops_WhenCityNotQueried_ShouldReturnCertainWorkshops()
         {
             // Arrange
+            List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsNoCityFilter();
+
             SetupGetPopularWorkshops();
+
+            mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
+                .Returns(expectedWorkshopCards);
 
             // Act
             var result = await service
@@ -59,14 +66,19 @@ namespace OutOfSchool.WebApi.Tests.Services
             result
                 .Should()
                 .BeEquivalentTo(
-                    ExpectedWorkshopCardsNoCityFilter(), options => options.WithStrictOrdering());
+                    expectedWorkshopCards, options => options.WithStrictOrdering());
         }
 
         [Test]
         public async Task GetPopularWorkshops_WithCityQueried_ShouldReturnCertainWorkshops()
         {
             // Arrange
+            List<WorkshopCard> expectedWorkshopCards = ExpectedWorkshopCardsCityFilter();
+
             SetupGetPopularWorkshops();
+
+            mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>()))
+                .Returns(expectedWorkshopCards);
 
             // Act
             var result = await service
@@ -77,7 +89,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             result
                 .Should()
                 .BeEquivalentTo(
-                    ExpectedWorkshopCardsCityFilter(), options => options.WithStrictOrdering());
+                    expectedWorkshopCards, options => options.WithStrictOrdering());
         }
 
         [Test]
@@ -256,6 +268,30 @@ namespace OutOfSchool.WebApi.Tests.Services
                 new Application { Id = new Guid("01d08412-69d3-4620-8c54-7b997430e08d"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop { Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), DirectionId = 3 } },
                 new Application { Id = new Guid("af475193-6a1e-4a75-9ba3-439c4300f771"), WorkshopId = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), Workshop = new Workshop { Id = new Guid("6f8bf795-072d-4fca-ad89-e54a275eb674"), DirectionId = 3 } },
             };
+        }
+
+        private IEnumerable<Workshop> WithWorkshopsFilteredForCityQuery(int limit, string city)
+        {
+            var workshops = WithWorkshops();
+
+            if (!string.IsNullOrWhiteSpace(city))
+            {
+                workshops = workshops
+                    .Where(w => string.Equals(w.Address.City, city.Trim()));
+            }
+
+            var workshopsWithApplications = workshops.Select(w => new
+            {
+                Workshop = w,
+                Applications = w.Applications.Count,
+            });
+
+            var popularWorkshops = workshopsWithApplications
+                .OrderByDescending(w => w.Applications)
+                .Select(w => w.Workshop)
+                .Take(limit);
+
+            return popularWorkshops.ToList();
         }
 
         #endregion

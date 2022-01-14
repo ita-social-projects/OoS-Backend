@@ -19,5 +19,7 @@ namespace OutOfSchool.WebApi.Config
         public string Password { get; set; }
 
         public List<string> Urls { get; set; }
+
+        public int PingIntervalSeconds { get; set; }
     }
 }

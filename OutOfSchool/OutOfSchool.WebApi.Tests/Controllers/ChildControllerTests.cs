@@ -107,7 +107,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             var noneExistingChildId = Guid.NewGuid();
             service.Setup(x => x.GetByIdAndUserId(It.IsAny<Guid>(), It.IsAny<string>()))
-                .ReturnsAsync(default, default);
+                .ReturnsAsync(default, new TimeSpan(1));
 
             // Act
             var result = await controller.GetUsersChildById(Guid.NewGuid()).ConfigureAwait(false);

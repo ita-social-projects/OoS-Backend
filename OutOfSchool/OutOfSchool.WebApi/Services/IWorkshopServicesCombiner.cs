@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
     /// The interface for CRUD operations with workshops.
     /// </summary>
-    public interface IWorkshopServicesCombiner : ICRUDService<WorkshopDTO, Guid>
+    public interface IWorkshopServicesCombiner : ICRUDService<WorkshopDTO, Guid>, IWorkshopImagesService
     {
         /// <summary>
         /// Get all entities from the database.

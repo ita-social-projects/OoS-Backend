@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Nest;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Config;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -20,27 +22,27 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ElasticsearchSynchronizationService : IElasticsearchSynchronizationService
     {
-        // TODO: move to config
-        private const int NumberOfOperation = 10;
-
         private readonly IWorkshopService databaseService;
         private readonly IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository;
         private readonly IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider;
         private readonly ILogger<ElasticsearchSynchronizationService> logger;
         private readonly IMapper mapper;
+        private readonly IOptions<ElasticsearchSynchronizationSchedulerConfig> options;
 
         public ElasticsearchSynchronizationService(
             IWorkshopService workshopService,
             IElasticsearchSyncRecordRepository elasticsearchSyncRecordRepository,
             IElasticsearchProvider<WorkshopES, WorkshopFilterES> esProvider,
             ILogger<ElasticsearchSynchronizationService> logger,
-            IMapper mapper)
+            IMapper mapper,
+            IOptions<ElasticsearchSynchronizationSchedulerConfig> options)
         {
             this.databaseService = workshopService;
             this.elasticsearchSyncRecordRepository = elasticsearchSyncRecordRepository;
             this.esProvider = esProvider;
             this.logger = logger;
             this.mapper = mapper;
+            this.options = options;
         }
 
         public async Task<bool> Synchronize()
@@ -49,7 +51,7 @@ namespace OutOfSchool.WebApi.Services
 
             var elasticsearchSyncRecords = await elasticsearchSyncRecordRepository.GetByEntity(
                 ElasticsearchSyncEntity.Workshop,
-                NumberOfOperation).ConfigureAwait(false);
+                options.Value.OperationsPerTask).ConfigureAwait(false);
 
             var resultCreate = await SynchronizeAndDeleteRecords(elasticsearchSyncRecords, ElasticsearchSyncOperation.Create).ConfigureAwait(false);
             if (!resultCreate)
@@ -117,13 +119,13 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation("Elasticsearch synchronization finished");
 
-                await Task.Delay(10000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(options.Value.DelayBetweenTasksInMilliseconds, cancellationToken).ConfigureAwait(false);
             }
         }
 
         private async Task<bool> Synchronize(IEnumerable<ElasticsearchSyncRecord> elasticsearchSyncRecords, ElasticsearchSyncOperation elasticsearchSyncOperation)
         {
-            var ids = elasticsearchSyncRecords.Where(es => es.Operation == elasticsearchSyncOperation).Select(es => es.RecordId);
+            var ids = elasticsearchSyncRecords.Where(es => es.Operation == elasticsearchSyncOperation).Select(es => es.RecordId).ToList();
 
             if (!ids.Any())
             {

@@ -117,31 +117,43 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ImageStorageError" xml:space="preserve">
-    <value>Нажаль, ми не змогли зберегти це фото</value>
+  <data name="DefaultError" xml:space="preserve">
+    <value>Нажаль, ми не змогли виконати цю операцію</value>
   </data>
-  <data name="InvalidImageFormatError" xml:space="preserve">
+  <data name="EntityNotFoundError" xml:space="preserve">
+    <value>Будь-ласка, переконайтесь, що ви здійснюєте правильну операцію</value>
+  </data>
+  <data name="ExceedingCountOfImagesError" xml:space="preserve">
+    <value>Неможливо завантажити так багато фото через обмеження на кількість зображень.</value>
+  </data>
+  <data name="ImageNotFoundError" xml:space="preserve">
+    <value>Зображення не знайдено</value>
+  </data>
+  <data name="ImageStorageError" xml:space="preserve">
+    <value>Помилка виконання</value>
+  </data>
+  <data name="InvalidFormatError" xml:space="preserve">
     <value>Некоректний формат фото</value>
   </data>
-  <data name="InvalidImageResolutionError" xml:space="preserve">
+  <data name="InvalidResolutionError" xml:space="preserve">
     <value>Некоректні довжина/висота фото</value>
   </data>
-  <data name="InvalidImageSizeError" xml:space="preserve">
+  <data name="InvalidSizeError" xml:space="preserve">
     <value>Некоректний розмір фото</value>
   </data>
-  <data name="NoImagesForUploading" xml:space="preserve">
-    <value>Немає зображень для завантаження</value>
+  <data name="NoGivenImagesError" xml:space="preserve">
+    <value>Не вибрано жодного зображення</value>
   </data>
-  <data name="NotFoundError" xml:space="preserve">
-    <value>Зображення не знайдено</value>
+  <data name="RemovingError" xml:space="preserve">
+    <value>Виникла помилка під час видалення</value>
   </data>
   <data name="UnexpectedValidationError" xml:space="preserve">
     <value>Будь-ласка, переконайтесь у коректності фото</value>
   </data>
-  <data name="UploadImagesError" xml:space="preserve">
-    <value>Виникла помилка під час завантаження</value>
+  <data name="UpdateEntityError" xml:space="preserve">
+    <value>Виникли деякі проблеми з даними</value>
   </data>
-  <data name="WorkshopEntityNotFoundWhileUploadingError" xml:space="preserve">
-    <value>Неможливо знайти гурток для завантаження зображення</value>
+  <data name="UploadingError" xml:space="preserve">
+    <value>Виникла помилка під час завантаження</value>
   </data>
 </root>

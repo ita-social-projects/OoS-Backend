@@ -18,6 +18,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Services
@@ -31,6 +32,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IRatingService> ratingService;
         private Mock<ILogger<WorkshopService>> logger;
         private Mock<IMapper> mapper;
+        private Mock<IWorkshopImagesService> workshopImagesService;
 
         [SetUp]
         public void SetUp()
@@ -40,13 +42,15 @@ namespace OutOfSchool.WebApi.Tests.Services
             ratingService = new Mock<IRatingService>();
             logger = new Mock<ILogger<WorkshopService>>();
             mapper = new Mock<IMapper>();
+            workshopImagesService = new Mock<IWorkshopImagesService>();
             workshopService =
                 new WorkshopService(
                     workshopRepository.Object,
                     classRepository.Object,
                     ratingService.Object,
                     logger.Object,
-                    mapper.Object);
+                    mapper.Object,
+                    workshopImagesService.Object);
         }
 
         #region Create
