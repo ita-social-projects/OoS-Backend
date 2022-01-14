@@ -125,7 +125,7 @@ namespace OutOfSchool.WebApi.Services
 
         private async Task<bool> Synchronize(IEnumerable<ElasticsearchSyncRecord> elasticsearchSyncRecords, ElasticsearchSyncOperation elasticsearchSyncOperation)
         {
-            var ids = elasticsearchSyncRecords.Where(es => es.Operation == elasticsearchSyncOperation).Select(es => es.RecordId);
+            var ids = elasticsearchSyncRecords.Where(es => es.Operation == elasticsearchSyncOperation).Select(es => es.RecordId).ToList();
 
             if (!ids.Any())
             {
