@@ -151,17 +151,6 @@ namespace OutOfSchool.WebApi.Services.Images
 
         protected abstract List<Image<TEntity>> GetEntityImages(TEntity entity);
 
-        protected virtual void AddImageToEntity(TEntity entity, Image<TEntity> image)
-        {
-            GetEntityImages(entity).Add(image);
-        }
-
-        protected virtual void RemoveImageFromEntity(TEntity entity, string imageId)
-        {
-            GetEntityImages(entity).RemoveAt(
-                GetEntityImages(entity).FindIndex(i => i.ExternalStorageId == imageId));
-        }
-
         protected async Task<MultipleKeyValueOperationResult> UploadManyImagesProcessAsync(
             TEntity entity,
             IList<IFormFile> images)
@@ -236,6 +225,17 @@ namespace OutOfSchool.WebApi.Services.Images
                 logger.LogError(ex, "Unreal to update entity while uploading images.");
                 return OperationResult.Failed(ImagesOperationErrorCode.UpdateEntityError.GetOperationError());
             }
+        }
+
+        private void AddImageToEntity(TEntity entity, Image<TEntity> image)
+        {
+            GetEntityImages(entity).Add(image);
+        }
+
+        private void RemoveImageFromEntity(TEntity entity, string imageId)
+        {
+            GetEntityImages(entity).RemoveAt(
+                GetEntityImages(entity).FindIndex(i => i.ExternalStorageId == imageId));
         }
     }
 }

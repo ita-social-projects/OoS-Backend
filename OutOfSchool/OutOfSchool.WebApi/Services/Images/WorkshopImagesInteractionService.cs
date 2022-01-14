@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
@@ -14,7 +15,8 @@ namespace OutOfSchool.WebApi.Services.Images
         ChangeableImagesInteractionService<IWorkshopRepository, Workshop, Guid>,
         IWorkshopImagesInteractionService
     {
-        public WorkshopImagesInteractionService(IImageService imageService, IWorkshopRepository repository, ILogger<ImageInteractionBaseService<IWorkshopRepository, Workshop, Guid>> logger, ImagesLimits<Workshop> limits) : base(imageService, repository, logger, limits)
+        public WorkshopImagesInteractionService(IImageService imageService, IWorkshopRepository repository, ILogger<ImageInteractionBaseService<IWorkshopRepository, Workshop, Guid>> logger, IOptions<ImagesLimits<Workshop>> limits)
+            : base(imageService, repository, logger, limits.Value)
         {
         }
 
