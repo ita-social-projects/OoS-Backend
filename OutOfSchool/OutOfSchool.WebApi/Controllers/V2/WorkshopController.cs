@@ -286,9 +286,14 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return new ForbidResult("Forbidden to delete workshops of another providers.");
             }
 
-            await combinedWorkshopService.Delete(id).ConfigureAwait(false);
+            var imagesResults = await combinedWorkshopService.RemoveManyImagesAsync(workshop.Id, workshop.ImageIds).ConfigureAwait(false);
+            if (imagesResults.Succeeded)
+            {
+                await combinedWorkshopService.Delete(id).ConfigureAwait(false);
+                return NoContent();
+            }
 
-            return NoContent();
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
         private async Task<bool> IsUserProvidersOwner(Guid providerId)
