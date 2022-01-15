@@ -3,6 +3,10 @@ using System.Linq.Expressions;
 
 namespace OutOfSchool.WebApi.Common.SearchFilters
 {
+    /// <summary>
+    /// Represents a filter class to find entities from repositories.
+    /// </summary>
+    /// <typeparam name="TEntity">Entity type.</typeparam>
     public class EntitySearchFilter<TEntity>
     {
         public EntitySearchFilter(

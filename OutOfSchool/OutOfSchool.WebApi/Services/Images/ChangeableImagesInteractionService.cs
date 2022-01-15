@@ -15,12 +15,25 @@ using OutOfSchool.WebApi.Models.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
+    /// <summary>
+    /// Represents a class for operations with images.
+    /// </summary>
+    /// <typeparam name="TRepository">Repository type.</typeparam>
+    /// <typeparam name="TEntity">Entity type.</typeparam>
+    /// <typeparam name="TKey">The type of entity Id.</typeparam>
     public abstract class ChangeableImagesInteractionService<TRepository, TEntity, TKey> :
         ImageInteractionBaseService<TRepository, TEntity, TKey>,
         IChangeableImagesInteractionService<TKey>
         where TRepository : IEntityRepositoryBase<TKey, TEntity>, IImageInteractionRepository
         where TEntity : class, new()
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChangeableImagesInteractionService{TRepository, TEntity, TKey}"/> class.
+        /// </summary>
+        /// <param name="imageService">Service for interacting with an image storage.</param>
+        /// <param name="repository">Repository with images.</param>
+        /// <param name="limits">Describes limits of images for entities.</param>
+        /// <param name="logger">Logger.</param>
         protected ChangeableImagesInteractionService(
             IImageService imageService,
             TRepository repository,
@@ -30,6 +43,7 @@ namespace OutOfSchool.WebApi.Services.Images
         {
         }
 
+        /// <inheritdoc/>
         public virtual async Task<ImageChangingResult> ChangeImagesAsync(TKey entityId, IList<string> oldImageIds, IList<IFormFile> newImages)
         {
             _ = oldImageIds ?? throw new ArgumentNullException(nameof(oldImageIds));
@@ -60,8 +74,10 @@ namespace OutOfSchool.WebApi.Services.Images
             return result;
         }
 
+        /// <inheritdoc/>
         protected abstract override EntitySearchFilter<TEntity> GetFilterForSearchingEntityByIdWithIncludedImages(TKey entityId);
 
+        /// <inheritdoc/>
         protected abstract override List<Image<TEntity>> GetEntityImages(TEntity entity);
     }
 }

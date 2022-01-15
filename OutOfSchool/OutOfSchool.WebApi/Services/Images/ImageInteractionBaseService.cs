@@ -19,12 +19,26 @@ using OutOfSchool.WebApi.Extensions;
 namespace OutOfSchool.WebApi.Services.Images
 {
     // TODO: make synchronization to remove incorrect operations' ids
+
+    /// <summary>
+    /// Represents a base class for operations with images.
+    /// </summary>
+    /// <typeparam name="TRepository">Repository type.</typeparam>
+    /// <typeparam name="TEntity">Entity type.</typeparam>
+    /// <typeparam name="TKey">The type of entity Id.</typeparam>
     public abstract class ImageInteractionBaseService<TRepository, TEntity, TKey> : IImageInteractionService<TKey>
         where TRepository : IEntityRepositoryBase<TKey, TEntity>, IImageInteractionRepository
         where TEntity : class, new()
     {
         private readonly ILogger<ImageInteractionBaseService<TRepository, TEntity, TKey>> logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageInteractionBaseService{TRepository, TEntity, TKey}"/> class.
+        /// </summary>
+        /// <param name="imageService">Service for interacting with an image storage.</param>
+        /// <param name="repository">Repository with images.</param>
+        /// <param name="limits">Describes limits of images for entities.</param>
+        /// <param name="logger">Logger.</param>
         protected ImageInteractionBaseService(
             IImageService imageService,
             TRepository repository,
@@ -37,12 +51,22 @@ namespace OutOfSchool.WebApi.Services.Images
             this.logger = logger;
         }
 
+        /// <summary>
+        /// Gets a service for interacting with an image storage..
+        /// </summary>
         protected IImageService ImageService { get; }
 
+        /// <summary>
+        /// Gets a repository with images.
+        /// </summary>
         protected TRepository Repository { get; }
 
+        /// <summary>
+        /// Gets limits of images for entity of <c>TEntity</c> type.
+        /// </summary>
         protected ImagesLimits<TEntity> Limits { get; }
 
+        /// <inheritdoc/>
         public virtual async Task<OperationResult> UploadImageAsync(TKey entityId, IFormFile image)
         {
             if (image == null)
@@ -72,6 +96,7 @@ namespace OutOfSchool.WebApi.Services.Images
             return await EntityUpdateAsync(entity).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<OperationResult> RemoveImageAsync(TKey entityId, string imageId)
         {
             if (string.IsNullOrEmpty(imageId))
@@ -105,6 +130,7 @@ namespace OutOfSchool.WebApi.Services.Images
             return await EntityUpdateAsync(entity).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(TKey entityId, IList<IFormFile> images)
         {
             if (images == null || images.Count <= 0)
@@ -121,6 +147,7 @@ namespace OutOfSchool.WebApi.Services.Images
             return await UploadManyImagesProcessAsync(entity, images).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(TKey entityId, IList<string> imageIds)
         {
             if (imageIds == null || imageIds.Count <= 0)
@@ -137,27 +164,61 @@ namespace OutOfSchool.WebApi.Services.Images
             return await RemoveManyImagesProcessAsync(workshop, imageIds).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Gets the entity with included images that is required to be non-null.
+        /// </summary>
+        /// <param name="entityId">Entity id.</param>
+        /// <returns>The instance of <see cref="Task"/> that represents <c>TEntity</c>.</returns>
+        /// <exception cref="InvalidOperationException">When entity is null.</exception>
         protected async Task<TEntity> GetRequiredEntityWithIncludedImages(TKey entityId)
         {
             var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
             return entity ?? throw new InvalidOperationException($"Unreal to find {nameof(TEntity)} with id {entityId}.");
         }
 
+        /// <summary>
+        /// Gets the entity with included images.
+        /// </summary>
+        /// <param name="entityId">Entity id.</param>
+        /// <returns>The instance of <see cref="Task"/> that represents <c>TEntity</c>.</returns>
+        /// <exception cref="InvalidOperationException">When filter is not specified.</exception>
         protected virtual async Task<TEntity> GetEntityWithIncludedImages(TKey entityId)
         {
             var filter = GetFilterForSearchingEntityByIdWithIncludedImages(entityId) ?? throw new InvalidOperationException($"Filter for {nameof(TEntity)} is null.");
             return (await Repository.GetByFilter(filter.Predicate, filter.IncludedProperties).ConfigureAwait(false)).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Determines if the given count of images is allowed for this entity.
+        /// </summary>
+        /// <param name="entity">Entity.</param>
+        /// <param name="countOfFiles">Count of files.</param>
+        /// <returns>The <see cref="bool"/> value which shows if uploading is allowed.</returns>
         protected virtual bool AllowedToUploadGivenAmountOfFiles(TEntity entity, int countOfFiles)
         {
             return GetEntityImages(entity).Count + countOfFiles <= Limits.MaxCountOfFiles;
         }
 
+        /// <summary>
+        /// Specifies the filter for getting entity with images by id from a repository.
+        /// </summary>
+        /// <param name="entityId">Entity id.</param>
+        /// <returns>The instance of <see cref="EntitySearchFilter{TEntity}"/>.</returns>
         protected abstract EntitySearchFilter<TEntity> GetFilterForSearchingEntityByIdWithIncludedImages(TKey entityId);
 
+        /// <summary>
+        /// Returns images list for the given entity.
+        /// </summary>
+        /// <param name="entity">Entity.</param>
+        /// <returns>The <see cref="List{T}"/> that contains <see cref="Image{TEntity}"/>.</returns>
         protected abstract List<Image<TEntity>> GetEntityImages(TEntity entity);
 
+        /// <summary>
+        /// The process of uploading images for the entity.
+        /// </summary>
+        /// <param name="entity">Entity.</param>
+        /// <param name="images">Images for uploading.</param>
+        /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="MultipleKeyValueOperationResult"/>.</returns>
         protected async Task<MultipleKeyValueOperationResult> UploadManyImagesProcessAsync(
             TEntity entity,
             IList<IFormFile> images)
@@ -188,6 +249,12 @@ namespace OutOfSchool.WebApi.Services.Images
             return imagesUploadingResult.MultipleKeyValueOperationResult;
         }
 
+        /// <summary>
+        /// The process of removing images for the entity.
+        /// </summary>
+        /// <param name="entity">Entity.</param>
+        /// <param name="imageIds">Image ids for removing.</param>
+        /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="MultipleKeyValueOperationResult"/>.</returns>
         protected async Task<MultipleKeyValueOperationResult> RemoveManyImagesProcessAsync(
             TEntity entity,
             IList<string> imageIds)
@@ -220,6 +287,11 @@ namespace OutOfSchool.WebApi.Services.Images
             return imagesRemovingResult.MultipleKeyValueOperationResult;
         }
 
+        /// <summary>
+        /// Updates the entity.
+        /// </summary>
+        /// <param name="entity">Entity.</param>
+        /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="OperationResult"/>.</returns>
         protected async Task<OperationResult> EntityUpdateAsync(TEntity entity)
         {
             try
