@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common.SearchFilters;
 using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Models.Images;
 
@@ -27,8 +30,6 @@ namespace OutOfSchool.WebApi.Services.Images
         {
         }
 
-        //protected abstract override IList<Image<TEntity>> EntityImages { get; }
-
         public virtual async Task<ImageChangingResult> ChangeImagesAsync(TKey entityId, IList<string> oldImageIds, IList<IFormFile> newImages)
         {
             _ = oldImageIds ?? throw new ArgumentNullException(nameof(oldImageIds));
@@ -36,12 +37,13 @@ namespace OutOfSchool.WebApi.Services.Images
             var entity = await GetRequiredEntityWithIncludedImages(entityId).ConfigureAwait(false);
 
             var result = new ImageChangingResult();
+            var entityImages = GetEntityImages(entity);
 
-            var shouldRemove = !new HashSet<string>(oldImageIds).SetEquals(GetEntityImages(entity).Select(x => x.ExternalStorageId));
+            var shouldRemove = !new HashSet<string>(oldImageIds).SetEquals(entityImages.Select(x => x.ExternalStorageId));
 
             if (shouldRemove)
             {
-                var removingList = GetEntityImages(entity).Select(x => x.ExternalStorageId).Except(oldImageIds).ToList();
+                var removingList = entityImages.Select(x => x.ExternalStorageId).Except(oldImageIds).ToList();
                 result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(entity, removingList).ConfigureAwait(false);
             }
 
@@ -58,7 +60,7 @@ namespace OutOfSchool.WebApi.Services.Images
             return result;
         }
 
-        protected abstract override Task<TEntity> GetEntityWithIncludedImages(TKey entityId);
+        protected abstract override EntitySearchFilter<TEntity> GetFilterForSearchingEntityByIdWithIncludedImages(TKey entityId);
 
         protected abstract override List<Image<TEntity>> GetEntityImages(TEntity entity);
     }

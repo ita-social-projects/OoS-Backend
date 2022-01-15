@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources.Codes;
+using OutOfSchool.WebApi.Common.SearchFilters;
 using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
 
@@ -40,8 +42,6 @@ namespace OutOfSchool.WebApi.Services.Images
         protected TRepository Repository { get; }
 
         protected ImagesLimits<TEntity> Limits { get; }
-
-        //protected abstract IList<Image<TEntity>> EntityImages { get; }
 
         public virtual async Task<OperationResult> UploadImageAsync(TKey entityId, IFormFile image)
         {
@@ -85,7 +85,8 @@ namespace OutOfSchool.WebApi.Services.Images
                 return OperationResult.Failed(ImagesOperationErrorCode.EntityNotFoundError.GetOperationError());
             }
 
-            var ableToRemove = GetEntityImages(entity).Select(x => x.ExternalStorageId).Contains(imageId);
+            var entityImages = GetEntityImages(entity);
+            var ableToRemove = entityImages.Select(x => x.ExternalStorageId).Contains(imageId);
 
             if (!ableToRemove)
             {
@@ -99,7 +100,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
             }
 
-            GetEntityImages(entity).RemoveAt(GetEntityImages(entity).FindIndex(i => i.ExternalStorageId == imageId));
+            RemoveImageFromEntity(entity, imageId);
 
             return await EntityUpdateAsync(entity).ConfigureAwait(false);
         }
@@ -142,12 +143,18 @@ namespace OutOfSchool.WebApi.Services.Images
             return entity ?? throw new InvalidOperationException($"Unreal to find {nameof(TEntity)} with id {entityId}.");
         }
 
+        protected virtual async Task<TEntity> GetEntityWithIncludedImages(TKey entityId)
+        {
+            var filter = GetFilterForSearchingEntityByIdWithIncludedImages(entityId) ?? throw new InvalidOperationException($"Filter for {nameof(TEntity)} is null.");
+            return (await Repository.GetByFilter(filter.Predicate, filter.IncludedProperties).ConfigureAwait(false)).FirstOrDefault();
+        }
+
         protected virtual bool AllowedToUploadGivenAmountOfFiles(TEntity entity, int countOfFiles)
         {
             return GetEntityImages(entity).Count + countOfFiles <= Limits.MaxCountOfFiles;
         }
 
-        protected abstract Task<TEntity> GetEntityWithIncludedImages(TKey entityId);
+        protected abstract EntitySearchFilter<TEntity> GetFilterForSearchingEntityByIdWithIncludedImages(TKey entityId);
 
         protected abstract List<Image<TEntity>> GetEntityImages(TEntity entity);
 
@@ -234,8 +241,9 @@ namespace OutOfSchool.WebApi.Services.Images
 
         private void RemoveImageFromEntity(TEntity entity, string imageId)
         {
-            GetEntityImages(entity).RemoveAt(
-                GetEntityImages(entity).FindIndex(i => i.ExternalStorageId == imageId));
+            var entityImages = GetEntityImages(entity);
+            entityImages.RemoveAt(
+                entityImages.FindIndex(i => i.ExternalStorageId == imageId));
         }
     }
 }

@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common.SearchFilters;
 using OutOfSchool.WebApi.Config.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
-    public class WorkshopImagesInteractionService :
+    public sealed class WorkshopImagesInteractionService :
         ChangeableImagesInteractionService<IWorkshopRepository, Workshop, Guid>,
         IWorkshopImagesInteractionService
     {
@@ -20,9 +22,9 @@ namespace OutOfSchool.WebApi.Services.Images
         {
         }
 
-        protected override async Task<Workshop> GetEntityWithIncludedImages(Guid entityId)
+        protected override EntitySearchFilter<Workshop> GetFilterForSearchingEntityByIdWithIncludedImages(Guid entityId)
         {
-            return (await Repository.GetByFilter(x => x.Id == entityId, nameof(Workshop.WorkshopImages)).ConfigureAwait(false)).FirstOrDefault();
+            return new EntitySearchFilter<Workshop>(x => x.Id == entityId, nameof(Workshop.WorkshopImages));
         }
 
         protected override List<Image<Workshop>> GetEntityImages(Workshop entity) => entity.WorkshopImages;
