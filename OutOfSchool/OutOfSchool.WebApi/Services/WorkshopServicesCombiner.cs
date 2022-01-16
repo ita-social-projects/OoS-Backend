@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
@@ -72,6 +73,22 @@ namespace OutOfSchool.WebApi.Services
                     .ConfigureAwait(false);
 
             return workshop;
+        }
+
+        public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+        {
+            var workshops = await workshopService.PartialUpdateByProvider(provider).ConfigureAwait(false);
+
+            foreach (var workshop in workshops)
+            {
+                await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                    ElasticsearchSyncEntity.Workshop,
+                    workshop.Id,
+                    ElasticsearchSyncOperation.Update)
+                    .ConfigureAwait(false);
+            }
+
+            return workshops;
         }
 
         /// <inheritdoc/>

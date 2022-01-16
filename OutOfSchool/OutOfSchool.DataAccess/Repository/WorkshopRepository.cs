@@ -61,5 +61,19 @@ namespace OutOfSchool.Services.Repository
         {
             return await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
         }
+
+        public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+        {
+            var workshops = db.Workshops.Where(ws => ws.ProviderId == provider.Id);
+            await workshops.ForEachAsync(ws =>
+                                            {
+                                                ws.ProviderTitle = provider.FullTitle;
+                                                ws.ProviderOwnership = provider.Ownership;
+                                            });
+
+            await db.SaveChangesAsync();
+
+            return await workshops.ToListAsync();
+        }
     }
 }
