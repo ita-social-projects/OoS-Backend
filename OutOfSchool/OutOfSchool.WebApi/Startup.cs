@@ -20,6 +20,7 @@ using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Redis;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
@@ -148,11 +149,13 @@ namespace OutOfSchool.WebApi
 
             // Images limits options
             services.Configure<ImagesLimits<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
+            services.Configure<ImagesLimits<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
 
             // Image options
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
             services.AddSingleton<MongoDb>();
             services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
+            services.Configure<ImageOptions<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -213,12 +216,14 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
 
+            services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
-            services.AddTransient<IImageService, ImageService>();
-            services.AddTransient<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
-            services.AddTransient<IInformationAboutPortalService, InformationAboutPortalService>();
+            services.AddScoped<IImageService, ImageService>();
+            services.AddScoped<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
+            services.AddScoped<IImageValidatorService<Teacher>, ImageValidatorService<Teacher>>();
+            services.AddTransient<IAboutPortalService, AboutPortalService>();
             services.AddTransient<ISupportInformationService, SupportInformationService>();
-            services.AddTransient<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
+            services.AddScoped<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -231,13 +236,15 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Direction>, EntityRepository<Direction>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
             services.AddTransient<IEntityRepository<InstitutionStatus>, EntityRepository<InstitutionStatus>>();
-            services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
+            services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
-            services.AddTransient<IEntityRepository<InformationAboutPortal>, EntityRepository<InformationAboutPortal>>();
             services.AddTransient<IEntityRepository<SupportInformation>, EntityRepository<SupportInformation>>();
 
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
+            services.AddTransient<ISensitiveEntityRepository<AboutPortal>, SensitiveEntityRepository<AboutPortal>>();
+            services.AddTransient<ISensitiveEntityRepository<AboutPortalItem>, SensitiveEntityRepository<AboutPortalItem>>();
+
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services
                 .AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository
@@ -251,6 +258,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
+            services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
@@ -267,6 +275,16 @@ namespace OutOfSchool.WebApi
             services.AddFeatureManagement(Configuration.GetSection(FeatureManagementConfig.Name));
             services.Configure<FeatureManagementConfig>(Configuration.GetSection(FeatureManagementConfig.Name));
 
+            // ApplicationsConstraints options
+            services.AddOptions<ApplicationsConstraintsConfig>()
+                .Bind(Configuration.GetSection(ApplicationsConstraintsConfig.Name))
+                .ValidateDataAnnotations();
+
+            // Redis options
+            services.AddOptions<RedisConfig>()
+                .Bind(Configuration.GetSection(RedisConfig.Name))
+                .ValidateDataAnnotations();
+
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
             services.AddSwagger(swaggerConfig);
@@ -276,6 +294,14 @@ namespace OutOfSchool.WebApi
             services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddSignalR();
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration =
+                    $"{Configuration.GetValue<string>("Redis:Server")}:{Configuration.GetValue<int>("Redis:Port")},password={Configuration.GetValue<string>("Redis:Password")}";
+            });
+
+            services.AddSingleton<ICacheService, CacheService>();
         }
     }
 }

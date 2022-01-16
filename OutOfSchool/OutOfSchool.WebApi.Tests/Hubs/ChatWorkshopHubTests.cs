@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -36,6 +37,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         private Mock<IClientProxy> clientProxyMock;
         private Mock<HubCallerContext> hubCallerContextMock;
         private Mock<IGroupManager> groupsMock;
+        private Mock<IStringLocalizer<SharedResource>> localizerMock;
 
         [SetUp]
         public void SetUp()
@@ -51,6 +53,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             clientProxyMock = new Mock<IClientProxy>();
             hubCallerContextMock = new Mock<HubCallerContext>();
             groupsMock = new Mock<IGroupManager>();
+            localizerMock = new Mock<IStringLocalizer<SharedResource>>();
 
             chatHub = new ChatWorkshopHub(
                 loggerMock.Object,
@@ -58,7 +61,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 roomServiceMock.Object,
                 validationServiceMock.Object,
                 workshopRepositoryMock.Object,
-                parentRepositoryMock.Object)
+                parentRepositoryMock.Object,
+                localizerMock.Object)
             {
                 Clients = clientsMock.Object,
                 Context = hubCallerContextMock.Object,

@@ -34,31 +34,34 @@ namespace OutOfSchool.WebApi.Services.Images
         public ChangeableImagesInteractionService(
             IImageService imageService,
             IEntityRepositoryBase<TKey, TEntity> repository,
-            ILogger<ChangeableImagesInteractionService<TEntity, TKey>> logger,
-            ImagesLimits<TEntity> limits)
+            ImagesLimits<TEntity> limits,
+            ILogger<ChangeableImagesInteractionService<TEntity, TKey>> logger)
             : base(imageService, repository, limits, logger)
         {
         }
 
         /// <inheritdoc/>
-        public async Task<ImageChangingResult> ChangeImagesAsync(TKey entityId, IList<string> oldImageIds, IList<IFormFile> newImages)
+        public async Task<MultipleImageChangingResult> ChangeImagesAsync(TKey entityId, IList<string> oldImageIds, IList<IFormFile> newImages)
         {
             _ = oldImageIds ?? throw new ArgumentNullException(nameof(oldImageIds));
 
             Logger.LogDebug($"Changing images for entity [Id = {entityId}] was started.");
             var entity = await GetRequiredEntityWithIncludedImages(entityId).ConfigureAwait(false);
 
-            var result = new ImageChangingResult();
+            var result = new MultipleImageChangingResult();
 
             var shouldRemove = !new HashSet<string>(oldImageIds).SetEquals(entity.Images.Select(x => x.ExternalStorageId));
 
             if (shouldRemove)
             {
                 var removingList = entity.Images.Select(x => x.ExternalStorageId).Except(oldImageIds).ToList();
-                result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(entity, removingList).ConfigureAwait(false);
+                if (removingList.Any())
+                {
+                    result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(entity, removingList).ConfigureAwait(false);
+                }
             }
 
-            if (result.RemovedMultipleResult is { HasResults: true })
+            if (result.RemovedMultipleResult?.RemovedIds?.Count > 0)
             {
                 entity = await GetRequiredEntityWithIncludedImages(entityId).ConfigureAwait(false);
             }
@@ -69,6 +72,32 @@ namespace OutOfSchool.WebApi.Services.Images
             }
 
             Logger.LogDebug($"Changing images for entity [Id = {entityId}] was finished.");
+            return result;
+        }
+
+        public async Task<ImageChangingResult> UpdateImageAsync(TKey entityId, string oldImageId, IFormFile newImage)
+        {
+            Logger.LogDebug($"Updating an image for entity [Id = {entityId}] was started.");
+            var entity = await GetRequiredEntityWithIncludedImages(entityId).ConfigureAwait(false);
+
+            var result = new ImageChangingResult();
+
+            if (!string.IsNullOrEmpty(oldImageId))
+            {
+                result.RemovingResult = await RemoveImageProcessAsync(entity, oldImageId).ConfigureAwait(false);
+            }
+
+            if (!result.RemovingResult.Succeeded)
+            {
+                return result;
+            }
+
+            if (newImage != null)
+            {
+                result.UploadingResult = await UploadImageProcessAsync(entity, newImage).ConfigureAwait(false);
+            }
+
+            Logger.LogDebug($"Updating an image for entity [Id = {entityId}] was finished.");
             return result;
         }
     }

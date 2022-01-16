@@ -1,0 +1,24 @@
+cert-manager:
+  enabled: true
+  installCRDs: true
+  prometheus:
+    enabled: false
+
+ingress-nginx:
+  enabled: false
+webapi:
+  enabled: false
+identity:
+  enabled: false
+frontend:
+  enabled: false
+mysql:
+  enabled: false
+phpmyadmin:
+  enabled: false
+elasticsearch:
+  enabled: false
+kibana:
+  enabled: false
+mongodb:
+  enabled: false

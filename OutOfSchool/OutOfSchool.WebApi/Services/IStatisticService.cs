@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Services
     public interface IStatisticService
     {
         /// <summary>
-        /// Get popular directions.
+        /// Get popular directions using Redis.
         /// </summary>
         /// <param name="limit">Number of entries to return.</param>
         /// <param name="city">City to look for.</param>
@@ -18,11 +18,27 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<DirectionStatistic>> GetPopularDirections(int limit, string city);
 
         /// <summary>
-        /// Get popular workshops.
+        /// Get popular directions from DB.
+        /// </summary>
+        /// <param name="limit">Number of entries to return.</param>
+        /// <param name="city">City to look for.</param>
+        /// <returns>List of popular categories.</returns>
+        Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, string city);
+
+        /// <summary>
+        /// Get popular workshops using Redis.
         /// </summary>
         /// <param name="limit">Number of entries to return.</param>
         /// <param name="city">City to look for.</param>
         /// <returns>List of popular workshops.</returns>
         Task<IEnumerable<WorkshopCard>> GetPopularWorkshops(int limit, string city);
+
+        /// <summary>
+        /// Get popular workshops from DB.
+        /// </summary>
+        /// <param name="limit">Number of entries to return.</param>
+        /// <param name="city">City to look for.</param>
+        /// <returns>List of popular workshops.</returns>
+        Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, string city);
     }
 }

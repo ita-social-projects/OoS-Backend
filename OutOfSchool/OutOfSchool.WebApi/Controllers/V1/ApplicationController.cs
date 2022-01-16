@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -194,41 +195,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Get Applications by Status.
-        /// </summary>
-        /// <param name="status">Application status.</param>
-        /// <returns>List of applications.</returns>
-        /// <response code="200">Entities were found by given status.</response>
-        /// <response code="204">No entity with given status was found.</response>
-        /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.ApplicationRead)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet]
-        public async Task<IActionResult> GetByStatus(int status)
-        {
-            try
-            {
-                ValidateStatus(status);
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-            var applications = await applicationService.GetAllByStatus(status).ConfigureAwait(false);
-
-            if (!applications.Any())
-            {
-                return NoContent();
-            }
-
-            return Ok(applications);
-        }
-
-        /// <summary>
         /// Method for creating a new application.
         /// </summary>
         /// <param name="applicationDto">Application entity to add.</param>
@@ -236,11 +202,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="201">Entity was created and returned with Id.</response>
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
+        /// <response code="429">If too many requests have been sent.</response>
         /// <response code="500">If any server error occurs.</response>
         [HasPermission(Permissions.ApplicationAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
         public async Task<IActionResult> Create(ApplicationDto applicationDto)
@@ -265,12 +233,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 applicationDto.Status = ApplicationStatus.Pending;
 
-                var application = await applicationService.Create(applicationDto).ConfigureAwait(false);
+                var applicationWithAdditionalData = await applicationService.Create(applicationDto).ConfigureAwait(false);
 
-                return CreatedAtAction(
-                    nameof(GetById),
-                    new { id = application.Id, },
-                    application);
+                if (applicationWithAdditionalData.AdditionalData > 0)
+                {
+                    Response.Headers.Add("Access-Control-Expose-Headers", "Retry-After");
+                    Response.Headers.Add("Retry-After", applicationWithAdditionalData.AdditionalData.ToString(CultureInfo.InvariantCulture));
+                    return StatusCode(StatusCodes.Status429TooManyRequests);
+                }
+                else
+                {
+                    return CreatedAtAction(
+                        nameof(GetById),
+                        new { id = applicationWithAdditionalData.Model.Id, },
+                        applicationWithAdditionalData.Model);
+                }
             }
             catch (ArgumentException ex)
             {
@@ -352,15 +329,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
-            }
-        }
-
-        // TODO: Ask Polina about status validation
-        private void ValidateStatus(int status)
-        {
-            if (status < 1 || status > 7)
-            {
-                throw new ArgumentOutOfRangeException(nameof(status), localizer["Status should be from 1 to 7"]);
             }
         }
 

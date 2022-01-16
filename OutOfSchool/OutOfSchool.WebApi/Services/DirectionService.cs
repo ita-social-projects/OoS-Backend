@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
@@ -18,6 +19,7 @@ namespace OutOfSchool.WebApi.Services
     public class DirectionService : IDirectionService
     {
         private readonly IEntityRepository<Direction> repository;
+        private readonly IWorkshopRepository repositoryWorkshop;
         private readonly ILogger<DirectionService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -25,12 +27,18 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="DirectionService"/> class.
         /// </summary>
         /// <param name="entityRepository">Repository for Direction entity.</param>
+        /// <param name="repositoryWorkshop">Workshop repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public DirectionService(IEntityRepository<Direction> entityRepository, ILogger<DirectionService> logger, IStringLocalizer<SharedResource> localizer)
+        public DirectionService(
+            IEntityRepository<Direction> entityRepository,
+            IWorkshopRepository repositoryWorkshop,
+            ILogger<DirectionService> logger,
+            IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = entityRepository;
+            this.repositoryWorkshop = repositoryWorkshop;
             this.logger = logger;
         }
 
@@ -51,17 +59,29 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task<Result<DirectionDto>> Delete(long id)
         {
             logger.LogInformation($"Deleting Direction with Id = {id} started.");
 
             var entity = new Direction() { Id = id };
+
+            var workShops = await repositoryWorkshop.GetByFilter(w => w.DirectionId == id).ConfigureAwait(false);
+            if (workShops.Any())
+            {
+                return Result<DirectionDto>.Failed(new OperationError
+                    {
+                        Code = "400",
+                        Description = localizer["Some workshops assosiated with this direction. Deletion prohibited."],
+                    });
+            }
 
             try
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
                 logger.LogInformation($"Direction with Id = {id} succesfully deleted.");
+
+                return Result<DirectionDto>.Success(entity.ToModel());
             }
             catch (DbUpdateConcurrencyException)
             {

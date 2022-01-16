@@ -5,6 +5,8 @@ using AutoMapper;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Teachers;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util.CustomComparers;
 
 namespace OutOfSchool.WebApi.Util
@@ -42,20 +44,22 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Teachers, opt => opt.MapFrom((dto, entity, dest, ctx) =>
                 {
                     var dtoTeachers = ctx.Mapper.Map<List<Teacher>>(dto.Teachers);
-                    if (dest is { } && dest.Any())
-                    {
-                        var dtoTeachersHs = new HashSet<Teacher>(dtoTeachers, new TeacherComparerWithoutFK());
-                        foreach (var destTeacher in dest.Where(destTeacher => dtoTeachersHs.Remove(destTeacher)))
-                        {
-                            dtoTeachersHs.Add(destTeacher);
-                        }
-
-                        return dtoTeachersHs.ToList();
-                    }
-
-                    return dtoTeachers;
+                    return WorkshopTeachersMapperFunction(dtoTeachers, dest);
                 }))
-                .ForMember(dest => dest.Images, opt => opt.Ignore());
+                .ForMember(dest => dest.Images, opt => opt.Ignore())
+                .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+
+            CreateMap<WorkshopCreationDto, Workshop>()
+                .IncludeBase<WorkshopDTO, Workshop>()
+                .ForMember(dest => dest.Teachers, opt => opt.MapFrom((dto, entity, dest, ctx) =>
+                {
+                    var dtoTeachers = ctx.Mapper.Map<List<Teacher>>(dto.Teachers);
+                    return WorkshopTeachersMapperFunction(dtoTeachers, dest);
+                })); // duplicate for Teachers here because WorkshopCreationDto hides WorkshopDTO.Teachers
+
+            CreateMap<WorkshopUpdateDto, Workshop>()
+                .IncludeBase<WorkshopDTO, Workshop>()
+                .ForMember(dest => dest.Teachers, opt => opt.Ignore());
 
             CreateMap<Workshop, WorkshopDTO>()
                 .ForMember(
@@ -78,7 +82,20 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.User, opt => opt.Ignore())
                  .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore());
 
-            CreateMap<Teacher, TeacherDTO>().ReverseMap();
+            CreateMap<TeacherDTO, Teacher>()
+                .ForMember(dest => dest.AvatarImageId, opt => opt.Ignore())
+                .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
+            CreateMap<TeacherCreationDto, Teacher>()
+                .IncludeBase<TeacherDTO, Teacher>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.WorkshopId));
+            CreateMap<TeacherUpdateDto, Teacher>()
+                .IncludeBase<TeacherDTO, Teacher>()
+                .ForMember(dest => dest.Id, opt => opt.UseDestinationValue())
+                .ForMember(dest => dest.WorkshopId, opt => opt.UseDestinationValue());
+            CreateMap<TeacherUpdateDto, TeacherCreationDto>();
+            CreateMap<Teacher, TeacherDTO>();
+
             CreateMap<DateTimeRange, DateTimeRangeDto>()
                 .ForMember(dtr => dtr.Workdays, cfg => cfg.MapFrom(dtr => dtr.Workdays.ToDaysBitMaskEnumerable().ToList()));
             CreateMap<DateTimeRangeDto, DateTimeRange>()
@@ -88,14 +105,20 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Direction, opt => opt.Ignore());
             CreateMap<Workshop, WorkshopCard>()
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo))
+                .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
                 .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id));
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
 
-            CreateMap<InformationAboutPortal, InformationAboutPortalDto>().ReverseMap()
-                .ForMember(c => c.Id, m => m.Ignore());
+            CreateMap<AboutPortalItem, AboutPortalItemDto>().ReverseMap();
+            CreateMap<AboutPortal, AboutPortalDto>()
+                .ForMember(dest => dest.AboutPortalItems, opt => opt.MapFrom((dto, entity, dest, ctx) =>
+                {
+                    var dtoItems = ctx.Mapper.Map<List<AboutPortalItem>>(dto.AboutPortalItems);
+                    return dtoItems;
+                }));
+            CreateMap<AboutPortalDto, AboutPortal>();
 
             CreateMap<SupportInformation, SupportInformationDto>().ReverseMap()
                 .ForMember(c => c.Id, m => m.Ignore());
@@ -128,6 +151,22 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(c => c.Email))
                 .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
                 .ForMember(dest => dest.AccountStatus, m => m.Ignore());
+        }
+
+        private static List<Teacher> WorkshopTeachersMapperFunction(List<Teacher> dtoTeachers, List<Teacher> dest)
+        {
+            if (dest is { } && dest.Any())
+            {
+                var dtoTeachersHs = new HashSet<Teacher>(dtoTeachers, new TeacherComparerWithoutFK());
+                foreach (var destTeacher in dest.Where(destTeacher => dtoTeachersHs.Remove(destTeacher)))
+                {
+                    dtoTeachersHs.Add(destTeacher);
+                }
+
+                return dtoTeachersHs.ToList();
+            }
+
+            return dtoTeachers;
         }
     }
 }

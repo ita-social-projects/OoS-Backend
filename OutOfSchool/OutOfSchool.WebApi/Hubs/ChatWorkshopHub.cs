@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OutOfSchool.Common;
@@ -21,7 +23,6 @@ namespace OutOfSchool.WebApi.Hubs
     [Authorize(Roles = "provider,parent")]
     public class ChatWorkshopHub : Hub
     {
-        // TODO: add/change proper logging of all exceptions
         // TODO: split method SendMessageToOthersInGroupAsync into two separate for parent and provider
 
         // This collection tracks users with their connections.
@@ -34,23 +35,26 @@ namespace OutOfSchool.WebApi.Hubs
         private readonly IValidationService validationService;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IParentRepository parentRepository;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatWorkshopHub"/> class.
         /// </summary>
+        /// <param name="logger">Logger.</param>
         /// <param name="chatMessageService">Service for ChatMessage entities.</param>
         /// <param name="chatRoomService">Service for ChatRoom entities.</param>
         /// <param name="validationService">Service for validation parameters.</param>
         /// <param name="workshopRepository">Repository for workshop entities.</param>
         /// <param name="parentRepository">Repository for parent entities.</param>
-        /// <param name="logger">Logger.</param>
+        /// <param name="localizer">Localizer.</param>
         public ChatWorkshopHub(
             ILogger<ChatWorkshopHub> logger,
             IChatMessageWorkshopService chatMessageService,
             IChatRoomWorkshopService chatRoomService,
             IValidationService validationService,
             IWorkshopRepository workshopRepository,
-            IParentRepository parentRepository)
+            IParentRepository parentRepository,
+            IStringLocalizer<SharedResource> localizer)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.messageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
@@ -58,15 +62,16 @@ namespace OutOfSchool.WebApi.Hubs
             this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
             this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
             this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
+            this.localizer = localizer;
         }
 
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
+            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
 
-            var userRoleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Role)} from HttpContext.");
+            var userRoleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
+            LogErrorThrowExceptionIfPropertyIsNull(userRoleName, nameof(userRoleName));
 
             Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
 
@@ -92,8 +97,8 @@ namespace OutOfSchool.WebApi.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
+            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
 
             logger.LogDebug($"UserId: {userId} connection:{Context.ConnectionId} disconnected.");
 
@@ -121,7 +126,7 @@ namespace OutOfSchool.WebApi.Hubs
                     var messageToLog = $"{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)} with UserId:{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)} is trying to send message with one of not his own parameters: {nameof(chatMessageWorkshopCreateDto.WorkshopId)} {chatMessageWorkshopCreateDto.WorkshopId}, {nameof(chatMessageWorkshopCreateDto.ParentId)} {chatMessageWorkshopCreateDto.ParentId}";
                     logger.LogWarning(messageToLog);
 
-                    var messageForUser = "Some of the message parameters were wrong. Please check your message and try again.";
+                    var messageForUser = localizer["Some of the message parameters were wrong. Please check your message and try again."];
                     await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
                     return;
                 }
@@ -147,13 +152,13 @@ namespace OutOfSchool.WebApi.Hubs
             catch (AuthenticationException exception)
             {
                 logger.LogWarning(exception.Message);
-                var messageForUser = "Can not get some user's claims. Please check your authentication or contact technical support.";
+                var messageForUser = localizer["Can not get some user's claims. Please check your authentication or contact technical support."];
                 await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
                 logger.LogError(exception.Message);
-                var messageForUser = "Server error. Please try again later or contact technical support.";
+                var messageForUser = localizer["Server error. Please try again later or contact technical support."];
                 await Clients.Caller.SendAsync("ReceiveMessageInChatGroup", messageForUser).ConfigureAwait(false);
             }
         }
@@ -200,11 +205,11 @@ namespace OutOfSchool.WebApi.Hubs
 
         private Task<bool> UserHasRigtsForChatRoomAsync(Guid workshopId, Guid parentId)
         {
-            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
+            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
 
-            var userRole = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Role)} from HttpContext.");
+            var userRole = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
+            LogErrorThrowExceptionIfPropertyIsNull(userRole, nameof(userRole));
 
             bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
@@ -214,6 +219,16 @@ namespace OutOfSchool.WebApi.Hubs
             }
 
             return validationService.UserIsParentOwnerAsync(userId, parentId);
+        }
+
+        private void LogErrorThrowExceptionIfPropertyIsNull(string claim, string nameofClaim)
+        {
+            if (claim is null)
+            {
+                var errorText = "Can not get user's claim {0} from HttpContext.";
+                logger.LogError(string.Format(CultureInfo.InvariantCulture, errorText, nameofClaim));
+                throw new AuthenticationException(localizer[errorText, nameofClaim]);
+            }
         }
     }
 }

@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Http;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
+using OutOfSchool.WebApi.Models.Teachers;
+using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -16,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Teacher to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherDTO> Create(TeacherDTO dto);
+        Task<TeacherCreationResultDto> Create(TeacherCreationDto dto);
 
         /// <summary>
         /// Get all entities.
@@ -36,7 +40,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Teacher to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherDTO> Update(TeacherDTO dto);
+        Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto);
 
         /// <summary>
         /// Delete entity.

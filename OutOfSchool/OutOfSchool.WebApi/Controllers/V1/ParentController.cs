@@ -189,8 +189,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             try
             {
                 string userId = User.FindFirst("sub")?.Value;
-                var parents = await serviceParent.GetAll().ConfigureAwait(false);
-                var parentDTO = parents.FirstOrDefault(x => x.UserId == userId);
+                var parentDTO = await serviceParent.GetByUserId(userId).ConfigureAwait(false);
                 return this.Ok(parentDTO);
             }
             catch (ArgumentException ex)

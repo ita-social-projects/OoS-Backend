@@ -1,5 +1,8 @@
 # Terraform Files
 
+## DEPRECATION WARNING
+Does not work after switching to MySQL.
+
 ## Prereq
 
 1. Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)

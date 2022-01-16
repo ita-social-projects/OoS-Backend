@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using MongoDB.Bson.IO;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.Images;
@@ -32,6 +33,26 @@ namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers
                 GeneralMessage = multipleResults.GeneralResultMessage,
                 HasResults = multipleResults.HasResults,
                 Results = CreateResultsResponse(multipleResults),
+            };
+        }
+
+        public static SingleImageUploadingResponse CreateSingleUploadingResult(this OperationResult result)
+        {
+            _ = result ?? throw new ArgumentNullException(nameof(result));
+
+            return new SingleImageUploadingResponse()
+            {
+                Result = result,
+            };
+        }
+
+        public static SingleImageRemovingResponse CreateSingleRemovingResult(this OperationResult result)
+        {
+            _ = result ?? throw new ArgumentNullException(nameof(result));
+
+            return new SingleImageRemovingResponse()
+            {
+                Result = result,
             };
         }
 

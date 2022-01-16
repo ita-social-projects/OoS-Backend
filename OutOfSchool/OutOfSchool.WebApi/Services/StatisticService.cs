@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Redis;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -24,6 +25,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Direction> directionRepository;
         private readonly ILogger<StatisticService> logger;
         private readonly IMapper mapper;
+        private readonly ICacheService cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StatisticService"/> class.
@@ -34,13 +36,15 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="directionRepository">Direction repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Automapper DI service.</param>
+        /// <param name="cache">Redis cache service.</param>
         public StatisticService(
             IApplicationRepository applicationRepository,
             IWorkshopRepository workshopRepository,
             IRatingService ratingService,
             IEntityRepository<Direction> directionRepository,
             ILogger<StatisticService> logger,
-            IMapper mapper)
+            IMapper mapper,
+            ICacheService cache)
         {
             this.applicationRepository = applicationRepository;
             this.workshopRepository = workshopRepository;
@@ -48,6 +52,7 @@ namespace OutOfSchool.WebApi.Services
             this.directionRepository = directionRepository;
             this.logger = logger;
             this.mapper = mapper;
+            this.cache = cache;
         }
 
         // Return categories with 1 SQL query
@@ -57,6 +62,17 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation("Getting popular categories started.");
 
+            string cacheKey = $"GetPopularDirections_{limit}_{city}";
+
+            var popularDirections = await cache.GetOrAddAsync(cacheKey, () =>
+                GetPopularDirectionsFromDatabase(limit, city)).ConfigureAwait(false);
+
+            return popularDirections;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, string city)
+        {
             var workshops = workshopRepository.Get<int>();
             var applications = applicationRepository.Get<int>();
 
@@ -74,7 +90,6 @@ namespace OutOfSchool.WebApi.Services
                     WorkshopsCount = g.Count() as int?,
                 });
 
-
             var directionsWithApplications = applications
                 .GroupBy(a => a.Workshop.DirectionId)
                 .Select(g => new
@@ -83,7 +98,6 @@ namespace OutOfSchool.WebApi.Services
                     ApplicationsCount = g.Count() as int?,
                 });
 
-            // LEFT JOIN DirectionsWithWorkshops with DirectionsWithApplications
             var directionsWithCounts = directionsWithWorkshops
                 .GroupJoin(
                     directionsWithApplications,
@@ -105,7 +119,6 @@ namespace OutOfSchool.WebApi.Services
 
             var allDirections = directionRepository.Get<int>();
 
-            // LEFT JOIN DirectionsWithCounts with all Directions
             var statistics = allDirections
                 .GroupJoin(
                     directionsWithCounts,
@@ -137,8 +150,19 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation("Getting popular workshops started.");
 
+            string cacheKey = $"GetPopularWorkshops_{limit}_{city}";
+
+            var workshopsResult = await cache.GetOrAddAsync(cacheKey, () =>
+                GetPopularWorkshopsFromDatabase(limit, city)).ConfigureAwait(false);
+
+            return workshopsResult;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, string city)
+        {
             var workshops = workshopRepository
-                .Get<int>(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
+                    .Get<int>(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
 
             if (!string.IsNullOrWhiteSpace(city))
             {

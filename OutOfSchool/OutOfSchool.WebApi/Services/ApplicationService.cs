@@ -7,9 +7,11 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
@@ -21,15 +23,14 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class ApplicationService : IApplicationService
     {
-        // TODO: move to configuration
-        private const int ApplicationsLimit = 2;
-
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IEntityRepository<Child> childRepository;
         private readonly ILogger<ApplicationService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
+
+        private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationService"/> class.
@@ -40,13 +41,15 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopRepository">Workshop repository.</param>
         /// <param name="childRepository">Child repository.</param>
         /// <param name="mapper">Automapper DI service.</param>
+        /// <param name="applicationsConstraintsConfig">Options for application's constraints.</param>
         public ApplicationService(
             IApplicationRepository repository,
             ILogger<ApplicationService> logger,
             IStringLocalizer<SharedResource> localizer,
             IWorkshopRepository workshopRepository,
             IEntityRepository<Child> childRepository,
-            IMapper mapper)
+            IMapper mapper,
+            IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig)
         {
             this.applicationRepository = repository;
             this.workshopRepository = workshopRepository;
@@ -54,16 +57,41 @@ namespace OutOfSchool.WebApi.Services
             this.localizer = localizer;
             this.childRepository = childRepository;
             this.mapper = mapper;
+
+            try
+            {
+                this.applicationsConstraintsConfig = applicationsConstraintsConfig.Value;
+            }
+            catch (OptionsValidationException ex)
+            {
+                foreach (var failure in ex.Failures)
+                {
+                    logger.LogError(failure);
+                }
+
+                throw;
+            }
         }
 
         /// <inheritdoc/>
-        public async Task<ApplicationDto> Create(ApplicationDto applicationDto)
+        public async Task<ModelWithAdditionalData<ApplicationDto, int>> Create(ApplicationDto applicationDto)
         {
             logger.LogInformation("Application creating started.");
 
             ModelNullValidation(applicationDto);
 
-            await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
+            (bool IsCorrect, int SecondsRetryAfter) resultOfCheck = await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
+
+            if (!resultOfCheck.IsCorrect)
+            {
+                var modelData = new ModelWithAdditionalData<ApplicationDto, int>()
+                {
+                    Description = $"Limit of applications per {applicationsConstraintsConfig.ApplicationsLimitDays} days is exceeded.",
+                    AdditionalData = resultOfCheck.SecondsRetryAfter,
+                };
+
+                return modelData;
+            }
 
             var isChildParent = await CheckChildParent(applicationDto.ParentId, applicationDto.ChildId).ConfigureAwait(false);
 
@@ -79,7 +107,11 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Application with Id = {newApplication?.Id} created successfully.");
 
-            return mapper.Map<ApplicationDto>(newApplication);
+            return new ModelWithAdditionalData<ApplicationDto, int>()
+            {
+                Model = mapper.Map<ApplicationDto>(newApplication),
+                AdditionalData = 0,
+            };
         }
 
         /// <inheritdoc/>
@@ -320,24 +352,36 @@ namespace OutOfSchool.WebApi.Services
             return await children.ContainsAsync(childId).ConfigureAwait(false);
         }
 
-        private async Task CheckApplicationsLimit(ApplicationDto applicationDto)
+        private async Task<(bool IsCorrect, int SecondsRetryAfter)> CheckApplicationsLimit(ApplicationDto applicationDto)
         {
             var endDate = applicationDto.CreationTime;
 
-            var startDate = endDate.AddDays(-7);
+            var startDate = endDate.AddDays(-applicationsConstraintsConfig.ApplicationsLimitDays);
 
             Expression<Func<Application, bool>> filter = a => a.ChildId == applicationDto.ChildId
-                                                              && a.WorkshopId == applicationDto.WorkshopId
-                                                              && a.ParentId == applicationDto.ParentId
-                                                              && (a.CreationTime >= startDate && a.CreationTime <= endDate);
+                                                                && a.WorkshopId == applicationDto.WorkshopId
+                                                                && a.ParentId == applicationDto.ParentId
+                                                                && (a.CreationTime >= startDate && a.CreationTime <= endDate);
 
             var applications = await applicationRepository.GetByFilter(filter).ConfigureAwait(false);
 
-            if (applications.Count() >= ApplicationsLimit)
+            if (applications.Count() >= applicationsConstraintsConfig.ApplicationsLimit)
             {
-                logger.LogInformation($"Operation failed. Limit of applications per week is exceeded.");
-                throw new ArgumentException(localizer["Limit of applications per week is exceeded."]);
+                logger.LogInformation($"Limit of applications per {applicationsConstraintsConfig.ApplicationsLimitDays} days is exceeded.");
+
+                DateTimeOffset dateStartingSendNewApplication = applications
+                    .OrderByDescending(a => a.CreationTime)
+                    .Take(applicationsConstraintsConfig.ApplicationsLimit)
+                    .Last()
+                    .CreationTime
+                    .AddDays(applicationsConstraintsConfig.ApplicationsLimitDays)
+                    .AddSeconds(1);
+
+                return (IsCorrect: false,
+                    SecondsRetryAfter: (int)dateStartingSendNewApplication.Subtract(DateTimeOffset.UtcNow).TotalSeconds);
             }
+
+            return (IsCorrect: true, SecondsRetryAfter: 0);
         }
 
         private IQueryable<Application> GetFiltered(IQueryable<Application> applications, ApplicationFilter filter)

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
@@ -18,6 +19,7 @@ namespace OutOfSchool.WebApi.Services
     public class DepartmentService : IDepartmentService
     {
         private readonly IDepartmentRepository repository;
+        private readonly IWorkshopRepository repositoryWorkshop;
         private readonly ILogger<DepartmentService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -25,12 +27,18 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="DepartmentService"/> class.
         /// </summary>
         /// <param name="entityRepository">Repository for some entity.</param>
+        /// <param name="repositoryWorkshop">Workshop repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public DepartmentService(IDepartmentRepository entityRepository, ILogger<DepartmentService> logger, IStringLocalizer<SharedResource> localizer)
+        public DepartmentService(
+            IDepartmentRepository entityRepository,
+            IWorkshopRepository repositoryWorkshop,
+            ILogger<DepartmentService> logger,
+            IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = entityRepository;
+            this.repositoryWorkshop = repositoryWorkshop;
             this.logger = logger;
         }
 
@@ -51,17 +59,29 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task<Result<DepartmentDto>> Delete(long id)
         {
             logger.LogInformation($"Deleting Department with Id = {id} started.");
 
             var entity = new Department() { Id = id };
+
+            var workShops = await repositoryWorkshop.GetByFilter(w => w.DepartmentId == id).ConfigureAwait(false);
+            if (workShops.Any())
+            {
+                return Result<DepartmentDto>.Failed(new OperationError
+                {
+                    Code = "400",
+                    Description = localizer["Some workshops assosiated with this department. Deletion prohibited."],
+                });
+            }
 
             try
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
                 logger.LogInformation($"Department with Id = {id} succesfully deleted.");
+
+                return Result<DepartmentDto>.Success(entity.ToModel());
             }
             catch (DbUpdateConcurrencyException)
             {

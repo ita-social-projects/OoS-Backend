@@ -11,6 +11,7 @@ using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1
@@ -21,7 +22,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    public class TeacherController : ControllerBase
+    [HasPermission(Permissions.SystemManagement)]
+    public class TeacherController : ControllerBase // check permissions for workshopIds for public controller
     {
         private readonly ITeacherService teacherService;
         private readonly IStringLocalizer<SharedResource> localizer;
@@ -102,7 +104,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(TeacherDTO dto)
+        public async Task<IActionResult> Create(TeacherCreationDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -114,12 +116,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return StatusCode(403, $"Forbidden to create teachers related to workshop withId - {dto.WorkshopId}.");
             }
 
-            var teacher = await teacherService.Create(dto).ConfigureAwait(false);
+            var creationResult = await teacherService.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = teacher.Id, },
-                teacher);
+                new { id = creationResult.Teacher.Id, },
+                creationResult);
         }
 
         /// <summary>
@@ -132,7 +134,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(TeacherDTO dto)
+        public async Task<IActionResult> Update(TeacherUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {

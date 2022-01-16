@@ -39,7 +39,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
         private Mock<IProviderService> providerServiceMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<IImageService> imageServiceMock;
 
         private string userId;
         private Mock<HttpContext> httpContextMoq;
@@ -71,7 +70,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             workshopServiceMoq = new Mock<IWorkshopServicesCombiner>();
             providerServiceMoq = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
-            imageServiceMock = new Mock<IImageService>();
 
             controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object, options.Object)
             {
@@ -419,7 +417,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Email = "email6@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
-                Logo = "image6",
+                CoverImageId = "image6",
                 ProviderId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                 DirectionId = 1,
                 DepartmentId = 1,
@@ -445,7 +443,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LastName = "Brown",
                         MiddleName = "SomeMiddleName",
                         Description = "Description",
-                        Image = "Image",
+                        //Image = "Image",
                         DateOfBirth = DateTime.Parse("2000-01-01"),
                         WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },
@@ -456,7 +454,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LastName = "Snow",
                         MiddleName = "SomeMiddleName",
                         Description = "Description",
-                        Image = "Image",
+                        //Image = "Image",
                         DateOfBirth = DateTime.Parse("1990-01-01"),
                         WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },
@@ -487,7 +485,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email1@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image1",
+                    CoverImageId = "image1",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
@@ -515,7 +513,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email2@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image2",
+                    CoverImageId = "image2",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
@@ -543,7 +541,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email3@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image3",
+                    CoverImageId = "image3",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
@@ -567,7 +565,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email4@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image4",
+                    CoverImageId = "image4",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
@@ -591,7 +589,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email5@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image5",
+                    CoverImageId = "image5",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,

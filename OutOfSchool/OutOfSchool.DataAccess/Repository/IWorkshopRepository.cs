@@ -7,8 +7,6 @@ namespace OutOfSchool.Services.Repository
 {
     public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
     {
-        IUnitOfWork UnitOfWork { get; }
-
         /// <summary>
         /// Checks entity classId existence.
         /// </summary>

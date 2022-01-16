@@ -12,16 +12,6 @@
     <div class="wrapper"> 
         <h1 class="icon_title">@SharedLocalizer["Sign In"].Value.ToUpper()</h1>       
         <div class="icon_wrapper">
-            <div class="icon_social">
-                <a class="icon_social_link" href="''">
-                    <img class="icon-image" src="~/icons/facebook.png" alt="facebook">
-                </a>
-                <a class="icon_social_link" href="''">
-                    <img class="icon-image" src="~/icons/google.png" alt="google">
-                </a>
-            </div>
-            <div class="option-short">@SharedLocalizer["or fill out the form"]</div>
-
             @* <form asp-controller="Auth" asp-action="ExternalLogin" *@
             @*       asp-route-returnUrl="@Model.ReturnUrl" method="post"> *@
             @*     @foreach (var provider in Model.ExternalProviders) *@

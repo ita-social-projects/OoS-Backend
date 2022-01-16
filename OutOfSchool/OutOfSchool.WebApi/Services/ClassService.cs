@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 
@@ -18,6 +19,7 @@ namespace OutOfSchool.WebApi.Services
     public class ClassService : IClassService
     {
         private readonly IClassRepository repository;
+        private readonly IWorkshopRepository repositoryWorkshop;
         private readonly ILogger<ClassService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -25,12 +27,18 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="ClassService"/> class.
         /// </summary>
         /// <param name="entityRepository">Repository for some entity.</param>
+        /// <param name="repositoryWorkshop">Workshop repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
-        public ClassService(IClassRepository entityRepository, ILogger<ClassService> logger, IStringLocalizer<SharedResource> localizer)
+        public ClassService(
+            IClassRepository entityRepository,
+            IWorkshopRepository repositoryWorkshop,
+            ILogger<ClassService> logger,
+            IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
             this.repository = entityRepository;
+            this.repositoryWorkshop = repositoryWorkshop;
             this.logger = logger;
         }
 
@@ -51,17 +59,29 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(long id)
+        public async Task<Result<ClassDto>> Delete(long id)
         {
             logger.LogInformation($"Deleting Class with Id = {id} started.");
 
             var entity = new Class() { Id = id };
+
+            var workShops = await repositoryWorkshop.GetByFilter(w => w.ClassId == id).ConfigureAwait(false);
+            if (workShops.Any())
+            {
+                return Result<ClassDto>.Failed(new OperationError
+                {
+                    Code = "400",
+                    Description = localizer["Some workshops assosiated with this class. Deletion prohibited."],
+                });
+            }
 
             try
             {
                 await repository.Delete(entity).ConfigureAwait(false);
 
                 logger.LogInformation($"Class with Id = {id} succesfully deleted.");
+
+                return Result<ClassDto>.Success(entity.ToModel());
             }
             catch (DbUpdateConcurrencyException)
             {

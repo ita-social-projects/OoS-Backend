@@ -258,7 +258,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Email = "email5@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
-                Logo = "image5",
+                CoverImageId = "image5",
                 ProviderId = Guid.NewGuid(),
                 DirectionId = 1,
                 Direction = "Some title of direction",
@@ -285,7 +285,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                                 LastName = "Brown",
                                 MiddleName = "SomeMiddleName",
                                 Description = "Description",
-                                Image = "Image",
+                                AvatarImageId = "Image",
                                 DateOfBirth = DateTime.Parse("1990-01-01"),
                                 WorkshopId = new Guid("3a217d24-4945-477b-9381-e9ee8dc1f338"),
                             },
@@ -296,7 +296,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                                 LastName = "Snow",
                                 MiddleName = "SomeMiddleName",
                                 Description = "Description",
-                                Image = "Image",
+                                AvatarImageId = "Image",
                                 DateOfBirth = DateTime.Parse("1990-01-01"),
                                 WorkshopId = new Guid("3a217d24-4945-477b-9381-e9ee8dc1f338"),
                             },
@@ -325,7 +325,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
                 Assert.AreEqual(workshopDto.MinAge, result.MinAge);
                 Assert.AreEqual(workshopDto.MaxAge, result.MaxAge);
-                Assert.AreEqual(workshopDto.Logo, result.Photo);
+                Assert.AreEqual(workshopDto.CoverImageId, result.CoverImageId);
                 Assert.AreEqual(workshopDto.DirectionId, result.DirectionId);
                 Assert.AreEqual(workshopDto.Address?.Id, result.Address.Id);
                 Assert.IsNotNull(result.Address);

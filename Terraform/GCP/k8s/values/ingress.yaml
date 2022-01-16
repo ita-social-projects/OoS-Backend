@@ -1,0 +1,44 @@
+ingress-nginx:
+  enabled: true
+  controller:
+    service:
+      enabled: true
+      externalTrafficPolicy: Local
+    autoscaling:
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 2
+    config:
+      proxy-body-size: 10m
+    metrics:
+      enabled: false
+      serviceMonitor:
+        enabled: false
+  defaultBackend:
+    enabled: true
+    autoscaling:
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 2
+  tcp:
+    3306: "outofschool/mysql:3306"
+    27017: "outofschool/mongodb:27017"
+
+webapi:
+  enabled: false
+identity:
+  enabled: false
+frontend:
+  enabled: false
+mysql:
+  enabled: false
+phpmyadmin:
+  enabled: false
+cert-manager:
+  enabled: false
+elasticsearch:
+  enabled: false
+kibana:
+  enabled: false
+mongodb:
+  enabled: false

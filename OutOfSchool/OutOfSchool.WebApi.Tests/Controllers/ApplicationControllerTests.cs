@@ -335,58 +335,14 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetByStatus_WhenStatusIsValid_ShouldReturnOkObjectResult()
-        {
-            // Arrange
-            var status = (int)applications.First().Status;
-            applicationService.Setup(s => s.GetAllByStatus(status))
-                .ReturnsAsync(applications.Where(a => (int)a.Status == status));
-
-            // Act
-            var result = await controller.GetByStatus(status).ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Test]
-        [TestCase(10)]
-        [TestCase(-1)]
-        public async Task GetByStatus_WhenIdIsNotValid_ShouldReturnBadRequest(int status)
-        {
-            // Act
-            var result = await controller.GetByStatus(status).ConfigureAwait(false) as BadRequestObjectResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Test]
-        [TestCase(7)]
-        public async Task GetByStatus_WhenThereIsNoApplicationsWithStatus_ShouldReturnNoContent(int status)
-        {
-            // Arrange
-            applicationService.Setup(s => s.GetAllByStatus(status))
-                .ReturnsAsync(applications.Where(a => (int)a.Status == status));
-
-            // Act
-            var result = await controller.GetByStatus(status).ConfigureAwait(false) as NoContentResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
-        }
-
-        [Test]
         public async Task CreateApplication_WhenModelIsValid_ShouldReturnCreatedAtAction()
         {
             // Arrange
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
 
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
-            applicationService.Setup(s => s.Create(applications.First())).ReturnsAsync(applications.First());
+            applicationService.Setup(s => s.Create(applications.First()))
+                .ReturnsAsync(new ModelWithAdditionalData<ApplicationDto, int> { Model = applications.First(), AdditionalData = 0});
 
             // Act
             var result = await controller.Create(applications.First()).ConfigureAwait(false) as CreatedAtActionResult;
@@ -432,7 +388,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherParent);
-            applicationService.Setup(s => s.Create(applications.First())).ReturnsAsync(applications.First());
+            applicationService.Setup(s => s.Create(applications.First()))
+                .ReturnsAsync(new ModelWithAdditionalData<ApplicationDto, int> { Model = applications.First(), AdditionalData = 0 });
 
             // Act
             var result = await controller.Create(applications.First()).ConfigureAwait(false) as BadRequestObjectResult;
@@ -586,7 +543,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Email = "email6@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
-                Logo = "image6",
+                CoverImageId = "image6",
                 ProviderId = Guid.NewGuid(),
                 DirectionId = 1,
                 DepartmentId = 1,
@@ -612,7 +569,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LastName = "Brown",
                         MiddleName = "SomeMiddleName",
                         Description = "Description",
-                        Image = "Image",
+                        AvatarImageId = "Image",
                         DateOfBirth = DateTime.Parse("2000-01-01"),
                         WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },
@@ -623,7 +580,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LastName = "Snow",
                         MiddleName = "SomeMiddleName",
                         Description = "Description",
-                        Image = "Image",
+                        AvatarImageId = "Image",
                         DateOfBirth = DateTime.Parse("1990-01-01"),
                         WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },
@@ -654,7 +611,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email1@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image1",
+                    CoverImageId = "image1",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
@@ -682,7 +639,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email2@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image2",
+                    CoverImageId = "image2",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
@@ -710,7 +667,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email3@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image3",
+                    CoverImageId = "image3",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
@@ -734,7 +691,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email4@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image4",
+                    CoverImageId = "image4",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,
@@ -758,7 +715,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Email = "email5@gmail.com",
                     MaxAge = 10,
                     MinAge = 4,
-                    Logo = "image5",
+                    CoverImageId = "image5",
                     DirectionId = 1,
                     DepartmentId = 1,
                     ClassId = 1,

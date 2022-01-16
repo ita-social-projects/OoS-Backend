@@ -13,17 +13,7 @@
 <div class="wrapper_body">
     <div class="wrapper">
         <h1 class="icon_title">@SharedLocalizer["Register"].Value.ToUpper()</h1>
-        <h5 class="icon_subtitle">@SharedLocalizer["To be able to apply to clubs or become a service provider"]</h5>
         <div class="icon_wrapper">
-            <div class="icon_social">
-                <a class="icon_social_link" href="''">
-                    <img class="icon-image" src="~/icons/facebook.png" alt="facebook">
-                </a>
-                <a class="icon_social_link" href="''">
-                    <img class="icon-image" src="~/icons/google.png" alt="google">
-                </a>
-            </div>            
-            <div class="option-short">@SharedLocalizer["or fill out the form"]</div>
             <form onsubmit="return validateForm(this)" onkeyup="validateFormOnKeyUp(this)" asp-controller="Auth"
                 asp-action="Register" method="post">
                 <input type="hidden" asp-for="ReturnUrl" />

@@ -23,6 +23,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
         private IClassRepository repo;
+        private IWorkshopRepository repositoryWorkshop;
         private IClassService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger<ClassService>> logger;
@@ -38,9 +39,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             context = new OutOfSchoolDbContext(options);
 
             repo = new ClassRepository(context);
+            repositoryWorkshop = new WorkshopRepository(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ClassService>>();
-            service = new ClassService(repo, logger.Object, localizer.Object);
+            service = new ClassService(repo, repositoryWorkshop, logger.Object, localizer.Object);
 
             SeedDatabase();
         }
@@ -182,6 +184,19 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         [Test]
         [Order(10)]
+        [TestCase(2)]
+        public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsNotSucceeded(long id)
+        {
+            // Act
+            var result = await service.Delete(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.False(result.Succeeded);
+            Assert.That(result.OperationResult.Errors, Is.Not.Empty);
+        }
+
+        [Test]
+        [Order(10)]
         [TestCase(1)]
         public async Task GetByDepartmentId_WhenIdIsValid_ReturnsEntities(long id)
         {
@@ -260,6 +275,17 @@ namespace OutOfSchool.WebApi.Tests.Services
                 };
 
                 ctx.Classes.AddRangeAsync(classes);
+
+                var workshops = new List<Workshop>()
+                {
+                   new Workshop()
+                   {
+                        Title = "Test1",
+                        ClassId = 2,
+                   },
+                };
+
+                ctx.Workshops.AddRangeAsync(workshops);
 
                 ctx.SaveChangesAsync();
             }
