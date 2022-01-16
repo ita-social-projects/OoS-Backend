@@ -212,26 +212,25 @@ namespace OutOfSchool.WebApi.Services
                         providerDto.ActualAddress.Id = checkProvider.ActualAddress?.Id ?? 0;
                     }
 
-                    if (checkProvider.FullTitle != providerDto.FullTitle
-                        || checkProvider.Ownership != providerDto.Ownership)
+                    if (IsNeedInRelatedWorkshopsUpdating(providerDto, checkProvider))
                     {
                         checkProvider = await providerRepository.RunInTransaction(async () =>
+                        {
+                            var workshops = await workshopServiceCombiner
+                                                .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
+                                                .ConfigureAwait(false);
+
+                            mapper.Map(providerDto, checkProvider);
+                            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+
+                            foreach (var workshop in workshops)
                             {
-                                var workshops = await workshopServiceCombiner
-                                                    .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
-                                                    .ConfigureAwait(false);
+                                logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
+                                                        $"in workshops with Id = {workshop?.Id} updated succesfully.");
+                            }
 
-                                mapper.Map(providerDto, checkProvider);
-                                await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-
-                                foreach (var workshop in workshops)
-                                {
-                                    logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
-                                                            $"in workshops with Id = {workshop?.Id} updated succesfully.");
-                                }
-
-                                return checkProvider;
-                            }).ConfigureAwait(false);
+                            return checkProvider;
+                        }).ConfigureAwait(false);
                     }
                     else
                     {
@@ -273,6 +272,12 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Deleting failed. Provider with Id = {id} doesn't exist in the system.");
                 throw;
             }
+        }
+
+        private static bool IsNeedInRelatedWorkshopsUpdating(ProviderDto providerDto, Provider checkProvider)
+        {
+            return checkProvider.FullTitle != providerDto.FullTitle
+                   || checkProvider.Ownership != providerDto.Ownership;
         }
     }
 }
