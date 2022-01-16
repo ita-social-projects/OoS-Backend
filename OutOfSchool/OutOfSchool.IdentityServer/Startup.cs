@@ -100,7 +100,6 @@ namespace OutOfSchool.IdentityServer
             })
                 .AddEntityFrameworkStores<OutOfSchoolDbContext>()
                 .AddDefaultTokenProviders();
-
             services.ConfigureApplicationCookie(c =>
             {
                 c.Cookie.Name = "IdentityServer.Cookie";
