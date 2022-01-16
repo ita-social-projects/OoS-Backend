@@ -137,6 +137,15 @@ namespace OutOfSchool.IdentityServer.Controllers
                 });
             }
 
+            var user = await userManager.FindByEmailAsync(model.Username);
+
+            if (user != null && !user.IsEnabled)
+            {
+                logger.LogInformation($"{path} User is blocked. Login was failed.");
+
+                return BadRequest();
+            }
+
             var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
 
             if (result.Succeeded)
@@ -169,10 +178,10 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="returnUrl"> URL used to redirect user back to client.</param>
         /// <param name="providerRegistration"> bool used to prepare page for provider registration.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [HttpGet]
         public IActionResult Register(string returnUrl = "Login", bool? providerRegistration = null)
         {
-            return View(new RegisterViewModel { ReturnUrl = returnUrl, ProviderRegistration = providerRegistration ?? GetProviderRegistrationFromUri(returnUrl) });
+            return View(new RegisterViewModel { ReturnUrl = returnUrl, ProviderRegistration = providerRegistration
+                ?? GetProviderRegistrationFromUri(returnUrl) });
         }
 
         /// <summary>
@@ -217,6 +226,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 CreatingTime = DateTimeOffset.UtcNow,
                 Role = model.Role,
                 IsRegistered = false,
+                IsEnabled = true,
             };
 
             try

@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.Globalization;
+using System.Net.Http;
 using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -33,6 +34,8 @@ using OutOfSchool.WebApi.Extensions.Startup;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Communication;
+using OutOfSchool.WebApi.Services.Communication.ICommunication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 using Serilog;
@@ -106,6 +109,10 @@ namespace OutOfSchool.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<AppDefaultsConfig>(Configuration.GetSection(AppDefaultsConfig.Name));
+            services.Configure<IdentityServerConfig>(Configuration.GetSection(IdentityServerConfig.Name));
+            services.Configure<ProviderAdminConfig>(Configuration.GetSection(ProviderAdminConfig.Name));
+            services.Configure<CommunicationConfig>(Configuration.GetSection(CommunicationConfig.Name));
+
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
@@ -128,13 +135,27 @@ namespace OutOfSchool.WebApi
                 .AddJsonOptions(options =>
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-            // Images limits options
-            services.Configure<ImagesLimits<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
+            services.AddHttpClient(Configuration["Communication:ClientName"])
+                .AddHttpMessageHandler(handler =>
+                    new RetryPolicyDelegatingHandler(
+                        int.Parse(Configuration["Communication:MaxNumberOfRetries"])))
+                .ConfigurePrimaryHttpMessageHandler(handler =>
+                    new HttpClientHandler()
+                    {
+                        AutomaticDecompression = System.Net.DecompressionMethods.GZip,
+                    });
+
+            services.AddScoped<IProviderAdminService, ProviderAdminService>();
+
+
+
+            // Request options
+            services.Configure<CommonImagesRequestLimits>(Configuration.GetSection(CommonImagesRequestLimits.Name));
 
             // Image options
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
             services.AddSingleton<MongoDb>();
-            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
+            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}"));
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -154,23 +175,20 @@ namespace OutOfSchool.WebApi
             }
 
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                    builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
-                    {
-                        mySqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
-                    }))
+                                //builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion))
+                builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
+                {
+                    mySqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+                }))
                 .AddCustomDataProtection("WebApi");
 
             // Add Elasticsearch client
             var elasticConfig = Configuration
                 .GetSection(ElasticConfig.Name)
                 .Get<ElasticConfig>();
-            services.Configure<ElasticConfig>(Configuration.GetSection(ElasticConfig.Name));
             services.AddElasticsearch(elasticConfig);
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
-
-            services.AddElasticsearchSynchronization(
-                builder => builder.Bind(Configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName)));
 
             // entities services
             services.AddTransient<IAddressService, AddressService>();
@@ -197,8 +215,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
             services.AddTransient<IImageService, ImageService>();
             services.AddTransient<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
-            services.AddTransient<IInformationAboutPortalService, InformationAboutPortalService>();
-            services.AddTransient<IWorkshopImagesService, WorkshopImagesService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -213,8 +229,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<InstitutionStatus>, EntityRepository<InstitutionStatus>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
+            services.AddTransient<IEntityRepository<ProviderAdmin>, EntityRepository<ProviderAdmin>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
-            services.AddTransient<IEntityRepository<InformationAboutPortal>, EntityRepository<InformationAboutPortal>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services
@@ -227,7 +243,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
-            services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
+            services.AddTransient<IImageRepository, ImageRepository>();
+            services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

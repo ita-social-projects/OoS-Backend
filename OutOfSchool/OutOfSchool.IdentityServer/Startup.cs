@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -21,9 +22,12 @@ using Microsoft.Extensions.Hosting;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions.Startup;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.EmailSender;
 using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.KeyManagement;
+using OutOfSchool.IdentityServer.Services;
+using OutOfSchool.IdentityServer.Services.Intefaces;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
@@ -76,14 +80,24 @@ namespace OutOfSchool.IdentityServer
 
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-            services.AddIdentity<User, IdentityRole>(options =>
+            // TODO: Move authority to config
+            services.AddAuthentication("Bearer")
+                .AddIdentityServerAuthentication("Bearer", options =>
                 {
-                    options.Password.RequireDigit = false;
-                    options.Password.RequireLowercase = false;
-                    options.Password.RequireNonAlphanumeric = false;
-                    options.Password.RequireUppercase = false;
-                    options.Password.RequiredLength = 6;
-                })
+                    options.ApiName = "outofschoolapi";
+                    options.Authority = "http://localhost:5443";
+
+                    options.RequireHttpsMetadata = false;
+                });
+
+            services.AddIdentity<User, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequiredLength = 8;
+            })
                 .AddEntityFrameworkStores<OutOfSchoolDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -135,9 +149,12 @@ namespace OutOfSchool.IdentityServer
                 });
 
             services.AddProxy();
-
+            services.AddAutoMapper(typeof(MappingProfile));
             services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
+            services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
+            services.AddTransient<IProviderAdminService, ProviderAdminService>();
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

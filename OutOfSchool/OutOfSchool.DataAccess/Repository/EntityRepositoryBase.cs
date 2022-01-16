@@ -43,24 +43,23 @@ namespace OutOfSchool.Services.Repository
         public virtual async Task<TValue> RunInTransaction(Func<Task<TValue>> operation)
         {
             var executionStrategy = dbContext.Database.CreateExecutionStrategy();
+            return await executionStrategy.Execute(async () =>
+            {
+                using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
 
-            TValue result = null;
-            await executionStrategy.ExecuteAsync(
-                async () =>
+                try
                 {
-                    await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
-                    try
-                    {
-                        result = await operation().ConfigureAwait(false);
-                        await transaction.CommitAsync().ConfigureAwait(false);
-                    }
-                    catch (Exception)
-                    {
-                        await transaction.RollbackAsync().ConfigureAwait(false);
-                        throw;
-                    }
-                });
-            return result;
+                    var result = await operation().ConfigureAwait(false);
+                    await transaction.CommitAsync().ConfigureAwait(false);
+
+                    return result;
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync().ConfigureAwait(false);
+                    throw;
+                }
+            });
         }
 
         /// <inheritdoc/>

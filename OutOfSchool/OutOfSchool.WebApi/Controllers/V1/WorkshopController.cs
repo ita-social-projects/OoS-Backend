@@ -26,6 +26,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     {
         private readonly IWorkshopServicesCombiner combinedWorkshopService;
         private readonly IProviderService providerService;
+        private readonly IProviderAdminService providerAdminService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
 
@@ -34,16 +35,19 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
         /// <param name="providerService">Service for Provider model.</param>
+        /// <param name="providerService">Service for Provider admin model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="options">Application default values.</param>
         public WorkshopController(
             IWorkshopServicesCombiner combinedWorkshopService,
             IProviderService providerService,
+            IProviderAdminService providerAdminService,
             IStringLocalizer<SharedResource> localizer,
             IOptions<AppDefaultsConfig> options)
         {
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
+            this.providerAdminService = providerAdminService;
             this.providerService = providerService;
             this.options = options.Value;
         }
@@ -152,7 +156,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(ModelState);
             }
 
-            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
                 return StatusCode(403, "Forbidden to create workshops for another providers.");
@@ -200,10 +204,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(ModelState);
             }
 
-            var userHasRights = await this.IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
+            var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId, dto.Id).ConfigureAwait(false);
             if (!userHasRights)
             {
-                return StatusCode(403, "Forbidden to update workshops for another providers.");
+                return StatusCode(403, "Forbidden to update workshops, which are not related to you");
             }
 
             return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
@@ -233,10 +237,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return NoContent();
             }
 
-            var userHasRights = await this.IsUserProvidersOwner(workshop.ProviderId).ConfigureAwait(false);
+            var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false);
             if (!userHasRights)
             {
-                return new ForbidResult("Forbidden to delete workshops of another providers.");
+                return StatusCode(403, "Forbidden to delete workshops of another providers.");
             }
 
             await combinedWorkshopService.Delete(id).ConfigureAwait(false);
@@ -244,18 +248,27 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return NoContent();
         }
 
-        private async Task<bool> IsUserProvidersOwner(Guid providerId)
+        private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid providerId, Guid workshopId = default)
         {
             // Provider can create/update/delete a workshop only with it's own ProviderId.
             // Admin can create a work without checks.
-            if (User.IsInRole("provider"))
+            if (User.IsInRole(Role.Provider.ToString().ToLower()))
             {
                 var userId = User.FindFirst("sub")?.Value;
-                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-
-                if (providerId != provider.Id)
+                try {
+                    var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+                    if (providerId != provider.Id)
+                    {
+                        return false;
+                    }
+                }
+                catch (ArgumentException)
                 {
-                    return false;
+                    var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+                    if (!isUserRelatedAdmin)
+                    {
+                        return false;
+                    }
                 }
             }
 

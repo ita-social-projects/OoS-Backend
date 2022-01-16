@@ -99,5 +99,7 @@ namespace OutOfSchool.Services.Models
         public long? InstitutionStatusId { get; set; }
 
         public virtual InstitutionStatus InstitutionStatus { get; set; }
+
+        public virtual ICollection<ProviderAdmin> ProviderAdmins { get; set; }
     }
 }

@@ -24,6 +24,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Provider> Providers { get; set; }
 
+        public DbSet<ProviderAdmin> ProviderAdmins { get; set; }
+
         public DbSet<ChatRoomWorkshop> ChatRoomWorkshops { get; set; }
 
         public DbSet<ChatMessageWorkshop> ChatMessageWorkshops { get; set; }
@@ -62,10 +64,6 @@ namespace OutOfSchool.Services
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
-        public DbSet<InformationAboutPortal> InformationAboutPortal { get; set; }
-
-        public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
-
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();
@@ -83,6 +81,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
             builder.ApplyConfiguration(new ChildConfiguration());
             builder.ApplyConfiguration(new ProviderConfiguration());
+            builder.ApplyConfiguration(new ProviderAdminConfiguration());
             builder.ApplyConfiguration(new WorkshopConfiguration());
             builder.ApplyConfiguration(new WorkshopImagesConfiguration());
 
