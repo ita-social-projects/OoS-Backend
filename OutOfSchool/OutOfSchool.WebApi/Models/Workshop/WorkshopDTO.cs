@@ -111,6 +111,7 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long ClassId { get; set; }
 
+        [Required]
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public AddressDto Address { get; set; }
 

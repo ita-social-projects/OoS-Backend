@@ -98,6 +98,30 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
+        /// Get the nearest city by the filter from the database.
+        /// </summary>
+        /// <param name="filter">Entity that represents searching parameters.</param>
+        /// <returns>The closest city by the filter.</returns>
+        [Route("[action]")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CityDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        public async Task<IActionResult> GetNearestByFilter([FromQuery] CityFilter filter)
+        {
+            var city = await service.GetNearestCityByFilter(filter).ConfigureAwait(false);
+
+            if (city is null)
+            {
+                return NoContent();
+            }
+
+            return Ok(city);
+        }
+
+        /// <summary>
         /// Add a new City to the database.
         /// </summary>
         /// <param name="dto">City entity to add.</param>

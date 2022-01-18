@@ -145,43 +145,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act and Assert
             service.Invoking(w => w.Create(application.ToModel())).Should().Throw<ArgumentException>();
-        }
-
-        //[Test]
-        //public async Task CreateMultipleApplications_WhenModelIsValid_ShouldReturnApplication()
-        //{
-        //    // Act
-        //    var result = await service.Create(applications).ConfigureAwait(false);
-
-        //    // Assert
-        //    result.Should().BeEquivalentTo(applications);
-        //}
-
-        //[Test]
-        //public void CreateMultipleApplications_WhenCollectionIsEmpty_ShouldThrowArgumentException()
-        //{
-        //    // Arrange
-        //    IEnumerable<ApplicationDto> applications = new List<ApplicationDto>();
-
-        //    // Act and Assert
-        //    Assert.ThrowsAsync<ArgumentException>(
-        //        async () => await service.Create(applications).ConfigureAwait(false));
-        //}
-
-        //[Test]
-        //public void CreateMultipleApplications_WhenModelIsNull_ShouldThrowArgumentException()
-        //{
-        //    // Arrange
-        //    ApplicationDto application = null;
-        //    IEnumerable<ApplicationDto> applications = new List<ApplicationDto>()
-        //    {
-        //        application,
-        //    };
-
-        //    // Act and Assert
-        //    Assert.ThrowsAsync<ArgumentException>(
-        //        async () => await service.Create(applications).ConfigureAwait(false));
-        //}
+        }       
 
         [Test]
         public async Task GetAllByWorkshop_WhenIdIsValid_ShouldReturnApplications()

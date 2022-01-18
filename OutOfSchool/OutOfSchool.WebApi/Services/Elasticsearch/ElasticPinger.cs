@@ -3,7 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Nest;
+using OutOfSchool.WebApi.Config;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -12,11 +14,16 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<ElasticPinger> logger;
         private Timer timer;
         private ElasticClient elasticClient;
+        private ElasticConfig elasticConfig;
 
-        public ElasticPinger(ILogger<ElasticPinger> logger, ElasticClient client)
+        public ElasticPinger(
+            ILogger<ElasticPinger> logger,
+            ElasticClient client,
+            IOptions<ElasticConfig> elasticOptions)
         {
             this.logger = logger;
-            this.elasticClient = client;
+            elasticClient = client;
+            elasticConfig = elasticOptions.Value;
         }
 
         public bool IsHealthy { get; private set; }
@@ -28,7 +35,7 @@ namespace OutOfSchool.WebApi.Services
                 cb => IsHealthy = elasticClient.Ping().IsValid,
                 null,
                 TimeSpan.Zero,
-                TimeSpan.FromSeconds(5));
+                TimeSpan.FromSeconds(elasticConfig.PingIntervalSeconds));
             logger.LogInformation("Service did ping");
             return Task.CompletedTask;
         }
