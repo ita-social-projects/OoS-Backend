@@ -5,11 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
@@ -17,9 +14,9 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Common.Resources.Codes;
-using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
@@ -29,14 +26,18 @@ namespace OutOfSchool.WebApi.Services.Images
     public class ImageService : IImageService
     {
         private readonly IExternalImageStorage externalStorage;
-        private readonly IImageRepository imageRepository;
         private readonly IServiceProvider serviceProvider;
         private readonly ILogger<ImageService> logger;
 
-        public ImageService(IExternalImageStorage externalStorage, IWorkshopRepository workshopRepository, IImageRepository imageRepository, IServiceProvider serviceProvider, ILogger<ImageService> logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageService"/> class.
+        /// </summary>
+        /// <param name="externalStorage">Storage for images.</param>
+        /// <param name="serviceProvider">Provides access to the app services.</param>
+        /// <param name="logger">Logger.</param>
+        public ImageService(IExternalImageStorage externalStorage, IServiceProvider serviceProvider, ILogger<ImageService> logger)
         {
             this.externalStorage = externalStorage;
-            this.imageRepository = imageRepository;
             this.serviceProvider = serviceProvider;
             this.logger = logger;
         }
@@ -46,7 +47,7 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (imageId == null)
             {
-                return Result<ImageDto>.Failed(new OperationError { Code = ImageResourceCodes.NotFoundError, Description = Resources.ImageResource.NotFoundError });
+                return Result<ImageDto>.Failed(ImagesOperationErrorCode.ImageNotFoundError.GetOperationError());
             }
 
             logger.LogDebug($"Getting image by id = {imageId} was started.");
@@ -61,171 +62,181 @@ namespace OutOfSchool.WebApi.Services.Images
                     ContentType = externalImageModel.ContentType,
                 };
 
-                logger.LogInformation($"Image with id {imageId} was successfully got");
+                logger.LogDebug($"Image with id {imageId} was successfully got.");
                 return Result<ImageDto>.Success(imageDto);
             }
             catch (ImageStorageException ex)
             {
-                return Result<ImageDto>.Failed(new OperationError { Code = ImageResourceCodes.NotFoundError, Description = Resources.ImageResource.NotFoundError });
+                logger.LogError(ex, $"Image with id {imageId} wasn't found.");
+                return Result<ImageDto>.Failed(ImagesOperationErrorCode.ImageNotFoundError.GetOperationError());
             }
         }
 
         /// <inheritdoc/>
-        // TODO: check the workshop's images limit in order to prevent uploading too many images into 1 workshop
-        public async Task<MultipleKeyValueOperationResult> UploadManyWorkshopImagesWithUpdatingEntityAsync(
-            Guid workshopId,
-            List<IFormFile> fileCollection)
+        public async Task<ImageUploadingResult> UploadManyImagesAsync<TEntity>(IList<IFormFile> images)
         {
-            if (fileCollection == null || fileCollection.Count <= 0)
+            if (images == null || images.Count <= 0)
             {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.NoImagesForUploading };
+                return new ImageUploadingResult
+                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() } };
             }
 
-            logger.LogDebug($"Uploading {fileCollection.Count} images for workshopId = {workshopId} was started.");
-            var workshopRepository = GetWorkshopRepository();
-            var validator = GetValidator<Workshop>();
-            var workshop = (await workshopRepository.GetByFilter(x => x.Id == workshopId, nameof(Workshop.WorkshopImages)).ConfigureAwait(false)).FirstOrDefault();
-            if (workshop == null)
-            {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.WorkshopEntityNotFoundWhileUploadingError };
-            }
-
-            logger.LogDebug($"Workshop with id = {workshopId} was found.");
+            logger.LogDebug($"Uploading {images.Count} images was started.");
+            var validator = GetValidator<TEntity>();
 
             var savingExternalImageIds = new List<string>();
-            var uploadImageResults = new MultipleKeyValueOperationResult();
+            var uploadingImagesResults = new MultipleKeyValueOperationResult();
 
             try
             {
-                for (short i = 0; i < fileCollection.Count; i++)
+                for (short i = 0; i < images.Count; i++)
                 {
-                    logger.LogDebug($"Started uploading process for {nameof(fileCollection)} id number {i}.");
-                    await using var stream = fileCollection[i].OpenReadStream();
+                    logger.LogDebug($"Started uploading process for {nameof(images)} id number {i}.");
+                    await using var stream = images[i].OpenReadStream();
 
-                    logger.LogDebug($"Started validating process for {nameof(fileCollection)} id number {i}.");
+                    logger.LogDebug($"Started validating process for {nameof(images)} id number {i}.");
                     var validationResult = validator.Validate(stream);
                     if (!validationResult.Succeeded)
                     {
-                        logger.LogError($"Image with {nameof(fileCollection)} id = {i} isn't valid: {string.Join(",", validationResult.Errors)}");
-                        uploadImageResults.Results.Add(i, validationResult);
+                        logger.LogError($"Image with {nameof(images)} id = {i} isn't valid: {string.Join(",", validationResult.Errors)}");
+                        uploadingImagesResults.Results.Add(i, validationResult);
                         continue;
                     }
 
                     logger.LogDebug(
-                        $"Started uploading process into an external storage for {nameof(fileCollection)} id number {i}.");
-                    var imageUploadResult = await UploadImageProcessAsync(stream, fileCollection[i].ContentType).ConfigureAwait(false);
-                    uploadImageResults.Results.Add(i, imageUploadResult.OperationResult);
+                        $"Started uploading process into an external storage for {nameof(images)} id number {i}.");
+                    var imageUploadResult = await UploadImageProcessAsync(stream, images[i].ContentType).ConfigureAwait(false);
+                    uploadingImagesResults.Results.Add(i, imageUploadResult.OperationResult);
                     if (imageUploadResult.Succeeded)
                     {
                         logger.LogDebug(
-                            $"Image with {nameof(fileCollection)} id number {i} was successfully uploaded into an external storage.");
+                            $"Image with {nameof(images)} id number {i} was successfully uploaded into an external storage.");
                         savingExternalImageIds.Add(imageUploadResult.Value);
                     }
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.UploadImagesError };
+                logger.LogError(ex, $"Exception while uploading images, message: {ex.Message}");
+                return new ImageUploadingResult
+                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.UploadingError.GetResourceValue() } };
             }
 
-            try
-            {
-                logger.LogDebug($"Started updating workshop [id = {workshopId}] with uploaded images.");
-                savingExternalImageIds.ForEach(id => workshop.WorkshopImages.Add(new Image<Workshop> { ExternalStorageId = id }));
-                await workshopRepository.Update(workshop).ConfigureAwait(false);
-                logger.LogDebug($"Workshop [id = {workshopId}] was successfully updated.");
-            }
-            catch (Exception ex)
-            {
-                // TODO: mark image ids in order to delete
-                logger.LogError(ex, $"Cannot update workshop with id = {workshopId} because of {ex.Message}");
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = Resources.ImageResource.UploadImagesError };
-            }
-
-            logger.LogInformation($"Uploading images for workshopId = {workshopId} was finished.");
-            return uploadImageResults;
+            logger.LogDebug($"Uploading {images.Count} images was finished.");
+            return new ImageUploadingResult
+            { SavedIds = savingExternalImageIds, MultipleKeyValueOperationResult = uploadingImagesResults };
         }
 
         /// <inheritdoc/>
-        // TODO: check the workshop's images limit in order to prevent uploading too many images into 1 workshop
-        public async Task<OperationResult> UploadWorkshopImageWithUpdatingEntityAsync(Guid workshopId, ImageDto imageDto)
+        public async Task<Result<string>> UploadImageAsync<TEntity>(IFormFile image)
         {
-            if (imageDto == null)
+            if (image == null)
             {
-                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.NoImagesForUploading, Description = Resources.ImageResource.NoImagesForUploading});
+                return Result<string>.Failed(ImagesOperationErrorCode.NoGivenImagesError.GetOperationError());
             }
 
-            logger.LogDebug($"Uploading an image for workshopId = {workshopId} was started.");
-            var workshopRepository = GetWorkshopRepository();
-            var validator = GetValidator<Workshop>();
-            var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
-            if (workshop == null)
-            {
-                return OperationResult.Failed(new OperationError{Code = ImageResourceCodes.WorkshopEntityNotFoundWhileUploadingError, Description = Resources.ImageResource.WorkshopEntityNotFoundWhileUploadingError});
-            }
-
-            logger.LogDebug($"Workshop [id = {workshopId}] was found.");
+            logger.LogDebug("Uploading an image was started.");
+            var validator = GetValidator<TEntity>();
             string externalImageId;
 
             try
             {
                 logger.LogDebug("Started validating process for a given image.");
-                var validationResult = validator.Validate(imageDto.ContentStream);
+                await using var stream = image.OpenReadStream();
+                var validationResult = validator.Validate(stream);
                 if (!validationResult.Succeeded)
                 {
-                    logger.LogError("Image isn't valid.");
-                    return validationResult;
+                    logger.LogError($"Image isn't valid: {string.Join(",", validationResult.Errors)}");
+                    return Result<string>.Failed(validationResult.Errors.ToArray());
                 }
 
                 logger.LogDebug("Started uploading process into an external storage for a given image.");
-                var imageUploadResult = await UploadImageProcessAsync(imageDto.ContentStream, imageDto.ContentType).ConfigureAwait(false);
+                var imageUploadResult = await UploadImageProcessAsync(stream, image.ContentType).ConfigureAwait(false);
                 if (!imageUploadResult.Succeeded)
                 {
-                    logger.LogDebug("The image was successfully uploaded into an external storage.");
-                    return imageUploadResult.OperationResult;
+                    return imageUploadResult;
                 }
 
+                logger.LogDebug("The image was successfully uploaded into an external storage.");
                 externalImageId = imageUploadResult.Value;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Exception while uploading images for workshopId = {workshopId}: {ex.Message}");
-                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UploadImagesError, Description = ImageResourceCodes.UploadImagesError });
+                logger.LogError(ex, $"Exception while uploading images, message: {ex.Message}");
+                return Result<string>.Failed(ImagesOperationErrorCode.UploadingError.GetOperationError());
             }
 
-            try
+            logger.LogDebug("Uploading an image was successfully finished.");
+            return Result<string>.Success(externalImageId);
+        }
+
+        /// <inheritdoc/>
+        public async Task<ImageRemovingResult> RemoveManyImagesAsync(IList<string> imageIds)
+        {
+            if (imageIds == null || imageIds.Count == 0)
             {
-                logger.LogDebug($"Started updating workshop [id = {workshopId}] with uploaded images.");
-                workshop.WorkshopImages.Add(new Image<Workshop> { ExternalStorageId = externalImageId});
-                await workshopRepository.Update(workshop).ConfigureAwait(false);
-                logger.LogDebug($"Workshop [id = {workshopId}] was successfully updated.");
-            }
-            catch (Exception ex)
-            {
-                // TODO: mark image id in order to delete
-                logger.LogError(ex, $"Cannot update workshop with id = {workshopId} because of {ex.Message}");
-                return OperationResult.Failed(new OperationError { Code = ImageResourceCodes.UploadImagesError, Description = Resources.ImageResource.UploadImagesError });
+                return new ImageRemovingResult
+                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() } };
             }
 
-            logger.LogInformation($"Uploading an image for workshopId = {workshopId} was finished.");
-            return OperationResult.Success;
+            logger.LogDebug($"Removing {imageIds.Count} images was started.");
+            var removingExternalImageIds = new List<string>();
+            var removingImagesResults = new MultipleKeyValueOperationResult();
+
+            for (short i = 0; i < imageIds.Count; i++)
+            {
+                var imageRemovingResult = await RemovingImageProcessAsync(imageIds[i]).ConfigureAwait(false);
+                removingImagesResults.Results.Add(i, imageRemovingResult);
+                if (imageRemovingResult.Succeeded)
+                {
+                    logger.LogDebug($"Image with an external id = {imageIds[i]} was successfully deleted.");
+                    removingExternalImageIds.Add(imageIds[i]);
+                }
+            }
+
+            logger.LogDebug($"Removing {imageIds.Count} images was finished.");
+            return new ImageRemovingResult { RemovedIds = removingExternalImageIds, MultipleKeyValueOperationResult = removingImagesResults };
+        }
+
+        /// <inheritdoc/>
+        public async Task<OperationResult> RemoveImageAsync(string imageId)
+        {
+            if (string.IsNullOrEmpty(imageId))
+            {
+                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
+            }
+
+            logger.LogDebug($"Deleting an image with external id = {imageId} was started.");
+            return await RemovingImageProcessAsync(imageId).ConfigureAwait(false);
         }
 
         private async Task<Result<string>> UploadImageProcessAsync(Stream contentStream, string contentType)
         {
             try
             {
-                var imageStorageId = await externalStorage.UploadImageAsync(new ExternalImageModel {ContentStream = contentStream, ContentType = contentType})
+                var imageStorageId = await externalStorage.UploadImageAsync(new ExternalImageModel { ContentStream = contentStream, ContentType = contentType })
                     .ConfigureAwait(false);
 
-                logger.LogDebug("Uploading into an external storage result: Success.");
                 return Result<string>.Success(imageStorageId);
             }
             catch (ImageStorageException ex)
             {
                 logger.LogError(ex, $"Unable to upload image into an external storage because of {ex.Message}.");
-                return Result<string>.Failed(new OperationError { Code = ImageResourceCodes.ImageStorageError, Description = Resources.ImageResource.ImageStorageError });
+                return Result<string>.Failed(ImagesOperationErrorCode.ImageStorageError.GetOperationError());
+            }
+        }
+
+        private async Task<OperationResult> RemovingImageProcessAsync(string imageId)
+        {
+            try
+            {
+                await externalStorage.DeleteImageAsync(imageId).ConfigureAwait(false);
+                return OperationResult.Success;
+            }
+            catch (ImageStorageException ex)
+            {
+                logger.LogError(ex, $"Unreal to delete image with an external id = {imageId}.");
+                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
             }
         }
 
@@ -233,13 +244,6 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             return (IImageValidatorService<T>)serviceProvider.GetService(typeof(IImageValidatorService<T>))
                 ?? throw new NullReferenceException($"Unable to receive ImageValidatorService of type {nameof(T)}");
-        }
-
-        private IWorkshopRepository GetWorkshopRepository()
-        {
-            return (IWorkshopRepository)serviceProvider.GetService(typeof(IWorkshopRepository))
-                   ?? throw new NullReferenceException(
-                       $"Unable to receive service instance of {nameof(IWorkshopRepository)}");
         }
     }
 }

@@ -16,7 +16,7 @@ using NUnit.Framework;
 
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common.TestDataGenerators;
-using OutOfSchool.WebApi.ApiModels;
+
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -363,67 +363,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             result.Should().NotBeNull();
             result.StatusCode.Should().Be(204);
         }
-
-        //[Test]
-        //public async Task CreateMultiple_WhenModelIsValid_ShouldReturnCreatedAtAction()
-        //{
-        //    // Arrange
-        //    var applicationApiModel = new ApplicationApiModel()
-        //    {
-        //        WorkshopId = 1,
-        //        Children = children,
-        //    };
-
-        //    applicationService.Setup(s => s.Create(It.IsAny<IEnumerable<ApplicationDto>>())).ReturnsAsync(applications);
-
-        //    // Act
-        //    var result = await controller.Create(applicationApiModel)
-        //                                 .ConfigureAwait(false) as CreatedAtActionResult;
-
-        //    // Assert
-        //    result.Should().NotBeNull();
-        //    result.StatusCode.Should().Be(201);
-        //}
-
-        //[Test]
-        //public async Task CreateMultiple_WhenModelIsNotValid_ShoulReturnBadRequest()
-        //{
-        //    // Arrange
-        //    var applicationApiModel = new ApplicationApiModel()
-        //    {
-        //        WorkshopId = 1,
-        //        Children = children,
-        //    };
-
-        //    controller.ModelState.AddModelError("CreateApplication", "Invalid model state.");
-
-        //    // Act
-        //    var result = await controller.Create(applicationApiModel).ConfigureAwait(false) as BadRequestObjectResult;
-
-        //    // Assert
-        //    result.Should().NotBeNull();
-        //    result.StatusCode.Should().Be(400);
-        //}
-
-        //[Test]
-        //public async Task CreateMultiple_WhenParametersAreNotValid_ShouldReturnBadRequest()
-        //{
-        //    // Arrange
-        //    var applicationApiModel = new ApplicationApiModel()
-        //    {
-        //        WorkshopId = 1,
-        //        Children = children,
-        //    };
-
-        //    applicationService.Setup(s => s.Create(It.IsAny<IEnumerable<ApplicationDto>>())).ThrowsAsync(new ArgumentException());
-
-        //    // Act
-        //    var result = await controller.Create(applicationApiModel).ConfigureAwait(false) as BadRequestObjectResult;
-
-        //    // Assert
-        //    result.Should().NotBeNull();
-        //    result.StatusCode.Should().Be(400);
-        //}
 
         [Test]
         public async Task CreateApplication_WhenModelIsValid_ShouldReturnCreatedAtAction()

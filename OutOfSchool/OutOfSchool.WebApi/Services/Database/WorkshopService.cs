@@ -2,18 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using AutoMapper;
 using H3Lib;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
@@ -31,6 +38,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IRatingService ratingService;
         private readonly ILogger<WorkshopService> logger;
         private readonly IMapper mapper;
+        private readonly IWorkshopImagesService workshopImagesService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -40,18 +48,21 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Automapper DI service.</param>
+        /// <param name="workshopImagesService">Image service for workshop.</param>
         public WorkshopService(
             IWorkshopRepository workshopRepository,
             IClassRepository classRepository,
             IRatingService ratingService,
             ILogger<WorkshopService> logger,
-            IMapper mapper)
+            IMapper mapper,
+            IWorkshopImagesService workshopImagesService)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
             this.ratingService = ratingService;
             this.logger = logger;
             this.mapper = mapper;
+            this.workshopImagesService = workshopImagesService;
         }
 
         /// <inheritdoc/>
@@ -287,6 +298,21 @@ namespace OutOfSchool.WebApi.Services
         {
             return await workshopRepository.GetByIds(ids).ConfigureAwait(false);
         }
+
+        public async Task<OperationResult> UploadImageAsync(Guid entityId, IFormFile image) =>
+            await workshopImagesService.UploadImageAsync(entityId, image).ConfigureAwait(false);
+
+        public async Task<OperationResult> RemoveImageAsync(Guid entityId, string imageId) =>
+            await workshopImagesService.RemoveImageAsync(entityId, imageId).ConfigureAwait(false);
+
+        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, IList<IFormFile> images) =>
+            await workshopImagesService.UploadManyImagesAsync(entityId, images).ConfigureAwait(false);
+
+        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, IList<string> imageIds) =>
+            await workshopImagesService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
+
+        public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopUpdateDto dto) =>
+            await workshopImagesService.ChangeImagesAsync(dto).ConfigureAwait(false);
 
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
         {

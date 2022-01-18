@@ -1,14 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -145,6 +152,21 @@ namespace OutOfSchool.WebApi.Services
 
             return workshopCards.ToList();
         }
+
+        public async Task<OperationResult> UploadImageAsync(Guid entityId, IFormFile image) =>
+            await workshopService.UploadImageAsync(entityId, image).ConfigureAwait(false);
+
+        public async Task<OperationResult> RemoveImageAsync(Guid entityId, string imageId) =>
+            await workshopService.RemoveImageAsync(entityId, imageId).ConfigureAwait(false);
+
+        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, IList<IFormFile> images) =>
+            await workshopService.UploadManyImagesAsync(entityId, images).ConfigureAwait(false);
+
+        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, IList<string> imageIds) =>
+            await workshopService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
+
+        public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopUpdateDto dto) =>
+            await workshopService.ChangeImagesAsync(dto).ConfigureAwait(false);
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {

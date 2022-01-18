@@ -16,6 +16,11 @@ namespace OutOfSchool.WebApi.Common
         public string GeneralResultMessage { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether the multiple result of the operation is succeeded.
+        /// </summary>
+        public bool Succeeded => HasResults && !HasBadResults;
+
+        /// <summary>
         /// Gets a value indicating whether the <see cref="Results"/> isn't empty.
         /// </summary>
         public bool HasResults => Results.Any();

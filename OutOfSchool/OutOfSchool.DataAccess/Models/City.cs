@@ -18,5 +18,7 @@ namespace OutOfSchool.Services.Models
         public double? Latitude { get; set; } = default;
 
         public double? Longitude { get; set; } = default;
+
+        public ulong GeoHash { get; set; } = default;
     }
 }

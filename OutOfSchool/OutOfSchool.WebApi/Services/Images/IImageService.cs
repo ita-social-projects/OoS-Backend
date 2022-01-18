@@ -6,6 +6,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
@@ -15,30 +16,40 @@ namespace OutOfSchool.WebApi.Services.Images
     public interface IImageService
     {
         /// <summary>
-        /// Gets image by id.
+        /// Gets an image by its id.
         /// </summary>
         /// <param name="imageId">Image id.</param>
-        /// <returns>The instance of <see cref="Result{ImageDto}"/>.</returns>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result{T}"/> of the <see cref="ImageDto"/>, got from the operation.</returns>
         Task<Result<ImageDto>> GetByIdAsync(string imageId);
 
         /// <summary>
-        /// Uploads images for the chosen workshop and then updates it.
+        /// Uploads images into a storage.
         /// </summary>
-        /// <param name="workshopId">It's an Id of Workshop.</param>
-        /// <param name="fileCollection">Contains images to upload.</param>
-        /// <returns>The instance of <see cref="Dictionary{TKey,TValue}"/> that contains results (type of <see cref="OperationResult"/>) for uploading any image.
-        /// This is the pair of keys from fileCollection and appropriate OperationResult.
-        /// It returns the pair of (-1, <see cref="OperationResult"/>) if there are no ways to update the current workshop.</returns>
-        Task<MultipleKeyValueOperationResult> UploadManyWorkshopImagesWithUpdatingEntityAsync(
-            Guid workshopId,
-            List<IFormFile> fileCollection);
+        /// <typeparam name="TEntity">The entity you wanna validate image specs.</typeparam>
+        /// <param name="images">Contains images to upload.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ImageUploadingResult"/> of the operation.</returns>
+        Task<ImageUploadingResult> UploadManyImagesAsync<TEntity>(IList<IFormFile> images);
 
         /// <summary>
-        /// Uploads the given image for the chosen workshop and then updates it.
+        /// Uploads the given image into a storage.
         /// </summary>
-        /// <param name="workshopId">It's an Id of Workshop.</param>
-        /// <param name="imageDto">Contains the image.</param>
-        /// <returns>The instance of <see cref="OperationResult"/> that describes the result of uploading.</returns>
-        Task<OperationResult> UploadWorkshopImageWithUpdatingEntityAsync(Guid workshopId, ImageDto imageDto);
+        /// <typeparam name="TEntity">The entity you wanna validate image specs.</typeparam>
+        /// <param name="image">Contains the image.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result{T}"/> of the <see cref="string"/>, got from the operation.</returns>
+        Task<Result<string>> UploadImageAsync<TEntity>(IFormFile image);
+
+        /// <summary>
+        /// Removes images from a storage.
+        /// </summary>
+        /// <param name="imageIds">Image Ids.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ImageRemovingResult"/> of the operation.</returns>
+        Task<ImageRemovingResult> RemoveManyImagesAsync(IList<string> imageIds);
+
+        /// <summary>
+        /// Uploads the given image into a storage.
+        /// </summary>
+        /// <param name="imageId">Image Id.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="OperationResult"/> of the operation.</returns>
+        Task<OperationResult> RemoveImageAsync(string imageId);
     }
 }

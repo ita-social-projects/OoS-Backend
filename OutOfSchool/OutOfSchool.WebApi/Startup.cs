@@ -128,13 +128,13 @@ namespace OutOfSchool.WebApi
                 .AddJsonOptions(options =>
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-            // Request options
-            services.Configure<CommonImagesRequestLimits>(Configuration.GetSection(CommonImagesRequestLimits.Name));
+            // Images limits options
+            services.Configure<ImagesLimits<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
 
             // Image options
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
             services.AddSingleton<MongoDb>();
-            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}"));
+            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -169,8 +169,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
-            services.AddHostedService<ElasticsearchSynchronizationHostedService>();
-            services.AddTransient<IElasticsearchSynchronizationService, ElasticsearchSynchronizationService>();
+            services.AddElasticsearchSynchronization(
+                builder => builder.Bind(Configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName)));
 
             // entities services
             services.AddTransient<IAddressService, AddressService>();
@@ -199,6 +199,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
             services.AddTransient<IInformationAboutPortalService, InformationAboutPortalService>();
             services.AddTransient<ISupportInformationService, SupportInformationService>();
+            services.AddTransient<IWorkshopImagesService, WorkshopImagesService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -228,7 +229,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
-            services.AddTransient<IImageRepository, ImageRepository>();
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
 
             // Register the Permission policy handlers

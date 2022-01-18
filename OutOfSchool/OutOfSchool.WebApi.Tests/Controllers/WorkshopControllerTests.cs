@@ -40,7 +40,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IProviderService> providerServiceMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<IImageService> imageServiceMock;
-        private Mock<IOptions<CommonImagesRequestLimits>> requestLimitOptionsMock;
 
         private string userId;
         private Mock<HttpContext> httpContextMoq;
