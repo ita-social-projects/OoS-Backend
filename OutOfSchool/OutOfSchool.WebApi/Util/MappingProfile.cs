@@ -114,6 +114,8 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Workshop, WorkshopES>()
                 .ForMember(dest => dest.Rating, opt => opt.Ignore())
                 .ForMember(dest => dest.Direction, opt => opt.Ignore());
+            #warning The next mapping is here to test UI Admin features. Will be removed or refactored
+            CreateMap<ShortUserDto, AdminDto>();
         }
     }
 }
