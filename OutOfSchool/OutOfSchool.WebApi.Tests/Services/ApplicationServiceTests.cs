@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services;
@@ -17,6 +18,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -37,6 +39,9 @@ namespace OutOfSchool.WebApi.Tests.Services
         private List<ApplicationDto> applications;
         private Mock<IMapper> mapper;
 
+        private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
+        //private IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig;
+
         [SetUp]
         public void SetUp()
         {
@@ -49,12 +54,23 @@ namespace OutOfSchool.WebApi.Tests.Services
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ApplicationService>>();
             mapper = new Mock<IMapper>();
+
+            applicationsConstraintsConfig = new Mock<IOptions<ApplicationsConstraintsConfig>>();
+            applicationsConstraintsConfig.Setup(x => x.Value)
+                .Returns(new ApplicationsConstraintsConfig()
+                {
+                    ApplicationsLimit = 2,
+                    ApplicationsLimitDays = 7,
+                });
+
             service = new ApplicationService(
                 applicationRepository,
                 logger.Object,
                 localizer.Object,
                 workshopRepository,
-                childRepository, mapper.Object);
+                childRepository,
+                mapper.Object,
+                applicationsConstraintsConfig.Object);
 
             applications = ApplicationDTOsGenerator.Generate(5);
         }
@@ -105,7 +121,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.Create(toCreate).ConfigureAwait(false);
 
             // Assert
-            AssertApplicationsDTOsAreEqual(toCreate, result);
+            AssertApplicationsDTOsAreEqual(toCreate, result.Model);
         }
 
         [Test]
