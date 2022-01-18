@@ -334,11 +334,11 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(0)]
-        public async Task GetAllByStatus_WhenStatusIsValid_ShouldReturnApplications(int status)
+        public async Task GetAllByStatus_WhenStatusIsValid_ShouldReturnApplications()
         {
             // Arrange
             var existingApplications = WithApplicationsList();
+            var status = (int)existingApplications.First().Status;
             SetupGetAllBy(existingApplications);
 
             // Act
@@ -349,7 +349,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [TestCase(2)]
+        [TestCase(-1)]
+        [TestCase(10)]
         public async Task GetAllByStatus_WhenStatusIsNotValid_ShouldReturnEmptyCollection(int status)
         {
             // Act
@@ -617,6 +618,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 new Application()
                 {
                     Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
+                    Status = ApplicationStatus.Pending,
                     WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
                     ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
@@ -624,6 +626,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 new Application()
                 {
                     Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
+                    Status = ApplicationStatus.Rejected,
                     WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
                     ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
@@ -631,6 +634,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 new Application()
                 {
                     Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                    Status = ApplicationStatus.Pending,
                     WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
                     ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),

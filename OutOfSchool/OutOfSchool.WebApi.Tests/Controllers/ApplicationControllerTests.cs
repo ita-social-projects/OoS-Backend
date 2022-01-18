@@ -88,7 +88,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(200);
+            result.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
 
         [Test]
@@ -102,7 +102,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(204);
+            result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
         }
 
         [Test]
@@ -169,7 +169,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(200);
+            result.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
 
         [Test]
@@ -187,7 +187,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(204);
+            result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
         }
 
         [Test]
@@ -206,7 +206,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Test]
@@ -225,7 +225,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(200);
+            result.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
 
         [Test]
@@ -244,7 +244,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(200);
+            result.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
 
         [Test]
@@ -253,13 +253,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenIdIsNotValid_ShouldReturnBadRequest(Guid id, string property)
         {
             // Act
-            var filter = new ApplicationFilter { Status = (ApplicationStatus)1 };
+            var filter = new ApplicationFilter();
 
             var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Test]
@@ -268,7 +268,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenProviderHasNoApplications_ShouldReturnNoContent(Guid id, string property)
         {
             // Arrange
-            var filter = new ApplicationFilter { Status = (ApplicationStatus)1 };
+            var filter = new ApplicationFilter ();
 
             var newProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666"), UserId = userId };
             var newWorkshop = new WorkshopDTO { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
@@ -288,7 +288,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(204);
+            result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
         }
 
         [Test]
@@ -297,12 +297,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenProviderHasNoRights_ShouldReturnBadRequest(Guid id, string property)
         {
             // Arrange
-            var filter = new ApplicationFilter { Status = (ApplicationStatus)1 };
+            var filter = new ApplicationFilter();
 
             var anotherProvider = new ProviderDto { Id = new Guid("83caa2e6-902a-43b5-9744-8a9d66604777"), UserId = userId };
+            var anotherWorkshop = new WorkshopDTO { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
 
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
             providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherProvider);
+            providerService.Setup(s => s.GetById(id)).ReturnsAsync(anotherProvider);
+            workshopService.Setup(s => s.GetById(id)).ReturnsAsync(anotherWorkshop);
             applicationService.Setup(s => s.GetAllByProvider(id, filter))
                 .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
             applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
@@ -313,7 +316,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Test]
@@ -321,21 +324,21 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetByPropertyId_WhenThereIsNoWorkshopWithId_ShouldReturnBadRequest(Guid id, string property)
         {
             // Arrange
-            var filter = new ApplicationFilter { Status = (ApplicationStatus)1 };
+            var filter = new ApplicationFilter();
 
             // Act
             var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task GetByStatus_WhenStatusIsValid_ShouldReturnOkObjectResult(int status)
+        public async Task GetByStatus_WhenStatusIsValid_ShouldReturnOkObjectResult()
         {
             // Arrange
+            var status = (int)applications.First().Status;
             applicationService.Setup(s => s.GetAllByStatus(status))
                 .ReturnsAsync(applications.Where(a => (int)a.Status == status));
 
@@ -344,7 +347,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(200);
+            result.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
 
         [Test]
@@ -357,11 +360,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Test]
-        [TestCase(0)]
+        [TestCase(7)]
         public async Task GetByStatus_WhenThereIsNoApplicationsWithStatus_ShouldReturnNoContent(int status)
         {
             // Arrange
@@ -373,7 +376,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(204);
+            result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
         }
 
         //[Test]
@@ -451,7 +454,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(201);
+            result.StatusCode.Should().Be(StatusCodes.Status201Created);
         }
 
         [Test]
@@ -465,7 +468,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Test]
@@ -479,7 +482,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Test]
@@ -497,7 +500,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Test]
@@ -513,7 +516,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             // Assert
             result.Should().NotBeNull();
-            result.StatusCode.Should().Be(400);
+            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
         }
 
         [Test]
