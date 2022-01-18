@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="applicationDto">Application entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ApplicationDto> Create(ApplicationDto applicationDto);
+        Task<ModelWithAdditionalData<ApplicationDto, int>> Create(ApplicationDto applicationDto);
 
         /// <summary>
         /// Add collection of entities.
