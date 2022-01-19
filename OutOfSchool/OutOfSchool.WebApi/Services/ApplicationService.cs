@@ -366,7 +366,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (applications.Count() >= applicationsConstraintsConfig.ApplicationsLimit)
             {
-                logger.LogInformation($"Operation failed. Limit of applications per week is exceeded.");
+                logger.LogInformation($"Limit of applications per {applicationsConstraintsConfig.ApplicationsLimitDays} days is exceeded.");
 
                 DateTimeOffset dateStartingSendNewApplication = applications
                     .OrderByDescending(a => a.CreationTime)
