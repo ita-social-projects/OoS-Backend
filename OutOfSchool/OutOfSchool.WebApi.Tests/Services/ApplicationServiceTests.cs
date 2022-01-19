@@ -40,7 +40,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IMapper> mapper;
 
         private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
-        //private IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig;
 
         [SetUp]
         public void SetUp()
