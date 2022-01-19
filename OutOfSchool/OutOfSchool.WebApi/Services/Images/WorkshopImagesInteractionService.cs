@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="repository">Workshop repository.</param>
         /// <param name="limits">Describes limits of images for <see cref="Workshop"/>.</param>
         /// <param name="logger">Logger.</param>
-        public WorkshopImagesInteractionService(IImageService imageService, IWorkshopRepository repository, ILogger<ImageInteractionBaseService<Workshop, Guid>> logger, IOptions<ImagesLimits<Workshop>> limits)
+        public WorkshopImagesInteractionService(IImageService imageService, IWorkshopRepository repository, ILogger<WorkshopImagesInteractionService> logger, IOptions<ImagesLimits<Workshop>> limits)
             : base(imageService, repository, logger, limits.Value)
         {
         }

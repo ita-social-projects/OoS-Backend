@@ -35,17 +35,18 @@ namespace OutOfSchool.WebApi.Services.Images
         public ChangeableImagesInteractionService(
             IImageService imageService,
             IEntityRepositoryBase<TKey, TEntity> repository,
-            ILogger<ImageInteractionBaseService<TEntity, TKey>> logger,
+            ILogger<ChangeableImagesInteractionService<TEntity, TKey>> logger,
             ImagesLimits<TEntity> limits)
             : base(imageService, repository, limits, logger)
         {
         }
 
         /// <inheritdoc/>
-        public virtual async Task<ImageChangingResult> ChangeImagesAsync(TKey entityId, IList<string> oldImageIds, IList<IFormFile> newImages)
+        public async Task<ImageChangingResult> ChangeImagesAsync(TKey entityId, IList<string> oldImageIds, IList<IFormFile> newImages)
         {
             _ = oldImageIds ?? throw new ArgumentNullException(nameof(oldImageIds));
 
+            Logger.LogDebug($"Changing images for entity [Id = {entityId}] was started.");
             var entity = await GetRequiredEntityWithIncludedImages(entityId).ConfigureAwait(false);
 
             var result = new ImageChangingResult();
@@ -68,6 +69,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 result.UploadedMultipleResult = await UploadManyImagesProcessAsync(entity, newImages).ConfigureAwait(false);
             }
 
+            Logger.LogDebug($"Changing images for entity [Id = {entityId}] was finished.");
             return result;
         }
     }
