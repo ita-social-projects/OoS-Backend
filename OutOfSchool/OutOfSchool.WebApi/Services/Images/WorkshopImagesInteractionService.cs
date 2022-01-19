@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Common.SearchFilters;
 using OutOfSchool.WebApi.Config.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
