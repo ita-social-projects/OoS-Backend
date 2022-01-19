@@ -67,8 +67,9 @@ namespace OutOfSchool.WebApi.Services
                 foreach (var failure in ex.Failures)
                 {
                     logger.LogError(failure);
-                    throw;
                 }
+
+                throw;
             }
         }
 
