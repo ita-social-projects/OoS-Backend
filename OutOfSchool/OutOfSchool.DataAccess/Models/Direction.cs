@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Direction
+    public class Direction : IKeyedEntity<long>
     {
         public long Id { get; set; }
 

@@ -3,7 +3,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
-    public class ElasticsearchSyncRecord
+    public class ElasticsearchSyncRecord : IKeyedEntity<Guid>
     {
         public Guid Id { get; set; }
 

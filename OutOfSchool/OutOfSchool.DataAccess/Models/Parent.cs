@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Parent
+    public class Parent : IKeyedEntity<Guid>
     {
         public Parent()
         {

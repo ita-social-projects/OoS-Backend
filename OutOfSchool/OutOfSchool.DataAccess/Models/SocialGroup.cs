@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
 {
-    public class SocialGroup
+    public class SocialGroup : IKeyedEntity<long>
     {
         public SocialGroup()
         {

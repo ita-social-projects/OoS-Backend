@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
 {
-    public class InformationAboutPortal
+    public class InformationAboutPortal : IKeyedEntity<Guid>
     {
         public Guid Id { get; set; }
 
