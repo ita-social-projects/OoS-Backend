@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Services.Images
     /// Represents a class for operations with <see cref="Workshop"/> images.
     /// </summary>
     public sealed class WorkshopImagesInteractionService :
-        ChangeableImagesInteractionService<IWorkshopRepository, Workshop, Guid>,
+        ChangeableImagesInteractionService<Workshop, Guid>,
         IWorkshopImagesInteractionService
     {
         /// <summary>
@@ -27,18 +27,9 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="repository">Workshop repository.</param>
         /// <param name="limits">Describes limits of images for <see cref="Workshop"/>.</param>
         /// <param name="logger">Logger.</param>
-        public WorkshopImagesInteractionService(IImageService imageService, IWorkshopRepository repository, ILogger<ImageInteractionBaseService<IWorkshopRepository, Workshop, Guid>> logger, IOptions<ImagesLimits<Workshop>> limits)
+        public WorkshopImagesInteractionService(IImageService imageService, IWorkshopRepository repository, ILogger<ImageInteractionBaseService<Workshop, Guid>> logger, IOptions<ImagesLimits<Workshop>> limits)
             : base(imageService, repository, logger, limits.Value)
         {
         }
-
-        /// <inheritdoc/>
-        protected override EntitySearchFilter<Workshop> GetFilterForSearchingEntityByIdWithIncludedImages(Guid entityId)
-        {
-            return new EntitySearchFilter<Workshop>(x => x.Id == entityId, nameof(Workshop.WorkshopImages));
-        }
-
-        /// <inheritdoc/>
-        protected override List<Image<Workshop>> GetEntityImages(Workshop entity) => entity.WorkshopImages;
     }
 }

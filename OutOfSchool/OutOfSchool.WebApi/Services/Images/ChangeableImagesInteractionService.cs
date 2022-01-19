@@ -18,26 +18,24 @@ namespace OutOfSchool.WebApi.Services.Images
     /// <summary>
     /// Represents a class for operations with images.
     /// </summary>
-    /// <typeparam name="TRepository">Repository type.</typeparam>
     /// <typeparam name="TEntity">Entity type.</typeparam>
     /// <typeparam name="TKey">The type of entity Id.</typeparam>
-    public abstract class ChangeableImagesInteractionService<TRepository, TEntity, TKey> :
-        ImageInteractionBaseService<TRepository, TEntity, TKey>,
+    public class ChangeableImagesInteractionService<TEntity, TKey> :
+        ImageInteractionBaseService<TEntity, TKey>,
         IChangeableImagesInteractionService<TKey>
-        where TRepository : IEntityRepositoryBase<TKey, TEntity>, IImageInteractionRepository
-        where TEntity : class, new()
+        where TEntity : class, IKeyedEntity<TKey>, IImageDependentEntity<TEntity>, new()
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChangeableImagesInteractionService{TRepository, TEntity, TKey}"/> class.
+        /// Initializes a new instance of the <see cref="ChangeableImagesInteractionService{TEntity, TKey}"/> class.
         /// </summary>
         /// <param name="imageService">Service for interacting with an image storage.</param>
         /// <param name="repository">Repository with images.</param>
         /// <param name="limits">Describes limits of images for entities.</param>
         /// <param name="logger">Logger.</param>
-        protected ChangeableImagesInteractionService(
+        public ChangeableImagesInteractionService(
             IImageService imageService,
-            TRepository repository,
-            ILogger<ImageInteractionBaseService<TRepository, TEntity, TKey>> logger,
+            IEntityRepositoryBase<TKey, TEntity> repository,
+            ILogger<ImageInteractionBaseService<TEntity, TKey>> logger,
             ImagesLimits<TEntity> limits)
             : base(imageService, repository, limits, logger)
         {
@@ -51,13 +49,12 @@ namespace OutOfSchool.WebApi.Services.Images
             var entity = await GetRequiredEntityWithIncludedImages(entityId).ConfigureAwait(false);
 
             var result = new ImageChangingResult();
-            var entityImages = GetEntityImages(entity);
 
-            var shouldRemove = !new HashSet<string>(oldImageIds).SetEquals(entityImages.Select(x => x.ExternalStorageId));
+            var shouldRemove = !new HashSet<string>(oldImageIds).SetEquals(entity.Images.Select(x => x.ExternalStorageId));
 
             if (shouldRemove)
             {
-                var removingList = entityImages.Select(x => x.ExternalStorageId).Except(oldImageIds).ToList();
+                var removingList = entity.Images.Select(x => x.ExternalStorageId).Except(oldImageIds).ToList();
                 result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(entity, removingList).ConfigureAwait(false);
             }
 
@@ -73,11 +70,5 @@ namespace OutOfSchool.WebApi.Services.Images
 
             return result;
         }
-
-        /// <inheritdoc/>
-        protected abstract override EntitySearchFilter<TEntity> GetFilterForSearchingEntityByIdWithIncludedImages(TKey entityId);
-
-        /// <inheritdoc/>
-        protected abstract override List<Image<TEntity>> GetEntityImages(TEntity entity);
     }
 }

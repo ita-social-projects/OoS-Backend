@@ -23,27 +23,25 @@ namespace OutOfSchool.WebApi.Services.Images
     /// <summary>
     /// Represents a base class for operations with images.
     /// </summary>
-    /// <typeparam name="TRepository">Repository type.</typeparam>
     /// <typeparam name="TEntity">Entity type.</typeparam>
     /// <typeparam name="TKey">The type of entity Id.</typeparam>
-    public abstract class ImageInteractionBaseService<TRepository, TEntity, TKey> : IImageInteractionService<TKey>
-        where TRepository : IEntityRepositoryBase<TKey, TEntity>, IImageInteractionRepository
-        where TEntity : class, new()
+    public class ImageInteractionBaseService<TEntity, TKey> : IImageInteractionService<TKey>
+        where TEntity : class, IKeyedEntity<TKey>, IImageDependentEntity<TEntity>, new()
     {
-        private readonly ILogger<ImageInteractionBaseService<TRepository, TEntity, TKey>> logger;
+        private readonly ILogger<ImageInteractionBaseService<TEntity, TKey>> logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImageInteractionBaseService{TRepository, TEntity, TKey}"/> class.
+        /// Initializes a new instance of the <see cref="ImageInteractionBaseService{TEntity, TKey}"/> class.
         /// </summary>
         /// <param name="imageService">Service for interacting with an image storage.</param>
         /// <param name="repository">Repository with images.</param>
         /// <param name="limits">Describes limits of images for entities.</param>
         /// <param name="logger">Logger.</param>
-        protected ImageInteractionBaseService(
+        public ImageInteractionBaseService(
             IImageService imageService,
-            TRepository repository,
+            IEntityRepositoryBase<TKey, TEntity> repository,
             ImagesLimits<TEntity> limits,
-            ILogger<ImageInteractionBaseService<TRepository, TEntity, TKey>> logger)
+            ILogger<ImageInteractionBaseService<TEntity, TKey>> logger)
         {
             ImageService = imageService;
             Repository = repository;
@@ -59,7 +57,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <summary>
         /// Gets a repository with images.
         /// </summary>
-        protected TRepository Repository { get; }
+        protected IEntityRepositoryBase<TKey, TEntity> Repository { get; }
 
         /// <summary>
         /// Gets limits of images for entity of <c>TEntity</c> type.
@@ -85,7 +83,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 return OperationResult.Failed(ImagesOperationErrorCode.ExceedingCountOfImagesError.GetOperationError());
             }
 
-            var imageUploadingResult = await ImageService.UploadImageAsync<Workshop>(image).ConfigureAwait(false);
+            var imageUploadingResult = await ImageService.UploadImageAsync<TEntity>(image).ConfigureAwait(false);
             if (!imageUploadingResult.Succeeded)
             {
                 return OperationResult.Failed(ImagesOperationErrorCode.UploadingError.GetOperationError());
@@ -110,8 +108,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 return OperationResult.Failed(ImagesOperationErrorCode.EntityNotFoundError.GetOperationError());
             }
 
-            var entityImages = GetEntityImages(entity);
-            var ableToRemove = entityImages.Select(x => x.ExternalStorageId).Contains(imageId);
+            var ableToRemove = entity.Images.Select(x => x.ExternalStorageId).Contains(imageId);
 
             if (!ableToRemove)
             {
@@ -155,13 +152,13 @@ namespace OutOfSchool.WebApi.Services.Images
                 return new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() };
             }
 
-            var workshop = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
-            if (workshop == null)
+            var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
+            if (entity == null)
             {
                 return new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.EntityNotFoundError.GetResourceValue() };
             }
 
-            return await RemoveManyImagesProcessAsync(workshop, imageIds).ConfigureAwait(false);
+            return await RemoveManyImagesProcessAsync(entity, imageIds).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -184,8 +181,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <exception cref="InvalidOperationException">When filter is not specified.</exception>
         protected virtual async Task<TEntity> GetEntityWithIncludedImages(TKey entityId)
         {
-            var filter = GetFilterForSearchingEntityByIdWithIncludedImages(entityId) ?? throw new InvalidOperationException($"Filter for {nameof(TEntity)} is null.");
-            return (await Repository.GetByFilter(filter.Predicate, filter.IncludedProperties).ConfigureAwait(false)).FirstOrDefault();
+            return (await Repository.GetByFilter(x => x.Id.Equals(entityId), nameof(IImageDependentEntity<TEntity>.Images)).ConfigureAwait(false)).FirstOrDefault();
         }
 
         /// <summary>
@@ -196,22 +192,8 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <returns>The <see cref="bool"/> value which shows if uploading is allowed.</returns>
         protected virtual bool AllowedToUploadGivenAmountOfFiles(TEntity entity, int countOfFiles)
         {
-            return GetEntityImages(entity).Count + countOfFiles <= Limits.MaxCountOfFiles;
+            return entity.Images.Count + countOfFiles <= Limits.MaxCountOfFiles;
         }
-
-        /// <summary>
-        /// Specifies the filter for getting entity with images by id from a repository.
-        /// </summary>
-        /// <param name="entityId">Entity id.</param>
-        /// <returns>The instance of <see cref="EntitySearchFilter{TEntity}"/>.</returns>
-        protected abstract EntitySearchFilter<TEntity> GetFilterForSearchingEntityByIdWithIncludedImages(TKey entityId);
-
-        /// <summary>
-        /// Returns images list for the given entity.
-        /// </summary>
-        /// <param name="entity">Entity.</param>
-        /// <returns>The <see cref="List{T}"/> that contains <see cref="Image{TEntity}"/>.</returns>
-        protected abstract List<Image<TEntity>> GetEntityImages(TEntity entity);
 
         /// <summary>
         /// The process of uploading images for the entity.
@@ -229,7 +211,7 @@ namespace OutOfSchool.WebApi.Services.Images
                     { GeneralResultMessage = ImagesOperationErrorCode.ExceedingCountOfImagesError.GetResourceValue() };
             }
 
-            var imagesUploadingResult = await ImageService.UploadManyImagesAsync<Workshop>(images).ConfigureAwait(false);
+            var imagesUploadingResult = await ImageService.UploadManyImagesAsync<TEntity>(images).ConfigureAwait(false);
             if (imagesUploadingResult.SavedIds == null || imagesUploadingResult.MultipleKeyValueOperationResult == null)
             {
                 return new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.UploadingError.GetResourceValue() };
@@ -259,7 +241,7 @@ namespace OutOfSchool.WebApi.Services.Images
             TEntity entity,
             IList<string> imageIds)
         {
-            var ableToRemove = !imageIds.Except(GetEntityImages(entity).Select(x => x.ExternalStorageId)).Any();
+            var ableToRemove = !imageIds.Except(entity.Images.Select(x => x.ExternalStorageId)).Any();
 
             if (!ableToRemove)
             {
@@ -306,16 +288,15 @@ namespace OutOfSchool.WebApi.Services.Images
             }
         }
 
-        private void AddImageToEntity(TEntity entity, Image<TEntity> image)
+        private static void AddImageToEntity(TEntity entity, Image<TEntity> image)
         {
-            GetEntityImages(entity).Add(image);
+            entity.Images.Add(image);
         }
 
-        private void RemoveImageFromEntity(TEntity entity, string imageId)
+        private static void RemoveImageFromEntity(TEntity entity, string imageId)
         {
-            var entityImages = GetEntityImages(entity);
-            entityImages.RemoveAt(
-                entityImages.FindIndex(i => i.ExternalStorageId == imageId));
+            entity.Images.RemoveAt(
+                entity.Images.FindIndex(i => i.ExternalStorageId == imageId));
         }
     }
 }

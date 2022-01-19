@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
 {
-    public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>, IImageInteractionRepository
+    public interface IWorkshopRepository : IEntityRepositoryBase<Guid, Workshop>
     {
         IUnitOfWork UnitOfWork { get; }
 
