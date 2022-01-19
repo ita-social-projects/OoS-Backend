@@ -286,14 +286,17 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return new ForbidResult("Forbidden to delete workshops of another providers.");
             }
 
-            var imagesResults = await combinedWorkshopService.RemoveManyImagesAsync(workshop.Id, workshop.ImageIds).ConfigureAwait(false);
-            if (imagesResults.Succeeded)
+            if (workshop.ImageIds.Count > 0)
             {
-                await combinedWorkshopService.Delete(id).ConfigureAwait(false);
-                return NoContent();
+                var imagesResults = await combinedWorkshopService.RemoveManyImagesAsync(workshop.Id, workshop.ImageIds).ConfigureAwait(false);
+                if (!imagesResults.Succeeded)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
             }
 
-            return StatusCode(StatusCodes.Status500InternalServerError);
+            await combinedWorkshopService.Delete(id).ConfigureAwait(false);
+            return NoContent();
         }
 
         private async Task<bool> IsUserProvidersOwner(Guid providerId)
