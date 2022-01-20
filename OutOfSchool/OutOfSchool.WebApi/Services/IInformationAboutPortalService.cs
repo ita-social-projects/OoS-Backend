@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -27,5 +29,20 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <returns>InformationAboutPortal.</returns>
         Task<InformationAboutPortalDto> GetInformationAboutPortal();
+
+        Task<InformationAboutPortalItemDto> GetItemById(Guid id);
+
+        /// <summary>
+        /// Add entity.
+        /// </summary>
+        /// <param name="informationAboutPortalItemDto">InformationAboutPortalItem entity to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<InformationAboutPortalItemDto> CreateItem(InformationAboutPortalItemDto informationAboutPortalItemDto);
+
+        Task<InformationAboutPortalItemDto> UpdateItem(InformationAboutPortalItemDto informationAboutPortalItemDto);
+
+        Task DeleteItem(Guid id);
+
+        Task<IEnumerable<InformationAboutPortalItemDto>> GetAllItems();
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -81,6 +83,112 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
 
             return Ok(informationAboutPortal);
+        }
+
+        /// <summary>
+        /// Get item in information about Portal by it's id.
+        /// </summary>
+        /// <param name="id">InformationAboutPortalItem's id.</param>
+        /// <returns>InformationAboutPortalItem.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InformationAboutPortalItemDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetItemById(Guid id)
+        {
+            return Ok(await informationAboutPortalService.GetItemById(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Add new item into information about Portal.
+        /// </summary>
+        /// <param name="informationAboutPortalItemModel">Entity to add.</param>
+        /// <returns>Created item in information about Portal.</returns>
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost]
+        public async Task<IActionResult> CreateItem(InformationAboutPortalItemDto informationAboutPortalItemModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var informationAboutPortalItem = await informationAboutPortalService.CreateItem(informationAboutPortalItemModel).ConfigureAwait(false);
+
+            if (informationAboutPortalItem == null)
+            {
+                return BadRequest("Cannot create new item in information about Portal.\n Please check if information is valid.");
+            }
+
+            return CreatedAtAction(
+                nameof(GetItemById),
+                new { id = informationAboutPortalItem.Id, },
+                informationAboutPortalItem);
+        }
+
+        /// <summary>
+        /// Update item in information about Portal.
+        /// </summary>
+        /// <param name="informationAboutPortalItemModel">Entity to update.</param>
+        /// <returns>Updated information about Portal.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InformationAboutPortalItemDto))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPut]
+        public async Task<IActionResult> UpdateItem(InformationAboutPortalItemDto informationAboutPortalItemModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var informationAboutPortalItem = await informationAboutPortalService.UpdateItem(informationAboutPortalItemModel).ConfigureAwait(false);
+
+            if (informationAboutPortalItem == null)
+            {
+                return BadRequest("Cannot change information about Portal.\n Please check information is valid.");
+            }
+
+            return Ok(informationAboutPortalItem);
+        }
+
+        /// <summary>
+        /// Delete a specific Item in InformationAboutPortal from the database.
+        /// </summary>
+        /// <param name="id">Items's id.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteItem(Guid id)
+        {
+            await informationAboutPortalService.DeleteItem(id).ConfigureAwait(false);
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Get all items in InformationAboutPortal from the database.
+        /// </summary>
+        /// <returns>List of items.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<InformationAboutPortalItemDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        public async Task<IActionResult> GetAllItems()
+        {
+            var items = await informationAboutPortalService.GetAllItems().ConfigureAwait(false);
+
+            if (!items.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(items);
         }
     }
 }

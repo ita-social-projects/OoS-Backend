@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220119154554_AboutPortalAndSupportInformation")]
+    partial class AboutPortalAndSupportInformation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1075,9 +1077,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<Guid>("ProviderId")
                         .HasColumnType("binary(16)");
 
-                    b.Property<int>("ProviderOwnership")
-                        .HasColumnType("int");
-
                     b.Property<string>("ProviderTitle")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -1286,7 +1285,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Entity")
-                        .WithMany("Images")
+                        .WithMany("WorkshopImages")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1454,9 +1453,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Navigation("DateTimeRanges");
 
-                    b.Navigation("Images");
-
                     b.Navigation("Teachers");
+
+                    b.Navigation("WorkshopImages");
                 });
 #pragma warning restore 612, 618
         }

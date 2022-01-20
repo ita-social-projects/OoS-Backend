@@ -64,6 +64,8 @@ namespace OutOfSchool.Services
 
         public DbSet<InformationAboutPortal> InformationAboutPortal { get; set; }
 
+        public DbSet<InformationAboutPortalItem> InformationAboutPortalItem { get; set; }
+
         public DbSet<SupportInformation> SupportInformation { get; set; }
 
         public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
