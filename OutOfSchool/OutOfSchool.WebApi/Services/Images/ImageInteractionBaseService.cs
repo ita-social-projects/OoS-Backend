@@ -71,33 +71,16 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (image == null)
             {
-                return OperationResult.Failed(ImagesOperationErrorCode.UploadingError.GetOperationError());
+                return NoGivenImagesFailedOperation();
             }
 
-            Logger.LogDebug($"Uploading an image for entity [Id = {entityId}] was started.");
             var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
             if (entity == null)
             {
-                Logger.LogError($"Entity [id = {entityId}] was not got.");
-                return OperationResult.Failed(ImagesOperationErrorCode.EntityNotFoundError.GetOperationError());
+                return EntityNotFoundFailedOperation(entityId);
             }
 
-            if (!AllowedToUploadGivenAmountOfFiles(entity, 1))
-            {
-                Logger.LogError($"The image limit was reached for the entity [id = {entityId}]");
-                return OperationResult.Failed(ImagesOperationErrorCode.ExceedingCountOfImagesError.GetOperationError());
-            }
-
-            var imageUploadingResult = await ImageService.UploadImageAsync<TEntity>(image).ConfigureAwait(false);
-            if (!imageUploadingResult.Succeeded)
-            {
-                return OperationResult.Failed(ImagesOperationErrorCode.UploadingError.GetOperationError());
-            }
-
-            AddImageToEntity(entity, new Image<TEntity> { ExternalStorageId = imageUploadingResult.Value });
-
-            Logger.LogDebug($"Uploading an image for entity [Id = {entityId}] was finished.");
-            return await EntityUpdateAsync(entity).ConfigureAwait(false);
+            return await UploadImageProcessAsync(entity, image).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -105,35 +88,16 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (string.IsNullOrEmpty(imageId))
             {
-                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
+                return NoGivenImagesFailedOperation();
             }
 
-            Logger.LogDebug($"Removing an image [id = {imageId}] for entity [Id = {entityId}] was started.");
             var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
             if (entity == null)
             {
-                Logger.LogError($"Entity [id = {entityId}] was not got.");
-                return OperationResult.Failed(ImagesOperationErrorCode.EntityNotFoundError.GetOperationError());
+                return EntityNotFoundFailedOperation(entityId);
             }
 
-            var ableToRemove = entity.Images.Select(x => x.ExternalStorageId).Contains(imageId);
-
-            if (!ableToRemove)
-            {
-                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
-            }
-
-            var imageRemovingResult = await ImageService.RemoveImageAsync(imageId).ConfigureAwait(false);
-
-            if (!imageRemovingResult.Succeeded)
-            {
-                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
-            }
-
-            RemoveImageFromEntity(entity, imageId);
-
-            Logger.LogDebug($"Removing an image [id = {imageId}] for entity Id = {entityId} was finished.");
-            return await EntityUpdateAsync(entity).ConfigureAwait(false);
+            return await RemoveImageProcessAsync(entity, imageId).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -141,18 +105,15 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (images == null || images.Count <= 0)
             {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() };
+                return NoGivenImagesFailedMultipleOperation();
             }
 
-            Logger.LogDebug($"Uploading images for entity [Id = {entityId}] was started.");
             var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
             if (entity == null)
             {
-                Logger.LogError($"Entity [id = {entityId}] was not got.");
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.EntityNotFoundError.GetResourceValue() };
+                return EntityNotFoundFailedMultipleOperation(entityId);
             }
 
-            Logger.LogDebug($"Uploading images for entity [Id = {entityId}] was finished.");
             return await UploadManyImagesProcessAsync(entity, images).ConfigureAwait(false);
         }
 
@@ -161,15 +122,13 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (imageIds == null || imageIds.Count <= 0)
             {
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() };
+                return NoGivenImagesFailedMultipleOperation();
             }
 
-            Logger.LogDebug($"Removing images for entity [Id = {entityId}] was started.");
             var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
             if (entity == null)
             {
-                Logger.LogError($"Entity [id = {entityId}] was not got.");
-                return new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.EntityNotFoundError.GetResourceValue() };
+                return EntityNotFoundFailedMultipleOperation(entityId);
             }
 
             return await RemoveManyImagesProcessAsync(entity, imageIds).ConfigureAwait(false);
@@ -206,7 +165,96 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <returns>The <see cref="bool"/> value which shows if uploading is allowed.</returns>
         protected virtual bool AllowedToUploadGivenAmountOfFiles(TEntity entity, int countOfFiles)
         {
+            _ = entity?.Images ?? throw new ArgumentException(@"Unable to access images because it's null for the given entity.", nameof(entity));
             return entity.Images.Count + countOfFiles <= Limits.MaxCountOfFiles;
+        }
+
+        /// <summary>
+        /// Updates the entity.
+        /// </summary>
+        /// <param name="entity">Entity.</param>
+        /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="OperationResult"/>.</returns>
+        private protected async Task<OperationResult> EntityUpdateAsync(TEntity entity)
+        {
+            _ = entity ?? throw new InvalidOperationException($"Cannot update the {nameof(entity)} because it's null.");
+            try
+            {
+                await Repository.Update(entity).ConfigureAwait(false);
+                return OperationResult.Success;
+            }
+            catch (DbUpdateException ex)
+            {
+                Logger.LogError(ex, "Unreal to update entity while uploading images.");
+                return OperationResult.Failed(ImagesOperationErrorCode.UpdateEntityError.GetOperationError());
+            }
+        }
+
+        /// <summary>
+        /// The process of uploading an image for the entity.
+        /// </summary>
+        /// <param name="entity">Entity.</param>
+        /// <param name="image">Image for uploading.</param>
+        /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="OperationResult"/>.</returns>
+        /// <exception cref="ArgumentNullException">When entity or image id is null.</exception>
+        private protected async Task<OperationResult> UploadImageProcessAsync(
+            TEntity entity,
+            IFormFile image)
+        {
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+            _ = image ?? throw new ArgumentNullException(nameof(image));
+
+            Logger.LogDebug($"Uploading an image for entity [Id = {entity.Id}] was started.");
+            if (!AllowedToUploadGivenAmountOfFiles(entity, 1))
+            {
+                Logger.LogError($"The image limit was reached for the entity [id = {entity.Id}]");
+                return OperationResult.Failed(ImagesOperationErrorCode.ExceedingCountOfImagesError.GetOperationError());
+            }
+
+            var imageUploadingResult = await ImageService.UploadImageAsync<TEntity>(image).ConfigureAwait(false);
+            if (!imageUploadingResult.Succeeded)
+            {
+                return OperationResult.Failed(ImagesOperationErrorCode.UploadingError.GetOperationError());
+            }
+
+            AddImageToEntity(entity, new Image<TEntity> { ExternalStorageId = imageUploadingResult.Value });
+
+            Logger.LogDebug($"Uploading an image for entity [Id = {entity.Id}] was finished.");
+            return await EntityUpdateAsync(entity).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// The process of removing an image from the entity.
+        /// </summary>
+        /// <param name="entity">Entity.</param>
+        /// <param name="imageId">Image Id for removing.</param>
+        /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="OperationResult"/>.</returns>
+        /// <exception cref="ArgumentNullException">When entity or image id is null.</exception>
+        private protected async Task<OperationResult> RemoveImageProcessAsync(
+            TEntity entity,
+            string imageId)
+        {
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+            _ = imageId ?? throw new ArgumentNullException(nameof(imageId));
+
+            Logger.LogDebug($"Removing an image [id = {imageId}] for entity [Id = {entity.Id}] was started.");
+            var ableToRemove = entity.Images.Select(x => x.ExternalStorageId).Contains(imageId);
+
+            if (!ableToRemove)
+            {
+                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
+            }
+
+            var imageRemovingResult = await ImageService.RemoveImageAsync(imageId).ConfigureAwait(false);
+
+            if (!imageRemovingResult.Succeeded)
+            {
+                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
+            }
+
+            RemoveImageFromEntity(entity, imageId);
+
+            Logger.LogDebug($"Removing an image [id = {imageId}] for entity Id = {entity.Id} was finished.");
+            return await EntityUpdateAsync(entity).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -215,10 +263,20 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="entity">Entity.</param>
         /// <param name="images">Images for uploading.</param>
         /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="MultipleKeyValueOperationResult"/>.</returns>
-        protected async Task<MultipleKeyValueOperationResult> UploadManyImagesProcessAsync(
+        /// <exception cref="ArgumentNullException">When an entity is null.</exception>
+        /// <exception cref="ArgumentException">When a given list of images is null or empty.</exception>
+        private protected async Task<MultipleKeyValueOperationResult> UploadManyImagesProcessAsync(
             TEntity entity,
             IList<IFormFile> images)
         {
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+
+            if (images == null || images.Count <= 0)
+            {
+                throw new ArgumentException(@"Given images must be non-null and not empty.", nameof(images));
+            }
+
+            Logger.LogDebug($"Uploading images for the entity [Id = {entity.Id}] was started.");
             if (!AllowedToUploadGivenAmountOfFiles(entity, images.Count))
             {
                 Logger.LogError($"The image limit was reached for the entity [id = {entity.Id}]");
@@ -243,19 +301,28 @@ namespace OutOfSchool.WebApi.Services.Images
                 }
             }
 
+            Logger.LogDebug($"Uploading images for the entity [Id = {entity.Id}] was finished.");
             return imagesUploadingResult.MultipleKeyValueOperationResult;
         }
 
         /// <summary>
-        /// The process of removing images for the entity.
+        /// The process of removing images from the entity.
         /// </summary>
         /// <param name="entity">Entity.</param>
         /// <param name="imageIds">Image ids for removing.</param>
         /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="MultipleKeyValueOperationResult"/>.</returns>
-        protected async Task<MultipleKeyValueOperationResult> RemoveManyImagesProcessAsync(
+        private protected async Task<MultipleKeyValueOperationResult> RemoveManyImagesProcessAsync(
             TEntity entity,
             IList<string> imageIds)
         {
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+
+            if (imageIds == null || imageIds.Count <= 0)
+            {
+                throw new ArgumentException(@"Given images must be non-null and not empty.", nameof(imageIds));
+            }
+
+            Logger.LogDebug($"Removing images for entity [Id = {entity.Id}] was started.");
             var ableToRemove = !imageIds.Except(entity.Images.Select(x => x.ExternalStorageId)).Any();
 
             if (!ableToRemove)
@@ -281,26 +348,8 @@ namespace OutOfSchool.WebApi.Services.Images
                 }
             }
 
+            Logger.LogDebug($"Removing images for entity [Id = {entity.Id}] was finished.");
             return imagesRemovingResult.MultipleKeyValueOperationResult;
-        }
-
-        /// <summary>
-        /// Updates the entity.
-        /// </summary>
-        /// <param name="entity">Entity.</param>
-        /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="OperationResult"/>.</returns>
-        protected async Task<OperationResult> EntityUpdateAsync(TEntity entity)
-        {
-            try
-            {
-                await Repository.Update(entity).ConfigureAwait(false);
-                return OperationResult.Success;
-            }
-            catch (DbUpdateException ex)
-            {
-                Logger.LogError(ex, "Unreal to update entity while uploading images.");
-                return OperationResult.Failed(ImagesOperationErrorCode.UpdateEntityError.GetOperationError());
-            }
         }
 
         private static void AddImageToEntity(TEntity entity, Image<TEntity> image)
@@ -312,6 +361,25 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             entity.Images.RemoveAt(
                 entity.Images.FindIndex(i => i.ExternalStorageId == imageId));
+        }
+
+        private static OperationResult NoGivenImagesFailedOperation() => OperationResult.Failed(ImagesOperationErrorCode.NoGivenImagesError.GetOperationError());
+
+        private static MultipleKeyValueOperationResult NoGivenImagesFailedMultipleOperation()
+        {
+            return new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() };
+        }
+
+        private OperationResult EntityNotFoundFailedOperation(TKey entityId)
+        {
+            Logger.LogError($"Entity [id = {entityId}] was not got.");
+            return OperationResult.Failed(ImagesOperationErrorCode.EntityNotFoundError.GetOperationError());
+        }
+
+        private MultipleKeyValueOperationResult EntityNotFoundFailedMultipleOperation(TKey entityId)
+        {
+            Logger.LogError($"Entity [id = {entityId}] was not got.");
+            return new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.EntityNotFoundError.GetResourceValue() };
         }
     }
 }
