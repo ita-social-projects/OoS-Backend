@@ -55,14 +55,14 @@ namespace OutOfSchool.WebApi.Util
 
                     return dtoTeachers;
                 }))
-                .ForMember(dest => dest.WorkshopImages, opt => opt.Ignore());
+                .ForMember(dest => dest.Images, opt => opt.Ignore());
 
             CreateMap<Workshop, WorkshopDTO>()
                 .ForMember(
                     dest => dest.Keywords,
                     opt => opt.MapFrom(src => src.Keywords.Split(SEPARATOR, StringSplitOptions.None)))
                 .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
-                .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.WorkshopImages.Select(x => x.ExternalStorageId)));
+                .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
             CreateMap<Address, AddressDto>().ReverseMap();
 
             CreateMap<Provider, ProviderDto>()

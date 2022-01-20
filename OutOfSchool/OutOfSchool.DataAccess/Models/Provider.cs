@@ -7,7 +7,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Provider
+    public class Provider : IKeyedEntity<Guid>
     {
         public Guid Id { get; set; }
 

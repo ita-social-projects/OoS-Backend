@@ -10,7 +10,7 @@ using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Workshop
+    public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
     {
         public Guid Id { get; set; }
 
@@ -120,6 +120,6 @@ namespace OutOfSchool.Services.Models
         // These properties are only for navigation EF Core.
         public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
 
-        public virtual List<Image<Workshop>> WorkshopImages { get; set; }
+        public virtual List<Image<Workshop>> Images { get; set; }
     }
 }

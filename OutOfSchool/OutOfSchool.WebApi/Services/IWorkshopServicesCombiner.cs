@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// The interface for CRUD operations with workshops.
     /// </summary>
-    public interface IWorkshopServicesCombiner : ICRUDService<WorkshopDTO, Guid>, IWorkshopImagesService
+    public interface IWorkshopServicesCombiner : ICRUDService<WorkshopDTO, Guid>, IWorkshopImagesInteractionService
     {
         /// <summary>
         /// Get all entities from the database.
