@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-
 using Nest;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {
@@ -21,6 +21,8 @@ namespace OutOfSchool.ElasticsearchData.Models
         public Guid ProviderId { get; set; }
 
         public string ProviderTitle { get; set; }
+
+        public OwnershipType ProviderOwnership { get; set; }
 
         public string Description { get; set; }
 

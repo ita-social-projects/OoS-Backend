@@ -183,6 +183,23 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+        {
+            logger.LogInformation($"Partial updating workshop with ProviderId = {provider?.Id} was started.");
+
+            try
+            {
+                return await workshopRepository.PartialUpdateByProvider(provider).ConfigureAwait(false);
+            }
+            catch (DbUpdateConcurrencyException exception)
+            {
+                logger.LogError($"Partial updating workshop with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
         /// <exception cref="ArgumentNullException">If the entity with specified id was not found in the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task Delete(Guid id)

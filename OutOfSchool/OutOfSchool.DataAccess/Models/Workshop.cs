@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Images;
 
@@ -81,6 +83,8 @@ namespace OutOfSchool.Services.Models
         [Required]
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
+
+        public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
 
         [MaxLength(200)]
         public string Keywords { get; set; } = string.Empty;

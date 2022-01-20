@@ -27,6 +27,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IMapper mapper;
         private readonly IEntityRepository<Address> addressRepository;
         private readonly IAddressService addressService;
+        private readonly IWorkshopServicesCombiner workshopServiceCombiner;
 
         // TODO: It should be removed after models revision.
         //       Temporary instance to fill 'Provider' model 'User' property
@@ -40,12 +41,18 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
+        /// <param name="mapper">Mapper.</param>
+        /// <param name="addressRepository">AddressRepository.</param>
+        /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
         public ProviderService(
             IProviderRepository providerRepository,
             IEntityRepository<User> usersRepository,
             IRatingService ratingService,
             ILogger<ProviderService> logger,
-            IStringLocalizer<SharedResource> localizer, IMapper mapper, IEntityRepository<Address> addressRepository)
+            IStringLocalizer<SharedResource> localizer,
+            IMapper mapper,
+            IEntityRepository<Address> addressRepository,
+            IWorkshopServicesCombiner workshopServiceCombiner)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
             this.mapper = mapper;
@@ -54,6 +61,7 @@ namespace OutOfSchool.WebApi.Services
             this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
             this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.workshopServiceCombiner = workshopServiceCombiner;
         }
 
         /// <inheritdoc/>
@@ -204,8 +212,31 @@ namespace OutOfSchool.WebApi.Services
                         providerDto.ActualAddress.Id = checkProvider.ActualAddress?.Id ?? 0;
                     }
 
-                    mapper.Map(providerDto, checkProvider);
-                    await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+                    if (IsNeedInRelatedWorkshopsUpdating(providerDto, checkProvider))
+                    {
+                        checkProvider = await providerRepository.RunInTransaction(async () =>
+                        {
+                            var workshops = await workshopServiceCombiner
+                                                .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
+                                                .ConfigureAwait(false);
+
+                            mapper.Map(providerDto, checkProvider);
+                            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+
+                            foreach (var workshop in workshops)
+                            {
+                                logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
+                                                        $"in workshops with Id = {workshop?.Id} updated succesfully.");
+                            }
+
+                            return checkProvider;
+                        }).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        mapper.Map(providerDto, checkProvider);
+                        await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+                    }
                 }
 
                 logger.LogInformation($"Provider with Id = {checkProvider?.Id} updated succesfully.");
@@ -241,6 +272,12 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Deleting failed. Provider with Id = {id} doesn't exist in the system.");
                 throw;
             }
+        }
+
+        private static bool IsNeedInRelatedWorkshopsUpdating(ProviderDto providerDto, Provider checkProvider)
+        {
+            return checkProvider.FullTitle != providerDto.FullTitle
+                   || checkProvider.Ownership != providerDto.Ownership;
         }
     }
 }

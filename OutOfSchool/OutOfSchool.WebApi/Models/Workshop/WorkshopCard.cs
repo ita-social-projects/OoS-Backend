@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -12,6 +13,8 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
+
+        public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
 
         public float Rating { get; set; }
 

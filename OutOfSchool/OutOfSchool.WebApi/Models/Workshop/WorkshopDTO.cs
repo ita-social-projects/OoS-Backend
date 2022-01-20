@@ -6,6 +6,7 @@ using System.Linq;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -83,6 +84,8 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
+
+        public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
 
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public IEnumerable<string> Keywords { get; set; } = default;
