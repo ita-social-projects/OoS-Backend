@@ -6,6 +6,7 @@ using System.Linq;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.Workshop;
