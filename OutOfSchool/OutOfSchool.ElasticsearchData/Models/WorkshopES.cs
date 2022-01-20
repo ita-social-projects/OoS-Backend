@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Nest;
-using OutOfSchool.Services.Enums;
+using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {

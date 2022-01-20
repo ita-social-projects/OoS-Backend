@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 using Bogus;
-
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 

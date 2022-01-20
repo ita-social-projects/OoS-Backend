@@ -28,7 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
-    <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>

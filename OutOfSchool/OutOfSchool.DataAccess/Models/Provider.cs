@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models

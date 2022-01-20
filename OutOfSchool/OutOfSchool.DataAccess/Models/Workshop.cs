@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Images;
