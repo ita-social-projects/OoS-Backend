@@ -237,7 +237,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return NoContent();
             }
 
-            var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false);
+            var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
                 return StatusCode(403, "Forbidden to delete workshops of another providers.");
@@ -250,8 +250,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
         private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid providerId, Guid workshopId = default)
         {
-            // Provider can create/update/delete a workshop only with it's own ProviderId.
-            // Admin can create a work without checks.
             if (User.IsInRole(Role.Provider.ToString().ToLower()))
             {
                 var userId = User.FindFirst("sub")?.Value;

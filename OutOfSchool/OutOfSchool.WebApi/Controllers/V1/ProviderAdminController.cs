@@ -141,5 +141,12 @@ namespace OutOfSchool.WebApi.Controllers
 
             return StatusCode((int)response.HttpStatusCode);
         }
+
+        [HttpGet("{providerId}")]
+        public async Task<IActionResult> GetRelatedProviderAdmins(Guid providerId, bool deputyOnly = false, bool assistantsOnly = false)
+        {
+            var relatedWorkshops = await providerAdminService.GetRelatedProviderAdmins(providerId).ConfigureAwait(false);
+            return Ok(relatedWorkshops);
+        }
     }
 }

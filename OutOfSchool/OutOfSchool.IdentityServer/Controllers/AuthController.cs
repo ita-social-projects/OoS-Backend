@@ -152,6 +152,14 @@ namespace OutOfSchool.IdentityServer.Controllers
             {
                 logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
 
+                user.LastLogin = DateTimeOffset.UtcNow;
+                var lastLoginResult = await userManager.UpdateAsync(user);
+                if (!lastLoginResult.Succeeded)
+                {
+                    throw new InvalidOperationException($"Unexpected error occurred setting the last login date" +
+                        $" ({lastLoginResult.ToString()}) for user with ID '{user.Id}'.");
+                }
+
                 return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
 

@@ -127,6 +127,21 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Rating, RatingDto>(rating, cfg => { cfg.CreateMap<Rating, RatingDto>(); });
         }
 
+        public static ProviderAdminDto ToModel(this User user, ProviderAdmin providerAdmin)
+        {
+            return Mapper<User, ProviderAdminDto>(user, cfg =>
+            {
+                cfg.CreateMap<User, ProviderAdminDto>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(c => c.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(c => c.LastName))
+                .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(c => c.MiddleName))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(c => c.PhoneNumber))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(c => c.Email))
+                .ForMember(dest => dest.IsDeputy, opt => opt.MapFrom(c => providerAdmin.IsDeputy))
+                .ForMember(dest => dest.AccountStatus, m => m.Ignore());
+            });
+        }
+
         public static ShortUserDto ToModel(this User user)
         {
             return Mapper<User, ShortUserDto>(user, cfg =>

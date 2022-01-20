@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,8 +13,12 @@ using Newtonsoft.Json;
 
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Enums;
+using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Communication;
 
 namespace OutOfSchool.WebApi.Services
@@ -22,6 +27,7 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IdentityServerConfig identityServerConfig;
         private readonly ProviderAdminConfig providerAdminConfig;
+        private readonly IEntityRepository<User> userRepository;
         private readonly IProviderAdminRepository providerAdminRepository;
         private readonly ILogger<ProviderAdminService> logger;
         private readonly ResponseDto responseDto;
@@ -32,12 +38,14 @@ namespace OutOfSchool.WebApi.Services
             IOptions<ProviderAdminConfig> providerAdminConfig,
             IOptions<CommunicationConfig> communicationConfig,
             IProviderAdminRepository providerAdminRepository,
+            IEntityRepository<User> userRepository,
             ILogger<ProviderAdminService> logger)
             : base(httpClientFactory, communicationConfig.Value)
         {
             this.identityServerConfig = identityServerConfig.Value;
             this.providerAdminConfig = providerAdminConfig.Value;
             this.providerAdminRepository = providerAdminRepository;
+            this.userRepository = userRepository;
             this.logger = logger;
             responseDto = new ResponseDto();
         }
@@ -252,15 +260,39 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<bool> CheckUserIsRelatedProviderAdmin(string userId, Guid providerId, Guid workshopId)
         {
-           var providerAdmin = await providerAdminRepository.GetByIdAsync(userId, providerId).ConfigureAwait(false);
+            var providerAdmin = await providerAdminRepository.GetByIdAsync(userId, providerId).ConfigureAwait(false);
 
-           if (!providerAdmin.IsDeputy)
+            if (!providerAdmin.IsDeputy)
             {
-                var relatedWorkshops = providerAdmin.ManagedWorkshops;
-                return relatedWorkshops.Where(w => w.Id == workshopId).Any();
+                return providerAdmin.ManagedWorkshops.Any(w => w.Id == workshopId);
             }
 
-           return providerAdmin != null;
+            return providerAdmin != null;
+        }
+
+        // TODO: implement mechanism to get data
+        public async Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(Guid providerId)
+        {
+            var providerAdmins = await providerAdminRepository.GetByFilter(pa => pa.ProviderId == providerId).ConfigureAwait(false);
+            List<ProviderAdminDto> dtos = new List<ProviderAdminDto>();
+            foreach (var pa in providerAdmins)
+            {
+                var user = (await userRepository.GetByFilter(u => u.Id == pa.UserId).ConfigureAwait(false)).Single();
+                var dto = user.ToModel(pa);
+
+                if (!user.IsEnabled)
+                {
+                    dto.AccountStatus = Enums.AccountStatus.Blocked;
+                }
+                else
+                {
+                dto.AccountStatus = user.LastLogin == DateTimeOffset.MinValue ? AccountStatus.NeverLogged : AccountStatus.Accepted;
+                }
+
+                dtos.Add(dto);
+            }
+
+            return dtos;
         }
     }
 }
