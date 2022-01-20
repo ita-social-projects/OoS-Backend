@@ -352,9 +352,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         // TODO: Ask Polina about status validation
         private void ValidateStatus(int status)
         {
-            if (status < 0 || status > 2)
+            if (status < 1 || status > 7)
             {
-                throw new ArgumentOutOfRangeException(nameof(status), localizer["Status should be from 0 to 2"]);
+                throw new ArgumentOutOfRangeException(nameof(status), localizer["Status should be from 1 to 7"]);
             }
         }
 
@@ -376,6 +376,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
         private async Task<IEnumerable<ApplicationDto>> GetByProviderId(Guid id, ApplicationFilter filter)
         {
+            var provider = await providerService.GetById(id).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                throw new ArgumentException(localizer[$"There is no provider with Id = {id}"]);
+            }
+
             await CheckUserRights(providerId: id).ConfigureAwait(false);
 
             var applications = await applicationService.GetAllByProvider(id, filter).ConfigureAwait(false);
