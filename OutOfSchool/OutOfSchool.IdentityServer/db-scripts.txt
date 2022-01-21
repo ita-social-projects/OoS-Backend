@@ -6,3 +6,5 @@ dotnet ef database update -c OutOfSchoolDbContext
 
 dotnet ef database update -c PersistedGrantDbContext
 dotnet ef database update -c ConfigurationDbContext
+
+dotnet ef migrations remove -c OutOfSchoolDbContext

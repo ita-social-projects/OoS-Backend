@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogDebug($"ProviderAdmin creating was started. User(id): {userId}");
 
-            var hasAccess = await IsAllowedCreateAsync(providerAdminDto.ProviderId, userId)
+            var hasAccess = await IsAllowedCreateAsync(providerAdminDto.ProviderId, userId, providerAdminDto.IsDeputy)
                 .ConfigureAwait(true);
 
             if (!hasAccess)
@@ -239,7 +239,7 @@ namespace OutOfSchool.WebApi.Services
             return response;
         }
 
-        public async Task<bool> IsAllowedCreateAsync(Guid providerId, string userId)
+        public async Task<bool> IsAllowedCreateAsync(Guid providerId, string userId, bool isDeputy)
         {
             bool providerAdminDeputy = await providerAdminRepository.IsExistProviderAdminDeputyWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);
@@ -247,7 +247,8 @@ namespace OutOfSchool.WebApi.Services
             bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);
 
-            return providerAdminDeputy || provider;
+            // provider admin deputy can create only assistants
+            return (providerAdminDeputy && !isDeputy) || provider;
         }
 
         public async Task<bool> IsAllowedAsync(Guid providerId, string userId)

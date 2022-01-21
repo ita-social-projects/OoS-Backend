@@ -29,11 +29,8 @@ namespace OutOfSchool.Common.Models
         [DataType(DataType.DateTime)]
         public DateTimeOffset CreatingTime { get; set; }
 
-        [DataType(DataType.DateTime)]
-        public DateTimeOffset? LastLogin { get; set; }
-
         public string ReturnUrl { get; set; }
-        
+
         public Guid ProviderId { get; set; }
 
         public string UserId { get; set; }
@@ -43,7 +40,5 @@ namespace OutOfSchool.Common.Models
 
         // to specify workshops, which can be managed by provider admin
         public List<Guid> ManagedWorkshopIds { get; set; }
-
-
     }
 }
