@@ -14,6 +14,7 @@ module "iam" {
   source             = "./iam"
   random_number      = random_integer.ri.result
   access_group_email = var.access_group_email
+  project            = var.project
 }
 
 module "passwords" {
@@ -69,6 +70,7 @@ module "k8s" {
   source            = "./k8s"
   project           = var.project
   zone              = var.zone
+  admin_ips         = var.admin_ips
   sql_root_pass     = module.passwords.sql_root_pass
   sql_api_pass      = module.passwords.sql_api_pass
   sql_auth_pass     = module.passwords.sql_auth_pass
@@ -85,14 +87,14 @@ module "k8s" {
 }
 
 module "secrets" {
-  source          = "./secrets"
-  sql_api_pass    = module.passwords.sql_api_pass
-  sql_auth_pass   = module.passwords.sql_auth_pass
-  es_api_pass     = module.passwords.es_api_pass
-  mongo_pass      = module.passwords.mongo_pass
-  labels          = var.labels
-  sql_hostname    = var.sql_hostname
-  mongo_hostname  = var.mongo_hostname
+  source         = "./secrets"
+  sql_api_pass   = module.passwords.sql_api_pass
+  sql_auth_pass  = module.passwords.sql_auth_pass
+  es_api_pass    = module.passwords.es_api_pass
+  mongo_pass     = module.passwords.mongo_pass
+  labels         = var.labels
+  sql_hostname   = var.sql_hostname
+  mongo_hostname = var.mongo_hostname
 }
 
 module "build" {

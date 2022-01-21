@@ -8,6 +8,11 @@ variable "zone" {
   description = "Zone where the cluster was created"
 }
 
+variable "admin_ips" {
+  type        = list(string)
+  description = "Admin IPs to manage database if needed"
+}
+
 variable "sql_api_pass" {
   type = string
 }

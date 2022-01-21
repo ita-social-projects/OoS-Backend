@@ -10,11 +10,13 @@ resource "google_service_account_key" "csi" {
 resource "google_project_iam_member" "csi-storage" {
   role   = "roles/compute.storageAdmin"
   member = "serviceAccount:${google_service_account.csi.email}"
+  project = var.project
 }
 
 resource "google_project_iam_member" "csi-sauser" {
   role   = "roles/iam.serviceAccountUser"
   member = "serviceAccount:${google_service_account.csi.email}"
+  project = var.project
 }
 
 resource "google_project_iam_custom_role" "csi" {
@@ -31,4 +33,5 @@ resource "google_project_iam_custom_role" "csi" {
 resource "google_project_iam_member" "gke-csi" {
   role   = google_project_iam_custom_role.csi.id
   member = "serviceAccount:${google_service_account.csi.email}"
+  project = var.project
 }

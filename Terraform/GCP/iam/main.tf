@@ -27,6 +27,7 @@ resource "google_service_account_iam_member" "front-acc-user" {
 }
 
 resource "google_project_iam_member" "run-admin" {
-  role   = "roles/run.admin"
-  member = "serviceAccount:${google_project_service_identity.build.email}"
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${google_project_service_identity.build.email}"
+  project = var.project
 }

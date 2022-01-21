@@ -4,6 +4,13 @@ resource "google_service_account" "app" {
 }
 
 resource "google_project_iam_member" "secret-accessor-api" {
-  role   = "roles/secretmanager.secretAccessor"
-  member = "serviceAccount:${google_service_account.app.email}"
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.app.email}"
+  project = var.project
+}
+
+resource "google_project_iam_member" "api-log" {
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.app.email}"
+  project = var.project
 }

@@ -7,7 +7,7 @@ set -uo pipefail
 # sudo bash add-monitoring-agent-repo.sh --also-install
 # sudo service stackdriver-agent start
 
-export INSTALL_K3S_VERSION=v1.21.6+k3s1
+export INSTALL_K3S_VERSION=v1.21.8+k3s2
 export K3S_DATASTORE_ENDPOINT="mysql://${db_username}:${db_password}@tcp(${db_host}:3306)/k3s"
 export K3S_TOKEN=${token}
 
@@ -24,7 +24,7 @@ curl -sfL https://get.k3s.io | sh -s - server \
   --disable local-storage \
   --no-deploy local-storage
 
-sleep 5
+sleep 10
 
 cat <<EOF | kubectl apply -f -
 ---
@@ -283,6 +283,7 @@ spec:
       containers:
         - name: cloud-controller-manager
           image: quay.io/openshift/origin-gcp-cloud-controller-manager:4.10.0
+          imagePullPolicy: Always
           resources:
             requests:
               cpu: 50m
@@ -305,12 +306,17 @@ spec:
             timeoutSeconds: 15
 EOF
 
-sleep 5
+sleep 15
 # Need to restart Kubelet after CCM install
 sudo systemctl restart k3s
 
 NAME=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
 ZONE=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
+kubectl uncordon $NAME
+gcloud compute instances \
+    add-tags $NAME \
+    --tags=$NAME \
+    --zone $ZONE
 gcloud compute instances \
     add-labels $NAME \
     --zone $ZONE "--labels=startup-done=${random_number}"

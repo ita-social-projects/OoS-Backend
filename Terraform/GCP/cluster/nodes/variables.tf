@@ -49,8 +49,13 @@ variable "startup" {
   description = "Startup Script"
 }
 
-variable "node_name" {
-  description = "Node Name"
+variable "node_role" {
+  description = "Node role"
+}
+
+variable "node_count" {
+  description = "Number of Nodes"
+  type        = number
 }
 
 variable "ssh_user" {

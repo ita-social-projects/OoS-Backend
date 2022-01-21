@@ -11,14 +11,12 @@ resource "google_compute_region_backend_service" "k3s" {
   protocol              = "TCP"
   load_balancing_scheme = "EXTERNAL"
 
-  dynamic "backend" {
-    for_each = module.master
-    content {
-      group          = backend.value["mig_url"]
-      balancing_mode = "CONNECTION"
-    }
+  backend {
+    group          = module.masters.mig_url
+    balancing_mode = "CONNECTION"
   }
 }
+
 resource "google_compute_region_health_check" "k3s" {
   provider = google-beta
   project  = var.project

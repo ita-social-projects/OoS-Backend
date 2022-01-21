@@ -5,3 +5,8 @@ variable "random_number" {
 variable "access_group_email" {
   type = string
 }
+
+variable "project" {
+  type        = string
+  description = "Your project"
+}

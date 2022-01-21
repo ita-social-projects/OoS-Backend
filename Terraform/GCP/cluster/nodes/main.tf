@@ -1,12 +1,12 @@
 resource "google_compute_instance_template" "k3s" {
-  name_prefix = "k3s-${var.node_name}-${var.random_number}-"
-  description = "This template is used to create k3s ${var.node_name} instances."
+  name_prefix = "k3s-${var.node_role}-${var.random_number}-"
+  description = "This template is used to create k3s ${var.node_role} instances."
 
   tags = var.tags
 
   labels = var.labels
 
-  instance_description = "${var.node_name} instance"
+  instance_description = "${var.node_role} instance"
   machine_type         = var.machine_type.e2medium
 
   scheduling {
@@ -50,7 +50,7 @@ resource "google_compute_instance_template" "k3s" {
 }
 
 resource "google_compute_health_check" "k3s" {
-  name = "k3s-port-hc-${var.node_name}-${var.random_number}"
+  name = "k3s-port-hc-${var.node_role}-${var.random_number}"
 
   timeout_sec         = 5
   check_interval_sec  = 10
@@ -64,9 +64,9 @@ resource "google_compute_health_check" "k3s" {
 }
 
 resource "google_compute_instance_group_manager" "k3s" {
-  name = "k3s-igm-${var.node_name}-${var.random_number}"
+  name = "k3s-igm-${var.node_role}-${var.random_number}"
 
-  base_instance_name = "k3s-${var.node_name}"
+  base_instance_name = "k3s-${var.node_role}"
   zone               = var.zone
 
   version {
@@ -94,13 +94,21 @@ resource "google_compute_instance_group_manager" "k3s" {
 }
 
 resource "google_compute_per_instance_config" "k3s" {
+  for_each               = toset(local.full_names)
   zone                   = google_compute_instance_group_manager.k3s.zone
   instance_group_manager = google_compute_instance_group_manager.k3s.name
-  name                   = "k3s-${var.node_name}"
+  name                   = each.key
   minimal_action         = "REPLACE"
   preserved_state {
     metadata = {
       instance_template = google_compute_instance_template.k3s.self_link
     }
   }
+}
+
+
+locals {
+  full_names = [
+    for i in range(1, var.node_count + 1) : format("k3s-%s%d", var.node_role, i)
+  ]
 }

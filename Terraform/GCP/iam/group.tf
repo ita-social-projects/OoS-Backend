@@ -15,4 +15,5 @@ resource "google_project_iam_member" "group_roles" {
   for_each = toset(local.group_roles)
   role     = each.key
   member   = "group:${var.access_group_email}"
+  project  = var.project
 }

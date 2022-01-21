@@ -5,3 +5,7 @@ output "mig_url" {
 output "template_id" {
   value = google_compute_instance_template.k3s.id
 }
+
+output "names" {
+  value = local.full_names
+}
