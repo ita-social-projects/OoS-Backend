@@ -232,11 +232,10 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<InstitutionStatus>, EntityRepository<InstitutionStatus>>();
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
-            services.AddTransient<IEntityRepository<ProviderAdmin>, EntityRepository<ProviderAdmin>>();
-            services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
             services.AddTransient<IEntityRepository<InformationAboutPortal>, EntityRepository<InformationAboutPortal>>();
 
+            services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services
                 .AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository

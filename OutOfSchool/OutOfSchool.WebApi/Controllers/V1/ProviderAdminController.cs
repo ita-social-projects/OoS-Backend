@@ -145,12 +145,11 @@ namespace OutOfSchool.WebApi.Controllers
             return StatusCode((int)response.HttpStatusCode);
         }
 
-
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderAdminDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{providerId}")]
-        public async Task<IActionResult> GetRelatedProviderAdmins(Guid providerId, bool deputyOnly = false, bool assistantsOnly = false)
+        public async Task<IActionResult> GetRelatedProviderAdmins(Guid providerId, bool deputyOnly, bool assistantsOnly)
         {
             var relatedAdmins = await providerAdminService.GetRelatedProviderAdmins(providerId).ConfigureAwait(false);
 

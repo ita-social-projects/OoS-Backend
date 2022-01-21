@@ -186,10 +186,14 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="returnUrl"> URL used to redirect user back to client.</param>
         /// <param name="providerRegistration"> bool used to prepare page for provider registration.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [HttpGet]
         public IActionResult Register(string returnUrl = "Login", bool? providerRegistration = null)
         {
-            return View(new RegisterViewModel { ReturnUrl = returnUrl, ProviderRegistration = providerRegistration
-                ?? GetProviderRegistrationFromUri(returnUrl) });
+            return View(new RegisterViewModel
+            {
+                ReturnUrl = returnUrl, ProviderRegistration = providerRegistration
+                ?? GetProviderRegistrationFromUri(returnUrl),
+            });
         }
 
         /// <summary>
