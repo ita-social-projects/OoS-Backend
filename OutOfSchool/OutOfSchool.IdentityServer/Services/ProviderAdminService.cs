@@ -77,9 +77,6 @@ namespace OutOfSchool.IdentityServer.Services
                             user.IsEnabled = true;
                             user.Role = nameof(Role.Provider).ToLower();
 
-                            // TODO: Delete before final commit
-                            user.MiddleName = password;
-
                             IdentityResult result = await userManager.CreateAsync(user, password);
 
                             if (!result.Succeeded)

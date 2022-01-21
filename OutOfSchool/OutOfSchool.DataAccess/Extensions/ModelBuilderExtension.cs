@@ -79,7 +79,15 @@ namespace OutOfSchool.Services.Extensions
                     RoleName = Role.Parent.ToString(),
                     PackedPermissions = PermissionsSeeder.SeedPermissions(Role.Parent.ToString()),
                     Description = "parent permissions",
-                });
+                },
+                new PermissionsForRole
+                {
+                    Id = 4,
+                    RoleName = nameof(Role.Provider) + nameof(Role.Admin),
+                    PackedPermissions = PermissionsSeeder.SeedPermissions(nameof(Role.Provider) + nameof(Role.Admin)),
+                    Description = "provider admin permissions",
+                }
+                );
         }
 
         /// <summary>

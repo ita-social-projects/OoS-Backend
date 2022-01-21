@@ -19,23 +19,20 @@ namespace OutOfSchool.IdentityServer
     {
         private readonly UserManager<User> userManager;
         private readonly IEntityRepository<PermissionsForRole> permissionsForRolesRepository;
-        private readonly IProviderAdminRepository providerAdminsRepository;
 
         public ProfileService(
             UserManager<User> userManager,
-            IEntityRepository<PermissionsForRole> permissionsForRolesRepository,
-            IProviderAdminRepository providerAdminsRepository)
+            IEntityRepository<PermissionsForRole> permissionsForRolesRepository)
         {
             this.userManager = userManager;
             this.permissionsForRolesRepository = permissionsForRolesRepository;
-            this.providerAdminsRepository = providerAdminsRepository;
         }
 
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             var nameClaim = context.Subject.Claims.FirstOrDefault(claim => claim.Type == "name");
             var roleClaim = context.Subject.Claims.FirstOrDefault(claim => claim.Type == "role");
-            var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(nameClaim.Value,roleClaim.Value));
+            var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(nameClaim.Value, roleClaim.Value));
             var claims = new List<Claim>
             {
                 nameClaim,
@@ -58,11 +55,10 @@ namespace OutOfSchool.IdentityServer
         {
             var userToLogin = await userManager.FindByNameAsync(userName);
 
-            if (userToLogin.Role == nameof(Role.Provider) && userToLogin.IsDerived)
+            if (userToLogin.Role == nameof(Role.Provider).ToLower() && userToLogin.IsDerived)
             {
-                // Provider-Derived set of permissions in DB excludes not allowed actions
-                // for provider admins - workshop deletion, all related to provider-level actions
-                roleName += "-Derived";
+                // ProviderAdmin set of permissions in DB excludes not allowed actions
+                roleName += nameof(Role.Admin);
             }
 
             var permissionsForUser = (await permissionsForRolesRepository
@@ -74,6 +70,7 @@ namespace OutOfSchool.IdentityServer
             {
                 return new List<Permissions>() { Permissions.NotSet }.PackPermissionsIntoString();
             }
+
             return permissionsForUser;
         }
     }

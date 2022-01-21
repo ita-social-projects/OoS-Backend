@@ -24,10 +24,21 @@ namespace OutOfSchool.Common.PermissionsModule
             Permissions.ImpersonalDataRead,
             Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
             Permissions.ApplicationRead, Permissions.ApplicationEdit,
-            Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove,
+            Permissions.ProviderAddNew, Permissions.ProviderEdit, Permissions.ProviderRead, Permissions.ProviderRemove, Permissions.ProviderAdmins,
             Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
             Permissions.UserRead, Permissions.UserEdit,
             Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
+        };
+
+        private static readonly IEnumerable<Permissions> SeedProviderAdminPermissions = new List<Permissions>
+        {
+            Permissions.ImpersonalDataRead,
+            Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
+            Permissions.ApplicationRead, Permissions.ApplicationEdit,
+            Permissions.ProviderAdmins,
+            Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
+            Permissions.UserRead, Permissions.UserEdit,
+            Permissions.WorkshopEdit, Permissions.WorkshopAddNew,
         };
 
         private static readonly IEnumerable<Permissions> SeedParentPermissions = new List<Permissions>
@@ -51,6 +62,9 @@ namespace OutOfSchool.Common.PermissionsModule
 
                 case "provider":
                     return SeedProviderPermissions.PackPermissionsIntoString();
+
+                case "provideradmin":
+                    return SeedProviderAdminPermissions.PackPermissionsIntoString();
 
                 case "parent":
                     return SeedParentPermissions.PackPermissionsIntoString();
