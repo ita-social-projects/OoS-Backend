@@ -282,7 +282,7 @@ namespace OutOfSchool.WebApi.Services
 
                 if (!user.IsEnabled)
                 {
-                    dto.AccountStatus = Enums.AccountStatus.Blocked;
+                    dto.AccountStatus = AccountStatus.Blocked;
                 }
                 else
                 {

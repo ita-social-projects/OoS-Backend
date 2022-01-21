@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authentication;
@@ -12,6 +14,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers
@@ -142,11 +145,31 @@ namespace OutOfSchool.WebApi.Controllers
             return StatusCode((int)response.HttpStatusCode);
         }
 
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderAdminDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{providerId}")]
         public async Task<IActionResult> GetRelatedProviderAdmins(Guid providerId, bool deputyOnly = false, bool assistantsOnly = false)
         {
-            var relatedWorkshops = await providerAdminService.GetRelatedProviderAdmins(providerId).ConfigureAwait(false);
-            return Ok(relatedWorkshops);
+            var relatedAdmins = await providerAdminService.GetRelatedProviderAdmins(providerId).ConfigureAwait(false);
+
+            IActionResult result = Ok(relatedAdmins);
+
+            if (assistantsOnly && deputyOnly)
+            {
+                return result;
+            }
+            else if (deputyOnly)
+            {
+                result = Ok(relatedAdmins.Where(w => w.IsDeputy));
+            }
+            else if (assistantsOnly)
+            {
+                result = Ok(relatedAdmins.Where(w => !w.IsDeputy));
+            }
+
+            return result;
         }
     }
 }
