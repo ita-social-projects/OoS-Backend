@@ -23,6 +23,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private readonly IApplicationService applicationService;
         private readonly IParentService parentService;
         private readonly IProviderService providerService;
+        private readonly IProviderAdminService providerAdminService;
         private readonly IWorkshopService workshopService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -32,18 +33,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="applicationService">Service for Application model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="providerService">Service for Provider model.</param>
+        /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
         /// <param name="parentService">Service for Parent model.</param>
         /// <param name="workshopService">Service for Workshop model.</param>
         public ApplicationController(
             IApplicationService applicationService,
             IStringLocalizer<SharedResource> localizer,
             IProviderService providerService,
+            IProviderAdminService providerAdminService,
             IParentService parentService,
             IWorkshopService workshopService)
         {
             this.applicationService = applicationService;
             this.localizer = localizer;
             this.providerService = providerService;
+            this.providerAdminService = providerAdminService;
             this.parentService = parentService;
             this.workshopService = workshopService;
         }
@@ -98,7 +102,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 await CheckUserRights(
                         parentId: application.ParentId,
-                        providerId: application.Workshop.ProviderId)
+                        providerId: application.Workshop.ProviderId,
+                        workshopId: application.Workshop.WorkshopId)
                     .ConfigureAwait(false);
 
                 return Ok(application);
@@ -308,7 +313,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 await CheckUserRights(
                     parentId: application.ParentId,
-                    providerId: application.Workshop.ProviderId).ConfigureAwait(false);
+                    providerId: application.Workshop.ProviderId,
+                    workshopId: application.Workshop.WorkshopId).ConfigureAwait(false);
 
                 var updatedApplication = await applicationService.Update(application).ConfigureAwait(false);
 
@@ -367,7 +373,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 throw new ArgumentException(localizer[$"There is no workshop with Id = {id}"]);
             }
 
-            await CheckUserRights(providerId: workshop.ProviderId).ConfigureAwait(false);
+            await CheckUserRights(providerId: workshop.ProviderId, workshopId: workshop.Id).ConfigureAwait(false);
 
             var applications = await applicationService.GetAllByWorkshop(id, filter).ConfigureAwait(false);
 
@@ -383,7 +389,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return applications;
         }
 
-        private async Task CheckUserRights(Guid parentId = default, Guid providerId = default)
+        private async Task CheckUserRights(Guid parentId = default, Guid providerId = default, Guid workshopId = default)
         {
             var userId = User.FindFirst("sub")?.Value;
 
@@ -397,9 +403,19 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
             else if (User.IsInRole("provider"))
             {
-                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-
-                userHasRights = provider.Id == providerId;
+                try
+                {
+                    var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+                    userHasRights = provider.Id == providerId;
+                }
+                catch (ArgumentException)
+                {
+                    var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+                    if (!isUserRelatedAdmin)
+                    {
+                        userHasRights = false;
+                    }
+                }
             }
 
             if (!userHasRights)

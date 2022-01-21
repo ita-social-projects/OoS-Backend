@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="combinedWorkshopService">Service for operations with Workshops.</param>
         /// <param name="providerService">Service for Provider model.</param>
-        /// <param name="providerService">Service for Provider admin model.</param>
+        /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="options">Application default values.</param>
         public WorkshopController(
