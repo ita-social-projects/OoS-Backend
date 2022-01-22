@@ -5,7 +5,7 @@ using OutOfSchool.Common;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Address
+    public class Address : IKeyedEntity<long>
     {
         public long Id { get; set; }
 

@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Stores;
+using Microsoft.Extensions.Logging;
 
 namespace OutOfSchool.IdentityServer.KeyManagement
 {
     public class ValidationKeyStore : IValidationKeysStore
     {
         private readonly IKeyManager keyManager;
+        private readonly ILogger<ValidationKeyStore> logger;
 
-        public ValidationKeyStore(IKeyManager manager)
+        public ValidationKeyStore(IKeyManager manager, ILogger<ValidationKeyStore> logger)
         {
             keyManager = manager;
+            this.logger = logger;
         }
 
         /// <inheritdoc />
@@ -34,7 +37,7 @@ namespace OutOfSchool.IdentityServer.KeyManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                logger.LogError(e, "Failed to get validation keys");
                 return Array.Empty<SecurityKeyInfo>();
             }
         }

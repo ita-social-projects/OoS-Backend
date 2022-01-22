@@ -5,12 +5,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Workshop
+    public class Workshop : IKeyedEntity<Guid>, IImageDependentEntity<Workshop>
     {
         public Guid Id { get; set; }
 
@@ -82,6 +84,8 @@ namespace OutOfSchool.Services.Models
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
 
+        public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
+
         [MaxLength(200)]
         public string Keywords { get; set; } = string.Empty;
 
@@ -122,6 +126,6 @@ namespace OutOfSchool.Services.Models
         // These properties are only for navigation EF Core.
         public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
 
-        public virtual List<Image<Workshop>> WorkshopImages { get; set; }
+        public virtual List<Image<Workshop>> Images { get; set; }
     }
 }

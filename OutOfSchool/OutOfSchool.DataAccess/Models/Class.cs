@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Class
+    public class Class : IKeyedEntity<long>
     {
         public long Id { get; set; }
 

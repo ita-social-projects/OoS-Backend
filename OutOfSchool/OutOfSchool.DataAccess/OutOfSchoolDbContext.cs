@@ -83,7 +83,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ProviderConfiguration());
             builder.ApplyConfiguration(new ProviderAdminConfiguration());
             builder.ApplyConfiguration(new WorkshopConfiguration());
-            builder.ApplyConfiguration(new WorkshopImagesConfiguration());
+            builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
 
             builder.Seed();
             builder.UpdateIdentityTables();

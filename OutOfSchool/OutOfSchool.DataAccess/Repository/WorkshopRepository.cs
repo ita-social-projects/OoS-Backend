@@ -50,7 +50,7 @@ namespace OutOfSchool.Services.Repository
                 .Include(ws => ws.Address)
                 .Include(ws => ws.Teachers)
                 .Include(ws => ws.DateTimeRanges)
-                .Include(ws => ws.WorkshopImages)
+                .Include(ws => ws.Images)
                 .SingleOrDefaultAsync(ws => ws.Id == id);
         }
 
@@ -60,6 +60,20 @@ namespace OutOfSchool.Services.Repository
         public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
         {
             return await dbSet.Where(w => ids.Contains(w.Id)).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+        {
+            var workshops = db.Workshops.Where(ws => ws.ProviderId == provider.Id);
+            await workshops.ForEachAsync(ws =>
+                                            {
+                                                ws.ProviderTitle = provider.FullTitle;
+                                                ws.ProviderOwnership = provider.Ownership;
+                                            });
+
+            await db.SaveChangesAsync();
+
+            return await workshops.ToListAsync();
         }
     }
 }

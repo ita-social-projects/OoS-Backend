@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IRatingService ratingService;
         private readonly ILogger<WorkshopService> logger;
         private readonly IMapper mapper;
-        private readonly IWorkshopImagesService workshopImagesService;
+        private readonly IWorkshopImagesInteractionService workshopImagesInteractionService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -48,21 +48,21 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="ratingService">Rating service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Automapper DI service.</param>
-        /// <param name="workshopImagesService">Image service for workshop.</param>
+        /// <param name="workshopImagesInteractionService">Image service for workshop.</param>
         public WorkshopService(
             IWorkshopRepository workshopRepository,
             IClassRepository classRepository,
             IRatingService ratingService,
             ILogger<WorkshopService> logger,
             IMapper mapper,
-            IWorkshopImagesService workshopImagesService)
+            IWorkshopImagesInteractionService workshopImagesInteractionService)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
             this.ratingService = ratingService;
             this.logger = logger;
             this.mapper = mapper;
-            this.workshopImagesService = workshopImagesService;
+            this.workshopImagesInteractionService = workshopImagesInteractionService;
         }
 
         /// <inheritdoc/>
@@ -183,6 +183,23 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+        {
+            logger.LogInformation($"Partial updating workshop with ProviderId = {provider?.Id} was started.");
+
+            try
+            {
+                return await workshopRepository.PartialUpdateByProvider(provider).ConfigureAwait(false);
+            }
+            catch (DbUpdateConcurrencyException exception)
+            {
+                logger.LogError($"Partial updating workshop with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
         /// <exception cref="ArgumentNullException">If the entity with specified id was not found in the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task Delete(Guid id)
@@ -300,19 +317,19 @@ namespace OutOfSchool.WebApi.Services
         }
 
         public async Task<OperationResult> UploadImageAsync(Guid entityId, IFormFile image) =>
-            await workshopImagesService.UploadImageAsync(entityId, image).ConfigureAwait(false);
+            await workshopImagesInteractionService.UploadImageAsync(entityId, image).ConfigureAwait(false);
 
         public async Task<OperationResult> RemoveImageAsync(Guid entityId, string imageId) =>
-            await workshopImagesService.RemoveImageAsync(entityId, imageId).ConfigureAwait(false);
+            await workshopImagesInteractionService.RemoveImageAsync(entityId, imageId).ConfigureAwait(false);
 
         public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, IList<IFormFile> images) =>
-            await workshopImagesService.UploadManyImagesAsync(entityId, images).ConfigureAwait(false);
+            await workshopImagesInteractionService.UploadManyImagesAsync(entityId, images).ConfigureAwait(false);
 
         public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, IList<string> imageIds) =>
-            await workshopImagesService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
+            await workshopImagesInteractionService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
 
-        public async Task<ImageChangingResult> ChangeImagesAsync(WorkshopUpdateDto dto) =>
-            await workshopImagesService.ChangeImagesAsync(dto).ConfigureAwait(false);
+        public async Task<ImageChangingResult> ChangeImagesAsync(Guid entityId, IList<string> oldImageIds, IList<IFormFile> newImages) =>
+            await workshopImagesInteractionService.ChangeImagesAsync(entityId, oldImageIds, newImages).ConfigureAwait(false);
 
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
         {

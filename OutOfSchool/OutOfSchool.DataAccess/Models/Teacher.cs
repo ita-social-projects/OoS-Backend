@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.Services.Models
 {
-    public class Teacher
+    public class Teacher : IKeyedEntity<Guid>
     {
         public Guid Id { get; set; }
 

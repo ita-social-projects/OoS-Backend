@@ -352,6 +352,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
+                    b.Property<ulong>("GeoHash")
+                        .HasColumnType("bigint unsigned");
+
                     b.Property<double?>("Latitude")
                         .HasColumnType("double");
 
@@ -813,6 +816,29 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         });
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.SupportInformation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(3000)
+                        .HasColumnType("varchar(3000)");
+
+                    b.Property<string>("SectionName")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SupportInformation");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1033,6 +1059,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<Guid>("ProviderId")
                         .HasColumnType("binary(16)");
 
+                    b.Property<int>("ProviderOwnership")
+                        .HasColumnType("int");
+
                     b.Property<string>("ProviderTitle")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -1241,7 +1270,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Entity")
-                        .WithMany("WorkshopImages")
+                        .WithMany("Images")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1393,9 +1422,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Navigation("DateTimeRanges");
 
-                    b.Navigation("Teachers");
+                    b.Navigation("Images");
 
-                    b.Navigation("WorkshopImages");
+                    b.Navigation("Teachers");
                 });
 #pragma warning restore 612, 618
         }

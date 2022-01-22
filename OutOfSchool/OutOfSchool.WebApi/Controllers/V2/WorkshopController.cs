@@ -245,7 +245,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
             }
 
-            var imagesResults = await combinedWorkshopService.ChangeImagesAsync(dto).ConfigureAwait(false);
+            var imagesResults = await combinedWorkshopService.ChangeImagesAsync(dto.Id, dto.ImageIds, dto.ImageFiles).ConfigureAwait(false);
             var updatedWorkshop = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
             return Ok(new WorkshopUpdateResponse
@@ -286,8 +286,16 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return new ForbidResult("Forbidden to delete workshops of another providers.");
             }
 
-            await combinedWorkshopService.Delete(id).ConfigureAwait(false);
+            if (workshop.ImageIds.Count > 0)
+            {
+                var imagesResults = await combinedWorkshopService.RemoveManyImagesAsync(workshop.Id, workshop.ImageIds).ConfigureAwait(false);
+                if (!imagesResults.Succeeded)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
+            }
 
+            await combinedWorkshopService.Delete(id).ConfigureAwait(false);
             return NoContent();
         }
 

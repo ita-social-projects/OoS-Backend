@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.Services.Models
 {
-    public class SectionDayOfWeek
+    public class SectionDayOfWeek : IKeyedEntity<long>
     {
         public long Id { get; set; }
 

@@ -4,7 +4,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Application
+    public class Application : IKeyedEntity<Guid>
     {
         public Guid Id { get; set; }
 

@@ -32,7 +32,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IRatingService> ratingService;
         private Mock<ILogger<WorkshopService>> logger;
         private Mock<IMapper> mapper;
-        private Mock<IWorkshopImagesService> workshopImagesService;
+        private Mock<IWorkshopImagesInteractionService> workshopImagesInteractionService;
 
         [SetUp]
         public void SetUp()
@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             ratingService = new Mock<IRatingService>();
             logger = new Mock<ILogger<WorkshopService>>();
             mapper = new Mock<IMapper>();
-            workshopImagesService = new Mock<IWorkshopImagesService>();
+            workshopImagesInteractionService = new Mock<IWorkshopImagesInteractionService>();
             workshopService =
                 new WorkshopService(
                     workshopRepository.Object,
@@ -50,7 +50,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     ratingService.Object,
                     logger.Object,
                     mapper.Object,
-                    workshopImagesService.Object);
+                    workshopImagesInteractionService.Object);
         }
 
         #region Create

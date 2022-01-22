@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Images;
 
@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// The interface for CRUD operations with workshops.
     /// </summary>
-    public interface IWorkshopServicesCombiner : ICRUDService<WorkshopDTO, Guid>, IWorkshopImagesService
+    public interface IWorkshopServicesCombiner : ICRUDService<WorkshopDTO, Guid>, IWorkshopImagesInteractionService
     {
         /// <summary>
         /// Get all entities from the database.
@@ -35,5 +35,12 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="IEnumerable{WorkshopES}"/> that contains elements that were found.</returns>
         Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter);
+
+        /// <summary>
+        /// Update prodider's properies in all workshops with specified provider.
+        /// </summary>
+        /// <param name="provider">Provider to be searched by.</param>
+        /// <returns>List of Workshops for the specified provider.</returns>
+        Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider);
     }
 }
