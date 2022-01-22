@@ -11,6 +11,8 @@ namespace OutOfSchool.Services.Repository
 
         Task<bool> IsExistProviderWithUserIdAsync(Guid providerId, string userId);
 
+        Task<Provider> GetProviderWithUserIdAsync(string userId);
+
         Task<int> GetNumberProviderAdminsAsync(Guid providerId);
 
         Task<ProviderAdmin> GetByIdAsync(string id, Guid providerId);

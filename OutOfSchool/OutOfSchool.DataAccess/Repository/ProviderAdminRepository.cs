@@ -40,6 +40,14 @@ namespace OutOfSchool.Services.Repository
             return provider != null;
         }
 
+        public async Task<Provider> GetProviderWithUserIdAsync(string userId)
+        {
+            var provider = await db.Providers
+                .SingleOrDefaultAsync(p => p.UserId == userId);
+
+            return provider;
+        }
+
         public async Task<int> GetNumberProviderAdminsAsync(Guid providerId)
         {
             return await db.ProviderAdmins

@@ -271,26 +271,47 @@ namespace OutOfSchool.WebApi.Services
             return providerAdmin != null;
         }
 
-        // TODO: implement mechanism to get data
-        public async Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(Guid providerId)
+        public async Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(string userId, bool isDeputy = false)
         {
-            var providerAdmins = await providerAdminRepository.GetByFilter(pa => pa.ProviderId == providerId).ConfigureAwait(false);
+            var provider = await providerAdminRepository.GetProviderWithUserIdAsync(userId).ConfigureAwait(false);
+            List<ProviderAdmin> providerAdmins = new List<ProviderAdmin>();
             List<ProviderAdminDto> dtos = new List<ProviderAdminDto>();
-            foreach (var pa in providerAdmins)
+
+            if (provider != null)
             {
-                var user = (await userRepository.GetByFilter(u => u.Id == pa.UserId).ConfigureAwait(false)).Single();
-                var dto = user.ToModel(pa);
-
-                if (!user.IsEnabled)
+                providerAdmins = (await providerAdminRepository.GetByFilter(pa => pa.ProviderId == provider.Id).ConfigureAwait(false))
+                    .ToList();
+            }
+            else
+            {
+                var providerAdmin = (await providerAdminRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault();
+                if (providerAdmin.IsDeputy)
                 {
-                    dto.AccountStatus = AccountStatus.Blocked;
+                    providerAdmins = (await providerAdminRepository
+                        .GetByFilter(pa => pa.ProviderId == providerAdmin.ProviderId && !pa.IsDeputy)
+                        .ConfigureAwait(false)).ToList();
                 }
-                else
+            }
+
+            if (providerAdmins.Any())
+            {
+                foreach (var pa in providerAdmins)
                 {
-                dto.AccountStatus = user.LastLogin == DateTimeOffset.MinValue ? AccountStatus.NeverLogged : AccountStatus.Accepted;
+                    var user = (await userRepository.GetByFilter(u => u.Id == pa.UserId).ConfigureAwait(false)).Single();
+                    var dto = user.ToModel(pa);
+
+                    if (!user.IsEnabled)
+                    {
+                        dto.AccountStatus = AccountStatus.Blocked;
+                    }
+                    else
+                    {
+                        dto.AccountStatus = user.LastLogin == DateTimeOffset.MinValue ? AccountStatus.NeverLogged : AccountStatus.Accepted;
+                    }
+
+                    dtos.Add(dto);
                 }
 
-                dtos.Add(dto);
             }
 
             return dtos;

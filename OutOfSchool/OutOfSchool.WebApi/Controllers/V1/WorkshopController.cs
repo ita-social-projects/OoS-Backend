@@ -250,7 +250,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
         private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid providerId, Guid workshopId = default)
         {
-            if (User.IsInRole(Role.Provider.ToString().ToLower()))
+            if (User.IsInRole(nameof(Role.Provider).ToLower()))
             {
                 var userId = User.FindFirst("sub")?.Value;
                 try {

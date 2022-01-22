@@ -145,13 +145,20 @@ namespace OutOfSchool.WebApi.Controllers
             return StatusCode((int)response.HttpStatusCode);
         }
 
+        /// <summary>
+        /// Method to Get filtered data about related ProviderAdmins.
+        /// </summary>
+        /// <param name="deputyOnly">Returns only deputy provider admins.</param>
+        /// <param name="assistantsOnly">Returns only assistants (workshop) provider admins.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderAdminDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{providerId}")]
-        public async Task<IActionResult> GetRelatedProviderAdmins(Guid providerId, bool deputyOnly, bool assistantsOnly)
+        [HasPermission(Permissions.ProviderRead)]
+        [HttpGet]
+        public async Task<IActionResult> GetFilteredProviderAdminsAsync(bool deputyOnly, bool assistantsOnly)
         {
-            var relatedAdmins = await providerAdminService.GetRelatedProviderAdmins(providerId).ConfigureAwait(false);
+            var relatedAdmins = await providerAdminService.GetRelatedProviderAdmins(userId).ConfigureAwait(false);
 
             IActionResult result = Ok(relatedAdmins);
 
@@ -167,6 +174,28 @@ namespace OutOfSchool.WebApi.Controllers
             {
                 result = Ok(relatedAdmins.Where(w => !w.IsDeputy));
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Method to Get data about related ProviderAdmins.
+        /// </summary>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderAdminDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        public async Task<IActionResult> GetRelatedProviderAdmins()
+        {
+            var relatedAdmins = await providerAdminService.GetRelatedProviderAdmins(userId).ConfigureAwait(false);
+
+            if (!relatedAdmins.Any())
+            {
+                return StatusCode(403, "You have no rights to do this action");
+            }
+
+            IActionResult result = Ok(relatedAdmins);
 
             return result;
         }
