@@ -192,7 +192,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (!relatedAdmins.Any())
             {
-                return StatusCode(403, "You have no rights to do this action");
+                return StatusCode(204, "No provider admins to show");
             }
 
             IActionResult result = Ok(relatedAdmins);

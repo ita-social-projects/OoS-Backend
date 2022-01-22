@@ -64,8 +64,6 @@ namespace OutOfSchool.IdentityServer.Services
             var password = PasswordGenerator
                 .GenerateRandomPassword(userManager.Options.Password);
 
-            user.MiddleName = password;
-
             var executionStrategy = context.Database.CreateExecutionStrategy();
             await executionStrategy.Execute(async () =>
                 {
@@ -119,6 +117,16 @@ namespace OutOfSchool.IdentityServer.Services
 
                                  // we create empty list, because deputy are not connected with each workshop, but to all related to provider
                                  new List<Workshop>();
+                            if (!providerAdmin.IsDeputy && !providerAdmin.ManagedWorkshops.Any())
+                            {
+                                transaction.Rollback();
+                                logger.LogError($"Cant create assistant provider admin without related workshops");
+                                response.IsSuccess = false;
+                                response.HttpStatusCode = HttpStatusCode.BadRequest;
+                                response.Message = "You have to specify related workshops to be able to create workshop admin";
+
+                                return response;
+                            }
 
                             await providerAdminRepository.Create(providerAdmin)
                                     .ConfigureAwait(false);
