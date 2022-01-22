@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -15,6 +16,8 @@ namespace OutOfSchool.WebApi.Services
         Task<ResponseDto> DeleteProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token);
 
         Task<ResponseDto> BlockProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token);
+
+        Task GiveAssistantAccessToWorkshop(string userId, Guid workshopId);
 
         Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(string userId);
 

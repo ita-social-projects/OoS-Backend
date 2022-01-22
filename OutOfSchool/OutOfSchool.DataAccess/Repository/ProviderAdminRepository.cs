@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -46,6 +47,15 @@ namespace OutOfSchool.Services.Repository
                 .SingleOrDefaultAsync(p => p.UserId == userId);
 
             return provider;
+        }
+
+        public async Task AddRelatedWorkshopForAssistant(string userId, Guid workshopId)
+        {
+            var providerAdmin = await db.ProviderAdmins.SingleOrDefaultAsync(p => p.UserId == userId);
+            var workshopToUpdate = await db.Workshops.SingleOrDefaultAsync(w => w.Id == workshopId);
+            workshopToUpdate.ProviderAdmins = new List<ProviderAdmin> { providerAdmin };
+            db.Update(workshopToUpdate);
+            await db.SaveChangesAsync();
         }
 
         public async Task<int> GetNumberProviderAdminsAsync(Guid providerId)

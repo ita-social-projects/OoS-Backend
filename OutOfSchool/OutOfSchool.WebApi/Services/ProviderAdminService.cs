@@ -259,11 +259,16 @@ namespace OutOfSchool.WebApi.Services
             return provider;
         }
 
+        public async Task GiveAssistantAccessToWorkshop(string userId, Guid workshopId)
+        {
+            await providerAdminRepository.AddRelatedWorkshopForAssistant(userId, workshopId).ConfigureAwait(false);
+        }
+
         public async Task<bool> CheckUserIsRelatedProviderAdmin(string userId, Guid providerId, Guid workshopId)
         {
             var providerAdmin = await providerAdminRepository.GetByIdAsync(userId, providerId).ConfigureAwait(false);
 
-            if (!providerAdmin.IsDeputy)
+            if (!providerAdmin.IsDeputy && workshopId != Guid.Empty)
             {
                 return providerAdmin.ManagedWorkshops.Any(w => w.Id == workshopId);
             }

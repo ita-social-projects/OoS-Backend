@@ -174,6 +174,16 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
+            // here we will get "false" if workshop was created by assistant provider admin
+            // because user is not currently associated with new workshop
+            // so we can update information to allow assistant manage created workshop
+
+            if (!(await IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false)))
+            {
+                var userId = User.FindFirst("sub")?.Value;
+                await providerAdminService.GiveAssistantAccessToWorkshop(userId, workshop.Id).ConfigureAwait(false);
+            }
+
             return CreatedAtAction(
                 nameof(GetById),
                 new { id = workshop.Id, },

@@ -13,6 +13,8 @@ namespace OutOfSchool.Services.Repository
 
         Task<Provider> GetProviderWithUserIdAsync(string userId);
 
+        Task AddRelatedWorkshopForAssistant(string userId, Guid workshopId);
+
         Task<int> GetNumberProviderAdminsAsync(Guid providerId);
 
         Task<ProviderAdmin> GetByIdAsync(string id, Guid providerId);
