@@ -64,6 +64,12 @@ namespace OutOfSchool.Services
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
+        public DbSet<InformationAboutPortal> InformationAboutPortal { get; set; }
+
+        public DbSet<SupportInformation> SupportInformation { get; set; }
+
+        public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
+
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();
