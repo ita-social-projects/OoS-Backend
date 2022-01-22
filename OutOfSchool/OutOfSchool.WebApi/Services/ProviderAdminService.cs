@@ -271,7 +271,7 @@ namespace OutOfSchool.WebApi.Services
             return providerAdmin != null;
         }
 
-        public async Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(string userId, bool isDeputy = false)
+        public async Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(string userId)
         {
             var provider = await providerAdminRepository.GetProviderWithUserIdAsync(userId).ConfigureAwait(false);
             List<ProviderAdmin> providerAdmins = new List<ProviderAdmin>();

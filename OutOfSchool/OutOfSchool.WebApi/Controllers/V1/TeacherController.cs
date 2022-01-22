@@ -74,6 +74,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return Ok(await service.GetById(id).ConfigureAwait(false));
         }
 
+        // TODO: Discuss: do we need to perform additional validation during attempt to create/delete teacher
+        // Currently, every user with Permission "TeacherAddNew" is allowed to create new entity. But due to permissions matrix:
+        // we have not to allow workshop admins delete not related teachers etc.
+
         /// <summary>
         /// Add a new teacher to the database.
         /// </summary>
@@ -90,7 +94,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 return BadRequest(ModelState);
             }
-
             var teacher = await service.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(

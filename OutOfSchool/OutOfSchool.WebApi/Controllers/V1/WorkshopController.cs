@@ -254,6 +254,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 var userId = User.FindFirst("sub")?.Value;
                 try {
+
                     var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
                     if (providerId != provider.Id)
                     {

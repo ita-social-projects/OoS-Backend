@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Services
 
         Task<ResponseDto> BlockProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token);
 
-        Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(string userId, bool isDeputy = false);
+        Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(string userId);
 
         Task<bool> CheckUserIsRelatedProviderAdmin(string providerAdminId, Guid providerId, Guid workshopId = default);
     }
