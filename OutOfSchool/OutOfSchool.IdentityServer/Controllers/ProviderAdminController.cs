@@ -39,6 +39,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpPost]
+        [HasPermission(Permissions.ProviderAdmins)]
         public async Task<ResponseDto> Create(CreateProviderAdminDto providerAdminDto)
         {
             logger.LogDebug($"Received request " +
@@ -49,7 +50,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpDelete]
-        [Authorize(Roles = "provider")]
+        [HasPermission(Permissions.ProviderRemove)]
         public async Task<ResponseDto> Delete(DeleteProviderAdminDto deleteProviderAdminDto)
         {
             if (deleteProviderAdminDto is null)
@@ -65,7 +66,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "provider")]
+        [HasPermission(Permissions.ProviderRemove)]
         public async Task<ResponseDto> Block(BlockProviderAdminDto blockProviderAdminDto)
         {
             logger.LogDebug($"Received request " +

@@ -154,6 +154,10 @@ namespace OutOfSchool.IdentityServer
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
             services.AddTransient<IProviderAdminService, ProviderAdminService>();
 
+            // Register the Permission policy handlers
+            services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
+            services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
