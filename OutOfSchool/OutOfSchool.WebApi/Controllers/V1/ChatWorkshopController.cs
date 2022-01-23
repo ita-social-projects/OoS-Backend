@@ -232,13 +232,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
             catch (AuthenticationException exception)
             {
                 logger.LogWarning(exception.Message);
-                var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
+                var messageForUser = localizer["Can not get some user's claims. Please check your authentication or contact technical support."];
                 return BadRequest(messageForUser);
             }
             catch (Exception exception)
             {
                 logger.LogError(exception.Message);
-                var messageForUser = "Server error. Please try again later or contact technical support.";
+                var messageForUser = localizer["Server error. Please try again later or contact technical support."];
                 return new ObjectResult(messageForUser) { StatusCode = 500 };
             }
         }
@@ -276,13 +276,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
             catch (AuthenticationException exception)
             {
                 logger.LogWarning(exception.Message);
-                var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
+                var messageForUser = localizer["Can not get some user's claims. Please check your authentication or contact technical support."];
                 return BadRequest(messageForUser);
             }
             catch (Exception exception)
             {
                 logger.LogError(exception.Message);
-                var messageForUser = "Server error. Please try again later or contact technical support.";
+                var messageForUser = localizer["Server error. Please try again later or contact technical support."];
                 return new ObjectResult(messageForUser) { StatusCode = 500 };
             }
         }
@@ -308,13 +308,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
             catch (AuthenticationException exception)
             {
                 logger.LogWarning(exception.Message);
-                var messageForUser = "Cannot get some user's claims. Please check your authentication or contact technical support.";
+                var messageForUser = localizer["Can not get some user's claims. Please check your authentication or contact technical support."];
                 return BadRequest(messageForUser);
             }
             catch (Exception exception)
             {
                 logger.LogError(exception.Message);
-                var messageForUser = "Server error. Please try again later or contact technical support.";
+                var messageForUser = localizer["Server error. Please try again later or contact technical support."];
                 return new ObjectResult(messageForUser) { StatusCode = 500 };
             }
         }

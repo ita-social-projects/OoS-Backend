@@ -121,6 +121,14 @@
     <value>Address is null.</value>
     <comment>AdressController</comment>
   </data>
+  <data name="Can not get some user's claims. Please check your authentication or contact technical support." xml:space="preserve">
+    <value>Can not get some user's claims. Please check your authentication or contact technical support.</value>
+    <comment>ChatWorkshopHub</comment>
+  </data>
+  <data name="Can not get user's claim {0} from HttpContext." xml:space="preserve">
+    <value>Can not get user's claim {0} from HttpContext.</value>
+    <comment>ChatWorkshopHub</comment>
+  </data>
   <data name="Error! Please check the number is correct" xml:space="preserve">
     <value>Error! Please check the number is correct</value>
     <comment>PhoneNumberValidation</comment>
@@ -128,6 +136,14 @@
   <data name="Id cannot be 0 or less than 0." xml:space="preserve">
     <value>Id cannot be 0 or less than 0.</value>
     <comment>AdressController</comment>
+  </data>
+  <data name="Server error. Please try again later or contact technical support." xml:space="preserve">
+    <value>Server error. Please try again later or contact technical support.</value>
+    <comment>ChatWorkshopHub</comment>
+  </data>
+  <data name="Some of the message parameters were wrong. Please check your message and try again." xml:space="preserve">
+    <value>Some of the message parameters were wrong. Please check your message and try again.</value>
+    <comment>ChatWorkshopHub</comment>
   </data>
   <data name="The id cannot be greater than number of table entities." xml:space="preserve">
     <value>The id cannot be greater than number of table entities.</value>
