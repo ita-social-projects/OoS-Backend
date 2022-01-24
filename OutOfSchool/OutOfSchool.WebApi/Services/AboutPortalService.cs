@@ -18,6 +18,7 @@ namespace OutOfSchool.WebApi.Services
     {
         private const int LimitOfItems = 10;
 
+        private readonly IAboutPortalRepository repository;
         private readonly ISensitiveEntityRepository<AboutPortal> informationAboutPortalRepository;
         private readonly ISensitiveEntityRepository<AboutPortalItem> informationAboutPortalItemRepository;
         private readonly ILogger<AboutPortalService> logger;
@@ -33,12 +34,14 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
         public AboutPortalService(
+            IAboutPortalRepository repository,
             ISensitiveEntityRepository<AboutPortal> informationAboutPortalRepository,
             ISensitiveEntityRepository<AboutPortalItem> informationAboutPortalItemRepository,
             ILogger<AboutPortalService> logger,
             IStringLocalizer<SharedResource> localizer,
             IMapper mapper)
         {
+            this.repository = repository;
             this.informationAboutPortalRepository = informationAboutPortalRepository;
             this.informationAboutPortalItemRepository = informationAboutPortalItemRepository;
             this.logger = logger;
@@ -85,7 +88,9 @@ namespace OutOfSchool.WebApi.Services
             }
             else
             {
-                AboutPortal currentInformationAboutPortal = infoAboutPortals.Single();
+                var currentInformationAboutPortal = infoAboutPortals.Single();
+                informationAboutPortalDto.Id = currentInformationAboutPortal.Id;
+                await repository.DeleteAllItems().ConfigureAwait(false);
                 mapper.Map(informationAboutPortalDto, currentInformationAboutPortal);
                 var informationAboutPortal = await informationAboutPortalRepository.Update(currentInformationAboutPortal).ConfigureAwait(false);
                 updatedInformationAboutPortalDto = mapper.Map<AboutPortalDto>(informationAboutPortal);
@@ -182,7 +187,7 @@ namespace OutOfSchool.WebApi.Services
             var infoAboutPortals = await informationAboutPortalRepository.GetAll().ConfigureAwait(false);
             var informationAboutPortal = infoAboutPortals.Single();
 
-            informationAboutPortalItem.InformationAboutPortal = informationAboutPortal;
+            informationAboutPortalItem.AboutPortal = informationAboutPortal;
             return informationAboutPortalItem;
         }
     }

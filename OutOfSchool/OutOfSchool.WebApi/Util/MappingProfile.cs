@@ -94,8 +94,15 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
 
-            CreateMap<AboutPortal, AboutPortalDto>().ReverseMap();
             CreateMap<AboutPortalItem, AboutPortalItemDto>().ReverseMap();
+
+            CreateMap<AboutPortal, AboutPortalDto>()
+                .ForMember(dest => dest.Items, opt => opt.MapFrom((dto, entity, dest, ctx) =>
+                {
+                    var dtoItems = ctx.Mapper.Map<List<AboutPortalItem>>(dto.AboutPortalItems);
+                    return dtoItems;
+                }))
+                .ReverseMap();
 
             CreateMap<SupportInformation, SupportInformationDto>().ReverseMap()
                 .ForMember(c => c.Id, m => m.Ignore());

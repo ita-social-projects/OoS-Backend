@@ -232,6 +232,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
+            services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
