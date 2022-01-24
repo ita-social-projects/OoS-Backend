@@ -62,9 +62,9 @@ namespace OutOfSchool.Services
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
-        public DbSet<InformationAboutPortal> InformationAboutPortal { get; set; }
+        public DbSet<AboutPortal> AboutPortal { get; set; }
 
-        public DbSet<InformationAboutPortalItem> InformationAboutPortalItem { get; set; }
+        public DbSet<AboutPortalItem> AboutPortalItems{ get; set; }
 
         public DbSet<SupportInformation> SupportInformation { get; set; }
 

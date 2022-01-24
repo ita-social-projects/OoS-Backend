@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class InformationAboutPortalDto
+    public class AboutPortalDto
     {
         public Guid Id { get; set; }
 

@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     public class InformationAboutPortalController : ControllerBase
     {
-        private readonly IInformationAboutPortalService informationAboutPortalService;
+        private readonly IAboutPortalService informationAboutPortalService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly ILogger<InformationAboutPortalController> logger;
 
@@ -28,7 +28,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="localizer">Localizer.</param>
         /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
         public InformationAboutPortalController(
-            IInformationAboutPortalService informationAboutPortalService,
+            IAboutPortalService informationAboutPortalService,
             IStringLocalizer<SharedResource> localizer,
             ILogger<InformationAboutPortalController> logger)
         {
@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get information about Portal from the database.
         /// </summary>
         /// <returns>Information about Portal.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InformationAboutPortalDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AboutPortalDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
@@ -63,12 +63,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="informationAboutPortalModel">Entity to update.</param>
         /// <returns>Updated information about Portal.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InformationAboutPortalDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AboutPortalDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(InformationAboutPortalDto informationAboutPortalModel)
+        public async Task<IActionResult> Update(AboutPortalDto informationAboutPortalModel)
         {
             if (!ModelState.IsValid)
             {
@@ -90,7 +90,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">InformationAboutPortalItem's id.</param>
         /// <returns>InformationAboutPortalItem.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InformationAboutPortalItemDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AboutPortalItemDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
@@ -109,7 +109,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> CreateItem(InformationAboutPortalItemDto informationAboutPortalItemModel)
+        public async Task<IActionResult> CreateItem(AboutPortalItemDto informationAboutPortalItemModel)
         {
             if (!ModelState.IsValid)
             {
@@ -134,12 +134,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="informationAboutPortalItemModel">Entity to update.</param>
         /// <returns>Updated information about Portal.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InformationAboutPortalItemDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AboutPortalItemDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> UpdateItem(InformationAboutPortalItemDto informationAboutPortalItemModel)
+        public async Task<IActionResult> UpdateItem(AboutPortalItemDto informationAboutPortalItemModel)
         {
             if (!ModelState.IsValid)
             {
@@ -175,7 +175,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get all items in InformationAboutPortal from the database.
         /// </summary>
         /// <returns>List of items.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<InformationAboutPortalItemDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AboutPortalItemDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.WebApi.Models
 {
-    public class InformationAboutPortalItem
+    public class AboutPortalItemDto
     {
         public Guid Id { get; set; }
 
@@ -13,8 +13,6 @@ namespace OutOfSchool.Services.Models
         [MaxLength(2000)]
         public string Description { get; set; }
 
-        public Guid InformationAboutPortalId { get; set; }
-
-        public virtual InformationAboutPortal InformationAboutPortal { get; set; }
+        public Guid AboutPortalId { get; set; }
     }
 }

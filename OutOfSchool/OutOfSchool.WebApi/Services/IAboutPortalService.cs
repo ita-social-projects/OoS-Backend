@@ -8,41 +8,41 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// Defines interface for CRUD functionality for InformationAboutPortal entity.
     /// </summary>
-    public interface IInformationAboutPortalService
+    public interface IAboutPortalService
     {
         /// <summary>
         /// Add entity.
         /// </summary>
         /// <param name="informationAboutPortalDto">InformationAboutPortal entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<InformationAboutPortalDto> Create(InformationAboutPortalDto informationAboutPortalDto);
+        Task<AboutPortalDto> Create(AboutPortalDto informationAboutPortalDto);
 
         /// <summary>
         /// Update entity.
         /// </summary>
         /// <param name="informationAboutPortalDto">InformationAboutPortal entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<InformationAboutPortalDto> Update(InformationAboutPortalDto informationAboutPortalDto);
+        Task<AboutPortalDto> Update(AboutPortalDto informationAboutPortalDto);
 
         /// <summary>
         /// Get entity.
         /// </summary>
         /// <returns>InformationAboutPortal.</returns>
-        Task<InformationAboutPortalDto> GetInformationAboutPortal();
+        Task<AboutPortalDto> GetInformationAboutPortal();
 
-        Task<InformationAboutPortalItemDto> GetItemById(Guid id);
+        Task<AboutPortalItemDto> GetItemById(Guid id);
 
         /// <summary>
         /// Add entity.
         /// </summary>
         /// <param name="informationAboutPortalItemDto">InformationAboutPortalItem entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<InformationAboutPortalItemDto> CreateItem(InformationAboutPortalItemDto informationAboutPortalItemDto);
+        Task<AboutPortalItemDto> CreateItem(AboutPortalItemDto informationAboutPortalItemDto);
 
-        Task<InformationAboutPortalItemDto> UpdateItem(InformationAboutPortalItemDto informationAboutPortalItemDto);
+        Task<AboutPortalItemDto> UpdateItem(AboutPortalItemDto informationAboutPortalItemDto);
 
         Task DeleteItem(Guid id);
 
-        Task<IEnumerable<InformationAboutPortalItemDto>> GetAllItems();
+        Task<IEnumerable<AboutPortalItemDto>> GetAllItems();
     }
 }

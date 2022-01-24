@@ -14,28 +14,28 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// Implements the interface with CRUD functionality for InformationAboutPortal entity.
     /// </summary>
-    public class InformationAboutPortalService : IInformationAboutPortalService
+    public class AboutPortalService : IAboutPortalService
     {
         private const int LimitOfItems = 10;
 
-        private readonly ISensitiveEntityRepository<InformationAboutPortal> informationAboutPortalRepository;
-        private readonly ISensitiveEntityRepository<InformationAboutPortalItem> informationAboutPortalItemRepository;
-        private readonly ILogger<InformationAboutPortalService> logger;
+        private readonly ISensitiveEntityRepository<AboutPortal> informationAboutPortalRepository;
+        private readonly ISensitiveEntityRepository<AboutPortalItem> informationAboutPortalItemRepository;
+        private readonly ILogger<AboutPortalService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InformationAboutPortalService"/> class.
+        /// Initializes a new instance of the <see cref="AboutPortalService"/> class.
         /// </summary>
         /// <param name="informationAboutPortalRepository">InformationAboutPortal repository.</param>
         /// <param name="informationAboutPortalItemRepository">InformationAboutPortalItem repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
-        public InformationAboutPortalService(
-            ISensitiveEntityRepository<InformationAboutPortal> informationAboutPortalRepository,
-            ISensitiveEntityRepository<InformationAboutPortalItem> informationAboutPortalItemRepository,
-            ILogger<InformationAboutPortalService> logger,
+        public AboutPortalService(
+            ISensitiveEntityRepository<AboutPortal> informationAboutPortalRepository,
+            ISensitiveEntityRepository<AboutPortalItem> informationAboutPortalItemRepository,
+            ILogger<AboutPortalService> logger,
             IStringLocalizer<SharedResource> localizer,
             IMapper mapper)
         {
@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<InformationAboutPortalDto> Create(InformationAboutPortalDto informationAboutPortalDto)
+        public async Task<AboutPortalDto> Create(AboutPortalDto informationAboutPortalDto)
         {
             logger.LogDebug("InformationAboutPortal creating was started.");
 
@@ -61,22 +61,22 @@ namespace OutOfSchool.WebApi.Services
                 throw new InvalidOperationException("Cannot create more than one record about portal");
             }
 
-            Func<Task<InformationAboutPortal>> operation = async () =>
-                await informationAboutPortalRepository.Create(mapper.Map<InformationAboutPortal>(informationAboutPortalDto)).ConfigureAwait(false);
+            Func<Task<AboutPortal>> operation = async () =>
+                await informationAboutPortalRepository.Create(mapper.Map<AboutPortal>(informationAboutPortalDto)).ConfigureAwait(false);
 
             var newInformationAboutPortal = await informationAboutPortalRepository.RunInTransaction(operation).ConfigureAwait(false);
 
             logger.LogDebug($"InformationAboutPortal with Id = {newInformationAboutPortal?.Id} created successfully.");
 
-            return mapper.Map<InformationAboutPortalDto>(newInformationAboutPortal);
+            return mapper.Map<AboutPortalDto>(newInformationAboutPortal);
         }
 
         /// <inheritdoc/>
-        public async Task<InformationAboutPortalDto> Update(InformationAboutPortalDto informationAboutPortalDto)
+        public async Task<AboutPortalDto> Update(AboutPortalDto informationAboutPortalDto)
         {
             logger.LogDebug("Updating InformationAboutPortal started.");
 
-            InformationAboutPortalDto updatedInformationAboutPortalDto;
+            AboutPortalDto updatedInformationAboutPortalDto;
 
             var infoAboutPortals = await informationAboutPortalRepository.GetAll().ConfigureAwait(false);
             if (!infoAboutPortals.Any())
@@ -85,10 +85,10 @@ namespace OutOfSchool.WebApi.Services
             }
             else
             {
-                InformationAboutPortal currentInformationAboutPortal = infoAboutPortals.Single();
+                AboutPortal currentInformationAboutPortal = infoAboutPortals.Single();
                 mapper.Map(informationAboutPortalDto, currentInformationAboutPortal);
                 var informationAboutPortal = await informationAboutPortalRepository.Update(currentInformationAboutPortal).ConfigureAwait(false);
-                updatedInformationAboutPortalDto = mapper.Map<InformationAboutPortalDto>(informationAboutPortal);
+                updatedInformationAboutPortalDto = mapper.Map<AboutPortalDto>(informationAboutPortal);
             }
 
             logger.LogDebug("Updating InformationAboutPortal finished.");
@@ -97,7 +97,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<InformationAboutPortalDto> GetInformationAboutPortal()
+        public async Task<AboutPortalDto> GetInformationAboutPortal()
         {
             logger.LogDebug("Get information about portal is started.");
 
@@ -106,17 +106,17 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogDebug("Get information about portal is finished.");
 
-            return mapper.Map<InformationAboutPortalDto>(informationAboutPortal);
+            return mapper.Map<AboutPortalDto>(informationAboutPortal);
         }
 
-        public async Task<InformationAboutPortalItemDto> GetItemById(Guid id)
+        public async Task<AboutPortalItemDto> GetItemById(Guid id)
         {
             var informationAboutPortalItem = await informationAboutPortalItemRepository.GetById(id).ConfigureAwait(false);
 
-            return mapper.Map<InformationAboutPortalItemDto>(informationAboutPortalItem);
+            return mapper.Map<AboutPortalItemDto>(informationAboutPortalItem);
         }
 
-        public async Task<InformationAboutPortalItemDto> CreateItem(InformationAboutPortalItemDto informationAboutPortalItemDto)
+        public async Task<AboutPortalItemDto> CreateItem(AboutPortalItemDto informationAboutPortalItemDto)
         {
             if (informationAboutPortalItemDto == null)
             {
@@ -128,32 +128,32 @@ namespace OutOfSchool.WebApi.Services
                 throw new InvalidOperationException($"Cannot create more than {LimitOfItems} items.");
             }
 
-            var informationAboutPortalItem = mapper.Map<InformationAboutPortalItem>(informationAboutPortalItemDto);
+            var informationAboutPortalItem = mapper.Map<AboutPortalItem>(informationAboutPortalItemDto);
 
             informationAboutPortalItem = await LinkPortalToItemAsync(informationAboutPortalItem).ConfigureAwait(false);
 
-            Func<Task<InformationAboutPortalItem>> operation = async () =>
+            Func<Task<AboutPortalItem>> operation = async () =>
                 await informationAboutPortalItemRepository.Create(informationAboutPortalItem).ConfigureAwait(false);
 
             var newInformationAboutPortalItem = await informationAboutPortalItemRepository.RunInTransaction(operation).ConfigureAwait(false);
 
-            return mapper.Map<InformationAboutPortalItemDto>(newInformationAboutPortalItem);
+            return mapper.Map<AboutPortalItemDto>(newInformationAboutPortalItem);
         }
 
-        public async Task<InformationAboutPortalItemDto> UpdateItem(InformationAboutPortalItemDto informationAboutPortalItemDto)
+        public async Task<AboutPortalItemDto> UpdateItem(AboutPortalItemDto informationAboutPortalItemDto)
         {
             if (informationAboutPortalItemDto == null)
             {
                 throw new ArgumentNullException(nameof(informationAboutPortalItemDto));
             }
 
-            var informationAboutPortalItem = mapper.Map<InformationAboutPortalItem>(informationAboutPortalItemDto);
+            var informationAboutPortalItem = mapper.Map<AboutPortalItem>(informationAboutPortalItemDto);
 
             informationAboutPortalItem = await LinkPortalToItemAsync(informationAboutPortalItem).ConfigureAwait(false);
 
             var informationAboutPortalItemUpdated = await informationAboutPortalItemRepository.Update(informationAboutPortalItem).ConfigureAwait(false);
 
-            return mapper.Map<InformationAboutPortalItemDto>(informationAboutPortalItemUpdated);
+            return mapper.Map<AboutPortalItemDto>(informationAboutPortalItemUpdated);
         }
 
         public async Task DeleteItem(Guid id)
@@ -170,14 +170,14 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        public async Task<IEnumerable<InformationAboutPortalItemDto>> GetAllItems()
+        public async Task<IEnumerable<AboutPortalItemDto>> GetAllItems()
         {
             var items = await informationAboutPortalItemRepository.GetAll().ConfigureAwait(false);
 
-            return mapper.Map<List<InformationAboutPortalItemDto>>(items);
+            return mapper.Map<List<AboutPortalItemDto>>(items);
         }
 
-        private async Task<InformationAboutPortalItem> LinkPortalToItemAsync(InformationAboutPortalItem informationAboutPortalItem)
+        private async Task<AboutPortalItem> LinkPortalToItemAsync(AboutPortalItem informationAboutPortalItem)
         {
             var infoAboutPortals = await informationAboutPortalRepository.GetAll().ConfigureAwait(false);
             var informationAboutPortal = infoAboutPortals.Single();
