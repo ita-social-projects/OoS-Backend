@@ -335,51 +335,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        public async Task GetByStatus_WhenStatusIsValid_ShouldReturnOkObjectResult()
-        {
-            // Arrange
-            var status = (int)applications.First().Status;
-            applicationService.Setup(s => s.GetAllByStatus(status))
-                .ReturnsAsync(applications.Where(a => (int)a.Status == status));
-
-            // Act
-            var result = await controller.GetByStatus(status).ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Test]
-        [TestCase(10)]
-        [TestCase(-1)]
-        public async Task GetByStatus_WhenIdIsNotValid_ShouldReturnBadRequest(int status)
-        {
-            // Act
-            var result = await controller.GetByStatus(status).ConfigureAwait(false) as BadRequestObjectResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        }
-
-        [Test]
-        [TestCase(7)]
-        public async Task GetByStatus_WhenThereIsNoApplicationsWithStatus_ShouldReturnNoContent(int status)
-        {
-            // Arrange
-            applicationService.Setup(s => s.GetAllByStatus(status))
-                .ReturnsAsync(applications.Where(a => (int)a.Status == status));
-
-            // Act
-            var result = await controller.GetByStatus(status).ConfigureAwait(false) as NoContentResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
-        }
-
-        [Test]
         public async Task CreateApplication_WhenModelIsValid_ShouldReturnCreatedAtAction()
         {
             // Arrange
