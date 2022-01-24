@@ -11,6 +11,6 @@ namespace OutOfSchool.Services.Models
         [MaxLength(200)]
         public string Title { get; set; }
 
-        public virtual ICollection<AboutPortalItem> AboutPortalItem { get; set; }
+        public virtual ICollection<AboutPortalItem> AboutPortalItems { get; set; }
     }
 }
