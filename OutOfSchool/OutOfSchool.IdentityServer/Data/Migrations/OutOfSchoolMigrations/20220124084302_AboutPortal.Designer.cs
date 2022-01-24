@@ -9,7 +9,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220124081501_AboutPortal")]
+    [Migration("20220124084302_AboutPortal")]
     partial class AboutPortal
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
