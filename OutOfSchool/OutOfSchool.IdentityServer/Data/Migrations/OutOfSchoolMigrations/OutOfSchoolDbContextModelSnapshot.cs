@@ -208,9 +208,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("binary(16)");
 
-                    b.Property<DateTimeOffset?>("ApprovedTime")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<Guid>("ChildId")
                         .HasColumnType("binary(16)");
 
@@ -219,10 +216,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<Guid>("ParentId")
                         .HasColumnType("binary(16)");
-
-                    b.Property<string>("RejectionMessage")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
 
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
@@ -351,9 +344,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("District")
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
-
-                    b.Property<ulong>("GeoHash")
-                        .HasColumnType("bigint unsigned");
 
                     b.Property<double?>("Latitude")
                         .HasColumnType("double");
@@ -535,6 +525,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("binary(16)");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(3000)
+                        .HasColumnType("varchar(3000)");
+
+                    b.Property<string>("SectionName")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
                     b.Property<string>("Title")
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
@@ -542,30 +540,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasKey("Id");
 
                     b.ToTable("InformationAboutPortal");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.InformationAboutPortalItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<Guid>("InformationAboutPortalId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("SectionName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InformationAboutPortalId");
-
-                    b.ToTable("InformationAboutPortalItem");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
@@ -830,29 +804,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                             Id = 5L,
                             Name = "Діти, позбавлені батьківського піклування"
                         });
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.SupportInformation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(3000)
-                        .HasColumnType("varchar(3000)");
-
-                    b.Property<string>("SectionName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SupportInformation");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
@@ -1294,17 +1245,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Entity");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.InformationAboutPortalItem", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.InformationAboutPortal", "InformationAboutPortal")
-                        .WithMany("InformationAboutPortalItem")
-                        .HasForeignKey("InformationAboutPortalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("InformationAboutPortal");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.User", "User")
@@ -1417,11 +1357,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Direction", b =>
                 {
                     b.Navigation("Departments");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.InformationAboutPortal", b =>
-                {
-                    b.Navigation("InformationAboutPortalItem");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
