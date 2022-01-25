@@ -14,6 +14,7 @@ using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.CustomResults;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Images;
@@ -40,17 +41,17 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+        public async Task<CreationResultWithManyImagesDto<WorkshopDTO>> Create(WorkshopCreationDto dto)
         {
-            var workshop = await workshopService.Create(dto).ConfigureAwait(false);
+            var creationResult = await workshopService.Create(dto).ConfigureAwait(false);
 
             await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
-                    workshop.Id,
+                    creationResult.Dto.Id,
                     ElasticsearchSyncOperation.Create)
                     .ConfigureAwait(false);
 
-            return workshop;
+            return creationResult;
         }
 
         /// <inheritdoc/>
@@ -62,13 +63,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> Update(WorkshopDTO dto)
+        public async Task<UpdateResultWithManyImagesDto<WorkshopDTO>> Update(WorkshopUpdateDto dto)
         {
             var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
             await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
-                    workshop.Id,
+                    workshop.Dto.Id,
                     ElasticsearchSyncOperation.Update)
                     .ConfigureAwait(false);
 
@@ -169,21 +170,6 @@ namespace OutOfSchool.WebApi.Services
 
             return workshopCards.ToList();
         }
-
-        public async Task<OperationResult> UploadImageAsync(Guid entityId, IFormFile image) =>
-            await workshopService.UploadImageAsync(entityId, image).ConfigureAwait(false);
-
-        public async Task<OperationResult> RemoveImageAsync(Guid entityId, string imageId) =>
-            await workshopService.RemoveImageAsync(entityId, imageId).ConfigureAwait(false);
-
-        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, IList<IFormFile> images) =>
-            await workshopService.UploadManyImagesAsync(entityId, images).ConfigureAwait(false);
-
-        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, IList<string> imageIds) =>
-            await workshopService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
-
-        public async Task<ImageChangingResult> ChangeImagesAsync(Guid entityId, IList<string> oldImageIds, IList<IFormFile> newImages) =>
-            await workshopService.ChangeImagesAsync(entityId, oldImageIds, newImages).ConfigureAwait(false);
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {

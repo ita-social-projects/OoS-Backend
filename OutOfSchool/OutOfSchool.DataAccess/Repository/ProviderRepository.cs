@@ -16,8 +16,6 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public IUnitOfWork UnitOfWork => db;
-
         /// <summary>
         /// Checks entity elements for uniqueness.
         /// </summary>

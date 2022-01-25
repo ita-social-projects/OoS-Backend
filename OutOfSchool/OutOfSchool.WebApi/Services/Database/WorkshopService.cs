@@ -18,6 +18,7 @@ using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.CustomResults;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Images;
@@ -69,8 +70,9 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="ArgumentOutOfRangeException">If any inner entities were not found.</exception>
         /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+        public async Task<CreationResultWithManyImagesDto<WorkshopDTO>> Create(WorkshopCreationDto dto)
         {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation("Workshop creating was started.");
 
             // In case if DirectionId and DepartmentId does not match ClassId
@@ -81,9 +83,19 @@ namespace OutOfSchool.WebApi.Services
 
             var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
+            ImageUploadingResult uploadingResult = null;
+            if (dto.ImageFiles?.Count > 0)
+            {
+                uploadingResult = await workshopImagesInteractionService.UploadManyImagesAsync(newWorkshop.Id, dto.ImageFiles).ConfigureAwait(false);
+            }
+
             logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
 
-            return mapper.Map<WorkshopDTO>(newWorkshop);
+            return new CreationResultWithManyImagesDto<WorkshopDTO>()
+            {
+                Dto = mapper.Map<WorkshopDTO>(newWorkshop),
+                UploadingImagesResults = uploadingResult,
+            };
         }
 
         /// <inheritdoc/>
@@ -155,16 +167,22 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         /// <exception cref="ArgumentOutOfRangeException">If the workshop was not found. Or if any inner entities were not found.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        public async Task<WorkshopDTO> Update(WorkshopDTO dto)
+        public async Task<UpdateResultWithManyImagesDto<WorkshopDTO>> Update(WorkshopUpdateDto dto)
         {
-            logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+            logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
 
             // In case if DirectionId and DepartmentId does not match ClassId
             await this.FillDirectionsFields(dto).ConfigureAwait(false);
 
-            var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
+            MultipleImageChangingResult multipleImageChangingResult = null;
 
-            // In case if AddressId was changed. AddresId is one and unique for workshop.
+            multipleImageChangingResult = await workshopImagesInteractionService.ChangeImagesAsync(dto.Id, dto.ImageIds, dto.ImageFiles)
+                .ConfigureAwait(false);
+
+            var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
+
+            // In case if AddressId was changed. AddressId is one and unique for workshop.
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
@@ -179,14 +197,19 @@ namespace OutOfSchool.WebApi.Services
                 throw;
             }
 
-            return mapper.Map<WorkshopDTO>(currentWorkshop);
+            return new UpdateResultWithManyImagesDto<WorkshopDTO>
+            {
+                Dto = mapper.Map<WorkshopDTO>(currentWorkshop),
+                UploadingImagesResults = multipleImageChangingResult?.UploadedMultipleResult,
+                RemovingImagesResults = multipleImageChangingResult?.RemovedMultipleResult,
+            };
         }
 
         /// <inheritdoc/>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
         {
-            logger.LogInformation($"Partial updating workshop with ProviderId = {provider?.Id} was started.");
+            logger.LogInformation($"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was started.");
 
             try
             {
@@ -194,7 +217,7 @@ namespace OutOfSchool.WebApi.Services
             }
             catch (DbUpdateConcurrencyException exception)
             {
-                logger.LogError($"Partial updating workshop with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
+                logger.LogError($"Partial updating {nameof(Workshop)} with ProviderId = {provider?.Id} was failed. Exception: {exception.Message}");
                 throw;
             }
         }
@@ -204,18 +227,25 @@ namespace OutOfSchool.WebApi.Services
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task Delete(Guid id)
         {
-            logger.LogInformation($"Deleting Workshop with Id = {id} started.");
+            logger.LogInformation($"Deleting {nameof(Workshop)} with Id = {id} started.");
 
             var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
+
+            var removingResult = await workshopImagesInteractionService.RemoveManyImagesAsync(entity.Id, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
+
+            if (entity.Images.Count > 0 && removingResult.MultipleKeyValueOperationResult is { Succeeded: false })
+            {
+                throw new InvalidOperationException($"Unreal to delete {nameof(Workshop)} [id = {id}] because unable to delete images.");
+            }
 
             try
             {
                 await workshopRepository.Delete(entity).ConfigureAwait(false);
-                logger.LogInformation($"Workshop with Id = {id} succesfully deleted.");
+                logger.LogInformation($"{nameof(Workshop)} with Id = {id} successfully deleted.");
             }
             catch (DbUpdateConcurrencyException)
             {
-                logger.LogError($"Deleting failed. Workshop with Id = {id} doesn't exist in the system.");
+                logger.LogError($"Deleting {nameof(Workshop)} with Id = {id} failed.");
                 throw;
             }
         }
@@ -315,21 +345,6 @@ namespace OutOfSchool.WebApi.Services
         {
             return await workshopRepository.GetByIds(ids).ConfigureAwait(false);
         }
-
-        public async Task<OperationResult> UploadImageAsync(Guid entityId, IFormFile image) =>
-            await workshopImagesInteractionService.UploadImageAsync(entityId, image).ConfigureAwait(false);
-
-        public async Task<OperationResult> RemoveImageAsync(Guid entityId, string imageId) =>
-            await workshopImagesInteractionService.RemoveImageAsync(entityId, imageId).ConfigureAwait(false);
-
-        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, IList<IFormFile> images) =>
-            await workshopImagesInteractionService.UploadManyImagesAsync(entityId, images).ConfigureAwait(false);
-
-        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, IList<string> imageIds) =>
-            await workshopImagesInteractionService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
-
-        public async Task<ImageChangingResult> ChangeImagesAsync(Guid entityId, IList<string> oldImageIds, IList<IFormFile> newImages) =>
-            await workshopImagesInteractionService.ChangeImagesAsync(entityId, oldImageIds, newImages).ConfigureAwait(false);
 
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
         {

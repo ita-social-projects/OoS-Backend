@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.CustomResults;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
@@ -10,8 +12,39 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// The interface for CRUD operations with workshops.
     /// </summary>
-    public interface IWorkshopServicesCombiner : ICRUDService<WorkshopDTO, Guid>, IWorkshopImagesInteractionService
+    public interface IWorkshopServicesCombiner
     {
+        /// <summary>
+        /// Add entity to the database.
+        /// </summary>
+        /// <param name="dto">Entity to add.</param>
+        /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
+        /// The task result contains the entity that was created.</returns>
+        Task<CreationResultWithManyImagesDto<WorkshopDTO>> Create(WorkshopCreationDto dto);
+
+        /// <summary>
+        /// Get entity by it's key.
+        /// </summary>
+        /// <param name="id">Key in the table.</param>
+        /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
+        /// The task result contains the entity that was found, or null.</returns>
+        Task<WorkshopDTO> GetById(Guid id);
+
+        /// <summary>
+        /// Update existing entity in the database.
+        /// </summary>
+        /// <param name="dto">Entity that will be to updated.</param>
+        /// <returns>An <see cref="UpdateResultWithManyImagesDto{TEntity}"/> of <see cref="WorkshopDTO"/> representing the result of the asynchronous operation.
+        /// The task result contains the entity that was updated.</returns>
+        Task<UpdateResultWithManyImagesDto<WorkshopDTO>> Update(WorkshopUpdateDto dto);
+
+        /// <summary>
+        ///  Delete entity.
+        /// </summary>
+        /// <param name="id">Key in the table.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task Delete(Guid id);
+
         /// <summary>
         /// Get all entities from the database.
         /// </summary>

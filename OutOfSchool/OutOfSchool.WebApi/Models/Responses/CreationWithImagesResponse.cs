@@ -1,11 +1,11 @@
 ﻿using System;
 using OutOfSchool.WebApi.Models.Images;
 
-namespace OutOfSchool.WebApi.Models.Workshop
+namespace OutOfSchool.WebApi.Models.Responses
 {
-    public class WorkshopCreationResponse
+    public class CreationWithImagesResponse<TKey>
     {
-        public Guid WorkshopId { get; set; }
+        public TKey Id { get; set; }
 
         public MultipleImageUploadingResponse UploadingImagesResults { get; set; }
     }

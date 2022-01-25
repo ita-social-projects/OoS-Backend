@@ -12,6 +12,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1
@@ -145,7 +146,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(WorkshopDTO dto)
+        public async Task<IActionResult> Create(WorkshopCreationDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -172,7 +173,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = workshop.Id, },
+                new { id = workshop.Dto.Id },
                 workshop);
         }
 
@@ -193,7 +194,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(WorkshopDTO dto)
+        public async Task<IActionResult> Update(WorkshopUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {
