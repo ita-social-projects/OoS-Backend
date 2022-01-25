@@ -60,6 +60,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Image<Workshop>> WorkshopImages { get; set; }
 
+        public DbSet<Image<Teacher>> TeacherImages { get; set; }
+
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public DbSet<AboutPortal> AboutPortal { get; set; }
@@ -89,6 +91,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ProviderConfiguration());
             builder.ApplyConfiguration(new WorkshopConfiguration());
             builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
+            builder.ApplyConfiguration(new EntityImagesConfiguration<Teacher>());
 
             builder.Seed();
             builder.UpdateIdentityTables();

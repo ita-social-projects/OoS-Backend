@@ -5,6 +5,7 @@ using AutoMapper;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Util.CustomComparers;
 
 namespace OutOfSchool.WebApi.Util
@@ -78,7 +79,10 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.User, opt => opt.Ignore())
                  .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore());
 
-            CreateMap<Teacher, TeacherDTO>().ReverseMap();
+            CreateMap<TeacherDTO, Teacher>()
+                .ForMember(dest => dest.AvatarImageId, opt => opt.Ignore());
+            CreateMap<Teacher, TeacherDTO>();
+
             CreateMap<DateTimeRange, DateTimeRangeDto>()
                 .ForMember(dtr => dtr.Workdays, cfg => cfg.MapFrom(dtr => dtr.Workdays.ToDaysBitMaskEnumerable().ToList()));
             CreateMap<DateTimeRangeDto, DateTimeRange>()

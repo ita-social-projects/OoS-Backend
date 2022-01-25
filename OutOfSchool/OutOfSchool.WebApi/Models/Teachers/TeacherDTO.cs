@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -32,8 +33,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(300)]
         public string Description { get; set; } = string.Empty;
 
-        [MaxLength(256)]
-        public string Image { get; set; } = string.Empty;
+        public string AvatarImageId { get; set; }
 
         public Guid WorkshopId { get; set; }
     }
