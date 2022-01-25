@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
@@ -96,6 +98,9 @@ namespace OutOfSchool.WebApi.Models
         public float Rating { get; set; }
 
         public int NumberOfRatings { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public WorkshopStatus Status { get; set; } = WorkshopStatus.Opened;
 
         [Required]
         public Guid ProviderId { get; set; }

@@ -107,6 +107,8 @@ namespace OutOfSchool.Services.Models
         [Required]
         public long ClassId { get; set; }
 
+        public WorkshopStatus Status { get; set; }
+
         public virtual Provider Provider { get; set; }
 
         public virtual Direction Direction { get; set; }
