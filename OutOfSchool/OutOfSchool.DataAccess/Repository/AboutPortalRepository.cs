@@ -16,8 +16,6 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public IUnitOfWork UnitOfWork => db;
-
         public async Task<AboutPortal> GetWithNavigations(Guid id)
         {
             return await db.AboutPortal
