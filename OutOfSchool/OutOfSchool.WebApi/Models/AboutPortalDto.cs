@@ -14,6 +14,6 @@ namespace OutOfSchool.WebApi.Models
         public string Title { get; set; }
 
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
-        public IEnumerable<AboutPortalItemDto> Items { get; set; }
+        public IEnumerable<AboutPortalItemDto> AboutPortalItems { get; set; }
     }
 }

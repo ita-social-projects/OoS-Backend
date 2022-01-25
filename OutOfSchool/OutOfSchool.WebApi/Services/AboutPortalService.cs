@@ -79,22 +79,27 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogDebug("Updating InformationAboutPortal started.");
 
+            // TODO: It is temporary. Rewrite this whole method using Unit of Work
             AboutPortalDto updatedInformationAboutPortalDto;
 
             var infoAboutPortals = await informationAboutPortalRepository.GetAll().ConfigureAwait(false);
             if (!infoAboutPortals.Any())
             {
-                updatedInformationAboutPortalDto = await Create(informationAboutPortalDto).ConfigureAwait(false);
+                await Create(informationAboutPortalDto).ConfigureAwait(false);
+                infoAboutPortals = await informationAboutPortalRepository.GetAll().ConfigureAwait(false);
             }
-            else
+
+            var currentInformationAboutPortal = infoAboutPortals.Single();
+            informationAboutPortalDto.Id = currentInformationAboutPortal.Id;
+            await repository.DeleteAllItems().ConfigureAwait(false);
+            foreach (var item in informationAboutPortalDto.AboutPortalItems)
             {
-                var currentInformationAboutPortal = infoAboutPortals.Single();
-                informationAboutPortalDto.Id = currentInformationAboutPortal.Id;
-                await repository.DeleteAllItems().ConfigureAwait(false);
-                mapper.Map(informationAboutPortalDto, currentInformationAboutPortal);
-                var informationAboutPortal = await informationAboutPortalRepository.Update(currentInformationAboutPortal).ConfigureAwait(false);
-                updatedInformationAboutPortalDto = mapper.Map<AboutPortalDto>(informationAboutPortal);
+                await CreateItem(item).ConfigureAwait(false);
             }
+
+            mapper.Map(informationAboutPortalDto, currentInformationAboutPortal);
+            var informationAboutPortal = await repository.Update(currentInformationAboutPortal).ConfigureAwait(false);
+            updatedInformationAboutPortalDto = mapper.Map<AboutPortalDto>(informationAboutPortal);
 
             logger.LogDebug("Updating InformationAboutPortal finished.");
 

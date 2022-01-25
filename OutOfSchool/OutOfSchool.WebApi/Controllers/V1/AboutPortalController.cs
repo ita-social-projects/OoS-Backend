@@ -15,22 +15,22 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    public class InformationAboutPortalController : ControllerBase
+    public class AboutPortalController : ControllerBase
     {
         private readonly IAboutPortalService informationAboutPortalService;
         private readonly IStringLocalizer<SharedResource> localizer;
-        private readonly ILogger<InformationAboutPortalController> logger;
+        private readonly ILogger<AboutPortalController> logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InformationAboutPortalController"/> class.
+        /// Initializes a new instance of the <see cref="AboutPortalController"/> class.
         /// </summary>
         /// <param name="informationAboutPortalService">Service for InformationAboutPortal model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
-        public InformationAboutPortalController(
+        public AboutPortalController(
             IAboutPortalService informationAboutPortalService,
             IStringLocalizer<SharedResource> localizer,
-            ILogger<InformationAboutPortalController> logger)
+            ILogger<AboutPortalController> logger)
         {
             this.informationAboutPortalService = informationAboutPortalService ?? throw new ArgumentNullException(nameof(informationAboutPortalService));
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
@@ -94,6 +94,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
+        [Obsolete]
         public async Task<IActionResult> GetItemById(Guid id)
         {
             return Ok(await informationAboutPortalService.GetItemById(id).ConfigureAwait(false));
@@ -109,6 +110,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
+        [Obsolete]
         public async Task<IActionResult> CreateItem(AboutPortalItemDto informationAboutPortalItemModel)
         {
             if (!ModelState.IsValid)
@@ -139,6 +141,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
+        [Obsolete]
         public async Task<IActionResult> UpdateItem(AboutPortalItemDto informationAboutPortalItemModel)
         {
             if (!ModelState.IsValid)
@@ -164,6 +167,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpDelete("{id}")]
+        [Obsolete]
         public async Task<IActionResult> DeleteItem(Guid id)
         {
             await informationAboutPortalService.DeleteItem(id).ConfigureAwait(false);
@@ -179,6 +183,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
+        [Obsolete]
         public async Task<IActionResult> GetAllItems()
         {
             var items = await informationAboutPortalService.GetAllItems().ConfigureAwait(false);
