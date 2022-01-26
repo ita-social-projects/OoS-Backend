@@ -125,7 +125,12 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.Create(newApplication.ToModel()).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(ExpectedApplicationCreate(newApplication));
+            result.Should().BeEquivalentTo(
+                new ModelWithAdditionalData<ApplicationDto, int>
+                {
+                    Model = ExpectedApplicationCreate(newApplication),
+                    AdditionalData = 0,
+                });
         }
 
         [Test]
