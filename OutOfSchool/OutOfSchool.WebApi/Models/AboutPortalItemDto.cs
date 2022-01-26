@@ -1,19 +1,18 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.WebApi.Models
 {
-    public class InformationAboutPortal : IKeyedEntity<Guid>
+    public class AboutPortalItemDto
     {
         public Guid Id { get; set; }
 
         [MaxLength(200)]
-        public string Title { get; set; }
-
-        [MaxLength(200)]
         public string SectionName { get; set; }
 
-        [MaxLength(3000)]
+        [MaxLength(2000)]
         public string Description { get; set; }
+
+        public Guid AboutPortalId { get; set; }
     }
 }
