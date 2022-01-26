@@ -89,7 +89,7 @@ namespace OutOfSchool.WebApi.Services
                 uploadingResult = await workshopImagesInteractionService.UploadManyImagesAsync(newWorkshop.Id, dto.ImageFiles).ConfigureAwait(false);
             }
 
-            logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
+            logger.LogInformation($"Workshop with Id = {newWorkshop.Id} created successfully.");
 
             return new CreationResultWithManyImagesDto<WorkshopDTO>()
             {
@@ -175,9 +175,8 @@ namespace OutOfSchool.WebApi.Services
             // In case if DirectionId and DepartmentId does not match ClassId
             await this.FillDirectionsFields(dto).ConfigureAwait(false);
 
-            MultipleImageChangingResult multipleImageChangingResult = null;
-
-            multipleImageChangingResult = await workshopImagesInteractionService.ChangeImagesAsync(dto.Id, dto.ImageIds, dto.ImageFiles)
+            dto.ImageIds ??= new List<string>();
+            var multipleImageChangingResult = await workshopImagesInteractionService.ChangeImagesAsync(dto.Id, dto.ImageIds, dto.ImageFiles)
                 .ConfigureAwait(false);
 
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
@@ -200,8 +199,8 @@ namespace OutOfSchool.WebApi.Services
             return new UpdateResultWithManyImagesDto<WorkshopDTO>
             {
                 Dto = mapper.Map<WorkshopDTO>(currentWorkshop),
-                UploadingImagesResults = multipleImageChangingResult?.UploadedMultipleResult,
-                RemovingImagesResults = multipleImageChangingResult?.RemovedMultipleResult,
+                UploadingImagesResults = multipleImageChangingResult.UploadedMultipleResult,
+                RemovingImagesResults = multipleImageChangingResult.RemovedMultipleResult,
             };
         }
 

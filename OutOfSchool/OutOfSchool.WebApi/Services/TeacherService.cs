@@ -26,7 +26,7 @@ namespace OutOfSchool.WebApi.Services
     public class TeacherService : ITeacherService
     {
         private readonly ISensitiveEntityRepository<Teacher> teacherRepository;
-        private readonly ITeacherImagesInteractionService teacherImagesInteractionService;
+        private readonly IImageService imageService;
         private readonly ILogger<TeacherService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
@@ -35,15 +35,15 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="TeacherService"/> class.
         /// </summary>
         /// <param name="teacherRepository">Repository for Teacher entity.</param>
-        /// <param name="teacherImagesInteractionService">Image service for teachers.</param>
+        /// <param name="imageService">Image service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
-        public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, ITeacherImagesInteractionService teacherImagesInteractionService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
+        public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IImageService imageService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
         {
             this.localizer = localizer;
             this.teacherRepository = teacherRepository;
-            this.teacherImagesInteractionService = teacherImagesInteractionService;
+            this.imageService = imageService;
             this.logger = logger;
             this.mapper = mapper;
         }
@@ -51,29 +51,25 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<CreationResultWithImageDto<TeacherDTO>> Create(TeacherCreationDto dto)
         {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation("Teacher creating was started.");
 
             var teacher = mapper.Map<Teacher>(dto);
 
             var newTeacher = await teacherRepository.Create(teacher).ConfigureAwait(false);
 
-            Result<string> uploadingResult = null;
-            if (dto.ImageFile != null)
+            var uploadingResult = await imageService.UploadImageAsync<Teacher>(dto.ImageFile).ConfigureAwait(false);
+            if (uploadingResult.Succeeded)
             {
-                uploadingResult = await teacherImagesInteractionService.UploadImageAsync(newTeacher.Id, dto.ImageFile).ConfigureAwait(false);
-
-                if (uploadingResult.Succeeded)
-                {
-                    await UpdateTeacherAvatarAsync(newTeacher, uploadingResult.Value).ConfigureAwait(false);
-                }
+                await UpdateTeacherAvatarAsync(newTeacher, uploadingResult.Value).ConfigureAwait(false);
             }
 
-            logger.LogInformation($"Teacher with Id = {newTeacher?.Id} created successfully.");
+            logger.LogInformation($"Teacher with Id = {newTeacher.Id} created successfully.");
 
             return new CreationResultWithImageDto<TeacherDTO>()
             {
                 Dto = mapper.Map<TeacherDTO>(newTeacher),
-                UploadingImageResult = uploadingResult?.OperationResult,
+                UploadingImageResult = uploadingResult.OperationResult,
             };
         }
 
@@ -98,33 +94,21 @@ namespace OutOfSchool.WebApi.Services
 
             var teacher = await teacherRepository.GetById(id).ConfigureAwait(false);
 
-            if (teacher == null)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(id),
-                    localizer["The id cannot be greater than number of table entities."]);
-            }
+            logger.LogInformation($"Got a Teacher with Id = {id}.");
 
-            logger.LogInformation($"Successfully got a Teacher with Id = {id}.");
-
-            return teacher.ToModel();
+            return teacher?.ToModel();
         }
 
         /// <inheritdoc/>
         public async Task<UpdateResultWithImageDto<TeacherDTO>> Update(TeacherUpdateDto dto)
         {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation($"Updating Teacher with Id = {dto.Id} started.");
-
-            var updatingImageResult =
-                await teacherImagesInteractionService.UpdateImageAsync(dto.Id, dto.AvatarImageId, dto.ImageFile).ConfigureAwait(false);
 
             var teacher = await teacherRepository.GetById(dto.Id).ConfigureAwait(false);
             mapper.Map(dto, teacher);
 
-            if (updatingImageResult.UploadingResult is { Succeeded: true })
-            {
-                teacher.AvatarImageId = updatingImageResult.UploadingResult.Value;
-            }
+            var changingAvatarResult = await ChangeAvatarImageAsync(teacher, dto.AvatarImageId, dto.ImageFile).ConfigureAwait(false);
 
             try
             {
@@ -135,8 +119,8 @@ namespace OutOfSchool.WebApi.Services
                 return new UpdateResultWithImageDto<TeacherDTO>
                 {
                     Dto = mapper.Map<TeacherDTO>(teacher),
-                    UploadingImageResult = updatingImageResult.UploadingResult?.OperationResult,
-                    RemovingImageResult = updatingImageResult.RemovingResult,
+                    UploadingImageResult = changingAvatarResult.UploadingResult?.OperationResult,
+                    RemovingImageResult = changingAvatarResult.RemovingResult,
                 };
             }
             catch (DbUpdateConcurrencyException)
@@ -153,9 +137,9 @@ namespace OutOfSchool.WebApi.Services
 
             var entity = await teacherRepository.GetByFilterNoTracking(x => x.Id == id, nameof(Workshop.Images)).FirstAsync().ConfigureAwait(false);
 
-            var removingResult = await teacherImagesInteractionService.RemoveManyImagesAsync(entity.Id, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
+            var removingResult = await imageService.RemoveImageAsync(entity.AvatarImageId).ConfigureAwait(false);
 
-            if (entity.Images.Count > 0 && removingResult.MultipleKeyValueOperationResult is { Succeeded: false })
+            if (!removingResult.Succeeded)
             {
                 throw new InvalidOperationException($"Unreal to delete {nameof(Teacher)} [id = {id}] because unable to delete images.");
             }
@@ -173,7 +157,31 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        // TODO: delete image ids when exception
+        private async Task<ImageChangingResult> ChangeAvatarImageAsync(Teacher teacher, string oldImage, IFormFile newImage)
+        {
+            if (!teacher.AvatarImageId.Equals(oldImage, StringComparison.Ordinal))
+            {
+                return new ImageChangingResult { RemovingResult = OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError()) };
+            }
+
+            var result = new ImageChangingResult();
+            if (!string.IsNullOrEmpty(oldImage))
+            {
+                result.RemovingResult = await imageService.RemoveImageAsync(oldImage).ConfigureAwait(false);
+                if (!result.RemovingResult.Succeeded)
+                {
+                    return new ImageChangingResult { RemovingResult = OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError()) };
+                }
+            }
+
+            result.UploadingResult = await imageService.UploadImageAsync<Teacher>(newImage).ConfigureAwait(false);
+
+            teacher.AvatarImageId = result.UploadingResult.Succeeded ? result.UploadingResult.Value : null;
+
+            return result;
+        }
+
+        // delete id if exception
         private async Task UpdateTeacherAvatarAsync(Teacher teacher, string newImageId)
         {
             teacher.AvatarImageId = newImageId;

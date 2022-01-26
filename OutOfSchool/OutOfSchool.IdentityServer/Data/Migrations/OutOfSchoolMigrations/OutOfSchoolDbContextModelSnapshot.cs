@@ -555,19 +555,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Favorites");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Teacher>", b =>
-                {
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("ExternalStorageId")
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("EntityId", "ExternalStorageId");
-
-                    b.ToTable("TeacherImages");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.Property<Guid>("EntityId")
@@ -1306,17 +1293,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Teacher>", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Teacher", "Entity")
-                        .WithMany("Images")
-                        .HasForeignKey("EntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Entity");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Entity")
@@ -1467,11 +1443,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
                 {
                     b.Navigation("Children");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
-                {
-                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
