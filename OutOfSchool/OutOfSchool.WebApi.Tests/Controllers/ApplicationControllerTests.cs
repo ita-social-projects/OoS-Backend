@@ -341,7 +341,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
 
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
-            applicationService.Setup(s => s.Create(applications.First())).ReturnsAsync(applications.First());
+            applicationService.Setup(s => s.Create(applications.First()))
+                .ReturnsAsync(new ModelWithAdditionalData<ApplicationDto, int> { Model = applications.First(), AdditionalData = 0});
 
             // Act
             var result = await controller.Create(applications.First()).ConfigureAwait(false) as CreatedAtActionResult;

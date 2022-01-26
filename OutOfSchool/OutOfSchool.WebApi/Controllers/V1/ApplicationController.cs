@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -196,11 +197,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="201">Entity was created and returned with Id.</response>
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
+        /// <response code="429">If too many requests have been sent.</response>
         /// <response code="500">If any server error occurs.</response>
         [HasPermission(Permissions.ApplicationAddNew)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
         public async Task<IActionResult> Create(ApplicationDto applicationDto)
@@ -225,12 +228,20 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 applicationDto.Status = ApplicationStatus.Pending;
 
-                var application = await applicationService.Create(applicationDto).ConfigureAwait(false);
+                var applicationWithAdditionalData = await applicationService.Create(applicationDto).ConfigureAwait(false);
 
-                return CreatedAtAction(
-                    nameof(GetById),
-                    new { id = application.Id, },
-                    application);
+                if (applicationWithAdditionalData.AdditionalData > 0)
+                {
+                    Response.Headers.Add("Retry-After", applicationWithAdditionalData.AdditionalData.ToString(CultureInfo.InvariantCulture));
+                    return StatusCode(StatusCodes.Status429TooManyRequests);
+                }
+                else
+                {
+                    return CreatedAtAction(
+                        nameof(GetById),
+                        new { id = applicationWithAdditionalData.Model.Id, },
+                        applicationWithAdditionalData.Model);
+                }
             }
             catch (ArgumentException ex)
             {

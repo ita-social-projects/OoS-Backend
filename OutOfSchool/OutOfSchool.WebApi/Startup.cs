@@ -249,6 +249,11 @@ namespace OutOfSchool.WebApi
             services.AddFeatureManagement(Configuration.GetSection(FeatureManagementConfig.Name));
             services.Configure<FeatureManagementConfig>(Configuration.GetSection(FeatureManagementConfig.Name));
 
+            // ApplicationsConstraints options
+            services.AddOptions<ApplicationsConstraintsConfig>()
+                .Bind(Configuration.GetSection(ApplicationsConstraintsConfig.Name))
+                .ValidateDataAnnotations();
+
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
             services.AddSwagger(swaggerConfig);

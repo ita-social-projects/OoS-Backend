@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
@@ -18,6 +19,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -35,6 +37,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<ILogger<ApplicationService>> logger;
         private Mock<IMapper> mapper;
 
+        private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
+
         [SetUp]
         public void SetUp()
         {
@@ -45,13 +49,23 @@ namespace OutOfSchool.WebApi.Tests.Services
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ApplicationService>>();
             mapper = new Mock<IMapper>();
+
+            applicationsConstraintsConfig = new Mock<IOptions<ApplicationsConstraintsConfig>>();
+            applicationsConstraintsConfig.Setup(x => x.Value)
+                .Returns(new ApplicationsConstraintsConfig()
+                {
+                    ApplicationsLimit = 2,
+                    ApplicationsLimitDays = 7,
+                });
+
             service = new ApplicationService(
                 applicationRepositoryMock.Object,
                 logger.Object,
                 localizer.Object,
                 workshopRepositoryMock.Object,
                 childRepositoryMock.Object,
-                mapper.Object);
+                mapper.Object,
+                applicationsConstraintsConfig.Object);
         }
 
         [Test]

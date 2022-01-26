@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MySqlConnector;
 
 namespace OutOfSchool.WebApi.Extensions
@@ -64,6 +65,14 @@ namespace OutOfSchool.WebApi.Extensions
                 logger.LogError($"Exception information: {ex}");
 
                 var messageForUser = "Server error, invalid query. Please check your input data or contact support.";
+
+                await HandleExceptionAsync(context, messageForUser, StatusCodes.Status500InternalServerError).ConfigureAwait(false);
+            }
+            catch (OptionsValidationException ex)
+            {
+                logger.LogError($"Exception information: {ex}");
+
+                var messageForUser = "Server error, options validation error. Please contact support.";
 
                 await HandleExceptionAsync(context, messageForUser, StatusCodes.Status500InternalServerError).ConfigureAwait(false);
             }
