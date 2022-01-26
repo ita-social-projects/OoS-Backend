@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OutOfSchool.Services.Models
 {
-    public class PermissionsForRole
+    public class PermissionsForRole : IKeyedEntity<long>
     {
         public long Id { get; set; }
 

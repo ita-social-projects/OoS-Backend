@@ -203,7 +203,7 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (string.IsNullOrEmpty(imageId))
             {
-                OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
+                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
             }
 
             logger.LogDebug($"Deleting an image with external id = {imageId} was started.");

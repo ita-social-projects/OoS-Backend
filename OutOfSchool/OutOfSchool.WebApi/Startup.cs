@@ -197,8 +197,9 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
             services.AddTransient<IImageService, ImageService>();
             services.AddTransient<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
-            services.AddTransient<IInformationAboutPortalService, InformationAboutPortalService>();
-            services.AddTransient<IWorkshopImagesService, WorkshopImagesService>();
+            services.AddTransient<IAboutPortalService, AboutPortalService>();
+            services.AddTransient<ISupportInformationService, SupportInformationService>();
+            services.AddTransient<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -214,7 +215,10 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Teacher>, EntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
-            services.AddTransient<IEntityRepository<InformationAboutPortal>, EntityRepository<InformationAboutPortal>>();
+            services.AddTransient<IEntityRepository<SupportInformation>, EntityRepository<SupportInformation>>();
+
+            services.AddTransient<ISensitiveEntityRepository<AboutPortal>, SensitiveEntityRepository<AboutPortal>>();
+            services.AddTransient<ISensitiveEntityRepository<AboutPortalItem>, SensitiveEntityRepository<AboutPortalItem>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services
@@ -228,6 +232,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
+            services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

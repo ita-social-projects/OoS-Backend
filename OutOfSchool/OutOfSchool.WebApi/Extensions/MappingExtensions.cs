@@ -362,6 +362,7 @@ namespace OutOfSchool.WebApi.Extensions
                 .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => src.Workshop.ProviderId))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.ProviderTitle, opt => opt.MapFrom(src => src.Workshop.ProviderTitle))
+                .ForMember(dest => dest.ProviderOwnership, opt => opt.MapFrom(src => src.Workshop.ProviderOwnership))
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title))
                 .ForMember(dest => dest.IsPerMonth, opt => opt.MapFrom(src => src.Workshop.IsPerMonth))

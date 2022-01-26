@@ -46,9 +46,17 @@ namespace OutOfSchool.WebApi.Tests.Services
             var localizer = new Mock<IStringLocalizer<SharedResource>>();
             var logger = new Mock<ILogger<ProviderService>>();
             mapper = new Mock<IMapper>();
+            var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
 
-
-            providerService = new ProviderService(providersRepositoryMock.Object, usersRepositoryMock.Object, ratingService.Object, logger.Object, localizer.Object, mapper.Object, addressRepo.Object);
+            providerService = new ProviderService(
+                providersRepositoryMock.Object,
+                usersRepositoryMock.Object,
+                ratingService.Object,
+                logger.Object,
+                localizer.Object,
+                mapper.Object,
+                addressRepo.Object,
+                workshopServicesCombiner.Object);
         }
 
         [Test]

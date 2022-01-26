@@ -62,7 +62,11 @@ namespace OutOfSchool.Services
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
-        public DbSet<InformationAboutPortal> InformationAboutPortal { get; set; }
+        public DbSet<AboutPortal> AboutPortal { get; set; }
+
+        public DbSet<AboutPortalItem> AboutPortalItems{ get; set; }
+
+        public DbSet<SupportInformation> SupportInformation { get; set; }
 
         public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
 
@@ -84,7 +88,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ChildConfiguration());
             builder.ApplyConfiguration(new ProviderConfiguration());
             builder.ApplyConfiguration(new WorkshopConfiguration());
-            builder.ApplyConfiguration(new WorkshopImagesConfiguration());
+            builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
 
             builder.Seed();
             builder.UpdateIdentityTables();

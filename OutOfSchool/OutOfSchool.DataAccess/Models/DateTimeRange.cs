@@ -5,7 +5,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
-    public class DateTimeRange
+    public class DateTimeRange : IKeyedEntity<long>
     {
         public long Id { get; set; }
 

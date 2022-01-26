@@ -162,6 +162,45 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.AboutPortal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AboutPortal");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.AboutPortalItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<Guid>("AboutPortalId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("SectionName")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AboutPortalId");
+
+                    b.ToTable("AboutPortalItems");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Address", b =>
                 {
                     b.Property<long>("Id")
@@ -352,6 +391,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
+                    b.Property<ulong>("GeoHash")
+                        .HasColumnType("bigint unsigned");
+
                     b.Property<double?>("Latitude")
                         .HasColumnType("double");
 
@@ -524,29 +566,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasKey("EntityId", "ExternalStorageId");
 
                     b.ToTable("WorkshopImages");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.InformationAboutPortal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(3000)
-                        .HasColumnType("varchar(3000)");
-
-                    b.Property<string>("SectionName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("InformationAboutPortal");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
@@ -813,6 +832,29 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         });
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.SupportInformation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(3000)
+                        .HasColumnType("varchar(3000)");
+
+                    b.Property<string>("SectionName")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SupportInformation");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1033,6 +1075,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<Guid>("ProviderId")
                         .HasColumnType("binary(16)");
 
+                    b.Property<int>("ProviderOwnership")
+                        .HasColumnType("int");
+
                     b.Property<string>("ProviderTitle")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -1112,6 +1157,17 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.AboutPortalItem", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.AboutPortal", "AboutPortal")
+                        .WithMany("AboutPortalItems")
+                        .HasForeignKey("AboutPortalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AboutPortal");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Application", b =>
@@ -1241,7 +1297,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Entity")
-                        .WithMany("WorkshopImages")
+                        .WithMany("Images")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1348,6 +1404,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Provider");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.AboutPortal", b =>
+                {
+                    b.Navigation("AboutPortalItems");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatRoomWorkshop", b =>
                 {
                     b.Navigation("ChatMessages");
@@ -1393,9 +1454,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Navigation("DateTimeRanges");
 
-                    b.Navigation("Teachers");
+                    b.Navigation("Images");
 
-                    b.Navigation("WorkshopImages");
+                    b.Navigation("Teachers");
                 });
 #pragma warning restore 612, 618
         }

@@ -8,7 +8,6 @@ namespace OutOfSchool.WebApi.Models
 {
     public class ApplicationFilter
     {
-        [Range(0, 7, ErrorMessage = "Status filter should be from 0 to 7")]
         public ApplicationStatus Status { get; set; }
 
         public bool OrderByDateAscending { get; set; } = true;

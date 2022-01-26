@@ -190,41 +190,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Get Applications by Status.
-        /// </summary>
-        /// <param name="status">Application status.</param>
-        /// <returns>List of applications.</returns>
-        /// <response code="200">Entities were found by given status.</response>
-        /// <response code="204">No entity with given status was found.</response>
-        /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.ApplicationRead)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet]
-        public async Task<IActionResult> GetByStatus(int status)
-        {
-            try
-            {
-                ValidateStatus(status);
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-            var applications = await applicationService.GetAllByStatus(status).ConfigureAwait(false);
-
-            if (!applications.Any())
-            {
-                return NoContent();
-            }
-
-            return Ok(applications);
-        }
-
-        /// <summary>
         /// Method for creating a new application.
         /// </summary>
         /// <param name="applicationDto">Application entity to add.</param>
@@ -360,15 +325,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
         }
 
-        // TODO: Ask Polina about status validation
-        private void ValidateStatus(int status)
-        {
-            if (status < 0 || status > 2)
-            {
-                throw new ArgumentOutOfRangeException(nameof(status), localizer["Status should be from 0 to 2"]);
-            }
-        }
-
         private async Task<IEnumerable<ApplicationDto>> GetByWorkshopId(Guid id, ApplicationFilter filter)
         {
             var workshop = await workshopService.GetById(id).ConfigureAwait(false);
@@ -387,6 +343,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
         private async Task<IEnumerable<ApplicationDto>> GetByProviderId(Guid id, ApplicationFilter filter)
         {
+            var provider = await providerService.GetById(id).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                throw new ArgumentException(localizer[$"There is no provider with Id = {id}"]);
+            }
+
             await CheckUserRights(providerId: id).ConfigureAwait(false);
 
             var applications = await applicationService.GetAllByProvider(id, filter).ConfigureAwait(false);

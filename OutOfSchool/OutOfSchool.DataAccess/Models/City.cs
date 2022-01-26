@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.Services.Models
 {
-    public class City
+    public class City : IKeyedEntity<long>
     {
         public long Id { get; set; }
 

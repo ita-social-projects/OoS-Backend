@@ -10,7 +10,7 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// Defines interface for CRUD functionality for Workshop entity.
     /// </summary>
-    public interface IWorkshopService : ICRUDService<WorkshopDTO, Guid>, IWorkshopImagesService
+    public interface IWorkshopService : ICRUDService<WorkshopDTO, Guid>, IWorkshopImagesInteractionService
     {
         /// <summary>
         /// Get all entities from the database.
@@ -45,5 +45,12 @@ namespace OutOfSchool.WebApi.Services
         Task<SearchResult<WorkshopCard>> GetNearestByFilter(WorkshopFilter filter = null);
 
         Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
+
+        /// <summary>
+        /// Update prodider's properies in all workshops with specified provider.
+        /// </summary>
+        /// <param name="provider">Provider to be searched by.</param>
+        /// <returns>List of Workshops for the specified provider.</returns>
+        Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider);
     }
 }

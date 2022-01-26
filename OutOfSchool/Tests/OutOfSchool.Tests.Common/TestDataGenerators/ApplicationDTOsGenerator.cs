@@ -59,5 +59,53 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
 
             return applications;
         }
+
+        public static ApplicationDto WithParent(this ApplicationDto application, ParentDTO parent)
+        {
+            _ = application ?? throw new ArgumentNullException(nameof(application));
+
+            application.Parent = parent;
+            application.ParentId = parent?.Id ?? default;
+
+            return application;
+        }
+
+        public static List<ApplicationDto> WithParent(this List<ApplicationDto> applications, ParentDTO parent)
+        {
+            _ = applications ?? throw new ArgumentNullException(nameof(applications));
+
+            applications.ForEach(
+                application =>
+                {
+                    application.Parent = parent;
+                    application.ParentId = parent?.Id ?? default;
+                });
+
+            return applications;
+        }
+
+        public static ApplicationDto WithChild(this ApplicationDto application, ChildDto child)
+        {
+            _ = application ?? throw new ArgumentNullException(nameof(application));
+
+            application.Child = child;
+            application.ChildId = child?.Id ?? default;
+
+            return application;
+        }
+
+        public static List<ApplicationDto> WithChild(this List<ApplicationDto> applications, ChildDto child)
+        {
+            _ = applications ?? throw new ArgumentNullException(nameof(applications));
+
+            applications.ForEach(
+                application =>
+                {
+                    application.Child = child;
+                    application.ChildId = child?.Id ?? default;
+                });
+
+            return applications;
+        }
     }
 }

@@ -55,14 +55,14 @@ namespace OutOfSchool.WebApi.Util
 
                     return dtoTeachers;
                 }))
-                .ForMember(dest => dest.WorkshopImages, opt => opt.Ignore());
+                .ForMember(dest => dest.Images, opt => opt.Ignore());
 
             CreateMap<Workshop, WorkshopDTO>()
                 .ForMember(
                     dest => dest.Keywords,
                     opt => opt.MapFrom(src => src.Keywords.Split(SEPARATOR, StringSplitOptions.None)))
                 .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
-                .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.WorkshopImages.Select(x => x.ExternalStorageId)));
+                .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
             CreateMap<Address, AddressDto>().ReverseMap();
 
             CreateMap<Provider, ProviderDto>()
@@ -94,7 +94,16 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
 
-            CreateMap<InformationAboutPortal, InformationAboutPortalDto>().ReverseMap()
+            CreateMap<AboutPortalItem, AboutPortalItemDto>().ReverseMap();
+            CreateMap<AboutPortal, AboutPortalDto>()
+                .ForMember(dest => dest.AboutPortalItems, opt => opt.MapFrom((dto, entity, dest, ctx) =>
+                {
+                    var dtoItems = ctx.Mapper.Map<List<AboutPortalItem>>(dto.AboutPortalItems);
+                    return dtoItems;
+                }));
+            CreateMap<AboutPortalDto, AboutPortal>();
+
+            CreateMap<SupportInformation, SupportInformationDto>().ReverseMap()
                 .ForMember(c => c.Id, m => m.Ignore());
 
             CreateMap<ElasticsearchSyncRecord, ElasticsearchSyncRecordDto>().ReverseMap();
@@ -114,6 +123,8 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Workshop, WorkshopES>()
                 .ForMember(dest => dest.Rating, opt => opt.Ignore())
                 .ForMember(dest => dest.Direction, opt => opt.Ignore());
+            #warning The next mapping is here to test UI Admin features. Will be removed or refactored
+            CreateMap<ShortUserDto, AdminDto>();
         }
     }
 }

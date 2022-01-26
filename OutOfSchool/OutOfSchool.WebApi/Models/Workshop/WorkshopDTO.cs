@@ -6,6 +6,7 @@ using System.Linq;
 using Castle.Core.Internal;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -84,6 +85,8 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
 
+        public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
+
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public IEnumerable<string> Keywords { get; set; } = default;
 
@@ -123,7 +126,7 @@ namespace OutOfSchool.WebApi.Models
         public List<DateTimeRangeDto> DateTimeRanges { get; set; }
 
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
-        public ICollection<string> ImageIds { get; set; }
+        public IList<string> ImageIds { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
