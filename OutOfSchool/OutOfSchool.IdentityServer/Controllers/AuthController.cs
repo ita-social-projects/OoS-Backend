@@ -1,12 +1,16 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.IdentityServer.ViewModels;
@@ -58,6 +62,11 @@ namespace OutOfSchool.IdentityServer.Controllers
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
+            var rqf = Request.HttpContext.Features.Get<IRequestCultureFeature>();
+            var culture = rqf.RequestCulture.Culture;
+
+            HttpContext.Response.Cookies.Append("culture", culture.Name);
+
             userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub) ?? "unlogged";
             path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
         }
@@ -176,6 +185,28 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         /// <summary>
+        /// Generates a view for user to register when we got a validation error in Post method.
+        /// This method needs for showing the view in the culture which we got from frontend.
+        /// </summary>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [HttpGet]
+        public IActionResult RegisterRetry()
+        {
+            if (TempData["model"] is string serializedModel)
+            {
+                RegisterViewModel model = JsonConvert.DeserializeObject<RegisterViewModel>(serializedModel);
+                TryValidateModel(model);
+                TempData.Remove("model");
+
+                return View("Register", model);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        /// <summary>
         /// Creates user based on model.
         /// </summary>
         /// <param name="model"> View model that contains credentials for signing in.</param>
@@ -185,11 +216,23 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             logger.LogDebug($"{path} started.");
 
+            var serializedModel = JsonConvert.SerializeObject(model);
+            TempData["model"] = serializedModel;
+
+            CultureInfo cultureLoc = CultureInfo.CurrentCulture;
+
+            if (HttpContext.Request.Cookies.ContainsKey("culture"))
+            {
+                cultureLoc = new CultureInfo(HttpContext.Request.Cookies["culture"]);
+            }
+
+            var routeValuesErrors = new { culture = cultureLoc };
+
             if (!ModelState.IsValid)
             {
                 logger.LogError($"{path} Input data was not valid.");
 
-                return View(model);
+                return RedirectToAction("RegisterRetry", routeValuesErrors);
             }
 
             if (Request.Form[Role.Provider.ToString()].Count == 1)
@@ -203,7 +246,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             }
             else
             {
-                return View(model);
+                return RedirectToAction("RegisterRetry", routeValuesErrors);
             }
 
             var user = new User()
@@ -279,7 +322,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                     }
                 }
 
-                return View(model);
+                return RedirectToAction("RegisterRetry", routeValuesErrors);
             }
             catch (Exception ex)
             {
@@ -290,7 +333,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                 logger.LogError("Error happened while creating Parent entity. " + ex.Message);
 
-                return View(model);
+                return RedirectToAction("RegisterRetry", routeValuesErrors);
             }
         }
 
