@@ -163,7 +163,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task Delete_WhenIdIsValid_ReturnsNoContentResult(long id)
         {
             // Arrange
-            service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DepartmentDto>.Success(department)); ;
+            service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DepartmentDto>.Success(department));
 
             // Act
             var result = await controller.Delete(id) as NoContentResult;
