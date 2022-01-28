@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -161,7 +162,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task Delete_WhenIdIsValid_ReturnsNoContentResult(long id)
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
 
             // Act
             var result = await controller.Delete(id) as NoContentResult;
@@ -188,13 +189,32 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task Delete_WhenIdIsInvalid_ReturnsNull(long id)
         {
             // Arrange
-            service.Setup(x => x.Delete(id));
+            service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
 
             // Act
             var result = await controller.Delete(id) as OkObjectResult;
 
             // Assert
             Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        [TestCase(10)]
+        public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
+        {
+            // Arrange
+            service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Failed(new OperationError
+            {
+                Code = "400",
+                Description = "Some workshops assosiated with this direction. Deletion prohibited.",
+            }));
+
+            // Act
+            var result = await controller.Delete(id);
+
+            // Assert
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
         }
 
         private DirectionDto FakeDirection()

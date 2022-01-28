@@ -145,6 +145,18 @@
     <value>Some of the message parameters were wrong. Please check your message and try again.</value>
     <comment>ChatWorkshopHub</comment>
   </data>
+  <data name="Some workshops assosiated with this class. Deletion prohibited." xml:space="preserve">
+    <value>Some workshops assosiated with this class. Deletion prohibited.</value>
+    <comment>DirectionService</comment>
+  </data>
+  <data name="Some workshops assosiated with this department. Deletion prohibited." xml:space="preserve">
+    <value>Some workshops assosiated with this department. Deletion prohibited.</value>
+    <comment>DirectionService</comment>
+  </data>
+  <data name="Some workshops assosiated with this direction. Deletion prohibited." xml:space="preserve">
+    <value>Some workshops assosiated with this direction. Deletion prohibited.</value>
+    <comment>DirectionService</comment>
+  </data>
   <data name="The id cannot be greater than number of table entities." xml:space="preserve">
     <value>The id cannot be greater than number of table entities.</value>
     <comment>AdressService, ChildService, ProviderService</comment>

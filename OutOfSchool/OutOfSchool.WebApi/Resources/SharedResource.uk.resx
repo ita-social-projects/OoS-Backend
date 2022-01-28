@@ -142,6 +142,18 @@
     <value>Деякі параметри повідомлення були неправильними. Перевірте своє повідомлення та спробуйте ще раз.</value>
     <comment>ChatWorkshopHub</comment>
   </data>
+  <data name="Some workshops assosiated with this class. Deletion prohibited." xml:space="preserve">
+    <value>Деякі гуртки пов'язані з цим класом. Видалення заборонено.</value>
+    <comment>DirectionService</comment>
+  </data>
+  <data name="Some workshops assosiated with this department. Deletion prohibited." xml:space="preserve">
+    <value>Деякі гуртки пов'язані з цим відділенням. Видалення заборонено.</value>
+    <comment>DirectionService</comment>
+  </data>
+  <data name="Some workshops assosiated with this direction. Deletion prohibited." xml:space="preserve">
+    <value>Деякі гуртки пов'язані з цим напрямком. Видалення заборонено.</value>
+    <comment>DirectionService</comment>
+  </data>
   <data name="The id cannot be greater than number of table entities." xml:space="preserve">
     <value>Id не може бути більшим ніж кількість записів у таблиці.</value>
   </data>
