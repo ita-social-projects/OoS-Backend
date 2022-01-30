@@ -13,7 +13,6 @@ using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources.Codes;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.CustomResults;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Services.Images;
@@ -49,7 +48,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<CreationResultWithImageDto<TeacherDTO>> Create(TeacherCreationDto dto)
+        public async Task<TeacherCreationResultDto> Create(TeacherCreationDto dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation("Teacher creating was started.");
@@ -66,10 +65,10 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Teacher with Id = {newTeacher.Id} created successfully.");
 
-            return new CreationResultWithImageDto<TeacherDTO>()
+            return new TeacherCreationResultDto
             {
-                Dto = mapper.Map<TeacherDTO>(newTeacher),
-                UploadingImageResult = uploadingResult.OperationResult,
+                Teacher = mapper.Map<TeacherDTO>(newTeacher),
+                UploadingAvatarImageResult = uploadingResult.OperationResult,
             };
         }
 
@@ -100,27 +99,34 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<UpdateResultWithImageDto<TeacherDTO>> Update(TeacherUpdateDto dto)
+        public async Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation($"Updating Teacher with Id = {dto.Id} started.");
 
             var teacher = await teacherRepository.GetById(dto.Id).ConfigureAwait(false);
+            var currentImageId = teacher.AvatarImageId;
             mapper.Map(dto, teacher);
+            var changingAvatarResult = await ChangeAvatarImageAsync(currentImageId, dto.AvatarImageId, dto.ImageFile).ConfigureAwait(false);
 
-            var changingAvatarResult = await ChangeAvatarImageAsync(teacher, dto.AvatarImageId, dto.ImageFile).ConfigureAwait(false);
+            teacher.AvatarImageId = changingAvatarResult.UploadingResult switch
+            {
+                null when changingAvatarResult.RemovingResult == null => currentImageId,
+                { Succeeded: true } => changingAvatarResult.UploadingResult.Value,
+                _ => null
+            };
 
             try
             {
-                var updatedTeacher = await teacherRepository.Update(teacher).ConfigureAwait(false);
+                await teacherRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
-                logger.LogInformation($"Teacher with Id = {updatedTeacher?.Id} updated successfully.");
+                logger.LogInformation($"Teacher with Id = {teacher.Id} updated successfully.");
 
-                return new UpdateResultWithImageDto<TeacherDTO>
+                return new TeacherUpdateResultDto
                 {
-                    Dto = mapper.Map<TeacherDTO>(teacher),
-                    UploadingImageResult = changingAvatarResult.UploadingResult?.OperationResult,
-                    RemovingImageResult = changingAvatarResult.RemovingResult,
+                    Teacher = mapper.Map<TeacherDTO>(teacher),
+                    UploadingAvatarImageResult = changingAvatarResult.UploadingResult?.OperationResult,
+                    RemovingAvatarImageResult = changingAvatarResult.RemovingResult,
                 };
             }
             catch (DbUpdateConcurrencyException)
@@ -135,7 +141,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Deleting Teacher with Id = {id} started.");
 
-            var entity = await teacherRepository.GetByFilterNoTracking(x => x.Id == id, nameof(Workshop.Images)).FirstAsync().ConfigureAwait(false);
+            var entity = await teacherRepository.GetById(id).ConfigureAwait(false);
 
             var removingResult = await imageService.RemoveImageAsync(entity.AvatarImageId).ConfigureAwait(false);
 
@@ -157,26 +163,24 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private async Task<ImageChangingResult> ChangeAvatarImageAsync(Teacher teacher, string oldImage, IFormFile newImage)
+        private async Task<ImageChangingResult> ChangeAvatarImageAsync(string currentAvatarId, string oldImage, IFormFile newImage)
         {
-            if (!teacher.AvatarImageId.Equals(oldImage, StringComparison.Ordinal))
-            {
-                return new ImageChangingResult { RemovingResult = OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError()) };
-            }
-
             var result = new ImageChangingResult();
-            if (!string.IsNullOrEmpty(oldImage))
+            if (!string.IsNullOrEmpty(currentAvatarId) && !currentAvatarId.Equals(oldImage, StringComparison.Ordinal))
             {
-                result.RemovingResult = await imageService.RemoveImageAsync(oldImage).ConfigureAwait(false);
+                result.RemovingResult = await imageService.RemoveImageAsync(currentAvatarId).ConfigureAwait(false);
                 if (!result.RemovingResult.Succeeded)
                 {
                     return new ImageChangingResult { RemovingResult = OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError()) };
                 }
+
+                currentAvatarId = null;
             }
 
-            result.UploadingResult = await imageService.UploadImageAsync<Teacher>(newImage).ConfigureAwait(false);
-
-            teacher.AvatarImageId = result.UploadingResult.Succeeded ? result.UploadingResult.Value : null;
+            if (string.IsNullOrEmpty(currentAvatarId))
+            {
+                result.UploadingResult = await imageService.UploadImageAsync<Teacher>(newImage).ConfigureAwait(false);
+            }
 
             return result;
         }

@@ -1,10 +1,10 @@
 ﻿using OutOfSchool.WebApi.Models.Images;
 
-namespace OutOfSchool.WebApi.Models.Responses
+namespace OutOfSchool.WebApi.Models.Workshop
 {
-    public class UpdateWithImagesResponse<TEntity>
+    public class WorkshopUpdateResponse
     {
-        public TEntity UpdatedEntity { get; set; }
+        public WorkshopDTO Workshop { get; set; }
 
         public MultipleImageUploadingResponse UploadingImagesResults { get; set; }
 

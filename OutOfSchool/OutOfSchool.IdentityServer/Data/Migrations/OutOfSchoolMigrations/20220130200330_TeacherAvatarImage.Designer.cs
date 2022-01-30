@@ -9,8 +9,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220126183730_TeacherAvatar")]
-    partial class TeacherAvatar
+    [Migration("20220130200330_TeacherAvatarImage")]
+    partial class TeacherAvatarImage
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

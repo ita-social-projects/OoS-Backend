@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
-    public partial class TeacherAvatar : Migration
+    public partial class TeacherAvatarImage : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

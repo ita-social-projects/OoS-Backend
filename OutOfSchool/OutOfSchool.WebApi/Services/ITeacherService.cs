@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.CustomResults;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Services.Images;
@@ -21,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Teacher to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<CreationResultWithImageDto<TeacherDTO>> Create(TeacherCreationDto dto);
+        Task<TeacherCreationResultDto> Create(TeacherCreationDto dto);
 
         /// <summary>
         /// Get all entities.
@@ -41,7 +40,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Teacher to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<UpdateResultWithImageDto<TeacherDTO>> Update(TeacherUpdateDto dto);
+        Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto);
 
         /// <summary>
         /// Delete entity.

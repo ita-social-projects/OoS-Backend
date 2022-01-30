@@ -173,7 +173,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = workshop.Dto.Id },
+                new { id = workshop.Workshop.Id },
                 workshop);
         }
 

@@ -6,6 +6,7 @@ using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Teachers;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util.CustomComparers;
 
 namespace OutOfSchool.WebApi.Util
@@ -58,6 +59,16 @@ namespace OutOfSchool.WebApi.Util
                 }))
                 .ForMember(dest => dest.Images, opt => opt.Ignore());
 
+            // TODO change it
+            CreateMap<WorkshopCreationDto, Workshop>()
+                .IncludeBase<WorkshopDTO, Workshop>()
+                .ForMember(dest => dest.Teachers, opt => opt.Ignore());
+
+            // TODO change it
+            CreateMap<WorkshopUpdateDto, Workshop>()
+                .IncludeBase<WorkshopDTO, Workshop>()
+                .ForMember(dest => dest.Teachers, opt => opt.Ignore());
+
             CreateMap<Workshop, WorkshopDTO>()
                 .ForMember(
                     dest => dest.Keywords,
@@ -79,8 +90,15 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.User, opt => opt.Ignore())
                  .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore());
 
+            // TODO check
             CreateMap<TeacherDTO, Teacher>()
-                .ForMember(dest => dest.AvatarImageId, opt => opt.Ignore());
+                .ForMember(dest => dest.AvatarImageId, opt => opt.Ignore())
+                .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
+            CreateMap<TeacherCreationDto, Teacher>()
+                .IncludeBase<TeacherDTO, Teacher>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.WorkshopId));
+            CreateMap<TeacherUpdateDto, TeacherCreationDto>();
             CreateMap<Teacher, TeacherDTO>();
 
             CreateMap<DateTimeRange, DateTimeRangeDto>()
@@ -129,6 +147,25 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Direction, opt => opt.Ignore());
             #warning The next mapping is here to test UI Admin features. Will be removed or refactored
             CreateMap<ShortUserDto, AdminDto>();
+        }
+
+        public static List<Teacher> WorkshopTeachersMapperFunction<TDto>(
+            TDto dto, Workshop entity, List<Teacher> dest, ResolutionContext ctx)
+            where TDto : WorkshopDTO
+        {
+            var dtoTeachers = ctx.Mapper.Map<List<Teacher>>(dto.Teachers);
+            if (dest is { } && dest.Any())
+            {
+                var dtoTeachersHs = new HashSet<Teacher>(dtoTeachers, new TeacherComparerWithoutFK());
+                foreach (var destTeacher in dest.Where(destTeacher => dtoTeachersHs.Remove(destTeacher)))
+                {
+                    dtoTeachersHs.Add(destTeacher);
+                }
+
+                return dtoTeachersHs.ToList();
+            }
+
+            return dtoTeachers;
         }
     }
 }

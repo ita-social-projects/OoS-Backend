@@ -17,7 +17,6 @@ using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Responses;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Images;
@@ -154,7 +153,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.WorkshopAddNew)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreationWithImagesResponse<Guid>))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -164,11 +163,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto) // TODO: validate by request size
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
             {
                 return StatusCode(StatusCodes.Status413PayloadTooLarge);
@@ -194,11 +188,11 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = creationResult.Dto.Id, },
-                new CreationWithImagesResponse<Guid>
+                new { id = creationResult.Workshop.Id, },
+                new WorkshopCreationResponse
                 {
-                    Id = creationResult.Dto.Id,
-                    UploadingImagesResults = creationResult.UploadingImagesResults?.MultipleKeyValueOperationResult?.CreateMultipleUploadingResult(),
+                    Workshop = creationResult.Workshop,
+                    UploadingImagesResults = creationResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
                 });
         }
 
@@ -214,7 +208,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.WorkshopEdit)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdateWithImagesResponse<WorkshopDTO>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreationResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -224,11 +218,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Update([FromForm] WorkshopUpdateDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
             {
                 return StatusCode(StatusCodes.Status413PayloadTooLarge);
@@ -242,11 +231,11 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
             var updatingResult = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
-            return Ok(new UpdateWithImagesResponse<WorkshopDTO>()
+            return Ok(new WorkshopUpdateResponse
             {
-                UpdatedEntity = updatingResult.Dto,
-                UploadingImagesResults = updatingResult.UploadingImagesResults?.MultipleKeyValueOperationResult?.CreateMultipleUploadingResult(),
-                RemovingImagesResults = updatingResult.RemovingImagesResults?.MultipleKeyValueOperationResult?.CreateMultipleRemovingResult(),
+                Workshop = updatingResult.Workshop,
+                UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
+                RemovingImagesResults = updatingResult.RemovingImagesResults?.CreateMultipleRemovingResult(),
             });
         }
 

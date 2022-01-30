@@ -14,7 +14,6 @@ using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.CustomResults;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Images;
@@ -41,13 +40,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<CreationResultWithManyImagesDto<WorkshopDTO>> Create(WorkshopCreationDto dto)
+        public async Task<WorkshopCreationResultDto> Create(WorkshopCreationDto dto)
         {
             var creationResult = await workshopService.Create(dto).ConfigureAwait(false);
 
             await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
-                    creationResult.Dto.Id,
+                    creationResult.Workshop.Id,
                     ElasticsearchSyncOperation.Create)
                     .ConfigureAwait(false);
 
@@ -63,13 +62,13 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<UpdateResultWithManyImagesDto<WorkshopDTO>> Update(WorkshopUpdateDto dto)
+        public async Task<WorkshopUpdateResultDto> Update(WorkshopUpdateDto dto)
         {
             var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
             await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
-                    workshop.Dto.Id,
+                    workshop.Workshop.Id,
                     ElasticsearchSyncOperation.Update)
                     .ConfigureAwait(false);
 

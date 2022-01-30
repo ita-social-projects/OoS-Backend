@@ -85,12 +85,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPost]
         public async Task<IActionResult> Create(TeacherCreationDto dto)
         {
-            var teacher = await service.Create(dto).ConfigureAwait(false);
+            var creationResult = await service.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = teacher.Dto.Id, },
-                teacher);
+                new { id = creationResult.Teacher.Id, },
+                creationResult);
         }
 
         /// <summary>

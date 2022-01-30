@@ -12,7 +12,6 @@ using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
-using OutOfSchool.WebApi.Models.Responses;
 using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
@@ -26,7 +25,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
     [ApiController]
     [ApiVersion("2.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    public class TeacherController : ControllerBase
+    internal class TeacherController : ControllerBase // check permissions for workshopIds for public controller
     {
         private readonly ITeacherService teacherService;
         private readonly IStringLocalizer<SharedResource> localizer;
@@ -86,7 +85,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HasPermission(Permissions.TeacherAddNew)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreationWithImagesResponse<Guid>))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(TeacherCreationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Consumes("multipart/form-data")]
@@ -97,11 +96,11 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = creationResult.Dto.Id, },
-                new CreationWithImagesResponse<Guid>
+                new { id = creationResult.Teacher.Id, },
+                new TeacherCreationResponse
                 {
-                    Id = creationResult.Dto.Id,
-                    UploadingImagesResults = creationResult.UploadingImageResult.CreateSingleUploadingResult(),
+                    Teacher = creationResult.Teacher,
+                    UploadingAvatarImageResult = creationResult.UploadingAvatarImageResult?.CreateSingleUploadingResult(),
                 });
         }
 
@@ -111,20 +110,20 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <param name="dto">Teacher to update.</param>
         /// <returns>Teacher.</returns>
         [HasPermission(Permissions.TeacherEdit)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdateWithImagesResponse<TeacherDTO>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TeacherUpdateDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Consumes("multipart/form-data")]
         [HttpPut]
         public async Task<IActionResult> Update([FromForm] TeacherUpdateDto dto)
         {
-            var updatedTeacher = await teacherService.Update(dto).ConfigureAwait(false);
+            var updateResult = await teacherService.Update(dto).ConfigureAwait(false);
 
-            return Ok(new UpdateWithImagesResponse<TeacherDTO>
+            return Ok(new TeacherUpdateResponse
             {
-                UpdatedEntity = updatedTeacher.Dto,
-                UploadingImagesResults = updatedTeacher.UploadingImageResult?.CreateSingleUploadingResult(),
-                RemovingImagesResults = updatedTeacher.RemovingImageResult?.CreateSingleRemovingResult(),
+                Teacher = updateResult.Teacher,
+                UploadingAvatarImageResult = updateResult.UploadingAvatarImageResult?.CreateSingleUploadingResult(),
+                RemovingAvatarImageResult = updateResult.RemovingAvatarImageResult?.CreateSingleRemovingResult(),
             });
         }
 

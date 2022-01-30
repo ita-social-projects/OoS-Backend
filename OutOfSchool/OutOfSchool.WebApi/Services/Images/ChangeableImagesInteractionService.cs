@@ -55,7 +55,10 @@ namespace OutOfSchool.WebApi.Services.Images
             if (shouldRemove)
             {
                 var removingList = entity.Images.Select(x => x.ExternalStorageId).Except(oldImageIds).ToList();
-                result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(entity, removingList).ConfigureAwait(false);
+                if (removingList.Any())
+                {
+                    result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(entity, removingList).ConfigureAwait(false);
+                }
             }
 
             if (result.RemovedMultipleResult?.RemovedIds?.Count > 0)
