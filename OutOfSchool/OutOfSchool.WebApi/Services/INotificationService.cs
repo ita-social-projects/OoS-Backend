@@ -1,0 +1,34 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using OutOfSchool.WebApi.Models;
+
+namespace OutOfSchool.WebApi.Services
+{
+    /// <summary>
+    /// Defines interface for CRUD functionality for Notification entity.
+    /// </summary>
+    public interface INotificationService
+    {
+        /// <summary>
+        /// Add entity.
+        /// </summary>
+        /// <param name="notificationDto">Notificaton entity to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<NotificationDto> Create(NotificationDto notificationDto);
+
+        /// <summary>
+        /// To delete the object from DB.
+        /// </summary>
+        /// <param name="id">Key of the Notification in table.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task Delete(Guid id);
+
+        /// <summary>
+        /// Get all user's notification from the database.
+        /// </summary>
+        /// <param name="userId">User's id for notification.</param>
+        /// <returns>List of new user's notification.</returns>
+        Task<IEnumerable<NotificationDto>> GetAllUsersNotificationsAsync(string userId);
+    }
+}

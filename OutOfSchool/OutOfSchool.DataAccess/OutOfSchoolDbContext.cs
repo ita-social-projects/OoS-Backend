@@ -68,6 +68,8 @@ namespace OutOfSchool.Services
 
         public DbSet<SupportInformation> SupportInformation { get; set; }
 
+        public DbSet<Notification> Notifications { get; set; }
+
         public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
 
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
