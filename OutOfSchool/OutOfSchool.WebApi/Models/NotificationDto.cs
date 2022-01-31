@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -12,5 +13,13 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         public string Text { get; set; }
+
+        [Required]
+        public NotificationType Type { get; set; }
+
+        [Required]
+        public DateTimeOffset CreatedDateTime { get; set; }
+
+        public DateTimeOffset? ReadDateTime { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -25,10 +26,25 @@ namespace OutOfSchool.WebApi.Services
         Task Delete(Guid id);
 
         /// <summary>
+        /// Get entity by it's key.
+        /// </summary>
+        /// <param name="id">Key in the table.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<NotificationDto> GetById(Guid id);
+
+        /// <summary>
         /// Get all user's notification from the database.
         /// </summary>
-        /// <param name="userId">User's id for notification.</param>
-        /// <returns>List of new user's notification.</returns>
-        Task<IEnumerable<NotificationDto>> GetAllUsersNotificationsAsync(string userId);
+        /// <param name="userId">User's id for notifications.</param>
+        /// <param name="notificationType">Type of notifications.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<IEnumerable<NotificationDto>> GetAllUsersNotificationsByFilterAsync(string userId, NotificationType? notificationType);
+
+        /// <summary>
+        /// Get amount of new notifications for user.
+        /// </summary>
+        /// <param name="userId">User's id for notifications.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<int> GetAmountOfNewUsersNotificationsAsync(string userId);
     }
 }

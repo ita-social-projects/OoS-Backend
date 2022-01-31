@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Extensions;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -37,6 +39,27 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
+        /// Add a new Notification to the database.
+        /// </summary>
+        /// <param name="notificationDto">Notification entity to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost]
+        public async Task<IActionResult> Create(NotificationDto notificationDto)
+        {
+            var notification = await notificationService.Create(notificationDto).ConfigureAwait(false);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = notification.Id, },
+                notification);
+        }
+
+        /// <summary>
         /// Delete the Notification entity from DB.
         /// </summary>
         /// <param name="id">The key of the Notification in table.</param>
@@ -54,8 +77,23 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
+        /// Get Notification by it's id.
+        /// </summary>
+        /// <param name="id">Notification id.</param>
+        /// <returns>Notification.</returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            return Ok(await notificationService.GetById(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
         /// Get new user's notification from the database.
         /// </summary>
+        /// <param name="notificationType">Type of notifications.</param>
         /// <returns>List of all user's notifications.</returns>
         /// <response code="200">All user's nofiticaitions.</response>
         /// <response code="204">If there are no user's notifications.</response>
@@ -65,13 +103,32 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllUsersNotificationsAsync()
+        public async Task<IActionResult> GetAllUsersNotifications(NotificationType? notificationType)
         {
-            var userId = User.FindFirst(IdentityResourceClaimsTypes.Sub).ToString();
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
-            var allNofitications = await notificationService.GetAllUsersNotificationsAsync(userId).ConfigureAwait(false);
+            var allNofitications = await notificationService.GetAllUsersNotificationsByFilterAsync(userId, notificationType).ConfigureAwait(false);
 
             return Ok(allNofitications);
+        }
+
+        /// <summary>
+        /// Get amount of new notifications for user.
+        /// </summary>
+        /// <returns>Amount of all user's notifications.</returns>
+        /// <response code="200">Amount of all user's nofiticaitions.</response>
+        /// <response code="500">If any server error occures.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAmountOfNewUsersNotifications()
+        {
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+
+            var amount = await notificationService.GetAmountOfNewUsersNotificationsAsync(userId).ConfigureAwait(false);
+
+            return Ok(new { Amount = amount });
         }
     }
 }
