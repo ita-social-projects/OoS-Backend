@@ -254,6 +254,7 @@ namespace OutOfSchool.WebApi.Services
         public async Task GiveAssistantAccessToWorkshop(string userId, Guid workshopId)
         {
             await providerAdminRepository.AddRelatedWorkshopForAssistant(userId, workshopId).ConfigureAwait(false);
+            logger.LogDebug($"Assistant provider admin(id): {userId} now is related to workshop(id): {workshopId}");
         }
 
         public async Task<bool> CheckUserIsRelatedProviderAdmin(string userId, Guid providerId, Guid workshopId)
