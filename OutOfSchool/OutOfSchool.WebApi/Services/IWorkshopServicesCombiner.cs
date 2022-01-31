@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreationResultDto"/>.</returns>
-        Task<WorkshopCreationResultDto> Create(WorkshopCreationDto dto);
+        Task<WorkshopDTO> Create(WorkshopDTO dto);
 
         /// <summary>
         /// Get entity by it's key.
@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Entity that will be to updated.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
-        Task<WorkshopUpdateResultDto> Update(WorkshopUpdateDto dto);
+        Task<WorkshopDTO> Update(WorkshopDTO dto);
 
         /// <summary>
         ///  Delete entity.
@@ -67,10 +67,10 @@ namespace OutOfSchool.WebApi.Services
         Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter);
 
         /// <summary>
-        /// Update prodider's properies in all workshops with specified provider.
+        /// Update provider's properties in all workshops with specified provider.
         /// </summary>
         /// <param name="provider">Provider to be searched by.</param>
-        /// <returns>List of Workshops for the specified provider.</returns>
+        /// <returns><see cref="IEnumerable{T}"/> of Workshops for the specified provider.</returns>
         Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider);
     }
 }

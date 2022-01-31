@@ -22,10 +22,10 @@ namespace OutOfSchool.WebApi.Services
 {
     public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     {
-        private readonly IWorkshopService workshopService;
+        private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly ILogger<WorkshopServicesCombiner> logger;
-        private readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService;
+        private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
 
         public WorkshopServicesCombiner(
             IWorkshopService workshopService,
@@ -40,17 +40,17 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopCreationResultDto> Create(WorkshopCreationDto dto)
+        public async Task<WorkshopDTO> Create(WorkshopDTO dto)
         {
-            var creationResult = await workshopService.Create(dto).ConfigureAwait(false);
+            var workshop = await workshopService.Create(dto).ConfigureAwait(false);
 
             await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
-                    creationResult.Workshop.Id,
+                    workshop.Id,
                     ElasticsearchSyncOperation.Create)
-                    .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
-            return creationResult;
+            return workshop;
         }
 
         /// <inheritdoc/>
@@ -62,19 +62,20 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopUpdateResultDto> Update(WorkshopUpdateDto dto)
+        public async Task<WorkshopDTO> Update(WorkshopDTO dto)
         {
             var workshop = await workshopService.Update(dto).ConfigureAwait(false);
 
             await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
-                    workshop.Workshop.Id,
+                    workshop.Id,
                     ElasticsearchSyncOperation.Update)
-                    .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
             return workshop;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
         {
             var workshops = await workshopService.PartialUpdateByProvider(provider).ConfigureAwait(false);
@@ -100,7 +101,7 @@ namespace OutOfSchool.WebApi.Services
                     ElasticsearchSyncEntity.Workshop,
                     id,
                     ElasticsearchSyncOperation.Delete)
-                    .ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

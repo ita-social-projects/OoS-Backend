@@ -25,7 +25,8 @@ namespace OutOfSchool.WebApi.Controllers.V2
     [ApiController]
     [ApiVersion("2.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    internal class TeacherController : ControllerBase // check permissions for workshopIds for public controller
+    [HasPermission(Permissions.SystemManagement)]
+    public class TeacherController : ControllerBase // check permissions for workshopIds for public controller
     {
         private readonly ITeacherService teacherService;
         private readonly IStringLocalizer<SharedResource> localizer;

@@ -33,11 +33,10 @@ namespace OutOfSchool.WebApi.Controllers.V2
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     public class WorkshopController : ControllerBase
     {
-        private readonly IWorkshopServicesCombiner combinedWorkshopService;
+        private readonly IWorkshopServicesCombinerV2 combinedWorkshopService;
         private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
-        private readonly ImagesLimits<Workshop> limits;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
@@ -46,19 +45,16 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="options">Application default values.</param>
-        /// <param name="limits">Describes limits of workshop images.</param>
         public WorkshopController(
-            IWorkshopServicesCombiner combinedWorkshopService,
+            IWorkshopServicesCombinerV2 combinedWorkshopService,
             IProviderService providerService,
             IStringLocalizer<SharedResource> localizer,
-            IOptions<AppDefaultsConfig> options,
-            IOptions<ImagesLimits<Workshop>> limits)
+            IOptions<AppDefaultsConfig> options)
         {
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
             this.options = options.Value;
-            this.limits = limits.Value;
         }
 
         /// <summary>
@@ -163,11 +159,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto) // TODO: validate by request size
         {
-            if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
-            {
-                return StatusCode(StatusCodes.Status413PayloadTooLarge);
-            }
-
             var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
@@ -176,7 +167,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
             dto.Id = default;
             dto.Address.Id = default;
-            if (dto.Teachers.Any())
+            if (dto.Teachers != null && dto.Teachers.Any())
             {
                 foreach (var teacher in dto.Teachers)
                 {
@@ -218,11 +209,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Update([FromForm] WorkshopUpdateDto dto)
         {
-            if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
-            {
-                return StatusCode(StatusCodes.Status413PayloadTooLarge);
-            }
-
             var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
@@ -289,11 +275,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
             }
 
             return true;
-        }
-
-        private bool ValidCountOfFiles(int fileAmount)
-        {
-            return fileAmount <= limits.MaxCountOfFiles;
         }
     }
 }

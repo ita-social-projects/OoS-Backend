@@ -17,8 +17,15 @@ namespace OutOfSchool.WebApi.Services
         /// Add entity to the database.
         /// </summary>
         /// <param name="dto">Entity to add.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDTO"/>.</returns>
+        Task<WorkshopDTO> Create(WorkshopDTO dto);
+
+        /// <summary>
+        /// Add entity to the database.
+        /// </summary>
+        /// <param name="dto">Entity to add.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreationResultDto"/>.</returns>
-        Task<WorkshopCreationResultDto> Create(WorkshopCreationDto dto);
+        Task<WorkshopCreationResultDto> CreateV2(WorkshopCreationDto dto);
 
         /// <summary>
         /// Get entity by it's key.
@@ -32,8 +39,15 @@ namespace OutOfSchool.WebApi.Services
         /// Update existing entity in the database.
         /// </summary>
         /// <param name="dto">Entity that will be to updated.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDTO"/>.</returns>
+        Task<WorkshopDTO> Update(WorkshopDTO dto);
+
+        /// <summary>
+        /// Update existing entity in the database.
+        /// </summary>
+        /// <param name="dto">Entity that will be to updated.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
-        Task<WorkshopUpdateResultDto> Update(WorkshopUpdateDto dto);
+        Task<WorkshopUpdateResultDto> UpdateV2(WorkshopUpdateDto dto);
 
         /// <summary>
         ///  Delete entity.
@@ -41,6 +55,13 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(Guid id);
+
+        /// <summary>
+        ///  Delete entity.
+        /// </summary>
+        /// <param name="id">Key in the table.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task DeleteV2(Guid id);
 
         /// <summary>
         /// Get all entities from the database.
@@ -77,7 +98,7 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids);
 
         /// <summary>
-        /// Update prodider's properies in all workshops with specified provider.
+        /// Update provider's properties in all workshops with specified provider.
         /// </summary>
         /// <param name="provider">Provider to be searched by.</param>
         /// <returns>List of Workshops for the specified provider.</returns>

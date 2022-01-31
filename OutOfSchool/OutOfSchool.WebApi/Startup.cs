@@ -196,6 +196,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IValidationService, ValidationService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
+            services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
             services.AddTransient<IImageService, ImageService>();
             services.AddTransient<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();

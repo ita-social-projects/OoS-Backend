@@ -59,12 +59,25 @@ namespace OutOfSchool.WebApi.Util
                 }))
                 .ForMember(dest => dest.Images, opt => opt.Ignore());
 
-            // TODO change it
             CreateMap<WorkshopCreationDto, Workshop>()
                 .IncludeBase<WorkshopDTO, Workshop>()
-                .ForMember(dest => dest.Teachers, opt => opt.Ignore());
+                .ForMember(dest => dest.Teachers, opt => opt.MapFrom((dto, entity, dest, ctx) =>
+                {
+                    var dtoTeachers = ctx.Mapper.Map<List<Teacher>>(dto.Teachers);
+                    if (dest is { } && dest.Any())
+                    {
+                        var dtoTeachersHs = new HashSet<Teacher>(dtoTeachers, new TeacherComparerWithoutFK());
+                        foreach (var destTeacher in dest.Where(destTeacher => dtoTeachersHs.Remove(destTeacher)))
+                        {
+                            dtoTeachersHs.Add(destTeacher);
+                        }
 
-            // TODO change it
+                        return dtoTeachersHs.ToList();
+                    }
+
+                    return dtoTeachers;
+                })); // duplicate for Teachers here because WorkshopCreationDto hides WorkshopDTO.Teachers
+
             CreateMap<WorkshopUpdateDto, Workshop>()
                 .IncludeBase<WorkshopDTO, Workshop>()
                 .ForMember(dest => dest.Teachers, opt => opt.Ignore());
@@ -90,7 +103,6 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.User, opt => opt.Ignore())
                  .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore());
 
-            // TODO check
             CreateMap<TeacherDTO, Teacher>()
                 .ForMember(dest => dest.AvatarImageId, opt => opt.Ignore())
                 .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
@@ -98,6 +110,10 @@ namespace OutOfSchool.WebApi.Util
                 .IncludeBase<TeacherDTO, Teacher>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(src => src.WorkshopId));
+            CreateMap<TeacherUpdateDto, Teacher>()
+                .IncludeBase<TeacherDTO, Teacher>()
+                .ForMember(dest => dest.Id, opt => opt.UseDestinationValue())
+                .ForMember(dest => dest.WorkshopId, opt => opt.UseDestinationValue());
             CreateMap<TeacherUpdateDto, TeacherCreationDto>();
             CreateMap<Teacher, TeacherDTO>();
 

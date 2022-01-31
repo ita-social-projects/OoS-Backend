@@ -118,6 +118,7 @@ namespace OutOfSchool.WebApi.Models
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public AddressDto Address { get; set; }
 
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public List<TeacherDTO> Teachers { get; set; }
 
         [Required]

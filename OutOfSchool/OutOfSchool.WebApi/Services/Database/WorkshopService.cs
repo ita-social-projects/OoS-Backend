@@ -75,10 +75,30 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        /// <exception cref="ArgumentOutOfRangeException">If any inner entities were not found.</exception>
-        /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
-        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        public async Task<WorkshopCreationResultDto> Create(WorkshopCreationDto dto)
+        /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
+        public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+        {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+            logger.LogInformation("Workshop creating was started.");
+
+            // In case if DirectionId and DepartmentId does not match ClassId
+            await this.FillDirectionsFields(dto).ConfigureAwait(false);
+
+            Func<Task<Workshop>> operation = async () =>
+                await workshopRepository.Create(mapper.Map<Workshop>(dto)).ConfigureAwait(false);
+
+            var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
+
+            logger.LogInformation($"Workshop with Id = {newWorkshop?.Id} created successfully.");
+
+            return mapper.Map<WorkshopDTO>(newWorkshop);
+        }
+
+        /// <inheritdoc/>
+        /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreationDto"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">If unreal to map teachers.</exception>
+        /// <exception cref="DbUpdateException">If unreal to update entity.</exception>
+        public async Task<WorkshopCreationResultDto> CreateV2(WorkshopCreationDto dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation("Workshop creating was started.");
@@ -97,34 +117,37 @@ namespace OutOfSchool.WebApi.Services
                 uploadingResult = await workshopImagesInteractionService.UploadManyImagesAsync(newWorkshop.Id, dto.ImageFiles).ConfigureAwait(false);
             }
 
-            if (dto.Teachers.Count != newWorkshop.Teachers.Count)
+            if (dto.Teachers != null)
             {
-                throw new InvalidOperationException("Incorrect mapping teachers while creating a new workshop.");
-            }
-
-            for (var i = 0; i < dto.Teachers.Count; i++)
-            {
-                var image = dto.Teachers[i].ImageFile;
-                if (image != null)
+                if (dto.Teachers.Count != newWorkshop.Teachers.Count)
                 {
-                    var uploadingImageResult = await imageService
-                        .UploadImageAsync<Teacher>(image).ConfigureAwait(false);
+                    throw new InvalidOperationException("Incorrect mapping teachers while creating a new workshop.");
+                }
 
-                    if (uploadingImageResult.Succeeded)
+                for (var i = 0; i < dto.Teachers.Count; i++)
+                {
+                    var image = dto.Teachers[i].ImageFile;
+                    if (image != null)
                     {
-                        newWorkshop.Teachers[i].AvatarImageId = uploadingImageResult.Value;
+                        var uploadingImageResult = await imageService
+                            .UploadImageAsync<Teacher>(image).ConfigureAwait(false);
+
+                        if (uploadingImageResult.Succeeded)
+                        {
+                            newWorkshop.Teachers[i].AvatarImageId = uploadingImageResult.Value;
+                        }
                     }
                 }
-            }
 
-            try
-            {
-                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-            }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError(ex, $"Updating a new workshop failed. Exception: {ex.Message}");
-                throw;
+                try
+                {
+                    await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+                }
+                catch (DbUpdateException ex)
+                {
+                    logger.LogError(ex, $"Updating a new workshop failed. Exception: {ex.Message}");
+                    throw;
+                }
             }
 
             logger.LogInformation($"Workshop with Id = {newWorkshop.Id} created successfully.");
@@ -203,9 +226,39 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        /// <exception cref="ArgumentOutOfRangeException">If the workshop was not found. Or if any inner entities were not found.</exception>
+        /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        public async Task<WorkshopUpdateResultDto> Update(WorkshopUpdateDto dto)
+        public async Task<WorkshopDTO> Update(WorkshopDTO dto)
+        {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+            logger.LogInformation($"Updating Workshop with Id = {dto?.Id} started.");
+
+            // In case if DirectionId and DepartmentId does not match ClassId
+            await this.FillDirectionsFields(dto).ConfigureAwait(false);
+
+            var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
+
+            // In case if AddressId was changed. AddresId is one and unique for workshop.
+            dto.AddressId = currentWorkshop.AddressId;
+            dto.Address.Id = currentWorkshop.AddressId;
+
+            mapper.Map(dto, currentWorkshop);
+            try
+            {
+                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            }
+            catch (DbUpdateConcurrencyException exception)
+            {
+                logger.LogError($"Updating failed. Exception: {exception.Message}");
+                throw;
+            }
+
+            return mapper.Map<WorkshopDTO>(currentWorkshop);
+        }
+
+        /// <inheritdoc/>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        public async Task<WorkshopUpdateResultDto> UpdateV2(WorkshopUpdateDto dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
@@ -223,7 +276,7 @@ namespace OutOfSchool.WebApi.Services
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
-            var deletedIds = currentWorkshop.Teachers.Select(x => x.Id).Except(dto.Teachers.Select(x => x.Id));
+            var deletedIds = currentWorkshop.Teachers.Select(x => x.Id).Except(dto.Teachers.Select(x => x.Id)).ToList();
 
             foreach (var deletedId in deletedIds)
             {
@@ -281,9 +334,29 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        /// <exception cref="ArgumentNullException">If the entity with specified id was not found in the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task Delete(Guid id)
+        {
+            logger.LogInformation($"Deleting Workshop with Id = {id} started.");
+
+            var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
+
+            try
+            {
+                await workshopRepository.Delete(entity).ConfigureAwait(false);
+                logger.LogInformation($"Workshop with Id = {id} succesfully deleted.");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.LogError($"Deleting failed. Workshop with Id = {id} doesn't exist in the system.");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        /// <exception cref="InvalidOperationException">If unreal to delete images.</exception>
+        public async Task DeleteV2(Guid id)
         {
             logger.LogInformation($"Deleting {nameof(Workshop)} with Id = {id} started.");
 
