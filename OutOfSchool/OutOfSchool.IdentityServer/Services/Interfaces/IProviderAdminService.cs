@@ -18,13 +18,13 @@ namespace OutOfSchool.IdentityServer.Services.Intefaces
             string userId);
 
         Task<ResponseDto> DeleteProviderAdminAsync(
-            DeleteProviderAdminDto deleteProviderAdminDto,
+            string providerAdminId,
             HttpRequest request,
             string path,
             string userId);
 
         Task<ResponseDto> BlockProviderAdminAsync(
-            BlockProviderAdminDto blockProviderAdminDto,
+            string providerAdminId,
             HttpRequest request,
             string path,
             string userId);

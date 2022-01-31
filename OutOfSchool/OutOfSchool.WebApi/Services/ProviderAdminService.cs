@@ -142,12 +142,8 @@ namespace OutOfSchool.WebApi.Services
             var request = new Request()
             {
                 HttpMethodType = HttpMethodType.Delete,
-                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteProviderAdmin),
+                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteProviderAdmin + providerAdminId),
                 Token = token,
-                Data = new DeleteProviderAdminDto()
-                {
-                    ProviderAdminId = providerAdminId,
-                },
                 RequestId = Guid.NewGuid(),
             };
 
@@ -207,12 +203,8 @@ namespace OutOfSchool.WebApi.Services
             var request = new Request()
             {
                 HttpMethodType = HttpMethodType.Put,
-                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.BlockProviderAdmin),
+                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.BlockProviderAdmin + providerAdminId),
                 Token = token,
-                Data = new BlockProviderAdminDto()
-                {
-                    ProviderAdminId = providerAdminId,
-                },
                 RequestId = Guid.NewGuid(),
             };
 
@@ -244,7 +236,7 @@ namespace OutOfSchool.WebApi.Services
             bool providerAdminDeputy = await providerAdminRepository.IsExistProviderAdminDeputyWithUserIdAsync(providerId, userId)
                 .ConfigureAwait(false);
 
-            bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(providerId, userId)
+            bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(userId)
                 .ConfigureAwait(false);
 
             // provider admin deputy can create only assistants
@@ -253,7 +245,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<bool> IsAllowedAsync(Guid providerId, string userId)
         {
-            bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(providerId, userId)
+            bool provider = await providerAdminRepository.IsExistProviderWithUserIdAsync(userId)
                 .ConfigureAwait(false);
 
             return provider;

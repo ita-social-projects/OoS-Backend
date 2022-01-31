@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Services.Communication
                     .AcceptEncoding
                     .Add(new StringWithQualityHeaderValue("gzip"));
 
-                requestMessage.RequestUri = new System.Uri(request.Url.ToString());
+                requestMessage.RequestUri = new Uri(request.Url.ToString());
 
                 if (request.Data != null)
                 {

@@ -173,7 +173,7 @@ namespace OutOfSchool.IdentityServer.Services
         }
 
         public async Task<ResponseDto> DeleteProviderAdminAsync(
-            DeleteProviderAdminDto deleteProviderAdminDto,
+            string providerAdminId,
             HttpRequest request,
             string path,
             string userId)
@@ -186,21 +186,21 @@ namespace OutOfSchool.IdentityServer.Services
                     try
                     {
                         var providerAdmin = context.ProviderAdmins
-                            .SingleOrDefault(pa => pa.UserId == deleteProviderAdminDto.ProviderAdminId);
+                            .SingleOrDefault(pa => pa.UserId == providerAdminId);
 
                         if (providerAdmin is null)
                         {
                             response.IsSuccess = false;
                             response.HttpStatusCode = HttpStatusCode.NotFound;
 
-                            logger.LogError($"{path} ProviderAdmin(id) {deleteProviderAdminDto.ProviderAdminId} not found. " +
+                            logger.LogError($"{path} ProviderAdmin(id) {providerAdminId} not found. " +
                                 $"Request(id): {request.Headers["X-Request-ID"]}" +
                                     $"User(id): {userId}");
                         }
 
                         context.ProviderAdmins.Remove(providerAdmin);
 
-                        var user = await userManager.FindByIdAsync(deleteProviderAdminDto.ProviderAdminId);
+                        var user = await userManager.FindByIdAsync(providerAdminId);
                         var result = await userManager.DeleteAsync(user);
 
                         if (!result.Succeeded)
@@ -222,7 +222,7 @@ namespace OutOfSchool.IdentityServer.Services
 
                         transaction.Commit();
 
-                        logger.LogInformation($"ProviderAdmin(id):{deleteProviderAdminDto.ProviderAdminId} was successfully deleted by " +
+                        logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully deleted by " +
                             $"User(id): {userId}. Request(id): {request.Headers["X-Request-ID"]}");
 
                         return response;
@@ -245,19 +245,19 @@ namespace OutOfSchool.IdentityServer.Services
         }
 
         public async Task<ResponseDto> BlockProviderAdminAsync(
-            BlockProviderAdminDto blockProviderAdminDto,
+            string providerAdminId,
             HttpRequest request,
             string path,
             string userId)
         {
-            var user = await userManager.FindByIdAsync(blockProviderAdminDto.ProviderAdminId);
+            var user = await userManager.FindByIdAsync(providerAdminId);
 
             if (user is null)
             {
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.NotFound;
 
-                logger.LogError($"{path} ProviderAdmin(id) {blockProviderAdminDto.ProviderAdminId} not found. " +
+                logger.LogError($"{path} ProviderAdmin(id) {providerAdminId} not found. " +
                             $"Request(id): {request.Headers["X-Request-ID"]}" +
                                 $"User(id): {userId}");
             }
@@ -269,7 +269,7 @@ namespace OutOfSchool.IdentityServer.Services
             {
                 logger.LogError($"{path} Error happened while blocking ProviderAdmin. Request(id): {request.Headers["X-Request-ID"]}" +
                             $"User(id): {userId}" +
-                            $"{string.Join(System.Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+                            $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
 
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -283,7 +283,7 @@ namespace OutOfSchool.IdentityServer.Services
             {
                 logger.LogError($"{path} Error happened while updating security stamp. ProviderAdmin. Request(id): {request.Headers["X-Request-ID"]}" +
                             $"User(id): {userId}" +
-                            $"{string.Join(System.Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+                            $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
 
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -291,7 +291,7 @@ namespace OutOfSchool.IdentityServer.Services
                 return response;
             }
 
-            logger.LogInformation($"ProviderAdmin(id):{blockProviderAdminDto.ProviderAdminId} was successfully blocked by " +
+            logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully blocked by " +
                         $"User(id): {userId}. Request(id): {request.Headers["X-Request-ID"]}");
 
             response.IsSuccess = true;

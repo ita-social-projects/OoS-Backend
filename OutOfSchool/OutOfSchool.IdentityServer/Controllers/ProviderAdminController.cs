@@ -49,31 +49,31 @@ namespace OutOfSchool.IdentityServer.Controllers
                 .CreateProviderAdminAsync(providerAdminDto, Request, Url, path, userId);
         }
 
-        [HttpDelete]
+        [HttpDelete("{providerAdminId}")]
         [HasPermission(Permissions.ProviderRemove)]
-        public async Task<ResponseDto> Delete(DeleteProviderAdminDto deleteProviderAdminDto)
+        public async Task<ResponseDto> Delete(string providerAdminId)
         {
-            if (deleteProviderAdminDto is null)
+            if (providerAdminId is null)
             {
-                throw new ArgumentNullException(nameof(deleteProviderAdminDto));
+                throw new ArgumentNullException(nameof(providerAdminId));
             }
 
             logger.LogDebug($"Received request " +
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
             return await providerAdminService
-                .DeleteProviderAdminAsync(deleteProviderAdminDto, Request, path, userId);
+                .DeleteProviderAdminAsync(providerAdminId, Request, path, userId);
         }
 
-        [HttpPut]
+        [HttpPut("{providerAdminId}")]
         [HasPermission(Permissions.ProviderRemove)]
-        public async Task<ResponseDto> Block(BlockProviderAdminDto blockProviderAdminDto)
+        public async Task<ResponseDto> Block(string providerAdminId)
         {
             logger.LogDebug($"Received request " +
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
             return await providerAdminService
-                .BlockProviderAdminAsync(blockProviderAdminDto, Request, path, userId);
+                .BlockProviderAdminAsync(providerAdminId, Request, path, userId);
         }
     }
 }

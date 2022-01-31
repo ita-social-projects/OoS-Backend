@@ -9,7 +9,7 @@ namespace OutOfSchool.Services.Repository
     {
         Task<bool> IsExistProviderAdminDeputyWithUserIdAsync(Guid providerId, string userId);
 
-        Task<bool> IsExistProviderWithUserIdAsync(Guid providerId, string userId);
+        Task<bool> IsExistProviderWithUserIdAsync(string userId);
 
         Task<Provider> GetProviderWithUserIdAsync(string userId);
 
@@ -17,6 +17,6 @@ namespace OutOfSchool.Services.Repository
 
         Task<int> GetNumberProviderAdminsAsync(Guid providerId);
 
-        Task<ProviderAdmin> GetByIdAsync(string id, Guid providerId);
+        Task<ProviderAdmin> GetByIdAsync(string userId, Guid providerId);
     }
 }

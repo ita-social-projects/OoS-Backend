@@ -33,7 +33,8 @@ namespace OutOfSchool.Services.Repository
             return providerAdmin != null && providerAdmin.IsDeputy == true;
         }
 
-        public async Task<bool> IsExistProviderWithUserIdAsync(Guid providerId, string userId)
+        // TODO: use provider repository to do this action 
+        public async Task<bool> IsExistProviderWithUserIdAsync(string userId)
         {
             var provider = await db.Providers
                 .SingleOrDefaultAsync(p => p.UserId == userId);
@@ -41,6 +42,7 @@ namespace OutOfSchool.Services.Repository
             return provider != null;
         }
 
+        // use provider repository to do this action ?
         public async Task<Provider> GetProviderWithUserIdAsync(string userId)
         {
             var provider = await db.Providers
@@ -49,6 +51,7 @@ namespace OutOfSchool.Services.Repository
             return provider;
         }
 
+        // TODO: use workshop repository to do action with workshop
         public async Task AddRelatedWorkshopForAssistant(string userId, Guid workshopId)
         {
             var providerAdmin = await db.ProviderAdmins.SingleOrDefaultAsync(p => p.UserId == userId);
