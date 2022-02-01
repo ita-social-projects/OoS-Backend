@@ -300,4 +300,7 @@
    <data name="Not registered yet?" xml:space="preserve">
     <value>Not registered yet?</value>
   </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
 </root>
