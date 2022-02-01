@@ -9,7 +9,7 @@
     ViewData["Title"] = SharedLocalizer["Change email"];
     Layout = "_Layout";
 }
-}
+
 <div class="wrapper_body">
     <div class="wrapper">
         <h2 class="title">@SharedLocalizer["Change email"].Value.ToUpper()</h2>
@@ -34,7 +34,7 @@
                     <span asp-validation-for="Email"></span>
                 </div>
             <div class="registration_item">
-                <input type="submit" value="Save" class="registration_submit registration_button"/>
+                <input type="submit" value=@SharedLocalizer["Save"] class="registration_submit registration_button"/>
             </div>
         </form>
     </div>
