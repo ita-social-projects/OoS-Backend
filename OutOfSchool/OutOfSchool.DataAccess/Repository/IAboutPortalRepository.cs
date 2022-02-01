@@ -8,8 +8,12 @@ namespace OutOfSchool.Services.Repository
 {
     public interface IAboutPortalRepository : ISensitiveEntityRepository<AboutPortal>
     {
-        Task<AboutPortal> GetWithNavigations(Guid id);
+        IUnitOfWork UnitOfWork { get; }
 
-        Task DeleteAllItems();
+        Task<AboutPortal> GetWithNavigations();
+
+        void DeleteAllItems();
+
+        Task CreateItems(IEnumerable<AboutPortalItem> entities);
     }
 }

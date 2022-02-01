@@ -217,9 +217,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
             services.AddTransient<IEntityRepository<SupportInformation>, EntityRepository<SupportInformation>>();
 
-            services.AddTransient<ISensitiveEntityRepository<AboutPortal>, SensitiveEntityRepository<AboutPortal>>();
-            services.AddTransient<ISensitiveEntityRepository<AboutPortalItem>, SensitiveEntityRepository<AboutPortalItem>>();
-
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services
                 .AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository

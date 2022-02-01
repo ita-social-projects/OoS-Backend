@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -16,18 +17,24 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public async Task<AboutPortal> GetWithNavigations(Guid id)
+        public IUnitOfWork UnitOfWork => db;
+
+        public async Task<AboutPortal> GetWithNavigations()
         {
             return await db.AboutPortal
                 .Include(ap => ap.AboutPortalItems)
-                .SingleOrDefaultAsync(ap => ap.Id == id);
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
         }
 
-        public async Task DeleteAllItems()
+        public void DeleteAllItems()
         {
-            db.AboutPortalItems.RemoveRange(db.AboutPortalItems.Select(x => x));
+            db.AboutPortalItems.RemoveRange(db.AboutPortalItems);
+        }
 
-            await db.SaveChangesAsync().ConfigureAwait(false);
+        public async Task CreateItems(IEnumerable<AboutPortalItem> entities)
+        {
+            await db.AboutPortalItems.AddRangeAsync(entities).ConfigureAwait(false);
         }
     }
 }
