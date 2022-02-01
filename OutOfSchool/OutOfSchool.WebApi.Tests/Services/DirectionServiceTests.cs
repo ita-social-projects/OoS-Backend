@@ -23,6 +23,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
         private IEntityRepository<Direction> repo;
+        private IWorkshopRepository repositoryWorkshop;
         private IDirectionService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger<DirectionService>> logger;
@@ -38,9 +39,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             context = new OutOfSchoolDbContext(options);
 
             repo = new EntityRepository<Direction>(context);
+            repositoryWorkshop = new WorkshopRepository(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<DirectionService>>();
-            service = new DirectionService(repo, logger.Object, localizer.Object);
+            service = new DirectionService(repo, repositoryWorkshop, logger.Object, localizer.Object);
 
             SeedDatabase();
         }
@@ -176,6 +178,19 @@ namespace OutOfSchool.WebApi.Tests.Services
                 async () => await service.Delete(id).ConfigureAwait(false));
         }
 
+        [Test]
+        [Order(10)]
+        [TestCase(2)]
+        public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsNotSucceeded(long id)
+        {
+            // Act
+            var result = await service.Delete(id).ConfigureAwait(false);
+
+            // Assert
+            Assert.False(result.Succeeded);
+            Assert.That(result.OperationResult.Errors, Is.Not.Empty);
+        }
+
         private void SeedDatabase()
         {
             using var ctx = new OutOfSchoolDbContext(options);
@@ -203,6 +218,18 @@ namespace OutOfSchool.WebApi.Tests.Services
                 };
 
                 ctx.Directions.AddRangeAsync(directions);
+
+                var workshops = new List<Workshop>()
+                {
+                   new Workshop()
+                   {
+                        Title = "Test1",
+                        DirectionId = 2,
+                   },
+                };
+
+                ctx.Workshops.AddRangeAsync(workshops);
+
                 ctx.SaveChangesAsync();
             }
         }

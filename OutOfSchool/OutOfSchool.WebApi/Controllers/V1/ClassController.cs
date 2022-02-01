@@ -186,11 +186,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="id">The key of the class in table.</param>
         /// <returns>Status Code.</returns>
         /// <response code="204">Class was successfully deleted.</response>
+        /// <response code="400">If some workshops assosiated with this class.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method.</response>
         /// <response code="500">If any server error occures.</response>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -198,7 +200,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             this.ValidateId(id, localizer);
 
-            await service.Delete(id).ConfigureAwait(false);
+            var result = await service.Delete(id).ConfigureAwait(false);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.OperationResult);
+            }
 
             return NoContent();
         }

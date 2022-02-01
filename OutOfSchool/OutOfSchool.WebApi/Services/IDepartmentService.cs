@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -52,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         /// To delete the object from DB.
         /// </summary>
         /// <param name="id">Key of the Department in table.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(long id);
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<Result<DepartmentDto>> Delete(long id);
     }
 }
