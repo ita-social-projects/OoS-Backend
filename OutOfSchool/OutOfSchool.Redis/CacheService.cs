@@ -14,6 +14,7 @@ namespace OutOfSchool.Redis
         private readonly RedisConfig redisConfig;
 
         private bool isWorking = true;
+        private readonly bool isEnabled = false;
         private Timer timer;
 
         public CacheService(
@@ -26,15 +27,11 @@ namespace OutOfSchool.Redis
             try
             {
                 this.redisConfig = redisConfig.Value;
+                isEnabled = this.redisConfig.Enabled;
             }
-            catch (OptionsValidationException ex)
+            catch (OptionsValidationException)
             {
-                foreach (var failure in ex.Failures)
-                {
-                    //logger.LogError(failure);
-                }
-
-                throw;
+                isEnabled = false;
             }
         }
 
@@ -42,7 +39,7 @@ namespace OutOfSchool.Redis
         {
             try
             {
-                if (redisConfig.Enabled && isWorking)
+                if (isEnabled && isWorking)
                 {
                     var value = await cache.GetStringAsync(key);
 
@@ -117,7 +114,7 @@ namespace OutOfSchool.Redis
 
         private async Task ExecuteRedisMethod(Func<Task> redisMethod)
         {
-            if (redisConfig.Enabled && isWorking)
+            if (isEnabled && isWorking)
             {
                 try
                 {

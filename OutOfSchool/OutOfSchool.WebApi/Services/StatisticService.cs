@@ -43,10 +43,8 @@ namespace OutOfSchool.WebApi.Services
             IRatingService ratingService,
             IEntityRepository<Direction> directionRepository,
             ILogger<StatisticService> logger,
-            IMapper mapper
-            ,
-            ICacheService cache
-            )
+            IMapper mapper,
+            ICacheService cache)
         {
             this.applicationRepository = applicationRepository;
             this.workshopRepository = workshopRepository;

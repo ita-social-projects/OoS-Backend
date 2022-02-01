@@ -273,7 +273,7 @@ namespace OutOfSchool.WebApi
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration =
-                    $"{Configuration.GetValue<string>("Redis:Server")}:{Configuration.GetValue<int>("Redis:Port")}";
+                    $"{Configuration.GetValue<string>("Redis:Server")}:{Configuration.GetValue<int>("Redis:Port")},password={Configuration.GetValue<string>("Redis:Password")}";
             });
 
             services.AddSingleton<ICacheService, CacheService>();
