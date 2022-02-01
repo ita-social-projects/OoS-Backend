@@ -19,6 +19,7 @@ using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Redis;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
@@ -254,6 +255,11 @@ namespace OutOfSchool.WebApi
                 .Bind(Configuration.GetSection(ApplicationsConstraintsConfig.Name))
                 .ValidateDataAnnotations();
 
+            // Redis options
+            services.AddOptions<RedisConfig>()
+                .Bind(Configuration.GetSection(RedisConfig.Name))
+                .ValidateDataAnnotations();
+
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
             services.AddSwagger(swaggerConfig);
@@ -263,6 +269,14 @@ namespace OutOfSchool.WebApi
             services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddSignalR();
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration =
+                    $"{Configuration.GetValue<string>("Redis:Server")}:{Configuration.GetValue<int>("Redis:Port")}";
+            });
+
+            services.AddSingleton<ICacheService, CacheService>();
         }
     }
 }

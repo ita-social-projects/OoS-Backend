@@ -29,7 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.Tests.Common", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.Common", "OutOfSchool.Common\OutOfSchool.Common.csproj", "{127A5800-FD78-4B67-AA3C-E4DA61B6F933}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.WebApi.IntegrationTests", "Tests\OutOfSchool.WebApi.IntegrationTests\OutOfSchool.WebApi.IntegrationTests.csproj", "{13875C12-6837-4742-88F9-C3401C5A2D85}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi.IntegrationTests", "Tests\OutOfSchool.WebApi.IntegrationTests\OutOfSchool.WebApi.IntegrationTests.csproj", "{13875C12-6837-4742-88F9-C3401C5A2D85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.Redis", "OutOfSchool.Redis\OutOfSchool.Redis.csproj", "{ED7E72ED-6A6C-4C49-BC59-4B3FEF9E503C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +79,10 @@ Global
 		{13875C12-6837-4742-88F9-C3401C5A2D85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13875C12-6837-4742-88F9-C3401C5A2D85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13875C12-6837-4742-88F9-C3401C5A2D85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED7E72ED-6A6C-4C49-BC59-4B3FEF9E503C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED7E72ED-6A6C-4C49-BC59-4B3FEF9E503C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED7E72ED-6A6C-4C49-BC59-4B3FEF9E503C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED7E72ED-6A6C-4C49-BC59-4B3FEF9E503C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
