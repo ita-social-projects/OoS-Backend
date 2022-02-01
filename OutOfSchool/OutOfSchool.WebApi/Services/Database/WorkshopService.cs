@@ -119,35 +119,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (dto.Teachers != null)
             {
-                if (dto.Teachers.Count != newWorkshop.Teachers.Count)
-                {
-                    throw new InvalidOperationException("Incorrect mapping teachers while creating a new workshop.");
-                }
-
-                for (var i = 0; i < dto.Teachers.Count; i++)
-                {
-                    var image = dto.Teachers[i].ImageFile;
-                    if (image != null)
-                    {
-                        var uploadingImageResult = await imageService
-                            .UploadImageAsync<Teacher>(image).ConfigureAwait(false);
-
-                        if (uploadingImageResult.Succeeded)
-                        {
-                            newWorkshop.Teachers[i].AvatarImageId = uploadingImageResult.Value;
-                        }
-                    }
-                }
-
-                try
-                {
-                    await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-                }
-                catch (DbUpdateException ex)
-                {
-                    logger.LogError(ex, $"Updating a new workshop failed. Exception: {ex.Message}");
-                    throw;
-                }
+                await AddTeacherImages(newWorkshop, dto.Teachers).ConfigureAwait(false);
             }
 
             logger.LogInformation($"Workshop with Id = {newWorkshop.Id} created successfully.");
@@ -276,26 +248,7 @@ namespace OutOfSchool.WebApi.Services
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
-            var deletedIds = currentWorkshop.Teachers.Select(x => x.Id).Except(dto.Teachers.Select(x => x.Id)).ToList();
-
-            foreach (var deletedId in deletedIds)
-            {
-                await teacherService.Delete(deletedId).ConfigureAwait(false);
-            }
-
-            foreach (var teacherUpdateDto in dto.Teachers)
-            {
-                if (currentWorkshop.Teachers.Select(x => x.Id).Contains(teacherUpdateDto.Id))
-                {
-                    await teacherService.Update(teacherUpdateDto).ConfigureAwait(false);
-                }
-                else
-                {
-                    var newTeacher = mapper.Map<TeacherCreationDto>(teacherUpdateDto);
-                    newTeacher.WorkshopId = currentWorkshop.Id;
-                    await teacherService.Create(newTeacher).ConfigureAwait(false);
-                }
-            }
+            await UpdateTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherUpdateDto>()).ConfigureAwait(false);
 
             mapper.Map(dto, currentWorkshop);
             try
@@ -367,6 +320,11 @@ namespace OutOfSchool.WebApi.Services
             if (entity.Images.Count > 0 && removingResult.MultipleKeyValueOperationResult is { Succeeded: false })
             {
                 throw new InvalidOperationException($"Unreal to delete {nameof(Workshop)} [id = {id}] because unable to delete images.");
+            }
+
+            foreach (var teacher in entity.Teachers.ToList())
+            {
+                await teacherService.Delete(teacher.Id).ConfigureAwait(false);
             }
 
             try
@@ -636,6 +594,63 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return workshops;
+        }
+
+        private async Task AddTeacherImages(Workshop workshop, List<TeacherCreationDto> teacherCreationDtoList)
+        {
+            if (teacherCreationDtoList.Count != workshop.Teachers.Count)
+            {
+                throw new InvalidOperationException("Incorrect mapping teachers while creating a new workshop.");
+            }
+
+            for (var i = 0; i < teacherCreationDtoList.Count; i++)
+            {
+                var image = teacherCreationDtoList[i].ImageFile;
+                if (image != null)
+                {
+                    var uploadingImageResult = await imageService
+                        .UploadImageAsync<Teacher>(image).ConfigureAwait(false);
+
+                    if (uploadingImageResult.Succeeded)
+                    {
+                        workshop.Teachers[i].AvatarImageId = uploadingImageResult.Value;
+                    }
+                }
+            }
+
+            try
+            {
+                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            }
+            catch (DbUpdateException ex)
+            {
+                logger.LogError(ex, $"Updating a new workshop failed. Exception: {ex.Message}");
+                throw;
+            }
+        }
+
+        private async Task UpdateTeachers(Workshop currentWorkshop, List<TeacherUpdateDto> teacherUpdateDtoList)
+        {
+            var deletedIds = currentWorkshop.Teachers.Select(x => x.Id).Except(teacherUpdateDtoList.Select(x => x.Id)).ToList();
+
+            foreach (var deletedId in deletedIds)
+            {
+                await teacherService.Delete(deletedId).ConfigureAwait(false);
+            }
+
+            foreach (var teacherUpdateDto in teacherUpdateDtoList)
+            {
+                if (currentWorkshop.Teachers.Select(x => x.Id).Contains(teacherUpdateDto.Id))
+                {
+                    await teacherService.Update(teacherUpdateDto).ConfigureAwait(false);
+                }
+                else
+                {
+                    var newTeacher = mapper.Map<TeacherCreationDto>(teacherUpdateDto);
+                    newTeacher.WorkshopId = currentWorkshop.Id;
+                    await teacherService.Create(newTeacher).ConfigureAwait(false);
+                }
+            }
         }
     }
 }

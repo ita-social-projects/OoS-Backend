@@ -143,11 +143,14 @@ namespace OutOfSchool.WebApi.Services
 
             var entity = await teacherRepository.GetById(id).ConfigureAwait(false);
 
-            var removingResult = await imageService.RemoveImageAsync(entity.AvatarImageId).ConfigureAwait(false);
-
-            if (!removingResult.Succeeded)
+            if (!string.IsNullOrEmpty(entity.AvatarImageId))
             {
-                throw new InvalidOperationException($"Unreal to delete {nameof(Teacher)} [id = {id}] because unable to delete images.");
+                var removingResult = await imageService.RemoveImageAsync(entity.AvatarImageId).ConfigureAwait(false);
+
+                if (!removingResult.Succeeded)
+                {
+                    throw new InvalidOperationException($"Unreal to delete {nameof(Teacher)} [id = {id}] because unable to delete images.");
+                }
             }
 
             try

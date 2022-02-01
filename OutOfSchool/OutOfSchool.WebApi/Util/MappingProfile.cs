@@ -44,18 +44,7 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Teachers, opt => opt.MapFrom((dto, entity, dest, ctx) =>
                 {
                     var dtoTeachers = ctx.Mapper.Map<List<Teacher>>(dto.Teachers);
-                    if (dest is { } && dest.Any())
-                    {
-                        var dtoTeachersHs = new HashSet<Teacher>(dtoTeachers, new TeacherComparerWithoutFK());
-                        foreach (var destTeacher in dest.Where(destTeacher => dtoTeachersHs.Remove(destTeacher)))
-                        {
-                            dtoTeachersHs.Add(destTeacher);
-                        }
-
-                        return dtoTeachersHs.ToList();
-                    }
-
-                    return dtoTeachers;
+                    return WorkshopTeachersMapperFunction(dtoTeachers, dest);
                 }))
                 .ForMember(dest => dest.Images, opt => opt.Ignore());
 
@@ -64,18 +53,7 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Teachers, opt => opt.MapFrom((dto, entity, dest, ctx) =>
                 {
                     var dtoTeachers = ctx.Mapper.Map<List<Teacher>>(dto.Teachers);
-                    if (dest is { } && dest.Any())
-                    {
-                        var dtoTeachersHs = new HashSet<Teacher>(dtoTeachers, new TeacherComparerWithoutFK());
-                        foreach (var destTeacher in dest.Where(destTeacher => dtoTeachersHs.Remove(destTeacher)))
-                        {
-                            dtoTeachersHs.Add(destTeacher);
-                        }
-
-                        return dtoTeachersHs.ToList();
-                    }
-
-                    return dtoTeachers;
+                    return WorkshopTeachersMapperFunction(dtoTeachers, dest);
                 })); // duplicate for Teachers here because WorkshopCreationDto hides WorkshopDTO.Teachers
 
             CreateMap<WorkshopUpdateDto, Workshop>()
@@ -165,11 +143,8 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<ShortUserDto, AdminDto>();
         }
 
-        public static List<Teacher> WorkshopTeachersMapperFunction<TDto>(
-            TDto dto, Workshop entity, List<Teacher> dest, ResolutionContext ctx)
-            where TDto : WorkshopDTO
+        public static List<Teacher> WorkshopTeachersMapperFunction(List<Teacher> dtoTeachers, List<Teacher> dest)
         {
-            var dtoTeachers = ctx.Mapper.Map<List<Teacher>>(dto.Teachers);
             if (dest is { } && dest.Any())
             {
                 var dtoTeachersHs = new HashSet<Teacher>(dtoTeachers, new TeacherComparerWithoutFK());
