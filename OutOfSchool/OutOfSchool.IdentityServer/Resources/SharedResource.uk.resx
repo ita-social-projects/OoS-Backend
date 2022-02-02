@@ -290,7 +290,7 @@
     <value>Паролі не збігаються</value>
   </data>
   <data name="Error! Please check the number is correct" xml:space="preserve">
-    <value>Помилка!Перевірте будь ласка правильність номеру</value>
+    <value>Помилка! Перевірте будь ласка правильність номеру</value>
   </data>
   <data name="Phone number is required" xml:space="preserve">
     <value>Номер телефону обов’язковий</value>
@@ -298,7 +298,7 @@
   <data name="Email {0} is already taken" xml:space="preserve">
     <value>Емейл {0} вже зайнятий</value>
   </data>
-   <data name="Not registered yet?" xml:space="preserve">
+  <data name="Not registered yet?" xml:space="preserve">
     <value>Ще не зареєстровані?</value>
   </data>
    <data name="Save" xml:space="preserve">
