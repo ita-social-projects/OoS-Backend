@@ -49,6 +49,7 @@ namespace OutOfSchool.IdentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<IdentityServerConfig>(config.GetSection(IdentityServerConfig.Name));
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             var connectionString = config["ConnectionStrings:DefaultConnection"];
@@ -80,12 +81,11 @@ namespace OutOfSchool.IdentityServer
 
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-            // TODO: Move authority to config
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
                     options.ApiName = "outofschoolapi";
-                    options.Authority = "http://localhost:5443";
+                    options.Authority = config["Identity:Authority"];
 
                     options.RequireHttpsMetadata = false;
                 });
