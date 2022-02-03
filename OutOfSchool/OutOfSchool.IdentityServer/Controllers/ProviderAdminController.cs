@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -15,7 +14,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(AuthenticationSchemes = Constants.BearerScheme)]
     public class ProviderAdminController : Controller
     {
         private readonly ILogger<ProviderAdminController> logger;
@@ -47,8 +46,6 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             return await providerAdminService
                 .CreateProviderAdminAsync(providerAdminDto, Url, path, userId);
-
-                //.CreateProviderAdminAsync(providerAdminDto, Request, Url, path, userId);
         }
 
         [HttpDelete("{providerAdminId}")]
