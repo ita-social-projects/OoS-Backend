@@ -64,13 +64,7 @@ namespace OutOfSchool.WebApi.Services
 
             string cacheKey = $"GetPopularDirections_{limit}_{city}";
 
-            var cached = await cache.Get<IEnumerable<DirectionStatistic>>(cacheKey).ConfigureAwait(false);
-
-            if (cached != null)
-            {
-                return cached;
-            }
-            else
+            var popularDirections = await cache.GetOrAdd<IEnumerable<DirectionStatistic>>(cacheKey, async () =>
             {
                 var workshops = workshopRepository.Get<int>();
                 var applications = applicationRepository.Get<int>();
@@ -88,7 +82,6 @@ namespace OutOfSchool.WebApi.Services
                         DirectionId = g.Key,
                         WorkshopsCount = g.Count() as int?,
                     });
-
 
                 var directionsWithApplications = applications
                     .GroupBy(a => a.Workshop.DirectionId)
@@ -144,10 +137,10 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation($"All {sortedStatistics.Count} records were successfully received");
 
-                await cache.Set<IEnumerable<DirectionStatistic>>(cacheKey, sortedStatistics).ConfigureAwait(false);
-
                 return sortedStatistics;
-            }
+            }).ConfigureAwait(false);
+
+            return popularDirections;
         }
 
         /// <inheritdoc/>
@@ -157,14 +150,9 @@ namespace OutOfSchool.WebApi.Services
 
             string cacheKey = $"GetPopularWorkshops_{limit}_{city}";
 
-            var cached = await cache.Get<IEnumerable<WorkshopCard>>(cacheKey).ConfigureAwait(false);
+            var workshopsResult = await cache.GetOrAdd<IEnumerable<WorkshopCard>>(cacheKey, async () =>
+            {
 
-            if (cached != null)
-            {
-                return cached;
-            }
-            else
-            {
                 var workshops = workshopRepository
                     .Get<int>(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
 
@@ -193,10 +181,10 @@ namespace OutOfSchool.WebApi.Services
 
                 var result = GetWorkshopsWithAverageRating(workshopsCard);
 
-                await cache.Set<IEnumerable<WorkshopCard>>(cacheKey, result).ConfigureAwait(false);
-
                 return result;
-            }
+            }).ConfigureAwait(false);
+
+            return workshopsResult;
         }
 
         private List<WorkshopCard> GetWorkshopsWithAverageRating(List<WorkshopCard> workshopsCards)

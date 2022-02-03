@@ -7,12 +7,12 @@ namespace OutOfSchool.Redis
 {
     public interface ICacheService
     {
-        Task<T> Get<T>(string key);
+        Task<T> GetOrAdd<T>(string key, Func<Task<T>> newValueFactory);
         
-        Task Set<T>(string key, T value);
+        void Set<T>(string key, T value);
 
-        Task ClearCache(string key);
+        void ClearCache(string key);
 
-        Task Refresh(string key);
+        void Refresh(string key);
     }
 }

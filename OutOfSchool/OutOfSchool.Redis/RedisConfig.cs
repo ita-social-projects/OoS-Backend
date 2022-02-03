@@ -19,13 +19,13 @@ namespace OutOfSchool.Redis
         [Range(1, int.MaxValue, ErrorMessage = "Port must be greater then 0.")]
         public int Port { get; set; }
 
-        [Range(1, 12, ErrorMessage = "AbsoluteExpirationRelativeToNowFromHours must be between then 1 and 12.")]
-        public int AbsoluteExpirationRelativeToNowFromHours { get; set; }
+        [Required]
+        public TimeSpan AbsoluteExpirationRelativeToNowInterval { get; set; }
 
-        [Range(1, 60, ErrorMessage = "SlidingExpirationFromMinutes must be between then 1 and 60.")]
-        public int SlidingExpirationFromMinutes { get; set; }
+        [Required]
+        public TimeSpan SlidingExpirationInterval { get; set; }
 
-        [Range(1, 1800, ErrorMessage = "SecondsChekingIsWorking must be between then 1 and 1800.")]
-        public int SecondsChekingIsWorking { get; set; }
+        [Required]
+        public TimeSpan CheckAlivePollingInterval { get; set; }
     }
 }
