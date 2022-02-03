@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using AutoMapper;
@@ -30,7 +31,7 @@ namespace OutOfSchool.IdentityServer.Services
         private readonly IMapper mapper;
         private readonly ILogger<ProviderAdminService> logger;
         private readonly IProviderAdminRepository providerAdminRepository;
-        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly HttpRequest httpRequest;
 
         private readonly UserManager<User> userManager;
         private readonly OutOfSchoolDbContext context;
@@ -46,7 +47,7 @@ namespace OutOfSchool.IdentityServer.Services
             OutOfSchoolDbContext context)
         {
             this.mapper = mapper;
-            this.httpContextAccessor = httpContextAccessor;
+            this.httpRequest = httpContextAccessor.HttpContext.Request;
             this.userManager = userManager;
             this.context = context;
             this.providerAdminRepository = providerAdminRepository;
@@ -61,7 +62,6 @@ namespace OutOfSchool.IdentityServer.Services
             string path,
             string userId)
         {
-            var request = httpContextAccessor.HttpContext.Request;
             var user = mapper.Map<User>(providerAdminDto);
 
             var password = PasswordGenerator
@@ -84,7 +84,7 @@ namespace OutOfSchool.IdentityServer.Services
                             {
                                 transaction.Rollback();
 
-                                logger.LogError($"{path} Error happened while creation ProviderAdmin. Request(id): {request.Headers["X-Request-ID"]}" +
+                                logger.LogError($"{path} Error happened while creation ProviderAdmin. Request(id): {httpRequest.Headers["X-Request-ID"]}" +
                                     $"User(id): {userId}" +
                                     $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
@@ -100,7 +100,7 @@ namespace OutOfSchool.IdentityServer.Services
                             {
                                 transaction.Rollback();
 
-                                logger.LogError($"{path} Error happened while adding role to user. Request(id): {request.Headers["X-Request-ID"]}" +
+                                logger.LogError($"{path} Error happened while adding role to user. Request(id): {httpRequest.Headers["X-Request-ID"]}" +
                                     $"User(id): {userId}" +
                                     $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
@@ -140,7 +140,7 @@ namespace OutOfSchool.IdentityServer.Services
                             transaction.Commit();
 
                             logger.LogInformation($"ProviderAdmin(id):{providerAdminDto.UserId} was successfully created by " +
-                                $"User(id): {userId}. Request(id): {request.Headers["X-Request-ID"]}");
+                                $"User(id): {userId}. Request(id): {httpRequest.Headers["X-Request-ID"]}");
 
                             // TODO:
                             // Endpoint with sending new password
@@ -148,7 +148,7 @@ namespace OutOfSchool.IdentityServer.Services
                             // TODO:
                             // Use template instead
                             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                            var confirmationLink = url.Action("EmailConfirmation", "Account", new { userId = user.Id, token = token }, request.Scheme);
+                            var confirmationLink = url.Action("EmailConfirmation", "Account", new { userId = user.Id, token = token }, httpRequest.Scheme);
                             var subject = "Запрошення!";
                             var htmlMessage = $"Для реєстрації на платформі перейдіть " +
                                 $"за посиланням та заповність ваші данні в особистому кабінеті.<br>" +
@@ -180,7 +180,6 @@ namespace OutOfSchool.IdentityServer.Services
             string path,
             string userId)
         {
-            var request = httpContextAccessor.HttpContext.Request;
             var executionStrategy = context.Database.CreateExecutionStrategy();
             await executionStrategy.Execute(async () =>
             {
@@ -197,7 +196,7 @@ namespace OutOfSchool.IdentityServer.Services
                             response.HttpStatusCode = HttpStatusCode.NotFound;
 
                             logger.LogError($"{path} ProviderAdmin(id) {providerAdminId} not found. " +
-                                $"Request(id): {request.Headers["X-Request-ID"]}" +
+                                $"Request(id): {httpRequest.Headers["X-Request-ID"]}" +
                                     $"User(id): {userId}");
                         }
 
@@ -210,7 +209,7 @@ namespace OutOfSchool.IdentityServer.Services
                         {
                             transaction.Rollback();
 
-                            logger.LogError($"{path} Error happened while deleting ProviderAdmin. Request(id): {request.Headers["X-Request-ID"]}" +
+                            logger.LogError($"{path} Error happened while deleting ProviderAdmin. Request(id): {httpRequest.Headers["X-Request-ID"]}" +
                                 $"User(id): {userId}" +
                                 $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
@@ -226,7 +225,7 @@ namespace OutOfSchool.IdentityServer.Services
                         transaction.Commit();
 
                         logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully deleted by " +
-                            $"User(id): {userId}. Request(id): {request.Headers["X-Request-ID"]}");
+                            $"User(id): {userId}. Request(id): {httpRequest.Headers["X-Request-ID"]}");
 
                         return response;
                     }
@@ -234,7 +233,7 @@ namespace OutOfSchool.IdentityServer.Services
                     {
                         transaction.Rollback();
 
-                        logger.LogError($"{path} Error happened while deleting ProviderAdmin. Request(id): {request.Headers["X-Request-ID"]}" +
+                        logger.LogError($"{path} Error happened while deleting ProviderAdmin. Request(id): {httpRequest.Headers["X-Request-ID"]}" +
                                 $"User(id): {userId} {ex.Message}");
 
                         response.IsSuccess = false;
@@ -252,7 +251,6 @@ namespace OutOfSchool.IdentityServer.Services
             string path,
             string userId)
         {
-            var request = httpContextAccessor.HttpContext.Request;
             var user = await userManager.FindByIdAsync(providerAdminId);
 
             if (user is null)
@@ -261,7 +259,7 @@ namespace OutOfSchool.IdentityServer.Services
                 response.HttpStatusCode = HttpStatusCode.NotFound;
 
                 logger.LogError($"{path} ProviderAdmin(id) {providerAdminId} not found. " +
-                            $"Request(id): {request.Headers["X-Request-ID"]}" +
+                            $"Request(id): {httpRequest.Headers["X-Request-ID"]}" +
                                 $"User(id): {userId}");
             }
 
@@ -270,7 +268,7 @@ namespace OutOfSchool.IdentityServer.Services
 
             if (!updateResult.Succeeded)
             {
-                logger.LogError($"{path} Error happened while blocking ProviderAdmin. Request(id): {request.Headers["X-Request-ID"]}" +
+                logger.LogError($"{path} Error happened while blocking ProviderAdmin. Request(id): {httpRequest.Headers["X-Request-ID"]}" +
                             $"User(id): {userId}" +
                             $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
 
@@ -284,7 +282,7 @@ namespace OutOfSchool.IdentityServer.Services
 
             if (!updateResult.Succeeded)
             {
-                logger.LogError($"{path} Error happened while updating security stamp. ProviderAdmin. Request(id): {request.Headers["X-Request-ID"]}" +
+                logger.LogError($"{path} Error happened while updating security stamp. ProviderAdmin. Request(id): {httpRequest.Headers["X-Request-ID"]}" +
                             $"User(id): {userId}" +
                             $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
 
@@ -295,7 +293,7 @@ namespace OutOfSchool.IdentityServer.Services
             }
 
             logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully blocked by " +
-                        $"User(id): {userId}. Request(id): {request.Headers["X-Request-ID"]}");
+                        $"User(id): {userId}. Request(id): {httpRequest.Headers["X-Request-ID"]}");
 
             response.IsSuccess = true;
             response.HttpStatusCode = HttpStatusCode.OK;
