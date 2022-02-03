@@ -152,7 +152,6 @@ namespace OutOfSchool.WebApi.Services
 
             var workshopsResult = await cache.GetOrAdd<IEnumerable<WorkshopCard>>(cacheKey, async () =>
             {
-
                 var workshops = workshopRepository
                     .Get<int>(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
 

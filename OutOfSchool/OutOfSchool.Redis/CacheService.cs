@@ -11,7 +11,7 @@ namespace OutOfSchool.Redis
 {
     public class CacheService : ICacheService, IDisposable
     {
-        private ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
         private readonly IDistributedCache cache;
         private readonly RedisConfig redisConfig;
 
