@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,6 +30,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<User> userRepository;
         private readonly IProviderAdminRepository providerAdminRepository;
         private readonly ILogger<ProviderAdminService> logger;
+        private readonly IMapper mapper;
         private readonly ResponseDto responseDto;
 
         public ProviderAdminService(
@@ -39,6 +40,7 @@ namespace OutOfSchool.WebApi.Services
             IOptions<CommunicationConfig> communicationConfig,
             IProviderAdminRepository providerAdminRepository,
             IEntityRepository<User> userRepository,
+            IMapper mapper,
             ILogger<ProviderAdminService> logger)
             : base(httpClientFactory, communicationConfig.Value)
         {
@@ -46,6 +48,7 @@ namespace OutOfSchool.WebApi.Services
             this.providerAdminConfig = providerAdminConfig.Value;
             this.providerAdminRepository = providerAdminRepository;
             this.userRepository = userRepository;
+            this.mapper = mapper;
             this.logger = logger;
             responseDto = new ResponseDto();
         }
@@ -296,7 +299,8 @@ namespace OutOfSchool.WebApi.Services
                 foreach (var pa in providerAdmins)
                 {
                     var user = (await userRepository.GetByFilter(u => u.Id == pa.UserId).ConfigureAwait(false)).Single();
-                    var dto = user.ToModel(pa);
+                    var dto = mapper.Map<ProviderAdminDto>(user);
+                    dto.IsDeputy = pa.IsDeputy;
 
                     if (!user.IsEnabled)
                     {

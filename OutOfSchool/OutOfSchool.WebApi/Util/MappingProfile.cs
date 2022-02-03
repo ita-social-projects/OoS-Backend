@@ -119,6 +119,15 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Direction, opt => opt.Ignore());
             #warning The next mapping is here to test UI Admin features. Will be removed or refactored
             CreateMap<ShortUserDto, AdminDto>();
+
+            CreateMap<User, ProviderAdminDto>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(c => c.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(c => c.LastName))
+                .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(c => c.MiddleName))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(c => c.PhoneNumber))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(c => c.Email))
+                .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
+                .ForMember(dest => dest.AccountStatus, m => m.Ignore());
         }
     }
 }
