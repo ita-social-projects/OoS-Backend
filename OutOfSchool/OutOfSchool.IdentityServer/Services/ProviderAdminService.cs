@@ -30,6 +30,7 @@ namespace OutOfSchool.IdentityServer.Services
         private readonly IMapper mapper;
         private readonly ILogger<ProviderAdminService> logger;
         private readonly IProviderAdminRepository providerAdminRepository;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
         private readonly UserManager<User> userManager;
         private readonly OutOfSchoolDbContext context;
@@ -37,6 +38,7 @@ namespace OutOfSchool.IdentityServer.Services
 
         public ProviderAdminService(
             IMapper mapper,
+            IHttpContextAccessor httpContextAccessor,
             IProviderAdminRepository providerAdminRepository,
             ILogger<ProviderAdminService> logger,
             IEmailSender emailSender,
@@ -44,6 +46,7 @@ namespace OutOfSchool.IdentityServer.Services
             OutOfSchoolDbContext context)
         {
             this.mapper = mapper;
+            this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
             this.context = context;
             this.providerAdminRepository = providerAdminRepository;
@@ -54,11 +57,11 @@ namespace OutOfSchool.IdentityServer.Services
 
         public async Task<ResponseDto> CreateProviderAdminAsync(
             CreateProviderAdminDto providerAdminDto,
-            HttpRequest request,
             IUrlHelper url,
             string path,
             string userId)
         {
+            var request = httpContextAccessor.HttpContext.Request;
             var user = mapper.Map<User>(providerAdminDto);
 
             var password = PasswordGenerator
@@ -174,10 +177,10 @@ namespace OutOfSchool.IdentityServer.Services
 
         public async Task<ResponseDto> DeleteProviderAdminAsync(
             string providerAdminId,
-            HttpRequest request,
             string path,
             string userId)
         {
+            var request = httpContextAccessor.HttpContext.Request;
             var executionStrategy = context.Database.CreateExecutionStrategy();
             await executionStrategy.Execute(async () =>
             {
@@ -246,10 +249,10 @@ namespace OutOfSchool.IdentityServer.Services
 
         public async Task<ResponseDto> BlockProviderAdminAsync(
             string providerAdminId,
-            HttpRequest request,
             string path,
             string userId)
         {
+            var request = httpContextAccessor.HttpContext.Request;
             var user = await userManager.FindByIdAsync(providerAdminId);
 
             if (user is null)

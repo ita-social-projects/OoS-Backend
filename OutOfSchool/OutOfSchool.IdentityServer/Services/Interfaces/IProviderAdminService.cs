@@ -12,20 +12,17 @@ namespace OutOfSchool.IdentityServer.Services.Intefaces
     {
         Task<ResponseDto> CreateProviderAdminAsync(
             CreateProviderAdminDto providerAdminDto,
-            HttpRequest request,
             IUrlHelper url,
             string path,
             string userId);
 
         Task<ResponseDto> DeleteProviderAdminAsync(
             string providerAdminId,
-            HttpRequest request,
             string path,
             string userId);
 
         Task<ResponseDto> BlockProviderAdminAsync(
             string providerAdminId,
-            HttpRequest request,
             string path,
             string userId);
     }

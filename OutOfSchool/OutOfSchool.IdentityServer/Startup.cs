@@ -146,7 +146,7 @@ namespace OutOfSchool.IdentityServer
                     options.DataAnnotationLocalizerProvider = (type, factory) =>
                         factory.Create(typeof(SharedResource));
                 });
-
+            services.AddHttpContextAccessor();
             services.AddProxy();
             services.AddAutoMapper(typeof(MappingProfile));
             services.AddTransient<IParentRepository, ParentRepository>();
