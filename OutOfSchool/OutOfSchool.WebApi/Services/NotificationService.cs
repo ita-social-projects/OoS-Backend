@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
 
@@ -21,6 +22,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<NotificationService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
+        private readonly IHubContext<NotificationHub> notificationHub;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationService"/> class.
@@ -29,16 +31,19 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">localizer.</param>
         /// <param name="mapper">Mapper.</param>
+        /// <param name="notificationHub">NotificationHub.</param>
         public NotificationService(
             ISensitiveEntityRepository<Notification> notificationRepository,
             ILogger<NotificationService> logger,
             IStringLocalizer<SharedResource> localizer,
-            IMapper mapper)
+            IMapper mapper,
+            IHubContext<NotificationHub> notificationHub)
         {
             this.notificationRepository = notificationRepository;
             this.logger = logger;
             this.localizer = localizer;
             this.mapper = mapper;
+            this.notificationHub = notificationHub;
         }
 
         /// <inheritdoc/>
@@ -53,7 +58,11 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Notification with Id = {newNotification?.Id} created successfully.");
 
-            return mapper.Map<NotificationDto>(newNotification);
+            var notificationDtoReturn = mapper.Map<NotificationDto>(newNotification);
+
+            await notificationHub.Clients.Group("dcshut@gmail.com").SendAsync("ReceiveMessageInChatGroup", "Hello user!").ConfigureAwait(false);
+
+            return notificationDtoReturn;
         }
 
         /// <inheritdoc/>
