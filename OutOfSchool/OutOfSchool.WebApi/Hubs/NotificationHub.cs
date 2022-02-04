@@ -1,10 +1,13 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace OutOfSchool.WebApi.Hubs
 {
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(Roles = "provider,parent")]
     public class NotificationHub : Hub
     {
         private readonly ILogger<NotificationHub> logger;
@@ -23,9 +26,13 @@ namespace OutOfSchool.WebApi.Hubs
             this.localizer = localizer;
         }
 
-        public async Task SendMessage(string user, string message)
+        public override async Task OnConnectedAsync()
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message).ConfigureAwait(false);
+            string name = Context.User.Identity.Name;
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, name).ConfigureAwait(false);
+
+            await base.OnConnectedAsync().ConfigureAwait(false);
         }
     }
 }

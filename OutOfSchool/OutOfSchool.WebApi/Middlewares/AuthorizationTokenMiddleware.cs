@@ -24,13 +24,26 @@ namespace OutOfSchool.WebApi.Middlewares
 
             // web sockets cannot pass headers so we must take the access token from query param and
             // add it to the header before authentication middleware runs
-            if (request.Path.StartsWithSegments("/chathub", StringComparison.OrdinalIgnoreCase) &&
-                request.Query.TryGetValue("access_token", out var accessToken))
+            if (IsHubConnectionPath(request) && request.Query.TryGetValue("access_token", out var accessToken))
             {
                 request.Headers.Add("Authorization", $"Bearer {accessToken}");
             }
 
             await next(httpContext).ConfigureAwait(false);
+        }
+
+        private bool IsHubConnectionPath(HttpRequest request)
+        {
+            string[] hubs = new string[] { "/chathub", "/notificationhub" };
+            foreach (string hub in hubs)
+            {
+                if (request.Path.StartsWithSegments(hub, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
