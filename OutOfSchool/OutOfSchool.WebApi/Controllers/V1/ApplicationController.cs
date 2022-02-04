@@ -232,7 +232,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 if (applicationWithAdditionalData.AdditionalData > 0)
                 {
-                    Response.Headers.Add("Access-Control-Allow-Headers", "Retry-After");
+                    Response.Headers.Add("Access-Control-Expose-Headers", "Retry-After");
                     Response.Headers.Add("Retry-After", applicationWithAdditionalData.AdditionalData.ToString(CultureInfo.InvariantCulture));
                     return StatusCode(StatusCodes.Status429TooManyRequests);
                 }
