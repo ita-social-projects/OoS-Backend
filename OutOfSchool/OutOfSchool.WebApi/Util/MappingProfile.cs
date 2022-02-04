@@ -143,7 +143,7 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<ShortUserDto, AdminDto>();
         }
 
-        public static List<Teacher> WorkshopTeachersMapperFunction(List<Teacher> dtoTeachers, List<Teacher> dest)
+        private static List<Teacher> WorkshopTeachersMapperFunction(List<Teacher> dtoTeachers, List<Teacher> dest)
         {
             if (dest is { } && dest.Any())
             {

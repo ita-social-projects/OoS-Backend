@@ -199,7 +199,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.WorkshopEdit)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopCreationResponse))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopUpdateResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
