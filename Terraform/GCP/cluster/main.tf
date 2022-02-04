@@ -37,9 +37,6 @@ resource "null_resource" "wait_for_instances" {
   depends_on = [
     time_sleep.wait_60_seconds
   ]
-  # triggers = {
-  #   cluster_template_ids = "${join(",", [for k, v in module.master : v.template_id])}"
-  # }
   triggers = {
     cluster_template_id = module.masters.template_id
   }
