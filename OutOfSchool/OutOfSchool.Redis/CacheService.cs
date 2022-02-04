@@ -120,7 +120,7 @@ namespace OutOfSchool.Redis
             cacheLock?.Dispose();
         }
 
-        private void RedisIsBrokenStartCheck()
+        private async Task RedisIsBrokenStartCheck()
         {
             if (Monitor.TryEnter(lockObject))
             {
@@ -137,7 +137,7 @@ namespace OutOfSchool.Redis
                         }
                         catch (RedisConnectionException)
                         {
-                            Task.Delay(redisConfig.CheckAlivePollingInterval);
+                            await Task.Delay(redisConfig.CheckAlivePollingInterval);
                         }
                     }
                 }
