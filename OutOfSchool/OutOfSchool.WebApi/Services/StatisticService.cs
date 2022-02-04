@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi.Services
 
             string cacheKey = $"GetPopularDirections_{limit}_{city}";
 
-            var popularDirections = await cache.GetOrAdd<IEnumerable<DirectionStatistic>>(cacheKey, async () =>
+            var popularDirections = await cache.GetOrAddAsync<IEnumerable<DirectionStatistic>>(cacheKey, async () =>
             {
                 var workshops = workshopRepository.Get<int>();
                 var applications = applicationRepository.Get<int>();
@@ -91,7 +91,6 @@ namespace OutOfSchool.WebApi.Services
                         ApplicationsCount = g.Count() as int?,
                     });
 
-                // LEFT JOIN DirectionsWithWorkshops with DirectionsWithApplications
                 var directionsWithCounts = directionsWithWorkshops
                     .GroupJoin(
                         directionsWithApplications,
@@ -113,7 +112,6 @@ namespace OutOfSchool.WebApi.Services
 
                 var allDirections = directionRepository.Get<int>();
 
-                // LEFT JOIN DirectionsWithCounts with all Directions
                 var statistics = allDirections
                     .GroupJoin(
                         directionsWithCounts,
@@ -150,7 +148,7 @@ namespace OutOfSchool.WebApi.Services
 
             string cacheKey = $"GetPopularWorkshops_{limit}_{city}";
 
-            var workshopsResult = await cache.GetOrAdd<IEnumerable<WorkshopCard>>(cacheKey, async () =>
+            var workshopsResult = await cache.GetOrAddAsync<IEnumerable<WorkshopCard>>(cacheKey, async () =>
             {
                 var workshops = workshopRepository
                     .Get<int>(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
