@@ -77,3 +77,18 @@ variable "k8s_api_hostname" {
   type        = string
   description = "Hostname for K8S API"
 }
+
+variable "phpmyadmin_hostname" {
+  type        = string
+  description = "Hostname for PHPMyAdmin"
+}
+
+variable "kibana_hostname" {
+  type        = string
+  description = "Hostname for Kibana"
+}
+
+variable "elastic_hostname" {
+  type        = string
+  description = "Hostname for Elastic"
+}

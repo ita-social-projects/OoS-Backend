@@ -1,0 +1,169 @@
+# TODO: Think how to make it simpler so it can be moved to Elastic PostStart
+elasticConfigJob:
+  roles:
+    outofschool:
+      cluster:
+        - monitor
+      indices:
+        - names:
+            - workshop
+          privileges:
+            - read
+            - write
+            - delete
+            - create_index
+            - view_index_metadata
+            - manage
+          allow_restricted_indices: false
+      applications:
+        - application: kibana-.kibana
+          privileges:
+            - space_read
+          resources:
+            - space:default
+      metadata:
+        version: 2
+  secret: elasticsearch-credentials
+
+elasticsearch:
+  enabled: true
+  replicas: 1
+  protocol: http
+  esConfig:
+    elasticsearch.yml: |
+      xpack.license.self_generated.type: basic
+      xpack.security.enabled: true
+      xpack.security.transport.ssl.enabled: true
+      xpack.security.transport.ssl.verification_mode: certificate
+      xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/tls.key
+      xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/tls.crt
+      xpack.security.transport.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.crt
+      xpack.security.http.ssl.enabled: false
+      xpack.security.http.ssl.key: /usr/share/elasticsearch/config/certs/tls.key
+      xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/certs/tls.crt
+      xpack.security.http.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.crt
+  secretMounts:
+    - name: elastic-certificates
+      secretName: elastic-certificates
+      path: /usr/share/elasticsearch/config/certs
+  extraEnvs:
+    - name: ELASTIC_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-credentials
+          key: password
+    - name: ELASTIC_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-credentials
+          key: username
+  esJavaOpts: "-Xms512m -Xmx512m"
+  volumeClaimTemplate:
+    accessModes: [ "ReadWriteOnce" ]
+    storageClassName: "standard"
+    resources:
+      requests:
+        storage: 10G
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "1Gi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  rbac:
+    create: true
+  lifecycle: {}
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+  # postStart:
+  #   exec:
+  #     command:
+  #       - bash
+  #       - -c
+  #       - |
+  #         #!/bin/bash
+  #         # Add a template to adjust number of shards/replicas
+  #         TEMPLATE_NAME=my_template
+  #         INDEX_PATTERN="logstash-*"
+  #         SHARD_COUNT=8
+  #         REPLICA_COUNT=1
+  #         ES_URL=http://localhost:9200
+  #         while [[ "$(curl -s -o /dev/null -w '%{http_code}\n' $ES_URL)" != "200" ]]; do sleep 1; done
+  #         curl -XPUT "$ES_URL/_template/$TEMPLATE_NAME" -H 'Content-Type: application/json' -d'{"index_patterns":['\""$INDEX_PATTERN"\"'],"settings":{"number_of_shards":'$SHARD_COUNT',"number_of_replicas":'$REPLICA_COUNT'}}'
+  # TODO: check if need this
+  # Disable privileged init Container creation.
+  # sysctlInitContainer:
+  #   enabled: false
+  # TODO: check if need this
+  # Restrict the use of the memory-mapping when sysctlInitContainer is disabled.
+  # esConfig:
+  #   elasticsearch.yml: |
+  #     node.store.allow_mmap: false
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/issuer: "letsencrypt"
+      cert-manager.io/duration: 2160h0m0s
+      cert-manager.io/renew-before: 168h0m0s
+    hosts:
+      - host: ""
+        paths:
+          - path: /
+    tls:
+    - secretName: elastic-tls
+      hosts: []
+
+kibana:
+  enabled: true
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "1Gi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  extraEnvs:
+    - name: 'ELASTICSEARCH_USERNAME'
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-credentials
+          key: username
+    - name: 'ELASTICSEARCH_PASSWORD'
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-credentials
+          key: password
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/issuer: "letsencrypt"
+      cert-manager.io/duration: 2160h0m0s
+      cert-manager.io/renew-before: 168h0m0s
+    hosts:
+      - host: ""
+        paths:
+          - path: /
+    tls:
+    - secretName: kibana-tls
+      hosts: []
+
+ingress-nginx:
+  enabled: false
+webapi:
+  enabled: false
+identity:
+  enabled: false
+frontend:
+  enabled: false
+mysql:
+  enabled: false
+phpmyadmin:
+  enabled: false
+cert-manager:
+  enabled: false
+mongodb:
+  enabled: false

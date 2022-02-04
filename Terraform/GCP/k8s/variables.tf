@@ -52,3 +52,28 @@ variable "mongo_root_pass" {
 variable "mongo_pass" {
   type = string
 }
+
+variable "sql_hostname" {
+  type        = string
+  description = "Hostname for application database"
+}
+
+variable "mongo_hostname" {
+  type        = string
+  description = "Hostname for application MongoDB"
+}
+
+variable "phpmyadmin_hostname" {
+  type        = string
+  description = "Hostname for PHPMyAdmin"
+}
+
+variable "kibana_hostname" {
+  type        = string
+  description = "Hostname for Kibana"
+}
+
+variable "elastic_hostname" {
+  type        = string
+  description = "Hostname for Elastic"
+}

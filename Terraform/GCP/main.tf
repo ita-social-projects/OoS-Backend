@@ -67,20 +67,25 @@ provider "kubectl" {
 }
 
 module "k8s" {
-  source            = "./k8s"
-  project           = var.project
-  zone              = var.zone
-  admin_ips         = var.admin_ips
-  sql_root_pass     = module.passwords.sql_root_pass
-  sql_api_pass      = module.passwords.sql_api_pass
-  sql_auth_pass     = module.passwords.sql_auth_pass
-  es_admin_pass     = module.passwords.es_admin_pass
-  es_api_pass       = module.passwords.es_api_pass
-  csi_sa_email      = module.iam.csi_sa_email
-  csi_sa_key        = module.iam.csi_sa_key
-  mongo_root_pass   = module.passwords.mongo_root_pass
-  mongo_pass        = module.passwords.mongo_pass
-  letsencrypt_email = var.letsencrypt_email
+  source              = "./k8s"
+  project             = var.project
+  zone                = var.zone
+  admin_ips           = var.admin_ips
+  sql_root_pass       = module.passwords.sql_root_pass
+  sql_api_pass        = module.passwords.sql_api_pass
+  sql_auth_pass       = module.passwords.sql_auth_pass
+  es_admin_pass       = module.passwords.es_admin_pass
+  es_api_pass         = module.passwords.es_api_pass
+  csi_sa_email        = module.iam.csi_sa_email
+  csi_sa_key          = module.iam.csi_sa_key
+  mongo_root_pass     = module.passwords.mongo_root_pass
+  mongo_pass          = module.passwords.mongo_pass
+  letsencrypt_email   = var.letsencrypt_email
+  sql_hostname        = var.sql_hostname
+  mongo_hostname      = var.mongo_hostname
+  phpmyadmin_hostname = var.phpmyadmin_hostname
+  kibana_hostname     = var.kibana_hostname
+  elastic_hostname    = var.elastic_hostname
   depends_on = [
     time_sleep.wait_30_seconds
   ]
