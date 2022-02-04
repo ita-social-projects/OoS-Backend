@@ -18,7 +18,7 @@ namespace OutOfSchool.Redis
         private bool isWorking = true;
         private readonly bool isEnabled = false;
 
-        private object lockObject = new object();
+        private readonly object lockObject = new object();
 
         public CacheService(
             IDistributedCache cache, 
