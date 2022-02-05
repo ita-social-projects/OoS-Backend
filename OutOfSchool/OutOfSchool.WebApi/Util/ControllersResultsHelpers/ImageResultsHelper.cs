@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using MongoDB.Bson.IO;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.Images;
@@ -35,6 +36,32 @@ namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers
             };
         }
 
+        public static MultipleImageUploadingResponse CreateSingleUploadingResult(this OperationResult result)
+        {
+            _ = result ?? throw new ArgumentNullException(nameof(result));
+
+            return new MultipleImageUploadingResponse
+            {
+                AllImagesUploaded = result.Succeeded,
+                GeneralMessage = result.Succeeded ? null : result.Errors.FirstOrDefault()?.Description,
+                HasResults = true,
+                Results = CreateSingleResultResponse(result),
+            };
+        }
+
+        public static MultipleImageRemovingResponse CreateSingleRemovingResult(this OperationResult result)
+        {
+            _ = result ?? throw new ArgumentNullException(nameof(result));
+
+            return new MultipleImageRemovingResponse
+            {
+                AllImagesRemoved = result.Succeeded,
+                GeneralMessage = result.Succeeded ? null : result.Errors.FirstOrDefault()?.Description,
+                HasResults = true,
+                Results = CreateSingleResultResponse(result),
+            };
+        }
+
         private static IDictionary<short, OperationResult> CreateResultsResponse(MultipleKeyValueOperationResult multipleResults)
         {
             if (multipleResults.Succeeded)
@@ -43,6 +70,11 @@ namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers
             }
 
             return multipleResults.HasResults ? multipleResults.Results : null;
+        }
+
+        private static IDictionary<short, OperationResult> CreateSingleResultResponse(OperationResult result)
+        {
+            return result.Succeeded ? null : new Dictionary<short, OperationResult> { { 0, result } };
         }
     }
 }

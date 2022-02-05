@@ -82,5 +82,11 @@
         /// </summary>
         [ResourcesKey(nameof(ExceedingCountOfImagesError))]
         ExceedingCountOfImagesError = 12,
+
+        /// <summary>
+        /// The error that can be used when something wrong has happened while changing images.
+        /// </summary>
+        [ResourcesKey(nameof(ChangingError))]
+        ChangingError = 13,
     }
 }

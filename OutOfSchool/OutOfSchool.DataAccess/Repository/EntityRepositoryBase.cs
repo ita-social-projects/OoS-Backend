@@ -30,6 +30,8 @@ namespace OutOfSchool.Services.Repository
             dbSet = this.dbContext.Set<TValue>();
         }
 
+        public IUnitOfWork UnitOfWork => dbContext;
+
         /// <inheritdoc/>
         public virtual async Task<TValue> Create(TValue entity)
         {

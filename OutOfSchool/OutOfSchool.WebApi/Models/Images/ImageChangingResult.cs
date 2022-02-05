@@ -4,8 +4,8 @@ namespace OutOfSchool.WebApi.Models.Images
 {
     public class ImageChangingResult
     {
-        public MultipleKeyValueOperationResult RemovedMultipleResult { get; set; }
+        public OperationResult RemovingResult { get; set; }
 
-        public MultipleKeyValueOperationResult UploadedMultipleResult { get; set; }
+        public Result<string> UploadingResult { get; set; }
     }
 }

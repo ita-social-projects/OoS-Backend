@@ -33,11 +33,10 @@ namespace OutOfSchool.WebApi.Controllers.V2
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     public class WorkshopController : ControllerBase
     {
-        private readonly IWorkshopServicesCombiner combinedWorkshopService;
+        private readonly IWorkshopServicesCombinerV2 combinedWorkshopService;
         private readonly IProviderService providerService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly AppDefaultsConfig options;
-        private readonly ImagesLimits<Workshop> limits;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopController"/> class.
@@ -46,19 +45,16 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="options">Application default values.</param>
-        /// <param name="limits">Describes limits of workshop images.</param>
         public WorkshopController(
-            IWorkshopServicesCombiner combinedWorkshopService,
+            IWorkshopServicesCombinerV2 combinedWorkshopService,
             IProviderService providerService,
             IStringLocalizer<SharedResource> localizer,
-            IOptions<AppDefaultsConfig> options,
-            IOptions<ImagesLimits<Workshop>> limits)
+            IOptions<AppDefaultsConfig> options)
         {
             this.localizer = localizer;
             this.combinedWorkshopService = combinedWorkshopService;
             this.providerService = providerService;
             this.options = options.Value;
-            this.limits = limits.Value;
         }
 
         /// <summary>
@@ -153,7 +149,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.WorkshopAddNew)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreationResponse))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -163,16 +159,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto) // TODO: validate by request size
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
-            {
-                return StatusCode(StatusCodes.Status413PayloadTooLarge);
-            }
-
             var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
@@ -181,7 +167,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
             dto.Id = default;
             dto.Address.Id = default;
-            if (dto.Teachers.Any())
+            if (dto.Teachers != null && dto.Teachers.Any())
             {
                 foreach (var teacher in dto.Teachers)
                 {
@@ -189,21 +175,15 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 }
             }
 
-            var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
-
-            MultipleKeyValueOperationResult imagesResults = null;
-            if (dto.ImageFiles?.Count > 0)
-            {
-                imagesResults = await combinedWorkshopService.UploadManyImagesAsync(workshop.Id, dto.ImageFiles).ConfigureAwait(false);
-            }
+            var creationResult = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = workshop.Id, },
+                new { id = creationResult.Workshop.Id, },
                 new WorkshopCreationResponse
                 {
-                    WorkshopId = workshop.Id,
-                    UploadingImagesResults = imagesResults?.CreateMultipleUploadingResult(),
+                    Workshop = creationResult.Workshop,
+                    UploadingImagesResults = creationResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
                 });
         }
 
@@ -229,30 +209,19 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Update([FromForm] WorkshopUpdateDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (dto.ImageFiles != null && !ValidCountOfFiles(dto.ImageFiles.Count))
-            {
-                return StatusCode(StatusCodes.Status413PayloadTooLarge);
-            }
-
             var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
             }
 
-            var imagesResults = await combinedWorkshopService.ChangeImagesAsync(dto.Id, dto.ImageIds, dto.ImageFiles).ConfigureAwait(false);
-            var updatedWorkshop = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
+            var updatingResult = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
             return Ok(new WorkshopUpdateResponse
             {
-                UpdatedWorkshop = updatedWorkshop,
-                UploadingImagesResults = imagesResults.UploadedMultipleResult?.CreateMultipleUploadingResult(),
-                RemovingImagesResults = imagesResults.RemovedMultipleResult?.CreateMultipleRemovingResult(),
+                Workshop = updatingResult.Workshop,
+                UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
+                RemovingImagesResults = updatingResult.RemovingImagesResults?.CreateMultipleRemovingResult(),
             });
         }
 
@@ -286,15 +255,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return new ForbidResult("Forbidden to delete workshops of another providers.");
             }
 
-            if (workshop.ImageIds.Count > 0)
-            {
-                var imagesResults = await combinedWorkshopService.RemoveManyImagesAsync(workshop.Id, workshop.ImageIds).ConfigureAwait(false);
-                if (!imagesResults.Succeeded)
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError);
-                }
-            }
-
             await combinedWorkshopService.Delete(id).ConfigureAwait(false);
             return NoContent();
         }
@@ -315,11 +275,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
             }
 
             return true;
-        }
-
-        private bool ValidCountOfFiles(int fileAmount)
-        {
-            return fileAmount <= limits.MaxCountOfFiles;
         }
     }
 }

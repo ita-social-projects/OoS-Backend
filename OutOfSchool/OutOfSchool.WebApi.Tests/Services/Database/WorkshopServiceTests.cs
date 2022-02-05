@@ -30,8 +30,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IWorkshopRepository> workshopRepository;
         private Mock<IClassRepository> classRepository;
         private Mock<IRatingService> ratingService;
+        private Mock<ITeacherService> teacherService;
         private Mock<ILogger<WorkshopService>> logger;
         private Mock<IMapper> mapper;
+        private Mock<IImageService> imageService;
         private Mock<IWorkshopImagesInteractionService> workshopImagesInteractionService;
 
         [SetUp]
@@ -40,16 +42,20 @@ namespace OutOfSchool.WebApi.Tests.Services
             workshopRepository = new Mock<IWorkshopRepository>();
             classRepository = new Mock<IClassRepository>();
             ratingService = new Mock<IRatingService>();
+            teacherService = new Mock<ITeacherService>();
             logger = new Mock<ILogger<WorkshopService>>();
             mapper = new Mock<IMapper>();
+            imageService = new Mock<IImageService>();
             workshopImagesInteractionService = new Mock<IWorkshopImagesInteractionService>();
             workshopService =
                 new WorkshopService(
                     workshopRepository.Object,
                     classRepository.Object,
                     ratingService.Object,
+                    teacherService.Object,
                     logger.Object,
                     mapper.Object,
+                    imageService.Object,
                     workshopImagesInteractionService.Object);
         }
 
@@ -92,7 +98,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             SetupCreate(WithClassEntity(id));
-            var newWorkshop = new Workshop() {Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") };
+            var newWorkshop = new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") };
             newWorkshop.DepartmentId = 10;
             newWorkshop.DirectionId = 10;
 
@@ -293,16 +299,16 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .ReturnsAsync(classEntity);
             workshopRepository.Setup(
                     w => w.RunInTransaction(It.IsAny<Func<Task<Workshop>>>()))
-                .ReturnsAsync(new Workshop() {Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
+                .ReturnsAsync(new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
             mapper.Setup(m => m.Map<WorkshopDTO>(It.IsAny<Workshop>()))
-                .Returns(new WorkshopDTO() {Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
+                .Returns(new WorkshopDTO() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
         }
 
         private void SetupGetAll(IEnumerable<Workshop> workshops, Dictionary<Guid, Tuple<float, int>> ratings)
         {
             var mockWorkshops = workshops.AsQueryable().BuildMock();
             var workshopGuids = workshops.Select(w => w.Id);
-            var mappedDtos = workshops.Select(w => new WorkshopDTO() {Id = w.Id}).ToList();
+            var mappedDtos = workshops.Select(w => new WorkshopDTO() { Id = w.Id }).ToList();
 
             workshopRepository.Setup(w => w.Get(
                 It.IsAny<int>(),
@@ -330,13 +336,13 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Setup(
                     w => w.GetWithNavigations(workshopId))
                 .ReturnsAsync(workshop);
-            mapper.Setup(m => m.Map<WorkshopDTO>(workshop)).Returns(new WorkshopDTO() {Id = workshop.Id});
+            mapper.Setup(m => m.Map<WorkshopDTO>(workshop)).Returns(new WorkshopDTO() { Id = workshop.Id });
 
         }
 
         private void SetupGetByProviderId(IEnumerable<Workshop> workshops)
         {
-            var mappedDtos = workshops.Select(w => new WorkshopCard() {ProviderId = w.ProviderId}).ToList();
+            var mappedDtos = workshops.Select(w => new WorkshopCard() { ProviderId = w.ProviderId }).ToList();
             workshopRepository
                 .Setup(
                     w => w.GetByFilter(
@@ -394,7 +400,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             mapper
                 .Setup(m => m.Map<List<WorkshopCard>>(workshops))
                 .Returns(workshops
-                .Select(w => new WorkshopCard() {ProviderId = w.ProviderId}).ToList());
+                .Select(w => new WorkshopCard() { ProviderId = w.ProviderId }).ToList());
         }
 
         #endregion
@@ -407,7 +413,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             {
                 Id = id,
                 DepartmentId = 1,
-                Department = new Department() {Id = 1, DirectionId = 1},
+                Department = new Department() { Id = 1, DirectionId = 1 },
             };
         }
 
@@ -512,12 +518,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                     NumberOfRatings = 5,
                 });
 
-            return new SearchResult<WorkshopDTO>() {Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
+            return new SearchResult<WorkshopDTO>() { Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
         }
 
         private WorkshopDTO ExpectedWorkshopGetByIdSuccess(Guid id)
         {
-            return new WorkshopDTO() {Id = id};
+            return new WorkshopDTO() { Id = id };
         }
 
         private List<WorkshopCard> ExpectedWorkshopsGetByProviderId()
@@ -547,7 +553,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     ProviderId = w.ProviderId,
                 });
             return new SearchResult<WorkshopCard>()
-                {Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
+            { Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
         }
 
         private Expression<Func<Workshop, bool>> ExpectedPredicateWithIds(WorkshopFilter filter)

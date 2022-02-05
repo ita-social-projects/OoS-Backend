@@ -39,7 +39,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
         private Mock<IProviderService> providerServiceMoq;
         private Mock<IStringLocalizer<SharedResource>> localizer;
-        private Mock<IImageService> imageServiceMock;
 
         private string userId;
         private Mock<HttpContext> httpContextMoq;
@@ -71,7 +70,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             workshopServiceMoq = new Mock<IWorkshopServicesCombiner>();
             providerServiceMoq = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
-            imageServiceMock = new Mock<IImageService>();
 
             controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object, options.Object)
             {
@@ -445,7 +443,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LastName = "Brown",
                         MiddleName = "SomeMiddleName",
                         Description = "Description",
-                        Image = "Image",
+                        //Image = "Image",
                         DateOfBirth = DateTime.Parse("2000-01-01"),
                         WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },
@@ -456,7 +454,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LastName = "Snow",
                         MiddleName = "SomeMiddleName",
                         Description = "Description",
-                        Image = "Image",
+                        //Image = "Image",
                         DateOfBirth = DateTime.Parse("1990-01-01"),
                         WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },

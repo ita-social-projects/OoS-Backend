@@ -17,8 +17,6 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public IUnitOfWork UnitOfWork => db;
-
         /// <inheritdoc/>
         public new async Task Delete(Workshop entity)
         {

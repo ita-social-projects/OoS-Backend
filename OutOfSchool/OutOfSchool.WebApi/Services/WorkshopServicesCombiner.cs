@@ -22,10 +22,10 @@ namespace OutOfSchool.WebApi.Services
 {
     public class WorkshopServicesCombiner : IWorkshopServicesCombiner
     {
-        private readonly IWorkshopService workshopService;
+        private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly ILogger<WorkshopServicesCombiner> logger;
-        private readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService;
+        private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
 
         public WorkshopServicesCombiner(
             IWorkshopService workshopService,
@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Services
                     ElasticsearchSyncEntity.Workshop,
                     workshop.Id,
                     ElasticsearchSyncOperation.Create)
-                    .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
             return workshop;
         }
@@ -70,11 +70,12 @@ namespace OutOfSchool.WebApi.Services
                     ElasticsearchSyncEntity.Workshop,
                     workshop.Id,
                     ElasticsearchSyncOperation.Update)
-                    .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
             return workshop;
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
         {
             var workshops = await workshopService.PartialUpdateByProvider(provider).ConfigureAwait(false);
@@ -100,7 +101,7 @@ namespace OutOfSchool.WebApi.Services
                     ElasticsearchSyncEntity.Workshop,
                     id,
                     ElasticsearchSyncOperation.Delete)
-                    .ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -169,21 +170,6 @@ namespace OutOfSchool.WebApi.Services
 
             return workshopCards.ToList();
         }
-
-        public async Task<OperationResult> UploadImageAsync(Guid entityId, IFormFile image) =>
-            await workshopService.UploadImageAsync(entityId, image).ConfigureAwait(false);
-
-        public async Task<OperationResult> RemoveImageAsync(Guid entityId, string imageId) =>
-            await workshopService.RemoveImageAsync(entityId, imageId).ConfigureAwait(false);
-
-        public async Task<MultipleKeyValueOperationResult> UploadManyImagesAsync(Guid entityId, IList<IFormFile> images) =>
-            await workshopService.UploadManyImagesAsync(entityId, images).ConfigureAwait(false);
-
-        public async Task<MultipleKeyValueOperationResult> RemoveManyImagesAsync(Guid entityId, IList<string> imageIds) =>
-            await workshopService.RemoveManyImagesAsync(entityId, imageIds).ConfigureAwait(false);
-
-        public async Task<ImageChangingResult> ChangeImagesAsync(Guid entityId, IList<string> oldImageIds, IList<IFormFile> newImages) =>
-            await workshopService.ChangeImagesAsync(entityId, oldImageIds, newImages).ConfigureAwait(false);
 
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {

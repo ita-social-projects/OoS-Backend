@@ -10,6 +10,8 @@ namespace OutOfSchool.Services.Repository
     public interface IEntityRepositoryBase<TKey, TEntity>
         where TEntity : class, new()
     {
+        IUnitOfWork UnitOfWork { get; }
+
         /// <summary>
         /// Add new element.
         /// </summary>

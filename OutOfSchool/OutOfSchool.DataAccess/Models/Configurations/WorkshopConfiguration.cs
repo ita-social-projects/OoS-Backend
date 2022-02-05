@@ -22,6 +22,10 @@ namespace OutOfSchool.Services.Models.Configurations
                 .WithMany(x => x.Workshops)
                 // Note: cascade delete causes circular dependency issue
                 .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasMany(x => x.Teachers)
+                .WithOne(x => x.Workshop)
+                .HasForeignKey(x => x.WorkshopId);
         }
     }
 }
