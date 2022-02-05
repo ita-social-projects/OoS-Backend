@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Teacher's key.</param>
         /// <returns>Teacher.</returns>
-        Task<TeacherDTO> GetById(long id);
+        Task<TeacherDTO> GetById(Guid id);
 
         /// <summary>
         /// Update entity.
@@ -44,5 +44,13 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Teacher's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(Guid id);
+
+
+        /// <summary>
+        /// Gets Id of workshop, where specified teacher was created.
+        /// </summary>
+        /// <param name="teacherId">Teacher's key.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task<Guid> GetTeachersWorkshopId(Guid teacherId);
     }
 }

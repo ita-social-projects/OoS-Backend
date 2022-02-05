@@ -170,6 +170,10 @@ namespace OutOfSchool.WebApi.Services
             return workshopCards.ToList();
         }
 
+        // <inheritdoc/>
+        public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
+            await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
+
         public async Task<OperationResult> UploadImageAsync(Guid entityId, IFormFile image) =>
             await workshopService.UploadImageAsync(entityId, image).ConfigureAwait(false);
 

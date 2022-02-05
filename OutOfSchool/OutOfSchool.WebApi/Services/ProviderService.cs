@@ -274,6 +274,10 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
+        /// <inheritdoc/>
+        public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
+            await workshopServiceCombiner.GetWorkshopProviderId(workshopId).ConfigureAwait(false);
+
         private static bool IsNeedInRelatedWorkshopsUpdating(ProviderDto providerDto, Provider checkProvider)
         {
             return checkProvider.FullTitle != providerDto.FullTitle

@@ -17,6 +17,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -314,6 +315,15 @@ namespace OutOfSchool.WebApi.Services
         public async Task<IEnumerable<Workshop>> GetByIds(IEnumerable<Guid> ids)
         {
             return await workshopRepository.GetByIds(ids).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid> GetWorkshopProviderOwnerIdAsync(Guid workshopId)
+        {
+            return (await workshopRepository
+                .GetByFilterNoTracking(w => w.Id == workshopId)
+                .SingleOrDefaultAsync()
+                .ConfigureAwait(false)).ProviderId;
         }
 
         public async Task<OperationResult> UploadImageAsync(Guid entityId, IFormFile image) =>

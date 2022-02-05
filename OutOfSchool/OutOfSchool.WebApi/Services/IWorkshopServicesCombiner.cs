@@ -42,5 +42,13 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="provider">Provider to be searched by.</param>
         /// <returns>List of Workshops for the specified provider.</returns>
         Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider);
+
+
+        /// <summary>
+        /// Get id of provider, who owns Workshop with specefied id
+        /// </summary>
+        /// <param name="workshopId">WorkshopId to be searched by.</param>
+        /// <returns>Guid id for the specified provider.</returns>
+        Task<Guid> GetWorkshopProviderId(Guid workshopId);
     }
 }

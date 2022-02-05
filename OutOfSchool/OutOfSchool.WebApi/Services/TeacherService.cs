@@ -63,17 +63,17 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<TeacherDTO> GetById(long id)
+        public async Task<TeacherDTO> GetById(Guid id)
         {
             logger.LogInformation($"Getting Teacher by Id started. Looking Id = {id}.");
 
-            var teacher = await repository.GetById(id).ConfigureAwait(false);
+            var teacher = (await repository.GetByFilter(t => t.Id == id).ConfigureAwait(false)).SingleOrDefault();
 
             if (teacher == null)
             {
-                throw new ArgumentOutOfRangeException(
+                throw new ArgumentException(
                     nameof(id),
-                    localizer["The id cannot be greater than number of table entities."]);
+                    paramName: $"There are no recors in teachers table with such id - {id}.");
             }
 
             logger.LogInformation($"Successfully got a Teacher with Id = {id}.");
@@ -119,6 +119,26 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Deleting failed. Teacher with Id = {id} doesn't exist in the system.");
                 throw;
             }
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid> GetTeachersWorkshopId(Guid teacherId)
+        {
+            logger.LogInformation($"Searching Teacher by Id started. Looking Id = {teacherId}.");
+
+            var teacher = await repository.GetByFilterNoTracking(t => t.Id == teacherId).SingleOrDefaultAsync().ConfigureAwait(false);
+
+            if (teacher == null)
+            {
+                throw new ArgumentException(
+                    nameof(teacherId),
+                    paramName: $"There are no recors in teachers table with such id - {teacherId}.");
+            }
+
+            logger.LogInformation($"Successfully found a Teacher with Id = {teacherId}.");
+            var teachersWorkshopId = teacher.WorkshopId;
+            logger.LogInformation($"Successfully found WorkshopId - {teachersWorkshopId} for Teacher  with Id = {teacherId}.");
+            return teachersWorkshopId;
         }
     }
 }
