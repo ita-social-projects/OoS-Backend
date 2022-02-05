@@ -861,9 +861,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("binary(16)");
 
-                    b.Property<string>("AvatarImageId")
-                        .HasColumnType("longtext");
-
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("date");
 
@@ -876,6 +873,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
+
+                    b.Property<string>("Image")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
