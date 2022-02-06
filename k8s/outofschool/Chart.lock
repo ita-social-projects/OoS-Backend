@@ -1,0 +1,33 @@
+dependencies:
+- name: mysql
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.8.14
+- name: phpmyadmin
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.2.19
+- name: webapp
+  repository: ""
+  version: 0.1.0
+- name: webapp
+  repository: ""
+  version: 0.1.0
+- name: webapp
+  repository: ""
+  version: 0.1.0
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 7.15.0
+- name: kibana
+  repository: https://helm.elastic.co
+  version: 7.15.0
+- name: ingress-nginx
+  repository: https://kubernetes.github.io/ingress-nginx
+  version: 4.0.12
+- name: cert-manager
+  repository: https://charts.jetstack.io
+  version: v1.6.0
+- name: mongodb
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.30.0
+digest: sha256:24c88dc350f3e5bbe20563966333a0f3da50cbb80730c4a79eb0333cee2f8d3f
+generated: "2021-12-02T08:38:01.20127+02:00"

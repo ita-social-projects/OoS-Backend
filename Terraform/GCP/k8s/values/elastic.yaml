@@ -101,6 +101,11 @@ elasticsearch:
   # esConfig:
   #   elasticsearch.yml: |
   #     node.store.allow_mmap: false
+  extraInitContainers:
+  - name: plugins
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15
+    command: ['/bin/sh', '-c']
+    args: ['./bin/elasticsearch-plugin list | grep -q analysis-ukrainian || ./bin/elasticsearch-plugin install analysis-icu analysis-ukrainian mapper-murmur3 mapper-size']
   ingress:
     enabled: true
     annotations:

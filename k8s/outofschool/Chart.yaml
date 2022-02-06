@@ -1,0 +1,66 @@
+apiVersion: v2
+name: outofschool
+description: Umbrella chart for OutOfSchool application to manage its dependencies
+
+# A chart can be either an 'application' or a 'library' chart.
+#
+# Application charts are a collection of templates that can be packaged into versioned archives
+# to be deployed.
+#
+# Library charts provide useful utilities or functions for the chart developer. They're included as
+# a dependency of application charts to inject those utilities and functions into the rendering
+# pipeline. Library charts do not define any templates and therefore cannot be deployed.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.1.0
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application. Versions are not expected to
+# follow Semantic Versioning. They should reflect the version the application is using.
+# It is recommended to use it with quotes.
+appVersion: "fa5778e"
+
+dependencies:
+  - name: mysql
+    version: ~8.8.12
+    condition: mysql.enabled
+    repository: https://charts.bitnami.com/bitnami
+  - name: phpmyadmin
+    version: ~8.2.18
+    condition: phpmyadmin.enabled
+    repository: https://charts.bitnami.com/bitnami
+  - name: webapp
+    version: 0.1.0
+    condition: identity.enabled
+    alias: identity
+  - name: webapp
+    version: 0.1.0
+    condition: webapi.enabled
+    alias: webapi
+  - name: webapp
+    version: 0.1.0
+    condition: frontend.enabled
+    alias: frontend
+  - name: elasticsearch
+    version: 7.15.0
+    condition: elasticsearch.enabled
+    repository: https://helm.elastic.co
+  - name: kibana
+    version: 7.15.0
+    condition: kibana.enabled
+    repository: https://helm.elastic.co
+  - name: ingress-nginx
+    condition: ingress-nginx.enabled
+    version: ~4.0.6
+    repository: https://kubernetes.github.io/ingress-nginx
+  - name: cert-manager
+    condition: cert-manager.enabled
+    version: v1.6.0
+    repository: https://charts.jetstack.io
+  - name: mongodb
+    condition: mongodb.enabled
+    version: ~10.30.0
+    repository: https://charts.bitnami.com/bitnami
