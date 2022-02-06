@@ -111,7 +111,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Application with Id = {newApplication?.Id} created successfully.");
 
-            _ = notificationService.Create(NotificationType.Application, NotificationAction.Create, newApplication);
+            await notificationService.Create(NotificationType.Application, NotificationAction.Create, newApplication).ConfigureAwait(false);
 
             return new ModelWithAdditionalData<ApplicationDto, int>()
             {
