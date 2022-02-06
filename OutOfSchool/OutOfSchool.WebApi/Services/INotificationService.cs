@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -17,6 +18,15 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="notificationDto">Notificaton entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<NotificationDto> Create(NotificationDto notificationDto);
+
+        /// <summary>
+        /// Add entity.
+        /// </summary>
+        /// <param name="type">Notificaton type to add.</param>
+        /// <param name="action">Notificaton action to add.</param>
+        /// <param name="application">Application entity to add.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task Create(NotificationType type, NotificationAction action, Application application);
 
         /// <summary>
         /// To delete the object from DB.

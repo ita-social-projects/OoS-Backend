@@ -411,7 +411,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             application.Status = applicationDto.Status;
             application.RejectionMessage = applicationDto.RejectionMessage;
-            var approvedTime = DateTimeOffset.UtcNow;
 
             if (application.Status != ApplicationStatus.Rejected)
             {
@@ -420,7 +419,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             if (application.Status == ApplicationStatus.Approved)
             {
-                application.ApprovedTime = approvedTime;
+                application.ApprovedTime = DateTimeOffset.UtcNow;
             }
         }
     }

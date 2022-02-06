@@ -11,11 +11,13 @@ namespace OutOfSchool.Services.Models
         [Required]
         public string UserId { get; set; }
 
-        [Required]
         public string Text { get; set; }
 
         [Required]
         public NotificationType Type { get; set; }
+
+        [Required]
+        public NotificationAction Action { get; set; }
 
         [Required]
         public DateTimeOffset CreatedDateTime { get; set; }
