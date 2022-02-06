@@ -23,27 +23,31 @@ namespace OutOfSchool.WebApi.Services
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
         private readonly IHubContext<NotificationHub> notificationHub;
+        private readonly IWorkshopService workshopService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationService"/> class.
         /// </summary>
         /// <param name="notificationRepository">Repository for the Notification entity.</param>
         /// <param name="logger">Logger.</param>
-        /// <param name="localizer">localizer.</param>
+        /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
         /// <param name="notificationHub">NotificationHub.</param>
+        /// <param name="workshopService">WorkshopService.</param>
         public NotificationService(
             ISensitiveEntityRepository<Notification> notificationRepository,
             ILogger<NotificationService> logger,
             IStringLocalizer<SharedResource> localizer,
             IMapper mapper,
-            IHubContext<NotificationHub> notificationHub)
+            IHubContext<NotificationHub> notificationHub,
+            IWorkshopService workshopService)
         {
             this.notificationRepository = notificationRepository;
             this.logger = logger;
             this.localizer = localizer;
             this.mapper = mapper;
             this.notificationHub = notificationHub;
+            this.workshopService = workshopService;
         }
 
         /// <inheritdoc/>
@@ -52,7 +56,7 @@ namespace OutOfSchool.WebApi.Services
             logger.LogInformation("Notification creating was started.");
 
             var notification = mapper.Map<Notification>(notificationDto);
-            notification.CreatedDateTime = DateTime.UtcNow;
+            notification.CreatedDateTime = DateTimeOffset.UtcNow;
 
             var newNotification = await notificationRepository.Create(notification).ConfigureAwait(false);
 
@@ -63,6 +67,39 @@ namespace OutOfSchool.WebApi.Services
             await notificationHub.Clients.Group("dcshut@gmail.com").SendAsync("ReceiveMessageInChatGroup", "Hello user!").ConfigureAwait(false);
 
             return notificationDtoReturn;
+        }
+
+        public async Task Create(NotificationType type, NotificationAction action, Application application)
+        {
+            logger.LogInformation($"Notifications (type: {type}, action: {action}) creating was started.");
+
+            var notification = new Notification() { Id = Guid.NewGuid(), Type = type, Action = action, CreatedDateTime = DateTimeOffset.UtcNow, Text = "" };
+
+            var recipients = await GetNotificationRecipients(notification, application).ConfigureAwait(false);
+
+            foreach (string id in recipients)
+            {
+                notification.UserId = id;
+                var newNotification = await notificationRepository.Create(notification).ConfigureAwait(false);
+
+                logger.LogInformation($"Notification with Id = {newNotification?.Id} created successfully.");
+            }
+        }
+
+        private async Task<IEnumerable<string>> GetNotificationRecipients(Notification notificationDto, Application application)
+        {
+            var result = new List<string>();
+
+            if (notificationDto.Type == NotificationType.Application)
+            {
+                if (notificationDto.Action == NotificationAction.Create)
+                {
+                    string providerUserId = await workshopService.GetProviderUserId(application.WorkshopId).ConfigureAwait(false);
+                    result.Add(providerUserId);
+                }
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>

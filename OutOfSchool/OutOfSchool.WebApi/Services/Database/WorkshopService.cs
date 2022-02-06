@@ -137,6 +137,21 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<string> GetProviderUserId(Guid workshopId)
+        {
+            logger.LogInformation($"Getting Workshop by Id started. Looking Id = {workshopId}.");
+
+            Expression<Func<Workshop, bool>> filter = w => w.Id == workshopId;
+            var workshop = await workshopRepository.GetByFilter(filter, "Provider").ConfigureAwait(false);
+
+            logger.LogInformation(!workshop.Any()
+                ? $"There is no workshops in the Db with Id = {workshopId}."
+                : $"Successfully got Applications with Parent Id = {workshopId}.");
+
+            return workshop.FirstOrDefault().Provider?.UserId;
+        }
+
+        /// <inheritdoc/>
         public async Task<IEnumerable<WorkshopCard>> GetByProviderId(Guid id)
         {
             logger.LogInformation($"Getting Workshop by organization started. Looking ProviderId = {id}.");
