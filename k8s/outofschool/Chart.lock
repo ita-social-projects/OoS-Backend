@@ -1,7 +1,7 @@
 dependencies:
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
-  version: 8.8.14
+  version: 8.8.23
 - name: phpmyadmin
   repository: https://charts.bitnami.com/bitnami
   version: 8.2.19
@@ -22,12 +22,12 @@ dependencies:
   version: 7.15.0
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx
-  version: 4.0.12
+  version: 4.0.17
 - name: cert-manager
   repository: https://charts.jetstack.io
   version: v1.6.0
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
-  version: 10.30.0
-digest: sha256:24c88dc350f3e5bbe20563966333a0f3da50cbb80730c4a79eb0333cee2f8d3f
-generated: "2021-12-02T08:38:01.20127+02:00"
+  version: 10.30.12
+digest: sha256:db2f4efb5280bd762433f579cb33ed1095fe226b6072fe509de49656aefc2d21
+generated: "2022-02-06T23:40:28.201188+02:00"
