@@ -9,7 +9,7 @@ namespace OutOfSchool.WebApi.Models
 
         [Required(ErrorMessage = "Title is required")]
         [DataType(DataType.Text)]
-        [MaxLength(60)]
+        [MaxLength(100)]
         [MinLength(1)]
         public string Title { get; set; }
 
