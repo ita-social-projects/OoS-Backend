@@ -24,7 +24,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.Description, f => f.Lorem.Paragraph())
             .RuleFor(x => x.WithDisabilityOptions, f => f.Random.Bool())
             .RuleFor(x => x.DisabilityOptionsDesc, f => f.Lorem.Sentence())
-            .RuleFor(x => x.Logo, f => f.Image.LoremFlickrUrl())
+            .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())
             .RuleFor(x => x.Head, f => f.Person.FullName)
             .RuleFor(x => x.HeadDateOfBirth, f => f.Person.DateOfBirth)
             .RuleFor(x => x.ProviderTitle, f => f.Company.CompanyName())

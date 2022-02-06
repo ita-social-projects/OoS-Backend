@@ -16,7 +16,9 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
+using OutOfSchool.WebApi.Common.Resources.Codes;
 using OutOfSchool.WebApi.Enums;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Teachers;
@@ -117,16 +119,25 @@ namespace OutOfSchool.WebApi.Services
                 uploadingResult = await workshopImagesInteractionService.UploadManyImagesAsync(newWorkshop.Id, dto.ImageFiles).ConfigureAwait(false);
             }
 
+            Result<string> uploadingCoverImageResult = null;
+            if (dto.CoverImage != null)
+            {
+                uploadingCoverImageResult = await AddCoverImage(newWorkshop, dto.CoverImage).ConfigureAwait(false);
+            }
+
             if (dto.Teachers != null)
             {
                 await AddTeacherImages(newWorkshop, dto.Teachers).ConfigureAwait(false);
             }
+
+            await UpdateWorkshop().ConfigureAwait(false);
 
             logger.LogInformation($"Workshop with Id = {newWorkshop.Id} created successfully.");
 
             return new WorkshopCreationResultDto
             {
                 Workshop = mapper.Map<WorkshopDTO>(newWorkshop),
+                UploadingCoverImageResult = uploadingCoverImageResult?.OperationResult,
                 UploadingImagesResults = uploadingResult?.MultipleKeyValueOperationResult,
             };
         }
@@ -248,24 +259,19 @@ namespace OutOfSchool.WebApi.Services
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
-            await UpdateTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherUpdateDto>()).ConfigureAwait(false);
+            await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherUpdateDto>()).ConfigureAwait(false);
 
             mapper.Map(dto, currentWorkshop);
-            try
-            {
-                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-            }
-            catch (DbUpdateConcurrencyException exception)
-            {
-                logger.LogError(exception, $"Updating failed. Exception: {exception.Message}");
-                throw;
-            }
+
+            var changingCoverImageResult = await ChangeCoverImage(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
+
+            await UpdateWorkshop().ConfigureAwait(false);
 
             return new WorkshopUpdateResultDto
             {
                 Workshop = mapper.Map<WorkshopDTO>(currentWorkshop),
+                UploadingCoverImageResult = changingCoverImageResult?.UploadingResult?.OperationResult,
                 UploadingImagesResults = multipleImageChangingResult.UploadedMultipleResult?.MultipleKeyValueOperationResult,
-                RemovingImagesResults = multipleImageChangingResult.RemovedMultipleResult?.MultipleKeyValueOperationResult,
             };
         }
 
@@ -320,6 +326,16 @@ namespace OutOfSchool.WebApi.Services
             if (entity.Images.Count > 0 && removingResult.MultipleKeyValueOperationResult is { Succeeded: false })
             {
                 throw new InvalidOperationException($"Unreal to delete {nameof(Workshop)} [id = {id}] because unable to delete images.");
+            }
+
+            if (!string.IsNullOrEmpty(entity.CoverImageId))
+            {
+                var removingCoverImageResult = await imageService.RemoveImageAsync(entity.CoverImageId).ConfigureAwait(false);
+
+                if (!removingCoverImageResult.Succeeded)
+                {
+                    throw new InvalidOperationException($"Unreal to delete {nameof(Workshop)} [id = {id}] because unable to delete cover image.");
+                }
             }
 
             foreach (var teacher in entity.Teachers.ToList())
@@ -596,6 +612,18 @@ namespace OutOfSchool.WebApi.Services
             return workshops;
         }
 
+        private async Task<Result<string>> AddCoverImage(Workshop workshop, IFormFile image)
+        {
+            var uploadingCoverImageResult = await imageService.UploadImageAsync<Workshop>(image).ConfigureAwait(false);
+
+            if (uploadingCoverImageResult.Succeeded)
+            {
+                workshop.CoverImageId = uploadingCoverImageResult.Value;
+            }
+
+            return uploadingCoverImageResult;
+        }
+
         private async Task AddTeacherImages(Workshop workshop, List<TeacherCreationDto> teacherCreationDtoList)
         {
             if (teacherCreationDtoList.Count != workshop.Teachers.Count)
@@ -605,7 +633,7 @@ namespace OutOfSchool.WebApi.Services
 
             for (var i = 0; i < teacherCreationDtoList.Count; i++)
             {
-                var image = teacherCreationDtoList[i].ImageFile;
+                var image = teacherCreationDtoList[i].AvatarImage;
                 if (image != null)
                 {
                     var uploadingImageResult = await imageService
@@ -617,19 +645,28 @@ namespace OutOfSchool.WebApi.Services
                     }
                 }
             }
-
-            try
-            {
-                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-            }
-            catch (DbUpdateException ex)
-            {
-                logger.LogError(ex, $"Updating a new workshop failed. Exception: {ex.Message}");
-                throw;
-            }
         }
 
-        private async Task UpdateTeachers(Workshop currentWorkshop, List<TeacherUpdateDto> teacherUpdateDtoList)
+        private async Task<ImageChangingResult> ChangeCoverImage(Workshop workshop, string dtoImageId, IFormFile newImage)
+        {
+            ImageChangingResult changingCoverImageResult = null;
+            if (!string.Equals(dtoImageId, workshop.CoverImageId, StringComparison.Ordinal)
+                || (string.IsNullOrEmpty(dtoImageId) && newImage != null))
+            {
+                changingCoverImageResult = await imageService.ChangeImageAsync(workshop.CoverImageId, newImage).ConfigureAwait(false);
+
+                workshop.CoverImageId = changingCoverImageResult.UploadingResult switch
+                {
+                    null when changingCoverImageResult.RemovingResult is { Succeeded: false } => workshop.CoverImageId,
+                    { Succeeded: true } => changingCoverImageResult.UploadingResult.Value,
+                    _ => null
+                };
+            }
+
+            return changingCoverImageResult;
+        }
+
+        private async Task ChangeTeachers(Workshop currentWorkshop, List<TeacherUpdateDto> teacherUpdateDtoList)
         {
             var deletedIds = currentWorkshop.Teachers.Select(x => x.Id).Except(teacherUpdateDtoList.Select(x => x.Id)).ToList();
 
@@ -650,6 +687,19 @@ namespace OutOfSchool.WebApi.Services
                     newTeacher.WorkshopId = currentWorkshop.Id;
                     await teacherService.Create(newTeacher).ConfigureAwait(false);
                 }
+            }
+        }
+
+        private async Task UpdateWorkshop()
+        {
+            try
+            {
+                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            }
+            catch (DbUpdateException ex)
+            {
+                logger.LogError(ex, $"Updating a workshop failed. Exception: {ex.Message}");
+                throw;
             }
         }
     }

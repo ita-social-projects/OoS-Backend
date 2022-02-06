@@ -46,7 +46,8 @@ namespace OutOfSchool.WebApi.Util
                     var dtoTeachers = ctx.Mapper.Map<List<Teacher>>(dto.Teachers);
                     return WorkshopTeachersMapperFunction(dtoTeachers, dest);
                 }))
-                .ForMember(dest => dest.Images, opt => opt.Ignore());
+                .ForMember(dest => dest.Images, opt => opt.Ignore())
+                .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
 
             CreateMap<WorkshopCreationDto, Workshop>()
                 .IncludeBase<WorkshopDTO, Workshop>()
@@ -104,7 +105,7 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Direction, opt => opt.Ignore());
             CreateMap<Workshop, WorkshopCard>()
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.Logo))
+                .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.CoverImageId))
                 .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id));
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());

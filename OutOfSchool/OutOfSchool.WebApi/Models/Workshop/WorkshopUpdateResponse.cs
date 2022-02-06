@@ -6,8 +6,8 @@ namespace OutOfSchool.WebApi.Models.Workshop
     {
         public WorkshopDTO Workshop { get; set; }
 
-        public MultipleImageUploadingResponse UploadingImagesResults { get; set; }
+        public SingleImageUploadingResponse UploadingCoverImageResult { get; set; }
 
-        public MultipleImageRemovingResponse RemovingImagesResults { get; set; }
+        public MultipleImageUploadingResponse UploadingImagesResults { get; set; }
     }
 }

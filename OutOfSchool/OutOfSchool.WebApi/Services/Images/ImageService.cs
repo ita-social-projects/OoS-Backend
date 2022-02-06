@@ -210,6 +210,28 @@ namespace OutOfSchool.WebApi.Services.Images
             return await RemovingImageProcessAsync(imageId).ConfigureAwait(false);
         }
 
+        public async Task<ImageChangingResult> ChangeImageAsync(string currentImage, IFormFile newImage)
+        {
+            var result = new ImageChangingResult();
+            if (!string.IsNullOrEmpty(currentImage))
+            {
+                result.RemovingResult = await RemoveImageAsync(currentImage).ConfigureAwait(false);
+                if (!result.RemovingResult.Succeeded)
+                {
+                    return new ImageChangingResult { RemovingResult = OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError()) };
+                }
+
+                currentImage = null;
+            }
+
+            if (string.IsNullOrEmpty(currentImage) && newImage != null)
+            {
+                result.UploadingResult = await UploadImageAsync<Teacher>(newImage).ConfigureAwait(false);
+            }
+
+            return result;
+        }
+
         private async Task<Result<string>> UploadImageProcessAsync(Stream contentStream, string contentType)
         {
             try

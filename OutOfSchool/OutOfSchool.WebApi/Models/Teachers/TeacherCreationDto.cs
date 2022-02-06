@@ -5,6 +5,6 @@ namespace OutOfSchool.WebApi.Models.Teachers
 {
     public class TeacherCreationDto : TeacherDTO
     {
-        public IFormFile ImageFile { get; set; }
+        public IFormFile AvatarImage { get; set; }
     }
 }

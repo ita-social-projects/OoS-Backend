@@ -258,7 +258,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Email = "email5@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
-                Logo = "image5",
+                CoverImageId = "image5",
                 ProviderId = Guid.NewGuid(),
                 DirectionId = 1,
                 Direction = "Some title of direction",
@@ -325,7 +325,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
                 Assert.AreEqual(workshopDto.MinAge, result.MinAge);
                 Assert.AreEqual(workshopDto.MaxAge, result.MaxAge);
-                Assert.AreEqual(workshopDto.Logo, result.Photo);
+                Assert.AreEqual(workshopDto.CoverImageId, result.Photo);
                 Assert.AreEqual(workshopDto.DirectionId, result.DirectionId);
                 Assert.AreEqual(workshopDto.Address?.Id, result.Address.Id);
                 Assert.IsNotNull(result.Address);

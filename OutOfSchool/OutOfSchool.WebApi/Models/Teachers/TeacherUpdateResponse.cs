@@ -6,8 +6,6 @@ namespace OutOfSchool.WebApi.Models.Teachers
     {
         public TeacherDTO Teacher { get; set; }
 
-        public MultipleImageUploadingResponse UploadingAvatarImageResult { get; set; }
-
-        public MultipleImageRemovingResponse RemovingAvatarImageResult { get; set; }
+        public SingleImageUploadingResponse UploadingAvatarImageResult { get; set; }
     }
 }
