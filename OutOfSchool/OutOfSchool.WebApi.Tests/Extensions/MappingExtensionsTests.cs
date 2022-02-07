@@ -325,7 +325,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
                 Assert.AreEqual(workshopDto.MinAge, result.MinAge);
                 Assert.AreEqual(workshopDto.MaxAge, result.MaxAge);
-                Assert.AreEqual(workshopDto.CoverImageId, result.Photo);
+                Assert.AreEqual(workshopDto.CoverImageId, result.CoverImageId);
                 Assert.AreEqual(workshopDto.DirectionId, result.DirectionId);
                 Assert.AreEqual(workshopDto.Address?.Id, result.Address.Id);
                 Assert.IsNotNull(result.Address);

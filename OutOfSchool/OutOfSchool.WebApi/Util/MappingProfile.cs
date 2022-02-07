@@ -105,7 +105,7 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Direction, opt => opt.Ignore());
             CreateMap<Workshop, WorkshopCard>()
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                .ForMember(dest => dest.Photo, opt => opt.MapFrom(s => s.CoverImageId))
+                .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
                 .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id));
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
