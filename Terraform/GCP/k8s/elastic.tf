@@ -25,6 +25,7 @@ resource "helm_release" "elastic" {
   namespace     = kubernetes_namespace.oos.metadata[0].name
   wait          = true
   wait_for_jobs = true
+  timeout       = 600
   values = [
     "${file("${path.module}/values/elastic.yaml")}"
   ]
