@@ -136,7 +136,7 @@ elasticsearch:
         storage: 100M
   extraInitContainers:
   - name: plugins
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     command: ['/bin/sh', '-c']
     args: ['./bin/elasticsearch-plugin list | grep -q analysis-ukrainian || ./bin/elasticsearch-plugin install analysis-icu analysis-ukrainian mapper-murmur3 mapper-size']
 
@@ -229,7 +229,7 @@ mysql:
     persistence:
       enabled: true
       storageClass: openebs-hostpath
-      size: 30Gi 
+      size: 30Gi
     extraEnvVarsSecret: mysql-api-auth
 
 phpmyadmin:
