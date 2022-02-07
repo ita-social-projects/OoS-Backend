@@ -100,7 +100,7 @@ namespace OutOfSchool.WebApi.Models
         public int NumberOfRatings { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public WorkshopStatus Status { get; set; } = WorkshopStatus.Opened;
+        public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
 
         [Required]
         public Guid ProviderId { get; set; }

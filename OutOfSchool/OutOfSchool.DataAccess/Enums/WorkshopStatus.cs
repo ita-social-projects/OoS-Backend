@@ -6,7 +6,7 @@ namespace OutOfSchool.Services.Enums
     [JsonConverter(typeof(StringEnumConverter))]
     public enum WorkshopStatus
     {
-        Opened = 1,
+        Open = 1,
         Closed,
     }
 }
