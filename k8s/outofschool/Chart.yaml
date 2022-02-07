@@ -45,11 +45,11 @@ dependencies:
     condition: frontend.enabled
     alias: frontend
   - name: elasticsearch
-    version: 7.15.0
+    version: 7.16.1
     condition: elasticsearch.enabled
     repository: https://helm.elastic.co
   - name: kibana
-    version: 7.15.0
+    version: 7.16.1
     condition: kibana.enabled
     repository: https://helm.elastic.co
   - name: ingress-nginx
