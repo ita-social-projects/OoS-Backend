@@ -63,7 +63,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = await service
-                .GetPopularWorkshops(2, string.Empty)
+                .GetPopularWorkshopsFromDatabase(2, string.Empty)
                 .ConfigureAwait(false);
 
             // Assert
@@ -86,7 +86,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = await service
-                .GetPopularWorkshops(2, "Київ")
+                .GetPopularWorkshopsFromDatabase(2, "Київ")
                 .ConfigureAwait(false);
 
             // Assert
@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = await service
-                .GetPopularDirections(2, string.Empty)
+                .GetPopularDirectionsFromDatabase(2, string.Empty)
                 .ConfigureAwait(false);
 
             // Assert
@@ -122,7 +122,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = await service
-                .GetPopularDirections(2, "Київ")
+                .GetPopularDirectionsFromDatabase(2, "Київ")
                 .ConfigureAwait(false);
 
             // Assert
@@ -156,9 +156,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<bool>()))
                 .Returns(workshopsMock.Object)
                 .Verifiable();
-
-            cache.Setup(c => c.Get<IEnumerable<WorkshopCard>>(It.IsAny<string>()))
-                .ReturnsAsync(() => null);
         }
 
         private void SetupGetPopularDirections()
@@ -196,9 +193,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<bool>()))
                 .Returns(directionsMock.Object)
                 .Verifiable();
-
-            cache.Setup(c => c.Get<IEnumerable<DirectionStatistic>>(It.IsAny<string>()))
-                .ReturnsAsync(() => null);
         }
 
         #endregion
