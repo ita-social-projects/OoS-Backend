@@ -1010,10 +1010,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("ClassId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("CoverImageId")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
                     b.Property<long>("DepartmentId")
                         .HasColumnType("bigint");
 
@@ -1056,6 +1052,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("Keywords")
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Logo")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
 
                     b.Property<int>("MaxAge")
                         .HasColumnType("int");
