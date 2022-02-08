@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Redis;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
@@ -26,6 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IEntityRepository<Direction>> directionRepository;
 
         private Mock<IMapper> mapper;
+        private Mock<ICacheService> cache;
 
         [SetUp]
         public void SetUp()
@@ -36,6 +38,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var ratingService = new Mock<IRatingService>();
             var logger = new Mock<ILogger<StatisticService>>();
             mapper = new Mock<IMapper>();
+            cache = new Mock<ICacheService>();
 
             service = new StatisticService(
                 applicationRepository.Object,
@@ -43,7 +46,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 ratingService.Object,
                 directionRepository.Object,
                 logger.Object,
-                mapper.Object);
+                mapper.Object,
+                cache.Object);
         }
 
         [Test]
@@ -59,7 +63,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = await service
-                .GetPopularWorkshops(2, string.Empty)
+                .GetPopularWorkshopsFromDatabase(2, string.Empty)
                 .ConfigureAwait(false);
 
             // Assert
@@ -82,7 +86,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = await service
-                .GetPopularWorkshops(2, "Київ")
+                .GetPopularWorkshopsFromDatabase(2, "Київ")
                 .ConfigureAwait(false);
 
             // Assert
@@ -100,7 +104,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = await service
-                .GetPopularDirections(2, string.Empty)
+                .GetPopularDirectionsFromDatabase(2, string.Empty)
                 .ConfigureAwait(false);
 
             // Assert
@@ -118,7 +122,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = await service
-                .GetPopularDirections(2, "Київ")
+                .GetPopularDirectionsFromDatabase(2, "Київ")
                 .ConfigureAwait(false);
 
             // Assert
