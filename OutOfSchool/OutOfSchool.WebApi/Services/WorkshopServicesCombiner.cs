@@ -171,6 +171,10 @@ namespace OutOfSchool.WebApi.Services
             return workshopCards.ToList();
         }
 
+        // <inheritdoc/>
+        public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
+            await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
+
         private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
         {
             return source.Select(currentElement => currentElement.ToCardDto()).ToList();

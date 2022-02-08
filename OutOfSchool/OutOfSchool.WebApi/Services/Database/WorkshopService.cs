@@ -451,6 +451,15 @@ namespace OutOfSchool.WebApi.Services
             return await workshopRepository.GetByIds(ids).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
+        public async Task<Guid> GetWorkshopProviderOwnerIdAsync(Guid workshopId)
+        {
+            return (await workshopRepository
+                .GetByFilterNoTracking(w => w.Id == workshopId)
+                .SingleOrDefaultAsync()
+                .ConfigureAwait(false)).ProviderId;
+        }
+
         private Expression<Func<Workshop, bool>> PredicateBuild(WorkshopFilter filter)
         {
             var predicate = PredicateBuilder.True<Workshop>();
