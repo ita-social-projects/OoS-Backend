@@ -71,6 +71,8 @@ namespace OutOfSchool.Common.PermissionsModule
         ProviderAddNew = 52,
         [Display(GroupName = "Provider", Name = "Remove", Description = "Can remove Provider data")]
         ProviderRemove = 53,
+        [Display(GroupName = "Provider", Name = "Provider Admins", Description = "Can create and manage provider admins")]
+        ProviderAdmins = 54,
         #endregion
 
         #region Rating control permissions #7

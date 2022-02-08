@@ -1,21 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>23768b69-757e-4a20-894f-dcf7181971ca</UserSecretsId>
   </PropertyGroup>
-
   <PropertyGroup>
     <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101082648_InitialMigration.cs" />
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101082648_InitialMigration.Designer.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+        <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
     <PackageReference Include="IdentityModel" Version="5.0.0" />
     <PackageReference Include="IdentityServer4" Version="4.1.1" />
@@ -41,13 +38,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
     <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Remove="stylecop.json" />
     <AdditionalFiles Include="stylecop.json">
@@ -56,14 +51,12 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </AdditionalFiles>
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Data\Migrations\IdentityServer\CertificateDb\" />
     <Folder Include="Data\Migrations\IdentityServer\ConfigurationDb\" />
     <Folder Include="Data\Migrations\IdentityServer\PersistedGrantDb\" />
     <Folder Include="Data\Migrations\OutOfSchoolMigrations\" />
   </ItemGroup>
-
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://json.schemastore.org/appsettings" appsettings_1release_1json__JsonSchema="https://json.schemastore.org/appsettings" /></VisualStudio></ProjectExtensions>
 <ItemGroup>
     <Watch Include="wwwroot/**" />

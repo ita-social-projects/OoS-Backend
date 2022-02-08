@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Resources;
-using Google.Protobuf.WellKnownTypes;
-using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Common.Resources.Codes;
 using Enum = System.Enum;

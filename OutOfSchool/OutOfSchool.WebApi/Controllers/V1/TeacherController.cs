@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Teachers;
@@ -24,18 +25,29 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [HasPermission(Permissions.SystemManagement)]
     public class TeacherController : ControllerBase // check permissions for workshopIds for public controller
     {
-        private readonly ITeacherService service;
+        private readonly ITeacherService teacherService;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IProviderService providerService;
+        private readonly IProviderAdminService providerAdminService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TeacherController"/> class.
         /// </summary>
-        /// <param name="service">Service for Teacher model.</param>
-        /// <param name="localizer">Localizer.</param>
-        public TeacherController(ITeacherService service, IStringLocalizer<SharedResource> localizer)
+        /// <param name="teacherService">Service for Teacher model.</param>
+        /// <param name="localizer">Localizer.</param
+        /// <param name="providerService">Service for Provider.</param>
+        /// <param name="providerAdminService">Service For ProviderAdmin.</param>
+        /// 
+        public TeacherController(
+            ITeacherService teacherService,
+            IStringLocalizer<SharedResource> localizer,
+            IProviderAdminService providerAdminService,
+            IProviderService providerService)
         {
+            this.providerAdminService = providerAdminService;
+            this.providerService = providerService;
             this.localizer = localizer;
-            this.service = service;
+            this.teacherService = teacherService;
         }
 
         /// <summary>
@@ -49,7 +61,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var teachers = await service.GetAll().ConfigureAwait(false);
+            var teachers = await teacherService.GetAll().ConfigureAwait(false);
 
             if (!teachers.Any())
             {
@@ -71,7 +83,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            return Ok(await service.GetById(id).ConfigureAwait(false));
+            try
+            {
+                var teacherDTO = await teacherService.GetById(id).ConfigureAwait(false);
+                return Ok(teacherDTO);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         /// <summary>
@@ -86,7 +106,17 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPost]
         public async Task<IActionResult> Create(TeacherCreationDto dto)
         {
-            var creationResult = await service.Create(dto).ConfigureAwait(false);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!(await IsUserWorkshopOwnerOrAdmin(dto.WorkshopId).ConfigureAwait(false)))
+            {
+                return StatusCode(403, $"Forbidden to create teachers related to workshop withId - {dto.WorkshopId}.");
+            }
+
+            var creationResult = await teacherService.Create(dto).ConfigureAwait(false);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -106,7 +136,19 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPut]
         public async Task<IActionResult> Update(TeacherUpdateDto dto)
         {
-            return Ok(await service.Update(dto).ConfigureAwait(false));
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var workshopId = dto.WorkshopId;
+
+            if (!(await IsUserWorkshopOwnerOrAdmin(workshopId).ConfigureAwait(false)))
+            {
+                return StatusCode(403, $"Forbidden to update teachers related to workshop withId- {workshopId}.");
+            }
+
+            return Ok(await teacherService.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -120,9 +162,54 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await service.Delete(id).ConfigureAwait(false);
+            var teachersWorkshopId = await teacherService.GetTeachersWorkshopId(id).ConfigureAwait(false);
+            if (!(await IsUserWorkshopOwnerOrAdmin(teachersWorkshopId).ConfigureAwait(false)))
+            {
+                return StatusCode(403, $"Forbidden to delete teachers related to workshop withId - {teachersWorkshopId}.");
+            }
+
+            await teacherService.Delete(id).ConfigureAwait(false);
 
             return NoContent();
+        }
+
+        // method checks whether current user:
+        // - is in role provider,
+        // - owns workshop with specified id or is related provider admin
+        private async Task<bool> IsUserWorkshopOwnerOrAdmin(Guid workshopId)
+        {
+            if (User.IsInRole(nameof(Role.Provider).ToLower()))
+            {
+                var providerId = await providerService.GetProviderIdForWorkshopById(workshopId).ConfigureAwait(false);
+                var userId = User.FindFirst("sub")?.Value;
+                try
+                {
+                    var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+
+                    if (providerId != provider.Id)
+                    {
+                        return false;
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    try
+                    {
+                        var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+                        if (!isUserRelatedAdmin)
+                        {
+                            return false;
+                        }
+                    }
+                    catch (NullReferenceException)
+                    {
+                        return false;
+                    }
+
+                }
+            }
+
+            return true;
         }
     }
 }

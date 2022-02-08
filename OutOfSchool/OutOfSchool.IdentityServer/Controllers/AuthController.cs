@@ -146,11 +146,28 @@ namespace OutOfSchool.IdentityServer.Controllers
                 });
             }
 
+            var user = await userManager.FindByEmailAsync(model.Username);
+
+            if (user != null && !user.IsEnabled)
+            {
+                logger.LogInformation($"{path} User is blocked. Login was failed.");
+
+                return BadRequest();
+            }
+
             var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
 
             if (result.Succeeded)
             {
                 logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
+
+                user.LastLogin = DateTimeOffset.UtcNow;
+                var lastLoginResult = await userManager.UpdateAsync(user);
+                if (!lastLoginResult.Succeeded)
+                {
+                    throw new InvalidOperationException($"Unexpected error occurred setting the last login date" +
+                        $" ({lastLoginResult.ToString()}) for user with ID '{user.Id}'.");
+                }
 
                 return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
             }
@@ -181,7 +198,11 @@ namespace OutOfSchool.IdentityServer.Controllers
         [HttpGet]
         public IActionResult Register(string returnUrl = "Login", bool? providerRegistration = null)
         {
-            return View(new RegisterViewModel { ReturnUrl = returnUrl, ProviderRegistration = providerRegistration ?? GetProviderRegistrationFromUri(returnUrl) });
+            return View(new RegisterViewModel
+            {
+                ReturnUrl = returnUrl, ProviderRegistration = providerRegistration
+                ?? GetProviderRegistrationFromUri(returnUrl),
+            });
         }
 
         /// <summary>
@@ -260,6 +281,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 CreatingTime = DateTimeOffset.UtcNow,
                 Role = model.Role,
                 IsRegistered = false,
+                IsEnabled = true,
             };
 
             try

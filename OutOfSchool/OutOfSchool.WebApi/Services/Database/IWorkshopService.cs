@@ -103,5 +103,12 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="provider">Provider to be searched by.</param>
         /// <returns>List of Workshops for the specified provider.</returns>
         Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider);
+
+        /// <summary>
+        ///  Returns ProviderDto by Id of its own workshop entity.
+        /// </summary>
+        /// <param name="workshopId">WorkshopId for which we need to get provider owner entity.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task<Guid> GetWorkshopProviderOwnerIdAsync(Guid workshopId);
     }
 }

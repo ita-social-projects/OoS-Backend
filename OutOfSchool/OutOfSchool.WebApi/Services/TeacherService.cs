@@ -92,10 +92,17 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Teacher by Id started. Looking Id = {id}.");
 
-            var teacher = await teacherRepository.GetById(id).ConfigureAwait(false);
+            var teacher = (await teacherRepository.GetByFilter(t => t.Id == id).ConfigureAwait(false)).SingleOrDefault();
+
+            if (teacher == null)
+            {
+                throw new ArgumentException(
+                    nameof(id),
+                    paramName: $"There are no recors in teachers table with such id - {id}.");
+            }
 
             logger.LogInformation($"Got a Teacher with Id = {id}.");
-
+            
             return teacher?.ToModel();
         }
 
@@ -180,6 +187,26 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError(ex, "Unreal to update teacher.");
                 throw;
             }
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid> GetTeachersWorkshopId(Guid teacherId)
+        {
+            logger.LogInformation($"Searching Teacher by Id started. Looking Id = {teacherId}.");
+
+            var teacher = await teacherRepository.GetByFilterNoTracking(t => t.Id == teacherId).SingleOrDefaultAsync().ConfigureAwait(false);
+
+            if (teacher == null)
+            {
+                throw new ArgumentException(
+                    nameof(teacherId),
+                    paramName: $"There are no recors in teachers table with such id - {teacherId}.");
+            }
+
+            logger.LogInformation($"Successfully found a Teacher with Id = {teacherId}.");
+            var teachersWorkshopId = teacher.WorkshopId;
+            logger.LogInformation($"Successfully found WorkshopId - {teachersWorkshopId} for Teacher  with Id = {teacherId}.");
+            return teachersWorkshopId;
         }
     }
 }

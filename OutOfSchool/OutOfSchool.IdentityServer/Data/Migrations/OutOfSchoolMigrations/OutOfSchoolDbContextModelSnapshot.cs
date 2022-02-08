@@ -652,7 +652,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 2L,
                             Description = "provider permissions",
-                            PackedPermissions = "e\n4325HGIFPQ[]\\",
+                            PackedPermissions = "e\n43256HGIFPQ[]\\",
                             RoleName = "Provider"
                         },
                         new
@@ -661,6 +661,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                             Description = "parent permissions",
                             PackedPermissions = "e\n !()+>=<PQ",
                             RoleName = "Parent"
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            Description = "provider admin permissions",
+                            PackedPermissions = "e\n6HGIFPQ[\\",
+                            RoleName = "ProviderAdmin"
                         });
                 });
 
@@ -760,6 +767,24 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Providers");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdmin", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<bool>("IsDeputy")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("binary(16)");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("ProviderId");
+
+                    b.ToTable("ProviderAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Rating", b =>
@@ -923,6 +948,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
+
+                    b.Property<bool>("IsDerived")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsRegistered")
                         .HasColumnType("tinyint(1)");
@@ -1105,6 +1136,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("ProviderId");
 
                     b.ToTable("Workshops");
+                });
+
+            modelBuilder.Entity("ProviderAdminWorkshop", b =>
+                {
+                    b.Property<Guid>("ManagedWorkshopsId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("ProviderAdminsUserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("ManagedWorkshopsId", "ProviderAdminsUserId");
+
+                    b.HasIndex("ProviderAdminsUserId");
+
+                    b.ToTable("ProviderAdminWorkshop");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1346,6 +1392,17 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdmin", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
+                        .WithMany("ProviderAdmins")
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Provider");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Rating", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Parent", "Parent")
@@ -1403,6 +1460,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Provider");
                 });
 
+            modelBuilder.Entity("ProviderAdminWorkshop", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", null)
+                        .WithMany()
+                        .HasForeignKey("ManagedWorkshopsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.ProviderAdmin", null)
+                        .WithMany()
+                        .HasForeignKey("ProviderAdminsUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.AboutPortal", b =>
                 {
                     b.Navigation("AboutPortalItems");
@@ -1437,6 +1509,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
+                    b.Navigation("ProviderAdmins");
+
                     b.Navigation("Workshops");
                 });
 

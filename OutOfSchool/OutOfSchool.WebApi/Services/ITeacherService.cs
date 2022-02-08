@@ -48,5 +48,13 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Teacher's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(Guid id);
+
+
+        /// <summary>
+        /// Gets Id of workshop, where specified teacher was created.
+        /// </summary>
+        /// <param name="teacherId">Teacher's key.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task<Guid> GetTeachersWorkshopId(Guid teacherId);
     }
 }

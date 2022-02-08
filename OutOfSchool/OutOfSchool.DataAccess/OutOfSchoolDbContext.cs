@@ -24,6 +24,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Provider> Providers { get; set; }
 
+        public DbSet<ProviderAdmin> ProviderAdmins { get; set; }
+
         public DbSet<ChatRoomWorkshop> ChatRoomWorkshops { get; set; }
 
         public DbSet<ChatMessageWorkshop> ChatMessageWorkshops { get; set; }
@@ -87,6 +89,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
             builder.ApplyConfiguration(new ChildConfiguration());
             builder.ApplyConfiguration(new ProviderConfiguration());
+            builder.ApplyConfiguration(new ProviderAdminConfiguration());
             builder.ApplyConfiguration(new WorkshopConfiguration());
             builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
 

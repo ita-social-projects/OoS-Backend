@@ -115,6 +115,8 @@ namespace OutOfSchool.Services.Models
 
         public virtual Class Class { get; set; }
 
+        public virtual List<ProviderAdmin> ProviderAdmins { get; set; }
+
         public virtual List<Teacher> Teachers { get; set; }
 
         public virtual List<Application> Applications { get; set; }
