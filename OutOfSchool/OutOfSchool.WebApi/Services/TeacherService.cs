@@ -92,7 +92,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Teacher by Id started. Looking Id = {id}.");
 
-            var teacher = (await repository.GetByFilter(t => t.Id == id).ConfigureAwait(false)).SingleOrDefault();
+            var teacher = (await teacherRepository.GetByFilter(t => t.Id == id).ConfigureAwait(false)).SingleOrDefault();
 
             if (teacher == null)
             {
@@ -194,7 +194,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Searching Teacher by Id started. Looking Id = {teacherId}.");
 
-            var teacher = await repository.GetByFilterNoTracking(t => t.Id == teacherId).SingleOrDefaultAsync().ConfigureAwait(false);
+            var teacher = await teacherRepository.GetByFilterNoTracking(t => t.Id == teacherId).SingleOrDefaultAsync().ConfigureAwait(false);
 
             if (teacher == null)
             {
