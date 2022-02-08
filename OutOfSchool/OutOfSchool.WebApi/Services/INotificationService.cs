@@ -24,9 +24,10 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="type">Notificaton type to add.</param>
         /// <param name="action">Notificaton action to add.</param>
-        /// <param name="application">Application entity to add.</param>
+        /// <param name="objectId">ObjectId.</param>
+        /// <param name="notificationRecipients">NotificationRecipients.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Create(NotificationType type, NotificationAction action, Application application);
+        Task Create(NotificationType type, NotificationAction action, Guid objectId, IEnumerable<User> notificationRecipients);
 
         /// <summary>
         /// To delete the object from DB.
