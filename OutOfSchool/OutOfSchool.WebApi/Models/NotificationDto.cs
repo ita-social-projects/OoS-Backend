@@ -23,5 +23,7 @@ namespace OutOfSchool.WebApi.Models
         public DateTimeOffset CreatedDateTime { get; set; }
 
         public DateTimeOffset? ReadDateTime { get; set; }
+
+        public Guid? ObjectId { get; set; }
     }
 }

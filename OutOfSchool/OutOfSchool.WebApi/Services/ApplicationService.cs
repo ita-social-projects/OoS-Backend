@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// Implements the interface with CRUD functionality for Application entity.
     /// </summary>
-    public class ApplicationService : IApplicationService
+    public class ApplicationService : IApplicationService, INotificationReciever
     {
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
@@ -111,7 +111,13 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Application with Id = {newApplication?.Id} created successfully.");
 
-            await notificationService.Create(NotificationType.Application, NotificationAction.Create, newApplication).ConfigureAwait(false);
+            var recipients = await GetNotificationsRecipients(NotificationAction.Create, newApplication.Id).ConfigureAwait(false);
+
+            await notificationService.Create(
+                NotificationType.Application,
+                NotificationAction.Create,
+                newApplication.Id,
+                recipients).ConfigureAwait(false);
 
             return new ModelWithAdditionalData<ApplicationDto, int>()
             {
@@ -304,6 +310,18 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Updating failed. Exception = {ex.Message}.");
                 throw;
             }
+        }
+
+        public async Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Guid objectId)
+        {
+            var result = new List<User>();
+            if (action == NotificationAction.Create)
+            {
+                var providerUserIds = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
+                result.Add(providerUserIds.FirstOrDefault().Workshop.Provider.User);
+            }
+
+            return result;
         }
 
         private void ModelNullValidation(ApplicationDto applicationDto)

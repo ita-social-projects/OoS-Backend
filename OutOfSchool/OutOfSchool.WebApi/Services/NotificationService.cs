@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -23,7 +24,6 @@ namespace OutOfSchool.WebApi.Services
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
         private readonly IHubContext<NotificationHub> notificationHub;
-        private readonly IWorkshopService workshopService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationService"/> class.
@@ -33,21 +33,18 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
         /// <param name="notificationHub">NotificationHub.</param>
-        /// <param name="workshopService">WorkshopService.</param>
         public NotificationService(
             ISensitiveEntityRepository<Notification> notificationRepository,
             ILogger<NotificationService> logger,
             IStringLocalizer<SharedResource> localizer,
             IMapper mapper,
-            IHubContext<NotificationHub> notificationHub,
-            IWorkshopService workshopService)
+            IHubContext<NotificationHub> notificationHub)
         {
             this.notificationRepository = notificationRepository;
             this.logger = logger;
             this.localizer = localizer;
             this.mapper = mapper;
             this.notificationHub = notificationHub;
-            this.workshopService = workshopService;
         }
 
         /// <inheritdoc/>
@@ -64,42 +61,37 @@ namespace OutOfSchool.WebApi.Services
 
             var notificationDtoReturn = mapper.Map<NotificationDto>(newNotification);
 
-            await notificationHub.Clients.Group("dcshut@gmail.com").SendAsync("ReceiveMessageInChatGroup", "Hello user!").ConfigureAwait(false);
-
             return notificationDtoReturn;
         }
 
-        public async Task Create(NotificationType type, NotificationAction action, Application application)
+        public async Task Create(NotificationType type, NotificationAction action, Guid objectId, IEnumerable<User> notificationRecipients)
         {
             logger.LogInformation($"Notifications (type: {type}, action: {action}) creating was started.");
 
-            var notification = new Notification() { Id = Guid.NewGuid(), Type = type, Action = action, CreatedDateTime = DateTimeOffset.UtcNow, Text = "" };
-
-            var recipients = await GetNotificationRecipients(notification, application).ConfigureAwait(false);
-
-            foreach (string id in recipients)
+            var notification = new Notification()
             {
-                notification.UserId = id;
-                var newNotification = await notificationRepository.Create(notification).ConfigureAwait(false);
+                Id = Guid.NewGuid(),
+                Type = type,
+                Action = action,
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                ObjectId = objectId,
+                Text = string.Empty,
+            };
 
-                logger.LogInformation($"Notification with Id = {newNotification?.Id} created successfully.");
-            }
-        }
-
-        private async Task<IEnumerable<string>> GetNotificationRecipients(Notification notificationDto, Application application)
-        {
-            var result = new List<string>();
-
-            if (notificationDto.Type == NotificationType.Application)
+            foreach (var user in notificationRecipients)
             {
-                if (notificationDto.Action == NotificationAction.Create)
-                {
-                    string providerUserId = await workshopService.GetProviderUserId(application.WorkshopId).ConfigureAwait(false);
-                    result.Add(providerUserId);
-                }
-            }
+                notification.UserId = user.Id;
+                var newNotificationDto = await notificationRepository.Create(notification).ConfigureAwait(false);
 
-            return result;
+                logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was created successfully.");
+
+                await notificationHub.Clients
+                    .Group(user.UserName)
+                    .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(newNotificationDto))
+                    .ConfigureAwait(false);
+
+                logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was sent to {user?.UserName} successfully.");
+            }
         }
 
         /// <inheritdoc/>
