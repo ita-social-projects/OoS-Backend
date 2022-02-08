@@ -36,29 +36,23 @@ namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers
             };
         }
 
-        public static MultipleImageUploadingResponse CreateSingleUploadingResult(this OperationResult result)
+        public static SingleImageUploadingResponse CreateSingleUploadingResult(this OperationResult result)
         {
             _ = result ?? throw new ArgumentNullException(nameof(result));
 
-            return new MultipleImageUploadingResponse
+            return new SingleImageUploadingResponse()
             {
-                AllImagesUploaded = result.Succeeded,
-                GeneralMessage = result.Succeeded ? null : result.Errors.FirstOrDefault()?.Description,
-                HasResults = true,
-                Results = CreateSingleResultResponse(result),
+                Result = result,
             };
         }
 
-        public static MultipleImageRemovingResponse CreateSingleRemovingResult(this OperationResult result)
+        public static SingleImageRemovingResponse CreateSingleRemovingResult(this OperationResult result)
         {
             _ = result ?? throw new ArgumentNullException(nameof(result));
 
-            return new MultipleImageRemovingResponse
+            return new SingleImageRemovingResponse()
             {
-                AllImagesRemoved = result.Succeeded,
-                GeneralMessage = result.Succeeded ? null : result.Errors.FirstOrDefault()?.Description,
-                HasResults = true,
-                Results = CreateSingleResultResponse(result),
+                Result = result,
             };
         }
 
@@ -70,11 +64,6 @@ namespace OutOfSchool.WebApi.Util.ControllersResultsHelpers
             }
 
             return multipleResults.HasResults ? multipleResults.Results : null;
-        }
-
-        private static IDictionary<short, OperationResult> CreateSingleResultResponse(OperationResult result)
-        {
-            return result.Succeeded ? null : new Dictionary<short, OperationResult> { { 0, result } };
         }
     }
 }

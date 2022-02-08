@@ -124,7 +124,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
             {
                 Teacher = updateResult.Teacher,
                 UploadingAvatarImageResult = updateResult.UploadingAvatarImageResult?.CreateSingleUploadingResult(),
-                RemovingAvatarImageResult = updateResult.RemovingAvatarImageResult?.CreateSingleRemovingResult(),
             });
         }
 

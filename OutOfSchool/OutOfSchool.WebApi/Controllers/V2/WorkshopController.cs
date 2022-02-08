@@ -183,6 +183,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 new WorkshopCreationResponse
                 {
                     Workshop = creationResult.Workshop,
+                    UploadingCoverImageResult = creationResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
                     UploadingImagesResults = creationResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
                 });
         }
@@ -217,12 +218,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
             var updatingResult = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
-            return Ok(new WorkshopUpdateResponse
-            {
-                Workshop = updatingResult.Workshop,
-                UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
-                RemovingImagesResults = updatingResult.RemovingImagesResults?.CreateMultipleRemovingResult(),
-            });
+            return Ok(CreateUpdateResponse(updatingResult));
         }
 
         /// <summary>
@@ -275,6 +271,16 @@ namespace OutOfSchool.WebApi.Controllers.V2
             }
 
             return true;
+        }
+
+        private WorkshopUpdateResponse CreateUpdateResponse(WorkshopUpdateResultDto updatingResult)
+        {
+            return new WorkshopUpdateResponse
+            {
+                Workshop = updatingResult.Workshop,
+                UploadingCoverImageResult = updatingResult.UploadingCoverImageResult?.CreateSingleUploadingResult(),
+                UploadingImagesResults = updatingResult.UploadingImagesResults?.CreateMultipleUploadingResult(),
+            };
         }
     }
 }

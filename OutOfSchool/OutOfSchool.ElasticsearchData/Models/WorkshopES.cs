@@ -13,7 +13,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string Title { get; set; }
 
-        public string Logo { get; set; }
+        public string CoverImageId { get; set; }
 
         public float Rating { get; set; }
 

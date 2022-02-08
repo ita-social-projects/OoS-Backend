@@ -474,7 +474,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Email = "email1@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
-                Logo = "image1",
+                CoverImageId = "image1",
                 ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
                 DirectionId = 1,
                 ClassId = 1,

@@ -11,6 +11,8 @@ namespace OutOfSchool.WebApi.Models.Workshop
     {
         public List<IFormFile> ImageFiles { get; set; }
 
+        public IFormFile CoverImage { get; set; } 
+
         public new List<TeacherUpdateDto> Teachers { get; set; }
     }
 }

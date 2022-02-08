@@ -69,7 +69,7 @@ namespace OutOfSchool.Services.Models
         public string DisabilityOptionsDesc { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string Logo { get; set; } = string.Empty;
+        public string CoverImageId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
