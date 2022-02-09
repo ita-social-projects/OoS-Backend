@@ -153,7 +153,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 logger.LogInformation($"{path} User is blocked. Login was failed.");
 
                 // TODO: add localization
-                ModelState.AddModelError(string.Empty, "Your account is blocked. Contact administrator");
+                ModelState.AddModelError(string.Empty,localizer["Your account is blocked"]);
                 return View(new LoginViewModel
                 {
                     ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),

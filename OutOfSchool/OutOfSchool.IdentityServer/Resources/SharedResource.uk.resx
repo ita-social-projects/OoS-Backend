@@ -265,6 +265,9 @@
   <data name="is already taken" xml:space="preserve">
     <value>вже зайнятий</value>
   </data>
+    <data name="Your account is blocked" xml:space="preserve">
+    <value>Ваш акаунт заблокований. Звʼяжіться з адміністратором.</value>
+  </data>
   <data name="Login or password is wrong" xml:space="preserve">
     <value>Логін або пароль неправильні</value>
   </data>
