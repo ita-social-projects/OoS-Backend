@@ -111,13 +111,11 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Application with Id = {newApplication?.Id} created successfully.");
 
-            var recipients = await GetNotificationsRecipients(NotificationAction.Create, newApplication.Id).ConfigureAwait(false);
-
             await notificationService.Create(
                 NotificationType.Application,
                 NotificationAction.Create,
                 newApplication.Id,
-                recipients).ConfigureAwait(false);
+                this).ConfigureAwait(false);
 
             return new ModelWithAdditionalData<ApplicationDto, int>()
             {

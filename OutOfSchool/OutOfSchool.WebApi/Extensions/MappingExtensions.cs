@@ -101,6 +101,11 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Favorite, FavoriteDto>(favorite, cfg => { cfg.CreateMap<Favorite, FavoriteDto>(); });
         }
 
+        public static NotificationDto ToModel(this Notification notification)
+        {
+            return Mapper<Notification, NotificationDto>(notification, cfg => { cfg.CreateMap<Notification, NotificationDto>(); });
+        }
+
         public static ParentDTO ToModel(this Parent parent)
         {
             var parentDto =
@@ -254,6 +259,11 @@ namespace OutOfSchool.WebApi.Extensions
         public static Favorite ToDomain(this FavoriteDto favoriteDto)
         {
             return Mapper<FavoriteDto, Favorite>(favoriteDto, cfg => { cfg.CreateMap<FavoriteDto, Favorite>(); });
+        }
+
+        public static Notification ToDomain(this NotificationDto notificationDto)
+        {
+            return Mapper<NotificationDto, Notification>(notificationDto, cfg => { cfg.CreateMap<NotificationDto, Notification>(); });
         }
 
         public static Parent ToDomain(this ParentDTO parentDto)
