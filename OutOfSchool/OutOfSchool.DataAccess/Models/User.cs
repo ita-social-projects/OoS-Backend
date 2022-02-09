@@ -24,13 +24,13 @@ namespace OutOfSchool.Services.Models
         [MaxLength(30)]
         public string FirstName { get; set; }
 
+        // If the flag is true, that user can no longer do anything to website.
+        public bool IsBlocked { get; set; } = false;
+
         [MaxLength(50)]
         public string Role { get; set; }
 
         public bool IsRegistered { get; set; }
-
-        // If the flag is set, that user can no longer do anything to website.
-        public bool IsEnabled { get; set; }
 
         // for permissions managing at login and check if user is original provider or its admin
         public bool IsDerived { get; set; } = false;

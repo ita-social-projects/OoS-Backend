@@ -264,6 +264,9 @@
   <data name="is already taken" xml:space="preserve">
     <value>is already taken</value>
   </data>
+    <data name="Your account is blocked" xml:space="preserve">
+    <value>Your account is blocked. Please, contact administrator</value>
+  </data>
   <data name="Login or password is wrong" xml:space="preserve">
     <value>Login or password is wrong</value>
   </data>
