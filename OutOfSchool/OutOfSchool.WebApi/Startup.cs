@@ -181,6 +181,11 @@ namespace OutOfSchool.WebApi
                     }))
                 .AddCustomDataProtection("WebApi");
 
+            services.AddDbContext<FilesDbContext>(opt =>
+            {
+                opt.UseMySql(Configuration.GetConnectionString("ExternalImageStorage"), serverVersion);
+            });
+
             // Add Elasticsearch client
             var elasticConfig = Configuration
                 .GetSection(ElasticConfig.Name)
