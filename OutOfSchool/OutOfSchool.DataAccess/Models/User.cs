@@ -24,8 +24,8 @@ namespace OutOfSchool.Services.Models
         [MaxLength(30)]
         public string FirstName { get; set; }
 
-        // If the flag is set, that user can no longer do anything to website.
-        public bool IsEnabled { get; set; } = true;
+        // If the flag is true, that user can no longer do anything to website.
+        public bool IsBlocked { get; set; } = false;
 
         [MaxLength(50)]
         public string Role { get; set; }

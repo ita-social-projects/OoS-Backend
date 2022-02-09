@@ -949,10 +949,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
-                    b.Property<bool>("IsDerived")
+                    b.Property<bool>("IsBlocked")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("IsEnabled")
+                    b.Property<bool>("IsDerived")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsRegistered")

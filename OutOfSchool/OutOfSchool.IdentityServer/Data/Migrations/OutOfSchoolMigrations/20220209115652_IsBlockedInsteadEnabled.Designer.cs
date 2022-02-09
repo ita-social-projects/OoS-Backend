@@ -9,8 +9,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220209111602_EnabledDefaultTrueFix1")]
-    partial class EnabledDefaultTrueFix1
+    [Migration("20220209115652_IsBlockedInsteadEnabled")]
+    partial class IsBlockedInsteadEnabled
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -950,6 +950,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsDerived")
                         .HasColumnType("tinyint(1)");

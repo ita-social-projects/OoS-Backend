@@ -148,7 +148,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = await userManager.FindByEmailAsync(model.Username);
 
-            if (user != null && !user.IsEnabled)
+            if (user != null && user.IsBlocked)
             {
                 logger.LogInformation($"{path} User is blocked. Login was failed.");
 
@@ -287,7 +287,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 CreatingTime = DateTimeOffset.UtcNow,
                 Role = model.Role,
                 IsRegistered = false,
-                IsEnabled = true,
+                IsBlocked = false,
             };
 
             try

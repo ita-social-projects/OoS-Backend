@@ -2,23 +2,22 @@
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
-    public partial class EnabledDefaultTrueFix2 : Migration
+    public partial class IsBlockedInsteadEnabled : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
+            migrationBuilder.RenameColumn(
                 name: "IsEnabled",
                 table: "AspNetUsers",
-                type: "tinyint(1)",
-                nullable: false,
-                defaultValue: true);
+                newName: "IsBlocked");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "IsEnabled",
-                table: "AspNetUsers");
+            migrationBuilder.RenameColumn(
+                name: "IsBlocked",
+                table: "AspNetUsers",
+                newName: "IsEnabled");
         }
     }
 }
