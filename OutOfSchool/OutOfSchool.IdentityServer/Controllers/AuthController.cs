@@ -152,7 +152,13 @@ namespace OutOfSchool.IdentityServer.Controllers
             {
                 logger.LogInformation($"{path} User is blocked. Login was failed.");
 
-                return BadRequest();
+                // TODO: add localization
+                ModelState.AddModelError(string.Empty, "Your account is blocked. Contact administrator");
+                return View(new LoginViewModel
+                {
+                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                    ReturnUrl = model.ReturnUrl,
+                });
             }
 
             var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
