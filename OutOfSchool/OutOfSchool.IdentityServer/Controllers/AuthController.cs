@@ -148,11 +148,17 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = await userManager.FindByEmailAsync(model.Username);
 
-            if (user != null && !user.IsEnabled)
+            if (user != null && user.IsBlocked)
             {
                 logger.LogInformation($"{path} User is blocked. Login was failed.");
 
-                return BadRequest();
+                // TODO: add localization
+                ModelState.AddModelError(string.Empty,localizer["Your account is blocked"]);
+                return View(new LoginViewModel
+                {
+                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                    ReturnUrl = model.ReturnUrl,
+                });
             }
 
             var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
@@ -281,7 +287,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 CreatingTime = DateTimeOffset.UtcNow,
                 Role = model.Role,
                 IsRegistered = false,
-                IsEnabled = true,
+                IsBlocked = false,
             };
 
             try

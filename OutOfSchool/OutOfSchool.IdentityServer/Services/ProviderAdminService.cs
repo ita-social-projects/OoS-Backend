@@ -75,7 +75,7 @@ namespace OutOfSchool.IdentityServer.Services
                         try
                         {
                             user.IsDerived = true;
-                            user.IsEnabled = true;
+                            user.IsBlocked = false;
                             user.Role = nameof(Role.Provider).ToLower();
 
                             IdentityResult result = await userManager.CreateAsync(user, password);
@@ -263,7 +263,7 @@ namespace OutOfSchool.IdentityServer.Services
                                 $"User(id): {userId}");
             }
 
-            user.IsEnabled = false;
+            user.IsBlocked = true;
             var updateResult = await userManager.UpdateAsync(user);
 
             if (!updateResult.Succeeded)
