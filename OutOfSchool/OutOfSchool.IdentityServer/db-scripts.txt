@@ -1,8 +1,11 @@
 ﻿dotnet ef migrations add InitialIdentityServerPersistedGrantDbMigration -c PersistedGrantDbContext -o Data/Migrations/IdentityServer/PersistedGrantDb
 dotnet ef migrations add InitialIdentityServerConfigurationDbMigration -c ConfigurationDbContext -o Data/Migrations/IdentityServer/ConfigurationDb
 
-dotnet ef migrations add AddressH3Add -c OutOfSchoolDbContext -o Data/Migrations/OutOfSchoolMigrations
+dotnet ef migrations add MIGRATIONNAME -c OutOfSchoolDbContext -o Data/Migrations/OutOfSchoolMigrations
 dotnet ef database update -c OutOfSchoolDbContext
+
+dotnet ef migrations add MIGRATIONNAME -c FilesDbContext -o Data/Migrations/FilesMigrations
+dotnet ef database update -c FilesDbContext
 
 dotnet ef database update -c PersistedGrantDbContext
 dotnet ef database update -c ConfigurationDbContext

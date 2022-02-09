@@ -58,6 +58,7 @@ namespace OutOfSchool.Services.Repository
                 };
 
                 await dbContext.Images.AddAsync(newImage, cancellationToken).ConfigureAwait(false);
+                await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 return newImage.Id.ToString();
             }
             catch (Exception ex)
@@ -66,18 +67,18 @@ namespace OutOfSchool.Services.Repository
             }
         }
 
-        public Task DeleteImageAsync(string imageId, CancellationToken cancellationToken = default)
+        public async Task DeleteImageAsync(string imageId, CancellationToken cancellationToken = default)
         {
-            //_ = imageId ?? throw new ArgumentNullException(nameof(imageId));
-            //try
-            //{
-            //    await gridFsBucket.DeleteAsync(new ObjectId(imageId), cancellationToken: cancellationToken).ConfigureAwait(false);
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new ImageStorageException(ex);
-            //}
-            return Task.CompletedTask;
+            _ = imageId ?? throw new ArgumentNullException(nameof(imageId));
+            try
+            {
+                dbContext.Images.Remove(new DbImageModel { Id = new Guid(imageId) });
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new ImageStorageException(ex);
+            }
         }
     }
 }

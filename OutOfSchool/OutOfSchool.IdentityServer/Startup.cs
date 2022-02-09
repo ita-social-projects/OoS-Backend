@@ -77,6 +77,12 @@ namespace OutOfSchool.IdentityServer
                                 .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
                                 .MigrationsAssembly("OutOfSchool.IdentityServer")));
 
+            services.AddDbContext<FilesDbContext>(opt =>
+            {
+                opt.UseMySql(config.GetConnectionString("ExternalImageStorage"), serverVersion, optionsBuilder =>
+                    optionsBuilder.MigrationsAssembly("OutOfSchool.IdentityServer"));
+            });
+
             services.AddCustomDataProtection("IdentityServer");
 
             services.AddLocalization(options => options.ResourcesPath = "Resources");

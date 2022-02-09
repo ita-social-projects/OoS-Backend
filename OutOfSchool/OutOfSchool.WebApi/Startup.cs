@@ -153,7 +153,7 @@ namespace OutOfSchool.WebApi
 
             // Image options
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
-            services.AddSingleton<MongoDb>();
+            //services.AddSingleton<MongoDb>();
             services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
             services.Configure<ImageOptions<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
 
@@ -260,7 +260,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
-            services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
+            services.AddTransient<IExternalImageStorage, ExternalMysqlImageStorage>();
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
