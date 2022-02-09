@@ -23,7 +23,7 @@ namespace OutOfSchool.WebApi.Services
 {
     public class NotificationService : INotificationService
     {
-        private readonly ISensitiveEntityRepository<Notification> notificationRepository;
+        private readonly INotificationRepository notificationRepository;
         private readonly ILogger<NotificationService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="notificationHub">NotificationHub.</param>
         /// <param name="notificationsConfig">NotificationsConfig.</param>
         public NotificationService(
-            ISensitiveEntityRepository<Notification> notificationRepository,
+            INotificationRepository notificationRepository,
             ILogger<NotificationService> logger,
             IStringLocalizer<SharedResource> localizer,
             IMapper mapper,
@@ -148,9 +148,28 @@ namespace OutOfSchool.WebApi.Services
 
                 return result.ToModel();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                logger.LogError($"Updating failed. Notification with Id = {id} doesn't exist in the system.");
+                logger.LogError($"Updating ReadDateTime in notification Id = {id} failed. Exception: {ex.Message}.");
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task ReadUsersNotificationsByType(string userId, NotificationType notificationType)
+        {
+            logger.LogInformation($"Updating ReadDateTime UserId = {userId} NotificationType = {notificationType} started.");
+
+            try
+            {
+                var readDateTime = DateTimeOffset.UtcNow;
+                var notifications = await notificationRepository.SetReadDateTimeByType(userId, notificationType, readDateTime).ConfigureAwait(false);
+
+                logger.LogInformation($"Notifications UserId = {userId} NotificationType = {notificationType} updated succesfully.");
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                logger.LogError($"Updating ReadDateTime UserId = {userId} NotificationType = {notificationType} failed. Exception: {ex.Message}.");
                 throw;
             }
         }

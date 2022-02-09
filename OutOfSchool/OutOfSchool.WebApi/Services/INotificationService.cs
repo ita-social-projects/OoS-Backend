@@ -31,18 +31,26 @@ namespace OutOfSchool.WebApi.Services
         Task Create(NotificationType type, NotificationAction action, Guid objectId, INotificationReciever service);
 
         /// <summary>
-        /// To delete the object from DB.
+        /// Delete the object from DB.
         /// </summary>
         /// <param name="id">Key of the Notification in table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(Guid id);
 
         /// <summary>
-        /// To read notification.
+        /// Set property ReadDateTime in the notification.
         /// </summary>
         /// <param name="id">Key of the Notification in table.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task<NotificationDto> Read(Guid id);
+
+        /// <summary>
+        /// Set property ReadDateTime in notifications with specified notificationType.
+        /// </summary>
+        /// <param name="userId">User's id for notifications.</param>
+        /// <param name="notificationType">NotificationType.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task ReadUsersNotificationsByType(string userId, NotificationType notificationType);
 
         /// <summary>
         /// Get entity by it's key.

@@ -43,7 +43,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="notificationDto">Notification entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [AllowAnonymous]
+        /// <response code="201">Notification was successfully created.</response>
+        /// <response code="400">NotificationDto was wrong.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="500">If any server error occures.</response>
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -65,9 +69,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="id">The key of the Notification in table.</param>
         /// <returns>Status Code.</returns>
         /// <response code="204">Notification was successfully deleted.</response>
+        /// <response code="400">Id was wrong.</response>
+        /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
+        [Authorize]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Delete(Guid id)
         {
@@ -82,9 +91,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="id">The key of the Notification in table.</param>
         /// <returns>Status Code.</returns>
         /// <response code="200">Notification was successfully updated.</response>
+        /// <response code="400">Id was wrong.</response>
+        /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
+        [Authorize]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Read(Guid id)
         {
@@ -92,12 +106,40 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
+        /// Update ReadDateTime field in all notifications with specified notificationType.
+        /// </summary>
+        /// <param name="notificationType">NotificationType.</param>
+        /// <returns>Status Code.</returns>
+        /// <response code="200">Notifications were successfully updated.</response>
+        /// <response code="400">NotificationType was wrong.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="500">If any server error occures.</response>
+        [Authorize]
+        [HttpPut("{notificationType}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> ReadUsersNotificationsByType(NotificationType notificationType)
+        {
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            await notificationService.ReadUsersNotificationsByType(userId, notificationType).ConfigureAwait(false);
+            return Ok();
+        }
+
+        /// <summary>
         /// Get Notification by it's id.
         /// </summary>
         /// <param name="id">Notification id.</param>
         /// <returns>Notification.</returns>
-        [AllowAnonymous]
+        /// <response code="200">All user's nofiticaitions.</response>
+        /// <response code="400">Id was wrong.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="500">If any server error occures.</response>
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
@@ -108,15 +150,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <summary>
         /// Get new user's notification from the database.
         /// </summary>
-        /// <returns>List of all user's notifications.</returns>
+        /// <returns>List of all grouped and single user's notifications.</returns>
         /// <response code="200">All user's nofiticaitions.</response>
-        /// <response code="204">If there are no user's notifications.</response>
+        /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAllUsersNotificationsGroupedAsync()
         {
             var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
@@ -132,13 +174,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="notificationType">Type of notifications.</param>
         /// <returns>List of all user's notifications.</returns>
         /// <response code="200">All user's nofiticaitions.</response>
-        /// <response code="204">If there are no user's notifications.</response>
+        /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAllUsersNotifications(NotificationType? notificationType)
         {
             var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
@@ -153,11 +195,13 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <returns>Amount of all user's notifications.</returns>
         /// <response code="200">Amount of all user's nofiticaitions.</response>
+        /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAmountOfNewUsersNotifications()
         {
             var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
