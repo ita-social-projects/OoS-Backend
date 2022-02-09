@@ -257,6 +257,9 @@ namespace OutOfSchool.WebApi
                 .Bind(Configuration.GetSection(ApplicationsConstraintsConfig.Name))
                 .ValidateDataAnnotations();
 
+            // Notification options
+            services.Configure<NotificationsConfig>(Configuration.GetSection(NotificationsConfig.Name));
+
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
             services.AddSwagger(swaggerConfig);

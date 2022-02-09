@@ -16,7 +16,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    public class NotificationController : Controller
+    public class NotificationController : ControllerBase
     {
         private readonly INotificationService notificationService;
         private readonly ILogger<NotificationController> logger;
@@ -77,6 +77,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
+        /// Update ReadDateTime field in Notification.
+        /// </summary>
+        /// <param name="id">The key of the Notification in table.</param>
+        /// <returns>Status Code.</returns>
+        /// <response code="200">Notification was successfully updated.</response>
+        /// <response code="500">If any server error occures.</response>
+        [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> Read(Guid id)
+        {
+            return Ok(await notificationService.Read(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
         /// Get Notification by it's id.
         /// </summary>
         /// <param name="id">Notification id.</param>
@@ -88,6 +103,27 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public async Task<IActionResult> GetById(Guid id)
         {
             return Ok(await notificationService.GetById(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get new user's notification from the database.
+        /// </summary>
+        /// <returns>List of all user's notifications.</returns>
+        /// <response code="200">All user's nofiticaitions.</response>
+        /// <response code="204">If there are no user's notifications.</response>
+        /// <response code="500">If any server error occures.</response>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllUsersNotificationsGroupedAsync()
+        {
+            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+
+            var allNofitications = await notificationService.GetAllUsersNotificationsGroupedAsync(userId).ConfigureAwait(false);
+
+            return Ok(allNofitications);
         }
 
         /// <summary>

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Notifications;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -25,9 +26,9 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="type">Notificaton type to add.</param>
         /// <param name="action">Notificaton action to add.</param>
         /// <param name="objectId">ObjectId.</param>
-        /// <param name="notificationRecipients">NotificationRecipients.</param>
+        /// <param name="service">Service which implements interface INotificationReciever.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Create(NotificationType type, NotificationAction action, Guid objectId, IEnumerable<User> notificationRecipients);
+        Task Create(NotificationType type, NotificationAction action, Guid objectId, INotificationReciever service);
 
         /// <summary>
         /// To delete the object from DB.
@@ -37,11 +38,25 @@ namespace OutOfSchool.WebApi.Services
         Task Delete(Guid id);
 
         /// <summary>
+        /// To read notification.
+        /// </summary>
+        /// <param name="id">Key of the Notification in table.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task<NotificationDto> Read(Guid id);
+
+        /// <summary>
         /// Get entity by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<NotificationDto> GetById(Guid id);
+
+        /// <summary>
+        /// Get all user's notification grouped by type from the database.
+        /// </summary>
+        /// <param name="userId">User's id for notifications.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<NotificationGroupedAndSingle> GetAllUsersNotificationsGroupedAsync(string userId);
 
         /// <summary>
         /// Get all user's notification from the database.
