@@ -100,6 +100,7 @@ docker pull gcr.io/gcp101292-pozashkillya/oos-auth:LATEST_TAG
 
 Launch application:
 
+```bash
 helm upgrade --install \
     --namespace default \
     --values ./outofschool/values-local.yaml \
