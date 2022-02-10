@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -6,6 +7,7 @@ namespace OutOfSchool.WebApi.Middlewares
 {
     public class AuthorizationTokenMiddleware
     {
+        private static readonly string[] Hubs = new string[] { "/chathub", "/notificationhub" };
         private readonly RequestDelegate next;
 
         public AuthorizationTokenMiddleware(RequestDelegate next)
@@ -34,16 +36,7 @@ namespace OutOfSchool.WebApi.Middlewares
 
         private bool IsHubConnectionPath(HttpRequest request)
         {
-            string[] hubs = new string[] { "/chathub", "/notificationhub" };
-            foreach (string hub in hubs)
-            {
-                if (request.Path.StartsWithSegments(hub, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return Hubs.Where(h => request.Path.StartsWithSegments(h, StringComparison.OrdinalIgnoreCase)).Any();
         }
     }
 }

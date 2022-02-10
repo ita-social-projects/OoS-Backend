@@ -73,7 +73,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task Create(NotificationType type, NotificationAction action, Guid objectId, INotificationReciever service)
         {
-            if (!notificationsConfig.Value.Enabled)
+            if (!notificationsConfig.Value.Enabled || service is null)
             {
                 return;
             }
@@ -167,7 +167,7 @@ namespace OutOfSchool.WebApi.Services
             try
             {
                 var readDateTime = DateTimeOffset.UtcNow;
-                var notifications = await notificationRepository.SetReadDateTimeByType(userId, notificationType, readDateTime).ConfigureAwait(false);
+                _ = await notificationRepository.SetReadDateTimeByType(userId, notificationType, readDateTime).ConfigureAwait(false);
 
                 logger.LogInformation($"Notifications UserId = {userId} NotificationType = {notificationType} updated succesfully.");
             }
