@@ -224,7 +224,7 @@ namespace OutOfSchool.WebApi
             services.AddScoped<IImageValidatorService<Teacher>, ImageValidatorService<Teacher>>();
             services.AddTransient<IAboutPortalService, AboutPortalService>();
             services.AddTransient<ISupportInformationService, SupportInformationService>();
-            services.AddTransient<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
+            services.AddScoped<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
             services.AddTransient<INotificationService, NotificationService>();
 
             // entities repositories
@@ -287,6 +287,9 @@ namespace OutOfSchool.WebApi
             services.AddOptions<RedisConfig>()
                 .Bind(Configuration.GetSection(RedisConfig.Name))
                 .ValidateDataAnnotations();
+
+            // Notification options
+            services.Configure<NotificationsConfig>(Configuration.GetSection(NotificationsConfig.Name));
 
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
