@@ -34,9 +34,9 @@ namespace OutOfSchool.WebApi.Middlewares
             await next(httpContext).ConfigureAwait(false);
         }
 
-        private bool IsHubConnectionPath(HttpRequest request)
+        private static bool IsHubConnectionPath(HttpRequest request)
         {
-            return Hubs.Where(h => request.Path.StartsWithSegments(h, StringComparison.OrdinalIgnoreCase)).Any();
+            return Hubs.Any(h => request.Path.StartsWithSegments(h, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
