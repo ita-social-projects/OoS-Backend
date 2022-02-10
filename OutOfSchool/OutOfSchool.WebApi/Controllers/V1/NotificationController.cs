@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1
@@ -19,23 +21,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
     public class NotificationController : ControllerBase
     {
         private readonly INotificationService notificationService;
-        private readonly ILogger<NotificationController> logger;
-        private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationController"/> class.
         /// </summary>
         /// <param name="notificationService">Service for Notification model.</param>
-        /// <param name="logger">Logger.</param>
-        /// <param name="localizer">Localizer.</param>
         public NotificationController(
-            INotificationService notificationService,
-            ILogger<NotificationController> logger,
-            IStringLocalizer<SharedResource> localizer)
+            INotificationService notificationService)
         {
             this.notificationService = notificationService;
-            this.logger = logger;
-            this.localizer = localizer;
         }
 
         /// <summary>
@@ -48,11 +42,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpPost]
         public async Task<IActionResult> Create(NotificationDto notificationDto)
         {
             var notification = await notificationService.Create(notificationDto).ConfigureAwait(false);
@@ -96,7 +90,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="500">If any server error occures.</response>
         [Authorize]
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -137,11 +131,11 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize]
+        [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             return Ok(await notificationService.GetById(id).ConfigureAwait(false));
@@ -155,10 +149,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationGroupedAndSingle))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet]
         public async Task<IActionResult> GetAllUsersNotificationsGroupedAsync()
         {
             var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
@@ -177,10 +171,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NotificationDto>))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet]
         public async Task<IActionResult> GetAllUsersNotifications(NotificationType? notificationType)
         {
             var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
@@ -198,17 +192,17 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationAmount))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet]
         public async Task<IActionResult> GetAmountOfNewUsersNotifications()
         {
             var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
             var amount = await notificationService.GetAmountOfNewUsersNotificationsAsync(userId).ConfigureAwait(false);
 
-            return Ok(new { Amount = amount });
+            return Ok(new NotificationAmount() { Amount = amount });
         }
     }
 }

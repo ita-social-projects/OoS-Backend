@@ -8,7 +8,7 @@ namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
     /// Defines interface for getting notification recievers.
-    /// All services, which use notifications, should implement this interface.
+    /// All services, which use notifications, implement this interface.
     /// </summary>
     public interface INotificationReciever
     {

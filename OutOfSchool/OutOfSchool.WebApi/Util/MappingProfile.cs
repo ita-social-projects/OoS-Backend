@@ -5,6 +5,7 @@ using AutoMapper;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util.CustomComparers;
