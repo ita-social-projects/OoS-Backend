@@ -600,39 +600,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         });
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<int>("Action")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("CreatedDateTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid?>("ObjectId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<DateTimeOffset?>("ReadDateTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Text")
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Notifications");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
                 {
                     b.Property<Guid>("Id")
