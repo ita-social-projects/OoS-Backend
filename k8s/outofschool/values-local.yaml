@@ -1,0 +1,175 @@
+# Local values override
+
+global:
+  extraEnvironment: {}
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+elasticsearch:
+  enabled: true
+  generateCertificate: true
+  replicas: 1
+  protocol: http
+  esJavaOpts: "-Xms512m -Xmx512m" # example: "-Xmx1g -Xms1g"
+  volumeClaimTemplate:
+    accessModes: [ "ReadWriteOnce" ]
+    storageClassName: "hostpath"
+    resources:
+      requests:
+        storage: 1Gi
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1Gi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+kibana:
+  enabled: true
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+  healthCheckPath: "/kibana/app/kibana"
+  kibanaConfig:
+    kibana.yml: |
+      server.basePath: "/kibana"
+      server.publicBaseUrl: http://localhost/kibana
+      server.rewriteBasePath: true
+  ingress:
+    enabled: true
+    hosts:
+      - host: "localhost"
+        paths:
+          - path: /kibana
+
+mysql:
+  enabled: true
+  primary:
+    persistence:
+      enabled: true
+      storageClass: "hostpath"
+      accessModes:
+      - ReadWriteOnce
+      size: 1Gi 
+    extraEnvVarsSecret: mysql-api-auth
+
+## If you want - you can enable PHPMyAdmin but don't turn ingress on, as it won't work localy atm
+## Use port forwarding: https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/
+phpmyadmin:
+  enabled: false
+  ingress:
+    enabled: false
+  db:
+    allowArbitraryServer: false
+    host: "outofschool-mysql"
+
+mongodb:
+  enabled: true
+  persistence:
+    enabled: true
+    storageClass: "hostpath"
+    size: 1Gi
+  metrics:
+    enabled: false
+
+webapi:
+  enabled: true
+  aspNetCoreEnvironment: Kubernetes
+  image:
+    repository: gcr.io/gcp101292-pozashkillya/oos-api
+    pullPolicy: IfNotPresent
+    tag: 85ab0a4
+  extraEnvironment:
+    Elasticsearch__Urls__0: http://elasticsearch-master:9200/
+    Elasticsearch__Password: Oos-password1
+    ConnectionStrings__ExternalImageStorage__ServerName: mongodb://oos:Oos-password1@outofschool-mongodb:27017/outofschool?authSource=outofschool
+    ConnectionStrings__ExternalImageStorage__DatabaseName: outofschool
+    ReverseProxy__BasePath: /web
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    hosts:
+      - host: localhost
+        paths:
+          - path: /web(/|$)(.*)
+            pathType: ImplementationSpecific
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 1000m
+      memory: 512Mi
+
+  autoscaling:
+    enabled: false
+identity:
+  enabled: true
+  aspNetCoreEnvironment: Kubernetes
+  image:
+    repository: gcr.io/gcp101292-pozashkillya/oos-auth
+    pullPolicy: IfNotPresent
+    tag: 85ab0a4
+  extraEnvironment:
+    outofschoolapi__ApiSecret: "muchsecretkey"
+    m2m.client__ClientSecret: "verysecretkey"
+    ReverseProxy__BasePath: /identity
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    hosts:
+      - host: localhost
+        paths:
+          - path: /identity(/|$)(.*)
+            pathType: ImplementationSpecific
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 1000m
+      memory: 512Mi
+
+  autoscaling:
+    enabled: false
+# TODO: Local frontend won't work for now, need to rebuild image with local config
+frontend:
+  enabled: false
+  image:
+    repository: gcr.io/gcp101292-pozashkillya/oos-frontend
+    pullPolicy: IfNotPresent
+    tag: 85ab0a4
+  ingress:
+    enabled: false
+    className: "nginx"
+    hosts:
+      - host: localhost
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 500m
+      memory: 128Mi
+
+  autoscaling:
+    enabled: false
+
+cert-manager:
+  enabled: false
+ingress-nginx:
+  enabled: false
