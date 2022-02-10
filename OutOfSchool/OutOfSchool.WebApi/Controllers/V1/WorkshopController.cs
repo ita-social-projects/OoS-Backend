@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Config;
@@ -164,6 +165,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             dto.Id = default;
             dto.Address.Id = default;
+            dto.Status = WorkshopStatus.Open;
             if (dto.Teachers.Any())
             {
                 foreach (var teacher in dto.Teachers)
@@ -215,6 +217,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
 
             var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId, dto.Id).ConfigureAwait(false);
+
+            if (dto.ProviderOwnership == OwnershipType.Common || dto.ProviderOwnership == OwnershipType.State)
+            {
+                dto.Status = WorkshopStatus.Open;
+            }
+
             if (!userHasRights)
             {
                 return StatusCode(403, "Forbidden to update workshops, which are not related to you");

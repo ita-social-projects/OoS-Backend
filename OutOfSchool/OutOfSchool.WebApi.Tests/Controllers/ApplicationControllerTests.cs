@@ -26,6 +26,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IApplicationService> applicationService;
         private Mock<IWorkshopService> workshopService;
         private Mock<IProviderService> providerService;
+        private Mock<IProviderAdminService> providerAdminService;
         private Mock<IParentService> parentService;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
@@ -46,6 +47,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             applicationService = new Mock<IApplicationService>();
             workshopService = new Mock<IWorkshopService>();
             providerService = new Mock<IProviderService>();
+            providerAdminService = new Mock<IProviderAdminService>();
             parentService = new Mock<IParentService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
@@ -59,6 +61,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 applicationService.Object,
                 localizer.Object,
                 providerService.Object,
+                providerAdminService.Object,
                 parentService.Object,
                 workshopService.Object)
             {
