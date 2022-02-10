@@ -13,7 +13,6 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Notifications;
@@ -74,6 +73,11 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task Create(NotificationType type, NotificationAction action, Guid objectId, INotificationReciever service)
         {
+            if (!notificationsConfig.Value.Enabled)
+            {
+                return;
+            }
+
             logger.LogInformation($"Notifications (type: {type}, action: {action}) creating was started.");
 
             var notification = new Notification()
@@ -146,7 +150,7 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation($"Notification with Id = {id} updated succesfully.");
 
-                return result.ToModel();
+                return mapper.Map<NotificationDto>(result);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -197,7 +201,14 @@ namespace OutOfSchool.WebApi.Services
             {
                 foreach (var item in notificationsConfig.Value.Grouped)
                 {
-                    grouped.Add((NotificationType)Enum.Parse(typeof(NotificationType), item));
+                    try
+                    {
+                        grouped.Add((NotificationType)Enum.Parse(typeof(NotificationType), item));
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        logger.LogInformation($"Error convert value '{item}' to type 'NotificationType'. Message: {ex.Message}");
+                    }
                 }
             }
 
