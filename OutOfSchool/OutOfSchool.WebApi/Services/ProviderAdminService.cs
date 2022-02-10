@@ -302,7 +302,7 @@ namespace OutOfSchool.WebApi.Services
                     var dto = mapper.Map<ProviderAdminDto>(user);
                     dto.IsDeputy = pa.IsDeputy;
 
-                    if (!user.IsEnabled)
+                    if (!user.IsBlocked)
                     {
                         dto.AccountStatus = AccountStatus.Blocked;
                     }

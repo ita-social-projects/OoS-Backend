@@ -33,11 +33,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private static WorkshopDTO workshop;
         private static WorkshopCreationDto workshopCreation;
         private static ProviderDto provider;
+        private static ProviderAdminDto providerAdmin;
         private static Mock<IOptions<AppDefaultsConfig>> options;
 
         private WorkshopController controller;
         private Mock<IWorkshopServicesCombiner> workshopServiceMoq;
         private Mock<IProviderService> providerServiceMoq;
+        private Mock<IProviderAdminService> providerAdminService;
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private string userId;
@@ -71,7 +73,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerServiceMoq = new Mock<IProviderService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, localizer.Object, options.Object)
+            controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, providerAdminService.Object, localizer.Object, options.Object)
             {
                 ControllerContext = new ControllerContext() { HttpContext = httpContextMoq.Object },
             };
