@@ -254,11 +254,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting amount of new notifications for user (userId = {userId}) started.");
 
-            var filter = PredicateBuilder.True<Notification>();
-
-            filter = filter.And(n => n.UserId == userId && n.ReadDateTime == null);
-
-            var notifications = await notificationRepository.GetByFilter(filter).ConfigureAwait(false);
+            var notifications = await notificationRepository.GetByFilter(n => n.UserId == userId && n.ReadDateTime == null).ConfigureAwait(false);
 
             logger.LogInformation(!notifications.Any()
                 ? $"Notification table for user (userId = {userId}) is empty."
