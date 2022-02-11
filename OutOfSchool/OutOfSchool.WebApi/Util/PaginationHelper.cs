@@ -11,6 +11,7 @@ namespace OutOfSchool.WebApi.Util
     /// Helper for pagination.
     /// </summary>
     /// <typeparam name="T">Entity type to get paginated results for.</typeparam>
+    [Obsolete("Not needed")]
     public class PaginationHelper<T> : IPaginationHelper<T>
         where T : class, new()
     {

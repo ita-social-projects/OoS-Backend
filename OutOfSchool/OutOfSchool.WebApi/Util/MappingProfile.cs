@@ -151,6 +151,10 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(c => c.Email))
                 .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
                 .ForMember(dest => dest.AccountStatus, m => m.Ignore());
+
+            CreateMap<ClassDto, Class>().ReverseMap();
+            CreateMap<DepartmentDto, Department>().ReverseMap();
+            CreateMap<DirectionDto, Direction>().ReverseMap();
         }
 
         private static List<Teacher> WorkshopTeachersMapperFunction(List<Teacher> dtoTeachers, List<Teacher> dest)

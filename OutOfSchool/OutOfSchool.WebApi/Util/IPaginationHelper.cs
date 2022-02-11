@@ -10,6 +10,7 @@ namespace OutOfSchool.WebApi.Util
     /// Interface for pagination helper.
     /// </summary>
     /// <typeparam name="T">Entity wich list we want to paginate for.</typeparam>
+    [Obsolete("Not needed")]
     public interface IPaginationHelper<T>
     {
         /// <summary>

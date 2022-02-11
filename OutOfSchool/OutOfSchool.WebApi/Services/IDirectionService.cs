@@ -47,5 +47,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key of the Direction in table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<Result<DirectionDto>> Delete(long id);
+
+        Task<SearchResult<DirectionDto>> FilterByName(DirectionFilter filter);
     }
 }

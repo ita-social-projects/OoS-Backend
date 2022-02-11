@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopRepository repositoryWorkshop;
         private readonly ILogger<DepartmentService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DepartmentService"/> class.
@@ -34,12 +36,14 @@ namespace OutOfSchool.WebApi.Services
             IDepartmentRepository entityRepository,
             IWorkshopRepository repositoryWorkshop,
             ILogger<DepartmentService> logger,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            IMapper mapper)
         {
             this.localizer = localizer;
             this.repository = entityRepository;
             this.repositoryWorkshop = repositoryWorkshop;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         /// <inheritdoc/>
@@ -47,7 +51,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation("Department creating was started.");
 
-            var department = dto.ToDomain();
+            var department = mapper.Map<Department>(dto);
 
             ModelValidation(dto);
 
@@ -55,7 +59,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Department with Id = {newDepartment?.Id} created successfully.");
 
-            return newDepartment.ToModel();
+            return mapper.Map<DepartmentDto>(newDepartment);
         }
 
         /// <inheritdoc/>
@@ -81,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation($"Department with Id = {id} succesfully deleted.");
 
-                return Result<DepartmentDto>.Success(entity.ToModel());
+                return Result<DepartmentDto>.Success(mapper.Map<DepartmentDto>(entity));
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -101,7 +105,7 @@ namespace OutOfSchool.WebApi.Services
                 ? "Department table is empty."
                 : $"All {departments.Count()} records were successfully received from the Department table");
 
-            return departments.Select(entity => entity.ToModel()).ToList();
+            return departments.Select(entity => mapper.Map<DepartmentDto>(entity)).ToList();
         }
 
         /// <inheritdoc/>
@@ -120,7 +124,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Successfully got a Department with Id = {id}.");
 
-            return department.ToModel();
+            return mapper.Map<DepartmentDto>(department);
         }
 
         /// <inheritdoc/>
@@ -130,13 +134,14 @@ namespace OutOfSchool.WebApi.Services
 
             IdValidation(id);
 
-            var departments = await this.repository.Get<int>(where: x => x.DirectionId == id).ToListAsync().ConfigureAwait(false);
+            var departments = await repository.Get<int>(where: x => x.DirectionId == id).ToListAsync()
+                .ConfigureAwait(false);
 
             logger.LogInformation(!departments.Any()
                 ? $"There is no Deparment with DirectionId = {id}."
                 : $"All {departments.Count} records were successfully received from the Department table");
 
-            return departments.Select(entity => entity.ToModel()).ToList();
+            return departments.Select(entity => mapper.Map<DepartmentDto>(entity)).ToList();
         }
 
         /// <inheritdoc/>
@@ -148,11 +153,11 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var department = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var department = await repository.Update(mapper.Map<Department>(dto)).ConfigureAwait(false);
 
                 logger.LogInformation($"Department with Id = {department?.Id} updated succesfully.");
 
-                return department.ToModel();
+                return mapper.Map<DepartmentDto>(department);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -173,7 +178,7 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentException(localizer["There is no Direction with such id."]);
             }
 
-            if (repository.SameExists(dto.ToDomain()))
+            if (repository.SameExists(mapper.Map<Department>(dto)))
             {
                 throw new ArgumentException(localizer["There is already a Department with such a data."]);
             }

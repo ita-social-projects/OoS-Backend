@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopRepository repositoryWorkshop;
         private readonly ILogger<ClassService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClassService"/> class.
@@ -34,12 +36,14 @@ namespace OutOfSchool.WebApi.Services
             IClassRepository entityRepository,
             IWorkshopRepository repositoryWorkshop,
             ILogger<ClassService> logger,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            IMapper mapper)
         {
             this.localizer = localizer;
             this.repository = entityRepository;
             this.repositoryWorkshop = repositoryWorkshop;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         /// <inheritdoc/>
@@ -47,7 +51,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation("Class creating was started.");
 
-            var classEntity = dto.ToDomain();
+            var classEntity = mapper.Map<Class>(dto);
 
             ModelValidation(dto);
 
@@ -55,7 +59,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Class with Id = {newClass?.Id} created successfully.");
 
-            return newClass.ToModel();
+            return mapper.Map<ClassDto>(newClass);
         }
 
         /// <inheritdoc/>
@@ -81,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation($"Class with Id = {id} succesfully deleted.");
 
-                return Result<ClassDto>.Success(entity.ToModel());
+                return Result<ClassDto>.Success(mapper.Map<ClassDto>(entity));
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -95,13 +99,13 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation("Getting all Classes started.");
 
-            var classes = await this.repository.GetAll().ConfigureAwait(false);
+            var classes = await repository.GetAll().ConfigureAwait(false);
 
             logger.LogInformation(!classes.Any()
                 ? "Class table is empty."
                 : $"All {classes.Count()} records were successfully received from the Class table");
 
-            return classes.Select(entity => entity.ToModel()).ToList();
+            return classes.Select(entity => mapper.Map<ClassDto>(entity)).ToList();
         }
 
         /// <inheritdoc/>
@@ -109,7 +113,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Class by Id started. Looking Id = {id}.");
 
-            var classEntity = await repository.GetById((int)id).ConfigureAwait(false);
+            var classEntity = await repository.GetById((int) id).ConfigureAwait(false);
 
             if (classEntity == null)
             {
@@ -120,7 +124,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Successfully got a Class with Id = {id}.");
 
-            return classEntity.ToModel();
+            return mapper.Map<ClassDto>(classEntity);
         }
 
         /// <inheritdoc/>
@@ -130,13 +134,14 @@ namespace OutOfSchool.WebApi.Services
 
             IdValidation(id);
 
-            var classes = await this.repository.Get<int>(where: x => x.DepartmentId == id).ToListAsync().ConfigureAwait(false);
+            var classes = await repository.Get<int>(where: x => x.DepartmentId == id).ToListAsync()
+                .ConfigureAwait(false);
 
             logger.LogInformation(!classes.Any()
                 ? $"There aren't Classes for Department with Id = {id}."
                 : $"All {classes.Count} records were successfully received from the Class table");
 
-            return classes.Select(entity => entity.ToModel()).ToList();
+            return classes.Select(entity => mapper.Map<ClassDto>(entity)).ToList();
         }
 
         /// <inheritdoc/>
@@ -146,11 +151,11 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var classEntity = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var classEntity = await repository.Update(mapper.Map<Class>(dto)).ConfigureAwait(false);
 
                 logger.LogInformation($"Class with Id = {classEntity?.Id} updated succesfully.");
 
-                return classEntity.ToModel();
+                return mapper.Map<ClassDto>(classEntity);
             }
             catch (DbUpdateConcurrencyException)
             {

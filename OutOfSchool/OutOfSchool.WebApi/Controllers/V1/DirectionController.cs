@@ -23,6 +23,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [HasPermission(Permissions.SystemManagement)]
     public class DirectionController : ControllerBase
     {
+        private const int MinimumNameLength = 3;
         private readonly IDirectionService service;
         private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -173,6 +174,36 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
 
             return NoContent();
+        }
+        
+        /// <summary>
+        /// To get all Directions from DB.
+        /// </summary>
+        /// <param name="filter">Filter with name, skip and take.</param>
+        /// <returns>List of all directions, or no content.</returns>
+        /// <response code="200">One or more directions were found.</response>
+        /// <response code="204">No direction was found.</response>
+        /// <response code="500">If any server error occures.</response>
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<DirectionDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter)
+        {
+            if (filter.Name?.Length < MinimumNameLength)
+            {
+                return NoContent();
+            }
+
+            var directions = await service.FilterByName(filter).ConfigureAwait(false);
+
+            if (directions.TotalAmount < 1)
+            {
+                return NoContent();
+            }
+
+            return Ok(directions);
         }
     }
 }

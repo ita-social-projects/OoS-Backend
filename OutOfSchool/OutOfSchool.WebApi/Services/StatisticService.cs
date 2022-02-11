@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
         private readonly IRatingService ratingService;
-        private readonly IEntityRepository<Direction> directionRepository;
+        private readonly IDirectionRepository directionRepository;
         private readonly ILogger<StatisticService> logger;
         private readonly IMapper mapper;
         private readonly ICacheService cache;
@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Services
             IApplicationRepository applicationRepository,
             IWorkshopRepository workshopRepository,
             IRatingService ratingService,
-            IEntityRepository<Direction> directionRepository,
+            IDirectionRepository directionRepository,
             ILogger<StatisticService> logger,
             IMapper mapper,
             ICacheService cache)
@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi.Services
                     x => x.localDirectionsWithCounts,
                     (x, y) => new DirectionStatistic
                     {
-                        Direction = x.direction.ToModel(),
+                        Direction = mapper.Map<DirectionDto>(x.direction),
                         ApplicationsCount = y.ApplicationsCount ?? 0,
                         WorkshopsCount = y.WorkshopsCount ?? 0,
                     });
