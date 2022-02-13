@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using H3Lib;
+using H3Lib.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -92,7 +93,8 @@ namespace OutOfSchool.WebApi.Services
                 filter = new CityFilter();
             }
 
-            var geo = new GeoCoord(filter.Latitude, filter.Longitude);
+            var geo = default(GeoCoord).SetDegrees(filter.Latitude, filter.Longitude);
+
             var h3Location = Api.GeoToH3(geo, GeoMathHelper.ResolutionForCity);
             Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
 
@@ -109,8 +111,8 @@ namespace OutOfSchool.WebApi.Services
                         .GetDistanceFromLatLonInKm(
                             (double)city.Latitude,
                             (double)city.Longitude,
-                            (double)geo.Latitude,
-                            (double)geo.Longitude),
+                            (double)filter.Latitude,
+                            (double)filter.Longitude),
                 })
                 .OrderBy(p => p.Distance)
                 .Select(c => c.city)

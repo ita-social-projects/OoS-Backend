@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using AutoMapper;
 using H3Lib;
+using H3Lib.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -401,8 +402,8 @@ namespace OutOfSchool.WebApi.Services
                 filter = new WorkshopFilter();
             }
 
-            var geo = new GeoCoord(filter.Latitude, filter.Longitude);
-            var h3Location = H3Lib.Api.GeoToH3(geo, GeoMathHelper.Resolution);
+            var geo = default(GeoCoord).SetDegrees(filter.Latitude, filter.Longitude);
+            var h3Location = Api.GeoToH3(geo, GeoMathHelper.Resolution);
             Api.KRing(h3Location, GeoMathHelper.KRingForResolution, out var neighbours);
 
             var filterPredicate = PredicateBuild(filter);
@@ -430,8 +431,8 @@ namespace OutOfSchool.WebApi.Services
                         .GetDistanceFromLatLonInKm(
                             w.Address.Latitude,
                             w.Address.Longitude,
-                            (double)geo.Latitude,
-                            (double)geo.Longitude),
+                            (double)filter.Latitude,
+                            (double)filter.Longitude),
                 })
                 .OrderBy(p => p.Distance).Take(filter.Size).Select(a => a.w);
 
