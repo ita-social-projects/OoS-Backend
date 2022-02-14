@@ -7,4 +7,7 @@ dotnet ef database update -c OutOfSchoolDbContext
 dotnet ef database update -c PersistedGrantDbContext
 dotnet ef database update -c ConfigurationDbContext
 
+// Update DB to the specified migration
+dotnet ef database update 20220130210817_AddNotifications -c OutOfSchoolDbContext
+
 dotnet ef migrations remove -c OutOfSchoolDbContext

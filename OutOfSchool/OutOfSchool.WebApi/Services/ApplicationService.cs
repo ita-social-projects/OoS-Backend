@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// Implements the interface with CRUD functionality for Application entity.
     /// </summary>
-    public class ApplicationService : IApplicationService
+    public class ApplicationService : IApplicationService, INotificationReciever
     {
         private readonly IApplicationRepository applicationRepository;
         private readonly IWorkshopRepository workshopRepository;
@@ -29,6 +29,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<ApplicationService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
+        private readonly INotificationService notificationService;
 
         private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
 
@@ -42,6 +43,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="childRepository">Child repository.</param>
         /// <param name="mapper">Automapper DI service.</param>
         /// <param name="applicationsConstraintsConfig">Options for application's constraints.</param>
+        /// <param name="notificationService">Notification service.</param>
         public ApplicationService(
             IApplicationRepository repository,
             ILogger<ApplicationService> logger,
@@ -49,7 +51,8 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopRepository workshopRepository,
             IEntityRepository<Child> childRepository,
             IMapper mapper,
-            IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig)
+            IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig,
+            INotificationService notificationService)
         {
             this.applicationRepository = repository;
             this.workshopRepository = workshopRepository;
@@ -57,6 +60,7 @@ namespace OutOfSchool.WebApi.Services
             this.localizer = localizer;
             this.childRepository = childRepository;
             this.mapper = mapper;
+            this.notificationService = notificationService;
 
             try
             {
@@ -106,6 +110,15 @@ namespace OutOfSchool.WebApi.Services
             var newApplication = await applicationRepository.Create(application).ConfigureAwait(false);
 
             logger.LogInformation($"Application with Id = {newApplication?.Id} created successfully.");
+
+            if (newApplication != null)
+            {
+                await notificationService.Create(
+                    NotificationType.Application,
+                    NotificationAction.Create,
+                    newApplication.Id,
+                    this).ConfigureAwait(false);
+            }
 
             return new ModelWithAdditionalData<ApplicationDto, int>()
             {
@@ -298,6 +311,18 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Updating failed. Exception = {ex.Message}.");
                 throw;
             }
+        }
+
+        public async Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Guid objectId)
+        {
+            var result = new List<User>();
+            if (action == NotificationAction.Create)
+            {
+                var providerUserIds = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
+                result.Add(providerUserIds.FirstOrDefault().Workshop.Provider.User);
+            }
+
+            return result;
         }
 
         private void ModelNullValidation(ApplicationDto applicationDto)

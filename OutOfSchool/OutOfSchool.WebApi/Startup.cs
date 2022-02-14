@@ -102,6 +102,7 @@ namespace OutOfSchool.WebApi
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatWorkshopHub>("/chathub/workshop");
+                endpoints.MapHub<NotificationHub>("/notificationhub");
             });
         }
 
@@ -224,6 +225,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IAboutPortalService, AboutPortalService>();
             services.AddTransient<ISupportInformationService, SupportInformationService>();
             services.AddScoped<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
+            services.AddTransient<INotificationService, NotificationService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -259,6 +261,7 @@ namespace OutOfSchool.WebApi
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
+            services.AddTransient<INotificationRepository, NotificationRepository>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
@@ -284,6 +287,9 @@ namespace OutOfSchool.WebApi
             services.AddOptions<RedisConfig>()
                 .Bind(Configuration.GetSection(RedisConfig.Name))
                 .ValidateDataAnnotations();
+
+            // Notification options
+            services.Configure<NotificationsConfig>(Configuration.GetSection(NotificationsConfig.Name));
 
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
