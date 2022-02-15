@@ -221,6 +221,25 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
+        public async Task<IEnumerable<Guid>> GetChatRoomIdsByWorkshopIdsAsync(IEnumerable<Guid> workshopIds)
+        {
+            logger.LogDebug($"Process of getting {nameof(ChatRoomWorkshop)} Ids with {nameof(workshopIds)} was started.");
+
+            try
+            {
+                var rooms = await roomRepository.GetByFilter(r => workshopIds.Contains(r.WorkshopId)).ConfigureAwait(false);
+                logger.LogDebug(!rooms.Any()
+                    ? $"There is no Chat rooms in the system with workshopIds:{workshopIds}."
+                    : $"Successfully got all {rooms.Count()} records with workshopIds:{workshopIds}.");
+                return rooms.Select(x => x.Id);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError($"Getting all {nameof(ChatRoomWorkshop)} Ids with {nameof(workshopIds)}. Exception: {exception.Message}");
+                throw;
+            }
+        }
+
         /// <inheritdoc/>
         public async Task<ChatRoomWorkshopDto> GetUniqueChatRoomAsync(Guid workshopId, Guid parentId)
         {

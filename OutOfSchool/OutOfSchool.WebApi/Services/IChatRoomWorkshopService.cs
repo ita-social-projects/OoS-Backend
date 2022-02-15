@@ -68,6 +68,14 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<Guid>> GetChatRoomIdsByProviderIdAsync(Guid providerId);
 
         /// <summary>
+        /// Get a list of ChatRoom's Ids by specified Worshops.
+        /// </summary>
+        /// <param name="workshopIds">List of workshops ids.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="IEnumerable{Int64}"/> that contains elements from the input sequence.</returns>
+        Task<IEnumerable<Guid>> GetChatRoomIdsByWorkshopIdsAsync(IEnumerable<Guid> workshopIds);
+
+        /// <summary>
         /// Delete the ChatRoom including its messages.
         /// </summary>
         /// <param name="id">ChatRoom's key.</param>
