@@ -10,9 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
+using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.ViewModels;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -32,6 +34,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly ILogger<AuthController> logger;
         private readonly IParentRepository parentRepository;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IdentityServerConfig identityServerConfig;
         private string userId;
         private string path;
 
@@ -50,7 +53,8 @@ namespace OutOfSchool.IdentityServer.Controllers
             IIdentityServerInteractionService interactionService,
             ILogger<AuthController> logger,
             IParentRepository parentRepository,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            IOptions<IdentityServerConfig> identityServerConfig)
         {
             this.logger = logger;
             this.parentRepository = parentRepository;
@@ -58,6 +62,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             this.userManager = userManager;
             this.interactionService = interactionService;
             this.localizer = localizer;
+            this.identityServerConfig = identityServerConfig.Value;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -90,7 +95,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             {
                 logger.LogError($"{path} PostLogoutRedirectUri was null. User(id): {userId}.");
 
-                throw new NotImplementedException();
+                return Redirect(identityServerConfig.RedirectToStartPageUrl);
             }
 
             logger.LogInformation($"{path} Successfully logged out. User(id): {userId}");
