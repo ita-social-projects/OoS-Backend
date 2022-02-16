@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 
@@ -31,7 +32,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="filter">Filter for DirectionDto.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a List of <see cref="DirectionDto"/> that were found.</returns>
-        Task<IEnumerable<DirectionDto>> GetByFilter(OffsetFilter filter);
+        Task<SearchResult<DirectionDto>> GetByFilter(DirectionFilter filter);
 
         /// <summary>
         /// To recieve the Direction object with define id.

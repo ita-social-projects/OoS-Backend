@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -22,6 +24,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IWorkshopRepository repositoryWorkshop;
         private readonly ILogger<DirectionService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectionService"/> class.
@@ -104,20 +107,51 @@ namespace OutOfSchool.WebApi.Services
             return directions.Select(entity => entity.ToModel()).ToList();
         }
 
-        public async Task<IEnumerable<DirectionDto>> GetByFilter(OffsetFilter filter)
+        public async Task<SearchResult<DirectionDto>> GetByFilter(DirectionFilter filter)
         {
             logger.LogInformation("Getting Directions by filter started.");
-
-            var directions = await this.repository
-                .Get<int>(filter.From, filter.Size)
-                .ToListAsync()
-                .ConfigureAwait(false);
+            int count = 0;
+            var directions = new List<Direction>();
+            if (!string.IsNullOrEmpty(filter.Name))
+            {
+                var predicate = filter.Name switch
+                {
+                    var name when string.IsNullOrWhiteSpace(name) => PredicateBuilder.True<Direction>(),
+                    _ => PredicateBuilder
+                        .False<Direction>()
+                        .Or(direction =>
+                            direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase))
+                        .Or(direction => direction.Departments.Any(department =>
+                            department.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)))
+                        .Or(direction => direction.Departments.Any(department =>
+                            department.Classes.Any(c =>
+                                c.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)))),
+                };
+                count = await repository.Count(predicate).ConfigureAwait(false);
+                directions = await repository.Get<int>(filter.Size, filter.From, where: predicate)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                directions = await this.repository
+                    .Get<int>(filter.From, filter.Size)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+            }
+            
 
             logger.LogInformation(!directions.Any()
                 ? "Direction table is empty."
                 : $"All {directions.Count()} records were successfully received from the Direction table.");
 
-            return directions.Select(entity => entity.ToModel()).ToList();
+            var result = new SearchResult<DirectionDto>()
+            {
+                TotalAmount = count,
+                Entities = directions.Select(direction => mapper.Map<DirectionDto>(direction)).ToList(),
+            };
+
+            return result;
         }
 
         /// <inheritdoc/>
@@ -157,6 +191,36 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Updating failed. Direction with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
+        }
+
+        public async Task<SearchResult<DirectionDto>> FilterByName(DirectionFilter filter)
+        {
+            var predicate = filter.Name switch
+            {
+                var name when string.IsNullOrWhiteSpace(name) => PredicateBuilder.True<Direction>(),
+                _ => PredicateBuilder
+                    .False<Direction>()
+                    .Or(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase))
+                    .Or(direction => direction.Departments.Any(department =>
+                        department.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)))
+                    .Or(direction => direction.Departments.Any(department =>
+                        department.Classes.Any(c =>
+                            c.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)))),
+            };
+            var count = await repository.Count(predicate).ConfigureAwait(false);
+
+
+            var directions = await repository.Get<int>(filter.Size, filter.From, where: predicate)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            var result = new SearchResult<DirectionDto>()
+            {
+                TotalAmount = count,
+                Entities = directions.Select(direction => mapper.Map<DirectionDto>(direction)).ToList(),
+            };
+
+            return result;
         }
 
         private void DirectionValidation(DirectionDto dto)
