@@ -60,6 +60,23 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             return Ok(departments);
         }
+        
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DepartmentDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByFilter(OffsetFilter filter)
+        {
+            var departments = await service.GetByFilter(filter).ConfigureAwait(false);
+
+            if (!departments.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(departments);
+        }
 
         /// <summary>
         /// To recieve the department with the defined id.

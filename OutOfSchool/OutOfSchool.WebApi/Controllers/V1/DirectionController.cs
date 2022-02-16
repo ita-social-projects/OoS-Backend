@@ -61,6 +61,23 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return Ok(directions);
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByFilter(OffsetFilter filter)
+        {
+            var directions = await service.GetByFilter(filter).ConfigureAwait(false);
+
+            if (!directions.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(directions);
+        }
+
         /// <summary>
         /// To recieve the direction with the defined id.
         /// </summary>

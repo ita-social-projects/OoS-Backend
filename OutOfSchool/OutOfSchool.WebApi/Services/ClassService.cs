@@ -105,6 +105,23 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<ClassDto>> GetByFilter(OffsetFilter filter)
+        {
+            logger.LogInformation("Getting all Classes started.");
+
+            var classes = await this.repository
+                .Get<int>(filter.From, filter.Size)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            logger.LogInformation(!classes.Any()
+                ? "Class table is empty."
+                : $"All {classes.Count()} records were successfully received from the Class table");
+
+            return classes.Select(entity => entity.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
         public async Task<ClassDto> GetById(long id)
         {
             logger.LogInformation($"Getting Class by Id started. Looking Id = {id}.");

@@ -104,6 +104,22 @@ namespace OutOfSchool.WebApi.Services
             return directions.Select(entity => entity.ToModel()).ToList();
         }
 
+        public async Task<IEnumerable<DirectionDto>> GetByFilter(OffsetFilter filter)
+        {
+            logger.LogInformation("Getting Directions by filter started.");
+
+            var directions = await this.repository
+                .Get<int>(filter.From, filter.Size)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            logger.LogInformation(!directions.Any()
+                ? "Direction table is empty."
+                : $"All {directions.Count()} records were successfully received from the Direction table.");
+
+            return directions.Select(entity => entity.ToModel()).ToList();
+        }
+
         /// <inheritdoc/>
         public async Task<DirectionDto> GetById(long id)
         {

@@ -105,6 +105,23 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<DepartmentDto>> GetByFilter(OffsetFilter filter)
+        {
+            logger.LogInformation("Getting Departments by filter started.");
+
+            var departments = await this.repository
+                .Get<int>(filter.From, filter.Size)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            logger.LogInformation(!departments.Any()
+                ? "Department table is empty."
+                : $"All {departments.Count()} records were successfully received from the Department table");
+
+            return departments.Select(entity => entity.ToModel()).ToList();
+        }
+
+        /// <inheritdoc/>
         public async Task<DepartmentDto> GetById(long id)
         {
             logger.LogInformation($"Getting Department by Id started. Looking Id = {id}.");

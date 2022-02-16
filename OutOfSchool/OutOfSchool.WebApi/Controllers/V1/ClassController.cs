@@ -61,6 +61,23 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return Ok(classes);
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClassDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByFilter(OffsetFilter filter)
+        {
+            var classes = await service.GetByFilter(filter).ConfigureAwait(false);
+
+            if (!classes.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(classes);
+        }
+
         /// <summary>
         /// To recieve the class with the defined id.
         /// </summary>
