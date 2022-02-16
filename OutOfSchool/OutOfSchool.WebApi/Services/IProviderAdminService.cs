@@ -11,7 +11,7 @@ namespace OutOfSchool.WebApi.Services
 {
     public interface IProviderAdminService
     {
-        Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdmin, string token);
+        Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token);
 
         Task<ResponseDto> DeleteProviderAdminAsync(string providerAdminId, string userId, Guid providerId, string token);
 
@@ -23,6 +23,6 @@ namespace OutOfSchool.WebApi.Services
 
         Task<IEnumerable<Guid>> GetRelatedWorkshopIdsForProviderAdmins(string userId);
 
-        Task<bool> CheckUserIsRelatedProviderAdmin(string providerAdminId, Guid providerId, Guid workshopId = default);
+        Task<bool> CheckUserIsRelatedProviderAdmin(string userId, Guid providerId, Guid workshopId = default);
     }
 }

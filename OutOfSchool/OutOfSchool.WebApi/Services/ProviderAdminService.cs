@@ -313,7 +313,6 @@ namespace OutOfSchool.WebApi.Services
 
                     dtos.Add(dto);
                 }
-
             }
 
             return dtos;

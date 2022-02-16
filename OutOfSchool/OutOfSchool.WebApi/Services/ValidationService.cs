@@ -42,7 +42,7 @@ namespace OutOfSchool.WebApi.Services
             var workshops = await workshopRepository.GetByFilter(item => item.Id == workshopId, nameof(Workshop.Provider)).ConfigureAwait(false);
             var workshop = workshops.SingleOrDefault();
 
-            if (workshop is null)
+            if (workshop is null || userId is null)
             {
                 return false;
             }

@@ -170,7 +170,7 @@ namespace OutOfSchool.WebApi.Hubs
                 }
 
                 // Add Provider's admin connections to the Group.
-                var providersAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Where(w => w.Id == workshop.Id).Any() && !p.IsDeputy).ConfigureAwait(false);
+                var providersAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshop.Id) && !p.IsDeputy).ConfigureAwait(false);
                 foreach (var providersAdmin in providersAdmins)
                 {
                     await AddConnectionsToGroupAsync(providersAdmin.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
