@@ -22,6 +22,8 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+using OutOfSchool.IdentityServer.Config;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers
 {
@@ -35,6 +37,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         private readonly Mock<IParentRepository> fakeparentRepository;
         private AuthController authController;
         private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
+        private static Mock<IOptions<IdentityServerConfig>> fakeIdentityServerConfig;
 
         public AuthControllerTests()
         {
@@ -44,6 +47,16 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             fakeLogger = new Mock<ILogger<AuthController>>();
             fakeparentRepository = new Mock<IParentRepository>();
             fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
+        }
+
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            var config = new IdentityServerConfig();
+            config.RedirectToStartPageUrl = "https://oos.dmytrominochkin.cloud/";
+
+            fakeIdentityServerConfig = new Mock<IOptions<IdentityServerConfig>>();
+            fakeIdentityServerConfig.Setup(m => m.Value).Returns(config);
         }
 
         [SetUp]
@@ -58,8 +71,8 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
                 fakeInteractionService.Object, 
                 fakeLogger.Object,
                 fakeparentRepository.Object,
-                fakeLocalizer.Object
-                );
+                fakeLocalizer.Object,
+                fakeIdentityServerConfig.Object);
         }
 
         [Test]
@@ -83,7 +96,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         }
 
         [Test]
-        public void Logout_WithoutLogoutId_ThrowsNotImplementedException()
+        public async Task Logout_WithoutLogoutId_ReturnsRedirectResult()
         {
             // Arrange
             var logoutRequest = new LogoutRequest("iFrameUrl", new LogoutMessage())
@@ -95,9 +108,11 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             fakeInteractionService.Setup(service => service.GetLogoutContextAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult(logoutRequest));
 
+            // Act
+            var result = await authController.Logout("Any logout ID");
+
             // Act & Assert
-            var ex = Assert.ThrowsAsync<NotImplementedException>(
-                () => this.authController.Logout("Any logout ID"));
+            Assert.IsInstanceOf(typeof(RedirectResult), result);
         }
 
         [TestCase(null)]

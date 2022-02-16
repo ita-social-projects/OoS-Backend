@@ -44,9 +44,10 @@ namespace OutOfSchool.IdentityServer.Controllers
         /// <param name="userManager"> ASP.Net Core Identity User Manager.</param>
         /// <param name="signInManager"> ASP.Net Core Identity Sign in Manager.</param>
         /// <param name="interactionService"> Identity Server 4 interaction service.</param>
-        /// <param name="parentRepository">Repository for Parent model.</param>
+        /// <param name="parentRepository"> Repository for Parent model.</param>
         /// <param name="logger"> ILogger class.</param>
         /// <param name="localizer"> Localizer.</param>
+        /// <param name="identityServerConfig"> IdentityServer config.</param>
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
