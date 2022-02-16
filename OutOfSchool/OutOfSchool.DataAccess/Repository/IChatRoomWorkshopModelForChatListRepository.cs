@@ -39,5 +39,13 @@ namespace OutOfSchool.Services.Repository
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains found elements.</returns>
         Task<List<ChatRoomWorkshopForChatList>> GetByWorkshopIdAsync(Guid workshopId);
+
+        /// <summary>
+        /// Get a List of chat rooms for workshops by specified Workshop's keys.
+        /// </summary>
+        /// <param name="workshopIds">Workshop's keys in the system.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="List{ChatRoomWorkshopForChatList}"/> that contains found elements.</returns>
+        Task<List<ChatRoomWorkshopForChatList>> GetByWorkshopIdsAsync(IEnumerable<Guid> workshopIds);
     }
 }

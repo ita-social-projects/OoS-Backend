@@ -34,6 +34,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private readonly IValidationService validationService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly ILogger<ChatWorkshopController> logger;
+        private readonly IProviderAdminService providerAdminService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatWorkshopController"/> class.
@@ -43,18 +44,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="validationService">Service for validation parameters.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="logger">Logger.</param>
+        /// <param name="providerAdminService">Service for Provider's admins.</param>
         public ChatWorkshopController(
             IChatMessageWorkshopService messageService,
             IChatRoomWorkshopService roomService,
             IValidationService validationService,
             IStringLocalizer<SharedResource> localizer,
-            ILogger<ChatWorkshopController> logger)
+            ILogger<ChatWorkshopController> logger,
+            IProviderAdminService providerAdminService)
         {
             this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             this.roomService = roomService ?? throw new ArgumentNullException(nameof(roomService));
             this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
             this.logger = logger;
+            this.providerAdminService = providerAdminService;
         }
 
         /// <summary>
@@ -291,11 +295,23 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             try
             {
-                var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(this.GetUserId(), this.GetUserRole()).ConfigureAwait(false);
+                var userId = this.GetUserId();
+                var userRole = this.GetUserRole();
+                var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
 
                 if (providerOrParentId != default)
                 {
                     var chatRooms = await getChatRoomsByRole(providerOrParentId).ConfigureAwait(false);
+
+                    if (chatRooms.Any())
+                    {
+                        return Ok(chatRooms);
+                    }
+                }
+                else if (userRole == Role.Provider)
+                {
+                    var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
+                    var chatRooms = await roomService.GetByWorkshopIdsAsync(workshopIds).ConfigureAwait(false);
 
                     if (chatRooms.Any())
                     {

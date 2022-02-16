@@ -61,6 +61,16 @@ namespace OutOfSchool.Services.Repository
             return this.GetByParametersAsync(condition, searchMessagesForProvider);
         }
 
+        /// <inheritdoc/>
+        public Task<List<ChatRoomWorkshopForChatList>> GetByWorkshopIdsAsync(IEnumerable<Guid> workshopIds)
+        {
+            Expression<Func<ChatRoomWorkshop, bool>> condition = x => workshopIds.Contains(x.WorkshopId);
+
+            var searchMessagesForProvider = true;
+
+            return this.GetByParametersAsync(condition, searchMessagesForProvider);
+        }
+
         private Task<List<ChatRoomWorkshopForChatList>> GetByParametersAsync(Expression<Func<ChatRoomWorkshop, bool>> condition, bool searchMessagesForProvider)
         {
             var query = dbSet
