@@ -30,6 +30,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         private Mock<IValidationService> validationServiceMock;
         private Mock<IWorkshopRepository> workshopRepositoryMock;
         private Mock<IParentRepository> parentRepositoryMock;
+        private Mock<IProviderAdminRepository> providerAdminRepository;
 
         private ChatWorkshopHub chatHub;
 
@@ -54,6 +55,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             hubCallerContextMock = new Mock<HubCallerContext>();
             groupsMock = new Mock<IGroupManager>();
             localizerMock = new Mock<IStringLocalizer<SharedResource>>();
+            providerAdminRepository = new Mock<IProviderAdminRepository>();
 
             chatHub = new ChatWorkshopHub(
                 loggerMock.Object,
@@ -62,7 +64,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 validationServiceMock.Object,
                 workshopRepositoryMock.Object,
                 parentRepositoryMock.Object,
-                localizerMock.Object)
+                localizerMock.Object,
+                providerAdminRepository.Object)
             {
                 Clients = clientsMock.Object,
                 Context = hubCallerContextMock.Object,

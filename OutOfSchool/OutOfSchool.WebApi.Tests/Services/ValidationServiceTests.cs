@@ -17,6 +17,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IProviderRepository> providerRepositoryMock;
         private Mock<IParentRepository> parentRepositoryMock;
         private Mock<IWorkshopRepository> workshopRepositoryMock;
+        private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
 
         private IValidationService validationService;
 
@@ -26,8 +27,13 @@ namespace OutOfSchool.WebApi.Tests.Services
             providerRepositoryMock = new Mock<IProviderRepository>();
             parentRepositoryMock = new Mock<IParentRepository>();
             workshopRepositoryMock = new Mock<IWorkshopRepository>();
+            providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
 
-            validationService = new ValidationService(providerRepositoryMock.Object, parentRepositoryMock.Object, workshopRepositoryMock.Object);
+            validationService = new ValidationService(
+                providerRepositoryMock.Object,
+                parentRepositoryMock.Object,
+                workshopRepositoryMock.Object,
+                providerAdminRepositoryMock.Object);
         }
 
         #region UserIsProviderOwner
