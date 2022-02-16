@@ -16,7 +16,14 @@ namespace OutOfSchool.WebApi.Services
     public interface ITeacherService
     {
         /// <summary>
-        /// Add entity.
+        /// Creates a new teacher without the transaction.
+        /// </summary>
+        /// <param name="dto">Teacher to add.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<TeacherCreationResultDto> CreateWithoutTransaction(TeacherCreationDto dto);
+
+        /// <summary>
+        /// Creates a new teacher.
         /// </summary>
         /// <param name="dto">Teacher to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -36,6 +43,13 @@ namespace OutOfSchool.WebApi.Services
         Task<TeacherDTO> GetById(Guid id);
 
         /// <summary>
+        /// Updates a teacher without the transaction.
+        /// </summary>
+        /// <param name="dto">Teacher to update.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<TeacherUpdateResultDto> UpdateWithoutTransaction(TeacherUpdateDto dto);
+
+        /// <summary>
         /// Update entity.
         /// </summary>
         /// <param name="dto">Teacher to update.</param>
@@ -43,12 +57,18 @@ namespace OutOfSchool.WebApi.Services
         Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto);
 
         /// <summary>
+        /// Deletes a teacher without the transaction.
+        /// </summary>
+        /// <param name="id">Teacher's key.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        Task DeleteWithoutTransaction(Guid id);
+
+        /// <summary>
         /// Delete entity.
         /// </summary>
         /// <param name="id">Teacher's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(Guid id);
-
 
         /// <summary>
         /// Gets Id of workshop, where specified teacher was created.

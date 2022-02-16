@@ -20,6 +20,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Transactions;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -35,6 +36,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IMapper> mapper;
         private Mock<IImageService> imageService;
         private Mock<IWorkshopImagesInteractionService> workshopImagesInteractionService;
+        private Mock<IDistributedTransactionProcessor> transactionProcessor;
+        private Mock<IExecutionStrategyHelper> executionStrategyHelper;
 
         [SetUp]
         public void SetUp()
@@ -47,6 +50,8 @@ namespace OutOfSchool.WebApi.Tests.Services
             mapper = new Mock<IMapper>();
             imageService = new Mock<IImageService>();
             workshopImagesInteractionService = new Mock<IWorkshopImagesInteractionService>();
+            transactionProcessor = new Mock<IDistributedTransactionProcessor>();
+            executionStrategyHelper = new Mock<IExecutionStrategyHelper>();
             workshopService =
                 new WorkshopService(
                     workshopRepository.Object,
@@ -56,7 +61,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                     logger.Object,
                     mapper.Object,
                     imageService.Object,
-                    workshopImagesInteractionService.Object);
+                    workshopImagesInteractionService.Object,
+                    transactionProcessor.Object,
+                    executionStrategyHelper.Object);
         }
 
         #region Create

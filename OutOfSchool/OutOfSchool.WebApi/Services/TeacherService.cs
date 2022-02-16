@@ -16,6 +16,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Util.Transactions;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -29,6 +30,8 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<TeacherService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
+        private readonly IDistributedTransactionProcessor transactionProcessor;
+        private readonly IExecutionStrategyHelper executionStrategyHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TeacherService"/> class.
@@ -38,17 +41,26 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
-        public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IImageService imageService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
+        public TeacherService(
+            ISensitiveEntityRepository<Teacher> teacherRepository,
+            IImageService imageService,
+            ILogger<TeacherService> logger,
+            IStringLocalizer<SharedResource> localizer,
+            IMapper mapper,
+            IDistributedTransactionProcessor transactionProcessor,
+            IExecutionStrategyHelper executionStrategyHelper)
         {
             this.localizer = localizer;
             this.teacherRepository = teacherRepository;
             this.imageService = imageService;
             this.logger = logger;
             this.mapper = mapper;
+            this.transactionProcessor = transactionProcessor;
+            this.executionStrategyHelper = executionStrategyHelper;
         }
 
         /// <inheritdoc/>
-        public async Task<TeacherCreationResultDto> Create(TeacherCreationDto dto)
+        public async Task<TeacherCreationResultDto> CreateWithoutTransaction(TeacherCreationDto dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation("Teacher creating was started.");
@@ -71,6 +83,14 @@ namespace OutOfSchool.WebApi.Services
                 Teacher = mapper.Map<TeacherDTO>(newTeacher),
                 UploadingAvatarImageResult = uploadingResult.OperationResult,
             };
+        }
+
+        /// <inheritdoc/>
+        public async Task<TeacherCreationResultDto> Create(TeacherCreationDto dto)
+        {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            return await RunInDefaultTransactionWithResultAsync(CreateWithoutTransaction, dto).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -102,12 +122,12 @@ namespace OutOfSchool.WebApi.Services
             }
 
             logger.LogInformation($"Got a Teacher with Id = {id}.");
-            
+
             return teacher?.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto)
+        public async Task<TeacherUpdateResultDto> UpdateWithoutTransaction(TeacherUpdateDto dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation($"Updating Teacher with Id = {dto.Id} started.");
@@ -128,7 +148,15 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task Delete(Guid id)
+        public async Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto)
+        {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            return await RunInDefaultTransactionWithResultAsync(UpdateWithoutTransaction, dto).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task DeleteWithoutTransaction(Guid id)
         {
             logger.LogInformation($"Deleting Teacher with Id = {id} started.");
 
@@ -155,6 +183,32 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Deleting Teacher with Id = {id} failed.");
                 throw;
             }
+        }
+
+        /// <inheritdoc/>
+        public async Task Delete(Guid id)
+        {
+            await RunInDefaultTransactionAsync(DeleteWithoutTransaction, id).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid> GetTeachersWorkshopId(Guid teacherId)
+        {
+            logger.LogInformation($"Searching Teacher by Id started. Looking Id = {teacherId}.");
+
+            var teacher = await teacherRepository.GetByFilterNoTracking(t => t.Id == teacherId).SingleOrDefaultAsync().ConfigureAwait(false);
+
+            if (teacher == null)
+            {
+                throw new ArgumentException(
+                    nameof(teacherId),
+                    paramName: $"There are no recors in teachers table with such id - {teacherId}.");
+            }
+
+            logger.LogInformation($"Successfully found a Teacher with Id = {teacherId}.");
+            var teachersWorkshopId = teacher.WorkshopId;
+            logger.LogInformation($"Successfully found WorkshopId - {teachersWorkshopId} for Teacher  with Id = {teacherId}.");
+            return teachersWorkshopId;
         }
 
         private async Task<ImageChangingResult> ChangeAvatarImage(Teacher teacher, string dtoImageId, IFormFile newImage)
@@ -189,24 +243,22 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        /// <inheritdoc/>
-        public async Task<Guid> GetTeachersWorkshopId(Guid teacherId)
+        private async Task<TResult> RunInDefaultTransactionWithResultAsync<T, TResult>(Func<T, Task<TResult>> operation, T dto)
         {
-            logger.LogInformation($"Searching Teacher by Id started. Looking Id = {teacherId}.");
+            var strategy = executionStrategyHelper.CreateStrategyByDbName(DbContextName.OutOfSchoolDbContext);
+            return await strategy.ExecuteAsync(async () =>
+                await transactionProcessor.RunTransactionWithAutoCommitOrRollBackAsync(
+                    new[] { DbContextName.OutOfSchoolDbContext, DbContextName.FilesDbContext },
+                    async () => await operation(dto).ConfigureAwait(false)).ConfigureAwait(false)).ConfigureAwait(false);
+        }
 
-            var teacher = await teacherRepository.GetByFilterNoTracking(t => t.Id == teacherId).SingleOrDefaultAsync().ConfigureAwait(false);
-
-            if (teacher == null)
-            {
-                throw new ArgumentException(
-                    nameof(teacherId),
-                    paramName: $"There are no recors in teachers table with such id - {teacherId}.");
-            }
-
-            logger.LogInformation($"Successfully found a Teacher with Id = {teacherId}.");
-            var teachersWorkshopId = teacher.WorkshopId;
-            logger.LogInformation($"Successfully found WorkshopId - {teachersWorkshopId} for Teacher  with Id = {teacherId}.");
-            return teachersWorkshopId;
+        private async Task RunInDefaultTransactionAsync<T>(Func<T, Task> operation, T param)
+        {
+            var strategy = executionStrategyHelper.CreateStrategyByDbName(DbContextName.OutOfSchoolDbContext);
+            await strategy.ExecuteAsync(async () =>
+                await transactionProcessor.RunTransactionWithAutoCommitOrRollBackAsync(
+                    new[] { DbContextName.OutOfSchoolDbContext, DbContextName.FilesDbContext },
+                    async () => await operation(param).ConfigureAwait(false)).ConfigureAwait(false)).ConfigureAwait(false);
         }
     }
 }

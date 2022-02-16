@@ -15,6 +15,7 @@ using OutOfSchool.WebApi.Common.Resources.Codes;
 using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models.Images;
+using OutOfSchool.WebApi.Util.Transactions;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
@@ -39,12 +40,16 @@ namespace OutOfSchool.WebApi.Services.Images
             IImageService imageService,
             IEntityRepositoryBase<TKey, TEntity> repository,
             ImagesLimits<TEntity> limits,
-            ILogger<ImageInteractionBaseService<TEntity, TKey>> logger)
+            ILogger<ImageInteractionBaseService<TEntity, TKey>> logger,
+            IDistributedTransactionProcessor transactionProcessor,
+            IExecutionStrategyHelper executionStrategyHelper)
         {
             ImageService = imageService;
             Repository = repository;
             Limits = limits;
             Logger = logger;
+            TransactionProcessor = transactionProcessor;
+            ExecutionStrategyHelper = executionStrategyHelper;
         }
 
         /// <summary>
@@ -67,6 +72,27 @@ namespace OutOfSchool.WebApi.Services.Images
         /// </summary>
         protected ImagesLimits<TEntity> Limits { get; }
 
+        protected IDistributedTransactionProcessor TransactionProcessor { get; }
+
+        protected IExecutionStrategyHelper ExecutionStrategyHelper { get; }
+
+        /// <inheritdoc/>
+        public async Task<Result<string>> UploadImageWithoutTransactionAsync(TKey entityId, IFormFile image)
+        {
+            if (image == null)
+            {
+                return Result<string>.Failed(ImagesOperationErrorCode.NoGivenImagesError.GetOperationError());
+            }
+
+            var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
+            if (entity == null)
+            {
+                return Result<string>.Failed(ImagesOperationErrorCode.EntityNotFoundError.GetOperationError());
+            }
+
+            return await UploadImageProcessAsync(entity, image).ConfigureAwait(false);
+        }
+
         /// <inheritdoc/>
         public async Task<Result<string>> UploadImageAsync(TKey entityId, IFormFile image)
         {
@@ -81,7 +107,25 @@ namespace OutOfSchool.WebApi.Services.Images
                 return Result<string>.Failed(ImagesOperationErrorCode.EntityNotFoundError.GetOperationError());
             }
 
-            return await UploadImageProcessAsync(entity, image).ConfigureAwait(false);
+            return await RunInDefaultTransactionWithResultAsync(UploadImageProcessAsync, entity, image).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<OperationResult> RemoveImageWithoutTransactionAsync(TKey entityId, string imageId)
+        {
+            if (string.IsNullOrEmpty(imageId))
+            {
+                return OperationResult.Failed(ImagesOperationErrorCode.NoGivenImagesError.GetOperationError());
+            }
+
+            var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
+            if (entity == null)
+            {
+                Logger.LogError($"Entity [id = {entityId}] was not got.");
+                return OperationResult.Failed(ImagesOperationErrorCode.EntityNotFoundError.GetOperationError());
+            }
+
+            return await RemoveImageProcessAsync(entity, imageId).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -99,7 +143,27 @@ namespace OutOfSchool.WebApi.Services.Images
                 return OperationResult.Failed(ImagesOperationErrorCode.EntityNotFoundError.GetOperationError());
             }
 
-            return await RemoveImageProcessAsync(entity, imageId).ConfigureAwait(false);
+            return await RunInDefaultTransactionWithResultAsync(RemoveImageProcessAsync, entity, imageId).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<ImageUploadingResult> UploadManyImagesWithoutTransactionAsync(TKey entityId, IList<IFormFile> images)
+        {
+            if (images == null || images.Count <= 0)
+            {
+                return new ImageUploadingResult
+                    { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() } };
+            }
+
+            var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
+            if (entity == null)
+            {
+                Logger.LogError($"Entity [id = {entityId}] was not got.");
+                return new ImageUploadingResult
+                    { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.EntityNotFoundError.GetResourceValue() } };
+            }
+
+            return await UploadManyImagesProcessAsync(entity, images).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -119,7 +183,31 @@ namespace OutOfSchool.WebApi.Services.Images
                     { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.EntityNotFoundError.GetResourceValue() } };
             }
 
-            return await UploadManyImagesProcessAsync(entity, images).ConfigureAwait(false);
+            return await RunInDefaultTransactionWithResultAsync(UploadManyImagesProcessAsync, entity, images).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<ImageRemovingResult> RemoveManyImagesWithoutTransactionAsync(TKey entityId, IList<string> imageIds)
+        {
+            if (imageIds == null || imageIds.Count <= 0)
+            {
+                return new ImageRemovingResult
+                {
+                    MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.NoGivenImagesError.GetResourceValue() },
+                };
+            }
+
+            var entity = await GetEntityWithIncludedImages(entityId).ConfigureAwait(false);
+            if (entity == null)
+            {
+                Logger.LogError($"Entity [id = {entityId}] was not got.");
+                return new ImageRemovingResult
+                {
+                    MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.EntityNotFoundError.GetResourceValue() },
+                };
+            }
+
+            return await RemoveManyImagesProcessAsync(entity, imageIds).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -143,7 +231,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 };
             }
 
-            return await RemoveManyImagesProcessAsync(entity, imageIds).ConfigureAwait(false);
+            return await RunInDefaultTransactionWithResultAsync(RemoveManyImagesProcessAsync, entity, imageIds).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -380,6 +468,24 @@ namespace OutOfSchool.WebApi.Services.Images
 
             Logger.LogDebug($"Removing images for entity [Id = {entity.Id}] was finished.");
             return imagesRemovingResult;
+        }
+
+        private async Task<TResult> RunInDefaultTransactionWithResultAsync<T1, T2, TResult>(Func<T1, T2, Task<TResult>> operation, T1 param1, T2 param2)
+        {
+            var strategy = ExecutionStrategyHelper.CreateStrategyByDbName(DbContextName.OutOfSchoolDbContext);
+            return await strategy.ExecuteAsync(async () =>
+                await TransactionProcessor.RunTransactionWithAutoCommitOrRollBackAsync(
+                    new[] { DbContextName.OutOfSchoolDbContext, DbContextName.FilesDbContext },
+                    async () => await operation(param1, param2).ConfigureAwait(false)).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task RunInDefaultTransactionAsync<T1, T2>(Func<T1, T2, Task> operation, T1 param1, T2 param2)
+        {
+            var strategy = ExecutionStrategyHelper.CreateStrategyByDbName(DbContextName.OutOfSchoolDbContext);
+            await strategy.ExecuteAsync(async () =>
+                await TransactionProcessor.RunTransactionWithAutoCommitOrRollBackAsync(
+                    new[] { DbContextName.OutOfSchoolDbContext, DbContextName.FilesDbContext },
+                    async () => await operation(param1, param2).ConfigureAwait(false)).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private static void AddImageToEntity(TEntity entity, Image<TEntity> image)

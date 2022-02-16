@@ -9,6 +9,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config.Images;
+using OutOfSchool.WebApi.Util.Transactions;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
@@ -26,8 +27,14 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="repository">Workshop repository.</param>
         /// <param name="limits">Describes limits of images for <see cref="Workshop"/>.</param>
         /// <param name="logger">Logger.</param>
-        public WorkshopImagesInteractionService(IImageService imageService, IWorkshopRepository repository, ILogger<WorkshopImagesInteractionService> logger, IOptions<ImagesLimits<Workshop>> limits)
-            : base(imageService, repository, limits.Value, logger)
+        public WorkshopImagesInteractionService(
+            IImageService imageService,
+            IWorkshopRepository repository,
+            ILogger<WorkshopImagesInteractionService> logger,
+            IOptions<ImagesLimits<Workshop>> limits,
+            IDistributedTransactionProcessor transactionProcessor,
+            IExecutionStrategyHelper executionStrategyHelper)
+            : base(imageService, repository, limits.Value, logger, transactionProcessor, executionStrategyHelper)
         {
         }
     }

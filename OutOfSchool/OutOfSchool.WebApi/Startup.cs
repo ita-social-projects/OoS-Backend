@@ -1,6 +1,8 @@
 using System;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using AutoMapper;
@@ -10,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -38,6 +41,7 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Communication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.Transactions;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -264,6 +268,10 @@ namespace OutOfSchool.WebApi
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
+
+            services.AddScoped<ContextResolver>();
+            services.AddScoped<IExecutionStrategyHelper, ExecutionStrategyHelper>();
+            services.AddTransient<IDistributedTransactionProcessor, DistributedTransaction>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
