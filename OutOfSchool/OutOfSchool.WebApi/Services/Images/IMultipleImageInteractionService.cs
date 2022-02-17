@@ -9,35 +9,21 @@ namespace OutOfSchool.WebApi.Services.Images
     public interface IMultipleImageInteractionService<in TKey>
     {
         /// <summary>
-        /// Uploads some images to the entity with a specific id without the transaction.
-        /// </summary>
-        /// <param name="entityId">Entity id.</param>
-        /// <param name="images">Represents an image file.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="MultipleKeyValueOperationResult"/> of the operation.</returns>
-        Task<ImageUploadingResult> UploadManyImagesWithoutTransactionAsync(TKey entityId, IList<IFormFile> images);
-
-        /// <summary>
         /// Uploads some images to the entity with a specific id.
         /// </summary>
         /// <param name="entityId">Entity id.</param>
         /// <param name="images">Represents an image file.</param>
+        /// <param name="enabledTransaction">Determines whether transaction is active for this method.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="MultipleKeyValueOperationResult"/> of the operation.</returns>
-        Task<ImageUploadingResult> UploadManyImagesAsync(TKey entityId, IList<IFormFile> images);
-
-        /// <summary>
-        /// Removes some images from the entity with a specific id without the transaction.
-        /// </summary>
-        /// <param name="entityId">Entity id.</param>
-        /// <param name="imageIds">Represents an image file.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="MultipleKeyValueOperationResult"/> of the operation.</returns>
-        Task<ImageRemovingResult> RemoveManyImagesWithoutTransactionAsync(TKey entityId, IList<string> imageIds);
+        Task<ImageUploadingResult> UploadManyImagesAsync(TKey entityId, IList<IFormFile> images, bool enabledTransaction = true);
 
         /// <summary>
         /// Removes some images from the entity with a specific id.
         /// </summary>
         /// <param name="entityId">Entity id.</param>
         /// <param name="imageIds">Represents an image file.</param>
+        /// <param name="enabledTransaction">Determines whether transaction is active for this method.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="MultipleKeyValueOperationResult"/> of the operation.</returns>
-        Task<ImageRemovingResult> RemoveManyImagesAsync(TKey entityId, IList<string> imageIds);
+        Task<ImageRemovingResult> RemoveManyImagesAsync(TKey entityId, IList<string> imageIds, bool enabledTransaction = true);
     }
 }

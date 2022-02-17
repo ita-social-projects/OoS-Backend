@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace OutOfSchool.WebApi.Util.Transactions
 {
     /// <summary>
-    /// transaction pool helper
+    /// Transaction pool helper.
     /// </summary>
     public sealed class TransactionPoolManager
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using MongoDB.Driver.Core.WireProtocol.Messages;
 
 namespace OutOfSchool.WebApi.Util.Transactions
 {
@@ -12,24 +13,6 @@ namespace OutOfSchool.WebApi.Util.Transactions
         {
             _ = context ?? throw new ArgumentNullException(nameof(context));
             return context.Database.BeginTransaction();
-        }
-
-        public static async Task<T> RunOperationWithAutoCommitOrRollBackTransactionAsync<T>(this ITransactionProcessor transactionProcessor, Func<Task<T>> operation)
-        {
-            _ = transactionProcessor ?? throw new ArgumentNullException(nameof(transactionProcessor));
-            _ = operation ?? throw new ArgumentNullException(nameof(operation));
-
-            try
-            {
-                var result = await operation().ConfigureAwait(false);
-                transactionProcessor.Commit();
-                return result;
-            }
-            catch
-            {
-                transactionProcessor.Rollback();
-                throw;
-            }
         }
 
         public static async Task<T> RunTransactionWithAutoCommitOrRollBackAsync<T>(this IDistributedTransactionProcessor transactionProcessor, DbContextName[] dbContextNames, Func<Task<T>> operation)

@@ -128,7 +128,7 @@ namespace OutOfSchool.WebApi.Services
                     ImageUploadingResult uploadingResult = null;
                     if (dto.ImageFiles?.Count > 0)
                     {
-                        uploadingResult = await workshopImagesInteractionService.UploadManyImagesWithoutTransactionAsync(newWorkshop.Id, dto.ImageFiles).ConfigureAwait(false);
+                        uploadingResult = await workshopImagesInteractionService.UploadManyImagesAsync(newWorkshop.Id, dto.ImageFiles, false).ConfigureAwait(false);
                     }
 
                     Result<string> uploadingCoverImageResult = null;
@@ -348,7 +348,7 @@ namespace OutOfSchool.WebApi.Services
                     new[] { DbContextName.OutOfSchoolDbContext, DbContextName.FilesDbContext },
                     async () =>
                     {
-                        var removingResult = await workshopImagesInteractionService.RemoveManyImagesWithoutTransactionAsync(entity.Id, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
+                        var removingResult = await workshopImagesInteractionService.RemoveManyImagesAsync(entity.Id, entity.Images.Select(x => x.ExternalStorageId).ToList(), false).ConfigureAwait(false);
 
                         if (entity.Images.Count > 0 && removingResult.MultipleKeyValueOperationResult is { Succeeded: false })
                         {

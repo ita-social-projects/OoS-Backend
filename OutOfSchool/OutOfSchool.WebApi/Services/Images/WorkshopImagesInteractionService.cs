@@ -27,6 +27,8 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="repository">Workshop repository.</param>
         /// <param name="limits">Describes limits of images for <see cref="Workshop"/>.</param>
         /// <param name="logger">Logger.</param>
+        /// <param name="transactionProcessor">Responsible for making transactions.</param>
+        /// <param name="executionStrategyHelper">Helper for making execution strategies.</param>
         public WorkshopImagesInteractionService(
             IImageService imageService,
             IWorkshopRepository repository,
