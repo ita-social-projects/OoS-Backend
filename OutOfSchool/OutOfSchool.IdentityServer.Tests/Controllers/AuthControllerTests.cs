@@ -53,7 +53,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         public void OneTimeSetup()
         {
             var config = new IdentityServerConfig();
-            config.RedirectToStartPageUrl = "https://oos.dmytrominochkin.cloud/";
+            config.RedirectToStartPageUrl = "http://localhost:4200";
 
             fakeIdentityServerConfig = new Mock<IOptions<IdentityServerConfig>>();
             fakeIdentityServerConfig.Setup(m => m.Value).Returns(config);
