@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -37,7 +36,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>>
-        public async Task<bool> UserIsWorkshopOwnerAsync(string userId, Guid workshopId)
+        public async Task<bool> UserIsWorkshopOwnerAsync(string userId, Guid workshopId, Subrole userSubrole = Subrole.None)
         {
             var workshops = await workshopRepository.GetByFilter(item => item.Id == workshopId, nameof(Workshop.Provider)).ConfigureAwait(false);
             var workshop = workshops.SingleOrDefault();
@@ -47,23 +46,24 @@ namespace OutOfSchool.WebApi.Services
                 return false;
             }
 
-            if (userId.Equals(workshop.Provider.UserId, StringComparison.Ordinal))
+            if (userSubrole == Subrole.ProviderDeputy)
             {
-                return true;
+                var providersDeputies = await providerAdminRepository.GetByFilter(p => p.ProviderId == workshop.ProviderId
+                                                                                   && p.IsDeputy
+                                                                                   && p.UserId == userId).ConfigureAwait(false);
+                return providersDeputies.Any();
             }
 
-            var providersDeputies = await providerAdminRepository.GetByFilter(p => p.ProviderId == workshop.ProviderId
-                                                                                    && p.IsDeputy
-                                                                                    && p.UserId == userId).ConfigureAwait(false);
-            if (providersDeputies.Any())
+            if (userSubrole == Subrole.ProviderAdmin)
             {
-                return true;
-            }
-
-            var providersAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
+                var providersAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
                                                                                     && !p.IsDeputy
                                                                                     && p.UserId == userId).ConfigureAwait(false);
-            return providersAdmins.Any();
+
+                return providersAdmins.Any();
+            }
+
+            return userId.Equals(workshop.Provider.UserId, StringComparison.Ordinal);
         }
 
         /// <inheritdoc/>>

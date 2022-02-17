@@ -74,6 +74,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
 
             hubCallerContextMock.Setup(x => x.User.FindFirst("sub"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, UserId));
+            hubCallerContextMock.Setup(x => x.User.FindFirst("subrole"))
+                .Returns(new Claim(ClaimTypes.NameIdentifier, "None"));
         }
 
         // TODO: use fakers
@@ -185,7 +187,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             var validWorkshopId = Guid.NewGuid();
             var validNewMessage = string.Format("'workshopId':{0}, 'parentId':{1}, 'text':'hi', 'senderRoleIsProvider':true ", validWorkshopId, Guid.NewGuid());
 
-            validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId)).ReturnsAsync(true);
+            validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId, Subrole.None)).ReturnsAsync(true);
 
             var validCreatedMessage = new ChatMessageWorkshopDto()
             {

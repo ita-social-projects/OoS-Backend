@@ -171,7 +171,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             var userId = this.GetUserId();
 
-            var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId).ConfigureAwait(false);
+            var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId, GetUserSubrole()).ConfigureAwait(false);
 
             if (!result)
             {
@@ -192,11 +192,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private Role GetUserRole()
         {
             var userRoleName = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Role)} from HttpContext.");
 
             Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
 
             return userRole;
+        }
+
+        private Subrole GetUserSubrole()
+        {
+            var userSubroleName = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole)
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Subrole)} from HttpContext.");
+
+            Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
+
+            return userSubrole;
         }
 
         private void LogWarningAboutUsersTryingToGetNotOwnChatRoom(Guid chatRoomId, string userId)
@@ -297,21 +307,28 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 var userId = this.GetUserId();
                 var userRole = this.GetUserRole();
-                var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+                var userSubrole = this.GetUserSubrole();
 
-                if (providerOrParentId != default)
+                if (userSubrole == Subrole.ProviderAdmin)
                 {
-                    var chatRooms = await getChatRoomsByRole(providerOrParentId).ConfigureAwait(false);
+                    var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
+                    var chatRooms = await roomService.GetByWorkshopIdsAsync(workshopIds).ConfigureAwait(false);
 
                     if (chatRooms.Any())
                     {
                         return Ok(chatRooms);
                     }
+                    else
+                    {
+                        return NoContent();
+                    }
                 }
-                else if (userRole == Role.Provider)
+
+                var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+
+                if (providerOrParentId != default)
                 {
-                    var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
-                    var chatRooms = await roomService.GetByWorkshopIdsAsync(workshopIds).ConfigureAwait(false);
+                    var chatRooms = await getChatRoomsByRole(providerOrParentId).ConfigureAwait(false);
 
                     if (chatRooms.Any())
                     {

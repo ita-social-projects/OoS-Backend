@@ -77,7 +77,11 @@ namespace OutOfSchool.WebApi.Hubs
             var userRoleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
             LogErrorThrowExceptionIfPropertyIsNull(userRoleName, nameof(userRoleName));
 
+            var userSubroleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole);
+            LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
+
             Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
+            Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
 
             logger.LogDebug($"New Hub-connection established. {nameof(userId)}: {userId}, {nameof(userRoleName)}: {userRoleName}");
 
@@ -93,9 +97,9 @@ namespace OutOfSchool.WebApi.Hubs
             }
             else
             {
-                var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy).ConfigureAwait(false);
-                if (providersAdmins.Any())
+                if (userSubrole == Subrole.ProviderAdmin)
                 {
+                    var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy).ConfigureAwait(false);
                     var workshopsIds = providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
                     usersRoomIds = await roomService.GetChatRoomIdsByWorkshopIdsAsync(workshopsIds).ConfigureAwait(false);
                 }
@@ -247,7 +251,11 @@ namespace OutOfSchool.WebApi.Hubs
 
             if (userRoleIsProvider)
             {
-                return validationService.UserIsWorkshopOwnerAsync(userId, workshopId);
+                var userSubroleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole);
+                LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
+                Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
+
+                return validationService.UserIsWorkshopOwnerAsync(userId, workshopId, userSubrole);
             }
 
             return validationService.UserIsParentOwnerAsync(userId, parentId);

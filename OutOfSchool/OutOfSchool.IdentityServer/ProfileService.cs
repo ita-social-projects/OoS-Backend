@@ -19,13 +19,16 @@ namespace OutOfSchool.IdentityServer
     {
         private readonly UserManager<User> userManager;
         private readonly IEntityRepository<PermissionsForRole> permissionsForRolesRepository;
+        private readonly IProviderAdminRepository providerAdminRepository;
 
         public ProfileService(
             UserManager<User> userManager,
-            IEntityRepository<PermissionsForRole> permissionsForRolesRepository)
+            IEntityRepository<PermissionsForRole> permissionsForRolesRepository,
+            IProviderAdminRepository providerAdminRepository)
         {
             this.userManager = userManager;
             this.permissionsForRolesRepository = permissionsForRolesRepository;
+            this.providerAdminRepository = providerAdminRepository;
         }
 
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
@@ -33,11 +36,16 @@ namespace OutOfSchool.IdentityServer
             var nameClaim = context.Subject.Claims.FirstOrDefault(claim => claim.Type == "name");
             var roleClaim = context.Subject.Claims.FirstOrDefault(claim => claim.Type == "role");
             var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(nameClaim.Value, roleClaim.Value));
+
+            var subrole = await GetSubroleByUserName(nameClaim.Value, roleClaim.Value);
+            var subRoleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, subrole.ToString());
+
             var claims = new List<Claim>
             {
                 nameClaim,
                 roleClaim,
                 permissionsClaim,
+                subRoleClaim,
             };
 
             context.IssuedClaims.AddRange(claims);
@@ -72,6 +80,31 @@ namespace OutOfSchool.IdentityServer
             }
 
             return permissionsForUser;
+        }
+
+        // Get subrole for user
+        private async Task<Subrole> GetSubroleByUserName(string userName, string roleName)
+        {
+            var userToLogin = await userManager.FindByNameAsync(userName);
+
+            if (userToLogin.Role == nameof(Role.Provider).ToLower() && userToLogin.IsDerived)
+            {
+                var userDeputyOrAdmin = await providerAdminRepository
+                    .GetByFilter(p => p.UserId == userToLogin.Id)
+                    .ConfigureAwait(false);
+
+                if (userDeputyOrAdmin.Any(u => u.IsDeputy))
+                {
+                    return Subrole.ProviderDeputy;
+                }
+
+                if (userDeputyOrAdmin.Any(u => !u.IsDeputy))
+                {
+                    return Subrole.ProviderAdmin;
+                }
+            }
+
+            return Subrole.None;
         }
     }
 }
