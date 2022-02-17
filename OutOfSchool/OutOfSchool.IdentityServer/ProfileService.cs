@@ -83,7 +83,7 @@ namespace OutOfSchool.IdentityServer
         }
 
         // Get subrole for user
-        private async Task<Subrole> GetSubroleByUserName(string userName, string roleName)
+        private async Task<Subrole> GetSubroleByUserName(string userName)
         {
             var userToLogin = await userManager.FindByNameAsync(userName);
 
