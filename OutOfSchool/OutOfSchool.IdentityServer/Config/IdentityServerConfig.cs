@@ -7,5 +7,7 @@ namespace OutOfSchool.IdentityServer.Config
         public const string Name = "Identity";
 
         public Uri Authority { get; set; }
+
+        public string RedirectToStartPageUrl { get; set; }
     }
 }
