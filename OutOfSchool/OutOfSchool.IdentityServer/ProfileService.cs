@@ -37,7 +37,7 @@ namespace OutOfSchool.IdentityServer
             var roleClaim = context.Subject.Claims.FirstOrDefault(claim => claim.Type == "role");
             var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(nameClaim.Value, roleClaim.Value));
 
-            var subrole = await GetSubroleByUserName(nameClaim.Value, roleClaim.Value);
+            var subrole = await GetSubroleByUserName(nameClaim.Value);
             var subRoleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, subrole.ToString());
 
             var claims = new List<Claim>
