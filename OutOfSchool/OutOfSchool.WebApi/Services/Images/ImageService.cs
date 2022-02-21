@@ -87,9 +87,9 @@ namespace OutOfSchool.WebApi.Services.Images
             var savingExternalImageIds = new List<string>();
             var uploadingImagesResults = new MultipleKeyValueOperationResult();
 
-            try
+            for (short i = 0; i < images.Count; i++)
             {
-                for (short i = 0; i < images.Count; i++)
+                try
                 {
                     logger.LogDebug($"Started uploading process for {nameof(images)} id number {i}.");
                     await using var stream = images[i].OpenReadStream();
@@ -114,12 +114,11 @@ namespace OutOfSchool.WebApi.Services.Images
                         savingExternalImageIds.Add(imageUploadResult.Value);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Exception while uploading images, message: {ex.Message}");
-                return new ImageUploadingResult
-                { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.UploadingError.GetResourceValue() } };
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"Exception while uploading images, message: {ex.Message}");
+                    uploadingImagesResults.Results.TryAdd(i, OperationResult.Failed(ImagesOperationErrorCode.UploadingError.GetOperationError()));
+                }
             }
 
             logger.LogDebug($"Uploading {images.Count} images was finished.");

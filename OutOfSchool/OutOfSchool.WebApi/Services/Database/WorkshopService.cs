@@ -128,7 +128,7 @@ namespace OutOfSchool.WebApi.Services
                     ImageUploadingResult uploadingResult = null;
                     if (dto.ImageFiles?.Count > 0)
                     {
-                        uploadingResult = await workshopImagesInteractionService.UploadManyImagesAsync(newWorkshop.Id, dto.ImageFiles, false).ConfigureAwait(false);
+                        uploadingResult = await workshopImagesInteractionService.UploadManyImagesAsync(newWorkshop.Id, dto.ImageFiles, enabledTransaction: false).ConfigureAwait(false);
                     }
 
                     Result<string> uploadingCoverImageResult = null;
@@ -270,7 +270,7 @@ namespace OutOfSchool.WebApi.Services
                     async () =>
                 {
                     dto.ImageIds ??= new List<string>();
-                    var multipleImageChangingResult = await workshopImagesInteractionService.ChangeImagesAsync(dto.Id, dto.ImageIds, dto.ImageFiles)
+                    var multipleImageChangingResult = await workshopImagesInteractionService.ChangeImagesAsync(dto.Id, dto.ImageIds, dto.ImageFiles, enabledTransaction: false)
                         .ConfigureAwait(false);
 
                     var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
@@ -342,13 +342,13 @@ namespace OutOfSchool.WebApi.Services
 
             var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
 
-            var strategy = executionStrategyHelper.CreateStrategyByDbName(DbContextName.OutOfSchoolDbContext); 
+            var strategy = executionStrategyHelper.CreateStrategyByDbName(DbContextName.OutOfSchoolDbContext);
             await strategy.ExecuteAsync(async () =>
                 await transactionProcessor.RunTransactionWithAutoCommitOrRollBackAsync(
                     new[] { DbContextName.OutOfSchoolDbContext, DbContextName.FilesDbContext },
                     async () =>
                     {
-                        var removingResult = await workshopImagesInteractionService.RemoveManyImagesAsync(entity.Id, entity.Images.Select(x => x.ExternalStorageId).ToList(), false).ConfigureAwait(false);
+                        var removingResult = await workshopImagesInteractionService.RemoveManyImagesAsync(entity.Id, entity.Images.Select(x => x.ExternalStorageId).ToList(), enabledTransaction: false).ConfigureAwait(false);
 
                         if (entity.Images.Count > 0 && removingResult.MultipleKeyValueOperationResult is { Succeeded: false })
                         {
@@ -367,7 +367,7 @@ namespace OutOfSchool.WebApi.Services
 
                         foreach (var teacher in entity.Teachers.ToList())
                         {
-                            await teacherService.DeleteWithoutTransaction(teacher.Id).ConfigureAwait(false);
+                            await teacherService.Delete(teacher.Id, enabledTransaction: false).ConfigureAwait(false);
                         }
 
                         try
@@ -709,20 +709,20 @@ namespace OutOfSchool.WebApi.Services
 
             foreach (var deletedId in deletedIds)
             {
-                await teacherService.DeleteWithoutTransaction(deletedId).ConfigureAwait(false);
+                await teacherService.Delete(deletedId, enabledTransaction: false).ConfigureAwait(false);
             }
 
             foreach (var teacherUpdateDto in teacherUpdateDtoList)
             {
                 if (currentWorkshop.Teachers.Select(x => x.Id).Contains(teacherUpdateDto.Id))
                 {
-                    await teacherService.UpdateWithoutTransaction(teacherUpdateDto).ConfigureAwait(false);
+                    await teacherService.Update(teacherUpdateDto, enabledTransaction: false).ConfigureAwait(false);
                 }
                 else
                 {
                     var newTeacher = mapper.Map<TeacherCreationDto>(teacherUpdateDto);
                     newTeacher.WorkshopId = currentWorkshop.Id;
-                    await teacherService.CreateWithoutTransaction(newTeacher).ConfigureAwait(false);
+                    await teacherService.Create(newTeacher, enabledTransaction: false).ConfigureAwait(false);
                 }
             }
         }

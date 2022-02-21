@@ -16,18 +16,12 @@ namespace OutOfSchool.WebApi.Services
     public interface ITeacherService
     {
         /// <summary>
-        /// Creates a new teacher without the transaction.
-        /// </summary>
-        /// <param name="dto">Teacher to add.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherCreationResultDto> CreateWithoutTransaction(TeacherCreationDto dto);
-
-        /// <summary>
         /// Creates a new teacher.
         /// </summary>
         /// <param name="dto">Teacher to add.</param>
+        /// <param name="enabledTransaction">Determines whether transaction is active for this method.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherCreationResultDto> Create(TeacherCreationDto dto);
+        Task<TeacherCreationResultDto> Create(TeacherCreationDto dto, bool enabledTransaction = true);
 
         /// <summary>
         /// Get all entities.
@@ -43,32 +37,20 @@ namespace OutOfSchool.WebApi.Services
         Task<TeacherDTO> GetById(Guid id);
 
         /// <summary>
-        /// Updates a teacher without the transaction.
-        /// </summary>
-        /// <param name="dto">Teacher to update.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherUpdateResultDto> UpdateWithoutTransaction(TeacherUpdateDto dto);
-
-        /// <summary>
         /// Update entity.
         /// </summary>
         /// <param name="dto">Teacher to update.</param>
+        /// <param name="enabledTransaction">Determines whether transaction is active for this method.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto);
-
-        /// <summary>
-        /// Deletes a teacher without the transaction.
-        /// </summary>
-        /// <param name="id">Teacher's key.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task DeleteWithoutTransaction(Guid id);
+        Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto, bool enabledTransaction = true);
 
         /// <summary>
         /// Delete entity.
         /// </summary>
         /// <param name="id">Teacher's key.</param>
+        /// <param name="enabledTransaction">Determines whether transaction is active for this method.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Delete(Guid id);
+        Task Delete(Guid id, bool enabledTransaction = true);
 
         /// <summary>
         /// Gets Id of workshop, where specified teacher was created.

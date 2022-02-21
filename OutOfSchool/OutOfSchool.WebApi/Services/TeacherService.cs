@@ -60,37 +60,11 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<TeacherCreationResultDto> CreateWithoutTransaction(TeacherCreationDto dto)
-        {
-            _ = dto ?? throw new ArgumentNullException(nameof(dto));
-            logger.LogInformation("Teacher creating was started.");
-
-            var teacher = mapper.Map<Teacher>(dto);
-
-            var newTeacher = await teacherRepository.Create(teacher).ConfigureAwait(false);
-
-            var uploadingResult = await imageService.UploadImageAsync<Teacher>(dto.AvatarImage).ConfigureAwait(false);
-            if (uploadingResult.Succeeded)
-            {
-                teacher.AvatarImageId = uploadingResult.Value;
-                await UpdateTeacher().ConfigureAwait(false);
-            }
-
-            logger.LogInformation($"Teacher with Id = {newTeacher.Id} created successfully.");
-
-            return new TeacherCreationResultDto
-            {
-                Teacher = mapper.Map<TeacherDTO>(newTeacher),
-                UploadingAvatarImageResult = uploadingResult.OperationResult,
-            };
-        }
-
-        /// <inheritdoc/>
-        public async Task<TeacherCreationResultDto> Create(TeacherCreationDto dto)
+        public async Task<TeacherCreationResultDto> Create(TeacherCreationDto dto, bool enabledTransaction = true)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
 
-            return await RunInDefaultTransactionWithResultAsync(CreateWithoutTransaction, dto).ConfigureAwait(false);
+            return await ExecuteOperationWithResultAsync(CreateProcessAsync, dto, enabledTransaction).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -127,9 +101,62 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<TeacherUpdateResultDto> UpdateWithoutTransaction(TeacherUpdateDto dto)
+        public async Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto, bool enabledTransaction = true)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            return await ExecuteOperationWithResultAsync(UpdateProcessAsync, dto, enabledTransaction).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task Delete(Guid id, bool enabledTransaction = true)
+        {
+            await ExecuteOperationAsync(DeleteProcessAsync, id, enabledTransaction).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid> GetTeachersWorkshopId(Guid teacherId)
+        {
+            logger.LogInformation($"Searching Teacher by Id started. Looking Id = {teacherId}.");
+
+            var teacher = await teacherRepository.GetByFilterNoTracking(t => t.Id == teacherId).SingleOrDefaultAsync().ConfigureAwait(false);
+
+            if (teacher == null)
+            {
+                throw new ArgumentException($"There are no recors in teachers table with such id - {teacherId}.", nameof(teacherId));
+            }
+
+            logger.LogInformation($"Successfully found a Teacher with Id = {teacherId}.");
+            var teachersWorkshopId = teacher.WorkshopId;
+            logger.LogInformation($"Successfully found WorkshopId - {teachersWorkshopId} for Teacher  with Id = {teacherId}.");
+            return teachersWorkshopId;
+        }
+
+        private async Task<TeacherCreationResultDto> CreateProcessAsync(TeacherCreationDto dto)
+        {
+            logger.LogInformation("Teacher creating was started.");
+            var teacher = mapper.Map<Teacher>(dto);
+
+            var newTeacher = await teacherRepository.Create(teacher).ConfigureAwait(false);
+
+            var uploadingResult = await imageService.UploadImageAsync<Teacher>(dto.AvatarImage).ConfigureAwait(false);
+            if (uploadingResult.Succeeded)
+            {
+                teacher.AvatarImageId = uploadingResult.Value;
+                await UpdateTeacher().ConfigureAwait(false);
+            }
+
+            logger.LogInformation($"Teacher with Id = {newTeacher.Id} created successfully.");
+
+            return new TeacherCreationResultDto
+            {
+                Teacher = mapper.Map<TeacherDTO>(newTeacher),
+                UploadingAvatarImageResult = uploadingResult.OperationResult,
+            };
+        }
+
+        private async Task<TeacherUpdateResultDto> UpdateProcessAsync(TeacherUpdateDto dto)
+        {
             logger.LogInformation($"Updating Teacher with Id = {dto.Id} started.");
 
             var teacher = await teacherRepository.GetById(dto.Id).ConfigureAwait(false);
@@ -147,16 +174,7 @@ namespace OutOfSchool.WebApi.Services
             };
         }
 
-        /// <inheritdoc/>
-        public async Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto)
-        {
-            _ = dto ?? throw new ArgumentNullException(nameof(dto));
-
-            return await RunInDefaultTransactionWithResultAsync(UpdateWithoutTransaction, dto).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public async Task DeleteWithoutTransaction(Guid id)
+        private async Task DeleteProcessAsync(Guid id)
         {
             logger.LogInformation($"Deleting Teacher with Id = {id} started.");
 
@@ -183,32 +201,6 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Deleting Teacher with Id = {id} failed.");
                 throw;
             }
-        }
-
-        /// <inheritdoc/>
-        public async Task Delete(Guid id)
-        {
-            await RunInDefaultTransactionAsync(DeleteWithoutTransaction, id).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public async Task<Guid> GetTeachersWorkshopId(Guid teacherId)
-        {
-            logger.LogInformation($"Searching Teacher by Id started. Looking Id = {teacherId}.");
-
-            var teacher = await teacherRepository.GetByFilterNoTracking(t => t.Id == teacherId).SingleOrDefaultAsync().ConfigureAwait(false);
-
-            if (teacher == null)
-            {
-                throw new ArgumentException(
-                    nameof(teacherId),
-                    paramName: $"There are no recors in teachers table with such id - {teacherId}.");
-            }
-
-            logger.LogInformation($"Successfully found a Teacher with Id = {teacherId}.");
-            var teachersWorkshopId = teacher.WorkshopId;
-            logger.LogInformation($"Successfully found WorkshopId - {teachersWorkshopId} for Teacher  with Id = {teacherId}.");
-            return teachersWorkshopId;
         }
 
         private async Task<ImageChangingResult> ChangeAvatarImage(Teacher teacher, string dtoImageId, IFormFile newImage)
@@ -259,6 +251,26 @@ namespace OutOfSchool.WebApi.Services
                 await transactionProcessor.RunTransactionWithAutoCommitOrRollBackAsync(
                     new[] { DbContextName.OutOfSchoolDbContext, DbContextName.FilesDbContext },
                     async () => await operation(param).ConfigureAwait(false)).ConfigureAwait(false)).ConfigureAwait(false);
+        }
+
+        private async Task<TResult> ExecuteOperationWithResultAsync<T, TResult>(Func<T, Task<TResult>> operation, T param, bool enabledTransaction)
+        {
+            if (enabledTransaction)
+            {
+                return await RunInDefaultTransactionWithResultAsync(operation, param).ConfigureAwait(false);
+            }
+
+            return await operation(param).ConfigureAwait(false);
+        }
+
+        private async Task ExecuteOperationAsync<T>(Func<T, Task> operation, T param, bool enabledTransaction)
+        {
+            if (enabledTransaction)
+            {
+                await RunInDefaultTransactionAsync(operation, param).ConfigureAwait(false);
+            }
+
+            await operation(param).ConfigureAwait(false);
         }
     }
 }
