@@ -35,9 +35,12 @@ namespace OutOfSchool.IdentityServer
         {
             var nameClaim = context.Subject.Claims.FirstOrDefault(claim => claim.Type == "name");
             var roleClaim = context.Subject.Claims.FirstOrDefault(claim => claim.Type == "role");
-            var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(nameClaim.Value, roleClaim.Value));
 
-            var subrole = await GetSubroleByUserName(nameClaim.Value);
+            var userFromLogin = await userManager.FindByNameAsync(nameClaim.Value);
+
+            var permissionsClaim = new Claim(IdentityResourceClaimsTypes.Permissions, await GetPermissionsForUser(userFromLogin, roleClaim.Value));
+
+            var subrole = await GetSubroleByUserName(userFromLogin);
             var subRoleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, subrole.ToString());
 
             var claims = new List<Claim>
@@ -59,11 +62,9 @@ namespace OutOfSchool.IdentityServer
         }
 
         // get's list of permissions for current user's role from db
-        private async Task<string> GetPermissionsForUser(string userName, string roleName)
+        private async Task<string> GetPermissionsForUser(User userFromLogin, string roleName)
         {
-            var userToLogin = await userManager.FindByNameAsync(userName);
-
-            if (userToLogin.Role == nameof(Role.Provider).ToLower() && userToLogin.IsDerived)
+            if (userFromLogin.Role == nameof(Role.Provider).ToLower() && userFromLogin.IsDerived)
             {
                 // ProviderAdmin set of permissions in DB excludes not allowed actions
                 roleName += nameof(Role.Admin);
@@ -83,14 +84,12 @@ namespace OutOfSchool.IdentityServer
         }
 
         // Get subrole for user
-        private async Task<Subrole> GetSubroleByUserName(string userName)
+        private async Task<Subrole> GetSubroleByUserName(User userFromLogin)
         {
-            var userToLogin = await userManager.FindByNameAsync(userName);
-
-            if (userToLogin.Role == nameof(Role.Provider).ToLower() && userToLogin.IsDerived)
+            if (userFromLogin.Role == nameof(Role.Provider).ToLower() && userFromLogin.IsDerived)
             {
                 var userDeputyOrAdmin = await providerAdminRepository
-                    .GetByFilter(p => p.UserId == userToLogin.Id)
+                    .GetByFilter(p => p.UserId == userFromLogin.Id)
                     .ConfigureAwait(false);
 
                 if (userDeputyOrAdmin.Any(u => u.IsDeputy))

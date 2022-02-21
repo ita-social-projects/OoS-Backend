@@ -170,8 +170,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private async Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
             var userId = this.GetUserId();
+            var userSubrole = this.GetUserSubrole();
 
-            var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId, GetUserSubrole()).ConfigureAwait(false);
+            var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId, userSubrole).ConfigureAwait(false);
 
             if (!result)
             {
