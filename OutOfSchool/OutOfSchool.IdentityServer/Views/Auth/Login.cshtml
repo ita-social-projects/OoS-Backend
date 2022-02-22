@@ -28,7 +28,7 @@
                 <input type="hidden" asp-for="ReturnUrl"/>
                 <div asp-validation-summary="ModelOnly"></div>
                 <label class="registration_label">@SharedLocalizer["Email"]</label>
-                <input class="registration_input" asp-for="Username"/>
+                <input class="registration_input" asp-for="Username" placeholder="email@companyname.com"/>
                 <div class="login_privacy_username_box">
                     <span asp-validation-for="Username"></span>
                 </div>
