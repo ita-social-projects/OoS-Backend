@@ -27,7 +27,13 @@ namespace OutOfSchool.Services.Repository
             _ = imageId ?? throw new ArgumentNullException(nameof(imageId));
             try
             {
-                var searchResult = await dbContext.Images.FirstAsync(x => x.Id == new Guid(imageId)).ConfigureAwait(false);
+                var searchResult = await dbContext.Images.FirstOrDefaultAsync(x => x.Id == new Guid(imageId)).ConfigureAwait(false);
+
+                if (searchResult == null)
+                {
+                    return null;
+                }
+
                 return new ExternalImageModel
                 {
                     ContentStream = new MemoryStream(searchResult.File),

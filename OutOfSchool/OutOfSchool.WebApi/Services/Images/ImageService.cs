@@ -56,6 +56,11 @@ namespace OutOfSchool.WebApi.Services.Images
             {
                 var externalImageModel = await externalStorage.GetByIdAsync(imageId).ConfigureAwait(false);
 
+                if (externalImageModel == null)
+                {
+                    return Result<ImageDto>.Failed(ImagesOperationErrorCode.ImageNotFoundError.GetOperationError());
+                }
+
                 var imageDto = new ImageDto
                 {
                     ContentStream = externalImageModel.ContentStream,
