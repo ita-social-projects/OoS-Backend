@@ -11,7 +11,7 @@ namespace OutOfSchool.WebApi.Util.Transactions
 
         public ContextResolver(IServiceProvider serviceProvider)
         {
-            this.serviceProvider = serviceProvider;
+            this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
         public DbContext GetRequiredContext(DbContextName dbContextName)

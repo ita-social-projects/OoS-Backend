@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace OutOfSchool.WebApi.Util.Transactions
 {
@@ -8,7 +9,7 @@ namespace OutOfSchool.WebApi.Util.Transactions
 
         public ExecutionStrategyHelper(ContextResolver contextResolver)
         {
-            this.contextResolver = contextResolver;
+            this.contextResolver = contextResolver ?? throw new ArgumentNullException(nameof(contextResolver));
         }
 
         public IExecutionStrategy CreateStrategyByDbName(DbContextName dbContextName)

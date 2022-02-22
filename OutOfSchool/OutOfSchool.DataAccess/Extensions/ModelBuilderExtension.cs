@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Extensions
 {
@@ -131,6 +134,26 @@ namespace OutOfSchool.Services.Extensions
             //        .HasMaxLength(36)
             //        .IsRequired(true);
             //});
+        }
+
+        /// <summary>
+        /// Adds initial data for Files.
+        /// </summary>
+        /// <param name="builder">Model Builder.</param>
+        public static void SeedFilesData(this ModelBuilder builder)
+        {
+            // TODO: check and insert formats from configuration
+            builder.Entity<DbImageContentTypeModel>().HasData(
+                new DbImageContentTypeModel
+                {
+                    Id = 1,
+                    ContentTypeValue = "image/jpeg",
+                },
+                new DbImageContentTypeModel
+                {
+                    Id = 2,
+                    ContentTypeValue = "image/png",
+                });
         }
     }
 }

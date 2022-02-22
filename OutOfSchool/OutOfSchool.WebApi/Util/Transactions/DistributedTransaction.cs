@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace OutOfSchool.WebApi.Util.Transactions
@@ -10,7 +11,7 @@ namespace OutOfSchool.WebApi.Util.Transactions
 
         public DistributedTransaction(ContextResolver contextReceiver)
         {
-            this.contextReceiver = contextReceiver;
+            this.contextReceiver = contextReceiver ?? throw new ArgumentNullException(nameof(contextReceiver));
         }
 
         public IDbContextTransaction CurrentTransaction => transactionPoolManager.Peek();

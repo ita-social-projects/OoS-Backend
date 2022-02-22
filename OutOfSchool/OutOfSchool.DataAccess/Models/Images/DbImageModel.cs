@@ -10,6 +10,8 @@ namespace OutOfSchool.Services.Models.Images
 
         public byte[] File { get; set; }
 
-        public string ContentType { get; set; }
+        public int ContentTypeId { get; set; }
+
+        public DbImageContentTypeModel ContentType { get; set; }
     }
 }
