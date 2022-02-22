@@ -49,7 +49,6 @@ namespace OutOfSchool.IdentityServer.Services
         public async Task<ResponseDto> CreateProviderAdminAsync(
             CreateProviderAdminDto providerAdminDto,
             IUrlHelper url,
-            string path,
             string userId,
             string requestId)
         {
@@ -76,7 +75,7 @@ namespace OutOfSchool.IdentityServer.Services
                         await transaction.RollbackAsync();
 
                         logger.LogError(
-                            $"{path} Error happened while creation ProviderAdmin. Request(id): {requestId}" +
+                            $"Error happened while creation ProviderAdmin. Request(id): {requestId}" +
                             $"User(id): {userId}" +
                             $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
@@ -98,7 +97,7 @@ namespace OutOfSchool.IdentityServer.Services
                         await transaction.RollbackAsync();
 
                         logger.LogError(
-                            $"{path} Error happened while adding role to user. Request(id): {requestId}" +
+                            $"Error happened while adding role to user. Request(id): {requestId}" +
                             $"User(id): {userId}" +
                             $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
@@ -170,7 +169,7 @@ namespace OutOfSchool.IdentityServer.Services
                 {
                     await transaction.RollbackAsync();
 
-                    logger.LogError($"{path} {ex.Message} User(id): {userId}.");
+                    logger.LogError($"{ex.Message} User(id): {userId}.");
 
                     response.IsSuccess = false;
                     response.HttpStatusCode = HttpStatusCode.InternalServerError;
@@ -183,7 +182,6 @@ namespace OutOfSchool.IdentityServer.Services
 
         public async Task<ResponseDto> DeleteProviderAdminAsync(
             string providerAdminId,
-            string path,
             string userId,
             string requestId)
         {
@@ -202,7 +200,7 @@ namespace OutOfSchool.IdentityServer.Services
                         response.IsSuccess = false;
                         response.HttpStatusCode = HttpStatusCode.NotFound;
 
-                        logger.LogError($"{path} ProviderAdmin(id) {providerAdminId} not found. " +
+                        logger.LogError($"ProviderAdmin(id) {providerAdminId} not found. " +
                                         $"Request(id): {requestId}" +
                                         $"User(id): {userId}");
 
@@ -218,7 +216,7 @@ namespace OutOfSchool.IdentityServer.Services
                     {
                         await transaction.RollbackAsync();
 
-                        logger.LogError($"{path} Error happened while deleting ProviderAdmin. Request(id): {requestId}" +
+                        logger.LogError($"Error happened while deleting ProviderAdmin. Request(id): {requestId}" +
                                         $"User(id): {userId}" +
                                         $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
@@ -241,7 +239,7 @@ namespace OutOfSchool.IdentityServer.Services
                 {
                     await transaction.RollbackAsync();
 
-                    logger.LogError($"{path} Error happened while deleting ProviderAdmin. Request(id): {requestId}" +
+                    logger.LogError($"Error happened while deleting ProviderAdmin. Request(id): {requestId}" +
                                     $"User(id): {userId} {ex.Message}");
 
                     response.IsSuccess = false;
@@ -256,7 +254,6 @@ namespace OutOfSchool.IdentityServer.Services
         // TODO: Maybe add transactions later?
         public async Task<ResponseDto> BlockProviderAdminAsync(
             string providerAdminId,
-            string path,
             string userId,
             string requestId)
         {
@@ -268,7 +265,7 @@ namespace OutOfSchool.IdentityServer.Services
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.NotFound;
 
-                logger.LogError($"{path} ProviderAdmin(id) {providerAdminId} not found. " +
+                logger.LogError($"ProviderAdmin(id) {providerAdminId} not found. " +
                             $"Request(id): {requestId}" +
                                 $"User(id): {userId}");
 
@@ -280,7 +277,7 @@ namespace OutOfSchool.IdentityServer.Services
 
             if (!updateResult.Succeeded)
             {
-                logger.LogError($"{path} Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
+                logger.LogError($"Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
                             $"User(id): {userId}" +
                             $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
 
@@ -294,7 +291,7 @@ namespace OutOfSchool.IdentityServer.Services
 
             if (!updateSecurityStamp.Succeeded)
             {
-                logger.LogError($"{path} Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
+                logger.LogError($"Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
                             $"User(id): {userId}" +
                             $"{string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description))}");
 
