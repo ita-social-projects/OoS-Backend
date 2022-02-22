@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace OutOfSchool.Services.Models.Images
@@ -10,8 +11,7 @@ namespace OutOfSchool.Services.Models.Images
 
         public byte[] File { get; set; }
 
-        public int ContentTypeId { get; set; }
-
-        public DbImageContentTypeModel ContentType { get; set; }
+        [MaxLength(20)]
+        public string ContentType { get; set; }
     }
 }

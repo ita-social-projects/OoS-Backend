@@ -135,25 +135,5 @@ namespace OutOfSchool.Services.Extensions
             //        .IsRequired(true);
             //});
         }
-
-        /// <summary>
-        /// Adds initial data for Files.
-        /// </summary>
-        /// <param name="builder">Model Builder.</param>
-        public static void SeedFilesData(this ModelBuilder builder)
-        {
-            // TODO: check and insert formats from configuration
-            builder.Entity<DbImageContentTypeModel>().HasData(
-                new DbImageContentTypeModel
-                {
-                    Id = 1,
-                    ContentTypeValue = "image/jpeg",
-                },
-                new DbImageContentTypeModel
-                {
-                    Id = 2,
-                    ContentTypeValue = "image/png",
-                });
-        }
     }
 }

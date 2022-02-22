@@ -9,12 +9,14 @@ namespace OutOfSchool.WebApi.Util.Transactions
         {
             _ = transaction ?? throw new ArgumentNullException(nameof(transaction));
             transaction.Commit();
+            transaction.Dispose();
         }
 
         public static void RollbackTransaction(IDbContextTransaction transaction)
         {
             _ = transaction ?? throw new ArgumentNullException(nameof(transaction));
             transaction.Rollback();
+            transaction.Dispose();
         }
     }
 }

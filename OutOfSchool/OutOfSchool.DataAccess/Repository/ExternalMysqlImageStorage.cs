@@ -37,7 +37,7 @@ namespace OutOfSchool.Services.Repository
                 return new ExternalImageModel
                 {
                     ContentStream = new MemoryStream(searchResult.File),
-                    ContentType = searchResult.ContentType.ContentTypeValue,
+                    ContentType = searchResult.ContentType,
                 };
             }
             catch (Exception ex)
@@ -59,7 +59,7 @@ namespace OutOfSchool.Services.Repository
                 var newImage = new DbImageModel
                 {
                     Id = default,
-                    ContentType = await GetContentType(imageModel.ContentType),
+                    ContentType = imageModel.ContentType,
                     File = fileStream.ToArray(),
                 };
 
@@ -85,11 +85,6 @@ namespace OutOfSchool.Services.Repository
             {
                 throw new ImageStorageException(ex);
             }
-        }
-
-        private async Task<DbImageContentTypeModel> GetContentType(string contentType)
-        {
-            return await dbContext.ImageContentTypes.FirstAsync(x => x.ContentTypeValue.Equals(contentType));
         }
     }
 }

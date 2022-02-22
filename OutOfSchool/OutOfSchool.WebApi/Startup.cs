@@ -269,9 +269,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
 
-            services.AddScoped<ContextResolver>();
-            services.AddScoped<IExecutionStrategyHelper, ExecutionStrategyHelper>();
-            services.AddTransient<IDistributedTransactionProcessor, DistributedTransaction>();
+            services.AddTransactionProcessors();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

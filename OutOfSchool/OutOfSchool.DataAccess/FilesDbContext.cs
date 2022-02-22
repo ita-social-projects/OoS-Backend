@@ -17,8 +17,6 @@ namespace OutOfSchool.Services
 
         public DbSet<DbImageModel> Images { get; set; }
 
-        public DbSet<DbImageContentTypeModel> ImageContentTypes { get; set; }
-
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();
@@ -26,13 +24,6 @@ namespace OutOfSchool.Services
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
-            builder.Entity<DbImageModel>()
-                .HasOne(x => x.ContentType)
-                .WithMany(x => x.Images)
-                .HasForeignKey(x => x.ContentTypeId);
-
-            builder.SeedFilesData();
         }
     }
 }
