@@ -25,6 +25,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<DirectionService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
+        private readonly string includePropertiesForGetByFilterWithName = $"";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectionService"/> class.
@@ -127,19 +128,18 @@ namespace OutOfSchool.WebApi.Services
                             department.Classes.Any(c =>
                                 c.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)))),
                 };
+                directions = await repository.Get<int>(filter.From, filter.Size, where: predicate).ToListAsync().ConfigureAwait(false);
                 count = await repository.Count(predicate).ConfigureAwait(false);
-                directions = await repository.Get<int>(filter.Size, filter.From, where: predicate)
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+
             }
             else
             {
+                count = await repository.Count().ConfigureAwait(false);
                 directions = await this.repository
                     .Get<int>(filter.From, filter.Size)
                     .ToListAsync()
                     .ConfigureAwait(false);
             }
-            
 
             logger.LogInformation(!directions.Any()
                 ? "Direction table is empty."
@@ -148,7 +148,7 @@ namespace OutOfSchool.WebApi.Services
             var result = new SearchResult<DirectionDto>()
             {
                 TotalAmount = count,
-                Entities = directions.Select(direction => mapper.Map<DirectionDto>(direction)).ToList(),
+                Entities = directions.Select(entity => entity.ToModel()).ToList(),
             };
 
             return result;

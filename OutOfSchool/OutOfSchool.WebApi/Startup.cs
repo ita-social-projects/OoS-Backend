@@ -178,7 +178,9 @@ namespace OutOfSchool.WebApi
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                     builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
                     {
-                        mySqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+                        mySqlOptions
+                            .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+                            .EnableStringComparisonTranslations();
                     }))
                 .AddCustomDataProtection("WebApi");
 

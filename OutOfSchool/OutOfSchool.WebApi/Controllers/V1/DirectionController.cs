@@ -66,7 +66,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetByFilter(DirectionFilter filter)
+        public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter)
         {
             if (filter.Name?.Length <= 2 && !string.IsNullOrEmpty(filter.Name))
             {
