@@ -13,17 +13,17 @@ namespace OutOfSchool.IdentityServer.Services.Intefaces
         Task<ResponseDto> CreateProviderAdminAsync(
             CreateProviderAdminDto providerAdminDto,
             IUrlHelper url,
-            string path,
-            string userId);
+            string userId,
+            string requestId);
 
         Task<ResponseDto> DeleteProviderAdminAsync(
             string providerAdminId,
-            string path,
-            string userId);
+            string userId,
+            string requestId);
 
         Task<ResponseDto> BlockProviderAdminAsync(
             string providerAdminId,
-            string path,
-            string userId);
+            string userId,
+            string requestId);
     }
 }

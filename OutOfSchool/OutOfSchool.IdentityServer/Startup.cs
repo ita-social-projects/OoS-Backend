@@ -146,7 +146,6 @@ namespace OutOfSchool.IdentityServer
                     options.DataAnnotationLocalizerProvider = (type, factory) =>
                         factory.Create(typeof(SharedResource));
                 });
-            services.AddHttpContextAccessor();
             services.AddProxy();
             services.AddAutoMapper(typeof(MappingProfile));
             services.AddTransient<IParentRepository, ParentRepository>();
@@ -157,7 +156,6 @@ namespace OutOfSchool.IdentityServer
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
-
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
