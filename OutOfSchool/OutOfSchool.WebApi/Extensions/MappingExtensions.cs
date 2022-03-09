@@ -81,21 +81,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
         }
 
-        public static ClassDto ToModel(this Class classEntity)
-        {
-            return Mapper<Class, ClassDto>(classEntity, cfg => { cfg.CreateMap<Class, ClassDto>(); });
-        }
-
-        public static DepartmentDto ToModel(this Department department)
-        {
-            return Mapper<Department, DepartmentDto>(department, cfg => { cfg.CreateMap<Department, DepartmentDto>(); });
-        }
-
-        public static DirectionDto ToModel(this Direction direction)
-        {
-            return Mapper<Direction, DirectionDto>(direction, cfg => { cfg.CreateMap<Direction, DirectionDto>(); });
-        }
-
         public static FavoriteDto ToModel(this Favorite favorite)
         {
             return Mapper<Favorite, FavoriteDto>(favorite, cfg => { cfg.CreateMap<Favorite, FavoriteDto>(); });
@@ -234,21 +219,6 @@ namespace OutOfSchool.WebApi.Extensions
         public static City ToDomain(this CityDto cityDto)
         {
             return Mapper<CityDto, City>(cityDto, cfg => { cfg.CreateMap<CityDto, City>(); });
-        }
-
-        public static Class ToDomain(this ClassDto classDto)
-        {
-            return Mapper<ClassDto, Class>(classDto, cfg => { cfg.CreateMap<ClassDto, Class>(); });
-        }
-
-        public static Department ToDomain(this DepartmentDto departmentDto)
-        {
-            return Mapper<DepartmentDto, Department>(departmentDto, cfg => { cfg.CreateMap<DepartmentDto, Department>(); });
-        }
-
-        public static Direction ToDomain(this DirectionDto directionDto)
-        {
-            return Mapper<DirectionDto, Direction>(directionDto, cfg => { cfg.CreateMap<DirectionDto, Direction>(); });
         }
 
         public static Favorite ToDomain(this FavoriteDto favoriteDto)

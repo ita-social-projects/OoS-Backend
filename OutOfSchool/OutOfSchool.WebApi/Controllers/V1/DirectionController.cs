@@ -44,6 +44,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">One or more directions were found.</response>
         /// <response code="204">No direction was found.</response>
         /// <response code="500">If any server error occures.</response>
+        [Obsolete("Use paged method")]
         [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DirectionDto>))]
@@ -68,11 +69,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetByFilter([FromQuery] DirectionFilter filter)
         {
-            if (filter.Name?.Length <= 2 && !string.IsNullOrEmpty(filter.Name))
-            {
-                return NoContent();
-            }
-
             var directions = await service.GetByFilter(filter).ConfigureAwait(false);
 
             if (directions.TotalAmount < 1)

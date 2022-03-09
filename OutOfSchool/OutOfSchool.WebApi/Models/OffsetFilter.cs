@@ -8,11 +8,19 @@ namespace OutOfSchool.WebApi.Models
     /// </summary>
     public class OffsetFilter
     {
+        private const int MaxSize = 100;
+
+        private int size = 10;
+
         /// <summary>
         /// Gets or sets the amount of entities to take from collection.
         /// </summary>
-        [Range(0, int.MaxValue, ErrorMessage = "Field value should be in a range from 0 to 2 147 483 647")]
-        public int Size { get; set; } = 0;
+        public int Size
+        {
+            get => size;
+
+            set => size = (value > MaxSize) ? MaxSize : value;
+        }
 
         /// <summary>
         /// Gets or sets the amount of entities to skip before taking.

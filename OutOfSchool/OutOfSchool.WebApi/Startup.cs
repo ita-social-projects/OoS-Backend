@@ -237,7 +237,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<Child>, EntityRepository<Child>>();
             services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
             services.AddTransient<IEntityRepository<Favorite>, EntityRepository<Favorite>>();
-            services.AddTransient<IEntityRepository<Direction>, EntityRepository<Direction>>();
             services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
             services.AddTransient<IEntityRepository<InstitutionStatus>, EntityRepository<InstitutionStatus>>();
             services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
@@ -255,6 +254,7 @@ namespace OutOfSchool.WebApi
                 >();
             services.AddTransient<IClassRepository, ClassRepository>();
             services.AddTransient<IDepartmentRepository, DepartmentRepository>();
+            services.AddTransient<IDirectionRepository, DirectionRepository>();
             services.AddTransient<IParentRepository, ParentRepository>();
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
