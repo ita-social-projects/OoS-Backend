@@ -44,6 +44,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">One or more classes were found.</response>
         /// <response code="204">No class was found.</response>
         /// <response code="500">If any server error occures.</response>
+        [Obsolete("Use paged method")]
         [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClassDto>))]
@@ -54,6 +55,23 @@ namespace OutOfSchool.WebApi.Controllers.V1
             var classes = await service.GetAll().ConfigureAwait(false);
 
             if (!classes.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(classes);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ClassDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByFilter([FromQuery] OffsetFilter filter)
+        {
+            var classes = await service.GetByFilter(filter).ConfigureAwait(false);
+
+            if (classes.TotalAmount < 1)
             {
                 return NoContent();
             }

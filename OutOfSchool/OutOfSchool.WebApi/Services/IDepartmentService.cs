@@ -26,6 +26,14 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<DepartmentDto>> GetAll();
 
         /// <summary>
+        /// Get Department objects from DB by filter.
+        /// </summary>
+        /// <param name="filter">Filter for Department dto.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a List of <see cref="DepartmentDto"/> that were found.</returns>
+        Task<SearchResult<DepartmentDto>> GetByFilter(OffsetFilter filter);
+
+        /// <summary>
         /// To recieve the Department object with define id.
         /// </summary>
         /// <param name="id">Key in the table.</param>
