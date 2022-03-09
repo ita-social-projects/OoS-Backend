@@ -24,7 +24,7 @@ resource "google_container_registry" "registry" {
 }
 
 resource "google_storage_bucket_iam_member" "viewer" {
-  bucket = google_container_registry.registry.id
+  bucket = google_container_registry.registry[count.index].id
   role   = "roles/storage.objectViewer"
   member = "group:${var.access_group_email}"
   count  = "${var.access_group_email}" != "none" ? 1 : 0

@@ -85,6 +85,7 @@ elasticsearch:
   generateCertificate: true
   replicas: 1
   protocol: http
+  clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
   esConfig:
     elasticsearch.yml: |
       xpack.license.self_generated.type: basic

@@ -34,11 +34,11 @@ resource "helm_release" "elastic" {
     value = join("\\,", var.admin_ips)
   }
   set {
-    name  = "elastic.ingress.tls[0].hosts[0]"
+    name  = "elasticsearch.ingress.tls[0].hosts[0]"
     value = var.elastic_hostname
   }
   set {
-    name  = "elastic.ingress.hosts[0].host"
+    name  = "elasticsearch.ingress.hosts[0].host"
     value = var.elastic_hostname
   }
   set {
