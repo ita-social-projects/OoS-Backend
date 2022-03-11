@@ -151,7 +151,7 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(c => c.FirstName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(c => c.LastName))
                 .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(c => c.MiddleName))
-                .ForMember(dest => dest.Phone, opt => opt.MapFrom(c => c.PhoneNumber))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(c => c.PhoneNumber))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(c => c.Email))
                 .ForMember(dest => dest.IsDeputy, opt => opt.Ignore())
                 .ForMember(dest => dest.AccountStatus, m => m.Ignore());
