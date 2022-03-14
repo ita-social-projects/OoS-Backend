@@ -63,6 +63,22 @@ namespace OutOfSchool.WebApi.Services
             return mapper.Map<ClassDto>(newClass);
         }
 
+        public async Task<List<ClassDto>> Create(ClassDto[] dtos)
+        {
+            logger.LogInformation("Classes creating was started.");
+            List<ClassDto> addedArray = new List<ClassDto>();
+            foreach (var dto in dtos)
+            {
+                var classEntity = mapper.Map<Class>(dto);
+                ModelValidation(dto);
+                var newClass = await repository.Create(classEntity).ConfigureAwait(false);
+                logger.LogInformation($"Class with Id = {newClass?.Id} created successfully.");
+                addedArray.Add(mapper.Map<ClassDto>(newClass));
+            }
+
+            return addedArray;
+        }
+
         /// <inheritdoc/>
         public async Task<Result<ClassDto>> Delete(long id)
         {

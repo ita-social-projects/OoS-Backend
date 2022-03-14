@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 
@@ -17,6 +18,14 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="ClassDto"/> that was created.</returns>
         Task<ClassDto> Create(ClassDto dto);
+
+        /// <summary>
+        /// Add multiple new Classes to the DB.
+        /// </summary>
+        /// <param name="dtos">ClassDto entities.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="ClassDto"/> that was created.</returns>
+        Task<List<ClassDto>> Create(ClassDto[] dtos);
 
         /// <summary>
         /// Get all Class objects from DB.
