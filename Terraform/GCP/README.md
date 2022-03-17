@@ -34,7 +34,8 @@ gcloud services enable \
     secretmanager.googleapis.com \
     iam.googleapis.com \
     servicenetworking.googleapis.com \
-    sqladmin.googleapis.com
+    sqladmin.googleapis.com \
+    gmail.googleapis.com
 ```
 5. Init Terraform
 ```
