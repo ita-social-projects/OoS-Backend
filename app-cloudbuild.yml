@@ -28,7 +28,7 @@ steps:
     - $_SERVICE_ACCOUNT
     - --cpu=2
     - --memory=512Mi
-    - --max-instances=2
+    - --max-instances=3
     - --concurrency=80
     - --set-env-vars=ASPNETCORE_ENVIRONMENT=Google
     - --set-env-vars=Elasticsearch__User=webapi
