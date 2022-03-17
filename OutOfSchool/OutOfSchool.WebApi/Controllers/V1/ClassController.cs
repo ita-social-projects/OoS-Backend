@@ -210,10 +210,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 var classEntities = await service.Create(classes).ConfigureAwait(false);
 
-                return CreatedAtAction(
-                    nameof(GetById),
-                    classEntities.Select(c => new {id = c.Id}),
-                    classEntities);
+                return Ok(classEntities);
             }
             catch (ArgumentException ex)
             {
