@@ -173,6 +173,52 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
+        /// To create a new Class and add it to the DB.
+        /// </summary>
+        /// <param name="classDto">ClassDto object that will be added.</param>
+        /// <returns>Class that was created.</returns>
+        /// <response code="201">Class was successfully created.</response>
+        /// <response code="400">Model is invalid.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="403">If the user has no rights to use this method.</response>
+        /// <response code="500">If any server error occures.</response>
+        [HttpPost]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateMultiple([FromBody]ClassDto[] classes)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (classes.Length > 10)
+            {
+                return BadRequest("Can't add more than 10 classes in one query");
+            }
+
+            try
+            {
+                foreach (var classDto in classes)
+                {
+                    classDto.Id = default;
+                }
+
+                var classEntities = await service.Create(classes).ConfigureAwait(false);
+
+                return Ok(classEntities);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// To update Class entity that already exists.
         /// </summary>
         /// <param name="classDto">ClassDto object with new properties.</param>
