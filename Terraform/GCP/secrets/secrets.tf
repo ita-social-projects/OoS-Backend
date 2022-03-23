@@ -58,6 +58,21 @@ resource "google_secret_manager_secret_version" "secret-sendgrid-key" {
   secret_data = var.sendgrid_key
 }
 
+resource "google_secret_manager_secret" "secret-sendgrid-key" {
+  secret_id = "sendgrid-key"
+
+  labels = var.labels
+
+  replication {
+    automatic = true
+  }
+}
+
+resource "google_secret_manager_secret_version" "secret-sendgrid-key" {
+  secret      = google_secret_manager_secret.secret-sendgrid-key.id
+  secret_data = var.sendgrid_key
+}
+
 locals {
   api_list          = split("/", google_secret_manager_secret_version.secret-app-connection.name)
   auth_list         = split("/", google_secret_manager_secret_version.secret-auth-connection.name)

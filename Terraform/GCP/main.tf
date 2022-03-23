@@ -96,13 +96,13 @@ module "k8s" {
 }
 
 module "secrets" {
-  source         = "./secrets"
-  sql_api_pass   = module.passwords.sql_api_pass
-  sql_auth_pass  = module.passwords.sql_auth_pass
-  es_api_pass    = module.passwords.es_api_pass
-  labels         = var.labels
-  sql_hostname   = var.sql_hostname
-  sendgrid_key   = var.sendgrid_key
+  source        = "./secrets"
+  sql_api_pass  = module.passwords.sql_api_pass
+  sql_auth_pass = module.passwords.sql_auth_pass
+  es_api_pass   = module.passwords.es_api_pass
+  labels        = var.labels
+  sql_hostname  = var.sql_hostname
+  sendgrid_key  = var.sendgrid_key
 }
 
 module "build" {

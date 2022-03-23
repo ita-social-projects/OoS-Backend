@@ -22,3 +22,7 @@ variable "sql_hostname" {
 variable "sendgrid_key" {
   type = string
 }
+
+variable "sendgrid_key" {
+  type = string
+}
