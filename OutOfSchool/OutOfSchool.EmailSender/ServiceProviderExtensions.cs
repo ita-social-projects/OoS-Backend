@@ -13,7 +13,7 @@ namespace OutOfSchool.EmailSender
             string sendGridApiKey,
             Action<OptionsBuilder<EmailOptions>> emailOptions)
         {
-            if (isDevelopment && sendGridApiKey.Equals(string.Empty))
+            if (isDevelopment && string.IsNullOrWhiteSpace(sendGridApiKey))
             {
                 services.AddTransient<IEmailSender, DevEmailSender>();
                 return services;
