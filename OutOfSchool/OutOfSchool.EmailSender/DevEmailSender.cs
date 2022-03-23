@@ -15,7 +15,7 @@ namespace OutOfSchool.EmailSender
         public Task SendAsync(string email, string subject, string htmlMessage)
         {
             logger.LogDebug($"Sending mail to {email} with subject \"{subject}\" and content: {htmlMessage}");
-            return null;
+            return Task.CompletedTask;
         }
     }
 }
