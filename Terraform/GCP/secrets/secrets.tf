@@ -58,9 +58,25 @@ resource "google_secret_manager_secret_version" "secret-mongo-connection" {
   secret_data = "mongodb://oos:${var.mongo_pass}@${var.mongo_hostname}:27017/outofschool?authSource=outofschool"
 }
 
+resource "google_secret_manager_secret" "secret-sendgrid-key" {
+  secret_id = "sendgrid-key"
+
+  labels = var.labels
+
+  replication {
+    automatic = true
+  }
+}
+
+resource "google_secret_manager_secret_version" "secret-sendgrid-key" {
+  secret      = google_secret_manager_secret.secret-sendgrid-key.id
+  secret_data = var.sendgrid_key
+}
+
 locals {
-  api_list    = split("/", google_secret_manager_secret_version.secret-app-connection.name)
-  auth_list   = split("/", google_secret_manager_secret_version.secret-auth-connection.name)
-  es_api_list = split("/", google_secret_manager_secret_version.secret-es-api.name)
-  mongo_list  = split("/", google_secret_manager_secret_version.secret-mongo-connection.name)
+  api_list          = split("/", google_secret_manager_secret_version.secret-app-connection.name)
+  auth_list         = split("/", google_secret_manager_secret_version.secret-auth-connection.name)
+  es_api_list       = split("/", google_secret_manager_secret_version.secret-es-api.name)
+  mongo_list        = split("/", google_secret_manager_secret_version.secret-mongo-connection.name)
+  sendgrid_key_list = split("/", google_secret_manager_secret_version.secret-sendgrid-key.name)
 }

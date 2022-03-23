@@ -33,6 +33,8 @@ resource "google_cloudbuild_trigger" "backend-auth" {
     _REGION             = var.region
     _SERVICE_ACCOUNT    = var.auth_sa_email
     _CONN_STRING_SECRET = var.auth_secret
+    _SENDER_EMAIL       = var.sender_email
+    _SENDGRID_KEY       = var.sendgrid_key_secret
   }
 
   filename = "auth-cloudbuild.yml"

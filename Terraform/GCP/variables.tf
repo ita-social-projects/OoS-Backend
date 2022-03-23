@@ -92,3 +92,13 @@ variable "elastic_hostname" {
   type        = string
   description = "Hostname for Elastic"
 }
+
+variable "sender_email" {
+  type        = string
+  description = "Outgoing mail"
+}
+
+variable "sendgrid_key" {
+  type        = string
+  description = "Outgoing mail api key"
+}

@@ -26,3 +26,7 @@ variable "mongo_pass" {
 variable "mongo_hostname" {
   type = string
 }
+
+variable "sendgrid_key" {
+  type = string
+}

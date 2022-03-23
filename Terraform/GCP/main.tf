@@ -100,18 +100,21 @@ module "secrets" {
   labels         = var.labels
   sql_hostname   = var.sql_hostname
   mongo_hostname = var.mongo_hostname
+  sendgrid_key   = var.sendgrid_key
 }
 
 module "build" {
-  source             = "./build"
-  app_sa_email       = module.iam.webapi_sa_email
-  auth_sa_email      = module.iam.identity_sa_email
-  front_sa_email     = module.iam.frontend_sa_email
-  project            = var.project
-  zone               = var.zone
-  region             = var.region
-  api_secret         = module.secrets.sql_api_secret
-  auth_secret        = module.secrets.sql_auth_secret
-  es_api_pass_secret = module.secrets.es_api_secret
-  mongo_secret       = module.secrets.mongo_secret
+  source              = "./build"
+  app_sa_email        = module.iam.webapi_sa_email
+  auth_sa_email       = module.iam.identity_sa_email
+  front_sa_email      = module.iam.frontend_sa_email
+  project             = var.project
+  zone                = var.zone
+  region              = var.region
+  api_secret          = module.secrets.sql_api_secret
+  auth_secret         = module.secrets.sql_auth_secret
+  es_api_pass_secret  = module.secrets.es_api_secret
+  mongo_secret        = module.secrets.mongo_secret
+  sender_email        = var.sender_email
+  sendgrid_key_secret = module.secrets.sendgrid_key_secret
 }
