@@ -31,8 +31,7 @@ steps:
     - --concurrency=80
     - --set-env-vars=ASPNETCORE_ENVIRONMENT=Google
     - --set-env-vars=Email__AddressFrom=$_SENDER_EMAIL
-    - --set-env-vars=Email__Smtp__Username=$_SENDER_EMAIL
-    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Email__Smtp__Password=$_SENDER_PASSWORD
+    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Email__SendGridKey=$_SENDGRID_KEY
     # Disable http2 because prod will be http1.1 for now
     - --no-use-http2
 # Clean old versions except previous Cloud Run
