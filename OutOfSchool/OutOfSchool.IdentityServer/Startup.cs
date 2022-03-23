@@ -135,9 +135,13 @@ namespace OutOfSchool.IdentityServer
                         serverVersion,
                         sql => sql.MigrationsAssembly(migrationsAssembly)));
 
+            var mailConfig = config
+                .GetSection(EmailOptions.SectionName)
+                .Get<EmailOptions>();
             services.AddEmailSender(
-                builder => builder.Bind(config.GetSection(EmailOptions.SectionName)),
-                builder => builder.Bind(config.GetSection(SmtpOptions.SectionName)));
+                env.IsDevelopment(),
+                mailConfig.SendGridKey,
+                builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
 
             services.AddControllersWithViews()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
