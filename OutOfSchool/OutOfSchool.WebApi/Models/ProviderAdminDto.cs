@@ -5,6 +5,8 @@ namespace OutOfSchool.WebApi.Models
 {
     public class ProviderAdminDto
     {
+        public string Id { get; set; }
+
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
