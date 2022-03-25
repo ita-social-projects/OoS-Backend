@@ -148,6 +148,7 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<ShortUserDto, AdminDto>();
 
             CreateMap<User, ProviderAdminDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(c => c.Id))
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(c => c.FirstName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(c => c.LastName))
                 .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(c => c.MiddleName))
