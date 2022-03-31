@@ -6,8 +6,13 @@ namespace OutOfSchool.Services.Enums
     [JsonConverter(typeof(StringEnumConverter))]
     public enum NotificationAction
     {
+        Unknown,
         Create,
-        Update,
+        UpdateApplicationAcceptedForSelection,
+        UpdateApplicationApproved,
+        UpdateApplicationCompleted,
+        UpdateApplicationRejected,
+        UpdateApplicationLeft,
         Delete,
         Message,
     }

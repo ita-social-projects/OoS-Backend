@@ -157,6 +157,12 @@ namespace OutOfSchool.WebApi.Services
                 await applicationRepository.Delete(application).ConfigureAwait(false);
 
                 logger.LogInformation($"Application with Id = {id} succesfully deleted.");
+
+                await notificationService.Create(
+                    NotificationType.Application,
+                    NotificationAction.Delete,
+                    application.Id,
+                    this).ConfigureAwait(false);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -304,6 +310,17 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");
 
+                NotificationAction notificationAction = GetNotificationActionForUpdate(updatedApplication.Status);
+
+                if (notificationAction != NotificationAction.Unknown)
+                {
+                    await notificationService.Create(
+                        NotificationType.Application,
+                        notificationAction,
+                        updatedApplication.Id,
+                        this).ConfigureAwait(false);
+                }
+
                 return mapper.Map<ApplicationDto>(updatedApplication);
             }
             catch (DbUpdateConcurrencyException ex)
@@ -316,13 +333,31 @@ namespace OutOfSchool.WebApi.Services
         public async Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Guid objectId)
         {
             var result = new List<User>();
+            var applications = await applicationRepository.GetByFilter(a => a.Id == objectId).ConfigureAwait(false);
+
             if (action == NotificationAction.Create)
             {
-                var providerUserIds = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
-                result.Add(providerUserIds.FirstOrDefault().Workshop.Provider.User);
+                result.Add(applications.FirstOrDefault().Workshop.Provider.User);
+            }
+            else if (action == NotificationAction.UpdateApplicationApproved)
+            {
+                result.Add(applications.FirstOrDefault().Parent.User);
             }
 
             return result;
+        }
+
+        private NotificationAction GetNotificationActionForUpdate(ApplicationStatus applicationStatus)
+        {
+            return applicationStatus switch
+            {
+                ApplicationStatus.AcceptedForSelection => NotificationAction.UpdateApplicationAcceptedForSelection,
+                ApplicationStatus.Approved => NotificationAction.UpdateApplicationApproved,
+                ApplicationStatus.Completed => NotificationAction.UpdateApplicationCompleted,
+                ApplicationStatus.Rejected => NotificationAction.UpdateApplicationRejected,
+                ApplicationStatus.Left => NotificationAction.UpdateApplicationLeft,
+                _ => NotificationAction.Unknown,
+            };
         }
 
         private void ModelNullValidation(ApplicationDto applicationDto)
