@@ -11,7 +11,7 @@ namespace OutOfSchool.Services.Models
         [Required]
         public string UserId { get; set; }
 
-        public string Text { get; set; }
+        public string Data { get; set; }
 
         [Required]
         public NotificationType Type { get; set; }

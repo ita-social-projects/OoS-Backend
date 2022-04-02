@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">NotificationDto was wrong.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize]
+        [AllowAnonymous]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

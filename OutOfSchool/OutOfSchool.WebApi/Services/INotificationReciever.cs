@@ -18,6 +18,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="action">Action.</param>
         /// <param name="objectId">ObjectId.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Guid objectId);
+        Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId);
     }
 }

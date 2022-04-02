@@ -10,6 +10,7 @@ using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OutOfSchool.WebApi.Controllers.V1
 {
@@ -204,7 +205,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="429">If too many requests have been sent.</response>
         /// <response code="500">If any server error occurs.</response>
-        [HasPermission(Permissions.ApplicationAddNew)]
+        //[HasPermission(Permissions.ApplicationAddNew)]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -264,7 +266,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [HasPermission(Permissions.ApplicationEdit)]
+        //[HasPermission(Permissions.ApplicationEdit)]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApplicationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -8,11 +8,7 @@ namespace OutOfSchool.Services.Enums
     {
         Unknown,
         Create,
-        UpdateApplicationAcceptedForSelection,
-        UpdateApplicationApproved,
-        UpdateApplicationCompleted,
-        UpdateApplicationRejected,
-        UpdateApplicationLeft,
+        Update,
         Delete,
         Message,
     }

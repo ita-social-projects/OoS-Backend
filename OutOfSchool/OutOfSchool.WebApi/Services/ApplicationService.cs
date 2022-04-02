@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -310,16 +311,17 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");
 
-                NotificationAction notificationAction = GetNotificationActionForUpdate(updatedApplication.Status);
-
-                if (notificationAction != NotificationAction.Unknown)
+                var additionalData = new Dictionary<string, string>()
                 {
-                    await notificationService.Create(
-                        NotificationType.Application,
-                        notificationAction,
-                        updatedApplication.Id,
-                        this).ConfigureAwait(false);
-                }
+                    { "Status", JsonConvert.SerializeObject(updatedApplication.Status) },
+                };
+
+                await notificationService.Create(
+                    NotificationType.Application,
+                    NotificationAction.Update,
+                    updatedApplication.Id,
+                    this,
+                    additionalData).ConfigureAwait(false);
 
                 return mapper.Map<ApplicationDto>(updatedApplication);
             }
@@ -330,34 +332,28 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        public async Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Guid objectId)
+        public async Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
         {
             var result = new List<User>();
-            var applications = await applicationRepository.GetByFilter(a => a.Id == objectId).ConfigureAwait(false);
+            var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
 
             if (action == NotificationAction.Create)
             {
                 result.Add(applications.FirstOrDefault().Workshop.Provider.User);
             }
-            else if (action == NotificationAction.UpdateApplicationApproved)
+            else if (action == NotificationAction.Update)
             {
-                result.Add(applications.FirstOrDefault().Parent.User);
+                if (additionalData.ContainsKey("Status")
+                    && Enum.TryParse(additionalData["Status"], out ApplicationStatus applicationStatus))
+                {
+                    if (applicationStatus == ApplicationStatus.Approved)
+                    {
+                        result.Add(applications.FirstOrDefault().Parent.User);
+                    }
+                }
             }
 
             return result;
-        }
-
-        private NotificationAction GetNotificationActionForUpdate(ApplicationStatus applicationStatus)
-        {
-            return applicationStatus switch
-            {
-                ApplicationStatus.AcceptedForSelection => NotificationAction.UpdateApplicationAcceptedForSelection,
-                ApplicationStatus.Approved => NotificationAction.UpdateApplicationApproved,
-                ApplicationStatus.Completed => NotificationAction.UpdateApplicationCompleted,
-                ApplicationStatus.Rejected => NotificationAction.UpdateApplicationRejected,
-                ApplicationStatus.Left => NotificationAction.UpdateApplicationLeft,
-                _ => NotificationAction.Unknown,
-            };
         }
 
         private void ModelNullValidation(ApplicationDto applicationDto)

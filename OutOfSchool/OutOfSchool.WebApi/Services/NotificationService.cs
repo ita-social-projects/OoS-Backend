@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Services
             return notificationDtoReturn;
         }
 
-        public async Task Create(NotificationType type, NotificationAction action, Guid objectId, INotificationReciever service)
+        public async Task Create(NotificationType type, NotificationAction action, Guid objectId, INotificationReciever service, Dictionary<string, string> additionalData = null)
         {
             if (!notificationsConfig.Value.Enabled || service is null)
             {
@@ -87,10 +87,10 @@ namespace OutOfSchool.WebApi.Services
                 Action = action,
                 CreatedDateTime = DateTimeOffset.UtcNow,
                 ObjectId = objectId,
-                Text = string.Empty,
+                Data = additionalData is null ? string.Empty : JsonConvert.SerializeObject(additionalData),
             };
 
-            var recipients = await service.GetNotificationsRecipients(action, objectId).ConfigureAwait(false);
+            var recipients = await service.GetNotificationsRecipients(action, additionalData, objectId).ConfigureAwait(false);
 
             foreach (var user in recipients)
             {
