@@ -31,6 +31,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
         private readonly INotificationService notificationService;
+        private readonly IProviderAdminService providerAdminService;
 
         private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
 
@@ -53,7 +54,8 @@ namespace OutOfSchool.WebApi.Services
             IEntityRepository<Child> childRepository,
             IMapper mapper,
             IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IProviderAdminService providerAdminService)
         {
             this.applicationRepository = repository;
             this.workshopRepository = workshopRepository;
@@ -62,6 +64,7 @@ namespace OutOfSchool.WebApi.Services
             this.childRepository = childRepository;
             this.mapper = mapper;
             this.notificationService = notificationService;
+            this.providerAdminService = providerAdminService;
 
             try
             {
@@ -313,7 +316,7 @@ namespace OutOfSchool.WebApi.Services
 
                 var additionalData = new Dictionary<string, string>()
                 {
-                    { "Status", JsonConvert.SerializeObject(updatedApplication.Status) },
+                    { "Status", updatedApplication.Status.ToString() },
                 };
 
                 await notificationService.Create(
@@ -336,19 +339,30 @@ namespace OutOfSchool.WebApi.Services
         {
             var result = new List<User>();
             var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
+            var application = applications.FirstOrDefault();
 
             if (action == NotificationAction.Create)
             {
-                result.Add(applications.FirstOrDefault().Workshop.Provider.User);
+                result.Add(application.Workshop.Provider.User);
+                await providerAdminService.FillWithProviderAdmins(application.Workshop.Id, result).ConfigureAwait(false);
+                await providerAdminService.FillWithDeputy(application.Workshop.Provider.Id, result).ConfigureAwait(false);
             }
             else if (action == NotificationAction.Update)
             {
-                if (additionalData.ContainsKey("Status")
+                if (additionalData != null
+                    && additionalData.ContainsKey("Status")
                     && Enum.TryParse(additionalData["Status"], out ApplicationStatus applicationStatus))
                 {
-                    if (applicationStatus == ApplicationStatus.Approved)
+                    if (applicationStatus == ApplicationStatus.Approved
+                        || applicationStatus == ApplicationStatus.Rejected)
                     {
-                        result.Add(applications.FirstOrDefault().Parent.User);
+                        result.Add(application.Parent.User);
+                    }
+                    else if (applicationStatus == ApplicationStatus.Left)
+                    {
+                        result.Add(application.Workshop.Provider.User);
+                        await providerAdminService.FillWithProviderAdmins(application.Workshop.Id, result).ConfigureAwait(false);
+                        await providerAdminService.FillWithDeputy(application.Workshop.Provider.Id, result).ConfigureAwait(false);
                     }
                 }
             }

@@ -9,6 +9,8 @@ namespace OutOfSchool.Services.Models
     {
         public string UserId { get; set; }
 
+        public virtual User User { get; set; }
+
         public Guid ProviderId { get; set; }
 
         public virtual Provider Provider { get; set; }
@@ -18,6 +20,7 @@ namespace OutOfSchool.Services.Models
         // "true" gives access to all related with base provider workshops.
         // "false" executes further inspection into admins-to-workshops relations
         public bool IsDeputy { get; set; }
+
         public virtual List<Workshop> ManagedWorkshops { get; set; }
     }
 }

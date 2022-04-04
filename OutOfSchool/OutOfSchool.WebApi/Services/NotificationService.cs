@@ -82,7 +82,6 @@ namespace OutOfSchool.WebApi.Services
 
             var notification = new Notification()
             {
-                Id = Guid.NewGuid(),
                 Type = type,
                 Action = action,
                 CreatedDateTime = DateTimeOffset.UtcNow,
@@ -94,6 +93,7 @@ namespace OutOfSchool.WebApi.Services
 
             foreach (var user in recipients)
             {
+                notification.Id = Guid.NewGuid();
                 notification.UserId = user.Id;
                 var newNotificationDto = await notificationRepository.Create(notification).ConfigureAwait(false);
 

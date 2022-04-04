@@ -22,5 +22,9 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<ProviderAdminDto>> GetRelatedProviderAdmins(string userId);
 
         Task<bool> CheckUserIsRelatedProviderAdmin(string providerAdminId, Guid providerId, Guid workshopId = default);
+
+        Task FillWithProviderAdmins(Guid workshopId, List<User> users);
+
+        Task FillWithDeputy(Guid providerId, List<User> users);
     }
 }

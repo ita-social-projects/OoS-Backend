@@ -313,10 +313,41 @@ namespace OutOfSchool.WebApi.Services
 
                     dtos.Add(dto);
                 }
-
             }
 
             return dtos;
+        }
+
+        public async Task FillWithProviderAdmins(Guid workshopId, List<User> users)
+        {
+            var providersAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
+                                                                                   && !p.IsDeputy).ConfigureAwait(false);
+
+            FillWithUsers(users, providersAdmins);
+        }
+
+        public async Task FillWithDeputy(Guid providerId, List<User> users)
+        {
+            var providersDeputies = await providerAdminRepository.GetByFilter(p => p.ProviderId == providerId
+                                                                                   && p.IsDeputy).ConfigureAwait(false);
+
+            FillWithUsers(users, providersDeputies);
+        }
+
+        private void FillWithUsers(List<User> users, IEnumerable<ProviderAdmin> providersAdmins)
+        {
+            if (users is null)
+            {
+                return;
+            }
+
+            foreach (var item in providersAdmins)
+            {
+                if (!users.Contains(item.User))
+                {
+                    users.Add(item.User);
+                }
+            }
         }
     }
 }
