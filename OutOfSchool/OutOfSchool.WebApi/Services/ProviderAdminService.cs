@@ -318,7 +318,7 @@ namespace OutOfSchool.WebApi.Services
             return dtos;
         }
 
-        public async Task FillWithProviderAdmins(Guid workshopId, List<User> users)
+        public async Task FillWithProviderAdmins(Guid workshopId, List<string> users)
         {
             var providersAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
                                                                                    && !p.IsDeputy).ConfigureAwait(false);
@@ -326,7 +326,7 @@ namespace OutOfSchool.WebApi.Services
             FillWithUsers(users, providersAdmins);
         }
 
-        public async Task FillWithDeputy(Guid providerId, List<User> users)
+        public async Task FillWithDeputy(Guid providerId, List<string> users)
         {
             var providersDeputies = await providerAdminRepository.GetByFilter(p => p.ProviderId == providerId
                                                                                    && p.IsDeputy).ConfigureAwait(false);
@@ -334,7 +334,7 @@ namespace OutOfSchool.WebApi.Services
             FillWithUsers(users, providersDeputies);
         }
 
-        private void FillWithUsers(List<User> users, IEnumerable<ProviderAdmin> providersAdmins)
+        private void FillWithUsers(List<string> users, IEnumerable<ProviderAdmin> providersAdmins)
         {
             if (users is null)
             {
@@ -343,9 +343,9 @@ namespace OutOfSchool.WebApi.Services
 
             foreach (var item in providersAdmins)
             {
-                if (!users.Contains(item.User))
+                if (!users.Contains(item.UserId))
                 {
-                    users.Add(item.User);
+                    users.Add(item.UserId);
                 }
             }
         }

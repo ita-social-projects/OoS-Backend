@@ -1436,15 +1436,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("OutOfSchool.Services.Models.User", "User")
-                        .WithOne()
-                        .HasForeignKey("OutOfSchool.Services.Models.ProviderAdmin", "UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("Provider");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Rating", b =>

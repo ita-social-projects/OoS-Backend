@@ -94,17 +94,17 @@ namespace OutOfSchool.WebApi.Services
             foreach (var user in recipients)
             {
                 notification.Id = Guid.NewGuid();
-                notification.UserId = user.Id;
+                notification.UserId = user;
                 var newNotificationDto = await notificationRepository.Create(notification).ConfigureAwait(false);
 
                 logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was created successfully.");
 
                 await notificationHub.Clients
-                    .Group(user.UserName)
+                    .Group(user)
                     .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(newNotificationDto))
                     .ConfigureAwait(false);
 
-                logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was sent to {user?.UserName} successfully.");
+                logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was sent to {user} successfully.");
             }
         }
 

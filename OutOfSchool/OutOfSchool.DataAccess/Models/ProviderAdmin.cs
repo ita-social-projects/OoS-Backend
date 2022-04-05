@@ -9,8 +9,6 @@ namespace OutOfSchool.Services.Models
     {
         public string UserId { get; set; }
 
-        public virtual User User { get; set; }
-
         public Guid ProviderId { get; set; }
 
         public virtual Provider Provider { get; set; }

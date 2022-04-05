@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
-    public partial class NotificationData : Migration
+    public partial class NotificationsChanges : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

@@ -9,8 +9,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220402204216_NotificationData")]
-    partial class NotificationData
+    [Migration("20220405194116_NotificationsChanges")]
+    partial class NotificationsChanges
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

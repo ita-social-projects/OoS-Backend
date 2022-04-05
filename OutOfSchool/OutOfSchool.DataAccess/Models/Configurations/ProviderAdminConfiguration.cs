@@ -15,10 +15,6 @@ namespace OutOfSchool.Services.Models.Configurations
             builder.Property(x => x.IsDeputy)
                 .IsRequired();
 
-            builder.HasOne(x => x.User)
-                .WithOne()
-                .OnDelete(DeleteBehavior.NoAction);
-
             builder.HasOne(x => x.Provider)
                 .WithMany(x => x.ProviderAdmins)
                 .OnDelete(DeleteBehavior.NoAction);

@@ -335,15 +335,15 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        public async Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+        public async Task<IEnumerable<string>> GetNotificationsRecipients(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
         {
-            var result = new List<User>();
+            var result = new List<string>();
             var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
             var application = applications.FirstOrDefault();
 
             if (action == NotificationAction.Create)
             {
-                result.Add(application.Workshop.Provider.User);
+                result.Add(application.Workshop.Provider.UserId);
                 await providerAdminService.FillWithProviderAdmins(application.Workshop.Id, result).ConfigureAwait(false);
                 await providerAdminService.FillWithDeputy(application.Workshop.Provider.Id, result).ConfigureAwait(false);
             }
@@ -356,11 +356,11 @@ namespace OutOfSchool.WebApi.Services
                     if (applicationStatus == ApplicationStatus.Approved
                         || applicationStatus == ApplicationStatus.Rejected)
                     {
-                        result.Add(application.Parent.User);
+                        result.Add(application.Parent.UserId);
                     }
                     else if (applicationStatus == ApplicationStatus.Left)
                     {
-                        result.Add(application.Workshop.Provider.User);
+                        result.Add(application.Workshop.Provider.UserId);
                         await providerAdminService.FillWithProviderAdmins(application.Workshop.Id, result).ConfigureAwait(false);
                         await providerAdminService.FillWithDeputy(application.Workshop.Provider.Id, result).ConfigureAwait(false);
                     }
