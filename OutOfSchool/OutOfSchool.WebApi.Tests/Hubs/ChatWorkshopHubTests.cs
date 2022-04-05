@@ -30,6 +30,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         private Mock<IValidationService> validationServiceMock;
         private Mock<IWorkshopRepository> workshopRepositoryMock;
         private Mock<IParentRepository> parentRepositoryMock;
+        private Mock<IProviderAdminRepository> providerAdminRepository;
 
         private ChatWorkshopHub chatHub;
 
@@ -54,6 +55,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             hubCallerContextMock = new Mock<HubCallerContext>();
             groupsMock = new Mock<IGroupManager>();
             localizerMock = new Mock<IStringLocalizer<SharedResource>>();
+            providerAdminRepository = new Mock<IProviderAdminRepository>();
 
             chatHub = new ChatWorkshopHub(
                 loggerMock.Object,
@@ -62,7 +64,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 validationServiceMock.Object,
                 workshopRepositoryMock.Object,
                 parentRepositoryMock.Object,
-                localizerMock.Object)
+                localizerMock.Object,
+                providerAdminRepository.Object)
             {
                 Clients = clientsMock.Object,
                 Context = hubCallerContextMock.Object,
@@ -71,6 +74,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
 
             hubCallerContextMock.Setup(x => x.User.FindFirst("sub"))
                 .Returns(new Claim(ClaimTypes.NameIdentifier, UserId));
+            hubCallerContextMock.Setup(x => x.User.FindFirst("subrole"))
+                .Returns(new Claim(ClaimTypes.NameIdentifier, "None"));
         }
 
         // TODO: use fakers
@@ -182,7 +187,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             var validWorkshopId = Guid.NewGuid();
             var validNewMessage = string.Format("'workshopId':{0}, 'parentId':{1}, 'text':'hi', 'senderRoleIsProvider':true ", validWorkshopId, Guid.NewGuid());
 
-            validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId)).ReturnsAsync(true);
+            validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId, Subrole.None)).ReturnsAsync(true);
 
             var validCreatedMessage = new ChatMessageWorkshopDto()
             {

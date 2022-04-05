@@ -36,6 +36,7 @@ namespace OutOfSchool.WebApi.Hubs
         private readonly IWorkshopRepository workshopRepository;
         private readonly IParentRepository parentRepository;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IProviderAdminRepository providerAdminRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatWorkshopHub"/> class.
@@ -47,6 +48,7 @@ namespace OutOfSchool.WebApi.Hubs
         /// <param name="workshopRepository">Repository for workshop entities.</param>
         /// <param name="parentRepository">Repository for parent entities.</param>
         /// <param name="localizer">Localizer.</param>
+        /// <param name="providerAdminRepository">ProviderAdminRepository.</param>
         public ChatWorkshopHub(
             ILogger<ChatWorkshopHub> logger,
             IChatMessageWorkshopService chatMessageService,
@@ -54,7 +56,8 @@ namespace OutOfSchool.WebApi.Hubs
             IValidationService validationService,
             IWorkshopRepository workshopRepository,
             IParentRepository parentRepository,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            IProviderAdminRepository providerAdminRepository)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.messageService = chatMessageService ?? throw new ArgumentNullException(nameof(chatMessageService));
@@ -63,6 +66,7 @@ namespace OutOfSchool.WebApi.Hubs
             this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
             this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
             this.localizer = localizer;
+            this.providerAdminRepository = providerAdminRepository;
         }
 
         public override async Task OnConnectedAsync()
@@ -73,7 +77,11 @@ namespace OutOfSchool.WebApi.Hubs
             var userRoleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
             LogErrorThrowExceptionIfPropertyIsNull(userRoleName, nameof(userRoleName));
 
+            var userSubroleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole);
+            LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
+
             Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
+            Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
 
             logger.LogDebug($"New Hub-connection established. {nameof(userId)}: {userId}, {nameof(userRoleName)}: {userRoleName}");
 
@@ -82,11 +90,25 @@ namespace OutOfSchool.WebApi.Hubs
             // Add User to all Groups where he is a member.
             IEnumerable<Guid> usersRoomIds;
 
-            var userRoleId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
-
-            usersRoomIds = (userRole == Role.Parent)
-                ? await roomService.GetChatRoomIdsByParentIdAsync(userRoleId).ConfigureAwait(false)
-                : await roomService.GetChatRoomIdsByProviderIdAsync(userRoleId).ConfigureAwait(false);
+            if (userRole == Role.Parent)
+            {
+                var userRoleId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+                usersRoomIds = await roomService.GetChatRoomIdsByParentIdAsync(userRoleId).ConfigureAwait(false);
+            }
+            else
+            {
+                if (userSubrole == Subrole.ProviderAdmin)
+                {
+                    var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy).ConfigureAwait(false);
+                    var workshopsIds = providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
+                    usersRoomIds = await roomService.GetChatRoomIdsByWorkshopIdsAsync(workshopsIds).ConfigureAwait(false);
+                }
+                else
+                {
+                    var userRoleId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
+                    usersRoomIds = await roomService.GetChatRoomIdsByProviderIdAsync(userRoleId).ConfigureAwait(false);
+                }
+            }
 
             // TODO: add parallel execution (Task.WhenAll(tasks))
             foreach (var id in usersRoomIds)
@@ -143,6 +165,20 @@ namespace OutOfSchool.WebApi.Hubs
                 var workshops = await workshopRepository.GetByFilter(w => w.Id == chatMessageWorkshopCreateDto.WorkshopId, "Provider").ConfigureAwait(false);
                 var workshop = workshops.SingleOrDefault();
                 await AddConnectionsToGroupAsync(workshop.Provider.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
+
+                // Add Provider's deputy connections to the Group.
+                var providersDeputies = await providerAdminRepository.GetByFilter(p => p.ProviderId == workshop.ProviderId && p.IsDeputy).ConfigureAwait(false);
+                foreach (var providersDeputy in providersDeputies)
+                {
+                    await AddConnectionsToGroupAsync(providersDeputy.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
+                }
+
+                // Add Provider's admin connections to the Group.
+                var providersAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshop.Id) && !p.IsDeputy).ConfigureAwait(false);
+                foreach (var providersAdmin in providersAdmins)
+                {
+                    await AddConnectionsToGroupAsync(providersAdmin.UserId, createdMessageDto.ChatRoomId.ToString()).ConfigureAwait(false);
+                }
 
                 // Send chatMessage.
                 await Clients.OthersInGroup(createdMessageDto.ChatRoomId.ToString())
@@ -215,7 +251,11 @@ namespace OutOfSchool.WebApi.Hubs
 
             if (userRoleIsProvider)
             {
-                return validationService.UserIsWorkshopOwnerAsync(userId, workshopId);
+                var userSubroleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole);
+                LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
+                Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
+
+                return validationService.UserIsWorkshopOwnerAsync(userId, workshopId, userSubrole);
             }
 
             return validationService.UserIsParentOwnerAsync(userId, parentId);
