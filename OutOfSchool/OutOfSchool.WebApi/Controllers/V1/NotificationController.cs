@@ -4,12 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Services;
 
@@ -41,7 +38,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">NotificationDto was wrong.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [AllowAnonymous]
+        [Authorize]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

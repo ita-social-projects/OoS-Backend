@@ -37,6 +37,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<ILogger<ApplicationService>> logger;
         private Mock<IMapper> mapper;
         private Mock<INotificationService> notificationService;
+        private Mock<IProviderAdminService> providerAdminService;
 
         private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -47,6 +48,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             workshopRepositoryMock = new Mock<IWorkshopRepository>();
             childRepositoryMock = new Mock<IEntityRepository<Child>>();
             notificationService = new Mock<INotificationService>();
+            providerAdminService = new Mock<IProviderAdminService>();
 
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ApplicationService>>();
@@ -68,7 +70,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 childRepositoryMock.Object,
                 mapper.Object,
                 applicationsConstraintsConfig.Object,
-                notificationService.Object);
+                notificationService.Object,
+                providerAdminService.Object);
         }
 
         [Test]

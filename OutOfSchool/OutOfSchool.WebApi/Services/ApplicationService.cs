@@ -46,6 +46,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="mapper">Automapper DI service.</param>
         /// <param name="applicationsConstraintsConfig">Options for application's constraints.</param>
         /// <param name="notificationService">Notification service.</param>
+        /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
         public ApplicationService(
             IApplicationRepository repository,
             ILogger<ApplicationService> logger,

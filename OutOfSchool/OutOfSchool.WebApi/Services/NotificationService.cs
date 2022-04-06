@@ -14,7 +14,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Hubs;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Util;
 
@@ -86,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
                 Action = action,
                 CreatedDateTime = DateTimeOffset.UtcNow,
                 ObjectId = objectId,
-                Data = additionalData is null ? string.Empty : JsonConvert.SerializeObject(additionalData),
+                Data = additionalData is null ? new Dictionary<string, string>() : additionalData,
             };
 
             var recipients = await service.GetNotificationsRecipients(action, additionalData, objectId).ConfigureAwait(false);
