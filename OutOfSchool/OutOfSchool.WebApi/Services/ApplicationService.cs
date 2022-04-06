@@ -162,12 +162,6 @@ namespace OutOfSchool.WebApi.Services
                 await applicationRepository.Delete(application).ConfigureAwait(false);
 
                 logger.LogInformation($"Application with Id = {id} succesfully deleted.");
-
-                await notificationService.Create(
-                    NotificationType.Application,
-                    NotificationAction.Delete,
-                    application.Id,
-                    this).ConfigureAwait(false);
             }
             catch (DbUpdateConcurrencyException ex)
             {
