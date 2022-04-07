@@ -85,25 +85,25 @@ namespace OutOfSchool.WebApi.Services
                 Action = action,
                 CreatedDateTime = DateTimeOffset.UtcNow,
                 ObjectId = objectId,
-                Data = additionalData is null ? new Dictionary<string, string>() : additionalData,
+                Data = additionalData ?? new Dictionary<string, string>(),
             };
 
-            var recipients = await service.GetNotificationsRecipients(action, additionalData, objectId).ConfigureAwait(false);
+            var recipientsIds = await service.GetNotificationsRecipientIds(action, additionalData, objectId).ConfigureAwait(false);
 
-            foreach (var user in recipients)
+            foreach (var userId in recipientsIds)
             {
                 notification.Id = Guid.NewGuid();
-                notification.UserId = user;
+                notification.UserId = userId;
                 var newNotificationDto = await notificationRepository.Create(notification).ConfigureAwait(false);
 
                 logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was created successfully.");
 
                 await notificationHub.Clients
-                    .Group(user)
+                    .Group(userId)
                     .SendAsync("ReceiveNotification", JsonConvert.SerializeObject(newNotificationDto))
                     .ConfigureAwait(false);
 
-                logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was sent to {user} successfully.");
+                logger.LogInformation($"Notification with Id = {newNotificationDto?.Id} was sent to {userId} successfully.");
             }
         }
 

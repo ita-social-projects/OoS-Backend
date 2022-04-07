@@ -330,17 +330,23 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        public async Task<IEnumerable<string>> GetNotificationsRecipients(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+        public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
         {
-            var result = new List<string>();
+            var recipientIds = new List<string>();
+
             var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
             var application = applications.FirstOrDefault();
 
+            if (application is null)
+            {
+                return recipientIds;
+            }
+
             if (action == NotificationAction.Create)
             {
-                result.Add(application.Workshop.Provider.UserId);
-                await providerAdminService.FillWithProviderAdmins(application.Workshop.Id, result).ConfigureAwait(false);
-                await providerAdminService.FillWithDeputy(application.Workshop.Provider.Id, result).ConfigureAwait(false);
+                recipientIds.Add(application.Workshop.Provider.UserId);
+                recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id).ConfigureAwait(false));
+                recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
             }
             else if (action == NotificationAction.Update)
             {
@@ -351,18 +357,18 @@ namespace OutOfSchool.WebApi.Services
                     if (applicationStatus == ApplicationStatus.Approved
                         || applicationStatus == ApplicationStatus.Rejected)
                     {
-                        result.Add(application.Parent.UserId);
+                        recipientIds.Add(application.Parent.UserId);
                     }
                     else if (applicationStatus == ApplicationStatus.Left)
                     {
-                        result.Add(application.Workshop.Provider.UserId);
-                        await providerAdminService.FillWithProviderAdmins(application.Workshop.Id, result).ConfigureAwait(false);
-                        await providerAdminService.FillWithDeputy(application.Workshop.Provider.Id, result).ConfigureAwait(false);
+                        recipientIds.Add(application.Workshop.Provider.UserId);
+                        recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id).ConfigureAwait(false));
+                        recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
                     }
                 }
             }
 
-            return result;
+            return recipientIds.Distinct();
         }
 
         private void ModelNullValidation(ApplicationDto applicationDto)
