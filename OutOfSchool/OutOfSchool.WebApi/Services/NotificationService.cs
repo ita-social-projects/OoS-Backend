@@ -85,7 +85,7 @@ namespace OutOfSchool.WebApi.Services
                 Action = action,
                 CreatedDateTime = DateTimeOffset.UtcNow,
                 ObjectId = objectId,
-                Data = additionalData ?? new Dictionary<string, string>(),
+                Data = additionalData,
             };
 
             var recipientsIds = await service.GetNotificationsRecipientIds(action, additionalData, objectId).ConfigureAwait(false);
