@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -30,6 +31,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
         private readonly INotificationService notificationService;
+        private readonly IProviderAdminService providerAdminService;
 
         private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
 
@@ -44,6 +46,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="mapper">Automapper DI service.</param>
         /// <param name="applicationsConstraintsConfig">Options for application's constraints.</param>
         /// <param name="notificationService">Notification service.</param>
+        /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
         public ApplicationService(
             IApplicationRepository repository,
             ILogger<ApplicationService> logger,
@@ -52,7 +55,8 @@ namespace OutOfSchool.WebApi.Services
             IEntityRepository<Child> childRepository,
             IMapper mapper,
             IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IProviderAdminService providerAdminService)
         {
             this.applicationRepository = repository;
             this.workshopRepository = workshopRepository;
@@ -61,6 +65,7 @@ namespace OutOfSchool.WebApi.Services
             this.childRepository = childRepository;
             this.mapper = mapper;
             this.notificationService = notificationService;
+            this.providerAdminService = providerAdminService;
 
             try
             {
@@ -304,6 +309,18 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");
 
+                var additionalData = new Dictionary<string, string>()
+                {
+                    { "Status", updatedApplication.Status.ToString() },
+                };
+
+                await notificationService.Create(
+                    NotificationType.Application,
+                    NotificationAction.Update,
+                    updatedApplication.Id,
+                    this,
+                    additionalData).ConfigureAwait(false);
+
                 return mapper.Map<ApplicationDto>(updatedApplication);
             }
             catch (DbUpdateConcurrencyException ex)
@@ -313,16 +330,45 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        public async Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Guid objectId)
+        public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
         {
-            var result = new List<User>();
-            if (action == NotificationAction.Create)
+            var recipientIds = new List<string>();
+
+            var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
+            var application = applications.FirstOrDefault();
+
+            if (application is null)
             {
-                var providerUserIds = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
-                result.Add(providerUserIds.FirstOrDefault().Workshop.Provider.User);
+                return recipientIds;
             }
 
-            return result;
+            if (action == NotificationAction.Create)
+            {
+                recipientIds.Add(application.Workshop.Provider.UserId);
+                recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id).ConfigureAwait(false));
+                recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
+            }
+            else if (action == NotificationAction.Update)
+            {
+                if (additionalData != null
+                    && additionalData.ContainsKey("Status")
+                    && Enum.TryParse(additionalData["Status"], out ApplicationStatus applicationStatus))
+                {
+                    if (applicationStatus == ApplicationStatus.Approved
+                        || applicationStatus == ApplicationStatus.Rejected)
+                    {
+                        recipientIds.Add(application.Parent.UserId);
+                    }
+                    else if (applicationStatus == ApplicationStatus.Left)
+                    {
+                        recipientIds.Add(application.Workshop.Provider.UserId);
+                        recipientIds.AddRange(await providerAdminService.GetProviderAdminsIds(application.Workshop.Id).ConfigureAwait(false));
+                        recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(application.Workshop.Provider.Id).ConfigureAwait(false));
+                    }
+                }
+            }
+
+            return recipientIds.Distinct();
         }
 
         private void ModelNullValidation(ApplicationDto applicationDto)

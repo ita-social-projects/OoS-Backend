@@ -318,10 +318,20 @@ namespace OutOfSchool.WebApi.Services
             return dtos;
         }
 
-        public async Task<IEnumerable<Guid>> GetRelatedWorkshopIdsForProviderAdmins(string userId)
+        public async Task<IEnumerable<string>> GetProviderAdminsIds(Guid workshopId)
         {
-            var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && !p.IsDeputy).ConfigureAwait(false);
-            return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
+            var providerAdmins = await providerAdminRepository.GetByFilter(p => p.ManagedWorkshops.Any(w => w.Id == workshopId)
+                                                                                   && !p.IsDeputy).ConfigureAwait(false);
+
+            return providerAdmins.Select(a => a.UserId);
+        }
+
+        public async Task<IEnumerable<string>> GetProviderDeputiesIds(Guid providerId)
+        {
+            var providersDeputies = await providerAdminRepository.GetByFilter(p => p.ProviderId == providerId
+                                                                                   && p.IsDeputy).ConfigureAwait(false);
+
+            return providersDeputies.Select(d => d.UserId);
         }
     }
 }

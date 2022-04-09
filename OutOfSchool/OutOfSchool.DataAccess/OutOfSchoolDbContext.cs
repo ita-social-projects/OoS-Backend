@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
@@ -94,6 +93,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ProviderAdminConfiguration());
             builder.ApplyConfiguration(new WorkshopConfiguration());
             builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
+            builder.ApplyConfiguration(new NotificationConfiguration());
 
             builder.Seed();
             builder.UpdateIdentityTables();

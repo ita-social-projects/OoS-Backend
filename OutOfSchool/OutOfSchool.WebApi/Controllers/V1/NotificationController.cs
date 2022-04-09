@@ -4,12 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Services;
 

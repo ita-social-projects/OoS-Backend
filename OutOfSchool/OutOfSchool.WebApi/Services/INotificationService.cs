@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Notifications;
 
 namespace OutOfSchool.WebApi.Services
@@ -27,8 +25,9 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="action">Notificaton action to add.</param>
         /// <param name="objectId">ObjectId.</param>
         /// <param name="service">Service which implements interface INotificationReciever.</param>
+        /// <param name="additionalData">Data which need to save with notification</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task Create(NotificationType type, NotificationAction action, Guid objectId, INotificationReciever service);
+        Task Create(NotificationType type, NotificationAction action, Guid objectId, INotificationReciever service, Dictionary<string, string> additionalData = null);
 
         /// <summary>
         /// Delete the object from DB.

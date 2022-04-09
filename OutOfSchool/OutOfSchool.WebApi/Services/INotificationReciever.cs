@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -16,8 +15,9 @@ namespace OutOfSchool.WebApi.Services
         /// Get user's ids for notification.
         /// </summary>
         /// <param name="action">Action.</param>
+        /// <param name="additionalData">Additional data.</param>
         /// <param name="objectId">ObjectId.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<IEnumerable<User>> GetNotificationsRecipients(NotificationAction action, Guid objectId);
+        /// <returns>A <see cref="Task{TResult}"/> returns users' identificators for sending notifications.</returns>
+        Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId);
     }
 }
