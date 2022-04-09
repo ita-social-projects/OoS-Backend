@@ -34,6 +34,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private readonly IValidationService validationService;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly ILogger<ChatWorkshopController> logger;
+        private readonly IProviderAdminService providerAdminService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatWorkshopController"/> class.
@@ -43,18 +44,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="validationService">Service for validation parameters.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="logger">Logger.</param>
+        /// <param name="providerAdminService">Service for Provider's admins.</param>
         public ChatWorkshopController(
             IChatMessageWorkshopService messageService,
             IChatRoomWorkshopService roomService,
             IValidationService validationService,
             IStringLocalizer<SharedResource> localizer,
-            ILogger<ChatWorkshopController> logger)
+            ILogger<ChatWorkshopController> logger,
+            IProviderAdminService providerAdminService)
         {
             this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             this.roomService = roomService ?? throw new ArgumentNullException(nameof(roomService));
             this.validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
             this.logger = logger;
+            this.providerAdminService = providerAdminService;
         }
 
         /// <summary>
@@ -166,8 +170,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private async Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
             var userId = this.GetUserId();
+            var userSubrole = this.GetUserSubrole();
 
-            var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId).ConfigureAwait(false);
+            var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId, userSubrole).ConfigureAwait(false);
 
             if (!result)
             {
@@ -188,11 +193,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
         private Role GetUserRole()
         {
             var userRoleName = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Role)} from HttpContext.");
 
             Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
 
             return userRole;
+        }
+
+        private Subrole GetUserSubrole()
+        {
+            var userSubroleName = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole)
+                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Subrole)} from HttpContext.");
+
+            Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
+
+            return userSubrole;
         }
 
         private void LogWarningAboutUsersTryingToGetNotOwnChatRoom(Guid chatRoomId, string userId)
@@ -291,7 +306,26 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             try
             {
-                var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(this.GetUserId(), this.GetUserRole()).ConfigureAwait(false);
+                var userId = this.GetUserId();
+                var userRole = this.GetUserRole();
+                var userSubrole = this.GetUserSubrole();
+
+                if (userSubrole == Subrole.ProviderAdmin)
+                {
+                    var workshopIds = await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false);
+                    var chatRooms = await roomService.GetByWorkshopIdsAsync(workshopIds).ConfigureAwait(false);
+
+                    if (chatRooms.Any())
+                    {
+                        return Ok(chatRooms);
+                    }
+                    else
+                    {
+                        return NoContent();
+                    }
+                }
+
+                var providerOrParentId = await validationService.GetParentOrProviderIdByUserRoleAsync(userId, userRole).ConfigureAwait(false);
 
                 if (providerOrParentId != default)
                 {

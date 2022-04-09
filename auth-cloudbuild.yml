@@ -5,6 +5,7 @@ steps:
   args:
     - build
     - gcr.io/$PROJECT_ID/oos-auth:$SHORT_SHA
+    - --cache-image=gcr.io/$PROJECT_ID/oos-auth:cache
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --builder=paketobuildpacks/builder:base
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.IdentityServer/
