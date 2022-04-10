@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Grpc.Net.Client;
+using GrpcService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -126,7 +128,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">Id was wrong.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize]
+        //[Authorize]
+        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -134,7 +137,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            return Ok(await notificationService.GetById(id).ConfigureAwait(false));
+            // создаем канал для обмена сообщениями с сервером
+            // параметр - адрес сервера gRPC
+            using var channel = GrpcChannel.ForAddress("https://localhost:5002");
+            // создаем клиента
+            var client = new Greeter.GreeterClient(channel);
+            // обмениваемся сообщениями с сервером
+            var reply = await client.SayHelloAsync(new HelloRequest { Name = "ddddd" });
+
+            return Ok(reply);
         }
 
         /// <summary>

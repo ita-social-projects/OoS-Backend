@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using GrpcServiceServer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -175,6 +176,7 @@ namespace OutOfSchool.IdentityServer
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
             services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+            services.AddGrpc();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -242,6 +244,11 @@ namespace OutOfSchool.IdentityServer
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGrpcService<GreeterService>().RequireHost("*:5002");
+            });
         }
     }
 }
