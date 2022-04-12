@@ -5,6 +5,7 @@ steps:
   args:
     - build
     - gcr.io/$PROJECT_ID/oos-auth:$SHORT_SHA
+    - --cache-image=gcr.io/$PROJECT_ID/oos-auth:cache
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
     - --builder=paketobuildpacks/builder:base
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.IdentityServer/
@@ -30,7 +31,8 @@ steps:
     - --max-instances=2
     - --concurrency=80
     - --set-env-vars=ASPNETCORE_ENVIRONMENT=Google
-    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET
+    - --set-env-vars=Email__AddressFrom=$_SENDER_EMAIL
+    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Email__SendGridKey=$_SENDGRID_KEY
     # Disable http2 because prod will be http1.1 for now
     - --no-use-http2
 # Clean old versions except previous Cloud Run

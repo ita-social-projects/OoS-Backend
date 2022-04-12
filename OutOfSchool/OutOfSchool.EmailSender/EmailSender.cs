@@ -1,73 +1,61 @@
-﻿using System.Threading.Tasks;
-using MailKit.Net.Smtp;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MimeKit;
-using MimeKit.Text;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace OutOfSchool.EmailSender
 {
     public class EmailSender : IEmailSender
     {
-        private readonly IOptions<EmailOptions> _emailOptions;
-        private readonly IOptions<SmtpOptions> _smtpOptions;
+        private readonly IOptions<EmailOptions> emailOptions;
+        private readonly ISendGridClient sendGridClient;
+        private readonly ILogger<EmailSender> logger;
 
-        public EmailSender(IOptions<EmailOptions> emailOptions, IOptions<SmtpOptions> smtpOptions)
+        public EmailSender(
+            IOptions<EmailOptions> emailOptions,
+            ISendGridClient sendGridClient,
+            ILogger<EmailSender> logger)
         {
-            _emailOptions = emailOptions;
-            _smtpOptions = smtpOptions;
-        }
-
-        private Task SendAsync(Message message)
-        {
-            var mimeMessage = CreateMimeMessage(message);
-            return SendMimeMessageAsync(mimeMessage);
+            this.emailOptions = emailOptions;
+            this.sendGridClient = sendGridClient;
+            this.logger = logger;
         }
 
         public Task SendAsync(string email, string subject, string htmlMessage)
         {
-            var message = new Message()
+            var message = new SendGridMessage()
             {
                 From = new EmailAddress()
                 {
-                    Name = _emailOptions.Value.NameFrom,
-                    Address = _emailOptions.Value.AddressFrom,
+                    Email = emailOptions.Value.AddressFrom,
+                    Name = emailOptions.Value.NameFrom,
                 },
-                To = new EmailAddress()
-                {
-                    Name = email,
-                    Address = email,
-                },
-                Content = htmlMessage,
                 Subject = subject,
+                //TODO: Add plaintext message fallback
+                HtmlContent = htmlMessage
             };
+            message.AddTo(new EmailAddress(email));
+
             return SendAsync(message);
         }
 
-        private MimeMessage CreateMimeMessage(Message message)
+        private async Task SendAsync(SendGridMessage message)
         {
-            var mimeMessage = new MimeMessage();
-            mimeMessage.To.Add(new MailboxAddress(message.To.Name, message.To.Address));
-            mimeMessage.From.Add(new MailboxAddress(message.From.Name, message.From.Address));
-            mimeMessage.Subject = message.Subject;
-            mimeMessage.Body = new TextPart(TextFormat.Html)
+            if (!emailOptions.Value.Enabled)
             {
-                Text = message.Content
-            };
-            return mimeMessage;
-        }
-
-        private async Task SendMimeMessageAsync(MimeMessage mimeMessage)
-        {
-            if (!_emailOptions.Value.Enabled)
                 return;
-                
-            using (var emailClient = new SmtpClient())
+            }
+
+            try
             {
-                await emailClient.ConnectAsync(_smtpOptions.Value.Server, _smtpOptions.Value.Port, true);
-                emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-                await emailClient.AuthenticateAsync(_smtpOptions.Value.Username, _smtpOptions.Value.Password);
-                await emailClient.SendAsync(mimeMessage);
-                await emailClient.DisconnectAsync(true);
+                var response = await sendGridClient.SendEmailAsync(message).ConfigureAwait(false);
+                //TODO: Do Something with success?
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e.Message);
             }
         }
     }

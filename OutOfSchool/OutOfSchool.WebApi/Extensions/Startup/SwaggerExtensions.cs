@@ -52,6 +52,8 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                             },
                         },
                     });
+                    c.UseOneOfForPolymorphism();
+                    c.UseAllOfForInheritance();
                 })
                 .AddSwaggerGenNewtonsoftSupport();
 

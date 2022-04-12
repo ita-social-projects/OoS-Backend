@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -18,10 +20,11 @@ namespace OutOfSchool.WebApi.Services
     /// </summary>
     public class DirectionService : IDirectionService
     {
-        private readonly IEntityRepository<Direction> repository;
+        private readonly IDirectionRepository repository;
         private readonly IWorkshopRepository repositoryWorkshop;
         private readonly ILogger<DirectionService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
+        private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectionService"/> class.
@@ -30,16 +33,19 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="repositoryWorkshop">Workshop repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
+        /// <param name="mapper">Mapper.</param>
         public DirectionService(
-            IEntityRepository<Direction> entityRepository,
+            IDirectionRepository repository,
             IWorkshopRepository repositoryWorkshop,
             ILogger<DirectionService> logger,
-            IStringLocalizer<SharedResource> localizer)
+            IStringLocalizer<SharedResource> localizer,
+            IMapper mapper)
         {
             this.localizer = localizer;
-            this.repository = entityRepository;
+            this.repository = repository;
             this.repositoryWorkshop = repositoryWorkshop;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         /// <inheritdoc/>
@@ -47,7 +53,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation("Direction creating was started.");
 
-            var direction = dto.ToDomain();
+            var direction = mapper.Map<Direction>(dto);
 
             DirectionValidation(dto);
 
@@ -55,7 +61,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Direction with Id = {newDirection?.Id} created successfully.");
 
-            return newDirection.ToModel();
+            return mapper.Map<DirectionDto>(newDirection);
         }
 
         /// <inheritdoc/>
@@ -65,7 +71,10 @@ namespace OutOfSchool.WebApi.Services
 
             var entity = new Direction() { Id = id };
 
-            var workShops = await repositoryWorkshop.GetByFilter(w => w.DirectionId == id).ConfigureAwait(false);
+            var workShops = await repositoryWorkshop
+                .GetByFilter(w => w.DirectionId == id)
+                .ConfigureAwait(false);
+
             if (workShops.Any())
             {
                 return Result<DirectionDto>.Failed(new OperationError
@@ -81,7 +90,7 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation($"Direction with Id = {id} succesfully deleted.");
 
-                return Result<DirectionDto>.Success(entity.ToModel());
+                return Result<DirectionDto>.Success(mapper.Map<DirectionDto>(entity));
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -95,13 +104,46 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation("Getting all Directions started.");
 
-            var directions = await this.repository.GetAll().ConfigureAwait(false);
+            var directions = await repository.GetAll().ConfigureAwait(false);
 
             logger.LogInformation(!directions.Any()
                 ? "Direction table is empty."
                 : $"All {directions.Count()} records were successfully received from the Direction table.");
 
-            return directions.Select(entity => entity.ToModel()).ToList();
+            return directions.Select(entity => mapper.Map<DirectionDto>(entity)).ToList();
+        }
+
+        public async Task<SearchResult<DirectionDto>> GetByFilter(DirectionFilter filter)
+        {
+            logger.LogInformation("Getting Directions by filter started.");
+
+            var predicate = filter.Name switch
+            {
+                var name when string.IsNullOrWhiteSpace(name) => PredicateBuilder.True<Direction>(),
+                _ => PredicateBuilder
+                    .False<Direction>()
+                    .Or(direction => direction.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase))
+                    .Or(direction => direction.Departments.Any(department =>
+                        department.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)))
+                    .Or(direction => direction.Departments.Any(department =>
+                        department.Classes.Any(c =>
+                            c.Title.Contains(filter.Name, StringComparison.InvariantCultureIgnoreCase)))),
+            };
+            var count = await repository.Count(predicate).ConfigureAwait(false);
+
+
+            var directions = await repository.GetPagedByFilter(filter.From, filter.Size, predicate)
+                .ConfigureAwait(false);
+
+            logger.LogInformation($"All {directions.Count()} records were successfully received from the Direction table.");
+
+            var result = new SearchResult<DirectionDto>()
+            {
+                TotalAmount = count,
+                Entities = directions.Select(direction => mapper.Map<DirectionDto>(direction)).ToList(),
+            };
+
+            return result;
         }
 
         /// <inheritdoc/>
@@ -120,7 +162,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Successfully got a Direction with Id = {id}.");
 
-            return direction.ToModel();
+            return mapper.Map<DirectionDto>(direction);
         }
 
         /// <inheritdoc/>
@@ -130,11 +172,11 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var direction = await repository.Update(dto.ToDomain()).ConfigureAwait(false);
+                var direction = await repository.Update(mapper.Map<Direction>(dto)).ConfigureAwait(false);
 
                 logger.LogInformation($"Direction with Id = {direction?.Id} updated succesfully.");
 
-                return direction.ToModel();
+                return mapper.Map<DirectionDto>(direction);
             }
             catch (DbUpdateConcurrencyException)
             {

@@ -45,7 +45,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
             return await providerAdminService
-                .CreateProviderAdminAsync(providerAdminDto, Url, path, userId);
+                .CreateProviderAdminAsync(providerAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
         }
 
         [HttpDelete("{providerAdminId}")]
@@ -61,7 +61,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
             return await providerAdminService
-                .DeleteProviderAdminAsync(providerAdminId, path, userId);
+                .DeleteProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
         }
 
         [HttpPut("{providerAdminId}")]
@@ -72,7 +72,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
             return await providerAdminService
-                .BlockProviderAdminAsync(providerAdminId, path, userId);
+                .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
         }
     }
 }

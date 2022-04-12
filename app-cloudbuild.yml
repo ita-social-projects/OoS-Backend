@@ -5,6 +5,7 @@ steps:
   args:
     - build
     - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
+    - --cache-image=gcr.io/$PROJECT_ID/oos-api:cache
     - --builder=paketobuildpacks/builder:full
     - --buildpack=fagiani/apt
     - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
@@ -28,7 +29,7 @@ steps:
     - $_SERVICE_ACCOUNT
     - --cpu=2
     - --memory=512Mi
-    - --max-instances=2
+    - --max-instances=3
     - --concurrency=80
     - --set-env-vars=ASPNETCORE_ENVIRONMENT=Google
     - --set-env-vars=Elasticsearch__User=webapi

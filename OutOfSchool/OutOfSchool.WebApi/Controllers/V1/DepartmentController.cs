@@ -44,6 +44,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="200">One or more deparments were found.</response>
         /// <response code="204">No department was found.</response>
         /// <response code="500">If any server error occures.</response>
+        [Obsolete("Use paged method")]
         [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<DepartmentDto>))]
@@ -54,6 +55,23 @@ namespace OutOfSchool.WebApi.Controllers.V1
             var departments = await service.GetAll().ConfigureAwait(false);
 
             if (!departments.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(departments);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<DepartmentDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByFilter([FromQuery] OffsetFilter filter)
+        {
+            var departments = await service.GetByFilter(filter).ConfigureAwait(false);
+
+            if (departments.TotalAmount < 1)
             {
                 return NoContent();
             }

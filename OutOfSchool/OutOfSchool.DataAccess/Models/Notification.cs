@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Services.Enums;
 
@@ -11,7 +12,7 @@ namespace OutOfSchool.Services.Models
         [Required]
         public string UserId { get; set; }
 
-        public string Text { get; set; }
+        public Dictionary<string, string> Data { get; set; }
 
         [Required]
         public NotificationType Type { get; set; }

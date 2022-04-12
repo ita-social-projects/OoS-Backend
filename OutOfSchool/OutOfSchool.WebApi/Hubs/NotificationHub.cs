@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Extensions;
 
 namespace OutOfSchool.WebApi.Hubs
 {
@@ -9,7 +11,7 @@ namespace OutOfSchool.WebApi.Hubs
     {
         public override async Task OnConnectedAsync()
         {
-            string name = Context.User.Identity.Name;
+            string name = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, name).ConfigureAwait(false);
 

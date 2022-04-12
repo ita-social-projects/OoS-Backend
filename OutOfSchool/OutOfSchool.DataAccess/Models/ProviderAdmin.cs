@@ -18,6 +18,7 @@ namespace OutOfSchool.Services.Models
         // "true" gives access to all related with base provider workshops.
         // "false" executes further inspection into admins-to-workshops relations
         public bool IsDeputy { get; set; }
+
         public virtual List<Workshop> ManagedWorkshops { get; set; }
     }
 }

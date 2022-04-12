@@ -5,18 +5,15 @@ namespace OutOfSchool.Services.Repository
 {
     public class DepartmentRepository : EntityRepository<Department>, IDepartmentRepository
     {
-        private readonly OutOfSchoolDbContext db;
-
         public DepartmentRepository(OutOfSchoolDbContext dbContext)
          : base(dbContext)
         {
-            db = dbContext;
         }
 
         /// <inheritdoc/>
-        public bool SameExists(Department entity) => db.Departments.Any(x => (x.Title == entity.Title) && (x.DirectionId == entity.DirectionId));
+        public bool SameExists(Department entity) => dbSet.Any(x => (x.Title == entity.Title) && (x.DirectionId == entity.DirectionId));
 
         /// <inheritdoc/>
-        public bool DirectionExists(long id) => db.Directions.Any(x => x.Id == id);
+        public bool DirectionExists(long id) => dbContext.Directions.Any(x => x.Id == id);
     }
 }

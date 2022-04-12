@@ -17,6 +17,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IProviderRepository> providerRepositoryMock;
         private Mock<IParentRepository> parentRepositoryMock;
         private Mock<IWorkshopRepository> workshopRepositoryMock;
+        private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
 
         private IValidationService validationService;
 
@@ -26,8 +27,13 @@ namespace OutOfSchool.WebApi.Tests.Services
             providerRepositoryMock = new Mock<IProviderRepository>();
             parentRepositoryMock = new Mock<IParentRepository>();
             workshopRepositoryMock = new Mock<IWorkshopRepository>();
+            providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
 
-            validationService = new ValidationService(providerRepositoryMock.Object, parentRepositoryMock.Object, workshopRepositoryMock.Object);
+            validationService = new ValidationService(
+                providerRepositoryMock.Object,
+                parentRepositoryMock.Object,
+                workshopRepositoryMock.Object,
+                providerAdminRepositoryMock.Object);
         }
 
         #region UserIsProviderOwner
@@ -106,7 +112,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .ReturnsAsync(new List<Workshop>() { workshopWithProviderWithValidUserId });
 
             // Act
-            var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithValidUserId.Id).ConfigureAwait(false);
+            var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithValidUserId.Id, Subrole.None).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result);
@@ -130,7 +136,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .ReturnsAsync(new List<Workshop>() { workshopWithProviderWithAnotherUserId });
 
             // Act
-            var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithAnotherUserId.Id).ConfigureAwait(false);
+            var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, workshopWithProviderWithAnotherUserId.Id, Subrole.None).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result);
@@ -145,7 +151,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .ReturnsAsync(new List<Workshop>());
 
             // Act
-            var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, Guid.NewGuid()).ConfigureAwait(false);
+            var result = await validationService.UserIsWorkshopOwnerAsync(validUserId, Guid.NewGuid(), Subrole.None).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result);

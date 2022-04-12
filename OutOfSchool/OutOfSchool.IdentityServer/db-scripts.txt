@@ -11,3 +11,6 @@ dotnet ef database update -c ConfigurationDbContext
 dotnet ef database update 20220130210817_AddNotifications -c OutOfSchoolDbContext
 
 dotnet ef migrations remove -c OutOfSchoolDbContext
+
+// Install EF Core tools
+dotnet tool install --global dotnet-ef

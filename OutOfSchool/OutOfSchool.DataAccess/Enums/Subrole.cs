@@ -4,12 +4,10 @@ using Newtonsoft.Json.Converters;
 namespace OutOfSchool.Services.Enums
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum NotificationAction
+    public enum Subrole
     {
-        Unknown,
-        Create,
-        Update,
-        Delete,
-        Message,
+        None,
+        ProviderDeputy,
+        ProviderAdmin,
     }
 }
