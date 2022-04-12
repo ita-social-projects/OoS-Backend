@@ -12,6 +12,7 @@
     <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+	  <Protobuf Include="..\OutOfSchool.gRPC\Protos\greet.proto" GrpcServices="Client" />
     <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="Google.Protobuf" Version="3.20.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.44.0" />
@@ -68,6 +69,7 @@
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
     <ProjectReference Include="..\OutOfSchool.ElasticsearchData\OutOfSchool.ElasticsearchData.csproj" />
+    <ProjectReference Include="..\OutOfSchool.gRPC\OutOfSchool.gRPC.csproj" />
     <ProjectReference Include="..\OutOfSchool.Redis\OutOfSchool.Redis.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -80,9 +82,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Common\Exceptions\" />
-  </ItemGroup>
-  <ItemGroup>
-	<Protobuf Include="Protos\greet.proto" GrpcServices="Client" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\Images\ImageResource.Designer.cs">

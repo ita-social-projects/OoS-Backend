@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "GrpcService";
+
+package greet;
+
+// The greeting service definition.
+service gRPC_ProviderAdmin {
+  // Sends a greeting
+  rpc CreateProviderAdmin (CreateRequest) returns (CreateReply);
+}
+
+// The request message containing the user's name.
+message CreateRequest {
+  //string name = 1;
+  string FirstName = 1;
+  string LastName = 2;
+  string MiddleName = 3;
+  string Email = 4;
+  string PhoneNumber = 5;
+  google.protobuf.Timestamp CreatingTime = 6;
+  string ReturnUrl = 7;
+  string ProviderId = 8;
+  string UserId = 9;
+  bool IsDeputy = 10;
+  repeated string ManagedWorkshopIds = 11;
+}
+
+// The response message containing the greetings.
+message CreateReply {
+  string message = 1;
+}

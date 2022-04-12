@@ -11,7 +11,7 @@
     <Compile Remove="Data\Migrations\OutOfSchoolMigrations\20211101082648_InitialMigration.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
-	  <Protobuf Include="Protos\greet.proto" GrpcServices="Server" />
+	  <Protobuf Include="..\OutOfSchool.gRPC\Protos\greet.proto" GrpcServices="Server" />
 	  <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.44.0" />
         <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
@@ -45,6 +45,7 @@
     <ProjectReference Include="..\OutOfSchool.EmailSender\OutOfSchool.EmailSender.csproj" />
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
     <ProjectReference Include="..\OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj" />
+    <ProjectReference Include="..\OutOfSchool.gRPC\OutOfSchool.gRPC.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="stylecop.json" />

@@ -247,7 +247,7 @@ namespace OutOfSchool.IdentityServer
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<GreeterService>().RequireHost("*:5002");
+                endpoints.MapGrpcService<gRPC_ProviderAdminService>().RequireHost("*:5002");
             });
         }
     }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Net.Client;
 using GrpcService;
 using Microsoft.AspNetCore.Authorization;
@@ -137,13 +139,33 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            // создаем канал для обмена сообщениями с сервером
-            // параметр - адрес сервера gRPC
+            //// создаем канал для обмена сообщениями с сервером
+            //// параметр - адрес сервера gRPC
+            //using var channel = GrpcChannel.ForAddress("https://localhost:5002");
+            //// создаем клиента
+            //var client = new gRPC_ProviderAdmin.gRPC_ProviderAdminClient(channel);
+            //// обмениваемся сообщениями с сервером
+            //var reply = await client.CreateProviderAdminAsync(new CreateRequest { Name = "ddddd" });
+
             using var channel = GrpcChannel.ForAddress("https://localhost:5002");
-            // создаем клиента
-            var client = new Greeter.GreeterClient(channel);
-            // обмениваемся сообщениями с сервером
-            var reply = await client.SayHelloAsync(new HelloRequest { Name = "ddddd" });
+            var client = new gRPC_ProviderAdmin.gRPC_ProviderAdminClient(channel);
+
+            var _request = new CreateRequest()
+            {
+                FirstName = "FirstName",
+                LastName = "LastName",
+                MiddleName = "MiddleName",
+                Email = "romanchuk.o@slm.ua",
+                PhoneNumber = "+380681111111",
+                CreatingTime = Timestamp.FromDateTimeOffset(DateTimeOffset.Now),
+                ReturnUrl = "ReturnUrl",
+                ProviderId = "12300851-66db-4236-9271-1f037ffe3101",
+                UserId = "cee4ec9a-6fe1-444d-9d33-9df6f3d0f3ee",
+                IsDeputy = true,
+                ManagedWorkshopIds = { new List<string>() { "12316600-66db-4236-9271-1f037ffe3101", "12316600-66db-4236-9271-1f037ffe3102" } },
+            };
+
+            var reply = await client.CreateProviderAdminAsync(_request);
 
             return Ok(reply);
         }
