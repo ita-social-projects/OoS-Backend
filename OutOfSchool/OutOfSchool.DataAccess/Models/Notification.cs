@@ -14,6 +14,8 @@ namespace OutOfSchool.Services.Models
 
         public Dictionary<string, string> Data { get; set; }
 
+        public string GroupedData { get; set; }
+
         [Required]
         public NotificationType Type { get; set; }
 

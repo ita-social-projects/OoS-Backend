@@ -314,12 +314,15 @@ namespace OutOfSchool.WebApi.Services
                     { "Status", updatedApplication.Status.ToString() },
                 };
 
+                string groupedData = updatedApplication.Status.ToString();
+
                 await notificationService.Create(
                     NotificationType.Application,
                     NotificationAction.Update,
                     updatedApplication.Id,
                     this,
-                    additionalData).ConfigureAwait(false);
+                    additionalData,
+                    groupedData).ConfigureAwait(false);
 
                 return mapper.Map<ApplicationDto>(updatedApplication);
             }
