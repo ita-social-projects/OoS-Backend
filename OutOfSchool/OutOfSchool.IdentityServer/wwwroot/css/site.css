@@ -372,15 +372,17 @@ a {
   margin-top: 8px;
   border: 1px solid #e3e3e3;
   border-radius: 21px;
-  height: 30px;
+  height: 28px;
   width: 59px;
   text-align: center;
   font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 13px;
-  line-height: 26px;
+  line-height: 32px;
   color: #333333;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 .registration_button {
