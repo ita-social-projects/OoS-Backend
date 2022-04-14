@@ -70,7 +70,13 @@ namespace OutOfSchool.WebApi.Services
             return notificationDtoReturn;
         }
 
-        public async Task Create(NotificationType type, NotificationAction action, Guid objectId, INotificationReciever service, Dictionary<string, string> additionalData = null)
+        public async Task Create(
+            NotificationType type,
+            NotificationAction action,
+            Guid objectId,
+            INotificationReciever service,
+            Dictionary<string, string> additionalData = null,
+            string groupedData = null)
         {
             if (!notificationsConfig.Value.Enabled || service is null)
             {
@@ -86,6 +92,7 @@ namespace OutOfSchool.WebApi.Services
                 CreatedDateTime = DateTimeOffset.UtcNow,
                 ObjectId = objectId,
                 Data = additionalData,
+                GroupedData = groupedData,
             };
 
             var recipientsIds = await service.GetNotificationsRecipientIds(action, additionalData, objectId).ConfigureAwait(false);
@@ -213,8 +220,14 @@ namespace OutOfSchool.WebApi.Services
 
             result.NotificationsGrouped = allNotifications
                 .Where(n => grouped.Contains(n.Type))
-                .GroupBy(n => n.Type)
-                .Select(n => new NotificationGrouped { Type = n.Key, Amount = n.Count() })
+                .GroupBy(n => new { n.Type, n.Action, n.GroupedData })
+                .Select(n => new NotificationGrouped
+                    {
+                        Type = n.Key.Type,
+                        Action = n.Key.Action,
+                        GroupedData = n.Key.GroupedData,
+                        Amount = n.Count(),
+                    })
                 .ToList();
 
             result.Notifications = allNotifications
