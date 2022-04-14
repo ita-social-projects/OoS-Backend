@@ -25,8 +25,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="action">Notificaton action to add.</param>
         /// <param name="objectId">ObjectId.</param>
         /// <param name="service">Service which implements interface INotificationReciever.</param>
-        /// <param name="additionalData">Data need to save with notification</param>
-        /// <param name="groupedData">Field is used in grouping notifications for response type NotificationGrouped</param>
+        /// <param name="additionalData">Data need to save with notification.</param>
+        /// <param name="groupedData">Field is used in grouping notifications for response type NotificationGrouped.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Create(
             NotificationType type,
@@ -34,8 +34,7 @@ namespace OutOfSchool.WebApi.Services
             Guid objectId,
             INotificationReciever service,
             Dictionary<string, string> additionalData = null,
-            string groupedData = null
-        );
+            string groupedData = null);
 
         /// <summary>
         /// Delete the object from DB.

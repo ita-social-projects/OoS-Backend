@@ -227,8 +227,7 @@ namespace OutOfSchool.WebApi.Services
                         Action = n.Key.Action,
                         GroupedData = n.Key.GroupedData,
                         Amount = n.Count(),
-                    }
-                )
+                    })
                 .ToList();
 
             result.Notifications = allNotifications
