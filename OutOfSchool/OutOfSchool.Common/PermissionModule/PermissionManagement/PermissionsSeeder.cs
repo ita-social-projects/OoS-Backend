@@ -35,6 +35,7 @@ namespace OutOfSchool.Common.PermissionsModule
             Permissions.ImpersonalDataRead,
             Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
             Permissions.ApplicationRead, Permissions.ApplicationEdit,
+            Permissions.ProviderRead,
             Permissions.ProviderAdmins,
             Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
             Permissions.UserRead, Permissions.UserEdit,
