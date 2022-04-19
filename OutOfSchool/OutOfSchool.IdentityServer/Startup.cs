@@ -13,7 +13,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -247,7 +250,7 @@ namespace OutOfSchool.IdentityServer
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<gRPC_ProviderAdminService>().RequireHost("*:5002");
+                endpoints.MapGrpcService<GRPC_ProviderAdminService>().RequireHost("*:5002");
             });
         }
     }

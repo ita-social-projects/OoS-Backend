@@ -4,29 +4,31 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Grpc.Core;
 using GrpcService;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.IdentityServer.Services.Intefaces;
 
 namespace GrpcServiceServer
 {
-    public class gRPC_ProviderAdminService : gRPC_ProviderAdmin.gRPC_ProviderAdminBase
+    [Authorize(AuthenticationSchemes = Constants.BearerScheme)]
+    public class GRPC_ProviderAdminService : gRPC_ProviderAdmin.gRPC_ProviderAdminBase
     {
-        private readonly ILogger<gRPC_ProviderAdminService> logger;
+        private readonly ILogger<GRPC_ProviderAdminService> logger;
         private readonly IProviderAdminService providerAdminService;
         private readonly IMapper mapper;
-        //private readonly IUrlHelper urlHelper;
 
-        public gRPC_ProviderAdminService(
-            ILogger<gRPC_ProviderAdminService> logger,
+        public GRPC_ProviderAdminService(
+            ILogger<GRPC_ProviderAdminService> logger,
             IProviderAdminService providerAdminService,
             IMapper mapper)
         {
             this.logger = logger;
             this.providerAdminService = providerAdminService;
             this.mapper = mapper;
-            //this.urlHelper = urlHelper;
         }
 
         public override async Task<CreateReply> CreateProviderAdmin(CreateRequest request, ServerCallContext context)
@@ -51,11 +53,14 @@ namespace GrpcServiceServer
                 providerAdminDto.ManagedWorkshopIds.Add(Guid.Parse(item));
             }
 
-            var result = await providerAdminService.CreateProviderAdminAsync(providerAdminDto, null, "", "");
+            //var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var userId = context.GetHttpContext().User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+
+            var result = await providerAdminService.CreateProviderAdminAsync(providerAdminDto, null, userId, "");
 
             return await Task.FromResult(new CreateReply
             {
-                Message = "Hello " + request.FirstName
+                Message = "Hello " + request.FirstName + userId,
             });
         }
     }

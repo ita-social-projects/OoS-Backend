@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
 using Grpc.Net.Client;
+using Grpc.Net.Client.Configuration;
 using GrpcService;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -130,8 +132,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">Id was wrong.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        //[Authorize]
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NotificationDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -139,15 +140,38 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            //// создаем канал для обмена сообщениями с сервером
-            //// параметр - адрес сервера gRPC
-            //using var channel = GrpcChannel.ForAddress("https://localhost:5002");
-            //// создаем клиента
-            //var client = new gRPC_ProviderAdmin.gRPC_ProviderAdminClient(channel);
-            //// обмениваемся сообщениями с сервером
-            //var reply = await client.CreateProviderAdminAsync(new CreateRequest { Name = "ddddd" });
+            var token = await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
 
-            using var channel = GrpcChannel.ForAddress("https://localhost:5002");
+            var credentials = CallCredentials.FromInterceptor((context, metadata) =>
+            {
+                if (!string.IsNullOrEmpty(token))
+                {
+                    metadata.Add("Authorization", $"Bearer {token}");
+                }
+                return Task.CompletedTask;
+            });
+
+            var defaultMethodConfig = new MethodConfig
+            {
+                Names = { MethodName.Default },
+                RetryPolicy = new RetryPolicy
+                {
+                    MaxAttempts = 5,
+                    InitialBackoff = TimeSpan.FromSeconds(1),
+                    MaxBackoff = TimeSpan.FromSeconds(5),
+                    BackoffMultiplier = 1.5,
+                    RetryableStatusCodes = { Grpc.Core.StatusCode.Unavailable },
+                },
+            };
+
+            // SslCredentials is used here because this channel is using TLS.
+            // CallCredentials can't be used with ChannelCredentials.Insecure on non-TLS channels.
+            var channel = GrpcChannel.ForAddress("https://localhost:5002", new GrpcChannelOptions
+            {
+                Credentials = ChannelCredentials.Create(new SslCredentials(), credentials),
+                ServiceConfig = new ServiceConfig { MethodConfigs = { defaultMethodConfig } },
+            });
+
             var client = new gRPC_ProviderAdmin.gRPC_ProviderAdminClient(channel);
 
             var _request = new CreateRequest()
@@ -165,7 +189,16 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 ManagedWorkshopIds = { new List<string>() { "12316600-66db-4236-9271-1f037ffe3101", "12316600-66db-4236-9271-1f037ffe3102" } },
             };
 
-            var reply = await client.CreateProviderAdminAsync(_request);
+            var reply = new CreateReply();
+
+            try
+            {
+                reply = await client.CreateProviderAdminAsync(_request);
+            }
+            catch (RpcException ex)
+            {
+                var i = ex;
+            }
 
             return Ok(reply);
         }
