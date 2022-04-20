@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
+using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.Services.Intefaces;
 using OutOfSchool.IdentityServer.Services.Interfaces;
 using OutOfSchool.IdentityServer.Services.Password;
@@ -29,6 +31,7 @@ namespace OutOfSchool.IdentityServer.Services
         private readonly IMapper mapper;
         private readonly ILogger<ProviderAdminService> logger;
         private readonly IProviderAdminRepository providerAdminRepository;
+        private readonly GRPCConfig gPRCConfig;
 
         private readonly UserManager<User> userManager;
         private readonly OutOfSchoolDbContext context;
@@ -43,7 +46,8 @@ namespace OutOfSchool.IdentityServer.Services
             UserManager<User> userManager,
             OutOfSchoolDbContext context,
             IRazorViewToStringRenderer renderer,
-            IProviderAdminChangesLogService providerAdminChangesLogService)
+            IProviderAdminChangesLogService providerAdminChangesLogService,
+            IOptions<GRPCConfig> gRPCConfig)
         {
             this.mapper = mapper;
             this.userManager = userManager;
@@ -53,6 +57,7 @@ namespace OutOfSchool.IdentityServer.Services
             this.emailSender = emailSender;
             this.renderer = renderer;
             this.providerAdminChangesLogService = providerAdminChangesLogService;
+            this.gPRCConfig = gRPCConfig.Value;
         }
 
         public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -155,10 +160,15 @@ namespace OutOfSchool.IdentityServer.Services
                     // TODO:
                     // Use template instead
                     var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationLink = url.Action(
-                        "EmailConfirmation", "Account",
-                        new { userId = user.Id, token },
-                        "https");
+
+                    string confirmationLink =
+                        url is null
+                        ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}"
+                        : url.Action(
+                                "EmailConfirmation", "Account",
+                                new { userId = user.Id, token },
+                                "https");
+
                     var subject = "Запрошення!";
                     var adminInvitationViewModel = new AdminInvitationViewModel
                     {

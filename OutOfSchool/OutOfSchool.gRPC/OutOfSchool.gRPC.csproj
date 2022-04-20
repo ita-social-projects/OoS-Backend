@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.45.0" />
+    <PackageReference Include="Grpc.Core" Version="2.45.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.45.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Protos\greet.proto">
       <GrpcServices>Client</GrpcServices>
     </None>

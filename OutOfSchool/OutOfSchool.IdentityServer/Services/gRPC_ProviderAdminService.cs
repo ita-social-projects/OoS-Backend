@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcService;
 using Microsoft.AspNetCore.Authorization;
@@ -57,11 +58,30 @@ namespace GrpcServiceServer
             var userId = context.GetHttpContext().User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
             var result = await providerAdminService.CreateProviderAdminAsync(providerAdminDto, null, userId, "");
+            var _result = (CreateProviderAdminDto)result.Result;
 
-            return await Task.FromResult(new CreateReply
+            var resultGRPC = new CreateReply();
+
+            if (!(_result is null))
             {
-                Message = "Hello " + request.FirstName + userId,
-            });
+                resultGRPC.FirstName = _result.FirstName;
+                resultGRPC.LastName = _result.LastName;
+                resultGRPC.MiddleName = _result.MiddleName;
+                resultGRPC.Email = _result.Email;
+                resultGRPC.PhoneNumber = _result.PhoneNumber;
+                resultGRPC.CreatingTime = Timestamp.FromDateTimeOffset(_result.CreatingTime);
+                resultGRPC.ReturnUrl = _result.ReturnUrl;
+                resultGRPC.ProviderId = _result.ProviderId.ToString();
+                resultGRPC.UserId = _result.UserId;
+                resultGRPC.IsDeputy = _result.IsDeputy;
+
+                foreach (Guid item in _result.ManagedWorkshopIds)
+                {
+                    resultGRPC.ManagedWorkshopIds.Add(item.ToString());
+                }
+            }
+
+            return resultGRPC;
         }
     }
 }

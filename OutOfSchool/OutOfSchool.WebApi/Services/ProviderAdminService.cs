@@ -5,6 +5,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
+using GrpcService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,11 +16,11 @@ using Newtonsoft.Json;
 
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
+using OutOfSchool.GRPC;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Communication;
 
@@ -32,6 +35,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<ProviderAdminService> logger;
         private readonly IMapper mapper;
         private readonly ResponseDto responseDto;
+        private readonly GRPCConfig gPRCConfig;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,
@@ -41,6 +45,7 @@ namespace OutOfSchool.WebApi.Services
             IProviderAdminRepository providerAdminRepository,
             IEntityRepository<User> userRepository,
             IMapper mapper,
+            IOptions<GRPCConfig> gRPCConfig,
             ILogger<ProviderAdminService> logger)
             : base(httpClientFactory, communicationConfig.Value)
         {
@@ -50,6 +55,7 @@ namespace OutOfSchool.WebApi.Services
             this.userRepository = userRepository;
             this.mapper = mapper;
             this.logger = logger;
+            this.gPRCConfig = gRPCConfig.Value;
             responseDto = new ResponseDto();
         }
 
@@ -85,6 +91,16 @@ namespace OutOfSchool.WebApi.Services
                 return responseDto;
             }
 
+            ResponseDto response =
+                gPRCConfig.Enabled
+                ? await CreateProviderAdminGRPCAsync(userId, providerAdminDto, token).ConfigureAwait(false)
+                : await CreateProviderAdminRESTAsync(userId, providerAdminDto, token).ConfigureAwait(false);
+
+            return response;
+        }
+
+        private async Task<ResponseDto> CreateProviderAdminRESTAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+        {
             var request = new Request()
             {
                 HttpMethodType = HttpMethodType.Post,
@@ -107,6 +123,76 @@ namespace OutOfSchool.WebApi.Services
                     .DeserializeObject<CreateProviderAdminDto>(response.Result.ToString());
 
                 return responseDto;
+            }
+
+            return response;
+        }
+
+        private async Task<ResponseDto> CreateProviderAdminGRPCAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+        {
+            using var channel = GRPCCommon.CreateAuthenticatedChannel(token);
+
+            var client = new gRPC_ProviderAdmin.gRPC_ProviderAdminClient(channel);
+
+            var _request = new CreateRequest()
+            {
+                FirstName = providerAdminDto.FirstName,
+                LastName = providerAdminDto.LastName,
+                MiddleName = providerAdminDto.MiddleName,
+                Email = providerAdminDto.Email,
+                PhoneNumber = providerAdminDto.PhoneNumber,
+                CreatingTime = Timestamp.FromDateTimeOffset(providerAdminDto.CreatingTime),
+                ReturnUrl = providerAdminDto.ReturnUrl,
+                ProviderId = providerAdminDto.ProviderId.ToString(),
+                UserId = providerAdminDto.UserId,
+                IsDeputy = providerAdminDto.IsDeputy,
+            };
+
+            foreach (Guid item in providerAdminDto.ManagedWorkshopIds)
+            {
+                _request.ManagedWorkshopIds.Add(item.ToString());
+            }
+
+            var response = new ResponseDto()
+            {
+                IsSuccess = true,
+                HttpStatusCode = HttpStatusCode.OK,
+            };
+
+            try
+            {
+                var reply = await client.CreateProviderAdminAsync(_request);
+
+                CreateProviderAdminDto providerAdminDtoGRPC = new CreateProviderAdminDto();
+                providerAdminDtoGRPC.FirstName = reply.FirstName;
+                providerAdminDtoGRPC.LastName = reply.LastName;
+                providerAdminDtoGRPC.MiddleName = reply.MiddleName;
+                providerAdminDtoGRPC.Email = reply.Email;
+                providerAdminDtoGRPC.PhoneNumber = reply.PhoneNumber;
+                providerAdminDtoGRPC.CreatingTime = reply.CreatingTime.ToDateTimeOffset();
+                providerAdminDtoGRPC.ReturnUrl = reply.ReturnUrl;
+                providerAdminDtoGRPC.ProviderId = Guid.Parse(reply.ProviderId);
+                providerAdminDtoGRPC.UserId = reply.UserId;
+                providerAdminDtoGRPC.IsDeputy = reply.IsDeputy;
+                providerAdminDtoGRPC.ManagedWorkshopIds = new List<Guid>();
+
+                foreach (string item in reply.ManagedWorkshopIds)
+                {
+                    providerAdminDtoGRPC.ManagedWorkshopIds.Add(Guid.Parse(item));
+                }
+
+                responseDto.IsSuccess = true;
+                responseDto.Result = providerAdminDtoGRPC;
+
+                return responseDto;
+            }
+            catch (RpcException ex)
+            {
+                logger.LogError($"GRPC: Admin was not created by User(id): {userId}. {ex.Message}");
+
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                response.Message = ex.Message;
             }
 
             return response;
@@ -162,7 +248,7 @@ namespace OutOfSchool.WebApi.Services
                 if (!(responseDto.Result is null))
                 {
                     responseDto.Result = JsonConvert
-                    .DeserializeObject<ActionResult>(response.Result.ToString());
+                        .DeserializeObject<ActionResult>(response.Result.ToString());
 
                     return responseDto;
                 }

@@ -13,7 +13,7 @@
   <ItemGroup>
 	  <Protobuf Include="..\OutOfSchool.gRPC\Protos\greet.proto" GrpcServices="Server" />
 	  <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.44.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.45.0" />
         <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
     <PackageReference Include="IdentityModel" Version="5.0.0" />

@@ -329,6 +329,9 @@ namespace OutOfSchool.WebApi
             // Notification options
             services.Configure<NotificationsConfig>(Configuration.GetSection(NotificationsConfig.Name));
 
+            // GRPC options
+            services.Configure<GRPCConfig>(Configuration.GetSection(GRPCConfig.Name));
+
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
             services.AddSwagger(swaggerConfig);

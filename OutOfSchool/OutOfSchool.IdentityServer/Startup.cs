@@ -122,6 +122,9 @@ namespace OutOfSchool.IdentityServer
             var issuerSection = config.GetSection(IssuerConfig.Name);
             services.Configure<IssuerConfig>(issuerSection);
 
+            // GRPC options
+            services.Configure<GRPCConfig>(config.GetSection(GRPCConfig.Name));
+
             services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
                 .AddConfigurationStore(options =>
                 {
