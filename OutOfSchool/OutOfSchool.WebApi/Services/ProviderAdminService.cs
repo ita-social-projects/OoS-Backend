@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcService;
 using Microsoft.AspNetCore.Mvc;
@@ -134,24 +133,7 @@ namespace OutOfSchool.WebApi.Services
 
             var client = new gRPC_ProviderAdmin.gRPC_ProviderAdminClient(channel);
 
-            var _request = new CreateRequest()
-            {
-                FirstName = providerAdminDto.FirstName,
-                LastName = providerAdminDto.LastName,
-                MiddleName = providerAdminDto.MiddleName,
-                Email = providerAdminDto.Email,
-                PhoneNumber = providerAdminDto.PhoneNumber,
-                CreatingTime = Timestamp.FromDateTimeOffset(providerAdminDto.CreatingTime),
-                ReturnUrl = providerAdminDto.ReturnUrl,
-                ProviderId = providerAdminDto.ProviderId.ToString(),
-                UserId = providerAdminDto.UserId,
-                IsDeputy = providerAdminDto.IsDeputy,
-            };
-
-            foreach (Guid item in providerAdminDto.ManagedWorkshopIds)
-            {
-                _request.ManagedWorkshopIds.Add(item.ToString());
-            }
+            var _request = mapper.Map<CreateRequest>(providerAdminDto);
 
             var response = new ResponseDto()
             {
@@ -163,23 +145,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 var reply = await client.CreateProviderAdminAsync(_request);
 
-                CreateProviderAdminDto providerAdminDtoGRPC = new CreateProviderAdminDto();
-                providerAdminDtoGRPC.FirstName = reply.FirstName;
-                providerAdminDtoGRPC.LastName = reply.LastName;
-                providerAdminDtoGRPC.MiddleName = reply.MiddleName;
-                providerAdminDtoGRPC.Email = reply.Email;
-                providerAdminDtoGRPC.PhoneNumber = reply.PhoneNumber;
-                providerAdminDtoGRPC.CreatingTime = reply.CreatingTime.ToDateTimeOffset();
-                providerAdminDtoGRPC.ReturnUrl = reply.ReturnUrl;
-                providerAdminDtoGRPC.ProviderId = Guid.Parse(reply.ProviderId);
-                providerAdminDtoGRPC.UserId = reply.UserId;
-                providerAdminDtoGRPC.IsDeputy = reply.IsDeputy;
-                providerAdminDtoGRPC.ManagedWorkshopIds = new List<Guid>();
-
-                foreach (string item in reply.ManagedWorkshopIds)
-                {
-                    providerAdminDtoGRPC.ManagedWorkshopIds.Add(Guid.Parse(item));
-                }
+                var providerAdminDtoGRPC = mapper.Map<CreateProviderAdminDto>(reply);
 
                 responseDto.IsSuccess = true;
                 responseDto.Result = providerAdminDtoGRPC;

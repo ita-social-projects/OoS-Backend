@@ -34,54 +34,14 @@ namespace GrpcServiceServer
 
         public override async Task<CreateReply> CreateProviderAdmin(CreateRequest request, ServerCallContext context)
         {
-            //var providerAdminDto = mapper.Map<CreateProviderAdminDto>(request);
+            var createProviderAdminDto = mapper.Map<CreateProviderAdminDto>(request);
 
-            CreateProviderAdminDto providerAdminDto = new CreateProviderAdminDto();
-            providerAdminDto.FirstName = request.FirstName;
-            providerAdminDto.LastName = request.LastName;
-            providerAdminDto.MiddleName = request.MiddleName;
-            providerAdminDto.Email = request.Email;
-            providerAdminDto.PhoneNumber = request.PhoneNumber;
-            providerAdminDto.CreatingTime = request.CreatingTime.ToDateTimeOffset();
-            providerAdminDto.ReturnUrl = request.ReturnUrl;
-            providerAdminDto.ProviderId = Guid.Parse(request.ProviderId);
-            providerAdminDto.UserId = request.UserId;
-            providerAdminDto.IsDeputy = request.IsDeputy;
-            providerAdminDto.ManagedWorkshopIds = new List<Guid>();
-
-            foreach (string item in request.ManagedWorkshopIds)
-            {
-                providerAdminDto.ManagedWorkshopIds.Add(Guid.Parse(item));
-            }
-
-            //var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
             var userId = context.GetHttpContext().User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
 
-            var result = await providerAdminService.CreateProviderAdminAsync(providerAdminDto, null, userId, "");
-            var _result = (CreateProviderAdminDto)result.Result;
+            var result = await providerAdminService.CreateProviderAdminAsync(createProviderAdminDto, null, userId, "");
+            var resultCreateProviderAdminDto = (CreateProviderAdminDto)result.Result;
 
-            var resultGRPC = new CreateReply();
-
-            if (!(_result is null))
-            {
-                resultGRPC.FirstName = _result.FirstName;
-                resultGRPC.LastName = _result.LastName;
-                resultGRPC.MiddleName = _result.MiddleName;
-                resultGRPC.Email = _result.Email;
-                resultGRPC.PhoneNumber = _result.PhoneNumber;
-                resultGRPC.CreatingTime = Timestamp.FromDateTimeOffset(_result.CreatingTime);
-                resultGRPC.ReturnUrl = _result.ReturnUrl;
-                resultGRPC.ProviderId = _result.ProviderId.ToString();
-                resultGRPC.UserId = _result.UserId;
-                resultGRPC.IsDeputy = _result.IsDeputy;
-
-                foreach (Guid item in _result.ManagedWorkshopIds)
-                {
-                    resultGRPC.ManagedWorkshopIds.Add(item.ToString());
-                }
-            }
-
-            return resultGRPC;
+            return mapper.Map<CreateReply>(resultCreateProviderAdminDto);
         }
     }
 }

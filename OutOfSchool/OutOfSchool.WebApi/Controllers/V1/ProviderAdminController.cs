@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [HasPermission(Permissions.ProviderAdmins)]    
+    [HasPermission(Permissions.ProviderAdmins)]
     public class ProviderAdminController : Controller
     {
         private readonly IProviderAdminService providerAdminService;

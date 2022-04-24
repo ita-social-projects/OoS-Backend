@@ -1,4 +1,8 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using AutoMapper;
+using Google.Protobuf.WellKnownTypes;
+using GrpcService;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
 
@@ -13,6 +17,36 @@ namespace OutOfSchool.IdentityServer.Util
 
             CreateMap<CreateProviderAdminDto, ProviderAdmin>()
                 .ForMember(dest => dest.ManagedWorkshops, opt => opt.Ignore());
+
+            CreateMap<CreateProviderAdminDto, CreateReply>()
+                .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
+                .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
+                .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom((dto, entity) =>
+                {
+                    var managedWorkshopIds = new List<string>();
+
+                    foreach (var item in dto.ManagedWorkshopIds)
+                    {
+                        managedWorkshopIds.Add(item.ToString());
+                    }
+
+                    return managedWorkshopIds;
+                }));
+
+            CreateMap<CreateRequest, CreateProviderAdminDto>()
+                .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
+                .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
+                .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom((dto, entity) =>
+                {
+                    var managedWorkshopIds = new List<Guid>();
+
+                    foreach (var item in dto.ManagedWorkshopIds)
+                    {
+                        managedWorkshopIds.Add(Guid.Parse(item));
+                    }
+
+                    return managedWorkshopIds;
+                }));
         }
     }
 }

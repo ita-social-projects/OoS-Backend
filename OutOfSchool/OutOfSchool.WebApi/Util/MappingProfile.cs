@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using AutoMapper;
+using Google.Protobuf.WellKnownTypes;
+using GrpcService;
+using OutOfSchool.Common.Models;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
@@ -181,6 +184,36 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<ClassDto, Class>().ReverseMap();
             CreateMap<DepartmentDto, Department>().ReverseMap();
             CreateMap<DirectionDto, Direction>().ReverseMap();
+
+            CreateMap<CreateProviderAdminDto, CreateRequest>()
+                .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
+                .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
+                .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom((dto, entity) =>
+                {
+                    var managedWorkshopIds = new List<string>();
+
+                    foreach (var item in dto.ManagedWorkshopIds)
+                    {
+                        managedWorkshopIds.Add(item.ToString());
+                    }
+
+                    return managedWorkshopIds;
+                }));
+
+            CreateMap<CreateReply, CreateProviderAdminDto>()
+                .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
+                .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
+                .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom((dto, entity) =>
+                {
+                    var managedWorkshopIds = new List<Guid>();
+
+                    foreach (var item in dto.ManagedWorkshopIds)
+                    {
+                        managedWorkshopIds.Add(Guid.Parse(item));
+                    }
+
+                    return managedWorkshopIds;
+                }));
 
             CreateMap<User, ShortUserDto>();
 
