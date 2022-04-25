@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Protos\greet.proto">
+    <None Update="Protos\ProviderAdmin.proto">
       <GrpcServices>Client</GrpcServices>
     </None>
   </ItemGroup>

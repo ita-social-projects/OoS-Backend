@@ -4,13 +4,13 @@ import "google/protobuf/timestamp.proto";
 
 option csharp_namespace = "GrpcService";
 
-package greet;
+package ProviderAdmin;
 
-service gRPC_ProviderAdmin {
-  rpc CreateProviderAdmin (CreateRequest) returns (CreateReply);
+service GRPCProviderAdmin {
+  rpc CreateProviderAdmin (CreateProviderAdminRequest) returns (CreateProviderAdminReply);
 }
 
-message CreateRequest {
+message CreateProviderAdminRequest {
   string FirstName = 1;
   string LastName = 2;
   string MiddleName = 3;
@@ -22,9 +22,10 @@ message CreateRequest {
   string UserId = 9;
   bool IsDeputy = 10;
   repeated string ManagedWorkshopIds = 11;
+  string RequestId = 12;
 }
 
-message CreateReply {
+message CreateProviderAdminReply {
   string FirstName = 1;
   string LastName = 2;
   string MiddleName = 3;
@@ -36,4 +37,5 @@ message CreateReply {
   string UserId = 9;
   bool IsDeputy = 10;
   repeated string ManagedWorkshopIds = 11;
+  bool IsSuccess = 12;
 }

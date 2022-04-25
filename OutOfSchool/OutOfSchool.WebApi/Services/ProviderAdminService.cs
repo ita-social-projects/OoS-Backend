@@ -22,6 +22,7 @@ using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Communication;
+using OutOfSchool.WebApi.Services.GRPC;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -34,7 +35,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<ProviderAdminService> logger;
         private readonly IMapper mapper;
         private readonly ResponseDto responseDto;
-        private readonly GRPCConfig gPRCConfig;
+        private readonly IGRPCCommonService gRPCCommonService;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,
@@ -44,8 +45,8 @@ namespace OutOfSchool.WebApi.Services
             IProviderAdminRepository providerAdminRepository,
             IEntityRepository<User> userRepository,
             IMapper mapper,
-            IOptions<GRPCConfig> gRPCConfig,
-            ILogger<ProviderAdminService> logger)
+            ILogger<ProviderAdminService> logger,
+            IGRPCCommonService gRPCCommonService)
             : base(httpClientFactory, communicationConfig.Value)
         {
             this.identityServerConfig = identityServerConfig.Value;
@@ -54,7 +55,7 @@ namespace OutOfSchool.WebApi.Services
             this.userRepository = userRepository;
             this.mapper = mapper;
             this.logger = logger;
-            this.gPRCConfig = gRPCConfig.Value;
+            this.gRPCCommonService = gRPCCommonService;
             responseDto = new ResponseDto();
         }
 
@@ -91,7 +92,7 @@ namespace OutOfSchool.WebApi.Services
             }
 
             ResponseDto response =
-                gPRCConfig.Enabled
+                gRPCCommonService.IsEnabled
                 ? await CreateProviderAdminGRPCAsync(userId, providerAdminDto, token).ConfigureAwait(false)
                 : await CreateProviderAdminRESTAsync(userId, providerAdminDto, token).ConfigureAwait(false);
 
@@ -129,11 +130,10 @@ namespace OutOfSchool.WebApi.Services
 
         private async Task<ResponseDto> CreateProviderAdminGRPCAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
         {
-            using var channel = GRPCCommon.CreateAuthenticatedChannel(token);
+            using var channel = gRPCCommonService.CreateAuthenticatedChannel(token);
+            var client = new GRPCProviderAdmin.GRPCProviderAdminClient(channel);
 
-            var client = new gRPC_ProviderAdmin.gRPC_ProviderAdminClient(channel);
-
-            var _request = mapper.Map<CreateRequest>(providerAdminDto);
+            var createProviderAdminRequest = mapper.Map<CreateProviderAdminRequest>(providerAdminDto);
 
             var response = new ResponseDto()
             {
@@ -141,20 +141,35 @@ namespace OutOfSchool.WebApi.Services
                 HttpStatusCode = HttpStatusCode.OK,
             };
 
+            string requestId = Guid.NewGuid().ToString();
+            createProviderAdminRequest.RequestId = requestId;
+
+            logger.LogDebug($"GRPC: Request(id): {requestId} was sent. " +
+                $"User(id): {userId}. Method: CreateProviderAdminAsync.");
+
             try
             {
-                var reply = await client.CreateProviderAdminAsync(_request);
+                var reply = await client.CreateProviderAdminAsync(createProviderAdminRequest);
 
-                var providerAdminDtoGRPC = mapper.Map<CreateProviderAdminDto>(reply);
+                if (reply.IsSuccess)
+                {
+                    var providerAdminDtoGRPC = mapper.Map<CreateProviderAdminDto>(reply);
 
-                responseDto.IsSuccess = true;
-                responseDto.Result = providerAdminDtoGRPC;
+                    responseDto.IsSuccess = true;
+                    responseDto.Result = providerAdminDtoGRPC;
 
-                return responseDto;
+                    return responseDto;
+                }
+                else
+                {
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                }
             }
             catch (RpcException ex)
             {
-                logger.LogError($"GRPC: Admin was not created by User(id): {userId}. {ex.Message}");
+                logger.LogError($"GRPC: Request(id): {requestId}. " +
+                    $"Admin was not created by User(id): {userId}. {ex.Message}");
 
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;

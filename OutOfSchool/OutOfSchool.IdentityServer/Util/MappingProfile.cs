@@ -18,7 +18,7 @@ namespace OutOfSchool.IdentityServer.Util
             CreateMap<CreateProviderAdminDto, ProviderAdmin>()
                 .ForMember(dest => dest.ManagedWorkshops, opt => opt.Ignore());
 
-            CreateMap<CreateProviderAdminDto, CreateReply>()
+            CreateMap<CreateProviderAdminDto, CreateProviderAdminReply>()
                 .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
                 .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
                 .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom((dto, entity) =>
@@ -33,7 +33,7 @@ namespace OutOfSchool.IdentityServer.Util
                     return managedWorkshopIds;
                 }));
 
-            CreateMap<CreateRequest, CreateProviderAdminDto>()
+            CreateMap<CreateProviderAdminRequest, CreateProviderAdminDto>()
                 .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
                 .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
                 .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom((dto, entity) =>

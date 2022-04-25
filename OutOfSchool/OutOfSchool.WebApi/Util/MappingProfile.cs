@@ -185,7 +185,7 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<DepartmentDto, Department>().ReverseMap();
             CreateMap<DirectionDto, Direction>().ReverseMap();
 
-            CreateMap<CreateProviderAdminDto, CreateRequest>()
+            CreateMap<CreateProviderAdminDto, CreateProviderAdminRequest>()
                 .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
                 .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
                 .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom((dto, entity) =>
@@ -200,7 +200,7 @@ namespace OutOfSchool.WebApi.Util
                     return managedWorkshopIds;
                 }));
 
-            CreateMap<CreateReply, CreateProviderAdminDto>()
+            CreateMap<CreateProviderAdminReply, CreateProviderAdminDto>()
                 .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
                 .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
                 .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom((dto, entity) =>
