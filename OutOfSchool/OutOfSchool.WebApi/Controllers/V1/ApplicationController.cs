@@ -119,6 +119,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get Applications by Parent Id.
         /// </summary>
         /// <param name="id">Parent id.</param>
+        /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
         /// <response code="200">Entities were found by given Id.</response>
         /// <response code="204">No entity with given Id was found.</response>
@@ -129,7 +130,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByParentId(Guid id)
+        public async Task<IActionResult> GetByParentId(Guid id, [FromQuery] ApplicationFilter filter)
         {
             try
             {
@@ -140,7 +141,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(ex.Message);
             }
 
-            var applications = await applicationService.GetAllByParent(id).ConfigureAwait(false);
+            var applications = await applicationService.GetAllByParent(id, filter).ConfigureAwait(false);
 
             if (!applications.Any())
             {
