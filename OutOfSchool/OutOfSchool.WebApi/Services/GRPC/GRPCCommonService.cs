@@ -66,10 +66,10 @@ namespace OutOfSchool.GRPC
             var channel = GrpcChannel.ForAddress(
                 $"{gRPCConfig.Server}:{gRPCConfig.Port}",
                 new GrpcChannelOptions
-            {
-                Credentials = ChannelCredentials.Create(new SslCredentials(), credentials),
-                ServiceConfig = new ServiceConfig { MethodConfigs = { defaultMethodConfig } },
-            });
+                {
+                    Credentials = ChannelCredentials.Create(new SslCredentials(), credentials),
+                    ServiceConfig = new ServiceConfig { MethodConfigs = { defaultMethodConfig } },
+                });
 
             return channel;
         }
