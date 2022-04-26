@@ -13,10 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -186,7 +183,7 @@ namespace OutOfSchool.IdentityServer
             services.AddGrpc();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<GRPCConfig> gRPCConfig)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             var proxyOptions = config.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
             app.UseProxy(proxyOptions);
@@ -252,11 +249,13 @@ namespace OutOfSchool.IdentityServer
 
             app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
 
-            if (gRPCConfig.Value.Enabled)
+            var gRPCConfig = config.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
+
+            if (gRPCConfig.Enabled)
             {
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapGrpcService<ProviderAdminServiceGRPC>().RequireHost($"*:{gRPCConfig.Value.Port}");
+                    endpoints.MapGrpcService<ProviderAdminServiceGRPC>().RequireHost($"*:{gRPCConfig.Port}");
                 });
             }
         }
