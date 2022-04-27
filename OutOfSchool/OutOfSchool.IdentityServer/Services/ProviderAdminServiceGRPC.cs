@@ -3,7 +3,6 @@ using AutoMapper;
 using Grpc.Core;
 using GrpcService;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
@@ -14,16 +13,13 @@ namespace GrpcServiceServer
     [Authorize(AuthenticationSchemes = Constants.BearerScheme)]
     public class ProviderAdminServiceGRPC : GRPCProviderAdmin.GRPCProviderAdminBase
     {
-        private readonly ILogger<ProviderAdminServiceGRPC> logger;
         private readonly IProviderAdminService providerAdminService;
         private readonly IMapper mapper;
 
         public ProviderAdminServiceGRPC(
-            ILogger<ProviderAdminServiceGRPC> logger,
             IProviderAdminService providerAdminService,
             IMapper mapper)
         {
-            this.logger = logger;
             this.providerAdminService = providerAdminService;
             this.mapper = mapper;
         }

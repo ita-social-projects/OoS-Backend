@@ -165,7 +165,8 @@ namespace OutOfSchool.IdentityServer.Services
                         url is null
                         ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}"
                         : url.Action(
-                                "EmailConfirmation", "Account",
+                                "EmailConfirmation",
+                                "Account",
                                 new { userId = user.Id, token },
                                 "https");
 
