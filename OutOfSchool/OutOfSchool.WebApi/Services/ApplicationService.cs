@@ -185,19 +185,21 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByParent(Guid id)
+        public async Task<IEnumerable<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter)
         {
             logger.LogInformation($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
+            FilterNullValidation(filter);
 
-            Expression<Func<Application, bool>> filter = a => a.ParentId == id;
+            Expression<Func<Application, bool>> applicationFilter = a => a.ParentId == id;
 
-            var applications = await applicationRepository.GetByFilter(filter, "Workshop,Child,Parent").ConfigureAwait(false);
+            var applications = applicationRepository.Get<int>(where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
-            logger.LogInformation(!applications.Any()
+            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
+            logger.LogInformation(!filteredApplications.Any()
                 ? $"There is no applications in the Db with Parent Id = {id}."
                 : $"Successfully got Applications with Parent Id = {id}.");
 
-            return mapper.Map<List<ApplicationDto>>(applications);
+            return mapper.Map<List<ApplicationDto>>(filteredApplications);
         }
 
         /// <inheritdoc/>
