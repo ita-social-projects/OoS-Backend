@@ -118,11 +118,20 @@ namespace OutOfSchool.WebApi.Services
 
             if (newApplication != null)
             {
+                var additionalData = new Dictionary<string, string>()
+                {
+                    { "Status", newApplication.Status.ToString() },
+                };
+
+                string groupedData = newApplication.Status.ToString();
+
                 await notificationService.Create(
                     NotificationType.Application,
                     NotificationAction.Create,
                     newApplication.Id,
-                    this).ConfigureAwait(false);
+                    this,
+                    additionalData,
+                    groupedData).ConfigureAwait(false);
             }
 
             return new ModelWithAdditionalData<ApplicationDto, int>()
