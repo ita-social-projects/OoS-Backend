@@ -35,8 +35,9 @@ namespace OutOfSchool.WebApi.Services
         /// Get entity by User id.
         /// </summary>
         /// <param name="id">Key of the User entity in the table.</param>
+        /// <param name="isDeputyOrAdmin">Is user a deputy or delegated provider admin.</param>
         /// <returns>Provider.</returns>
-        Task<ProviderDto> GetByUserId(string id);
+        Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false);
 
         /// <summary>
         /// Update entity.

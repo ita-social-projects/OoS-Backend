@@ -21,6 +21,7 @@ namespace OutOfSchool.WebApi.Services
     public class ProviderService : IProviderService
     {
         private readonly IProviderRepository providerRepository;
+        private readonly IProviderAdminRepository providerAdminRepository;
         private readonly IRatingService ratingService;
         private readonly ILogger<ProviderService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
@@ -52,7 +53,8 @@ namespace OutOfSchool.WebApi.Services
             IStringLocalizer<SharedResource> localizer,
             IMapper mapper,
             IEntityRepository<Address> addressRepository,
-            IWorkshopServicesCombiner workshopServiceCombiner)
+            IWorkshopServicesCombiner workshopServiceCombiner,
+            IProviderAdminRepository providerAdminRepository)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
             this.mapper = mapper;
@@ -62,6 +64,7 @@ namespace OutOfSchool.WebApi.Services
             this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.workshopServiceCombiner = workshopServiceCombiner;
+            this.providerAdminRepository = providerAdminRepository;
         }
 
         /// <inheritdoc/>
@@ -156,22 +159,34 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ProviderDto> GetByUserId(string id)
+        public async Task<ProviderDto> GetByUserId(string id, bool isDeputyOrAdmin = false)
         {
             logger.LogInformation($"Getting Provider by UserId started. Looking UserId is {id}.");
+            Provider provider = default;
 
-            Expression<Func<Provider, bool>> filter = p => p.UserId == id;
+            if (isDeputyOrAdmin)
+            {
+                var providerAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false);
+                var providerAdmin = providerAdmins.FirstOrDefault();
+                if (providerAdmin != null)
+                {
+                    provider = providerAdmin.Provider;
+                }
+            }
+            else
+            {
+                var providers = await providerRepository.GetByFilter(p => p.UserId == id).ConfigureAwait(false);
+                provider = providers.FirstOrDefault();
+            }
 
-            var providers = (await providerRepository.GetByFilter(filter).ConfigureAwait(false)).ToList();
-
-            if (!providers.Any())
+            if (provider == null)
             {
                 throw new ArgumentException(localizer["There is no Provider in the Db with such User id"], nameof(id));
             }
 
             logger.LogInformation($"Successfully got a Provider with UserId = {id}.");
 
-            return providers.FirstOrDefault().ToModel();
+            return mapper.Map<ProviderDto>(provider);
         }
 
         /// <inheritdoc/>

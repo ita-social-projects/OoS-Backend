@@ -65,6 +65,7 @@ namespace OutOfSchool.IdentityServer.Services
                 try
                 {
                     user.IsDerived = true;
+                    user.IsRegistered = true;
                     user.IsBlocked = false;
                     user.Role = nameof(Role.Provider).ToLower();
 

@@ -50,6 +50,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             var logger = new Mock<ILogger<ProviderService>>();
             var addressRepository = new Mock<IEntityRepository<Address>>();
             var providerRepository = new ProviderRepository(this.GetContext());
+            var providerAdminRepository = new Mock<IProviderAdminRepository>();
             var userRepository = new Mock<IEntityRepository<User>>();
             var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
 
@@ -61,7 +62,8 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 localizer.Object,
                 this.mapper,
                 addressRepository.Object,
-                workshopServicesCombiner.Object);
+                workshopServicesCombiner.Object,
+                providerAdminRepository.Object);
         }
 
         [Test]

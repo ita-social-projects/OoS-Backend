@@ -97,12 +97,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             // TODO: localize messages from the conrollers.
             var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var isDeputyOrAdmin = !string.IsNullOrEmpty(User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole)) &&
+                User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole) != "None";
             if (userId == null)
             {
                 BadRequest("Invalid user information.");
             }
 
-            var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+            var provider = await providerService.GetByUserId(userId, isDeputyOrAdmin).ConfigureAwait(false);
             if (provider == null)
             {
                 return NoContent();

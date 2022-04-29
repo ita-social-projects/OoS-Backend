@@ -26,6 +26,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IProviderService providerService;
 
         private Mock<IProviderRepository> providersRepositoryMock;
+        private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
         private Mock<IEntityRepository<User>> usersRepositoryMock;
         private Mock<IRatingService> ratingService;
         private Mock<IMapper> mapper;
@@ -40,6 +41,9 @@ namespace OutOfSchool.WebApi.Tests.Services
             fakeUser = UserGenerator.Generate();
 
             providersRepositoryMock = CreateProvidersRepositoryMock(fakeProviders);
+
+            // TODO: configure mock and writer tests for provider admins 
+            providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
             usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
             var addressRepo = new Mock<IEntityRepository<Address>>();
             ratingService = new Mock<IRatingService>();
@@ -56,7 +60,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 localizer.Object,
                 mapper.Object,
                 addressRepo.Object,
-                workshopServicesCombiner.Object);
+                workshopServicesCombiner.Object,
+                providerAdminRepositoryMock.Object);
         }
 
         [Test]

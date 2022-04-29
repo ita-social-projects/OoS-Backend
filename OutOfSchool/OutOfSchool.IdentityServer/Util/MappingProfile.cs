@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
 using OutOfSchool.Common.Models;
-using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.IdentityServer
+namespace OutOfSchool.IdentityServer.Util
 {
     public class MappingProfile : Profile
     {
