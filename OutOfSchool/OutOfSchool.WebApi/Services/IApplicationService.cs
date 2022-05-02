@@ -89,5 +89,15 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Application's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(Guid id);
+
+        /// <summary>
+        /// Determines ability to create a new application for a child based on previous attempts.
+        /// </summary>
+        /// <param name="workshopId">Workshop id.</param>
+        /// <param name="childId">Child id.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains <see langword="true" /> if allowed to create a new application by the child status;
+        /// otherwise, <see langword="false" />.</returns>
+        Task<bool> AllowedNewApplicationByChildStatus(Guid workshopId, Guid childId);
     }
 }

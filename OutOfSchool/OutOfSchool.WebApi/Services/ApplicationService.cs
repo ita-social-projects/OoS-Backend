@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -89,17 +90,25 @@ namespace OutOfSchool.WebApi.Services
 
             ModelNullValidation(applicationDto);
 
+            var allowedNewApplicationForChild = await AllowedNewApplicationByChildStatus(applicationDto.WorkshopId, applicationDto.ChildId).ConfigureAwait(false);
+
+            if (!allowedNewApplicationForChild)
+            {
+                return new ModelWithAdditionalData<ApplicationDto, int>
+                {
+                    Description = "Unable to create a new application for a child because there's already appropriate status were found in this workshop.",
+                };
+            }
+
             (bool IsCorrect, int SecondsRetryAfter) resultOfCheck = await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
 
             if (!resultOfCheck.IsCorrect)
             {
-                var modelData = new ModelWithAdditionalData<ApplicationDto, int>()
+                return new ModelWithAdditionalData<ApplicationDto, int>
                 {
                     Description = $"Limit of applications per {applicationsConstraintsConfig.ApplicationsLimitDays} days is exceeded.",
                     AdditionalData = resultOfCheck.SecondsRetryAfter,
                 };
-
-                return modelData;
             }
 
             var isChildParent = await CheckChildParent(applicationDto.ParentId, applicationDto.ChildId).ConfigureAwait(false);
@@ -134,7 +143,7 @@ namespace OutOfSchool.WebApi.Services
                     groupedData).ConfigureAwait(false);
             }
 
-            return new ModelWithAdditionalData<ApplicationDto, int>()
+            return new ModelWithAdditionalData<ApplicationDto, int>
             {
                 Model = mapper.Map<ApplicationDto>(newApplication),
                 AdditionalData = 0,
@@ -142,6 +151,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        [Obsolete("This method doesn't check application restrictions")]
         public async Task<IEnumerable<ApplicationDto>> Create(IEnumerable<ApplicationDto> applicationDtos)
         {
             logger.LogInformation("Multiple applications creating started.");
@@ -385,6 +395,15 @@ namespace OutOfSchool.WebApi.Services
             return recipientIds.Distinct();
         }
 
+        public async Task<bool> AllowedNewApplicationByChildStatus(Guid workshopId, Guid childId)
+        {
+            Expression<Func<Application, bool>> filter = a => a.ChildId == childId
+                                                              && a.WorkshopId == workshopId
+                                                              && a.Status <= ApplicationStatus.StudyingForYears;
+
+            return !await applicationRepository.Any(filter).ConfigureAwait(false);
+        }
+
         private void ModelNullValidation(ApplicationDto applicationDto)
         {
             if (applicationDto is null)
@@ -448,9 +467,9 @@ namespace OutOfSchool.WebApi.Services
                                                                 && a.ParentId == applicationDto.ParentId
                                                                 && (a.CreationTime >= startDate && a.CreationTime <= endDate);
 
-            var applications = await applicationRepository.GetByFilter(filter).ConfigureAwait(false);
+            var applications = (await applicationRepository.GetByFilter(filter).ConfigureAwait(false)).ToArray();
 
-            if (applications.Count() >= applicationsConstraintsConfig.ApplicationsLimit)
+            if (applications.Length >= applicationsConstraintsConfig.ApplicationsLimit)
             {
                 logger.LogInformation($"Limit of applications per {applicationsConstraintsConfig.ApplicationsLimitDays} days is exceeded.");
 

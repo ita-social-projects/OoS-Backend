@@ -214,16 +214,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPost]
         public async Task<IActionResult> Create(ApplicationDto applicationDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (applicationDto is null)
-            {
-                return BadRequest(localizer[$"Application dto should not be null"]);
-            }
-
             try
             {
                 await CheckUserRights(parentId: applicationDto.ParentId).ConfigureAwait(false);
@@ -331,6 +321,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HasPermission(Permissions.ApplicationAddNew)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+        [HttpGet]
+        public async Task<IActionResult> AllowedNewApplicationByChildStatus(Guid workshopId, Guid childId)
+        {
+            return Ok(await applicationService.AllowedNewApplicationByChildStatus(workshopId, childId)
+                .ConfigureAwait(false));
         }
 
         private async Task<IEnumerable<ApplicationDto>> GetByWorkshopId(Guid id, ApplicationFilter filter)
