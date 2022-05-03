@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 
 namespace OutOfSchool.WebApi.Services
@@ -11,6 +15,7 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IBlockedProviderParentRepository blockedProviderParentRepository;
         private readonly ILogger<BlockedProviderParentService> logger;
+        private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
 
         /// <summary>
@@ -18,30 +23,101 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="blockedProviderParentRepository">Repository for the BlockedProviderParent entity.</param>
         /// <param name="logger">Logger.</param>
+        /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
         public BlockedProviderParentService(
             IBlockedProviderParentRepository blockedProviderParentRepository,
             ILogger<BlockedProviderParentService> logger,
+            IStringLocalizer<SharedResource> localizer,
             IMapper mapper)
         {
             this.blockedProviderParentRepository = blockedProviderParentRepository;
             this.logger = logger;
+            this.localizer = localizer;
             this.mapper = mapper;
         }
 
-        public Task<BlockedProviderParentDto> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto)
+        /// <inheritdoc/>
+        public async Task<Result<BlockedProviderParentDto>> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto)
         {
-            throw new NotImplementedException();
+            logger.LogDebug("BlockedProviderParent blocking was started.");
+
+            if (blockedProviderParentBlockDto == null)
+            {
+                throw new ArgumentNullException(nameof(blockedProviderParentBlockDto));
+            }
+
+            bool isBloked = await IsBlocked(blockedProviderParentBlockDto.ParentId, blockedProviderParentBlockDto.ProviderId).ConfigureAwait(false);
+
+            if (isBloked)
+            {
+                return Result<BlockedProviderParentDto>.Failed(new OperationError
+                {
+                    Code = "400",
+                    Description = localizer[
+                        "Block exists for ParentId: {0}, ProviderId: {1}.",
+                        blockedProviderParentBlockDto.ParentId,
+                        blockedProviderParentBlockDto.ProviderId],
+                });
+            }
+
+            var newBlockedProviderParent = mapper.Map<BlockedProviderParent>(blockedProviderParentBlockDto);
+            var entity = await blockedProviderParentRepository.Block(newBlockedProviderParent).ConfigureAwait(false);
+
+            return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
         }
 
-        public Task<bool> IsBlocked(Guid parentId, Guid providerId)
+        /// <inheritdoc/>
+        public async Task<Result<BlockedProviderParentDto>> Unblock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto)
         {
-            throw new NotImplementedException();
+            logger.LogDebug("BlockedProviderParent unblocking was started.");
+
+            if (blockedProviderParentUnblockDto == null)
+            {
+                throw new ArgumentNullException(nameof(blockedProviderParentUnblockDto));
+            }
+
+            var currentBlock = await GetBlock(blockedProviderParentUnblockDto.ParentId, blockedProviderParentUnblockDto.ProviderId).ConfigureAwait(false);
+
+            if (currentBlock is null)
+            {
+                return Result<BlockedProviderParentDto>.Failed(new OperationError
+                {
+                    Code = "400",
+                    Description = localizer[
+                        "Block does not exist for ParentId: {0}, ProviderId: {1}.",
+                        blockedProviderParentUnblockDto.ParentId,
+                        blockedProviderParentUnblockDto.ProviderId],
+                });
+            }
+
+            currentBlock.DateTimeTo = blockedProviderParentUnblockDto.DateTimeTo;
+            currentBlock.UserIdUnblock = blockedProviderParentUnblockDto.UserId;
+
+            var entity = await blockedProviderParentRepository.UnBlock(mapper.Map<BlockedProviderParent>(currentBlock)).ConfigureAwait(false);
+
+            return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
         }
 
-        public Task<BlockedProviderParentDto> Unblock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto)
+        /// <inheritdoc/>
+        public async Task<BlockedProviderParentDto> GetBlock(Guid parentId, Guid providerId)
         {
-            throw new NotImplementedException();
+            var currentBlock = await blockedProviderParentRepository.GetByFilter(
+                b => b.ParentId == parentId
+                    && b.ProviderId == providerId
+                    && b.DateTimeTo == null).ConfigureAwait(false);
+
+            return mapper.Map<BlockedProviderParentDto>(currentBlock.FirstOrDefault());
+        }
+
+        private async Task<bool> IsBlocked(Guid parentId, Guid providerId)
+        {
+            var currentBlock = await blockedProviderParentRepository.GetByFilter(
+                b => b.ParentId == parentId
+                    && b.ProviderId == providerId
+                    && b.DateTimeTo == null).ConfigureAwait(false);
+
+            return currentBlock.Any();
         }
     }
 }

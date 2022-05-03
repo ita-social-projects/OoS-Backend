@@ -26,48 +26,85 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Add a new Notification to the database.
+        /// Creating BlockedProviderParent in the database. Update dependent entities (IsBlocked = true).
         /// </summary>
         /// <param name="blockedProviderParentBlockDto">blockedProviderParentBlock entity to add.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        /// <response code="201">Notification was successfully created.</response>
-        /// <response code="400">NotificationDto was wrong.</response>
+        /// <returns>A <see cref="Task{BlockedProviderParentDto}"/> representing the result of the asynchronous operation.</returns>
+        /// <response code="201">BlockedProviderParent was successfully created.</response>
+        /// <response code="400">Block exists with current ProviderId and ParentId.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BlockedProviderParentDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create(BlockedProviderParentBlockDto blockedProviderParentBlockDto)
+        public async Task<IActionResult> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto)
         {
-            var blockedProviderParentDto = await blockedProviderParentService.Block(blockedProviderParentBlockDto).ConfigureAwait(false);
+            var result = await blockedProviderParentService.Block(blockedProviderParentBlockDto).ConfigureAwait(false);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.OperationResult);
+            }
+
+            var blockedProviderParent = result.Value;
 
             return CreatedAtAction(
-                nameof(GetById),
-                new { id = blockedProviderParentDto.Id, },
-                blockedProviderParentDto);
+                nameof(GetBlock),
+                new { parentId = blockedProviderParent.ParentId, providerId = blockedProviderParent.ProviderId, },
+                blockedProviderParent);
         }
 
         /// <summary>
-        /// Get Notification by it's id.
+        /// Update existing BlockedProviderParent in the database. Update dependent entities (IsBlocked = false).
         /// </summary>
-        /// <param name="id">Notification id.</param>
-        /// <returns>Notification.</returns>
-        /// <response code="200">All user's nofiticaitions.</response>
-        /// <response code="400">Id was wrong.</response>
+        /// <param name="blockedProviderParentUnblockDto">blockedProviderParentUnblockDto entity to update.</param>
+        /// <returns>A <see cref="Task{BlockedProviderParentDto}"/> representing the result of the asynchronous operation.</returns>
+        /// <response code="200">BlockedProviderParent was successfully updated.</response>
+        /// <response code="400">Block does not exist with current ProviderId and ParentId.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
         [Authorize]
-        [HttpGet("{id}")]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlockedProviderParentDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> UnBlock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto)
         {
-            return Ok();
+            var result = await blockedProviderParentService.Unblock(blockedProviderParentUnblockDto).ConfigureAwait(false);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.OperationResult);
+            }
+
+            return Ok(result.Value);
+        }
+
+        /// <summary>
+        /// Return blocked entity.
+        /// </summary>
+        /// <param name="parentId">Key of the Parent in table.</param>
+        /// <param name="providerId">Key of the Provider in table.</param>
+        /// <returns>A <see cref="Task{BlockedProviderParentDto}"/> that was found or null.</returns>
+        /// <response code="200">Operation was executed successfully.</response>
+        /// <response code="204">Blocked entity was not found.</response>
+        /// <response code="400">Id was wrong.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="500">If any server error occures.</response>
+        [Authorize]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlockedProviderParentDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetBlock(Guid parentId, Guid providerId)
+        {
+            return Ok(await blockedProviderParentService.GetBlock(parentId, providerId).ConfigureAwait(false));
         }
     }
 }
