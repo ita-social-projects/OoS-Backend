@@ -32,7 +32,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="blockedProviderParentBlockDto">blockedProviderParentBlock entity to add.</param>
         /// <returns>A <see cref="Task{BlockedProviderParentDto}"/> representing the result of the asynchronous operation.</returns>
         /// <response code="201">BlockedProviderParent was successfully created.</response>
-        /// <response code="400">Block exists with current ProviderId and ParentId.</response>
+        /// <response code="400">BlockedProviderParentBlockDto was incorrect. Block exists with current ProviderId and ParentId.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.ProviderAdmins)]
@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="blockedProviderParentUnblockDto">blockedProviderParentUnblockDto entity to update.</param>
         /// <returns>A <see cref="Task{BlockedProviderParentDto}"/> representing the result of the asynchronous operation.</returns>
         /// <response code="200">BlockedProviderParent was successfully updated.</response>
-        /// <response code="400">Block does not exist with current ProviderId and ParentId.</response>
+        /// <response code="400">BlockedProviderParentUnblockDto was incorrect. Block does not exist with current ProviderId and ParentId.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.ProviderAdmins)]
