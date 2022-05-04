@@ -10,11 +10,5 @@ namespace OutOfSchool.WebApi.Models.BlockedProviderParent
 
         [Required]
         public Guid ProviderId { get; set; }
-
-        [Required]
-        public string UserId { get; set; }
-
-        [Required]
-        public DateTimeOffset DateTimeTo { get; set; }
     }
 }

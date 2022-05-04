@@ -14,15 +14,17 @@ namespace OutOfSchool.WebApi.Services
         /// Create entity.
         /// </summary>
         /// <param name="blockedProviderParentBlockDto">BlockedProviderParent entity to add.</param>
+        /// <param name="userId">Current userId.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<Result<BlockedProviderParentDto>> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto);
+        Task<Result<BlockedProviderParentDto>> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto, string userId);
 
         /// <summary>
         /// Update BlockedProviderParent entity.
         /// </summary>
         /// <param name="blockedProviderParentUnblockDto">Entity for updating BlockedProviderParent.</param>
+        /// <param name="userId">Current userId.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<Result<BlockedProviderParentDto>> Unblock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto);
+        Task<Result<BlockedProviderParentDto>> Unblock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto, string userId);
 
         /// <summary>
         /// Return blocked entity.

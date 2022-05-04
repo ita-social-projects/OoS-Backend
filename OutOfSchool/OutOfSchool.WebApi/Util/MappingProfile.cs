@@ -71,9 +71,7 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
             CreateMap<Address, AddressDto>().ReverseMap();
 
-            CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>()
-                 .ForMember(dest => dest.UserIdBlock, opt => opt.MapFrom(src => src.UserId));
-
+            CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>();
             CreateMap<BlockedProviderParent, BlockedProviderParentDto>().ReverseMap();
 
             CreateMap<Provider, ProviderDto>()

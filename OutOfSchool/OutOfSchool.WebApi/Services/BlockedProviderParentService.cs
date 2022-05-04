@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<BlockedProviderParentDto>> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto)
+        public async Task<Result<BlockedProviderParentDto>> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto, string userId)
         {
             logger.LogDebug("BlockedProviderParent blocking was started.");
 
@@ -51,6 +51,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (isBloked)
             {
+                logger.LogError($"Block exists for ParentId: {blockedProviderParentBlockDto.ParentId}, ProviderId: {blockedProviderParentBlockDto.ProviderId}.");
                 return Result<BlockedProviderParentDto>.Failed(new OperationError
                 {
                     Code = "400",
@@ -62,13 +63,16 @@ namespace OutOfSchool.WebApi.Services
             }
 
             var newBlockedProviderParent = mapper.Map<BlockedProviderParent>(blockedProviderParentBlockDto);
+            newBlockedProviderParent.UserIdBlock = userId;
+            newBlockedProviderParent.DateTimeFrom = DateTime.Now;
+
             var entity = await blockedProviderParentRepository.Block(newBlockedProviderParent).ConfigureAwait(false);
 
             return Result<BlockedProviderParentDto>.Success(mapper.Map<BlockedProviderParentDto>(entity));
         }
 
         /// <inheritdoc/>
-        public async Task<Result<BlockedProviderParentDto>> Unblock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto)
+        public async Task<Result<BlockedProviderParentDto>> Unblock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto, string userId)
         {
             logger.LogDebug("BlockedProviderParent unblocking was started.");
 
@@ -81,6 +85,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (currentBlock is null)
             {
+                logger.LogError($"Block does not exist for ParentId: {blockedProviderParentUnblockDto.ParentId}, ProviderId: {blockedProviderParentUnblockDto.ProviderId}.");
                 return Result<BlockedProviderParentDto>.Failed(new OperationError
                 {
                     Code = "400",
@@ -91,8 +96,8 @@ namespace OutOfSchool.WebApi.Services
                 });
             }
 
-            currentBlock.DateTimeTo = blockedProviderParentUnblockDto.DateTimeTo;
-            currentBlock.UserIdUnblock = blockedProviderParentUnblockDto.UserId;
+            currentBlock.DateTimeTo = DateTime.Now;
+            currentBlock.UserIdUnblock = userId;
 
             var entity = await blockedProviderParentRepository.UnBlock(mapper.Map<BlockedProviderParent>(currentBlock)).ConfigureAwait(false);
 

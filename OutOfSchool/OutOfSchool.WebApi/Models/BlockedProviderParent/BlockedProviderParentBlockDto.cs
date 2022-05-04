@@ -14,11 +14,5 @@ namespace OutOfSchool.WebApi.Models.BlockedProviderParent
         [Required]
         [MaxLength(500)]
         public string Reason { get; set; }
-
-        [Required]
-        public string UserId { get; set; }
-
-        [Required]
-        public DateTimeOffset DateTimeFrom { get; set; }
     }
 }
