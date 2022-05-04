@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Services;
 
@@ -34,7 +35,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">Block exists with current ProviderId and ParentId.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize]
+        [HasPermission(Permissions.ProviderAdmins)]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BlockedProviderParentDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -66,7 +67,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="400">Block does not exist with current ProviderId and ParentId.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize]
+        [HasPermission(Permissions.ProviderAdmins)]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlockedProviderParentDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
