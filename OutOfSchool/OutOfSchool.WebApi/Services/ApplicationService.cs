@@ -94,10 +94,8 @@ namespace OutOfSchool.WebApi.Services
 
             if (!allowedNewApplicationForChild)
             {
-                return new ModelWithAdditionalData<ApplicationDto, int>
-                {
-                    Description = "Unable to create a new application for a child because there's already appropriate status were found in this workshop.",
-                };
+                logger.LogInformation("Unable to create a new application for a child because there's already appropriate status were found in this workshop.");
+                throw new ArgumentException("Unable to create a new application for a child because there's already appropriate status were found in this workshop.");
             }
 
             (bool IsCorrect, int SecondsRetryAfter) resultOfCheck = await CheckApplicationsLimit(applicationDto).ConfigureAwait(false);
