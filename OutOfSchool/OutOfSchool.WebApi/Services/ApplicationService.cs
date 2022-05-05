@@ -397,9 +397,17 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<bool> AllowedNewApplicationByChildStatus(Guid workshopId, Guid childId)
         {
+            var forbiddenStatuses = new[]
+            {
+                ApplicationStatus.Pending,
+                ApplicationStatus.AcceptedForSelection,
+                ApplicationStatus.Approved,
+                ApplicationStatus.StudyingForYears,
+            };
+
             Expression<Func<Application, bool>> filter = a => a.ChildId == childId
                                                               && a.WorkshopId == workshopId
-                                                              && a.Status <= ApplicationStatus.StudyingForYears;
+                                                              && forbiddenStatuses.Contains(a.Status);
 
             return !await applicationRepository.Any(filter).ConfigureAwait(false);
         }
