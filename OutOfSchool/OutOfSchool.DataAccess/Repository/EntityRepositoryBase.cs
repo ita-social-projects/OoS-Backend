@@ -141,6 +141,14 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
+        public virtual Task<bool> Any(Expression<Func<TValue, bool>> where = null)
+        {
+           return where == null
+                    ? dbSet.AnyAsync()
+                    : dbSet.Where(where).AnyAsync();
+        }
+
+        /// <inheritdoc/>
         public virtual IQueryable<TValue> Get<TOrderKey>(
             int skip = 0,
             int take = 0,

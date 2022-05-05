@@ -93,9 +93,18 @@ namespace OutOfSchool.Services.Repository
         /// Get the amount of elements with filter or without it.
         /// </summary>
         /// <param name="where">Filter.</param>
-        /// <returns>>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains an amount of found elements.</returns>
         Task<int> Count(Expression<Func<TEntity, bool>> where = null);
+
+        /// <summary>
+        /// Asynchronously determines whether any element of a sequence satisfies a condition.
+        /// </summary>
+        /// <param name="where">Filter.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains <see langword="true" /> if any elements in the source sequence pass the test in the specified
+        /// filter; otherwise, <see langword="false" />.</returns>
+        Task<bool> Any(Expression<Func<TEntity, bool>> where = null);
 
         /// <summary>
         /// Get ordered, filtered list of elements.
