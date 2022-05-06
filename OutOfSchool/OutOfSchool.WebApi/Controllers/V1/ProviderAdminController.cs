@@ -192,7 +192,7 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (!relatedAdmins.Any())
             {
-                return StatusCode(204, "No provider admins to show");
+                return NoContent();
             }
 
             IActionResult result = Ok(relatedAdmins);
