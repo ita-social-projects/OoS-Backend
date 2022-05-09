@@ -59,7 +59,7 @@ namespace OutOfSchool.GRPC
                     InitialBackoff = gRPCConfig.ChannelInitialBackoffInterval,
                     MaxBackoff = gRPCConfig.ChannelMaxBackoffInterval,
                     BackoffMultiplier = gRPCConfig.ChannelBackoffMultiplier,
-                    RetryableStatusCodes = { Grpc.Core.StatusCode.Unavailable },
+                    RetryableStatusCodes = { StatusCode.Unavailable },
                 },
             };
 

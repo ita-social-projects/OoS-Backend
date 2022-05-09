@@ -22,6 +22,7 @@ using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Communication;
 using OutOfSchool.WebApi.Services.GRPC;
+using OutOfSchool.WebApi.Services.ProviderAdminOperations;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -35,6 +36,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IMapper mapper;
         private readonly ResponseDto responseDto;
         private readonly IGRPCCommonService gRPCCommonService;
+        private readonly IProviderAdminOperationsService providerAdminOperationsService;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,
@@ -45,7 +47,8 @@ namespace OutOfSchool.WebApi.Services
             IEntityRepository<User> userRepository,
             IMapper mapper,
             ILogger<ProviderAdminService> logger,
-            IGRPCCommonService gRPCCommonService)
+            IGRPCCommonService gRPCCommonService,
+            IProviderAdminOperationsService providerAdminOperationsService)
             : base(httpClientFactory, communicationConfig.Value)
         {
             this.identityServerConfig = identityServerConfig.Value;
@@ -55,6 +58,7 @@ namespace OutOfSchool.WebApi.Services
             this.mapper = mapper;
             this.logger = logger;
             this.gRPCCommonService = gRPCCommonService;
+            this.providerAdminOperationsService = providerAdminOperationsService;
             responseDto = new ResponseDto();
         }
 
@@ -90,10 +94,9 @@ namespace OutOfSchool.WebApi.Services
                 return responseDto;
             }
 
-            ResponseDto response =
-                gRPCCommonService.IsEnabled
-                ? await CreateProviderAdminGRPCAsync(userId, providerAdminDto, token).ConfigureAwait(false)
-                : await CreateProviderAdminRESTAsync(userId, providerAdminDto, token).ConfigureAwait(false);
+            ResponseDto response = await providerAdminOperationsService
+                                        .CreateProviderAdminAsync(userId, providerAdminDto, token)
+                                        .ConfigureAwait(false);
 
             return response;
         }
