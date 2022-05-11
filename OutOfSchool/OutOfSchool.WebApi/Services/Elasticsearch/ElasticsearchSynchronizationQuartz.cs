@@ -17,14 +17,12 @@ namespace OutOfSchool.WebApi.Services.Elasticsearch
 
         public async Task Execute(IJobExecutionContext context)
         {
-            using (var scope = services.CreateScope())
-            {
-                var elasticsearchSynchronizationService =
-                    scope.ServiceProvider
-                    .GetRequiredService<IElasticsearchSynchronizationService>();
+            using var scope = services.CreateScope();
+            var elasticsearchSynchronizationService =
+                scope.ServiceProvider
+                .GetRequiredService<IElasticsearchSynchronizationService>();
 
-                await elasticsearchSynchronizationService.Synchronize().ConfigureAwait(false);
-            }
+            await elasticsearchSynchronizationService.Synchronize().ConfigureAwait(false);
         }
     }
 }

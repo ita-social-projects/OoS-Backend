@@ -30,20 +30,19 @@ namespace OutOfSchool.WebApi.Extensions
 
             if (elasticSynchronizationSchedulerConfig.UseQuartz)
             {
-                var jobKey = new JobKey("notificationJob");
+                var jobKey = new JobKey("elasticsearchJob");
 
                 services.AddQuartz(q =>
                 {
-                    q.SchedulerId = "JobScheduler";
-                    q.SchedulerName = "Job Scheduler";
+                    q.SchedulerId = "Elasticsearch";
+                    q.SchedulerName = "Elasticsearch";
                     q.UseMicrosoftDependencyInjectionJobFactory();
                     q.AddJob<ElasticsearchSynchronizationQuartz>(j => j.WithIdentity(jobKey));
                     q.AddTrigger(t => t
-                       .WithIdentity("notificationJobTrigger")
+                       .WithIdentity("elasticsearchJobTrigger")
                        .ForJob(jobKey)
                        .StartNow()
-                       .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig.DelayBetweenTasksInMilliseconds)).RepeatForever())
-                    );
+                       .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig.DelayBetweenTasksInMilliseconds)).RepeatForever()));
                 });
 
                 services.AddQuartzServer(options =>
