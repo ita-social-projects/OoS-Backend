@@ -284,6 +284,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
             services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
+            services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
 
             // Institution hierarchy
             services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
