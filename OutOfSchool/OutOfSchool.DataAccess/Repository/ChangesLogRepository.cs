@@ -15,7 +15,7 @@ namespace OutOfSchool.Services.Repository
         {
         }
 
-        public IEnumerable<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId)
+        public ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId)
             where TEntity : class, new()
         {
             var log = new List<ChangesLog>();

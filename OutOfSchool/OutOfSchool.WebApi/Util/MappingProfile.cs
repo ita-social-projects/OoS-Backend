@@ -159,6 +159,11 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<ClassDto, Class>().ReverseMap();
             CreateMap<DepartmentDto, Department>().ReverseMap();
             CreateMap<DirectionDto, Direction>().ReverseMap();
+
+            CreateMap<ChangesLog, ChangesLogDto>()
+                .ForMember(dest => dest.RecordId, opt => opt.MapFrom(c => c.RecordIdGuid.HasValue
+                    ? c.RecordIdGuid.ToString()
+                    : c.RecordIdLong.ToString()));
         }
     }
 }

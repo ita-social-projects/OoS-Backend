@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IMapper mapper;
         private readonly IEntityRepository<Address> addressRepository;
         private readonly IWorkshopServicesCombiner workshopServiceCombiner;
-        private readonly IChangesLogRepository changesLogRepository;
+        private readonly IChangesLogService changesLogService;
 
         // TODO: It should be removed after models revision.
         //       Temporary instance to fill 'Provider' model 'User' property
@@ -49,7 +49,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
         /// <param name="providerAdminRepository">Provider admin repository.</param>
         /// <param name="providerImagesService">Images service.</param>
-        /// <param name="changesLogRepository">ChangesLogRepository.</param>
+        /// <param name="providerAdminRepository">ProviderAdminRepository.</param>
+        /// <param name="changesLogService">ChangesLogService.</param>
         public ProviderService(
             IProviderRepository providerRepository,
             IEntityRepository<User> usersRepository,
@@ -61,7 +62,7 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopServicesCombiner workshopServiceCombiner,
             IProviderAdminRepository providerAdminRepository,
             IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
-            IChangesLogRepository changesLogRepository)
+            IChangesLogService changesLogService)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -73,7 +74,7 @@ namespace OutOfSchool.WebApi.Services
             this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
             this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
             ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
-            this.changesLogRepository = changesLogRepository;
+            this.changesLogService = changesLogService;
         }
 
         private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -356,8 +357,8 @@ namespace OutOfSchool.WebApi.Services
 
         private void LogProviderChanges(Provider provider, string userId)
         {
-            changesLogRepository.AddChangesLogToDbContext(provider, userId);
-            changesLogRepository.AddChangesLogToDbContext(provider.LegalAddress, userId);
+            changesLogService.AddEntityChangesToDbContext(provider, userId);
+            changesLogService.AddEntityChangesToDbContext(provider.LegalAddress, userId);
         }
     }
 }
