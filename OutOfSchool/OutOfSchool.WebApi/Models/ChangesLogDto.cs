@@ -16,6 +16,6 @@ namespace OutOfSchool.WebApi.Models
 
         public DateTime Changed { get; set; }
 
-        public string UserId { get; set; }
+        public ShortUserDto User { get; set; }
     }
 }

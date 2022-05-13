@@ -164,6 +164,8 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.RecordId, opt => opt.MapFrom(c => c.RecordIdGuid.HasValue
                     ? c.RecordIdGuid.ToString()
                     : c.RecordIdLong.ToString()));
+
+            CreateMap<User, ShortUserDto>();
         }
     }
 }

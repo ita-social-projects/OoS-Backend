@@ -37,37 +37,72 @@ namespace OutOfSchool.WebApi.Services
             return result.Count;
         }
 
-        public async Task<IEnumerable<ChangesLogDto>> GetChangesLog(ChangesLogFilter filter)
+        public async Task<SearchResult<ChangesLogDto>> GetChangesLog(ChangesLogFilter filter)
         {
-            // TODO: add filter validation
-            if (filter == null)
-            {
-                throw new ArgumentNullException(nameof(filter));
-            }
+            ValidateFilter(filter);
 
-            Expression<Func<ChangesLog, bool>> where = x =>
-                x.Table == filter.Table
-                && x.Field == filter.Field;
+            var where = GetQueryFilter(filter);
+            var (orderBy, ascending) = GetOrderParams(filter);
 
-            if (Guid.TryParse(filter.RecordId, out var recordIdGuid))
-            {
-                where = where.And(x => x.RecordIdGuid == recordIdGuid);
-            }
-            else if (long.TryParse(filter.RecordId, out var recordIdLong))
-            {
-                where = where.And(x => x.RecordIdLong == recordIdLong);
-            }
-
-            Expression<Func<ChangesLog, DateTime>> orderBy = x => x.Changed;
-
-            var log = await changesLogRepository
-                .Get(filter.From, filter.Size, "User", where, orderBy, false)
+            var count = await changesLogRepository.Count(where).ConfigureAwait(false);
+            var log = await changesLogRepository.Get(filter.From, filter.Size, "User", where, orderBy, ascending)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            var result = mapper.Map<IEnumerable<ChangesLogDto>>(log);
+            var entities = mapper.Map<IReadOnlyCollection<ChangesLogDto>>(log);
 
-            return result;
+            return new SearchResult<ChangesLogDto>
+            {
+                Entities = entities,
+                TotalAmount = count,
+            };
+        }
+
+        private Expression<Func<ChangesLog, bool>> GetQueryFilter(ChangesLogFilter filter)
+        {
+            Expression<Func<ChangesLog, bool>> expr = x => x.Table == filter.Table;
+
+            if (filter.Field != null)
+            {
+                expr = expr.And(x => x.Field == filter.Field);
+            }
+
+            if (filter.RecordId != null)
+            {
+                if (Guid.TryParse(filter.RecordId, out var recordIdGuid))
+                {
+                    expr = expr.And(x => x.RecordIdGuid == recordIdGuid);
+                }
+                else if (long.TryParse(filter.RecordId, out var recordIdLong))
+                {
+                    expr = expr.And(x => x.RecordIdLong == recordIdLong);
+                }
+            }
+
+            if (filter.DateFrom.HasValue)
+            {
+                expr = expr.And(x => x.Changed >= filter.DateFrom);
+            }
+
+            if (filter.DateTo.HasValue)
+            {
+                expr = expr.And(x => x.Changed <= filter.DateTo);
+            }
+
+            return expr;
+        }
+
+        private (Expression<Func<ChangesLog, DateTime>> orderBy, bool ascending) GetOrderParams(ChangesLogFilter filter)
+        {
+            // Returns default ordering so far...
+            Expression<Func<ChangesLog, DateTime>> orderBy = x => x.Changed;
+
+            return (orderBy, false);
+        }
+
+        private void ValidateFilter(ChangesLogFilter filter)
+        {
+            ModelValidationHelper.ValidateOffsetFilter(filter);
         }
     }
 }

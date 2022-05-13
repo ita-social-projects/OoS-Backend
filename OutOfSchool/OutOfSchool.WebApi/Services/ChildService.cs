@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -8,6 +7,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -226,35 +226,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private void ValidateOffsetFilter(OffsetFilter offsetFilter)
-        {
-            if (offsetFilter == null)
-            {
-                throw new ArgumentNullException(nameof(offsetFilter));
-            }
-
-            var isValid = true;
-
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine($"Validation of {nameof(OffsetFilter)} faild.");
-
-            if (offsetFilter.Size < 0)
-            {
-                isValid = false;
-                stringBuilder.AppendLine($"{nameof(OffsetFilter.Size)}: {offsetFilter.Size} cannot be negative.");
-            }
-
-            if (offsetFilter.From < 0)
-            {
-                isValid = false;
-                stringBuilder.AppendLine($"{nameof(OffsetFilter.From)}: {offsetFilter.From} cannot be negative.");
-            }
-
-            if (!isValid)
-            {
-                throw new ArgumentException(stringBuilder.ToString(), nameof(offsetFilter));
-            }
-        }
+        private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
 
         private void ValidateUserId(string userId)
         {

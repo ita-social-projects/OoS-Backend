@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -19,6 +18,6 @@ namespace OutOfSchool.WebApi.Services
         int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
             where TEntity : class, new();
 
-        Task<IEnumerable<ChangesLogDto>> GetChangesLog(ChangesLogFilter filter);
+        Task<SearchResult<ChangesLogDto>> GetChangesLog(ChangesLogFilter filter);
     }
 }
