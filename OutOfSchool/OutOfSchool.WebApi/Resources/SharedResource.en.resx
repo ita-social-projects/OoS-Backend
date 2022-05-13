@@ -121,6 +121,14 @@
     <value>Address is null.</value>
     <comment>AdressController</comment>
   </data>
+  <data name="Block does not exist for ParentId: {0}, ProviderId: {1}." xml:space="preserve">
+    <value>Block does not exist for ParentId: {0}, ProviderId: {1}.</value>
+    <comment>BlockedProviderParentService</comment>
+  </data>
+  <data name="Block exists for ParentId: {0}, ProviderId: {1}." xml:space="preserve">
+    <value>Block exists for ParentId: {0}, ProviderId: {1}.</value>
+    <comment>BlockedProviderParentService</comment>
+  </data>
   <data name="Can not get some user's claims. Please check your authentication or contact technical support." xml:space="preserve">
     <value>Can not get some user's claims. Please check your authentication or contact technical support.</value>
     <comment>ChatWorkshopHub</comment>

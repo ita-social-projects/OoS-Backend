@@ -120,6 +120,14 @@
   <data name="Address is null." xml:space="preserve">
     <value>Адреса null (пуста).</value>
   </data>
+  <data name="Block does not exist for ParentId: {0}, ProviderId: {1}." xml:space="preserve">
+    <value>Не існує блокування для ParentId: {0}, ProviderId: {1}.</value>
+    <comment>BlockedProviderParentService</comment>
+  </data>
+  <data name="Block exists for ParentId: {0}, ProviderId: {1}." xml:space="preserve">
+    <value>Існує блокування для ParentId: {0}, ProviderId: {1}.</value>
+    <comment>BlockedProviderParentService</comment>
+  </data>
   <data name="Can not get some user's claims. Please check your authentication or contact technical support." xml:space="preserve">
     <value>Не вдається отримати деякі user's claims. Будь ласка, перевірте свою аутентифікацію або зверніться до технічної підтримки.</value>
     <comment>ChatWorkshopHub</comment>

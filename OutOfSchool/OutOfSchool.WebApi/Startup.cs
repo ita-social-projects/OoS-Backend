@@ -228,6 +228,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISupportInformationService, SupportInformationService>();
             services.AddScoped<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
             services.AddTransient<INotificationService, NotificationService>();
+            services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -264,6 +265,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
+            services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

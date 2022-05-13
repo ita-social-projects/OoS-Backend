@@ -5,6 +5,7 @@ using AutoMapper;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -69,6 +70,9 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
                 .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
             CreateMap<Address, AddressDto>().ReverseMap();
+
+            CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>();
+            CreateMap<BlockedProviderParent, BlockedProviderParentDto>().ReverseMap();
 
             CreateMap<Provider, ProviderDto>()
                  .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
