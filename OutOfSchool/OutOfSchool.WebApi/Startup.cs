@@ -224,7 +224,7 @@ namespace OutOfSchool.WebApi
             services.AddScoped<IImageService, ImageService>();
             services.AddScoped<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
             services.AddScoped<IImageValidatorService<Teacher>, ImageValidatorService<Teacher>>();
-            services.AddTransient<IAboutPortalService, AboutPortalService>();
+            services.AddTransient<ICompanyInformationService, CompanyInformationService>();
             services.AddTransient<ISupportInformationService, SupportInformationService>();
             services.AddScoped<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
             services.AddTransient<INotificationService, NotificationService>();
@@ -263,7 +263,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
-            services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
+            services.AddTransient<ICompanyInformationRepository, CompanyInformationRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
             services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
 
