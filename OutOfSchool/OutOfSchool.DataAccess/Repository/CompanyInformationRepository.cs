@@ -19,7 +19,7 @@ namespace OutOfSchool.Services.Repository
 
         public async Task<CompanyInformation> GetWithNavigationsByTypeAsync(CompanyInformationType type)
         {
-            return await db.AboutPortal
+            return await db.CompanyInformation
                 .Where(ap => ap.Type == type)
                 .Include(ap => ap.CompanyInformationItems)
                 .FirstOrDefaultAsync()
@@ -28,12 +28,12 @@ namespace OutOfSchool.Services.Repository
 
         public void DeleteAllItemsByEntityAsync(CompanyInformation entity)
         {
-            db.AboutPortalItems.RemoveRange(db.AboutPortalItems.Where(api => api.AboutPortalId == entity.Id));
+            db.CompanyInformationItems.RemoveRange(db.CompanyInformationItems.Where(api => api.AboutPortalId == entity.Id));
         }
 
         public async Task CreateItems(IEnumerable<CompanyInformationItem> entities)
         {
-            await db.AboutPortalItems.AddRangeAsync(entities).ConfigureAwait(false);
+            await db.CompanyInformationItems.AddRangeAsync(entities).ConfigureAwait(false);
         }
     }
 }
