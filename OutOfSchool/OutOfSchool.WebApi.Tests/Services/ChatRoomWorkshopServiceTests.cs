@@ -192,7 +192,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             {
                 new ChatRoomWorkshopForChatList() { Id = Guid.NewGuid(), ParentId = existingParentId },
             };
-            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(existingParentId)).ReturnsAsync(validRooms);
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(existingParentId, It.IsAny<bool>())).ReturnsAsync(validRooms);
 
             // Act
             var result = await roomService.GetByParentIdAsync(existingParentId).ConfigureAwait(false);
@@ -210,7 +210,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var notExistingParentId = Guid.NewGuid();
             var validRooms = new List<ChatRoomWorkshopForChatList>();
 
-            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(notExistingParentId)).ReturnsAsync(validRooms);
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByParentIdAsync(notExistingParentId, It.IsAny<bool>())).ReturnsAsync(validRooms);
 
             // Act
             var result = await roomService.GetByParentIdAsync(notExistingParentId).ConfigureAwait(false);
@@ -232,7 +232,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             {
                 new ChatRoomWorkshopForChatList() { Id = Guid.NewGuid(), Workshop = new WorkshopInfoForChatList() { Id = Guid.NewGuid(), ProviderId = existingProviderId } },
             };
-            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByProviderIdAsync(existingProviderId)).ReturnsAsync(validRooms);
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByProviderIdAsync(existingProviderId, It.IsAny<bool>())).ReturnsAsync(validRooms);
 
             // Act
             var result = await roomService.GetByProviderIdAsync(existingProviderId).ConfigureAwait(false);
@@ -250,7 +250,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var notExistingProviderId = Guid.NewGuid();
             var validRooms = new List<ChatRoomWorkshopForChatList>();
 
-            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByProviderIdAsync(notExistingProviderId)).ReturnsAsync(validRooms);
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByProviderIdAsync(notExistingProviderId, It.IsAny<bool>())).ReturnsAsync(validRooms);
 
             // Act
             var result = await roomService.GetByProviderIdAsync(notExistingProviderId).ConfigureAwait(false);
@@ -272,7 +272,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             {
                 new ChatRoomWorkshopForChatList() { Id = Guid.NewGuid(), WorkshopId = existingWorkshopId, Workshop = new WorkshopInfoForChatList() { Id = existingWorkshopId } },
             };
-            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(existingWorkshopId)).ReturnsAsync(validRooms);
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(existingWorkshopId, It.IsAny<bool>())).ReturnsAsync(validRooms);
 
             // Act
             var result = await roomService.GetByWorkshopIdAsync(existingWorkshopId).ConfigureAwait(false);
@@ -290,7 +290,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var notExistingWorkshopId = Guid.NewGuid();
             var validRooms = new List<ChatRoomWorkshopForChatList>();
 
-            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(notExistingWorkshopId)).ReturnsAsync(validRooms);
+            roomWithSpecialModelRepositoryMock.Setup(x => x.GetByWorkshopIdAsync(notExistingWorkshopId, It.IsAny<bool>())).ReturnsAsync(validRooms);
 
             // Act
             var result = await roomService.GetByWorkshopIdAsync(notExistingWorkshopId).ConfigureAwait(false);

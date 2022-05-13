@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -11,7 +11,6 @@ using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -27,6 +26,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IClassService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger<ClassService>> logger;
+        private Mock<IMapper> mapper;
 
         [SetUp]
         public void SetUp()
@@ -42,7 +42,8 @@ namespace OutOfSchool.WebApi.Tests.Services
             repositoryWorkshop = new WorkshopRepository(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ClassService>>();
-            service = new ClassService(repo, repositoryWorkshop, logger.Object, localizer.Object);
+            mapper = new Mock<IMapper>();
+            service = new ClassService(repo, repositoryWorkshop, logger.Object, localizer.Object, mapper.Object);
 
             SeedDatabase();
         }
@@ -58,9 +59,18 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Description = "NewDescription",
                 DepartmentId = 1,
             };
+            var input = new ClassDto()
+            {
+                Title = "NewTitle",
+                Description = "NewDescription",
+                DepartmentId = 1,
+            };
+
+            mapper.Setup(m => m.Map<Class>(It.IsAny<ClassDto>())).Returns(expected);
+            // mapper.Setup(m => m.Map<ClassDto>(It.IsAny<Class>())).Returns(input);
 
             // Act
-            var result = await service.Create(expected.ToModel()).ConfigureAwait(false);
+            var result = await service.Create(input).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(expected.Title, result.Title);
@@ -72,11 +82,18 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Create_NotUniqueEntity_ReturnsArgumentException()
         {
             // Arrange
+            // TODO: Make independent test
             var expected = (await repo.GetAll()).FirstOrDefault();
+            var input = new ClassDto()
+            {
+                Title = expected.Title,
+                Description = expected.Description,
+                DepartmentId = expected.DepartmentId,
+            };
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Create(expected.ToModel()).ConfigureAwait(false));
+                async () => await service.Create(input).ConfigureAwait(false));
         }
 
         [Test]

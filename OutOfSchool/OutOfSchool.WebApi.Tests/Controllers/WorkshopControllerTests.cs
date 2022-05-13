@@ -288,7 +288,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateWorkshop_WhenModelIsValid_ShouldReturnOkObjectResult()
         {
             // Arrange
-            providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider);
+            providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
             workshopServiceMoq.Setup(x => x.Update(workshop)).ReturnsAsync(workshop);
 
             // Act
