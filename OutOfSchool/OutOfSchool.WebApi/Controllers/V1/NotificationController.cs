@@ -4,9 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Services;
 
@@ -113,7 +112,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> ReadUsersNotificationsByType(NotificationType notificationType)
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var userId = GettingUserProperties.GetUserId(User);
             await notificationService.ReadUsersNotificationsByType(userId, notificationType).ConfigureAwait(false);
             return Ok();
         }
@@ -152,7 +151,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllUsersNotificationsGroupedAsync()
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var userId = GettingUserProperties.GetUserId(User);
 
             var allNofitications = await notificationService.GetAllUsersNotificationsGroupedAsync(userId).ConfigureAwait(false);
 
@@ -174,7 +173,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllUsersNotifications(NotificationType? notificationType)
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var userId = GettingUserProperties.GetUserId(User);
 
             var allNofitications = await notificationService.GetAllUsersNotificationsByFilterAsync(userId, notificationType).ConfigureAwait(false);
 
@@ -195,7 +194,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAmountOfNewUsersNotifications()
         {
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var userId = GettingUserProperties.GetUserId(User);
 
             var amount = await notificationService.GetAmountOfNewUsersNotificationsAsync(userId).ConfigureAwait(false);
 

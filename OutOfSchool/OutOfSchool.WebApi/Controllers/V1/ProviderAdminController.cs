@@ -4,16 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -41,7 +39,7 @@ namespace OutOfSchool.WebApi.Controllers
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
-            userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            userId = GettingUserProperties.GetUserId(User);
         }
 
         /// <summary>

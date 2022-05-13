@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
@@ -155,7 +156,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
         private async Task<bool> IsParentAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
-            var userId = this.GetUserId();
+            var userId = GettingUserProperties.GetUserId(HttpContext);
 
             var result = await validationService.UserIsParentOwnerAsync(userId, chatRoom.ParentId).ConfigureAwait(false);
 
@@ -169,8 +170,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
         private async Task<bool> IsProviderAChatRoomParticipantAsync(ChatRoomWorkshopDto chatRoom)
         {
-            var userId = this.GetUserId();
-            var userSubrole = this.GetUserSubrole();
+            var userId = GettingUserProperties.GetUserId(HttpContext);
+            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
 
             var result = await validationService.UserIsWorkshopOwnerAsync(userId, chatRoom.WorkshopId, userSubrole).ConfigureAwait(false);
 
@@ -180,34 +181,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
 
             return result;
-        }
-
-        private string GetUserId()
-        {
-            var userId = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
-
-            return userId;
-        }
-
-        private Role GetUserRole()
-        {
-            var userRoleName = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Role)} from HttpContext.");
-
-            Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
-
-            return userRole;
-        }
-
-        private Subrole GetUserSubrole()
-        {
-            var userSubroleName = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Subrole)} from HttpContext.");
-
-            Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
-
-            return userSubrole;
         }
 
         private void LogWarningAboutUsersTryingToGetNotOwnChatRoom(Guid chatRoomId, string userId)
@@ -230,7 +203,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 if (chatRoom is null)
                 {
-                    this.LogInfoAboutUsersTryingToGetNotExistingChatRoom(chatRoomId, this.GetUserId());
+                    this.LogInfoAboutUsersTryingToGetNotExistingChatRoom(chatRoomId, GettingUserProperties.GetUserId(HttpContext));
 
                     return NoContent();
                 }
@@ -266,7 +239,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 if (chatRoom is null)
                 {
-                    var messageToLog = $"User with userId:{this.GetUserId()} is trying to get messages from not existing chat room: {nameof(chatRoomId)}={chatRoomId}.";
+                    var messageToLog = $"User with userId:{GettingUserProperties.GetUserId(HttpContext)} is trying to get messages from not existing chat room: {nameof(chatRoomId)}={chatRoomId}.";
                     logger.LogInformation(messageToLog);
 
                     return NoContent();
@@ -276,7 +249,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 if (isChatRoomValid)
                 {
-                    var messages = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(chatRoomId, offsetFilter, this.GetUserRole()).ConfigureAwait(false);
+                    var messages = await messageService.GetMessagesForChatRoomAndSetReadDateTimeIfItIsNullAsync(chatRoomId, offsetFilter, GettingUserProperties.GetUserRole(HttpContext)).ConfigureAwait(false);
 
                     if (messages.Any())
                     {
@@ -306,9 +279,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             try
             {
-                var userId = this.GetUserId();
-                var userRole = this.GetUserRole();
-                var userSubrole = this.GetUserSubrole();
+                var userId = GettingUserProperties.GetUserId(HttpContext);
+                var userRole = GettingUserProperties.GetUserRole(HttpContext);
+                var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
 
                 if (userSubrole == Subrole.ProviderAdmin)
                 {

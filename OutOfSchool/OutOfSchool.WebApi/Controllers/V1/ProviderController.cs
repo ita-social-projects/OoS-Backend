@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -96,9 +96,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public async Task<IActionResult> GetProfile()
         {
             // TODO: localize messages from the conrollers.
-            var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-            var isDeputyOrAdmin = !string.IsNullOrEmpty(User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole)) &&
-                User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole) != "None";
+            var userId = GettingUserProperties.GetUserId(User);
+            var isDeputyOrAdmin = !string.IsNullOrEmpty(GettingUserProperties.GetUserSubrole(User)) &&
+                GettingUserProperties.GetUserSubrole(User) != "None";
             if (userId == null)
             {
                 BadRequest("Invalid user information.");
@@ -144,7 +144,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
 
             // TODO: find out if we need this field in the model
-            providerModel.UserId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            providerModel.UserId = GettingUserProperties.GetUserId(User);
 
             try
             {
@@ -185,7 +185,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             try
             {
-                var userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+                var userId = GettingUserProperties.GetUserId(User);
                 var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
 
                 if (provider == null)
