@@ -52,6 +52,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var logger = new Mock<ILogger<ProviderService>>();
             var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
             var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
+            var changesLogService = new Mock<IChangesLogService>();
 
             var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
             mapper = config.CreateMapper();
@@ -66,7 +67,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 addressRepo.Object,
                 workshopServicesCombiner.Object,
                 providerAdminRepositoryMock.Object,
-                providerImagesService.Object);
+                providerImagesService.Object,
+                changesLogService.Object);
         }
 
         [Test]

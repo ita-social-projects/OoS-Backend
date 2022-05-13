@@ -57,6 +57,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             var userRepository = new Mock<IEntityRepository<User>>();
             var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
             var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
+            var changesLogService = new Mock<IChangesLogService>();
 
             this.providerService = new ProviderService(
                 providerRepository,
@@ -68,7 +69,8 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 addressRepository.Object,
                 workshopServicesCombiner.Object,
                 providerAdminRepository.Object,
-                providerImagesService.Object);
+                providerImagesService.Object,
+                changesLogService.Object);
         }
 
         [Test]
