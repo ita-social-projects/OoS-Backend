@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProfile_WhenNoProviderWithSuchUserId_ReturnsNoContent()
         {
             // Arrange
-            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(null as ProviderDto);
+            providerService.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(null as ProviderDto);
 
             // Act
             var result = await providerController.GetProfile().ConfigureAwait(false);
@@ -76,7 +76,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             // Arrange
             var expected = provider.ToModel();
-            providerService.Setup(x => x.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider.ToModel());
+            providerService.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider.ToModel());
 
             // Act
             var result = await providerController.GetProfile().ConfigureAwait(false);

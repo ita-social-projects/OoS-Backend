@@ -149,7 +149,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             httpContext.Setup(c => c.User.IsInRole(role)).Returns(true);
             parentService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(anotherParent);
-            providerService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(anotherProvider);
+            providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(anotherProvider);
             applicationService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(applications.SingleOrDefault(a => a.Id == applicationId));
 
             // Act
@@ -165,10 +165,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
-            applicationService.Setup(s => s.GetAllByParent(parent.Id)).ReturnsAsync(applications.Where(a => a.ParentId == parent.Id));
+            applicationService.Setup(s => s.GetAllByParent(parent.Id, It.IsAny<ApplicationFilter>())).ReturnsAsync(applications.Where(a => a.ParentId == parent.Id));
+            var filter = new ApplicationFilter();
 
             // Act
-            var result = await controller.GetByParentId(parent.Id).ConfigureAwait(false) as OkObjectResult;
+            var result = await controller.GetByParentId(parent.Id, filter).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -183,10 +184,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(newParent);
-            applicationService.Setup(s => s.GetAllByParent(newParent.Id)).ReturnsAsync(applications.Where(a => a.ParentId == newParent.Id));
+            applicationService.Setup(s => s.GetAllByParent(newParent.Id, It.IsAny<ApplicationFilter>())).ReturnsAsync(applications.Where(a => a.ParentId == newParent.Id));
+            var filter = new ApplicationFilter();
 
             // Act
-            var result = await controller.GetByParentId(newParent.Id).ConfigureAwait(false) as NoContentResult;
+            var result = await controller.GetByParentId(newParent.Id, filter).ConfigureAwait(false) as NoContentResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -201,11 +203,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherParent);
-            applicationService.Setup(s => s.GetAllByParent(parent.Id))
+            applicationService.Setup(s => s.GetAllByParent(parent.Id, It.IsAny<ApplicationFilter>()))
                 .ReturnsAsync(applications.Where(a => a.ParentId == parent.Id));
+            var filter = new ApplicationFilter();
 
             // Act
-            var result = await controller.GetByParentId(parent.Id).ConfigureAwait(false) as BadRequestObjectResult;
+            var result = await controller.GetByParentId(parent.Id, filter).ConfigureAwait(false) as BadRequestObjectResult;
 
             // Assert
             result.Should().NotBeNull();
@@ -213,13 +216,13 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         }
 
         [Test]
-        [TestCase("provider" )]
+        [TestCase("provider")]
         public async Task GetByPropertyProviderId_WhenIdIsValid_ShouldReturnOkObjectResult(string property)
         {
             // Arrange
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
             providerService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(provider);
-            providerService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider);
+            providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
             applicationService.Setup(s => s.GetAllByProvider(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
                 .ReturnsAsync(applications);
 
@@ -238,7 +241,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
             workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(workshopDto);
-            providerService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider);
+            providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
             applicationService.Setup(s => s.GetAllByWorkshop(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
                 .ReturnsAsync(applications);
 
@@ -278,7 +281,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
 
-            providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(newProvider);
+            providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(newProvider);
             workshopService.Setup(s => s.GetById(id)).ReturnsAsync(newWorkshop);
             providerService.Setup(s => s.GetById(id)).ReturnsAsync(newProvider);
             applicationService.Setup(s => s.GetAllByProvider(id, filter))
@@ -306,7 +309,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var anotherWorkshop = new WorkshopDTO { Id = new Guid("94b81fa7-180f-4965-8aac-908a9f3ecb8d"), ProviderId = new Guid("83caa2e6-902a-43b5-9744-8a9d66604666") };
 
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
-            providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherProvider);
+            providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(anotherProvider);
             providerService.Setup(s => s.GetById(id)).ReturnsAsync(anotherProvider);
             workshopService.Setup(s => s.GetById(id)).ReturnsAsync(anotherWorkshop);
             applicationService.Setup(s => s.GetAllByProvider(id, filter))
@@ -434,7 +437,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContext.Setup(c => c.User.IsInRole(It.IsAny<string>())).Returns(true);
 
             parentService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(parent);
-            providerService.Setup(s => s.GetByUserId(It.IsAny<string>())).ReturnsAsync(provider);
+            providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
 
             applicationService.Setup(s => s.Update(It.IsAny<ApplicationDto>())).ReturnsAsync(applications.First());
             applicationService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(applications.First());
@@ -480,7 +483,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var anotherProvider = new ProviderDto { Id = new Guid("2f91783d-a68f-41fa-9ded-d879f187a94c"), UserId = userId };
 
             httpContext.Setup(c => c.User.IsInRole(role)).Returns(true);
-            providerService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherProvider);
+            providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(anotherProvider);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherParent);
             applicationService.Setup(s => s.Update(applications.First())).ReturnsAsync(applications.First());
             applicationService.Setup(s => s.GetById(shortApplication.Id)).ReturnsAsync(applications.First());

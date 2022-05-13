@@ -5,20 +5,15 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
-using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.Tests;
-using OutOfSchool.Tests.Common;
-using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -280,9 +275,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var existingApplications = WithApplicationsList();
             SetupGetAllBy(existingApplications);
+            var filter = new ApplicationFilter();
 
             // Act
-            var result = await service.GetAllByParent(existingApplications.First().ParentId).ConfigureAwait(false);
+            var result = await service.GetAllByParent(existingApplications.First().ParentId, filter).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
@@ -292,7 +288,8 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAllByParent_WhenIdIsNotValid_ShouldReturnEmptyCollection()
         {
             // Act
-            var result = await service.GetAllByParent(Guid.NewGuid()).ConfigureAwait(false);
+            var filter = new ApplicationFilter();
+            var result = await service.GetAllByParent(Guid.NewGuid(), filter).ConfigureAwait(false);
 
             // Assert
             Assert.That(result, Is.Null);
