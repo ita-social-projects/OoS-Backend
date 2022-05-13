@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class AboutPortalItemDto
+    public class CompanyInformationItemDto
     {
         public Guid Id { get; set; }
 
@@ -13,6 +13,6 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(2000)]
         public string Description { get; set; }
 
-        public Guid AboutPortalId { get; set; }
+        public Guid CompanyInformationId { get; set; }
     }
 }

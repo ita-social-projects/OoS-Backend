@@ -40,28 +40,30 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<AboutPortalDto> Update(AboutPortalDto companyInformationDto)
+        public async Task<CompanyInformationDto> Update(CompanyInformationDto companyInformationDto)
         {
             logger.LogDebug("Updating CompanyInformation started.");
 
-            if (companyInformationDto.AboutPortalItems.Count() > LimitOfItems)
+            if (companyInformationDto.CompanyInformationItems.Count() > LimitOfItems)
             {
                 throw new InvalidOperationException($"Cannot create more than {LimitOfItems} items.");
             }
 
-            var aboutPortal = await companyInformationRepository.GetWithNavigationsByTypeAsync(companyInformationDto.Type).ConfigureAwait(false);
+            var companyInformation = await companyInformationRepository.GetWithNavigationsByTypeAsync(companyInformationDto.Type).ConfigureAwait(false);
 
-            if (aboutPortal == null)
+            if (companyInformation == null)
             {
-                aboutPortal = await Create(companyInformationDto).ConfigureAwait(false);
+                companyInformation = await Create(companyInformationDto).ConfigureAwait(false);
             }
             else
             {
-                companyInformationRepository.DeleteAllItemsByEntityAsync(aboutPortal);
+                companyInformationRepository.DeleteAllItemsByEntityAsync(companyInformation);
+
+                companyInformation.Title = companyInformationDto.Title;
             }
 
-            var items = mapper.Map<List<AboutPortalItem>>(companyInformationDto.AboutPortalItems);
-            aboutPortal.AboutPortalItems = items;
+            var items = mapper.Map<List<CompanyInformationItem>>(companyInformationDto.CompanyInformationItems);
+            companyInformation.CompanyInformationItems = items;
 
             await companyInformationRepository.CreateItems(items).ConfigureAwait(false);
 
@@ -75,22 +77,22 @@ namespace OutOfSchool.WebApi.Services
                 throw;
             }
 
-            return mapper.Map<AboutPortalDto>(aboutPortal);
+            return mapper.Map<CompanyInformationDto>(companyInformation);
         }
 
         /// <inheritdoc/>
-        public async Task<AboutPortalDto> GetByType(CompanyInformationType type)
+        public async Task<CompanyInformationDto> GetByType(CompanyInformationType type)
         {
             logger.LogDebug("Get CompanyInformation is started.");
 
-            var aboutPortal = await companyInformationRepository.GetWithNavigationsByTypeAsync(type).ConfigureAwait(false);
+            var companyInformation = await companyInformationRepository.GetWithNavigationsByTypeAsync(type).ConfigureAwait(false);
 
             logger.LogDebug("Get CompanyInformation is finished.");
 
-            return mapper.Map<AboutPortalDto>(aboutPortal);
+            return mapper.Map<CompanyInformationDto>(companyInformation);
         }
 
-        private async Task<AboutPortal> Create(AboutPortalDto companyInformationDto)
+        private async Task<CompanyInformation> Create(CompanyInformationDto companyInformationDto)
         {
             logger.LogDebug("CompanyInformation creating was started.");
 
@@ -104,8 +106,8 @@ namespace OutOfSchool.WebApi.Services
                 throw new InvalidOperationException("Cannot create more than one record about portal.");
             }
 
-            Func<Task<AboutPortal>> operation = async () =>
-                await companyInformationRepository.Create(mapper.Map<AboutPortal>(companyInformationDto)).ConfigureAwait(false);
+            Func<Task<CompanyInformation>> operation = async () =>
+                await companyInformationRepository.Create(mapper.Map<CompanyInformation>(companyInformationDto)).ConfigureAwait(false);
 
             var aboutPortal = await companyInformationRepository.RunInTransaction(operation).ConfigureAwait(false);
 

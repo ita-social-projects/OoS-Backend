@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
 {
-    public class AboutPortalItem : IKeyedEntity<Guid>
+    public class CompanyInformationItem : IKeyedEntity<Guid>
     {
         public Guid Id { get; set; }
 
@@ -15,6 +15,6 @@ namespace OutOfSchool.Services.Models
 
         public Guid AboutPortalId { get; set; }
 
-        public virtual AboutPortal AboutPortal { get; set; }
+        public virtual CompanyInformation CompanyInformation { get; set; }
     }
 }

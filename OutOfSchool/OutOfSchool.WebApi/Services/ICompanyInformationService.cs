@@ -14,7 +14,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">CompanyInformation entity to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<AboutPortalDto> Update(AboutPortalDto dto);
+        Task<CompanyInformationDto> Update(CompanyInformationDto dto);
 
         /// <summary>
         /// Get CompanyInformation entity by it's type.
@@ -22,6 +22,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="type">Type in the table.</param>
         /// <returns>A <see cref="Task{TEntity}"/> representing the result of the asynchronous operation.
         /// The task result contains the entity that was found, or null.</returns>
-        Task<AboutPortalDto> GetByType(CompanyInformationType type);
+        Task<CompanyInformationDto> GetByType(CompanyInformationType type);
     }
 }

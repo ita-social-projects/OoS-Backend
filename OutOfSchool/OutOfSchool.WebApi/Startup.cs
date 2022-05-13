@@ -246,8 +246,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<SupportInformation>, EntityRepository<SupportInformation>>();
 
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
-            services.AddTransient<ISensitiveEntityRepository<AboutPortal>, SensitiveEntityRepository<AboutPortal>>();
-            services.AddTransient<ISensitiveEntityRepository<AboutPortalItem>, SensitiveEntityRepository<AboutPortalItem>>();
+            services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
+            services.AddTransient<ISensitiveEntityRepository<CompanyInformationItem>, SensitiveEntityRepository<CompanyInformationItem>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services

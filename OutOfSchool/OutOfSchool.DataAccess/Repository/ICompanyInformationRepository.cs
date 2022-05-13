@@ -5,12 +5,12 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
 {
-    public interface ICompanyInformationRepository : ISensitiveEntityRepository<AboutPortal>
+    public interface ICompanyInformationRepository : ISensitiveEntityRepository<CompanyInformation>
     {
-        Task<AboutPortal> GetWithNavigationsByTypeAsync(CompanyInformationType type);
+        Task<CompanyInformation> GetWithNavigationsByTypeAsync(CompanyInformationType type);
 
-        void DeleteAllItemsByEntityAsync(AboutPortal entity);
+        void DeleteAllItemsByEntityAsync(CompanyInformation entity);
 
-        Task CreateItems(IEnumerable<AboutPortalItem> entities);
+        Task CreateItems(IEnumerable<CompanyInformationItem> entities);
     }
 }

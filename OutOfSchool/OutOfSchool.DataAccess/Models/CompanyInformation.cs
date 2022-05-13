@@ -5,7 +5,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
-    public class AboutPortal : IKeyedEntity<Guid>
+    public class CompanyInformation : IKeyedEntity<Guid>
     {
         public Guid Id { get; set; }
 
@@ -15,6 +15,6 @@ namespace OutOfSchool.Services.Models
         [Required]
         public CompanyInformationType Type { get; set; }
 
-        public virtual ICollection<AboutPortalItem> AboutPortalItems { get; set; }
+        public virtual ICollection<CompanyInformationItem> CompanyInformationItems { get; set; }
     }
 }

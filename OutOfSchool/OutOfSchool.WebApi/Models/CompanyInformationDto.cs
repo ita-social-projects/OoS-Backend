@@ -8,7 +8,7 @@ using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class AboutPortalDto
+    public class CompanyInformationDto
     {
         public Guid Id { get; set; }
 
@@ -20,6 +20,6 @@ namespace OutOfSchool.WebApi.Models
         public CompanyInformationType Type { get; set; }
 
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
-        public IEnumerable<AboutPortalItemDto> AboutPortalItems { get; set; }
+        public IEnumerable<CompanyInformationItemDto> CompanyInformationItems { get; set; }
     }
 }

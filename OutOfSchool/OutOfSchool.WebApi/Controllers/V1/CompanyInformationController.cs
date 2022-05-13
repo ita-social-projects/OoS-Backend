@@ -46,7 +46,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// Get information about CompanyInformation from the database by Type.
         /// </summary>
         /// <returns>Information about CompanyInformation by Type.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AboutPortalDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyInformationDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
@@ -69,12 +69,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="companyInformationModel">Entity to update.</param>
         /// <returns>Updated information about CompanyInformation.</returns>
         [HasPermission(Permissions.SystemManagement)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AboutPortalDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyInformationDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(AboutPortalDto companyInformationModel)
+        public async Task<IActionResult> Update(CompanyInformationDto companyInformationModel)
         {
             companyInformationModel.Type = this.Type;
 

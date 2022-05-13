@@ -7,7 +7,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository
 {
-    public class CompanyInformationRepository : SensitiveEntityRepository<AboutPortal>, ICompanyInformationRepository
+    public class CompanyInformationRepository : SensitiveEntityRepository<CompanyInformation>, ICompanyInformationRepository
     {
         private readonly OutOfSchoolDbContext db;
 
@@ -17,21 +17,21 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public async Task<AboutPortal> GetWithNavigationsByTypeAsync(CompanyInformationType type)
+        public async Task<CompanyInformation> GetWithNavigationsByTypeAsync(CompanyInformationType type)
         {
             return await db.AboutPortal
                 .Where(ap => ap.Type == type)
-                .Include(ap => ap.AboutPortalItems)
+                .Include(ap => ap.CompanyInformationItems)
                 .FirstOrDefaultAsync()
                 .ConfigureAwait(false);
         }
 
-        public void DeleteAllItemsByEntityAsync(AboutPortal entity)
+        public void DeleteAllItemsByEntityAsync(CompanyInformation entity)
         {
             db.AboutPortalItems.RemoveRange(db.AboutPortalItems.Where(api => api.AboutPortalId == entity.Id));
         }
 
-        public async Task CreateItems(IEnumerable<AboutPortalItem> entities)
+        public async Task CreateItems(IEnumerable<CompanyInformationItem> entities)
         {
             await db.AboutPortalItems.AddRangeAsync(entities).ConfigureAwait(false);
         }
