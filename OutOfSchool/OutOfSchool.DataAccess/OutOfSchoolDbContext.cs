@@ -67,8 +67,6 @@ namespace OutOfSchool.Services
 
         public DbSet<CompanyInformationItem> CompanyInformationItems { get; set; }
 
-        public DbSet<SupportInformation> SupportInformation { get; set; }
-
         public DbSet<Notification> Notifications { get; set; }
 
         public DbSet<BlockedProviderParent> BlockedProviderParents { get; set; }

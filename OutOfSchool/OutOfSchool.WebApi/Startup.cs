@@ -225,7 +225,6 @@ namespace OutOfSchool.WebApi
             services.AddScoped<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
             services.AddScoped<IImageValidatorService<Teacher>, ImageValidatorService<Teacher>>();
             services.AddTransient<ICompanyInformationService, CompanyInformationService>();
-            services.AddTransient<ISupportInformationService, SupportInformationService>();
             services.AddScoped<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
@@ -243,7 +242,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
-            services.AddTransient<IEntityRepository<SupportInformation>, EntityRepository<SupportInformation>>();
 
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
             services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();

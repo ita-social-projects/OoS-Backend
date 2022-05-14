@@ -125,9 +125,6 @@ namespace OutOfSchool.WebApi.Util
                 }));
             CreateMap<CompanyInformationDto, CompanyInformation>();
 
-            CreateMap<SupportInformation, SupportInformationDto>().ReverseMap()
-                .ForMember(c => c.Id, m => m.Ignore());
-
             CreateMap<Notification, NotificationDto>().ReverseMap()
                 .ForMember(n => n.Id, n => n.Ignore());
 
