@@ -13,7 +13,7 @@ namespace OutOfSchool.Services.Models
         [MaxLength(2000)]
         public string Description { get; set; }
 
-        public Guid AboutPortalId { get; set; }
+        public Guid CompanyInformationId { get; set; }
 
         public virtual CompanyInformation CompanyInformation { get; set; }
     }

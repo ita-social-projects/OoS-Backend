@@ -38,12 +38,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Gets company information type property.
+        /// Gets CompanyInformation type property.
         /// </summary>
         protected abstract CompanyInformationType Type { get; }
 
         /// <summary>
-        /// Get information about CompanyInformation from the database by Type.
+        /// Get a part of a CompanyInformation from the database by Type.
         /// </summary>
         /// <returns>Information about CompanyInformation by Type.</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyInformationDto))]
@@ -53,18 +53,18 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [AllowAnonymous]
         public async Task<IActionResult> Get()
         {
-            var aboutPortal = await this.companyInformationService.GetByType(this.Type).ConfigureAwait(false);
+            var companyInformation = await this.companyInformationService.GetByType(this.Type).ConfigureAwait(false);
 
-            if (aboutPortal == null)
+            if (companyInformation == null)
             {
                 return this.NoContent();
             }
 
-            return this.Ok(aboutPortal);
+            return this.Ok(companyInformation);
         }
 
         /// <summary>
-        /// Update information by Type about CompanyInformation.
+        /// Update a part of a CompanyInformation by Type.
         /// </summary>
         /// <param name="companyInformationModel">Entity to update.</param>
         /// <returns>Updated information about CompanyInformation.</returns>
@@ -83,14 +83,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return this.BadRequest(this.ModelState);
             }
 
-            var aboutPortal = await this.companyInformationService.Update(companyInformationModel).ConfigureAwait(false);
+            var companyInformation = await this.companyInformationService.Update(companyInformationModel).ConfigureAwait(false);
 
-            if (aboutPortal == null)
+            if (companyInformation == null)
             {
                 return this.BadRequest(this.localizer["Cannot change information about {0}.\n Please check information is valid.", this.Type]);
             }
 
-            return this.Ok(aboutPortal);
+            return this.Ok(companyInformation);
         }
     }
 }

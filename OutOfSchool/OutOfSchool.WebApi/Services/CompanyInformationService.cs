@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +14,13 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
-    /// Implements the interface with CRUD functionality for the Company Information entities (AboutPortal, SupportInformation and LawsAndRegulations).
+    /// Implements the interface with CRUD functionality for the CompanyInformation entities (AboutPortal, SupportInformation and LawsAndRegulations).
     /// </summary>
     public class CompanyInformationService : ICompanyInformationService
     {
         private const int LimitOfItems = 10;
 
-        private readonly ICompanyInformationRepository companyInformationRepository;
+        private readonly IEntityRepository<CompanyInformation> companyInformationRepository;
         private readonly ILogger<CompanyInformationService> logger;
         private readonly IMapper mapper;
 
@@ -30,7 +31,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Mapper.</param>
         public CompanyInformationService(
-            ICompanyInformationRepository companyInformationRepository,
+            IEntityRepository<CompanyInformation> companyInformationRepository,
             ILogger<CompanyInformationService> logger,
             IMapper mapper)
         {
@@ -40,16 +41,28 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<CompanyInformationDto> GetByType(CompanyInformationType type)
+        {
+            logger.LogDebug("Get CompanyInformation is started.");
+
+            var companyInformation = (await companyInformationRepository.GetByFilter(GetFilter(type), "CompanyInformationItems").ConfigureAwait(false)).FirstOrDefault();
+
+            logger.LogDebug("Get CompanyInformation is finished.");
+
+            return mapper.Map<CompanyInformationDto>(companyInformation);
+        }
+
+        /// <inheritdoc/>
         public async Task<CompanyInformationDto> Update(CompanyInformationDto companyInformationDto)
         {
-            logger.LogDebug("Updating CompanyInformation started.");
+            logger.LogDebug("Updating CompanyInformation is started.");
 
             if (companyInformationDto.CompanyInformationItems.Count() > LimitOfItems)
             {
                 throw new InvalidOperationException($"Cannot create more than {LimitOfItems} items.");
             }
 
-            var companyInformation = await companyInformationRepository.GetWithNavigationsByTypeAsync(companyInformationDto.Type).ConfigureAwait(false);
+            var companyInformation = (await companyInformationRepository.GetByFilter(GetFilter(companyInformationDto.Type), "CompanyInformationItems").ConfigureAwait(false)).FirstOrDefault();
 
             if (companyInformation == null)
             {
@@ -57,15 +70,11 @@ namespace OutOfSchool.WebApi.Services
             }
             else
             {
-                companyInformationRepository.DeleteAllItemsByEntityAsync(companyInformation);
+                var items = mapper.Map<List<CompanyInformationItem>>(companyInformationDto.CompanyInformationItems);
 
+                companyInformation.CompanyInformationItems = items;
                 companyInformation.Title = companyInformationDto.Title;
             }
-
-            var items = mapper.Map<List<CompanyInformationItem>>(companyInformationDto.CompanyInformationItems);
-            companyInformation.CompanyInformationItems = items;
-
-            await companyInformationRepository.CreateItems(items).ConfigureAwait(false);
 
             try
             {
@@ -77,43 +86,30 @@ namespace OutOfSchool.WebApi.Services
                 throw;
             }
 
-            return mapper.Map<CompanyInformationDto>(companyInformation);
-        }
-
-        /// <inheritdoc/>
-        public async Task<CompanyInformationDto> GetByType(CompanyInformationType type)
-        {
-            logger.LogDebug("Get CompanyInformation is started.");
-
-            var companyInformation = await companyInformationRepository.GetWithNavigationsByTypeAsync(type).ConfigureAwait(false);
-
-            logger.LogDebug("Get CompanyInformation is finished.");
+            logger.LogDebug("Updating CompanyInformation is finished.");
 
             return mapper.Map<CompanyInformationDto>(companyInformation);
         }
 
         private async Task<CompanyInformation> Create(CompanyInformationDto companyInformationDto)
         {
-            logger.LogDebug("CompanyInformation creating was started.");
+            logger.LogDebug("CompanyInformation creating is started.");
 
             if (companyInformationDto == null)
             {
                 throw new ArgumentNullException(nameof(companyInformationDto));
             }
 
-            if (await companyInformationRepository.Count().ConfigureAwait(false) > 0)
-            {
-                throw new InvalidOperationException("Cannot create more than one record about portal.");
-            }
+            var companyInformation = await companyInformationRepository.Create(mapper.Map<CompanyInformation>(companyInformationDto)).ConfigureAwait(false);
 
-            Func<Task<CompanyInformation>> operation = async () =>
-                await companyInformationRepository.Create(mapper.Map<CompanyInformation>(companyInformationDto)).ConfigureAwait(false);
+            logger.LogDebug($"CompanyInformation with Id = {companyInformation?.Id} created successfully.");
 
-            var aboutPortal = await companyInformationRepository.RunInTransaction(operation).ConfigureAwait(false);
+            return companyInformation;
+        }
 
-            logger.LogDebug($"CompanyInformation with Id = {aboutPortal?.Id} created successfully.");
-
-            return aboutPortal;
+        private Expression<Func<CompanyInformation, bool>> GetFilter(CompanyInformationType type)
+        {
+            return ci => ci.Type == type;
         }
     }
 }

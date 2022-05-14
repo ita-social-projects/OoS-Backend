@@ -242,6 +242,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
+            services.AddTransient<IEntityRepository<CompanyInformation>, EntityRepository<CompanyInformation>>();
 
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
             services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
@@ -261,7 +262,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
-            services.AddTransient<ICompanyInformationRepository, CompanyInformationRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
             services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
 
