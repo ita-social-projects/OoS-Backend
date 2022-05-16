@@ -5,10 +5,7 @@ using System.Text;
 
 namespace OutOfSchool.Services.Models.Images
 {
-    public class ExternalImageModel
+    public class ImageFileModel : FileModel
     {
-        public Stream ContentStream { get; set; }
-
-        public string ContentType { get; set; }
     }
 }

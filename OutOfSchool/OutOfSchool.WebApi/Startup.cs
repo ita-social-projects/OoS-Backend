@@ -28,7 +28,9 @@ using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Config.DataAccess;
 using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Extensions.Startup;
@@ -153,6 +155,7 @@ namespace OutOfSchool.WebApi
             services.Configure<ImagesLimits<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
 
             // Image options
+            services.Configure<GcpStorageImagesSourceConfig>(Configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
             services.AddSingleton<MongoDb>();
             services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
@@ -222,8 +225,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
             services.AddScoped<IImageService, ImageService>();
-            services.AddScoped<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
-            services.AddScoped<IImageValidatorService<Teacher>, ImageValidatorService<Teacher>>();
+            services.AddScoped<IImageValidator, ImageValidator<Workshop>>();
+            services.AddScoped<IImageValidator, ImageValidator<Teacher>>();
             services.AddTransient<IAboutPortalService, AboutPortalService>();
             services.AddTransient<ISupportInformationService, SupportInformationService>();
             services.AddScoped<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
@@ -260,7 +263,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
-            services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
+            //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
+            services.AddTransient<IImageFilesStorage, GcpImagesStorage>();
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
