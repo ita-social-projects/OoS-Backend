@@ -328,20 +328,25 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");
 
-                var additionalData = new Dictionary<string, string>()
+                var currentApplication = await applicationRepository.GetById(applicationDto.Id).ConfigureAwait(false);
+
+                if (currentApplication.Status != updatedApplication.Status)
                 {
-                    { "Status", updatedApplication.Status.ToString() },
-                };
+                    var additionalData = new Dictionary<string, string>()
+                    {
+                        { "Status", updatedApplication.Status.ToString() },
+                    };
 
-                string groupedData = updatedApplication.Status.ToString();
+                    string groupedData = updatedApplication.Status.ToString();
 
-                await notificationService.Create(
-                    NotificationType.Application,
-                    NotificationAction.Update,
-                    updatedApplication.Id,
-                    this,
-                    additionalData,
-                    groupedData).ConfigureAwait(false);
+                    await notificationService.Create(
+                        NotificationType.Application,
+                        NotificationAction.Update,
+                        updatedApplication.Id,
+                        this,
+                        additionalData,
+                        groupedData).ConfigureAwait(false);
+                }
 
                 return mapper.Map<ApplicationDto>(updatedApplication);
             }

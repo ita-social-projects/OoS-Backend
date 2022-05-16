@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -22,11 +23,12 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
-        private IEntityRepository<Direction> repo;
+        private IDirectionRepository repo;
         private IWorkshopRepository repositoryWorkshop;
         private IDirectionService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger<DirectionService>> logger;
+        private Mock<IMapper> mapper;
 
         [SetUp]
         public void SetUp()
@@ -38,11 +40,12 @@ namespace OutOfSchool.WebApi.Tests.Services
             options = builder.Options;
             context = new OutOfSchoolDbContext(options);
 
-            repo = new EntityRepository<Direction>(context);
+            repo = new DirectionRepository(context);
             repositoryWorkshop = new WorkshopRepository(context);
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<DirectionService>>();
-            service = new DirectionService(repo, repositoryWorkshop, logger.Object, localizer.Object);
+            mapper = new Mock<IMapper>();
+            service = new DirectionService(repo, repositoryWorkshop, logger.Object, localizer.Object, mapper.Object);
 
             SeedDatabase();
         }
@@ -58,8 +61,17 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Description = "NewDescription",
             };
 
+            var input = new DirectionDto()
+            {
+                Title = "NewTitle",
+                Description = "NewDescription",
+            };
+
+            mapper.Setup(m => m.Map<Direction>(It.IsAny<DirectionDto>())).Returns(expected);
+            // mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>())).Returns(input);
+
             // Act
-            var result = await service.Create(expected.ToModel()).ConfigureAwait(false);
+            var result = await service.Create(input).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(expected.Title, result.Title);
@@ -70,12 +82,18 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Order(2)]
         public async Task Create_NotUniqueEntity_ReturnsArgumentException()
         {
+            // TODO: Make independent test
             // Arrange
             var expected = (await repo.GetAll()).FirstOrDefault();
+            var input = new DirectionDto()
+            {
+                Title = expected.Title,
+                Description = expected.Description,
+            };
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Create(expected.ToModel()).ConfigureAwait(false));
+                async () => await service.Create(input).ConfigureAwait(false));
         }
 
         [Test]

@@ -14,6 +14,8 @@ namespace OutOfSchool.Services.Models.ChatWorkshop
         [Required]
         public Guid ParentId { get; set; }
 
+        public bool IsBlocked { get; set; }
+
         public virtual Workshop Workshop { get; set; }
 
         public virtual Parent Parent { get; set; }

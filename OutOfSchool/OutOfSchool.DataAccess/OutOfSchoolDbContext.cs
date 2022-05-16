@@ -71,6 +71,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Notification> Notifications { get; set; }
 
+        public DbSet<BlockedProviderParent> BlockedProviderParents { get; set; }
+
         public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
 
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();

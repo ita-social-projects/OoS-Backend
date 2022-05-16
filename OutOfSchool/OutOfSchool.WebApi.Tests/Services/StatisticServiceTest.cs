@@ -24,7 +24,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         private Mock<IApplicationRepository> applicationRepository;
         private Mock<IWorkshopRepository> workshopRepository;
-        private Mock<IEntityRepository<Direction>> directionRepository;
+        private Mock<IDirectionRepository> directionRepository;
 
         private Mock<IMapper> mapper;
         private Mock<ICacheService> cache;
@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             applicationRepository = new Mock<IApplicationRepository>();
             workshopRepository = new Mock<IWorkshopRepository>();
-            directionRepository = new Mock<IEntityRepository<Direction>>();
+            directionRepository = new Mock<IDirectionRepository>();
             var ratingService = new Mock<IRatingService>();
             var logger = new Mock<ILogger<StatisticService>>();
             mapper = new Mock<IMapper>();

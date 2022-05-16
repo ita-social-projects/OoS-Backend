@@ -1,0 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
+
+namespace OutOfSchool.Services.Models
+{
+    public class BlockedProviderParent : IKeyedEntity<Guid>
+    {
+        public Guid Id { get; set; }
+
+        [Required]
+        public Guid ParentId { get; set; }
+
+        [Required]
+        public Guid ProviderId { get; set; }
+
+        [Required]
+        [MaxLength(500)]
+        public string Reason { get; set; }
+
+        [Required]
+        public string UserIdBlock { get; set; }
+
+        public string UserIdUnblock { get; set; } = string.Empty;
+
+        [Required]
+        public DateTimeOffset DateTimeFrom { get; set; }
+
+        public DateTimeOffset? DateTimeTo { get; set; }
+
+        public virtual Parent Parent { get; set; }
+
+        public virtual Provider Provider { get; set; }
+
+    }
+}
