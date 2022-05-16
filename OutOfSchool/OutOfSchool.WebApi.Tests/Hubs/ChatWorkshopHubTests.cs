@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
         private Mock<IValidationService> validationServiceMock;
         private Mock<IWorkshopRepository> workshopRepositoryMock;
         private Mock<IParentRepository> parentRepositoryMock;
-        private Mock<IProviderAdminRepository> providerAdminRepository;
+        private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
 
         private ChatWorkshopHub chatHub;
 
@@ -55,7 +55,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             hubCallerContextMock = new Mock<HubCallerContext>();
             groupsMock = new Mock<IGroupManager>();
             localizerMock = new Mock<IStringLocalizer<SharedResource>>();
-            providerAdminRepository = new Mock<IProviderAdminRepository>();
+            providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
 
             chatHub = new ChatWorkshopHub(
                 loggerMock.Object,
@@ -65,7 +65,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 workshopRepositoryMock.Object,
                 parentRepositoryMock.Object,
                 localizerMock.Object,
-                providerAdminRepository.Object)
+                providerAdminRepositoryMock.Object)
             {
                 Clients = clientsMock.Object,
                 Context = hubCallerContextMock.Object,
@@ -126,7 +126,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             hubCallerContextMock.Setup(x => x.User.FindFirst("sub"))
                 .Returns(default(Claim));
 
-            var chatNewMessage = "{'workshopId':1, 'parentId':1, 'text':'hi', 'senderRoleIsProvider':false }";
+            var chatNewMessage = $"{{'workshopId':'{Guid.NewGuid()}', 'parentId':'{Guid.NewGuid()}', 'text':'hi', 'senderRoleIsProvider':false}}";
             clientsMock.Setup(clients => clients.Caller).Returns(clientProxyMock.Object);
 
             // Act
@@ -162,7 +162,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
 
             var invalidParentId = Guid.NewGuid();
 
-            var chatNewMessage = string.Format("'workshopId':'{0}', 'parentId':'{1}', 'text':'hi', 'senderRoleIsProvider':false ", Guid.NewGuid(), invalidParentId);
+            var chatNewMessage = $"{{'workshopId':'{Guid.NewGuid()}', 'parentId':'{invalidParentId}', 'text':'hi', 'senderRoleIsProvider':false}}";
 
             validationServiceMock.Setup(x => x.UserIsParentOwnerAsync(UserId, invalidParentId)).ReturnsAsync(false);
 
@@ -185,7 +185,8 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 .Returns(new Claim(ClaimTypes.NameIdentifier, userRole));
 
             var validWorkshopId = Guid.NewGuid();
-            var validNewMessage = string.Format("'workshopId':{0}, 'parentId':{1}, 'text':'hi', 'senderRoleIsProvider':true ", validWorkshopId, Guid.NewGuid());
+            var validParentId = Guid.NewGuid();
+            var validNewMessage = $"{{'workshopId':'{validWorkshopId}', 'parentId':'{validParentId}', 'text':'hi', 'senderRoleIsProvider':true}}";
 
             validationServiceMock.Setup(x => x.UserIsWorkshopOwnerAsync(UserId, validWorkshopId, Subrole.None)).ReturnsAsync(true);
 
@@ -201,7 +202,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
             messageServiceMock.Setup(x => x.CreateAsync(It.IsAny<ChatMessageWorkshopCreateDto>(), It.IsAny<Role>()))
                 .ReturnsAsync(validCreatedMessage);
 
-            var validParent = new Parent() { Id = Guid.NewGuid(), UserId = UserId };
+            var validParent = new Parent() { Id = validParentId, UserId = UserId };
             parentRepositoryMock.Setup(x => x.GetById(validParent.Id)).ReturnsAsync(validParent);
 
             var validWorkshops = new List<Workshop>() { new Workshop() { Id = validWorkshopId, Provider = new Provider() { UserId = "someId" } } };
@@ -212,6 +213,9 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 .Returns(Task.CompletedTask);
 
             clientsMock.Setup(clients => clients.OthersInGroup(It.IsAny<string>())).Returns(clientProxyMock.Object);
+
+            var validProviderAdmins = new List<ProviderAdmin>();
+            providerAdminRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<ProviderAdmin, bool>>>(), It.IsAny<string>())).ReturnsAsync(validProviderAdmins);
 
             // Act
             await chatHub.SendMessageToOthersInGroupAsync(validNewMessage).ConfigureAwait(false);
@@ -231,7 +235,7 @@ namespace OutOfSchool.WebApi.Tests.Hubs
 
             var validParentId = Guid.NewGuid();
 
-            var validNewMessage = string.Format("'workshopId':{0}, 'parentId':{1}, 'text':'hi', 'senderRoleIsProvider':false ", Guid.NewGuid(), validParentId);
+            var validNewMessage = $"{{'workshopId':'{Guid.NewGuid()}', 'parentId':'{validParentId}', 'text':'hi', 'senderRoleIsProvider':false}}";
 
             validationServiceMock.Setup(x => x.UserIsParentOwnerAsync(UserId, validParentId)).ReturnsAsync(true);
 
@@ -261,6 +265,9 @@ namespace OutOfSchool.WebApi.Tests.Hubs
                 .Returns(Task.CompletedTask);
 
             clientsMock.Setup(clients => clients.OthersInGroup(It.IsAny<string>())).Returns(clientProxyMock.Object);
+
+            var validProviderAdmins = new List<ProviderAdmin>();
+            providerAdminRepositoryMock.Setup(x => x.GetByFilter(It.IsAny<Expression<Func<ProviderAdmin, bool>>>(), It.IsAny<string>())).ReturnsAsync(validProviderAdmins);
 
             // Act
             await chatHub.SendMessageToOthersInGroupAsync(validNewMessage).ConfigureAwait(false);
