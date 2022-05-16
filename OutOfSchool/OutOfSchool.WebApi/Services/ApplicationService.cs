@@ -505,9 +505,9 @@ namespace OutOfSchool.WebApi.Services
             var filteredApplications = applications.Where(filterPredicate);
 
             var sortPredicate = SortExpressionBuild(filter);
-            filteredApplications = filteredApplications.DynamicOrderBy(sortPredicate);
+            var sortedApplications = filteredApplications.DynamicOrderBy(sortPredicate);
 
-            return filteredApplications;
+            return sortedApplications;
         }
 
         private Expression<Func<Application, bool>> PredicateBuild(
