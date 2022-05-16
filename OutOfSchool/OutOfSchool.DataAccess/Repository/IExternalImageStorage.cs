@@ -11,9 +11,9 @@ namespace OutOfSchool.Services.Repository
 {
     public interface IExternalImageStorage
     {
-        Task<ExternalImageModel> GetByIdAsync(string imageId);
+        Task<ImageFileModel> GetByIdAsync(string imageId);
 
-        Task<string> UploadImageAsync(ExternalImageModel imageModel, CancellationToken cancellationToken = default);
+        Task<string> UploadImageAsync(ImageFileModel imageFileModel, CancellationToken cancellationToken = default);
 
         Task DeleteImageAsync(string imageId, CancellationToken cancellationToken = default);
     }

@@ -17,6 +17,7 @@ using NUnit.Framework;
 using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources.Codes;
 using OutOfSchool.WebApi.Services.Images;
@@ -28,12 +29,12 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
     {
         #region TestData
 
-        private static readonly IReadOnlyList<Func<ExternalImageModel>> ExternalImageModelsWithMockedStreamTestDataSource;
+        private static readonly IReadOnlyList<Func<ImageFileModel>> ExternalImageModelsWithMockedStreamTestDataSource;
         private static readonly IReadOnlyList<Func<string>> ImageIdsTestDataSource;
 
         #endregion
 
-        private Mock<IExternalImageStorage> externalStorageMock;
+        private Mock<IImageFilesStorage> externalStorageMock;
         private Mock<IServiceProvider> serviceProviderMock;
         private Mock<ILogger<ImageService>> loggerMock;
         private IImageService imageService;
@@ -47,7 +48,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         [SetUp]
         public void SetUp()
         {
-            externalStorageMock = new Mock<IExternalImageStorage>();
+            externalStorageMock = new Mock<IImageFilesStorage>();
             serviceProviderMock = new Mock<IServiceProvider>();
             loggerMock = new Mock<ILogger<ImageService>>();
             imageService = new ImageService(
@@ -64,7 +65,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             // Arrange
             var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
             var externalImageModel = TakeFirstFromTestData(ExternalImageModelsWithMockedStreamTestDataSource);
-            externalStorageMock.Setup(x => x.GetByIdAsync(imageId)).
+            externalStorageMock.Setup(x => x.GetByIdAsync(imageId, CancellationToken.None)).
                 ReturnsAsync(externalImageModel);
 
             // Act
@@ -81,7 +82,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         {
             // Arrange
             var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
-            externalStorageMock.Setup(x => x.GetByIdAsync(It.IsAny<string>())).ThrowsAsync(new ImageStorageException());
+            externalStorageMock.Setup(x => x.GetByIdAsync(It.IsAny<string>(), CancellationToken.None)).ThrowsAsync(new FileStorageException());
 
             // Act
             var result = await imageService.GetByIdAsync(imageId);
@@ -115,7 +116,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             SetUpValidatorWithOperationResult(true);
             var queue = new Queue<string>(imageIds);
             externalStorageMock
-                .Setup(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(queue.Dequeue);
 
             // Act
@@ -159,7 +160,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         {
             // Arrange
             var images = CreateMockedFormFiles(2);
-            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(null);
+            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator))).Returns(null);
 
             // Act & Assert
             imageService.Invoking(x => x.UploadManyImagesAsync<It.IsAnyType>(images)).Should()
@@ -174,16 +175,16 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             const byte countOfImages = 4, countOfValidImages = 2;
             var images = CreateMockedFormFiles(countOfImages);
             var imageIds = TakeFromTestData(ImageIdsTestDataSource, countOfValidImages);
-            var validator = new Mock<IImageValidatorService<It.IsAnyType>>();
+            var validator = new Mock<IImageValidator>();
             validator.SetupSequence(x => x.Validate(It.IsAny<Stream>()))
                 .Returns(OperationResult.Success)
                 .Returns(OperationResult.Failed())
                 .Returns(OperationResult.Failed())
                 .Returns(OperationResult.Success);
-            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(validator.Object);
+            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator))).Returns(validator.Object);
             var queue = new Queue<string>(imageIds);
             externalStorageMock
-                .Setup(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(queue.Dequeue);
 
             // Act
@@ -205,10 +206,10 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             var imageIds = TakeFromTestData(ImageIdsTestDataSource, countOfUploadedImages);
             SetUpValidatorWithOperationResult(true);
             externalStorageMock
-                .SetupSequence(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
+                .SetupSequence(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(imageIds[0])
-                .ThrowsAsync(new ImageStorageException())
-                .ThrowsAsync(new ImageStorageException())
+                .ThrowsAsync(new FileStorageException())
+                .ThrowsAsync(new FileStorageException())
                 .ReturnsAsync(imageIds[1]);
 
             // Act
@@ -229,7 +230,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
             SetUpValidatorWithOperationResult(true);
             externalStorageMock
-                .Setup(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(imageId);
 
             // Act
@@ -275,8 +276,8 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
             SetUpValidatorWithOperationResult(true);
             externalStorageMock
-                .Setup(x => x.UploadImageAsync(It.IsAny<ExternalImageModel>(), It.IsAny<CancellationToken>()))
-                .ThrowsAsync(new ImageStorageException());
+                .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new FileStorageException());
 
             // Act
             var result = await imageService.UploadImageAsync<It.IsAnyType>(file);
@@ -291,7 +292,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         {
             // Arrange
             var image = new Mock<IFormFile>().Object;
-            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(null);
+            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator))).Returns(null);
 
             // Act & Assert
             imageService.Invoking(x => x.UploadImageAsync<It.IsAnyType>(image)).Should()
@@ -308,7 +309,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         {
             // Arrange
             externalStorageMock
-                .Setup(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -354,10 +355,10 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             const byte countOfImageIds = 3, countOfDeleted = 1;
             var imageIds = TakeFromTestData(ImageIdsTestDataSource, countOfImageIds);
             externalStorageMock
-                .SetupSequence(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .SetupSequence(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask)
-                .Throws<ImageStorageException>()
-                .Throws<ImageStorageException>();
+                .Throws<FileStorageException>()
+                .Throws<FileStorageException>();
 
             // Act
             var result = await imageService.RemoveManyImagesAsync(imageIds);
@@ -375,7 +376,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             // Arrange
             var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
             externalStorageMock
-                .Setup(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -414,8 +415,8 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             // Arrange
             var imageId = TakeFirstFromTestData(ImageIdsTestDataSource);
             externalStorageMock
-                .Setup(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Throws<ImageStorageException>();
+                .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Throws<FileStorageException>();
 
             // Act
             var result = await imageService.RemoveImageAsync(imageId);
@@ -494,16 +495,16 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         #region Initializators
 
         // Shouldn't make these collections smaller
-        private static IReadOnlyList<Func<ExternalImageModel>> InitializeExternalImageModelsWithMockedStreamsTestDataSource()
+        private static IReadOnlyList<Func<ImageFileModel>> InitializeExternalImageModelsWithMockedStreamsTestDataSource()
         {
-            return new List<Func<ExternalImageModel>>
+            return new List<Func<ImageFileModel>>
             {
-                () => new ExternalImageModel
+                () => new ImageFileModel
                 {
                     ContentStream = new Mock<Stream>().Object,
                     ContentType = "image/jpeg",
                 },
-                () => new ExternalImageModel
+                () => new ImageFileModel
                 {
                     ContentStream = new Mock<Stream>().Object,
                     ContentType = "image/png",
@@ -535,9 +536,9 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
                 result = () => OperationResult.Failed();
             }
 
-            var validator = new Mock<IImageValidatorService<It.IsAnyType>>();
+            var validator = new Mock<IImageValidator>();
             validator.Setup(x => x.Validate(It.IsAny<Stream>())).Returns(result);
-            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidatorService<It.IsAnyType>))).Returns(validator.Object);
+            serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator))).Returns(validator.Object);
         }
     }
 }
