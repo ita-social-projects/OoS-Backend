@@ -37,6 +37,21 @@ namespace OutOfSchool.WebApi.Services
             return result.Count;
         }
 
+        public int AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressPropertyName, string userId)
+            where TEntity : class, new()
+        {
+            logger.LogDebug($"Logging of '{typeof(TEntity).Name}' {addressPropertyName} changes started.");
+
+            var result = changesLogRepository
+                .AddEntityAddressChangesLogToDbContext(entity, addressPropertyName, ProjectAddress, userId);
+
+            var count = result == null ? 0 : 1;
+
+            logger.LogDebug($"Added {count} records to the Changes Log.");
+
+            return count;
+        }
+
         public async Task<SearchResult<ChangesLogDto>> GetChangesLog(ChangesLogFilter filter)
         {
             ValidateFilter(filter);
@@ -104,5 +119,10 @@ namespace OutOfSchool.WebApi.Services
         {
             ModelValidationHelper.ValidateOffsetFilter(filter);
         }
+
+        private string ProjectAddress(Address address) =>
+            address == null
+            ? null
+            : $"{address.District}, {address.City}, {address.Region}, {address.Street}, {address.BuildingNumber}";
     }
 }
