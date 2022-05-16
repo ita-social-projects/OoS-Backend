@@ -35,9 +35,9 @@ namespace OutOfSchool.WebApi.Services
             ILogger<CompanyInformationService> logger,
             IMapper mapper)
         {
-            this.companyInformationRepository = companyInformationRepository;
-            this.logger = logger;
-            this.mapper = mapper;
+            this.companyInformationRepository = companyInformationRepository ?? throw new ArgumentNullException(nameof(companyInformationRepository));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         /// <inheritdoc/>
