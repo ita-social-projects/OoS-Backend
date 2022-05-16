@@ -12,9 +12,10 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Update entity.
         /// </summary>
-        /// <param name="dto">CompanyInformation entity to update.</param>
+        /// <param name="companyInformationDto">CompanyInformation entity to update.</param>
+        /// <param name="type">CompanyInformationType that will be updated.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<CompanyInformationDto> Update(CompanyInformationDto dto);
+        Task<CompanyInformationDto> Update(CompanyInformationDto companyInformationDto, CompanyInformationType type);
 
         /// <summary>
         /// Get CompanyInformation entity by it's type.

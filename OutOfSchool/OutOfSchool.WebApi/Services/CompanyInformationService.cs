@@ -53,15 +53,31 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<CompanyInformationDto> Update(CompanyInformationDto companyInformationDto)
+        public Task<CompanyInformationDto> Update(CompanyInformationDto companyInformationDto, CompanyInformationType type)
         {
             logger.LogDebug("Updating CompanyInformation is started.");
+
+            if (companyInformationDto == null)
+            {
+                throw new ArgumentNullException(nameof(companyInformationDto));
+            }
 
             if (companyInformationDto.CompanyInformationItems.Count() > LimitOfItems)
             {
                 throw new InvalidOperationException($"Cannot create more than {LimitOfItems} items.");
             }
 
+            companyInformationDto.Type = type;
+
+            var companyInformation = UpdateOrCreateAsync(companyInformationDto);
+
+            logger.LogDebug("Updating CompanyInformation is finished.");
+
+            return companyInformation;
+        }
+
+        public async Task<CompanyInformationDto> UpdateOrCreateAsync(CompanyInformationDto companyInformationDto)
+        {
             var companyInformation = (await companyInformationRepository.GetByFilter(GetFilter(companyInformationDto.Type), "CompanyInformationItems").ConfigureAwait(false)).FirstOrDefault();
 
             if (companyInformation == null)
@@ -72,26 +88,22 @@ namespace OutOfSchool.WebApi.Services
             {
                 var items = mapper.Map<List<CompanyInformationItem>>(companyInformationDto.CompanyInformationItems);
 
+                // Clear CompanyInformationItemId because we will replace items for the CompanyInformation (old items will be deleted automatically by the EF)
+                foreach (var item in items)
+                {
+                    item.Id = Guid.Empty;
+                }
+
                 companyInformation.CompanyInformationItems = items;
                 companyInformation.Title = companyInformationDto.Title;
             }
 
-            try
-            {
-                await companyInformationRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-            }
-            catch (DbUpdateConcurrencyException exception)
-            {
-                logger.LogError($"Updating CompanyInformation failed. Exception: {exception.Message}");
-                throw;
-            }
-
-            logger.LogDebug("Updating CompanyInformation is finished.");
+            await companyInformationRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
             return mapper.Map<CompanyInformationDto>(companyInformation);
         }
 
-        private async Task<CompanyInformation> Create(CompanyInformationDto companyInformationDto)
+        private Task<CompanyInformation> Create(CompanyInformationDto companyInformationDto)
         {
             logger.LogDebug("CompanyInformation creating is started.");
 
@@ -100,11 +112,16 @@ namespace OutOfSchool.WebApi.Services
                 throw new ArgumentNullException(nameof(companyInformationDto));
             }
 
-            var companyInformation = await companyInformationRepository.Create(mapper.Map<CompanyInformation>(companyInformationDto)).ConfigureAwait(false);
+            var companyInformation = CreateAsync(companyInformationDto);
 
             logger.LogDebug($"CompanyInformation with Id = {companyInformation?.Id} created successfully.");
 
             return companyInformation;
+        }
+
+        private async Task<CompanyInformation> CreateAsync(CompanyInformationDto companyInformationDto)
+        {
+            return await companyInformationRepository.Create(mapper.Map<CompanyInformation>(companyInformationDto)).ConfigureAwait(false);
         }
 
         private Expression<Func<CompanyInformation, bool>> GetFilter(CompanyInformationType type)

@@ -19,22 +19,18 @@ namespace OutOfSchool.WebApi.Controllers.V1
     {
         private readonly ICompanyInformationService companyInformationService;
         private readonly IStringLocalizer<SharedResource> localizer;
-        private readonly ILogger<AboutPortalController> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CompanyInformationController"/> class.
         /// </summary>
         /// <param name="companyInformationService">Service for CompanyInformation model.</param>
         /// <param name="localizer">Localizer.</param>
-        /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
-        public CompanyInformationController(
+        protected CompanyInformationController(
             ICompanyInformationService companyInformationService,
-            IStringLocalizer<SharedResource> localizer,
-            ILogger<AboutPortalController> logger)
+            IStringLocalizer<SharedResource> localizer)
         {
             this.companyInformationService = companyInformationService ?? throw new ArgumentNullException(nameof(companyInformationService));
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -76,14 +72,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPut]
         public async Task<IActionResult> Update(CompanyInformationDto companyInformationModel)
         {
-            companyInformationModel.Type = this.Type;
-
             if (!ModelState.IsValid)
             {
                 return this.BadRequest(this.ModelState);
             }
 
-            var companyInformation = await this.companyInformationService.Update(companyInformationModel).ConfigureAwait(false);
+            var companyInformation = await this.companyInformationService.Update(companyInformationModel, this.Type).ConfigureAwait(false);
 
             if (companyInformation == null)
             {

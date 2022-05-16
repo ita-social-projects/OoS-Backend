@@ -19,12 +19,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="companyInformationService">Service for LawsAndRegulations model.</param>
         /// <param name="localizer">Localizer.</param>
-        /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> object.</param>
         public LawsAndRegulationsController(
             ICompanyInformationService companyInformationService,
-            IStringLocalizer<SharedResource> localizer,
-            ILogger<AboutPortalController> logger)
-            : base(companyInformationService, localizer, logger)
+            IStringLocalizer<SharedResource> localizer)
+            : base(companyInformationService, localizer)
         {
         }
 
