@@ -76,7 +76,12 @@ namespace OutOfSchool.WebApi.Services
             return companyInformation;
         }
 
-        public async Task<CompanyInformationDto> UpdateOrCreateAsync(CompanyInformationDto companyInformationDto)
+        private static Expression<Func<CompanyInformation, bool>> GetFilter(CompanyInformationType type)
+        {
+            return ci => ci.Type == type;
+        }
+
+        private async Task<CompanyInformationDto> UpdateOrCreateAsync(CompanyInformationDto companyInformationDto)
         {
             var companyInformation = (await companyInformationRepository.GetByFilter(GetFilter(companyInformationDto.Type), "CompanyInformationItems").ConfigureAwait(false)).FirstOrDefault();
 
@@ -122,11 +127,6 @@ namespace OutOfSchool.WebApi.Services
         private async Task<CompanyInformation> CreateAsync(CompanyInformationDto companyInformationDto)
         {
             return await companyInformationRepository.Create(mapper.Map<CompanyInformation>(companyInformationDto)).ConfigureAwait(false);
-        }
-
-        private Expression<Func<CompanyInformation, bool>> GetFilter(CompanyInformationType type)
-        {
-            return ci => ci.Type == type;
         }
     }
 }
