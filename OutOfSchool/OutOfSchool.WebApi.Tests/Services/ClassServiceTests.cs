@@ -21,7 +21,6 @@ namespace OutOfSchool.WebApi.Tests.Services
     [TestFixture]
     public class ClassServiceTests
     {
-        private DbContextOptions<OutOfSchoolDbContext> options;
         private Mock<IClassRepository> repo;
         private Mock<IWorkshopRepository> repositoryWorkshop;
         private IClassService service;
@@ -37,7 +36,11 @@ namespace OutOfSchool.WebApi.Tests.Services
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ClassService>>();
             mapper = new Mock<IMapper>();
-            service = new ClassService(repo.Object, repositoryWorkshop.Object, logger.Object, localizer.Object,
+            service = new ClassService(
+                repo.Object,
+                repositoryWorkshop.Object,
+                logger.Object,
+                localizer.Object,
                 mapper.Object);
         }
 
@@ -91,8 +94,14 @@ namespace OutOfSchool.WebApi.Tests.Services
                 },
             }.AsTestAsyncEnumerableQuery();
 
-            repo.Setup(r => r.Get<int>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(),
-                It.IsAny<Expression<Func<Class, bool>>>(), null, true)).Returns(mockDbResponse);
+            repo.Setup(r => r.Get<int>(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Class, bool>>>(),
+                null,
+                true))
+                .Returns(mockDbResponse);
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
@@ -358,8 +367,13 @@ namespace OutOfSchool.WebApi.Tests.Services
                 },
             };
 
-            repo.Setup(r => r.Get<int>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(),
-                    It.IsAny<Expression<Func<Class, bool>>>(), null, true))
+            repo.Setup(r => r.Get<int>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Class, bool>>>(),
+                    null,
+                    true))
                 .Returns(expectedEntity.AsTestAsyncEnumerableQuery());
             repo.Setup(r => r.DepartmentExists(id)).Returns(true);
             mapper.Setup(m => m.Map<List<ClassDto>>(It.IsAny<List<Class>>())).Returns(expectedDto);
@@ -369,8 +383,13 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Assert
             repo.Verify(
-                r => r.Get<int>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(),
-                    It.IsAny<Expression<Func<Class, bool>>>(), null, true), Times.Once);
+                r => r.Get<int>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Class, bool>>>(),
+                    null,
+                    true), Times.Once);
             Assert.That(entities.Count(), Is.EqualTo(expectedEntity.Count()));
         }
 

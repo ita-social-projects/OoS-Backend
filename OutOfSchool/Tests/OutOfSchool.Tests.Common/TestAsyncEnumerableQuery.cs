@@ -35,11 +35,11 @@ namespace OutOfSchool.Tests.Common
 
 
 
-        private class InMemoryAsyncEnumerator<T> : IAsyncEnumerator<T>
+        private class InMemoryAsyncEnumerator<TEntity> : IAsyncEnumerator<TEntity>
         {
-            private readonly IEnumerator<T> enumerator;
+            private readonly IEnumerator<TEntity> enumerator;
 
-            public InMemoryAsyncEnumerator(IEnumerator<T> enumerator)
+            public InMemoryAsyncEnumerator(IEnumerator<TEntity> enumerator)
             {
                 this.enumerator = enumerator;
             }
@@ -55,10 +55,10 @@ namespace OutOfSchool.Tests.Common
                 return new ValueTask<bool>(enumerator.MoveNext());
             }
 
-            public T Current => enumerator.Current;
+            public TEntity Current => enumerator.Current;
         }
 
-        private class AsyncQueryProvider<T> : IAsyncQueryProvider
+        private class AsyncQueryProvider<TEntity> : IAsyncQueryProvider
         {
             private readonly IQueryProvider inner;
 
@@ -69,7 +69,7 @@ namespace OutOfSchool.Tests.Common
 
             public IQueryable CreateQuery(Expression expression)
             {
-                return new TestAsyncEnumerableQuery<T>(expression);
+                return new TestAsyncEnumerableQuery<TEntity>(expression);
             }
 
             public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
