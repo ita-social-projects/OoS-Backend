@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository.Configuration;
 
 namespace OutOfSchool.Services.Repository
 {
     public class ChangesLogRepository : EntityRepository<ChangesLog>, IChangesLogRepository
     {
-        public ChangesLogRepository(OutOfSchoolDbContext dbContext)
+        private readonly IOptions<ChangesLogConfig> config;
+
+        public ChangesLogRepository(OutOfSchoolDbContext dbContext, IOptions<ChangesLogConfig> config)
             : base(dbContext)
         {
+            this.config = config;
         }
 
         public ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId)
@@ -21,6 +26,12 @@ namespace OutOfSchool.Services.Repository
             var log = new List<ChangesLog>();
             var entry = dbContext.Entry(entity);
 
+            var table = entry.GetTableName();
+            if (!config.Value.SupportedFields.TryGetValue(table, out var supportedFields))
+            {
+                return log;
+            }
+
             if (entry.State == EntityState.Modified)
             {
                 var properties = entry.Properties.Where(p => p.IsModified).ToList();
@@ -28,15 +39,21 @@ namespace OutOfSchool.Services.Repository
                 if (properties.Any())
                 {
                     var (entityIdGuid, entityIdLong) = GetEntityId(entry);
-                    var table = entry.GetTableName();
 
                     foreach (var prop in properties)
                     {
-                        log.Add(CreateChangesLogRecord(prop, table, userId, entityIdGuid, entityIdLong));
+                        var field = prop.GetColumnName();
+                        if (supportedFields.Contains(field))
+                        {
+                            log.Add(CreateChangesLogRecord(prop, table, field, userId, entityIdGuid, entityIdLong));
+                        }
                     }
-
-                    dbContext.AddRange(log);
                 }
+            }
+
+            if (log.Count > 0)
+            {
+                dbContext.AddRange(log);
             }
 
             return log;
@@ -68,6 +85,7 @@ namespace OutOfSchool.Services.Repository
         private ChangesLog CreateChangesLogRecord(
             PropertyEntry propertyEntry,
             string table,
+            string field,
             string userId,
             Guid? recordIdGuid,
             long? recordIdLong)
@@ -75,7 +93,7 @@ namespace OutOfSchool.Services.Repository
             var changesRecord = new ChangesLog
             {
                 Table = table,
-                Field = propertyEntry.GetColumnName(),
+                Field = field,
                 RecordIdGuid = recordIdGuid,
                 RecordIdLong = recordIdLong,
                 OldValue = propertyEntry.OriginalValue.ToString(),

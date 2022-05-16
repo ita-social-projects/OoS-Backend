@@ -31,6 +31,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Configuration;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.DataAccess;
 using OutOfSchool.WebApi.Config.Images;
@@ -291,6 +292,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
             services.AddTransient<ISensitiveEntityRepository<InstitutionFieldDescription>, SensitiveEntityRepository<InstitutionFieldDescription>>();
             services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
+
+            services.Configure<ChangesLogConfig>(Configuration.GetSection(ChangesLogConfig.Name));
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
