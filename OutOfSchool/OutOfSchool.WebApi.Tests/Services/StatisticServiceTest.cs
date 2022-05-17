@@ -100,29 +100,41 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetPopularDirections_WhenCityNotQueried_ShouldReturnCertainDirections()
         {
             // Arrange
+            List<DirectionStatistic> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
+            
             SetupGetPopularDirections();
+
+            foreach (DirectionStatistic stat in expectedDirectionStatistic)
+                mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
+                    .Returns(stat.Direction);
 
             // Act
             var result = await service
-                .GetPopularDirectionsFromDatabase(2, string.Empty)
+                .GetPopularDirectionsFromDatabase(1, string.Empty)
                 .ConfigureAwait(false);
 
             // Assert
             result
                 .Should()
                 .BeEquivalentTo(
-                    ExpectedDirectionStatisticsNoCityFilter(), options => options.WithStrictOrdering());
+                    expectedDirectionStatistic, options => options.WithStrictOrdering());
         }
 
         [Test]
         public async Task GetPopularDirections_WithCityQueried_ShouldReturnCertainDirections()
         {
             // Arrange
+            List<DirectionStatistic> expectedDirectionStatistic = ExpectedDirectionStatisticsCityFilter();
+
             SetupGetPopularDirections();
+
+            foreach (DirectionStatistic stat in expectedDirectionStatistic)
+                mapper.Setup(m => m.Map<DirectionDto>(It.IsAny<Direction>()))
+                    .Returns(stat.Direction);
 
             // Act
             var result = await service
-                .GetPopularDirectionsFromDatabase(2, "Київ")
+                .GetPopularDirectionsFromDatabase(1, "Київ")
                 .ConfigureAwait(false);
 
             // Assert
@@ -162,7 +174,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
             var applicationsMock = WithApplications().AsQueryable().BuildMock();
-            var directionsMock = WithDirections().AsQueryable().BuildMock();
+            var directionsMock = WithDirections().AsQueryable().BuildMock();            
 
             workshopRepository.Setup(w => w.Get<It.IsAnyType>(
                     It.IsAny<int>(),
@@ -325,7 +337,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             return new List<DirectionStatistic>
             {
                 new DirectionStatistic {ApplicationsCount = 3, Direction = new DirectionDto { Id = 3 }, WorkshopsCount = 1 },
-                new DirectionStatistic {ApplicationsCount = 2, Direction = new DirectionDto { Id = 2 }, WorkshopsCount = 1 },
             };
         }
 
@@ -334,7 +345,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             return new List<DirectionStatistic>
             {
                 new DirectionStatistic {ApplicationsCount = 2, Direction = new DirectionDto { Id = 2 }, WorkshopsCount = 1 },
-                new DirectionStatistic {ApplicationsCount = 1, Direction = new DirectionDto { Id = 1 }, WorkshopsCount = 1 },
             };
         }
 
