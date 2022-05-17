@@ -27,7 +27,7 @@ namespace OutOfSchool.Services.Repository
             gridFsBucket = db.GetContext();
         }
 
-        public async Task<ExternalImageModel> GetByIdAsync(string imageId)
+        public async Task<ImageFileModel> GetByIdAsync(string imageId)
         {
             _ = imageId ?? throw new ArgumentNullException(nameof(imageId));
             try
@@ -35,31 +35,31 @@ namespace OutOfSchool.Services.Repository
                 var result = await gridFsBucket.OpenDownloadStreamAsync(new ObjectId(imageId))
                              ?? throw new InvalidOperationException($"Unreal to get non-nullable {nameof(GridFSDownloadStream)} instance."); // think about searching by file name
                 var contentType = result.FileInfo.Metadata[ContentType].AsString;
-                return new ExternalImageModel { ContentStream = result, ContentType = contentType };
+                return new ImageFileModel { ContentStream = result, ContentType = contentType };
             }
             catch (Exception ex)
             {
-                throw new ImageStorageException(ex);
+                throw new FileStorageException(ex);
             }
         }
 
-        public async Task<string> UploadImageAsync(ExternalImageModel imageModel, CancellationToken cancellationToken = default)
+        public async Task<string> UploadImageAsync(ImageFileModel imageFileModel, CancellationToken cancellationToken = default)
         {
-            _ = imageModel ?? throw new ArgumentNullException(nameof(imageModel));
+            _ = imageFileModel ?? throw new ArgumentNullException(nameof(imageFileModel));
             try
             {
-                imageModel.ContentStream.Position = uint.MinValue;
+                imageFileModel.ContentStream.Position = uint.MinValue;
                 var options = new GridFSUploadOptions
                 {
-                    Metadata = new BsonDocument(ContentType, imageModel.ContentType),
+                    Metadata = new BsonDocument(ContentType, imageFileModel.ContentType),
                 };
-                var objectId = await gridFsBucket.UploadFromStreamAsync(Guid.NewGuid().ToString(), imageModel.ContentStream, options, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var objectId = await gridFsBucket.UploadFromStreamAsync(Guid.NewGuid().ToString(), imageFileModel.ContentStream, options, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 return objectId.ToString();
             }
             catch (Exception ex)
             {
-                throw new ImageStorageException(ex);
+                throw new FileStorageException(ex);
             }
         }
 
@@ -72,7 +72,7 @@ namespace OutOfSchool.Services.Repository
             }
             catch (Exception ex)
             {
-                throw new ImageStorageException(ex);
+                throw new FileStorageException(ex);
             }
         }
     }
