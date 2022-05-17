@@ -15,14 +15,15 @@ namespace OutOfSchool.Services.Repository.Files
     public abstract class GcpFilesStorageBase<TFile> : IFilesStorage<TFile, string>
         where TFile : FileModel, new()
     {
-        private readonly StorageClient storageClient;
-        private readonly string bucketName;
-
         protected GcpFilesStorageBase(IGcpStorageContext storageContext)
         {
-            storageClient = storageContext.StorageClient;
-            bucketName = storageContext.BucketName;
+            StorageClient = storageContext.StorageClient;
+            BucketName = storageContext.BucketName;
         }
+
+        private protected StorageClient StorageClient { get; }
+
+        private protected string BucketName { get; }
 
         /// <inheritdoc/>
         public virtual async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
@@ -30,13 +31,13 @@ namespace OutOfSchool.Services.Repository.Files
             _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
             try
             {
-                var fileObject = await storageClient.GetObjectAsync(
-                    bucketName,
+                var fileObject = await StorageClient.GetObjectAsync(
+                    BucketName,
                     fileId,
                     cancellationToken: cancellationToken);
 
                 var fileStream = new MemoryStream();
-                await storageClient.DownloadObjectAsync(
+                await StorageClient.DownloadObjectAsync(
                     fileObject,
                     fileStream,
                     cancellationToken: cancellationToken);
@@ -58,8 +59,8 @@ namespace OutOfSchool.Services.Repository.Files
             try
             {
                 var fileId = GenerateFileId();
-                var dataObject = await storageClient.UploadObjectAsync(
-                    bucketName,
+                var dataObject = await StorageClient.UploadObjectAsync(
+                    BucketName,
                     fileId,
                     file.ContentType,
                     file.ContentStream,
@@ -78,7 +79,7 @@ namespace OutOfSchool.Services.Repository.Files
             _ = fileId ?? throw new ArgumentNullException(nameof(fileId));
             try
             {
-                await storageClient.DeleteObjectAsync(bucketName, fileId, cancellationToken: cancellationToken);
+                await StorageClient.DeleteObjectAsync(BucketName, fileId, cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
