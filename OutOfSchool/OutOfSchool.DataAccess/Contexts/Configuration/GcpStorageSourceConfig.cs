@@ -8,7 +8,7 @@ namespace OutOfSchool.Services.Contexts.Configuration
         /// <summary>
         /// Gets or sets a file of Google credential.
         /// </summary>
-        public string CredentialFile { get; set; } // Should be set in environment variables
+        public string CredentialFilePath { get; set; } // Should be set in environment variables
 
         /// <summary>
         /// Gets or sets a bucket name of Google Storage.

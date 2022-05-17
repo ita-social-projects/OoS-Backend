@@ -7,12 +7,12 @@ namespace OutOfSchool.Services.Extensions
     {
         public static GoogleCredential RetrieveGoogleCredential(this GcpStorageSourceConfig config)
         {
-            if (string.IsNullOrEmpty(config.CredentialFile))
+            if (string.IsNullOrEmpty(config.CredentialFilePath))
             {
                 return GoogleCredential.GetApplicationDefault();
             }
 
-            return GoogleCredential.FromFile(config.CredentialFile);
+            return GoogleCredential.FromFile(config.CredentialFilePath);
         }
     }
 }
