@@ -12,8 +12,9 @@ namespace OutOfSchool.Services.Repository
         /// <typeparam name="TEntity">Entity type that exists in the DB.</typeparam>
         /// <param name="entity">Modified entity.</param>
         /// <param name="userId">User ID.</param>
+        /// <param name="trackedFields">List of fields to be logged.</param>
         /// <returns>A collection of the added ChangesLog records.</returns>
-        ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId)
+        ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId, IEnumerable<string> trackedFields)
             where TEntity : class, new();
 
         /// <summary>

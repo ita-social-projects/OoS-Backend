@@ -31,7 +31,6 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.Services.Repository.Configuration;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.DataAccess;
 using OutOfSchool.WebApi.Config.Images;

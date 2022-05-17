@@ -3,58 +3,46 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository.Configuration;
 
 namespace OutOfSchool.Services.Repository
 {
     public class ChangesLogRepository : EntityRepository<ChangesLog>, IChangesLogRepository
     {
-        private readonly IOptions<ChangesLogConfig> config;
-
-        public ChangesLogRepository(OutOfSchoolDbContext dbContext, IOptions<ChangesLogConfig> config)
+        public ChangesLogRepository(OutOfSchoolDbContext dbContext)
             : base(dbContext)
         {
-            this.config = config;
         }
 
-        public ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId)
+        public ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId, IEnumerable<string> trackedFields)
             where TEntity : class, new()
         {
             var result = new List<ChangesLog>();
             var entry = dbContext.Entry(entity);
 
-            var table = entry.GetTableName();
-            if (!config.Value.SupportedFields.TryGetValue(table, out var supportedFields))
+            if (entry.State != EntityState.Modified)
             {
                 return result;
             }
 
-            if (entry.State == EntityState.Modified)
+            var entityType = typeof(TEntity).Name;
+            var (entityIdGuid, entityIdLong) = GetEntityId(entry);
+            var properties = entry.Properties.Where(p => p.IsModified).ToList();
+
+            foreach (var prop in properties)
             {
-                var properties = entry.Properties.Where(p => p.IsModified).ToList();
-
-                if (properties.Any())
+                var fieldName = prop.GetColumnName();
+                if (trackedFields.Contains(fieldName))
                 {
-                    var (entityIdGuid, entityIdLong) = GetEntityId(entry);
-
-                    foreach (var prop in properties)
-                    {
-                        var field = prop.GetColumnName();
-                        if (supportedFields.Contains(field))
-                        {
-                            result.Add(CreateChangesLogRecord(
-                                table,
-                                field,
-                                entityIdGuid,
-                                entityIdLong,
-                                prop.OriginalValue.ToString(),
-                                prop.CurrentValue.ToString(),
-                                userId));
-                        }
-                    }
+                    result.Add(CreateChangesLogRecord(
+                        entityType,
+                        fieldName,
+                        entityIdGuid,
+                        entityIdLong,
+                        prop.OriginalValue.ToString(),
+                        prop.CurrentValue.ToString(),
+                        userId));
                 }
             }
 
@@ -68,34 +56,31 @@ namespace OutOfSchool.Services.Repository
 
         public ChangesLog AddEntityAddressChangesLogToDbContext<TEntity>(
             TEntity entity,
-            string addressField,
+            string addressPropertyName,
             Func<Address, string> addressProjector,
             string userId)
             where TEntity : class, new()
         {
             ChangesLog result = null;
             var entry = dbContext.Entry(entity);
+            var addressEntity = entry.Reference(addressPropertyName).TargetEntry;
 
-            var table = entry.GetTableName();
-            if (!config.Value.SupportedFields.TryGetValue(table, out var supportedFields) && !supportedFields.Contains(addressField))
+            if (addressEntity.State != EntityState.Modified)
             {
                 return result;
             }
 
-            var addressEntity = entry.Reference(addressField).TargetEntry;
+            var entityType = typeof(TEntity).Name;
+            var (entityIdGuid, entityIdLong) = GetEntityId(entry);
 
-            if (addressEntity.State == EntityState.Modified)
-            {
-                var (entityIdGuid, entityIdLong) = GetEntityId(entry);
-                result = CreateChangesLogRecord(
-                    table,
-                    addressField,
-                    entityIdGuid,
-                    entityIdLong,
-                    addressProjector((Address)addressEntity.OriginalValues.ToObject()),
-                    addressProjector((Address)addressEntity.CurrentValues.ToObject()),
-                    userId);
-            }
+            result = CreateChangesLogRecord(
+                entityType,
+                addressPropertyName,
+                entityIdGuid,
+                entityIdLong,
+                addressProjector((Address)addressEntity.OriginalValues.ToObject()),
+                addressProjector((Address)addressEntity.CurrentValues.ToObject()),
+                userId);
 
             if (result != null)
             {
@@ -129,27 +114,23 @@ namespace OutOfSchool.Services.Repository
         }
 
         private ChangesLog CreateChangesLogRecord(
-            string table,
-            string field,
-            Guid? recordIdGuid,
-            long? recordIdLong,
+            string entityType,
+            string fieldName,
+            Guid? entityIdGuid,
+            long? entityIdLong,
             string oldValue,
             string newValue,
             string userId)
-        {
-            var changesRecord = new ChangesLog
+            => new ChangesLog
             {
-                Table = table,
-                Field = field,
-                RecordIdGuid = recordIdGuid,
-                RecordIdLong = recordIdLong,
+                EntityType = entityType,
+                FieldName = fieldName,
+                EntityIdGuid = entityIdGuid,
+                EntityIdLong = entityIdLong,
                 OldValue = oldValue,
                 NewValue = newValue,
-                Changed = DateTime.Now,
+                UpdatedDate = DateTime.Now,
                 UserId = userId,
             };
-
-            return changesRecord;
-        }
     }
 }

@@ -9,15 +9,15 @@ namespace OutOfSchool.Services.Models
 
         [Required]
         [MaxLength(128)]
-        public string Table { get; set; }
+        public string EntityType { get; set; }
 
         [Required]
         [MaxLength(128)]
-        public string Field { get; set; }
+        public string FieldName { get; set; }
 
-        public Guid? RecordIdGuid { get; set; }
+        public Guid? EntityIdGuid { get; set; }
 
-        public long? RecordIdLong { get; set; }
+        public long? EntityIdLong { get; set; }
 
         [MaxLength(500)]
         public string OldValue { get; set; }
@@ -26,7 +26,7 @@ namespace OutOfSchool.Services.Models
         public string NewValue { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime Changed { get; set; }
+        public DateTime UpdatedDate { get; set; }
 
         public string UserId { get; set; }
 

@@ -6,11 +6,11 @@ namespace OutOfSchool.WebApi.Models
     public class ChangesLogFilter : OffsetFilter
     {
         [Required]
-        public string Table { get; set; }
+        public string EntityType { get; set; }
 
-        public string Field { get; set; }
+        public string FieldName { get; set; }
 
-        public string RecordId { get; set; }
+        public string EntityId { get; set; }
 
         public DateTime? DateFrom { get; set; }
 
