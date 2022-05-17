@@ -179,6 +179,15 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
+        public static CompanyInformationDto ToModel(this CompanyInformation companyInformation)
+        {
+            return Mapper<CompanyInformation, CompanyInformationDto>(companyInformation, cfg =>
+            {
+                cfg.CreateMap<CompanyInformation, CompanyInformationDto>();
+                cfg.CreateMap<CompanyInformationItem, CompanyInformationItemDto>();
+            });
+        }
+
         #endregion
 
         #region ToDomain
@@ -314,6 +323,15 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<AddressDto, Address>();
                 cfg.CreateMap<ProviderDto, Provider>();
                 cfg.CreateMap<TeacherDTO, Teacher>();
+            });
+        }
+
+        public static CompanyInformation ToDomain(this CompanyInformationDto companyInformation)
+        {
+            return Mapper<CompanyInformationDto, CompanyInformation>(companyInformation, cfg =>
+            {
+                cfg.CreateMap<CompanyInformationDto, CompanyInformation>();
+                cfg.CreateMap<CompanyInformationItemDto, CompanyInformationItem>();
             });
         }
 
