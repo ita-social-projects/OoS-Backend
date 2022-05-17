@@ -12,7 +12,6 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -55,7 +54,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             Expression<Func<CompanyInformation, bool>> filter = p => p.Type == type;
             var expected = await repository.GetByFilter(filter, "CompanyInformationItems").ConfigureAwait(false);
 
-            mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(expected.FirstOrDefault().ToModel());
+            mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(GetEntityDto(expected.FirstOrDefault()));
 
             // Act
             var result = await service.GetByType(type).ConfigureAwait(false);
@@ -72,7 +71,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             Expression<Func<CompanyInformation, bool>> filter = p => p.Type == type;
             var expected = await repository.GetByFilter(filter, "CompanyInformationItems").ConfigureAwait(false);
 
-            mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(expected.FirstOrDefault().ToModel());
+            mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(GetEntityDto(expected.FirstOrDefault()));
 
             // Act
             var result = await service.GetByType(type).ConfigureAwait(false);
@@ -87,18 +86,19 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Update_UpdatesExistedEntity(CompanyInformationType type)
         {
             // Arrange
-            var changedEntity = GetEntityDto(type);
+            var changedEntityDto = GetEntityDto(type);
+            var changedEntity = GetEntity(type);
 
             // Act
-            mapper.Setup(m => m.Map<IEnumerable<CompanyInformationItem>>(It.IsAny<IEnumerable<CompanyInformationItemDto>>())).Returns(changedEntity.ToDomain().CompanyInformationItems);
-            mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(changedEntity);
+            mapper.Setup(m => m.Map<IEnumerable<CompanyInformationItem>>(It.IsAny<IEnumerable<CompanyInformationItemDto>>())).Returns(changedEntity.CompanyInformationItems);
+            mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(changedEntityDto);
 
-            var result = await service.Update(changedEntity, type);
+            var result = await service.Update(changedEntityDto, type);
 
             // Assert
             Assert.That(changedEntity.Title, Is.EqualTo(result.Title));
             Assert.That(changedEntity.Type, Is.EqualTo(result.Type));
-            Assert.That(changedEntity.CompanyInformationItems.Count(), Is.EqualTo(result.CompanyInformationItems.Count()));
+            Assert.That(changedEntity.CompanyInformationItems.Count, Is.EqualTo(result.CompanyInformationItems.Count()));
             Assert.That(changedEntity.CompanyInformationItems.First().SectionName, Is.EqualTo(result.CompanyInformationItems.First().SectionName));
             Assert.That(changedEntity.CompanyInformationItems.Last().Description, Is.EqualTo(result.CompanyInformationItems.Last().Description));
         }
@@ -108,21 +108,41 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Update_UpdatesNotExistedEntity(CompanyInformationType type)
         {
             // Arrange
-            var changedEntity = GetEntityDto(type);
+            var changedEntityDto = GetEntityDto(type);
+            var changedEntity = GetEntity(type);
 
             // Act
-            mapper.Setup(m => m.Map<IEnumerable<CompanyInformationItem>>(It.IsAny<IEnumerable<CompanyInformationItemDto>>())).Returns(changedEntity.ToDomain().CompanyInformationItems);
-            mapper.Setup(m => m.Map<CompanyInformation>(It.IsAny<CompanyInformationDto>())).Returns(changedEntity.ToDomain());
-            mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(changedEntity);
+            mapper.Setup(m => m.Map<IEnumerable<CompanyInformationItem>>(It.IsAny<IEnumerable<CompanyInformationItemDto>>())).Returns(changedEntity.CompanyInformationItems);
+            mapper.Setup(m => m.Map<CompanyInformation>(It.IsAny<CompanyInformationDto>())).Returns(changedEntity);
+            mapper.Setup(m => m.Map<CompanyInformationDto>(It.IsAny<CompanyInformation>())).Returns(changedEntityDto);
 
-            var result = await service.Update(changedEntity, type);
+            var result = await service.Update(changedEntityDto, type);
 
             // Assert
             Assert.That(changedEntity.Title, Is.EqualTo(result.Title));
             Assert.That(changedEntity.Type, Is.EqualTo(result.Type));
-            Assert.That(changedEntity.CompanyInformationItems.Count(), Is.EqualTo(result.CompanyInformationItems.Count()));
+            Assert.That(changedEntity.CompanyInformationItems.Count, Is.EqualTo(result.CompanyInformationItems.Count()));
             Assert.That(changedEntity.CompanyInformationItems.First().SectionName, Is.EqualTo(result.CompanyInformationItems.First().SectionName));
             Assert.That(changedEntity.CompanyInformationItems.Last().Description, Is.EqualTo(result.CompanyInformationItems.Last().Description));
+        }
+
+        private CompanyInformationDto GetEntityDto(CompanyInformation companyInformation)
+        {
+            if (companyInformation == null)
+            {
+                return null;
+            }
+
+            return new CompanyInformationDto()
+            {
+                Title = companyInformation.Title,
+                Type = companyInformation.Type,
+                CompanyInformationItems = companyInformation.CompanyInformationItems.Select(x => new CompanyInformationItemDto
+                {
+                    SectionName = x.SectionName,
+                    Description = x.Description,
+                }).ToList(),
+            };
         }
 
         private CompanyInformationDto GetEntityDto(CompanyInformationType type)
@@ -139,6 +159,28 @@ namespace OutOfSchool.WebApi.Tests.Services
                                 Description = "Description 11",
                             },
                             new CompanyInformationItemDto()
+                            {
+                                SectionName = "Section 21",
+                                Description = "Description 21",
+                            },
+                        },
+            };
+        }
+
+        private CompanyInformation GetEntity(CompanyInformationType type)
+        {
+            return new CompanyInformation()
+            {
+                Title = "Title",
+                Type = type,
+                CompanyInformationItems = new List<CompanyInformationItem>
+                        {
+                            new CompanyInformationItem()
+                            {
+                                SectionName = "Section 11",
+                                Description = "Description 11",
+                            },
+                            new CompanyInformationItem()
                             {
                                 SectionName = "Section 21",
                                 Description = "Description 21",
