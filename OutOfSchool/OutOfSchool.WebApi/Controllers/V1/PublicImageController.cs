@@ -28,15 +28,15 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <summary>
         /// Gets <see cref="FileStreamResult"/> for a given pictureId.
         /// </summary>
-        /// <param name="imageMetadataId">This is the image id.</param>
+        /// <param name="imageId">This is the image id.</param>
         /// <returns>The result of <see cref="FileStreamResult"/>.</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileStreamResult))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{imageMetadataId}")]
-        public async Task<IActionResult> GetByIdAsync(string imageMetadataId)
+        [HttpGet("{imageId}")]
+        public async Task<IActionResult> GetByIdAsync(string imageId)
         {
-            var imageData = await imageService.GetByIdAsync(imageMetadataId).ConfigureAwait(false);
+            var imageData = await imageService.GetByIdAsync(imageId).ConfigureAwait(false);
 
             if (imageData.Succeeded)
             {

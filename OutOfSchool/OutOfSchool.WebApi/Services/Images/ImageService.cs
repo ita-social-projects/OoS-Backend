@@ -11,6 +11,7 @@ using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Common.Resources.Codes;
@@ -25,19 +26,19 @@ namespace OutOfSchool.WebApi.Services.Images
     /// </summary>
     public class ImageService : IImageService
     {
-        private readonly IExternalImageStorage externalStorage;
+        private readonly IImageFilesStorage imageStorage;
         private readonly IServiceProvider serviceProvider;
         private readonly ILogger<ImageService> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService"/> class.
         /// </summary>
-        /// <param name="externalStorage">Storage for images.</param>
+        /// <param name="imageStorage">Storage for images.</param>
         /// <param name="serviceProvider">Provides access to the app services.</param>
         /// <param name="logger">Logger.</param>
-        public ImageService(IExternalImageStorage externalStorage, IServiceProvider serviceProvider, ILogger<ImageService> logger)
+        public ImageService(IImageFilesStorage imageStorage, IServiceProvider serviceProvider, ILogger<ImageService> logger)
         {
-            this.externalStorage = externalStorage;
+            this.imageStorage = imageStorage;
             this.serviceProvider = serviceProvider;
             this.logger = logger;
         }
@@ -54,7 +55,12 @@ namespace OutOfSchool.WebApi.Services.Images
 
             try
             {
-                var externalImageModel = await externalStorage.GetByIdAsync(imageId).ConfigureAwait(false);
+                var externalImageModel = await imageStorage.GetByIdAsync(imageId).ConfigureAwait(false);
+
+                if (externalImageModel == null)
+                {
+                    return Result<ImageDto>.Failed(ImagesOperationErrorCode.ImageNotFoundError.GetOperationError());
+                }
 
                 var imageDto = new ImageDto
                 {
@@ -65,7 +71,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 logger.LogDebug($"Image with id {imageId} was successfully got.");
                 return Result<ImageDto>.Success(imageDto);
             }
-            catch (ImageStorageException ex)
+            catch (FileStorageException ex)
             {
                 logger.LogError(ex, $"Image with id {imageId} wasn't found.");
                 return Result<ImageDto>.Failed(ImagesOperationErrorCode.ImageNotFoundError.GetOperationError());
@@ -236,12 +242,12 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             try
             {
-                var imageStorageId = await externalStorage.UploadImageAsync(new ExternalImageModel { ContentStream = contentStream, ContentType = contentType })
+                var imageStorageId = await imageStorage.UploadAsync(new ImageFileModel { ContentStream = contentStream, ContentType = contentType })
                     .ConfigureAwait(false);
 
                 return Result<string>.Success(imageStorageId);
             }
-            catch (ImageStorageException ex)
+            catch (FileStorageException ex)
             {
                 logger.LogError(ex, $"Unable to upload image into an external storage because of {ex.Message}.");
                 return Result<string>.Failed(ImagesOperationErrorCode.ImageStorageError.GetOperationError());
@@ -252,19 +258,19 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             try
             {
-                await externalStorage.DeleteImageAsync(imageId).ConfigureAwait(false);
+                await imageStorage.DeleteAsync(imageId).ConfigureAwait(false);
                 return OperationResult.Success;
             }
-            catch (ImageStorageException ex)
+            catch (FileStorageException ex)
             {
                 logger.LogError(ex, $"Unreal to delete image with an external id = {imageId}.");
                 return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
             }
         }
 
-        private IImageValidatorService<T> GetValidator<T>()
+        private IImageValidator GetValidator<T>()
         {
-            return (IImageValidatorService<T>)serviceProvider.GetService(typeof(IImageValidatorService<T>))
+            return (IImageValidator)serviceProvider.GetService(typeof(IImageValidator))
                 ?? throw new NullReferenceException($"Unable to receive ImageValidatorService of type {nameof(T)}");
         }
     }
