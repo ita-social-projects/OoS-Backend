@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
 using OutOfSchool.Services.Common.Exceptions;
+using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
@@ -17,11 +18,10 @@ namespace OutOfSchool.Services.Repository.Files
         private readonly StorageClient storageClient;
         private readonly string bucketName;
 
-        protected GcpFilesStorageBase(GcpStorageSourceConfig options)
+        protected GcpFilesStorageBase(IGcpStorageContext storageContext)
         {
-            var credential = options.RetrieveGoogleCredential();
-            storageClient = StorageClient.Create(credential);
-            bucketName = options.BucketName;
+            storageClient = storageContext.StorageClient;
+            bucketName = storageContext.BucketName;
         }
 
         /// <inheritdoc/>
