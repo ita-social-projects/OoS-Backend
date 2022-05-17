@@ -39,7 +39,6 @@ using OutOfSchool.WebApi.Services.Communication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 using Quartz;
-using Quartz.Impl;
 using Serilog;
 
 namespace OutOfSchool.WebApi
