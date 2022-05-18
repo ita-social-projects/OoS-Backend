@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Extensions
                     q.SetProperty("quartz.jobStore.type", "Quartz.Impl.AdoJobStore.JobStoreTX, Quartz");
                     q.SetProperty("quartz.jobStore.dataSource", "default");
                     q.SetProperty("quartz.dataSource.default.provider", "MySql");
-                    q.SetProperty("quartz.dataSource.default.connectionString", "Server=localhost;user=root;password=root;database=out_of_school");
+                    q.SetProperty("quartz.dataSource.default.connectionString", elasticSynchronizationSchedulerConfig.QuartzConnectionString);
                     q.SetProperty("quartz.jobStore.clustered", "true");
                     q.SetProperty("quartz.jobStore.driverDelegateType", "Quartz.Impl.AdoJobStore.StdAdoDelegate, Quartz");
                     q.SetProperty("quartz.jobStore.useProperties", "true");
