@@ -34,6 +34,7 @@ steps:
     - --set-env-vars=ASPNETCORE_ENVIRONMENT=Google
     - --set-env-vars=Elasticsearch__User=webapi
     - --set-env-vars=ConnectionStrings__ExternalImageStorage__DatabaseName=outofschool
+    - --set-env-vars=GoogleCloudPlatform__Storage__OosImages__BucketName=$_BUCKET
     # Cloud Run fails to set the variable as an array :(
     # Using index instead
     - --set-env-vars=Elasticsearch__Urls__0=https://elastic.dmytrominochkin.cloud/
