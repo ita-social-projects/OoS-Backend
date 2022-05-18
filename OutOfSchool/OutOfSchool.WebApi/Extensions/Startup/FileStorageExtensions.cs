@@ -5,13 +5,19 @@ using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.WebApi.Util.FakeImplementations;
 
 namespace OutOfSchool.WebApi.Extensions.Startup
 {
     public static class FileStorageExtensions
     {
-        public static IServiceCollection AddImagesStorage(this IServiceCollection services)
+        public static IServiceCollection AddImagesStorage(this IServiceCollection services, bool turnOnFakeStorage = false)
         {
+            if (turnOnFakeStorage)
+            {
+                return services.AddTransient<IImageFilesStorage, FakeImagesStorage>();
+            }
+
             return services.AddTransient<IImageFilesStorage, GcpImagesStorage>(provider =>
             {
                 var config = provider.GetRequiredService<IOptions<GcpStorageImagesSourceConfig>>();

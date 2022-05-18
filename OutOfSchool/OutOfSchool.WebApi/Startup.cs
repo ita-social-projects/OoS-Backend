@@ -42,6 +42,7 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Communication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.FakeImplementations;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -266,7 +267,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
-            services.AddImagesStorage();
+            services.AddImagesStorage(turnOnFakeStorage: Configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
