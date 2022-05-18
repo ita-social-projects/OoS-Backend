@@ -10,11 +10,18 @@ resource "random_integer" "ri" {
   max = 99999
 }
 
+module "storage" {
+  source        = "./storage"
+  random_number = random_integer.ri.result
+  region        = var.region
+}
+
 module "iam" {
   source             = "./iam"
   random_number      = random_integer.ri.result
   access_group_email = var.access_group_email
   project            = var.project
+  bucket             = module.storage.image-bucket
 }
 
 module "passwords" {
@@ -117,4 +124,5 @@ module "build" {
   mongo_secret        = module.secrets.mongo_secret
   sender_email        = var.sender_email
   sendgrid_key_secret = module.secrets.sendgrid_key_secret
+  bucket              = module.storage.image-bucket
 }

@@ -10,3 +10,7 @@ variable "project" {
   type        = string
   description = "Your project"
 }
+
+variable "bucket" {
+  type = string
+}
