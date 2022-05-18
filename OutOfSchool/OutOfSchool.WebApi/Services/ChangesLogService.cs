@@ -126,21 +126,21 @@ namespace OutOfSchool.WebApi.Services
 
             if (filter.DateFrom.HasValue)
             {
-                expr = expr.And(x => x.UpdatedDate >= filter.DateFrom);
+                expr = expr.And(x => x.UpdatedDate >= filter.DateFrom.Value.Date);
             }
 
             if (filter.DateTo.HasValue)
             {
-                expr = expr.And(x => x.UpdatedDate <= filter.DateTo);
+                expr = expr.And(x => x.UpdatedDate < filter.DateTo.Value.Date.AddDays(1));
             }
 
             return expr;
         }
 
-        private (Expression<Func<ChangesLog, DateTime>> orderBy, bool ascending) GetOrderParams(ChangesLogFilter filter)
+        private (Expression<Func<ChangesLog, dynamic>> orderBy, bool ascending) GetOrderParams(ChangesLogFilter filter)
         {
             // Returns default ordering so far...
-            Expression<Func<ChangesLog, DateTime>> orderBy = x => x.UpdatedDate;
+            Expression<Func<ChangesLog, dynamic>> orderBy = x => x.UpdatedDate;
 
             return (orderBy, false);
         }
