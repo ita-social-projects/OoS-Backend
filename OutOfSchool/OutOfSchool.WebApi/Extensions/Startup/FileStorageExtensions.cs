@@ -1,5 +1,7 @@
+using System;
 using Google.Cloud.Storage.V1;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
@@ -13,7 +15,9 @@ namespace OutOfSchool.WebApi.Extensions.Startup
     {
         public static IServiceCollection AddImagesStorage(this IServiceCollection services, bool turnOnFakeStorage = false)
         {
-            if (turnOnFakeStorage)
+            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Development;
+
+            if (turnOnFakeStorage && isDevelopment)
             {
                 return services.AddTransient<IImageFilesStorage, FakeImagesStorage>();
             }
