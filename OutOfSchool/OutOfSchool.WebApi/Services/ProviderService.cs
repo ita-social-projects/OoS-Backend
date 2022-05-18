@@ -127,9 +127,12 @@ namespace OutOfSchool.WebApi.Services
 
             foreach (var provider in providersDTO)
             {
-                var (_, (rating, numberOfVotes)) = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
-                provider.Rating = rating;
-                provider.NumberOfRatings = numberOfVotes;
+                if (averageRatings.Any())
+                {
+                    var (_, (rating, numberOfVotes)) = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
+                    provider.Rating = rating;
+                    provider.NumberOfRatings = numberOfVotes;
+                }
             }
 
             return providersDTO;
