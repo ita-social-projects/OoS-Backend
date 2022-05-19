@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Castle.Core.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -75,6 +76,9 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(256)]
         public string CoverImageId { get; set; } = string.Empty;
 
+        [JsonProperty(NullValueHandling=NullValueHandling.Ignore)]
+        public IFormFile CoverImage { get; set; }
+
         [Required(ErrorMessage = "Head's information is required")]
         [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
         public string Head { get; set; } = string.Empty;
@@ -123,7 +127,6 @@ namespace OutOfSchool.WebApi.Models
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public AddressDto Address { get; set; }
 
-        [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public List<TeacherDTO> Teachers { get; set; }
 
         [Required]
@@ -132,6 +135,9 @@ namespace OutOfSchool.WebApi.Models
 
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public IList<string> ImageIds { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<IFormFile> ImageFiles { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

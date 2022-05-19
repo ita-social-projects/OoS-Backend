@@ -31,7 +31,6 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private static List<WorkshopDTO> workshops;
         private static List<WorkshopCard> workshopCards;
         private static WorkshopDTO workshop;
-        private static WorkshopCreationDto workshopCreation;
         private static ProviderDto provider;
         private static ProviderAdminDto providerAdmin;
         private static Mock<IOptions<AppDefaultsConfig>> options;

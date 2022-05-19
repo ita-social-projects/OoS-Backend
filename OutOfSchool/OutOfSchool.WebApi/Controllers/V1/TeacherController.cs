@@ -37,7 +37,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="localizer">Localizer.</param
         /// <param name="providerService">Service for Provider.</param>
         /// <param name="providerAdminService">Service For ProviderAdmin.</param>
-        /// 
         public TeacherController(
             ITeacherService teacherService,
             IStringLocalizer<SharedResource> localizer,
@@ -104,7 +103,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> Create(TeacherCreationDto dto)
+        public async Task<IActionResult> Create(TeacherDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -134,7 +133,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
-        public async Task<IActionResult> Update(TeacherUpdateDto dto)
+        public async Task<IActionResult> Update(TeacherDTO dto)
         {
             if (!ModelState.IsValid)
             {

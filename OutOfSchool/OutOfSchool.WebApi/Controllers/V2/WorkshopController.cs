@@ -149,7 +149,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <response code="413">If the request break the limits, set in configs.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.WorkshopAddNew)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreationDto))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(WorkshopCreationResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -157,7 +157,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Create([FromForm] WorkshopCreationDto dto) // TODO: validate by request size
+        public async Task<IActionResult> Create([FromForm] WorkshopDTO dto)
         {
             var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)
@@ -167,13 +167,6 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
             dto.Id = default;
             dto.Address.Id = default;
-            if (dto.Teachers != null && dto.Teachers.Any())
-            {
-                foreach (var teacher in dto.Teachers)
-                {
-                    teacher.Id = default;
-                }
-            }
 
             var creationResult = await combinedWorkshopService.Create(dto).ConfigureAwait(false);
 
@@ -208,7 +201,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPut]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Update([FromForm] WorkshopUpdateDto dto)
+        public async Task<IActionResult> Update([FromForm] WorkshopDTO dto)
         {
             var userHasRights = await IsUserProvidersOwner(dto.ProviderId).ConfigureAwait(false);
             if (!userHasRights)

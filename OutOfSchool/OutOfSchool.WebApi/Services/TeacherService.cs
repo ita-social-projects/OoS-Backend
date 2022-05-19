@@ -48,12 +48,14 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<TeacherCreationResultDto> Create(TeacherCreationDto dto)
+        public async Task<TeacherCreationResultDto> Create(TeacherDTO dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation("Teacher creating was started.");
 
             var teacher = mapper.Map<Teacher>(dto);
+            teacher.Id = default;
+            teacher.WorkshopId = dto.WorkshopId;
 
             var newTeacher = await teacherRepository.Create(teacher).ConfigureAwait(false);
 
@@ -102,12 +104,12 @@ namespace OutOfSchool.WebApi.Services
             }
 
             logger.LogInformation($"Got a Teacher with Id = {id}.");
-            
+
             return teacher?.ToModel();
         }
 
         /// <inheritdoc/>
-        public async Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto)
+        public async Task<TeacherUpdateResultDto> Update(TeacherDTO dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation($"Updating Teacher with Id = {dto.Id} started.");
