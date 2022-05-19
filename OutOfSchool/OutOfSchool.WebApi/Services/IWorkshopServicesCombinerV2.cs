@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.WebApi.Services
@@ -11,14 +12,14 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreationResultDto"/>.</returns>
-        Task<WorkshopCreationResultDto> Create(WorkshopCreationDto dto);
+        new Task<WorkshopCreationResultDto> Create(WorkshopDTO dto);
 
         /// <summary>
         /// Update existing entity in the database.
         /// </summary>
         /// <param name="dto">Entity that will be to updated.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
-        Task<WorkshopUpdateResultDto> Update(WorkshopUpdateDto dto);
+        new Task<WorkshopUpdateResultDto> Update(WorkshopDTO dto);
 
         /// <summary>
         ///  Delete entity.
