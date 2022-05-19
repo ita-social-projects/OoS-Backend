@@ -1,12 +1,9 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -80,7 +77,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet]
         public async Task<IActionResult> GetUsersChildren([FromQuery] OffsetFilter offsetFilter)
         {
-            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            string userId = GettingUserProperties.GetUserId(User);
 
             return Ok(await service.GetByUserId(userId, offsetFilter).ConfigureAwait(false));
         }
@@ -99,7 +96,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUsersChildById(Guid id)
         {
-            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            string userId = GettingUserProperties.GetUserId(User);
 
             return Ok(await service.GetByIdAndUserId(id, userId).ConfigureAwait(false));
         }
@@ -118,7 +115,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPost]
         public async Task<IActionResult> Create(ChildDto childDto)
         {
-            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            string userId = GettingUserProperties.GetUserId(User);
 
             var child = await service.CreateChildForUser(childDto, userId).ConfigureAwait(false);
 
@@ -142,7 +139,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPut]
         public async Task<IActionResult> Update(ChildDto dto)
         {
-            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            string userId = GettingUserProperties.GetUserId(User);
 
             return Ok(await service.UpdateChildCheckingItsUserIdProperty(dto, userId).ConfigureAwait(false));
         }
@@ -161,7 +158,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            string userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            string userId = GettingUserProperties.GetUserId(User);
 
             await service.DeleteChildCheckingItsUserIdProperty(id, userId).ConfigureAwait(false);
 
