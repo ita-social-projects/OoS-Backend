@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -16,7 +17,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="userId">User ID.</param>
         /// <returns>Number of the added ChangesLog records.</returns>
         int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
-            where TEntity : class, new();
+            where TEntity : class, IKeyedEntity, new();
 
         /// <summary>
         /// Create and add ChangesLog record for the Address in format {District, City, Region, Street, BuildingNumber}.
@@ -28,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="userId">User ID.</param>
         /// <returns>Number of the added ChangesLog records.</returns>
         int AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressPropertyName, string userId)
-            where TEntity : class, new();
+            where TEntity : class, IKeyedEntity, new();
 
         /// <summary>
         /// Get entities from the database that match filter's parameters.

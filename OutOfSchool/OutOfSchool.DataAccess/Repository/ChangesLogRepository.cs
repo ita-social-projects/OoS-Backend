@@ -16,7 +16,7 @@ namespace OutOfSchool.Services.Repository
         }
 
         public ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId, IEnumerable<string> trackedFields)
-            where TEntity : class, new()
+            where TEntity : class, IKeyedEntity, new()
         {
             var result = new List<ChangesLog>();
             var entry = dbContext.Entry(entity);
@@ -57,7 +57,7 @@ namespace OutOfSchool.Services.Repository
             string addressPropertyName,
             Func<Address, string> addressProjector,
             string userId)
-            where TEntity : class, new()
+            where TEntity : class, IKeyedEntity, new()
         {
             ChangesLog result = null;
             var entry = dbContext.Entry(entity);

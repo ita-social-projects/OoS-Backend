@@ -15,7 +15,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="trackedFields">List of fields to be logged.</param>
         /// <returns>A collection of the added ChangesLog records.</returns>
         ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId, IEnumerable<string> trackedFields)
-            where TEntity : class, new();
+            where TEntity : class, IKeyedEntity, new();
 
         /// <summary>
         /// Create and add ChangesLog record for the Address entity converted to string. Log record is stored with ID of the parent entity.
@@ -27,6 +27,6 @@ namespace OutOfSchool.Services.Repository
         /// <param name="userId">User ID.</param>
         /// <returns>An added ChangesLog record, or null.</returns>
         ChangesLog AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressPropertyName, Func<Address, string> addressProjector, string userId)
-            where TEntity : class, new();
+            where TEntity : class, IKeyedEntity, new();
     }
 }

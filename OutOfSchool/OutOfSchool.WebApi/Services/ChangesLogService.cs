@@ -35,7 +35,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         public int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
-            where TEntity : class, new()
+            where TEntity : class, IKeyedEntity, new()
         {
             if (!IsLoggingAllowed<TEntity>(out var trackedFields))
             {
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         public int AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressPropertyName, string userId)
-            where TEntity : class, new()
+            where TEntity : class, IKeyedEntity, new()
         {
             if (!IsLoggingAllowed<TEntity>(addressPropertyName))
             {

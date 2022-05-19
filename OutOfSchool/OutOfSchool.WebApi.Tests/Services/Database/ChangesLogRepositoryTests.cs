@@ -253,7 +253,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             ? null
             : $"{address.District}, {address.City}, {address.Region}, {address.Street}, {address.BuildingNumber}";
 
-        public class ProviderTest
+        public class ProviderTest : IKeyedEntity
         {
             public string FullTitle { get; set; }
 
