@@ -230,8 +230,8 @@ namespace OutOfSchool.WebApi
             services.AddScoped<IImageService, ImageService>();
             services.AddScoped<IImageValidator, ImageValidator<Workshop>>();
             services.AddScoped<IImageValidator, ImageValidator<Teacher>>();
-            services.AddTransient<IAboutPortalService, AboutPortalService>();
-            services.AddTransient<ISupportInformationService, SupportInformationService>();
+            services.AddTransient<ICompanyInformationService, CompanyInformationService>();
+
             services.AddScoped<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
@@ -249,11 +249,11 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
-            services.AddTransient<IEntityRepository<SupportInformation>, EntityRepository<SupportInformation>>();
+            services.AddTransient<IEntityRepository<CompanyInformation>, EntityRepository<CompanyInformation>>();
 
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
-            services.AddTransient<ISensitiveEntityRepository<AboutPortal>, SensitiveEntityRepository<AboutPortal>>();
-            services.AddTransient<ISensitiveEntityRepository<AboutPortalItem>, SensitiveEntityRepository<AboutPortalItem>>();
+            services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
+            services.AddTransient<ISensitiveEntityRepository<CompanyInformationItem>, SensitiveEntityRepository<CompanyInformationItem>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services
@@ -270,7 +270,6 @@ namespace OutOfSchool.WebApi
             services.AddImagesStorage(turnOnFakeStorage: Configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
-            services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
             services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
 

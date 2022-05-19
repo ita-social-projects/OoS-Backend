@@ -116,17 +116,14 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
 
-            CreateMap<AboutPortalItem, AboutPortalItemDto>().ReverseMap();
-            CreateMap<AboutPortal, AboutPortalDto>()
-                .ForMember(dest => dest.AboutPortalItems, opt => opt.MapFrom((dto, entity, dest, ctx) =>
+            CreateMap<CompanyInformationItem, CompanyInformationItemDto>().ReverseMap();
+            CreateMap<CompanyInformation, CompanyInformationDto>()
+                .ForMember(dest => dest.CompanyInformationItems, opt => opt.MapFrom((dto, entity, dest, ctx) =>
                 {
-                    var dtoItems = ctx.Mapper.Map<List<AboutPortalItem>>(dto.AboutPortalItems);
+                    var dtoItems = ctx.Mapper.Map<List<CompanyInformationItem>>(dto.CompanyInformationItems);
                     return dtoItems;
                 }));
-            CreateMap<AboutPortalDto, AboutPortal>();
-
-            CreateMap<SupportInformation, SupportInformationDto>().ReverseMap()
-                .ForMember(c => c.Id, m => m.Ignore());
+            CreateMap<CompanyInformationDto, CompanyInformation>();
 
             CreateMap<Notification, NotificationDto>().ReverseMap()
                 .ForMember(n => n.Id, n => n.Ignore());
