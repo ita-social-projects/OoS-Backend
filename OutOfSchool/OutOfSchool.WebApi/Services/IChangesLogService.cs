@@ -24,10 +24,10 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <typeparam name="TEntity">Entity type that exists in the DB.</typeparam>
         /// <param name="entity">Entity with the modified address.</param>
-        /// <param name="addressProperty">Address property name.</param>
+        /// <param name="addressPropertyName">Address property name.</param>
         /// <param name="userId">User ID.</param>
         /// <returns>Number of the added ChangesLog records.</returns>
-        int AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressProperty, string userId)
+        int AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressPropertyName, string userId)
             where TEntity : class, new();
 
         /// <summary>

@@ -28,9 +28,7 @@ namespace OutOfSchool.Services.Repository
 
             var entityType = typeof(TEntity).Name;
             var (entityIdGuid, entityIdLong) = GetEntityId(entry);
-            var properties = entry.Properties.Where(p => p.IsModified).ToList();
-
-            foreach (var prop in properties)
+            foreach (var prop in entry.Properties.Where(p => p.IsModified))
             {
                 var fieldName = prop.GetColumnName();
                 if (trackedFields.Contains(fieldName))
