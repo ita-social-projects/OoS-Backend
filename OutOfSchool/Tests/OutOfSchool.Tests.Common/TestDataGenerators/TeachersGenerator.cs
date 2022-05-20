@@ -20,7 +20,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.LastName, f => f.Person.LastName)
             .RuleFor(x => x.DateOfBirth, f => f.Person.DateOfBirth)
             .RuleFor(x => x.Description, f => f.Commerce.ProductDescription())
-            .RuleFor(x => x.AvatarImageId, f => f.Person.Avatar);
+            .RuleFor(x => x.CoverImageId, f => f.Person.Avatar);
 
         /// <summary>
         /// Creates new instance of the <see cref="Teacher"/> class with random data.

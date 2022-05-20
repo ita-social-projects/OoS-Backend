@@ -73,7 +73,7 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore());
 
             CreateMap<TeacherDTO, Teacher>()
-                .ForMember(dest => dest.AvatarImageId, opt => opt.Ignore())
+                .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
                 .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
             CreateMap<Teacher, TeacherDTO>();
 

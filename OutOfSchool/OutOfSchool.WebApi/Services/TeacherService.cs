@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Services
             var uploadingResult = await imageService.UploadImageAsync<Teacher>(dto.AvatarImage).ConfigureAwait(false);
             if (uploadingResult.Succeeded)
             {
-                teacher.AvatarImageId = uploadingResult.Value;
+                teacher.CoverImageId = uploadingResult.Value;
                 await UpdateTeacher().ConfigureAwait(false);
             }
 
@@ -136,9 +136,9 @@ namespace OutOfSchool.WebApi.Services
 
             var entity = await teacherRepository.GetById(id).ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(entity.AvatarImageId))
+            if (!string.IsNullOrEmpty(entity.CoverImageId))
             {
-                var removingResult = await imageService.RemoveImageAsync(entity.AvatarImageId).ConfigureAwait(false);
+                var removingResult = await imageService.RemoveImageAsync(entity.CoverImageId).ConfigureAwait(false);
 
                 if (!removingResult.Succeeded)
                 {
@@ -162,14 +162,14 @@ namespace OutOfSchool.WebApi.Services
         private async Task<ImageChangingResult> ChangeAvatarImage(Teacher teacher, string dtoImageId, IFormFile newImage)
         {
             ImageChangingResult changingAvatarResult = null;
-            if (!string.Equals(dtoImageId, teacher.AvatarImageId, StringComparison.Ordinal)
+            if (!string.Equals(dtoImageId, teacher.CoverImageId, StringComparison.Ordinal)
                 || (string.IsNullOrEmpty(dtoImageId) && newImage != null))
             {
-                changingAvatarResult = await imageService.ChangeImageAsync(teacher.AvatarImageId, newImage).ConfigureAwait(false);
+                changingAvatarResult = await imageService.ChangeImageAsync(teacher.CoverImageId, newImage).ConfigureAwait(false);
 
-                teacher.AvatarImageId = changingAvatarResult.UploadingResult switch
+                teacher.CoverImageId = changingAvatarResult.UploadingResult switch
                 {
-                    null when changingAvatarResult.RemovingResult is { Succeeded: false } => teacher.AvatarImageId,
+                    null when changingAvatarResult.RemovingResult is { Succeeded: false } => teacher.CoverImageId,
                     { Succeeded: true } => changingAvatarResult.UploadingResult.Value,
                     _ => null
                 };
