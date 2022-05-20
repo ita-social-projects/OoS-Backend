@@ -30,14 +30,6 @@ variable "sendgrid_key_secret" {
   type = string
 }
 
-variable "sender_email" {
-  type = string
-}
-
-variable "sendgrid_key_secret" {
-  type = string
-}
-
 variable "project" {
   type        = string
   description = "Your project"
