@@ -45,22 +45,9 @@ variable "letsencrypt_email" {
   description = "E-mail of letsencrypt user"
 }
 
-variable "mongo_root_pass" {
-  type = string
-}
-
-variable "mongo_pass" {
-  type = string
-}
-
 variable "sql_hostname" {
   type        = string
   description = "Hostname for application database"
-}
-
-variable "mongo_hostname" {
-  type        = string
-  description = "Hostname for application MongoDB"
 }
 
 variable "phpmyadmin_hostname" {

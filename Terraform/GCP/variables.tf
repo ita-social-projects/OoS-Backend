@@ -68,11 +68,6 @@ variable "sql_hostname" {
   description = "Hostname for application database"
 }
 
-variable "mongo_hostname" {
-  type        = string
-  description = "Hostname for application MongoDB"
-}
-
 variable "k8s_api_hostname" {
   type        = string
   description = "Hostname for K8S API"

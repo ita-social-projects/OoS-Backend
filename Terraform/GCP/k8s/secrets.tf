@@ -34,15 +34,3 @@ resource "kubernetes_secret" "elastic-credentials" {
     apipass  = var.es_api_pass
   }
 }
-
-resource "kubernetes_secret" "mongodb-credentials" {
-  metadata {
-    name      = "mongodb-credentials"
-    namespace = kubernetes_namespace.oos.metadata[0].name
-  }
-
-  data = {
-    mongodb-passwords     = var.mongo_pass
-    mongodb-root-password = var.mongo_root_pass
-  }
-}

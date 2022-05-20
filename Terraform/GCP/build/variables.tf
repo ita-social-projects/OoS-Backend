@@ -18,10 +18,6 @@ variable "auth_secret" {
   type = string
 }
 
-variable "mongo_secret" {
-  type = string
-}
-
 variable "es_api_pass_secret" {
   type = string
 }

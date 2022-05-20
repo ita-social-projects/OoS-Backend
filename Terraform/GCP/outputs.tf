@@ -28,16 +28,6 @@ output "clusterstore_pass" {
   sensitive = true
 }
 
-output "mongo_pass" {
-  value     = module.passwords.mongo_pass
-  sensitive = true
-}
-
-output "mongo_root_pass" {
-  value     = module.passwords.mongo_root_pass
-  sensitive = true
-}
-
 output "image_bucket" {
   value = module.storage.image-bucket
 }

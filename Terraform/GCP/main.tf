@@ -85,11 +85,8 @@ module "k8s" {
   es_api_pass         = module.passwords.es_api_pass
   csi_sa_email        = module.iam.csi_sa_email
   csi_sa_key          = module.iam.csi_sa_key
-  mongo_root_pass     = module.passwords.mongo_root_pass
-  mongo_pass          = module.passwords.mongo_pass
   letsencrypt_email   = var.letsencrypt_email
   sql_hostname        = var.sql_hostname
-  mongo_hostname      = var.mongo_hostname
   phpmyadmin_hostname = var.phpmyadmin_hostname
   kibana_hostname     = var.kibana_hostname
   elastic_hostname    = var.elastic_hostname
@@ -103,10 +100,8 @@ module "secrets" {
   sql_api_pass   = module.passwords.sql_api_pass
   sql_auth_pass  = module.passwords.sql_auth_pass
   es_api_pass    = module.passwords.es_api_pass
-  mongo_pass     = module.passwords.mongo_pass
   labels         = var.labels
   sql_hostname   = var.sql_hostname
-  mongo_hostname = var.mongo_hostname
   sendgrid_key   = var.sendgrid_key
 }
 
@@ -121,7 +116,6 @@ module "build" {
   api_secret          = module.secrets.sql_api_secret
   auth_secret         = module.secrets.sql_auth_secret
   es_api_pass_secret  = module.secrets.es_api_secret
-  mongo_secret        = module.secrets.mongo_secret
   sender_email        = var.sender_email
   sendgrid_key_secret = module.secrets.sendgrid_key_secret
   bucket              = module.storage.image-bucket
