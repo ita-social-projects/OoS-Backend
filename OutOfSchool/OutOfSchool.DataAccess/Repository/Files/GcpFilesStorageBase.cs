@@ -12,19 +12,13 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository.Files
 {
-    public abstract class GcpFilesStorageBase<TFile> : IFilesStorage<TFile, string>, IDisposable
+    public abstract class GcpFilesStorageBase<TFile> : IFilesStorage<TFile, string>
         where TFile : FileModel, new()
     {
         protected GcpFilesStorageBase(IGcpStorageContext storageContext)
         {
             StorageClient = storageContext.StorageClient;
             BucketName = storageContext.BucketName;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         private protected StorageClient StorageClient { get; }
@@ -102,14 +96,6 @@ namespace OutOfSchool.Services.Repository.Files
         protected virtual string GenerateFileId()
         {
             return Guid.NewGuid().ToString();
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                StorageClient?.Dispose();
-            }
         }
     }
 }
