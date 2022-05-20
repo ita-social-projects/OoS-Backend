@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
@@ -20,6 +21,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> userManager;
         private readonly IEmailSender emailSender;
         private readonly ILogger<AccountController> logger;
+        private readonly IStringLocalizer<SharedResource> localizer;
         private string userId;
         private string path;
 
@@ -27,12 +29,14 @@ namespace OutOfSchool.IdentityServer.Controllers
             SignInManager<User> signInManager,
             UserManager<User> userManager,
             IEmailSender emailSender,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger,
+            IStringLocalizer<SharedResource> localizer)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.emailSender = emailSender;
             this.logger = logger;
+            this.localizer = localizer;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -54,6 +58,20 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
+            if (model.Submit == localizer["Cancel"])
+            {
+                if (!string.IsNullOrWhiteSpace(model.Email))
+                {
+                    logger.LogInformation($"{path} Cancel click, but user enter new email, show confirmation.");
+
+                    return View("Email/ConfirmCancelEmail");
+                }
+                else
+                {
+                    return View("Email/CloseWindow");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 logger.LogError($"{path} Input data was not valid for User(id): {userId}. " +
@@ -73,7 +91,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             logger.LogInformation($"{path} Confirmation message was sent for User(id) + {userId}.");
 
-            return View("Email/ChangeEmail");
+            return View("Email/ConfirmChangeEmail", model);
         }
 
         [HttpGet]

@@ -264,7 +264,7 @@
   <data name="is already taken" xml:space="preserve">
     <value>is already taken</value>
   </data>
-    <data name="Your account is blocked" xml:space="preserve">
+  <data name="Your account is blocked" xml:space="preserve">
     <value>Your account is blocked. Please, contact administrator</value>
   </data>
   <data name="Login or password is wrong" xml:space="preserve">
@@ -300,10 +300,19 @@
   <data name="Email {0} is already taken" xml:space="preserve">
     <value>Email {0} is already taken</value>
   </data>
-   <data name="Not registered yet?" xml:space="preserve">
+  <data name="Not registered yet?" xml:space="preserve">
     <value>Not registered yet?</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Save</value>
+  </data>
+  <data name="Change email {0} done" xml:space="preserve">
+    <value>Instruction to change email have been sent to {0}. Please check the email and follow the steps in the letter.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Change email cancel" xml:space="preserve">
+    <value>Are you sure you want to cancel the email change?</value>
   </data>
 </root>

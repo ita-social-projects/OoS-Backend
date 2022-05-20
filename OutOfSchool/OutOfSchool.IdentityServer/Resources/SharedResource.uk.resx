@@ -265,7 +265,7 @@
   <data name="is already taken" xml:space="preserve">
     <value>вже зайнятий</value>
   </data>
-    <data name="Your account is blocked" xml:space="preserve">
+  <data name="Your account is blocked" xml:space="preserve">
     <value>Ваш акаунт заблокований. Звʼяжіться з адміністратором.</value>
   </data>
   <data name="Login or password is wrong" xml:space="preserve">
@@ -304,7 +304,16 @@
   <data name="Not registered yet?" xml:space="preserve">
     <value>Ще не зареєстровані?</value>
   </data>
-   <data name="Save" xml:space="preserve">
+  <data name="Save" xml:space="preserve">
     <value>Зберегти</value>
+  </data>
+  <data name="Change email {0} done" xml:space="preserve">
+    <value>Інструкція по зміни емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="Change email cancel" xml:space="preserve">
+    <value>Ви впевнені, що хочете скасувати зміну електронної адреси?</value>
   </data>
 </root>
