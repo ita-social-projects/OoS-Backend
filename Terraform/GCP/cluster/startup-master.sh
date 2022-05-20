@@ -282,7 +282,7 @@ spec:
       serviceAccountName: cloud-controller-manager
       containers:
         - name: cloud-controller-manager
-          image: quay.io/openshift/origin-gcp-cloud-controller-manager:4.10.0
+          image: quay.io/openshift/origin-gcp-cloud-controller-manager:4.12.0
           imagePullPolicy: Always
           resources:
             requests:
@@ -293,8 +293,10 @@ spec:
             - --bind-address=127.0.0.1
             - --cloud-provider=gce
             - --use-service-account-credentials
-            - --configure-cloud-routes=false
+            - --leader-elect=true
+            - --configure-cloud-routes=true
             - --allocate-node-cidrs=false
+            - --cluster-cidr=${cluster_cidr}
             - --controllers=*,-nodeipam
           livenessProbe:
             httpGet:

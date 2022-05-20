@@ -8,6 +8,7 @@ resource "google_compute_instance_template" "k3s" {
 
   instance_description = "${var.node_role} instance"
   machine_type         = var.machine_type.e2medium
+  can_ip_forward       = true
 
   scheduling {
     automatic_restart   = true
