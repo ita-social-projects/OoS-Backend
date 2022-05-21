@@ -23,17 +23,16 @@ namespace OutOfSchool.WebApi.Services.Images
         /// Removes a cover image from the entity.
         /// </summary>
         /// <param name="entity">Entity.</param>
-        /// <param name="imageId">Represents an image file.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="OperationResult"/> of the operation.</returns>
-        Task<OperationResult> RemoveCoverImageAsync(TEntity entity, string imageId);
+        Task<OperationResult> RemoveCoverImageAsync(TEntity entity);
 
         /// <summary>
         /// Changes the cover image given in oldImageId with a new one.
         /// </summary>
         /// <param name="entity">Entity.</param>
-        /// <param name="oldImageId">Image id to change.</param>
+        /// <param name="dtoImageId">Image id to change.</param>
         /// <param name="newImage">Image we should add to the entity.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ImageChangingResult"/> of the operation.</returns>
-        public Task<ImageChangingResult> ChangeCoverImageAsync(TEntity entity, string oldImageId, IFormFile newImage);
+        public Task<ImageChangingResult> ChangeCoverImageAsync(TEntity entity, string dtoImageId, IFormFile newImage);
     }
 }

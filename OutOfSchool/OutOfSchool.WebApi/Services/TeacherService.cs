@@ -138,12 +138,13 @@ namespace OutOfSchool.WebApi.Services
 
             if (!string.IsNullOrEmpty(entity.CoverImageId))
             {
-                var removingResult = await teacherImagesMediator.RemoveCoverImageAsync(entity, entity.CoverImageId).ConfigureAwait(false);
+                var removingResult = await teacherImagesMediator.RemoveCoverImageAsync(entity).ConfigureAwait(false);
 
-                if (!removingResult.Succeeded)
-                {
-                    throw new InvalidOperationException($"Unreal to delete {nameof(Teacher)} [id = {id}] because unable to delete images.");
-                }
+                // TODO: uncomment when create sync-transaction between images and main db
+                // if (!removingResult.Succeeded)
+                // {
+                //     throw new InvalidOperationException($"Unreal to delete {nameof(Teacher)} [id = {id}] because unable to delete images.");
+                // }
             }
 
             try

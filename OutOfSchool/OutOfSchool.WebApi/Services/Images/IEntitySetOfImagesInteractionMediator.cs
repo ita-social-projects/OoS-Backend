@@ -32,7 +32,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="entity">Entity.</param>
         /// <param name="images">Represents an image file.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="MultipleKeyValueOperationResult"/> of the operation.</returns>
-        Task<ImageUploadingResult> AddManyImagesAsync(TEntity entity, IList<IFormFile> images);
+        Task<MultipleImageUploadingResult> AddManyImagesAsync(TEntity entity, IList<IFormFile> images);
 
         /// <summary>
         /// Removes some images from the entity.
@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="entity">Entity.</param>
         /// <param name="imageIds">Represents an image file.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="MultipleKeyValueOperationResult"/> of the operation.</returns>
-        Task<ImageRemovingResult> RemoveManyImagesAsync(TEntity entity, IList<string> imageIds);
+        Task<MultipleImageRemovingResult> RemoveManyImagesAsync(TEntity entity, IList<string> imageIds);
 
         /// <summary>
         /// Changes the image given in oldImageId with a new one.

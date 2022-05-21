@@ -81,7 +81,7 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<ImageUploadingResult> UploadManyImagesAsync<TEntity>(IList<IFormFile> images)
+        public async Task<MultipleImageUploadingResult> UploadManyImagesAsync<TEntity>(IList<IFormFile> images)
         {
             if (images == null || images.Count <= 0)
             {
@@ -125,7 +125,7 @@ namespace OutOfSchool.WebApi.Services.Images
             }
 
             logger.LogTrace("Uploading images was finished");
-            return new ImageUploadingResult
+            return new MultipleImageUploadingResult
             {
                 SavedIds = savingExternalImageIds,
                 MultipleKeyValueOperationResult = uploadingImagesResults,
@@ -169,7 +169,7 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<ImageRemovingResult> RemoveManyImagesAsync(IList<string> imageIds)
+        public async Task<MultipleImageRemovingResult> RemoveManyImagesAsync(IList<string> imageIds)
         {
             if (imageIds == null || imageIds.Count <= 0)
             {
@@ -192,7 +192,7 @@ namespace OutOfSchool.WebApi.Services.Images
             }
 
             logger.LogTrace("Removing images was finished");
-            return new ImageRemovingResult
+            return new MultipleImageRemovingResult
             {
                 RemovedIds = removingExternalImageIds,
                 MultipleKeyValueOperationResult = removingImagesResults,

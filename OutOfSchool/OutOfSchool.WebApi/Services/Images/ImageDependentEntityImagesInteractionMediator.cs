@@ -93,11 +93,11 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<ImageUploadingResult> AddManyImagesAsync(TEntity entity, IList<IFormFile> images)
+        public async Task<MultipleImageUploadingResult> AddManyImagesAsync(TEntity entity, IList<IFormFile> images)
             => await UploadManyImagesProcessAsync(entity, images).ConfigureAwait(false);
 
         /// <inheritdoc/>
-        public async Task<ImageRemovingResult> RemoveManyImagesAsync(TEntity entity, IList<string> imageIds)
+        public async Task<MultipleImageRemovingResult> RemoveManyImagesAsync(TEntity entity, IList<string> imageIds)
             => await RemoveManyImagesProcessAsync(entity, imageIds).ConfigureAwait(false);
 
         /// <inheritdoc/>
@@ -153,15 +153,15 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<OperationResult> RemoveCoverImageAsync(TEntity entity, string imageId)
+        public async Task<OperationResult> RemoveCoverImageAsync(TEntity entity)
         {
             _ = entity ?? throw new ArgumentNullException(nameof(entity));
-            if (string.IsNullOrEmpty(imageId))
+            if (string.IsNullOrEmpty(entity.CoverImageId))
             {
-                throw new ArgumentException(@"Image id must be a non empty string", nameof(imageId));
+                throw new InvalidOperationException(@"Image id must be a non empty string");
             }
 
-            var removingCoverImageResult = await ImageService.RemoveImageAsync(imageId).ConfigureAwait(false);
+            var removingCoverImageResult = await ImageService.RemoveImageAsync(entity.CoverImageId).ConfigureAwait(false);
 
             if (removingCoverImageResult.Succeeded)
             {
@@ -172,17 +172,17 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public async Task<ImageChangingResult> ChangeCoverImageAsync(TEntity entity, string oldImageId, IFormFile newImage)
+        public async Task<ImageChangingResult> ChangeCoverImageAsync(TEntity entity, string dtoImageId, IFormFile newImage)
         {
             _ = entity ?? throw new ArgumentNullException(nameof(entity));
 
-            if (string.Equals(oldImageId, entity.CoverImageId, StringComparison.Ordinal) &&
-                (!string.IsNullOrEmpty(oldImageId) || newImage == null))
+            if (string.Equals(dtoImageId, entity.CoverImageId, StringComparison.Ordinal) &&
+                (!string.IsNullOrEmpty(dtoImageId) || newImage == null))
             {
                 return new ImageChangingResult(); // whenever no need to change cover image
             }
 
-            return await ChangeCoverImageProcessAsync(entity, oldImageId, newImage).ConfigureAwait(false);
+            return await ChangeCoverImageProcessAsync(entity, newImage).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="MultipleKeyValueOperationResult"/>.</returns>
         /// <exception cref="ArgumentNullException">When an entity is null.</exception>
         /// <exception cref="ArgumentException">When a given list of images is null or empty.</exception>
-        private protected async Task<ImageUploadingResult> UploadManyImagesProcessAsync(
+        private protected async Task<MultipleImageUploadingResult> UploadManyImagesProcessAsync(
             TEntity entity,
             IList<IFormFile> images)
         {
@@ -293,14 +293,14 @@ namespace OutOfSchool.WebApi.Services.Images
             if (!AllowedToUploadGivenAmountOfFiles(entity, images.Count))
             {
                 Logger.LogTrace("The image limit was reached for the entity");
-                return new ImageUploadingResult
+                return new MultipleImageUploadingResult
                     { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.ExceedingCountOfImagesError.GetResourceValue() } };
             }
 
             var imagesUploadingResult = await ImageService.UploadManyImagesAsync<TEntity>(images).ConfigureAwait(false);
             if (imagesUploadingResult.SavedIds == null || imagesUploadingResult.MultipleKeyValueOperationResult == null)
             {
-                return new ImageUploadingResult
+                return new MultipleImageUploadingResult
                     { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.UploadingError.GetResourceValue() } };
             }
 
@@ -319,7 +319,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="entity">Entity.</param>
         /// <param name="imageIds">Image ids for removing.</param>
         /// <returns>The instance of <see cref="Task{TResult}"/>, containing <see cref="MultipleKeyValueOperationResult"/>.</returns>
-        private protected async Task<ImageRemovingResult> RemoveManyImagesProcessAsync(
+        private protected async Task<MultipleImageRemovingResult> RemoveManyImagesProcessAsync(
             TEntity entity,
             IList<string> imageIds)
         {
@@ -335,7 +335,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
             if (!ableToRemove)
             {
-                return new ImageRemovingResult
+                return new MultipleImageRemovingResult
                 {
                     MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.RemovingError.GetResourceValue() },
                 };
@@ -345,7 +345,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
             if (imagesRemovingResult.RemovedIds == null || imagesRemovingResult.MultipleKeyValueOperationResult == null)
             {
-                return new ImageRemovingResult
+                return new MultipleImageRemovingResult
                 {
                     MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.RemovingError.GetResourceValue() },
                 };
@@ -366,24 +366,22 @@ namespace OutOfSchool.WebApi.Services.Images
                 entity.Images.FindIndex(i => i.ExternalStorageId == imageId));
         }
 
-        private async Task<ImageChangingResult> ChangeCoverImageProcessAsync(TEntity entity, string oldImageId, IFormFile newImage)
+        private async Task<ImageChangingResult> ChangeCoverImageProcessAsync(TEntity entity, IFormFile newImage)
         {
             var changingCoverImageResult = new ImageChangingResult();
 
-            if (!string.IsNullOrEmpty(oldImageId))
+            if (!string.IsNullOrEmpty(entity.CoverImageId))
             {
-                changingCoverImageResult.RemovingResult = await RemoveCoverImageAsync(entity, oldImageId).ConfigureAwait(false);
+                changingCoverImageResult.RemovingResult = await RemoveCoverImageAsync(entity).ConfigureAwait(false);
                 if (!changingCoverImageResult.RemovingResult.Succeeded)
                 {
                     return changingCoverImageResult;
                 }
-
-                oldImageId = null;
             }
 
-            if (string.IsNullOrEmpty(oldImageId) && newImage != null)
+            if (string.IsNullOrEmpty(entity.CoverImageId) && newImage != null)
             {
-                changingCoverImageResult.UploadingResult = await AddCoverImageAsync(entity, newImage).ConfigureAwait(false);
+                changingCoverImageResult.UploadingResult = await ImageService.UploadImageAsync<TEntity>(newImage).ConfigureAwait(false);
             }
 
             entity.CoverImageId = changingCoverImageResult.UploadingResult switch
