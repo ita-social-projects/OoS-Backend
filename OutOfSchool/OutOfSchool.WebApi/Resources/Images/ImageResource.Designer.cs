@@ -59,5 +59,14 @@ namespace OutOfSchool.WebApi.Resources.Images {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string ImageAlreadyExist {
+            get {
+                return ResourceManager.GetString("ImageAlreadyExist", resourceCulture);
+            }
+        }
     }
 }

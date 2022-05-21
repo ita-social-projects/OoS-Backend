@@ -43,8 +43,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ITeacherService teacherService;
         private readonly ILogger<WorkshopService> logger;
         private readonly IMapper mapper;
-        private readonly IImageService imageService;
-        private readonly IWorkshopImagesInteractionMediator workshopImagesInteractionMediator;
+        private readonly IImageDependentEntityImagesInteractionMediator<Workshop> workshopImagesMediator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -55,8 +54,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="teacherService">Teacher service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Automapper DI service.</param>
-        /// <param name="imageService">Image service.</param>
-        /// <param name="workshopImagesInteractionMediator">Image service for workshop.</param>
+        /// <param name="workshopImagesMediator">Workshop images mediator.</param>
         public WorkshopService(
             IWorkshopRepository workshopRepository,
             IClassRepository classRepository,
@@ -64,8 +62,7 @@ namespace OutOfSchool.WebApi.Services
             ITeacherService teacherService,
             ILogger<WorkshopService> logger,
             IMapper mapper,
-            IImageService imageService,
-            IWorkshopImagesInteractionMediator workshopImagesInteractionMediator)
+            IImageDependentEntityImagesInteractionMediator<Workshop> workshopImagesMediator)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
@@ -73,8 +70,7 @@ namespace OutOfSchool.WebApi.Services
             this.teacherService = teacherService;
             this.logger = logger;
             this.mapper = mapper;
-            this.imageService = imageService;
-            this.workshopImagesInteractionMediator = workshopImagesInteractionMediator;
+            this.workshopImagesMediator = workshopImagesMediator;
         }
 
         /// <inheritdoc/>
@@ -131,13 +127,13 @@ namespace OutOfSchool.WebApi.Services
             if (dto.ImageFiles?.Count > 0)
             {
                 newWorkshop.Images = new List<Image<Workshop>>();
-                uploadingResult = await workshopImagesInteractionMediator.UploadManyImagesAsync(newWorkshop, dto.ImageFiles).ConfigureAwait(false);
+                uploadingResult = await workshopImagesMediator.AddManyImagesAsync(newWorkshop, dto.ImageFiles).ConfigureAwait(false);
             }
 
             Result<string> uploadingCoverImageResult = null;
             if (dto.CoverImage != null)
             {
-                uploadingCoverImageResult = await AddCoverImage(newWorkshop, dto.CoverImage).ConfigureAwait(false);
+                uploadingCoverImageResult = await workshopImagesMediator.AddCoverImageAsync(newWorkshop, dto.CoverImage).ConfigureAwait(false);
             }
 
             await UpdateWorkshop().ConfigureAwait(false);
@@ -262,7 +258,7 @@ namespace OutOfSchool.WebApi.Services
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
 
             dto.ImageIds ??= new List<string>();
-            var multipleImageChangingResult = await workshopImagesInteractionMediator.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
+            var multipleImageChangingResult = await workshopImagesMediator.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
                 .ConfigureAwait(false);
 
             // In case if AddressId was changed. AddressId is one and unique for workshop.
@@ -273,7 +269,7 @@ namespace OutOfSchool.WebApi.Services
 
             mapper.Map(dto, currentWorkshop);
 
-            var changingCoverImageResult = await ChangeCoverImage(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
+            var changingCoverImageResult = await workshopImagesMediator.ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
 
             await UpdateWorkshop().ConfigureAwait(false);
 
@@ -331,7 +327,7 @@ namespace OutOfSchool.WebApi.Services
 
             var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
 
-            var removingResult = await workshopImagesInteractionMediator.RemoveManyImagesAsync(entity, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
+            var removingResult = await workshopImagesMediator.RemoveManyImagesAsync(entity, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
 
             if (entity.Images.Count > 0 && removingResult.MultipleKeyValueOperationResult is { Succeeded: false })
             {
@@ -340,7 +336,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!string.IsNullOrEmpty(entity.CoverImageId))
             {
-                var removingCoverImageResult = await imageService.RemoveImageAsync(entity.CoverImageId).ConfigureAwait(false);
+                var removingCoverImageResult = await workshopImagesMediator.RemoveImageAsync(entity, entity.CoverImageId).ConfigureAwait(false);
 
                 if (!removingCoverImageResult.Succeeded)
                 {
@@ -629,37 +625,6 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return workshops;
-        }
-
-        private async Task<Result<string>> AddCoverImage(Workshop workshop, IFormFile image)
-        {
-            var uploadingCoverImageResult = await imageService.UploadImageAsync<Workshop>(image).ConfigureAwait(false);
-
-            if (uploadingCoverImageResult.Succeeded)
-            {
-                workshop.CoverImageId = uploadingCoverImageResult.Value;
-            }
-
-            return uploadingCoverImageResult;
-        }
-
-        private async Task<ImageChangingResult> ChangeCoverImage(Workshop workshop, string dtoImageId, IFormFile newImage)
-        {
-            ImageChangingResult changingCoverImageResult = null;
-            if (!string.Equals(dtoImageId, workshop.CoverImageId, StringComparison.Ordinal)
-                || (string.IsNullOrEmpty(dtoImageId) && newImage != null))
-            {
-                changingCoverImageResult = await imageService.ChangeImageAsync(workshop.CoverImageId, newImage).ConfigureAwait(false);
-
-                workshop.CoverImageId = changingCoverImageResult.UploadingResult switch
-                {
-                    null when changingCoverImageResult.RemovingResult is { Succeeded: false } => workshop.CoverImageId,
-                    { Succeeded: true } => changingCoverImageResult.UploadingResult.Value,
-                    _ => null
-                };
-            }
-
-            return changingCoverImageResult;
         }
 
         private async Task ChangeTeachers(Workshop currentWorkshop, List<TeacherDTO> teacherDtoList)

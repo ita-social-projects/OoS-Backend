@@ -234,7 +234,8 @@ namespace OutOfSchool.WebApi
             services.AddScoped<IImageValidator, ImageValidator<Teacher>>();
             services.AddTransient<ICompanyInformationService, CompanyInformationService>();
 
-            services.AddScoped<IWorkshopImagesInteractionMediator, WorkshopImagesInteractionMediator>();
+            services.AddScoped<IImageDependentEntityImagesInteractionMediator<Workshop>, ImageDependentEntityImagesInteractionMediator<Workshop>>();
+            services.AddScoped<IEntityCoverImageInteractionMediator<Teacher>, ImageDependentEntityImagesInteractionMediator<Teacher>>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
 

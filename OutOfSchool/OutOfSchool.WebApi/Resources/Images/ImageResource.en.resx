@@ -123,9 +123,6 @@
   <data name="DefaultError" xml:space="preserve">
     <value>Unfortunately, we weren't able to complete it successfully</value>
   </data>
-  <data name="EntityNotFoundError" xml:space="preserve">
-    <value>Please, check that you try to do the right thing</value>
-  </data>
   <data name="ExceedingCountOfImagesError" xml:space="preserve">
     <value>You cannot upload so many images because of images' limits</value>
   </data>
@@ -153,10 +150,10 @@
   <data name="UnexpectedValidationError" xml:space="preserve">
     <value>Please, be sure that your image is correct</value>
   </data>
-  <data name="UpdateEntityError" xml:space="preserve">
-    <value>We have some troubles with your data</value>
-  </data>
   <data name="UploadingError" xml:space="preserve">
     <value>An error while uploading</value>
+  </data>
+  <data name="ImageAlreadyExist" xml:space="preserve">
+    <value>Image already exists</value>
   </data>
 </root>

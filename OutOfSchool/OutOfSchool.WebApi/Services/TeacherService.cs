@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services
     public class TeacherService : ITeacherService
     {
         private readonly ISensitiveEntityRepository<Teacher> teacherRepository;
-        private readonly IImageService imageService;
+        private readonly IEntityCoverImageInteractionMediator<Teacher> teacherImagesMediator;
         private readonly ILogger<TeacherService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
@@ -34,15 +34,15 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="TeacherService"/> class.
         /// </summary>
         /// <param name="teacherRepository">Repository for Teacher entity.</param>
-        /// <param name="imageService">Image service.</param>
+        /// <param name="teacherImagesMediator">Teacher images mediator.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
-        public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IImageService imageService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
+        public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IEntityCoverImageInteractionMediator<Teacher> teacherImagesMediator, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
         {
             this.localizer = localizer;
             this.teacherRepository = teacherRepository;
-            this.imageService = imageService;
+            this.teacherImagesMediator = teacherImagesMediator;
             this.logger = logger;
             this.mapper = mapper;
         }
@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Services
 
             var newTeacher = await teacherRepository.Create(teacher).ConfigureAwait(false);
 
-            var uploadingResult = await imageService.UploadImageAsync<Teacher>(dto.AvatarImage).ConfigureAwait(false);
+            var uploadingResult = await teacherImagesMediator.AddCoverImageAsync(newTeacher, dto.AvatarImage).ConfigureAwait(false);
             if (uploadingResult.Succeeded)
             {
                 teacher.CoverImageId = uploadingResult.Value;
@@ -118,7 +118,7 @@ namespace OutOfSchool.WebApi.Services
 
             mapper.Map(dto, teacher);
 
-            var changingAvatarResult = await ChangeAvatarImage(teacher, dto.AvatarImageId, dto.AvatarImage).ConfigureAwait(false);
+            var changingAvatarResult = await teacherImagesMediator.ChangeCoverImageAsync(teacher, dto.AvatarImageId, dto.AvatarImage).ConfigureAwait(false);
 
             await UpdateTeacher().ConfigureAwait(false);
 
@@ -138,7 +138,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (!string.IsNullOrEmpty(entity.CoverImageId))
             {
-                var removingResult = await imageService.RemoveImageAsync(entity.CoverImageId).ConfigureAwait(false);
+                var removingResult = await teacherImagesMediator.RemoveCoverImageAsync(entity, entity.CoverImageId).ConfigureAwait(false);
 
                 if (!removingResult.Succeeded)
                 {
@@ -157,25 +157,6 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Deleting Teacher with Id = {id} failed.");
                 throw;
             }
-        }
-
-        private async Task<ImageChangingResult> ChangeAvatarImage(Teacher teacher, string dtoImageId, IFormFile newImage)
-        {
-            ImageChangingResult changingAvatarResult = null;
-            if (!string.Equals(dtoImageId, teacher.CoverImageId, StringComparison.Ordinal)
-                || (string.IsNullOrEmpty(dtoImageId) && newImage != null))
-            {
-                changingAvatarResult = await imageService.ChangeImageAsync(teacher.CoverImageId, newImage).ConfigureAwait(false);
-
-                teacher.CoverImageId = changingAvatarResult.UploadingResult switch
-                {
-                    null when changingAvatarResult.RemovingResult is { Succeeded: false } => teacher.CoverImageId,
-                    { Succeeded: true } => changingAvatarResult.UploadingResult.Value,
-                    _ => null
-                };
-            }
-
-            return changingAvatarResult;
         }
 
         private async Task UpdateTeacher()

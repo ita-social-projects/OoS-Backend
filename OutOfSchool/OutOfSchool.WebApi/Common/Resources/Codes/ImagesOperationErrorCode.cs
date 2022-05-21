@@ -60,33 +60,27 @@
         InvalidResolutionError = 8,
 
         /// <summary>
-        /// The error that can be used when cannot find the entity for operations with images.
-        /// </summary>
-        [ResourcesKey(nameof(EntityNotFoundError))]
-        EntityNotFoundError = 9,
-
-        /// <summary>
         /// The error that can be used when no images were given for making operations.
         /// </summary>
         [ResourcesKey(nameof(NoGivenImagesError))]
-        NoGivenImagesError = 10,
-
-        /// <summary>
-        /// The error that can be used when something wrong has happened while updating the entity with changed images.
-        /// </summary>
-        [ResourcesKey(nameof(UpdateEntityError))]
-        UpdateEntityError = 11,
+        NoGivenImagesError = 9,
 
         /// <summary>
         /// The error that can be used when count of images is more than allowed for this type of entity.
         /// </summary>
         [ResourcesKey(nameof(ExceedingCountOfImagesError))]
-        ExceedingCountOfImagesError = 12,
+        ExceedingCountOfImagesError = 10,
 
         /// <summary>
         /// The error that can be used when something wrong has happened while changing images.
         /// </summary>
         [ResourcesKey(nameof(ChangingError))]
-        ChangingError = 13,
+        ChangingError = 11,
+
+        /// <summary>
+        /// The error that can be used when trying to upload image that the entity already contains.
+        /// </summary>
+        [ResourcesKey(nameof(ImageAlreadyExist))]
+        ImageAlreadyExist = 12,
     }
 }

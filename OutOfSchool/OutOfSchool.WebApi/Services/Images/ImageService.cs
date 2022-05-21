@@ -127,7 +127,8 @@ namespace OutOfSchool.WebApi.Services.Images
             logger.LogTrace("Uploading images was finished");
             return new ImageUploadingResult
             {
-                SavedIds = savingExternalImageIds, MultipleKeyValueOperationResult = uploadingImagesResults,
+                SavedIds = savingExternalImageIds,
+                MultipleKeyValueOperationResult = uploadingImagesResults,
             };
         }
 
@@ -193,7 +194,8 @@ namespace OutOfSchool.WebApi.Services.Images
             logger.LogTrace("Removing images was finished");
             return new ImageRemovingResult
             {
-                RemovedIds = removingExternalImageIds, MultipleKeyValueOperationResult = removingImagesResults,
+                RemovedIds = removingExternalImageIds,
+                MultipleKeyValueOperationResult = removingImagesResults,
             };
         }
 
@@ -202,36 +204,11 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             if (string.IsNullOrEmpty(imageId))
             {
-                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
+                throw new ArgumentException(@"Image id must be a non empty string", nameof(imageId));
             }
 
             logger.LogTrace("Deleting an image with imageId {ImageId} was started", imageId);
             return await RemovingImageProcessAsync(imageId).ConfigureAwait(false);
-        }
-
-        public async Task<ImageChangingResult> ChangeImageAsync(string currentImage, IFormFile newImage)
-        {
-            var result = new ImageChangingResult();
-            if (!string.IsNullOrEmpty(currentImage))
-            {
-                result.RemovingResult = await RemoveImageAsync(currentImage).ConfigureAwait(false);
-                if (!result.RemovingResult.Succeeded)
-                {
-                    return new ImageChangingResult
-                    {
-                        RemovingResult = OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError()),
-                    };
-                }
-
-                currentImage = null;
-            }
-
-            if (string.IsNullOrEmpty(currentImage) && newImage != null)
-            {
-                result.UploadingResult = await UploadImageAsync<Teacher>(newImage).ConfigureAwait(false);
-            }
-
-            return result;
         }
 
         private async Task<Result<string>> UploadImageProcessAsync(Stream contentStream, string contentType)
@@ -253,6 +230,11 @@ namespace OutOfSchool.WebApi.Services.Images
 
         private async Task<OperationResult> RemovingImageProcessAsync(string imageId)
         {
+            if (string.IsNullOrEmpty(imageId))
+            {
+                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
+            }
+
             try
             {
                 await imageStorage.DeleteAsync(imageId).ConfigureAwait(false);

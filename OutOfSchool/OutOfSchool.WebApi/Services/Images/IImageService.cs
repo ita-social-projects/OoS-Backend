@@ -51,7 +51,5 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="imageId">Image Id.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="OperationResult"/> of the operation.</returns>
         Task<OperationResult> RemoveImageAsync(string imageId);
-
-        Task<ImageChangingResult> ChangeImageAsync(string currentImage, IFormFile newImage);
     }
 }

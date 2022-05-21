@@ -33,8 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<ITeacherService> teacherService;
         private Mock<ILogger<WorkshopService>> logger;
         private Mock<IMapper> mapper;
-        private Mock<IImageService> imageService;
-        private Mock<IWorkshopImagesInteractionMediator> workshopImagesInteractionService;
+        private Mock<IImageDependentEntityImagesInteractionMediator<Workshop>> workshopImagesMediator;
 
         [SetUp]
         public void SetUp()
@@ -45,8 +44,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             teacherService = new Mock<ITeacherService>();
             logger = new Mock<ILogger<WorkshopService>>();
             mapper = new Mock<IMapper>();
-            imageService = new Mock<IImageService>();
-            workshopImagesInteractionService = new Mock<IWorkshopImagesInteractionMediator>();
+            workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionMediator<Workshop>>();
             workshopService =
                 new WorkshopService(
                     workshopRepository.Object,
@@ -55,8 +53,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     teacherService.Object,
                     logger.Object,
                     mapper.Object,
-                    imageService.Object,
-                    workshopImagesInteractionService.Object);
+                    workshopImagesMediator.Object);
         }
 
         #region Create

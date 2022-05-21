@@ -123,9 +123,6 @@
   <data name="DefaultError" xml:space="preserve">
     <value>Нажаль, ми не змогли виконати цю операцію</value>
   </data>
-  <data name="EntityNotFoundError" xml:space="preserve">
-    <value>Будь-ласка, переконайтесь, що ви здійснюєте правильну операцію</value>
-  </data>
   <data name="ExceedingCountOfImagesError" xml:space="preserve">
     <value>Неможливо завантажити так багато фото через обмеження на кількість зображень.</value>
   </data>
@@ -153,10 +150,10 @@
   <data name="UnexpectedValidationError" xml:space="preserve">
     <value>Будь-ласка, переконайтесь у коректності фото</value>
   </data>
-  <data name="UpdateEntityError" xml:space="preserve">
-    <value>Виникли деякі проблеми з даними</value>
-  </data>
   <data name="UploadingError" xml:space="preserve">
     <value>Виникла помилка під час завантаження</value>
+  </data>
+  <data name="ImageAlreadyExist" xml:space="preserve">
+    <value>Зображення вже існує</value>
   </data>
 </root>

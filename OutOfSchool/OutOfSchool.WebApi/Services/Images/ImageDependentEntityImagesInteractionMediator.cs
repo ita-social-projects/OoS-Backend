@@ -21,33 +21,33 @@ namespace OutOfSchool.WebApi.Services.Images
     // TODO: make synchronization to remove incorrect operations' ids
 
     /// <summary>
-    /// Represents a base mediator class for operations with images.
+    /// Represents a mediator class for operations with images.
     /// This instance does not save the given entity changes.
     /// </summary>
     /// <typeparam name="TEntity">Entity type.</typeparam>
-    public class ImageInteractionBaseMediator<TEntity> : IImageInteractionMediator<TEntity>
+    internal class ImageDependentEntityImagesInteractionMediator<TEntity> : IImageDependentEntityImagesInteractionMediator<TEntity>
         where TEntity : class, IKeyedEntity, IImageDependentEntity<TEntity>, new()
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImageInteractionBaseMediator{TEntity}"/> class.
+        /// Initializes a new instance of the <see cref="ImageDependentEntityImagesInteractionMediator{TEntity}"/> class.
         /// </summary>
         /// <param name="imageService">Service for interacting with an image storage.</param>
         /// <param name="limits">Describes limits of images for entities.</param>
         /// <param name="logger">Logger.</param>
-        public ImageInteractionBaseMediator(
+        public ImageDependentEntityImagesInteractionMediator(
             IImageService imageService,
-            ImagesLimits<TEntity> limits,
-            ILogger<ImageInteractionBaseMediator<TEntity>> logger)
+            IOptions<ImagesLimits<TEntity>> limits,
+            ILogger<ImageDependentEntityImagesInteractionMediator<TEntity>> logger)
         {
             ImageService = imageService;
-            Limits = limits;
+            Limits = limits.Value;
             Logger = logger;
         }
 
         /// <summary>
         /// Gets a logger.
         /// </summary>
-        protected ILogger<ImageInteractionBaseMediator<TEntity>> Logger { get; }
+        protected ILogger<ImageDependentEntityImagesInteractionMediator<TEntity>> Logger { get; }
 
         /// <summary>
         /// Gets a service for interacting with an image storage..
@@ -60,20 +60,130 @@ namespace OutOfSchool.WebApi.Services.Images
         protected ImagesLimits<TEntity> Limits { get; }
 
         /// <inheritdoc/>
-        public async Task<Result<string>> UploadImageAsync(TEntity entity, IFormFile image)
+        public async Task<Result<string>> AddImageAsync(TEntity entity, IFormFile image)
             => await UploadImageProcessAsync(entity, image).ConfigureAwait(false);
 
         /// <inheritdoc/>
         public async Task<OperationResult> RemoveImageAsync(TEntity entity, string imageId)
             => await RemoveImageProcessAsync(entity, imageId).ConfigureAwait(false);
 
+        public async Task<ImageChangingResult> ChangeImageAsync(TEntity entity, string oldImageId, IFormFile newImage)
+        {
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+            Logger.LogTrace("Updating an image the for entity was started");
+
+            var result = new ImageChangingResult();
+
+            if (!string.IsNullOrEmpty(oldImageId))
+            {
+                result.RemovingResult = await RemoveImageProcessAsync(entity, oldImageId).ConfigureAwait(false);
+                if (!result.RemovingResult.Succeeded)
+                {
+                    return result;
+                }
+            }
+
+            if (newImage != null)
+            {
+                result.UploadingResult = await UploadImageProcessAsync(entity, newImage).ConfigureAwait(false);
+            }
+
+            Logger.LogTrace("Updating an image for the entity was finished");
+            return result;
+        }
+
         /// <inheritdoc/>
-        public async Task<ImageUploadingResult> UploadManyImagesAsync(TEntity entity, IList<IFormFile> images)
+        public async Task<ImageUploadingResult> AddManyImagesAsync(TEntity entity, IList<IFormFile> images)
             => await UploadManyImagesProcessAsync(entity, images).ConfigureAwait(false);
 
         /// <inheritdoc/>
         public async Task<ImageRemovingResult> RemoveManyImagesAsync(TEntity entity, IList<string> imageIds)
             => await RemoveManyImagesProcessAsync(entity, imageIds).ConfigureAwait(false);
+
+        /// <inheritdoc/>
+        public async Task<MultipleImageChangingResult> ChangeImagesAsync(TEntity entity, IList<string> oldImageIds, IList<IFormFile> newImages)
+        {
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+            _ = entity.Images ?? throw new NullReferenceException($"Entity {nameof(entity.Images)} cannot be null collection");
+            oldImageIds ??= new List<string>();
+
+            Logger.LogTrace("Changing images for the entity was started");
+
+            var result = new MultipleImageChangingResult();
+
+            var shouldRemove = !new HashSet<string>(oldImageIds).SetEquals(entity.Images.Select(x => x.ExternalStorageId));
+
+            if (shouldRemove)
+            {
+                var removingList = entity.Images.Select(x => x.ExternalStorageId).Except(oldImageIds).ToList();
+                if (removingList.Any())
+                {
+                    result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(entity, removingList).ConfigureAwait(false);
+                }
+            }
+
+            if (newImages?.Count > 0)
+            {
+                result.UploadedMultipleResult = await UploadManyImagesProcessAsync(entity, newImages).ConfigureAwait(false);
+            }
+
+            Logger.LogTrace("Changing images for the entity was finished");
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Result<string>> AddCoverImageAsync(TEntity entity, IFormFile image)
+        {
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+            _ = image ?? throw new ArgumentNullException(nameof(image));
+
+            if (!string.IsNullOrEmpty(entity.CoverImageId))
+            {
+                return Result<string>.Failed(ImagesOperationErrorCode.ImageAlreadyExist.GetOperationError());
+            }
+
+            var uploadingCoverImageResult = await ImageService.UploadImageAsync<TEntity>(image).ConfigureAwait(false);
+
+            if (uploadingCoverImageResult.Succeeded)
+            {
+                entity.CoverImageId = uploadingCoverImageResult.Value;
+            }
+
+            return uploadingCoverImageResult;
+        }
+
+        /// <inheritdoc/>
+        public async Task<OperationResult> RemoveCoverImageAsync(TEntity entity, string imageId)
+        {
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+            if (string.IsNullOrEmpty(imageId))
+            {
+                throw new ArgumentException(@"Image id must be a non empty string", nameof(imageId));
+            }
+
+            var removingCoverImageResult = await ImageService.RemoveImageAsync(imageId).ConfigureAwait(false);
+
+            if (removingCoverImageResult.Succeeded)
+            {
+                entity.CoverImageId = null;
+            }
+
+            return removingCoverImageResult;
+        }
+
+        /// <inheritdoc/>
+        public async Task<ImageChangingResult> ChangeCoverImageAsync(TEntity entity, string oldImageId, IFormFile newImage)
+        {
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+
+            if (string.Equals(oldImageId, entity.CoverImageId, StringComparison.Ordinal) &&
+                (!string.IsNullOrEmpty(oldImageId) || newImage == null))
+            {
+                return new ImageChangingResult(); // whenever no need to change cover image
+            }
+
+            return await ChangeCoverImageProcessAsync(entity, oldImageId, newImage).ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Determines if the given count of images is allowed for this entity.
@@ -254,6 +364,36 @@ namespace OutOfSchool.WebApi.Services.Images
         {// try to use except
             entity.Images.RemoveAt(
                 entity.Images.FindIndex(i => i.ExternalStorageId == imageId));
+        }
+
+        private async Task<ImageChangingResult> ChangeCoverImageProcessAsync(TEntity entity, string oldImageId, IFormFile newImage)
+        {
+            var changingCoverImageResult = new ImageChangingResult();
+
+            if (!string.IsNullOrEmpty(oldImageId))
+            {
+                changingCoverImageResult.RemovingResult = await RemoveCoverImageAsync(entity, oldImageId).ConfigureAwait(false);
+                if (!changingCoverImageResult.RemovingResult.Succeeded)
+                {
+                    return changingCoverImageResult;
+                }
+
+                oldImageId = null;
+            }
+
+            if (string.IsNullOrEmpty(oldImageId) && newImage != null)
+            {
+                changingCoverImageResult.UploadingResult = await AddCoverImageAsync(entity, newImage).ConfigureAwait(false);
+            }
+
+            entity.CoverImageId = changingCoverImageResult.UploadingResult switch
+            {
+                null when changingCoverImageResult.RemovingResult is { Succeeded: false } => entity.CoverImageId,
+                { Succeeded: true } => changingCoverImageResult.UploadingResult.Value,
+                _ => null
+            };
+
+            return changingCoverImageResult;
         }
     }
 }
