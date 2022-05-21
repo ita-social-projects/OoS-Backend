@@ -40,9 +40,11 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <inheritdoc/>
         public async Task<MultipleImageChangingResult> ChangeImagesAsync(TEntity entity, IList<string> oldImageIds, IList<IFormFile> newImages)
         {
-            _ = oldImageIds ?? throw new ArgumentNullException(nameof(oldImageIds));
+            _ = entity ?? throw new ArgumentNullException(nameof(entity));
+            _ = entity.Images ?? throw new NullReferenceException($"Entity {nameof(entity.Images)} cannot be null collection");
+            oldImageIds ??= new List<string>();
 
-            Logger.LogDebug($"Changing images for entity [Id = {entity}] was started.");
+            Logger.LogTrace("Changing images for the entity was started");
 
             var result = new MultipleImageChangingResult();
 
@@ -62,24 +64,23 @@ namespace OutOfSchool.WebApi.Services.Images
                 result.UploadedMultipleResult = await UploadManyImagesProcessAsync(entity, newImages).ConfigureAwait(false);
             }
 
-            Logger.LogDebug($"Changing images for entity [Id = {entity}] was finished.");
+            Logger.LogTrace("Changing images for the entity was finished");
             return result;
         }
 
         public async Task<ImageChangingResult> ChangeImageAsync(TEntity entity, string oldImageId, IFormFile newImage)
         {
-            Logger.LogDebug($"Updating an image for entity [Id = {entity}] was started.");
+            Logger.LogTrace("Updating an image the for entity was started");
 
             var result = new ImageChangingResult();
 
             if (!string.IsNullOrEmpty(oldImageId))
             {
                 result.RemovingResult = await RemoveImageProcessAsync(entity, oldImageId).ConfigureAwait(false);
-            }
-
-            if (!result.RemovingResult.Succeeded)
-            {
-                return result;
+                if (!result.RemovingResult.Succeeded)
+                {
+                    return result;
+                }
             }
 
             if (newImage != null)
@@ -87,7 +88,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 result.UploadingResult = await UploadImageProcessAsync(entity, newImage).ConfigureAwait(false);
             }
 
-            Logger.LogDebug($"Updating an image for entity [Id = {entity}] was finished.");
+            Logger.LogTrace("Updating an image for the entity was finished");
             return result;
         }
     }

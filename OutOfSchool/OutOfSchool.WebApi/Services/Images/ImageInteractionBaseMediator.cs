@@ -65,21 +65,15 @@ namespace OutOfSchool.WebApi.Services.Images
 
         /// <inheritdoc/>
         public async Task<OperationResult> RemoveImageAsync(TEntity entity, string imageId)
-        {
-            return await RemoveImageProcessAsync(entity, imageId).ConfigureAwait(false);
-        }
+            => await RemoveImageProcessAsync(entity, imageId).ConfigureAwait(false);
 
         /// <inheritdoc/>
         public async Task<ImageUploadingResult> UploadManyImagesAsync(TEntity entity, IList<IFormFile> images)
-        {
-            return await UploadManyImagesProcessAsync(entity, images).ConfigureAwait(false);
-        }
+            => await UploadManyImagesProcessAsync(entity, images).ConfigureAwait(false);
 
         /// <inheritdoc/>
         public async Task<ImageRemovingResult> RemoveManyImagesAsync(TEntity entity, IList<string> imageIds)
-        {
-            return await RemoveManyImagesProcessAsync(entity, imageIds).ConfigureAwait(false);
-        }
+            => await RemoveManyImagesProcessAsync(entity, imageIds).ConfigureAwait(false);
 
         /// <summary>
         /// Determines if the given count of images is allowed for this entity.
@@ -89,7 +83,6 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <returns>The <see cref="bool"/> value which shows if uploading is allowed.</returns>
         protected virtual bool AllowedToUploadGivenAmountOfFiles(TEntity entity, int countOfFiles)
         {
-            // TODO: check if collection is empty but not null
             _ = entity?.Images ?? throw new ArgumentException(@"Unable to access images because it's null for the given entity.", nameof(entity));
             return entity.Images.Count + countOfFiles <= Limits.MaxCountOfFiles;
         }
@@ -108,10 +101,10 @@ namespace OutOfSchool.WebApi.Services.Images
             _ = entity ?? throw new ArgumentNullException(nameof(entity));
             _ = image ?? throw new ArgumentNullException(nameof(image));
 
-            Logger.LogDebug($"Uploading an image for entity [Id = {entity}] was started.");
+            Logger.LogTrace("Uploading an image for the entity was started");
             if (!AllowedToUploadGivenAmountOfFiles(entity, 1))
             {
-                Logger.LogError($"The image limit was reached for the entity [id = {entity}]");
+                Logger.LogTrace("The image limit was reached for the entity");
                 return Result<string>.Failed(ImagesOperationErrorCode.ExceedingCountOfImagesError.GetOperationError());
             }
 
@@ -123,7 +116,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
             entity.Images.Add(new Image<TEntity> { ExternalStorageId = imageUploadingResult.Value });
 
-            Logger.LogDebug($"Uploading an image for entity [Id = {entity}] was finished.");
+            Logger.LogTrace("Uploading an image for the entity was finished");
             return imageUploadingResult;
         }
 
@@ -145,7 +138,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 throw new ArgumentNullException(nameof(entity));
             }
 
-            Logger.LogDebug($"Removing an image [id = {imageId}] for entity [Id = {entity}] was started.");
+            Logger.LogTrace("Removing an image for the entity was started");
             var ableToRemove = entity.Images.Select(x => x.ExternalStorageId).Contains(imageId);
 
             if (!ableToRemove)
@@ -162,7 +155,7 @@ namespace OutOfSchool.WebApi.Services.Images
 
             RemoveImageFromEntity(entity, imageId);
 
-            Logger.LogDebug($"Removing an image [id = {imageId}] for entity Id = {entity} was finished.");
+            Logger.LogTrace("Removing an image for the entity was finished");
 
             return imageRemovingResult;
         }
@@ -186,10 +179,10 @@ namespace OutOfSchool.WebApi.Services.Images
                 throw new ArgumentException(@"Given images must be non-null and not empty.", nameof(images));
             }
 
-            Logger.LogDebug($"Uploading images for the entity [Id = {entity}] was started.");
+            Logger.LogTrace("Uploading images for the entity was started");
             if (!AllowedToUploadGivenAmountOfFiles(entity, images.Count))
             {
-                Logger.LogError($"The image limit was reached for the entity [id = {entity}]");
+                Logger.LogTrace("The image limit was reached for the entity");
                 return new ImageUploadingResult
                     { MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult { GeneralResultMessage = ImagesOperationErrorCode.ExceedingCountOfImagesError.GetResourceValue() } };
             }
@@ -203,11 +196,10 @@ namespace OutOfSchool.WebApi.Services.Images
 
             if (imagesUploadingResult.SavedIds.Count > 0)
             {
-                //imagesUploadingResult.SavedIds.ForEach(id => AddImageToEntity(entity, new Image<TEntity> { ExternalStorageId = id }));
                 entity.Images.AddRange(imagesUploadingResult.SavedIds.Select(id => new Image<TEntity> { ExternalStorageId = id }));
             }
 
-            Logger.LogDebug($"Uploading images for the entity [Id = {entity}] was finished.");
+            Logger.LogTrace("Uploading images for the entity was finished");
             return imagesUploadingResult;
         }
 
@@ -228,7 +220,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 throw new ArgumentException(@"Given images must be non-null and not empty.", nameof(imageIds));
             }
 
-            Logger.LogDebug($"Removing images for entity [Id = {entity}] was started.");
+            Logger.LogTrace("Removing images for the entity was started");
             var ableToRemove = !imageIds.Except(entity.Images.Select(x => x.ExternalStorageId)).Any();
 
             if (!ableToRemove)
@@ -254,7 +246,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 imagesRemovingResult.RemovedIds.ForEach(x => RemoveImageFromEntity(entity, x));
             }
 
-            Logger.LogDebug($"Removing images for entity [Id = {entity}] was finished.");
+            Logger.LogTrace("Removing images for the entity was finished");
             return imagesRemovingResult;
         }
 
