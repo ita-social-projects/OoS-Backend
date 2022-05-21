@@ -70,15 +70,6 @@ phpmyadmin:
     allowArbitraryServer: false
     host: "outofschool-mysql"
 
-mongodb:
-  enabled: true
-  persistence:
-    enabled: true
-    storageClass: "hostpath"
-    size: 1Gi
-  metrics:
-    enabled: false
-
 webapi:
   enabled: true
   aspNetCoreEnvironment: Kubernetes

@@ -24,14 +24,6 @@ version: 0.1.0
 appVersion: "fa5778e"
 
 dependencies:
-  - name: mysql
-    version: ~8.8.12
-    condition: mysql.enabled
-    repository: https://charts.bitnami.com/bitnami
-  - name: phpmyadmin
-    version: ~8.2.18
-    condition: phpmyadmin.enabled
-    repository: https://charts.bitnami.com/bitnami
   - name: webapp
     version: 0.1.0
     condition: identity.enabled
@@ -44,23 +36,3 @@ dependencies:
     version: 0.1.0
     condition: frontend.enabled
     alias: frontend
-  - name: elasticsearch
-    version: 7.16.1
-    condition: elasticsearch.enabled
-    repository: https://helm.elastic.co
-  - name: kibana
-    version: 7.16.1
-    condition: kibana.enabled
-    repository: https://helm.elastic.co
-  - name: ingress-nginx
-    condition: ingress-nginx.enabled
-    version: ~4.0.6
-    repository: https://kubernetes.github.io/ingress-nginx
-  - name: cert-manager
-    condition: cert-manager.enabled
-    version: v1.6.0
-    repository: https://charts.jetstack.io
-  - name: mongodb
-    condition: mongodb.enabled
-    version: ~10.30.0
-    repository: https://charts.bitnami.com/bitnami
