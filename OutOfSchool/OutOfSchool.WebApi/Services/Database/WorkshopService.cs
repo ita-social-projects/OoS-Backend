@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<WorkshopService> logger;
         private readonly IMapper mapper;
         private readonly IImageService imageService;
-        private readonly IWorkshopImagesInteractionService workshopImagesInteractionService;
+        private readonly IWorkshopImagesInteractionMediator workshopImagesInteractionMediator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Automapper DI service.</param>
         /// <param name="imageService">Image service.</param>
-        /// <param name="workshopImagesInteractionService">Image service for workshop.</param>
+        /// <param name="workshopImagesInteractionMediator">Image service for workshop.</param>
         public WorkshopService(
             IWorkshopRepository workshopRepository,
             IClassRepository classRepository,
@@ -65,7 +65,7 @@ namespace OutOfSchool.WebApi.Services
             ILogger<WorkshopService> logger,
             IMapper mapper,
             IImageService imageService,
-            IWorkshopImagesInteractionService workshopImagesInteractionService)
+            IWorkshopImagesInteractionMediator workshopImagesInteractionMediator)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Services
             this.logger = logger;
             this.mapper = mapper;
             this.imageService = imageService;
-            this.workshopImagesInteractionService = workshopImagesInteractionService;
+            this.workshopImagesInteractionMediator = workshopImagesInteractionMediator;
         }
 
         /// <inheritdoc/>
@@ -130,7 +130,8 @@ namespace OutOfSchool.WebApi.Services
             ImageUploadingResult uploadingResult = null;
             if (dto.ImageFiles?.Count > 0)
             {
-                uploadingResult = await workshopImagesInteractionService.UploadManyImagesAsync(newWorkshop.Id, dto.ImageFiles).ConfigureAwait(false);
+                newWorkshop.Images = new List<Image<Workshop>>();
+                uploadingResult = await workshopImagesInteractionMediator.UploadManyImagesAsync(newWorkshop, dto.ImageFiles).ConfigureAwait(false);
             }
 
             Result<string> uploadingCoverImageResult = null;
@@ -258,11 +259,11 @@ namespace OutOfSchool.WebApi.Services
             // In case if DirectionId and DepartmentId does not match ClassId
             await FillDirectionsFields(dto).ConfigureAwait(false);
 
-            dto.ImageIds ??= new List<string>();
-            var multipleImageChangingResult = await workshopImagesInteractionService.ChangeImagesAsync(dto.Id, dto.ImageIds, dto.ImageFiles)
-                .ConfigureAwait(false);
-
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
+
+            dto.ImageIds ??= new List<string>();
+            var multipleImageChangingResult = await workshopImagesInteractionMediator.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
+                .ConfigureAwait(false);
 
             // In case if AddressId was changed. AddressId is one and unique for workshop.
             dto.AddressId = currentWorkshop.AddressId;
@@ -330,7 +331,7 @@ namespace OutOfSchool.WebApi.Services
 
             var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
 
-            var removingResult = await workshopImagesInteractionService.RemoveManyImagesAsync(entity.Id, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
+            var removingResult = await workshopImagesInteractionMediator.RemoveManyImagesAsync(entity, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
 
             if (entity.Images.Count > 0 && removingResult.MultipleKeyValueOperationResult is { Succeeded: false })
             {

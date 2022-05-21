@@ -18,35 +18,31 @@ namespace OutOfSchool.WebApi.Services.Images
     /// Represents a class for operations with images.
     /// </summary>
     /// <typeparam name="TEntity">Entity type.</typeparam>
-    /// <typeparam name="TKey">The type of entity Id.</typeparam>
-    public class ChangeableImagesInteractionService<TEntity, TKey> :
-        ImageInteractionBaseService<TEntity, TKey>,
-        IChangeableImagesInteractionService<TKey>
-        where TEntity : class, IKeyedEntity<TKey>, IImageDependentEntity<TEntity>, new()
+    public class ChangeableImagesInteractionMediator<TEntity> :
+        ImageInteractionBaseMediator<TEntity>,
+        IChangeableImagesInteractionMediator<TEntity>
+        where TEntity : class, IKeyedEntity, IImageDependentEntity<TEntity>, new()
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChangeableImagesInteractionService{TEntity, TKey}"/> class.
+        /// Initializes a new instance of the <see cref="ChangeableImagesInteractionMediator{TEntity}"/> class.
         /// </summary>
         /// <param name="imageService">Service for interacting with an image storage.</param>
-        /// <param name="repository">Repository with images.</param>
         /// <param name="limits">Describes limits of images for entities.</param>
         /// <param name="logger">Logger.</param>
-        public ChangeableImagesInteractionService(
+        public ChangeableImagesInteractionMediator(
             IImageService imageService,
-            IEntityRepositoryBase<TKey, TEntity> repository,
             ImagesLimits<TEntity> limits,
-            ILogger<ChangeableImagesInteractionService<TEntity, TKey>> logger)
-            : base(imageService, repository, limits, logger)
+            ILogger<ChangeableImagesInteractionMediator<TEntity>> logger)
+            : base(imageService, limits, logger)
         {
         }
 
         /// <inheritdoc/>
-        public async Task<MultipleImageChangingResult> ChangeImagesAsync(TKey entityId, IList<string> oldImageIds, IList<IFormFile> newImages)
+        public async Task<MultipleImageChangingResult> ChangeImagesAsync(TEntity entity, IList<string> oldImageIds, IList<IFormFile> newImages)
         {
             _ = oldImageIds ?? throw new ArgumentNullException(nameof(oldImageIds));
 
-            Logger.LogDebug($"Changing images for entity [Id = {entityId}] was started.");
-            var entity = await GetRequiredEntityWithIncludedImages(entityId).ConfigureAwait(false);
+            Logger.LogDebug($"Changing images for entity [Id = {entity}] was started.");
 
             var result = new MultipleImageChangingResult();
 
@@ -61,24 +57,18 @@ namespace OutOfSchool.WebApi.Services.Images
                 }
             }
 
-            if (result.RemovedMultipleResult?.RemovedIds?.Count > 0)
-            {
-                entity = await GetRequiredEntityWithIncludedImages(entityId).ConfigureAwait(false);
-            }
-
             if (newImages?.Count > 0)
             {
                 result.UploadedMultipleResult = await UploadManyImagesProcessAsync(entity, newImages).ConfigureAwait(false);
             }
 
-            Logger.LogDebug($"Changing images for entity [Id = {entityId}] was finished.");
+            Logger.LogDebug($"Changing images for entity [Id = {entity}] was finished.");
             return result;
         }
 
-        public async Task<ImageChangingResult> UpdateImageAsync(TKey entityId, string oldImageId, IFormFile newImage)
+        public async Task<ImageChangingResult> ChangeImageAsync(TEntity entity, string oldImageId, IFormFile newImage)
         {
-            Logger.LogDebug($"Updating an image for entity [Id = {entityId}] was started.");
-            var entity = await GetRequiredEntityWithIncludedImages(entityId).ConfigureAwait(false);
+            Logger.LogDebug($"Updating an image for entity [Id = {entity}] was started.");
 
             var result = new ImageChangingResult();
 
@@ -97,7 +87,7 @@ namespace OutOfSchool.WebApi.Services.Images
                 result.UploadingResult = await UploadImageProcessAsync(entity, newImage).ConfigureAwait(false);
             }
 
-            Logger.LogDebug($"Updating an image for entity [Id = {entityId}] was finished.");
+            Logger.LogDebug($"Updating an image for entity [Id = {entity}] was finished.");
             return result;
         }
     }

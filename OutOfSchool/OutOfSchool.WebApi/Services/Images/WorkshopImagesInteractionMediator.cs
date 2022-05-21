@@ -15,19 +15,18 @@ namespace OutOfSchool.WebApi.Services.Images
     /// <summary>
     /// Represents a class for operations with <see cref="Workshop"/> images.
     /// </summary>
-    public sealed class WorkshopImagesInteractionService :
-        ChangeableImagesInteractionService<Workshop, Guid>,
-        IWorkshopImagesInteractionService
+    public sealed class WorkshopImagesInteractionMediator :
+        ChangeableImagesInteractionMediator<Workshop>,
+        IWorkshopImagesInteractionMediator
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkshopImagesInteractionService"/> class.
+        /// Initializes a new instance of the <see cref="WorkshopImagesInteractionMediator"/> class.
         /// </summary>
         /// <param name="imageService">Service for interacting with an image storage.</param>
-        /// <param name="repository">Workshop repository.</param>
         /// <param name="limits">Describes limits of images for <see cref="Workshop"/>.</param>
         /// <param name="logger">Logger.</param>
-        public WorkshopImagesInteractionService(IImageService imageService, IWorkshopRepository repository, ILogger<WorkshopImagesInteractionService> logger, IOptions<ImagesLimits<Workshop>> limits)
-            : base(imageService, repository, limits.Value, logger)
+        public WorkshopImagesInteractionMediator(IImageService imageService, ILogger<WorkshopImagesInteractionMediator> logger, IOptions<ImagesLimits<Workshop>> limits)
+            : base(imageService, limits.Value, logger)
         {
         }
     }
