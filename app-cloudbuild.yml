@@ -40,7 +40,7 @@ steps:
     # Cloud Run fails to set the variable as an array :(
     # Using index instead
     - --set-env-vars=Elasticsearch__Urls__0=https://elastic.dmytrominochkin.cloud/
-    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Elasticsearch__Password=$_ES_PASSWORD,ConnectionStrings__ExternalImageStorage__ServerName=$_MONGO_SECRET
+    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Elasticsearch__Password=$_ES_PASSWORD
     # Disable http2 because prod will be http1.1 for now
     - --no-use-http2
 # Clean old versions except previous Cloud Run
