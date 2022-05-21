@@ -47,15 +47,6 @@ kubectl create secret generic elasticsearch-credentials \
     --from-literal=apipass='Oos-password1'
 ```
 
-## MongoDB
-
-Create a secret with MongoDB password, for example:
-```bash
-kubectl create secret generic mongodb-credentials \
-    --from-literal=mongodb-passwords='Oos-password1' \
-    --from-literal=mongodb-root-password='Oos-password1'
-```
-
 ## Cert manager
 
 First, install Cert Manager:
@@ -78,7 +69,7 @@ helm upgrade --install \
     --set config.proxy-body-size=50m \
     --set autoscaling.enabled=false \
     --set defaultBackend.enabled=false \
-    ingress-nginx ./outofschool/charts/ingress-nginx-4.0.17.tgz
+    ingress-nginx ./outofschool/charts/ingress-nginx-4.0.19.tgz
 ```
 
 ## Application
