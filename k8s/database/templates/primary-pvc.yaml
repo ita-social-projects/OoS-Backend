@@ -1,0 +1,20 @@
+{{- if .Values.mysql.primary.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.pvc.name }}
+  namespace:  {{ .Release.Namespace }}
+  labels:
+    {{- include "database.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  storageClassName: {{ .Values.pvc.storageClass }}
+  accessModes:
+  {{- range .Values.pvc.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.pvc.size | quote }}
+{{- end -}}
