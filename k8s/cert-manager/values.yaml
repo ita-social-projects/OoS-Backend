@@ -1,0 +1,7 @@
+# Default values for cert-manager.
+# This is a YAML-formatted file.
+
+cert-manager:
+  installCRDs: true
+  prometheus:
+    enabled: false
