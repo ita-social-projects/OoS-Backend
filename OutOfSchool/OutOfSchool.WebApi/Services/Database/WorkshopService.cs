@@ -288,7 +288,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 Workshop = mapper.Map<WorkshopDTO>(updatedWorkshop),
                 UploadingCoverImageResult = changingCoverImageResult?.UploadingResult?.OperationResult,
-                UploadingImagesResults = multipleImageChangingResult.UploadedMultipleResult?.MultipleKeyValueOperationResult,
+                UploadingImagesResults = multipleImageChangingResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
             };
         }
 
