@@ -4,7 +4,7 @@ resource "kubectl_manifest" "elastic-ssl" {
   kind: Certificate
   metadata:
     name: elastic-certificates
-    namespace: ${kubernetes_namespace.oos.metadata[0].name}
+    namespace: ${data.kubernetes_namespace.oos.metadata[0].name}
   spec:
     dnsNames:
       - elasticsearch-master
@@ -21,8 +21,8 @@ resource "kubectl_manifest" "elastic-ssl" {
 
 resource "helm_release" "elastic" {
   name          = "elastic"
-  chart         = "../../k8s/outofschool"
-  namespace     = kubernetes_namespace.oos.metadata[0].name
+  chart         = "../../k8s/elastic"
+  namespace     = data.kubernetes_namespace.oos.metadata[0].name
   wait          = true
   wait_for_jobs = true
   timeout       = 600

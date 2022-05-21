@@ -25,9 +25,9 @@ elasticConfigJob:
         version: 2
   secret: elasticsearch-credentials
 
+generateCertificate: false
+
 elasticsearch:
-  enabled: true
-  generateCertificate: false
   replicas: 1
   protocol: http
   esConfig:
@@ -154,20 +154,3 @@ kibana:
     tls:
     - secretName: kibana-tls
       hosts: []
-
-ingress-nginx:
-  enabled: false
-webapi:
-  enabled: false
-identity:
-  enabled: false
-frontend:
-  enabled: false
-mysql:
-  enabled: false
-phpmyadmin:
-  enabled: false
-cert-manager:
-  enabled: false
-mongodb:
-  enabled: false

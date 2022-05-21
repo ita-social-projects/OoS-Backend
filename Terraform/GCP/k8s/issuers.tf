@@ -21,7 +21,7 @@ resource "kubectl_manifest" "ca-certificate" {
   kind: Certificate
   metadata:
     name: selfsigned-ca
-    namespace: ${kubernetes_namespace.oos.metadata[0].name}
+    namespace: ${data.kubernetes_namespace.oos.metadata[0].name}
   spec:
     commonName: selfsigned-ca
     isCA: true
@@ -46,7 +46,7 @@ resource "kubectl_manifest" "oos-issuer" {
   kind: Issuer
   metadata:
     name: oos-issuer
-    namespace: ${kubernetes_namespace.oos.metadata[0].name}
+    namespace: ${data.kubernetes_namespace.oos.metadata[0].name}
   spec:
     ca:
       secretName: root-secret
@@ -62,7 +62,7 @@ resource "kubectl_manifest" "letsencrypt-issuer" {
   kind: Issuer
   metadata:
     name: letsencrypt
-    namespace: ${kubernetes_namespace.oos.metadata[0].name}
+    namespace: ${data.kubernetes_namespace.oos.metadata[0].name}
   spec:
     acme:
       email: ${var.letsencrypt_email}

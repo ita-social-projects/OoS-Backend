@@ -1,7 +1,7 @@
 resource "kubernetes_secret" "sql-credentials" {
   metadata {
     name      = "mysql-auth"
-    namespace = kubernetes_namespace.oos.metadata[0].name
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
   }
 
   data = {
@@ -14,7 +14,7 @@ resource "kubernetes_secret" "sql-credentials" {
 resource "kubernetes_secret" "sql-api-credentials" {
   metadata {
     name      = "mysql-api-auth"
-    namespace = kubernetes_namespace.oos.metadata[0].name
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
   }
 
   data = {
@@ -25,7 +25,7 @@ resource "kubernetes_secret" "sql-api-credentials" {
 resource "kubernetes_secret" "elastic-credentials" {
   metadata {
     name      = "elasticsearch-credentials"
-    namespace = kubernetes_namespace.oos.metadata[0].name
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
   }
 
   data = {

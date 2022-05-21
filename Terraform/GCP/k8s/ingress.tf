@@ -1,6 +1,6 @@
 resource "helm_release" "ingress" {
   name             = "ingress"
-  chart            = "../../k8s/outofschool"
+  chart            = "../../k8s/ingress"
   namespace        = "ingress-nginx"
   create_namespace = true
   wait             = true

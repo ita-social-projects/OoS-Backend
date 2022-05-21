@@ -1,3 +1,6 @@
+pvc:
+  storageClass: standard
+
 mysql:
   enabled: true
   architecture: standalone
@@ -24,8 +27,8 @@ mysql:
   primary:
     persistence:
       enabled: true
-      storageClass: standard
-      size: 10Gi 
+      # storageClass: standard
+      # size: 10Gi 
     extraEnvVarsSecret: mysql-api-auth
 
 phpmyadmin:
@@ -36,6 +39,7 @@ phpmyadmin:
     pathType: ImplementationSpecific
     annotations:
       kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
       cert-manager.io/issuer: "letsencrypt"
       cert-manager.io/duration: 2160h0m0s
       cert-manager.io/renew-before: 168h0m0s
@@ -44,20 +48,3 @@ phpmyadmin:
   db:
     allowArbitraryServer: false
     host: "mysql"
-
-ingress-nginx:
-  enabled: false
-elasticsearch:
-  enabled: false
-kibana:
-  enabled: false
-webapi:
-  enabled: false
-identity:
-  enabled: false
-frontend:
-  enabled: false
-cert-manager:
-  enabled: false
-mongodb:
-  enabled: false

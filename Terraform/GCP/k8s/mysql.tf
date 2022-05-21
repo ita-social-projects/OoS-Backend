@@ -1,7 +1,7 @@
 resource "helm_release" "mysql" {
   name          = "mysql"
-  chart         = "../../k8s/outofschool"
-  namespace     = kubernetes_namespace.oos.metadata[0].name
+  chart         = "../../k8s/database"
+  namespace     = data.kubernetes_namespace.oos.metadata[0].name
   wait          = true
   wait_for_jobs = true
   values = [

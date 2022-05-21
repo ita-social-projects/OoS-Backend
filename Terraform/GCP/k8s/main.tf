@@ -13,9 +13,9 @@ terraform {
   }
 }
 
-resource "kubernetes_namespace" "oos" {
+data "kubernetes_namespace" "oos" {
   metadata {
-    name = "outofschool"
+    name = "default"
   }
 }
 

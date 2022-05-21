@@ -19,14 +19,6 @@ variable "sql_hostname" {
   type = string
 }
 
-variable "mongo_pass" {
-  type = string
-}
-
-variable "mongo_hostname" {
-  type = string
-}
-
 variable "sendgrid_key" {
   type = string
 }
