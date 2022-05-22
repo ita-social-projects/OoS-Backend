@@ -64,11 +64,15 @@ namespace OutOfSchool.IdentityServer.Controllers
                 {
                     logger.LogInformation($"{path} Cancel click, but user enter new email, show confirmation.");
 
-                    return View("Email/ConfirmCancelEmail");
+                    return View("Email/CancelChangeEmail");
                 }
                 else
                 {
-                    return View("Email/CloseWindow");
+                    return new ContentResult()
+                    {
+                        ContentType = "text/html",
+                        Content = "<script>window.close();</script>"
+                    };
                 }
             }
 
@@ -82,20 +86,20 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = await userManager.FindByEmailAsync(User.Identity.Name);
             var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
-            var callBackUrl = Url.Action(nameof(ConfirmEmailChange), "Account", new { userId = user.Id, email = model.Email, token }, Request.Scheme);
+            var callBackUrl = Url.Action(nameof(ConfirmChangeEmail), "Account", new { userId = user.Id, email = model.Email, token }, Request.Scheme);
 
             var email = model.Email;
             var subject = "Confirm email.";
-            var htmlMessage = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
+            var htmlMessage = localizer["Change email message", email, $" <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>link</a>."];
             await emailSender.SendAsync(email, subject, htmlMessage);
 
             logger.LogInformation($"{path} Confirmation message was sent for User(id) + {userId}.");
 
-            return View("Email/ConfirmChangeEmail", model);
+            return View("Email/SendChangeEmail", model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> ConfirmEmailChange(string userId, string email, string token)
+        public async Task<IActionResult> ConfirmChangeEmail(string userId, string email, string token)
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 

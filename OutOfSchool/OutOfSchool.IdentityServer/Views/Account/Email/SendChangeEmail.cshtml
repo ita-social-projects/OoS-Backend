@@ -3,14 +3,15 @@
 
 @inject IHtmlLocalizer<SharedResource> SharedLocalizer
 
+@model OutOfSchool.IdentityServer.ViewModels.ChangeEmailViewModel
+
 @{
     ViewData["Title"] = SharedLocalizer["Confirm email change"];
     Layout = "_Layout";
 }
 <div class="wrapper_body">
     <div class="wrapper">
-        <script>
-            window.close();
-        </script>
+        <h2 class="title">@SharedLocalizer["Change email"]</h2>
+        <h3 class="instruction">@SharedLocalizer[@"Change email {0} sent", Model.Email]</h3>
     </div>
 </div>

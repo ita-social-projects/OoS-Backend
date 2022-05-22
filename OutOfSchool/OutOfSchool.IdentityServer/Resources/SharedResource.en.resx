@@ -306,7 +306,7 @@
   <data name="Save" xml:space="preserve">
     <value>Save</value>
   </data>
-  <data name="Change email {0} done" xml:space="preserve">
+  <data name="Change email {0} sent" xml:space="preserve">
     <value>Instruction to change email have been sent to {0}. Please check the email and follow the steps in the letter.</value>
   </data>
   <data name="Cancel" xml:space="preserve">
@@ -314,5 +314,11 @@
   </data>
   <data name="Change email cancel" xml:space="preserve">
     <value>Are you sure you want to cancel the email change?</value>
+  </data>
+  <data name="Change email done" xml:space="preserve">
+    <value>Your email was changed</value>
+  </data>
+  <data name="Change email message" xml:space="preserve">
+    <value>Your email was changed. To confirm please follow the link and use the new login. Login: {0} {1}</value>
   </data>
 </root>

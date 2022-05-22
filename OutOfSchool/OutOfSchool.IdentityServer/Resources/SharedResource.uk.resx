@@ -307,7 +307,7 @@
   <data name="Save" xml:space="preserve">
     <value>Зберегти</value>
   </data>
-  <data name="Change email {0} done" xml:space="preserve">
+  <data name="Change email {0} sent" xml:space="preserve">
     <value>Інструкція по зміни емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
   </data>
   <data name="Cancel" xml:space="preserve">
@@ -315,5 +315,15 @@
   </data>
   <data name="Change email cancel" xml:space="preserve">
     <value>Ви впевнені, що хочете скасувати зміну електронної адреси?</value>
+  </data>
+  <data name="Change email done" xml:space="preserve">
+    <value>Ваш email успішно змінений</value>
+  </data>
+  <data name="Change email message" xml:space="preserve">
+    <value>Ваші дані було змінено.
+Щоб підтвердити зміну імейлу, перейдіть за цим посиланням та введіть новий логін
+
+Login: {0}
+{1}</value>
   </data>
 </root>
