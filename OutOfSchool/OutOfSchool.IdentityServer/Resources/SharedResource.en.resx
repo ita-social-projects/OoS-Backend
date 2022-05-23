@@ -321,4 +321,10 @@
   <data name="Change email message" xml:space="preserve">
     <value>Your email was changed. To confirm please follow the link and use the new login. Login: {0} {1}</value>
   </data>
+  <data name="Change email new email already used {0}" xml:space="preserve">
+    <value>Email {0} already used by another user, please enter another email.</value>
+  </data>
+  <data name="Change email mismatch current email {0}" xml:space="preserve">
+    <value>Email {0} dont match with current email</value>
+  </data>
 </root>

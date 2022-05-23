@@ -326,4 +326,10 @@
 Login: {0}
 {1}</value>
   </data>
+  <data name="Change email new email already used {0}" xml:space="preserve">
+    <value>Вказаний email {0} вже зареєстровано за іншим користувачем, введіть інший email</value>
+  </data>
+  <data name="Change email mismatch current email {0}" xml:space="preserve">
+    <value>Вказаний email {0} не співпадеє з поточним</value>
+  </data>
 </root>

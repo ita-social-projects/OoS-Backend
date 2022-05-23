@@ -16,9 +16,20 @@
 
         <h3 class="instruction">@SharedLocalizer["Enter new email message"].Value.ToUpper()</h3>
         <div class="warning">
-            <img src="~/icons/warning.svg" class="warning_icon" alt="warning"><p>@SharedLocalizer["Change email alert"]</p>
+            @if (Model.Submit == "emailMismatch")
+            {
+                <img src="~/icons/warning.svg" class="warning_icon" alt="warning"><p>@SharedLocalizer["Change email mismatch current email {0}", Model.CurrentEmail]</p>
+            }
+            else if (Model.Submit =="emailUsed")
+            {
+                <img src="~/icons/warning.svg" class="warning_icon" alt="warning"><p>@SharedLocalizer["Change email new email already used {0}", Model.Email]</p>
+            }
+            else
+            {
+                <img src="~/icons/warning.svg" class="warning_icon" alt="warning"><p>@SharedLocalizer["Change email alert"]</p>
+            }
         </div>
-        <form asp-action="ChangeEmail" name="Form1">
+        <form asp-action="ChangeEmail">
             <input type="hidden" asp-for="ReturnUrl" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 

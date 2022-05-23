@@ -62,16 +62,18 @@ namespace OutOfSchool.IdentityServer.Controllers
             {
                 if (!string.IsNullOrWhiteSpace(model.Email))
                 {
-                    logger.LogInformation($"{path} Cancel click, but user enter new email, show confirmation.");
+                    logger.LogInformation($"{path} Cancel click, but user enter the new email, show confirmation.");
 
                     return View("Email/CancelChangeEmail");
                 }
                 else
                 {
+                    logger.LogInformation($"{path} Cancel click, close window.");
+
                     return new ContentResult()
                     {
                         ContentType = "text/html",
-                        Content = "<script>window.close();</script>"
+                        Content = "<script>window.close();</script>",
                     };
                 }
             }
@@ -82,6 +84,23 @@ namespace OutOfSchool.IdentityServer.Controllers
                     $"Entered new Email: {model.Email}");
 
                 return View("Email/ChangeEmail", new ChangeEmailViewModel());
+            }
+
+            if (model.CurrentEmail != User.Identity.Name.ToLower())
+            {
+                logger.LogError($"{path} Current Email mismatch. Entered current Email: {model.CurrentEmail}");
+
+                model.Submit = "emailMismatch";
+                return View("Email/ChangeEmail", model);
+            }
+
+            var userNewEmail = await userManager.FindByEmailAsync(model.Email);
+            if (userNewEmail != null)
+            {
+                logger.LogError($"{path} Email already used. Entered new Email: {model.Email}");
+
+                model.Submit = "emailUsed";
+                return View("Email/ChangeEmail", model);
             }
 
             var user = await userManager.FindByEmailAsync(User.Identity.Name);
