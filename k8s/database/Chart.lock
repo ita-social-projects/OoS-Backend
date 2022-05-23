@@ -5,5 +5,8 @@ dependencies:
 - name: phpmyadmin
   repository: https://charts.bitnami.com/bitnami
   version: 8.2.19
-digest: sha256:cd27131405937bf220ef3467a7bcb5a707262ad8262b7a7c0c60c0c248c0597f
-generated: "2022-05-20T14:22:28.597938+03:00"
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.9.10
+digest: sha256:f530c96d14961f3a7384ef9227728ede2414f915382e948a763e19575fefddcf
+generated: "2022-05-23T17:58:21.106281+03:00"

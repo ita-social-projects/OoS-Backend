@@ -1,7 +1,8 @@
 # Local values override
 pvc:
-  size: 1G
-  storageClass: hostpath
+  mysql:
+    size: 1G
+    storageClass: hostpath
 
 mysql:
   enabled: true

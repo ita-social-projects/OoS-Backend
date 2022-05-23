@@ -37,6 +37,13 @@ kubectl create secret generic mysql-api-auth \
     --from-literal=API_PASSWORD='Oos-password1'
 ```
 
+## Redis
+Create a secret with Redis passwords, for example:
+```bash
+kubectl create secret generic redis-auth \
+    --from-literal=password='Oos-password1'
+```
+
 ## Elasticsearch
 
 Create a secret with Elasticsearch password, for example:
