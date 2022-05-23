@@ -14,7 +14,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             DirectoryInfo directory = TryGetSolutionDirectoryInfo();
-            string path = @"OutOfSchool.IdentityServer\Data\Migrations\OutOfSchoolMigrations\20220516203844_Quartz.cs";
+            string path = @"OutOfSchool.IdentityServer\Data\Migrations\OutOfSchoolMigrations\20220523184345_Quartz.cs";
             path = Path.Combine(directory.FullName, path);
 
             // Act
