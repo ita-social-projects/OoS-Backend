@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services
     public class TeacherService : ITeacherService
     {
         private readonly ISensitiveEntityRepository<Teacher> teacherRepository;
-        private readonly IEntityCoverImageInteractionMediator<Teacher> teacherImagesMediator;
+        private readonly IEntityCoverImageInteractionService<Teacher> teacherImagesMediator;
         private readonly ILogger<TeacherService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
@@ -38,7 +38,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
-        public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IEntityCoverImageInteractionMediator<Teacher> teacherImagesMediator, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
+        public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IEntityCoverImageInteractionService<Teacher> teacherImagesMediator, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
         {
             this.localizer = localizer;
             this.teacherRepository = teacherRepository;

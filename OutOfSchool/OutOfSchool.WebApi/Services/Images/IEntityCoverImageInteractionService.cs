@@ -8,7 +8,7 @@ using OutOfSchool.WebApi.Models.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
-    public interface IEntityCoverImageInteractionMediator<in TEntity>
+    public interface IEntityCoverImageInteractionService<in TEntity>
         where TEntity : class, IKeyedEntity
     {
         /// <summary>

@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<ITeacherService> teacherService;
         private Mock<ILogger<WorkshopService>> logger;
         private Mock<IMapper> mapper;
-        private Mock<IImageDependentEntityImagesInteractionMediator<Workshop>> workshopImagesMediator;
+        private Mock<IImageDependentEntityImagesInteractionService<Workshop>> workshopImagesMediator;
 
         [SetUp]
         public void SetUp()
@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             teacherService = new Mock<ITeacherService>();
             logger = new Mock<ILogger<WorkshopService>>();
             mapper = new Mock<IMapper>();
-            workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionMediator<Workshop>>();
+            workshopImagesMediator = new Mock<IImageDependentEntityImagesInteractionService<Workshop>>();
             workshopService =
                 new WorkshopService(
                     workshopRepository.Object,

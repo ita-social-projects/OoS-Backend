@@ -25,19 +25,19 @@ namespace OutOfSchool.WebApi.Services.Images
     /// This instance does not save the given entity changes.
     /// </summary>
     /// <typeparam name="TEntity">Entity type.</typeparam>
-    internal class ImageDependentEntityImagesInteractionMediator<TEntity> : IImageDependentEntityImagesInteractionMediator<TEntity>
+    internal class ImageDependentEntityImagesInteractionService<TEntity> : IImageDependentEntityImagesInteractionService<TEntity>
         where TEntity : class, IKeyedEntity, IImageDependentEntity<TEntity>, new()
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImageDependentEntityImagesInteractionMediator{TEntity}"/> class.
+        /// Initializes a new instance of the <see cref="ImageDependentEntityImagesInteractionService{TEntity}"/> class.
         /// </summary>
         /// <param name="imageService">Service for interacting with an image storage.</param>
         /// <param name="limits">Describes limits of images for entities.</param>
         /// <param name="logger">Logger.</param>
-        public ImageDependentEntityImagesInteractionMediator(
+        public ImageDependentEntityImagesInteractionService(
             IImageService imageService,
             IOptions<ImagesLimits<TEntity>> limits,
-            ILogger<ImageDependentEntityImagesInteractionMediator<TEntity>> logger)
+            ILogger<ImageDependentEntityImagesInteractionService<TEntity>> logger)
         {
             ImageService = imageService;
             Limits = limits.Value;
@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <summary>
         /// Gets a logger.
         /// </summary>
-        protected ILogger<ImageDependentEntityImagesInteractionMediator<TEntity>> Logger { get; }
+        protected ILogger<ImageDependentEntityImagesInteractionService<TEntity>> Logger { get; }
 
         /// <summary>
         /// Gets a service for interacting with an image storage..

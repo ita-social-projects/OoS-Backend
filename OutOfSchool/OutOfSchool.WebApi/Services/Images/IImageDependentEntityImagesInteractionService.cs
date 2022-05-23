@@ -9,7 +9,7 @@ using OutOfSchool.WebApi.Models.Images;
 
 namespace OutOfSchool.WebApi.Services.Images
 {
-    public interface IImageDependentEntityImagesInteractionMediator<in TEntity> : IEntitySetOfImagesInteractionMediator<TEntity>, IEntityCoverImageInteractionMediator<TEntity>
+    public interface IImageDependentEntityImagesInteractionService<in TEntity> : IEntitySetOfImagesInteractionService<TEntity>, IEntityCoverImageInteractionService<TEntity>
         where TEntity : class, IKeyedEntity, IImageDependentEntity<TEntity>
     {
     }

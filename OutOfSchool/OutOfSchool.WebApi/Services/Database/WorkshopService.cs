@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ITeacherService teacherService;
         private readonly ILogger<WorkshopService> logger;
         private readonly IMapper mapper;
-        private readonly IImageDependentEntityImagesInteractionMediator<Workshop> workshopImagesMediator;
+        private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesMediator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Services
             ITeacherService teacherService,
             ILogger<WorkshopService> logger,
             IMapper mapper,
-            IImageDependentEntityImagesInteractionMediator<Workshop> workshopImagesMediator)
+            IImageDependentEntityImagesInteractionService<Workshop> workshopImagesMediator)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
