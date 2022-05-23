@@ -163,12 +163,14 @@ namespace OutOfSchool.WebApi.Services.Images
 
             var removingCoverImageResult = await ImageService.RemoveImageAsync(entity.CoverImageId).ConfigureAwait(false);
 
-            if (removingCoverImageResult.Succeeded)
-            {
-                entity.CoverImageId = null;
-            }
+            // TODO: uncomment when create sync-transaction between images and main db
+            // if (removingCoverImageResult.Succeeded)
+            // {
+            entity.CoverImageId = null;
 
-            return removingCoverImageResult;
+            // }
+            // return removingCoverImageResult;
+            return OperationResult.Success;
         }
 
         /// <inheritdoc/>
@@ -258,16 +260,16 @@ namespace OutOfSchool.WebApi.Services.Images
 
             var imageRemovingResult = await ImageService.RemoveImageAsync(imageId).ConfigureAwait(false);
 
-            if (!imageRemovingResult.Succeeded)
-            {
-                return OperationResult.Failed(ImagesOperationErrorCode.RemovingError.GetOperationError());
-            }
-
+            // TODO: uncomment code when create sync-transaction between images and main db
+            // if (imageRemovingResult.Succeeded)
+            // {
             RemoveImageFromEntity(entity, imageId);
 
+            // }
             Logger.LogTrace("Removing an image for the entity was finished");
 
-            return imageRemovingResult;
+            // return imageRemovingResult;
+            return OperationResult.Success;
         }
 
         /// <summary>
@@ -351,12 +353,22 @@ namespace OutOfSchool.WebApi.Services.Images
                 };
             }
 
-            if (imagesRemovingResult.RemovedIds.Count > 0)
+            // TODO: uncomment code below and remove after first return when create sync-transaction between images and main db
+            // if (imagesRemovingResult.RemovedIds.Count > 0)
+            // {
+            //    imagesRemovingResult.RemovedIds.ForEach(x => RemoveImageFromEntity(entity, x));
+            // }
+
+            // Logger.LogTrace("Removing images for the entity was finished");
+            // return imagesRemovingResult;
+            imagesRemovingResult = new MultipleImageRemovingResult(); // temporary solution
+            for (short i = 0; i < imageIds.Count; i++)
             {
-                imagesRemovingResult.RemovedIds.ForEach(x => RemoveImageFromEntity(entity, x));
+                RemoveImageFromEntity(entity, imageIds[i]);
+                imagesRemovingResult.RemovedIds.Add(imageIds[i]);
+                imagesRemovingResult.MultipleKeyValueOperationResult.Results.Add(i, OperationResult.Success);
             }
 
-            Logger.LogTrace("Removing images for the entity was finished");
             return imagesRemovingResult;
         }
 
