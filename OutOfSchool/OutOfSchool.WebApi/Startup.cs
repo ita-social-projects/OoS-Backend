@@ -43,6 +43,7 @@ using OutOfSchool.WebApi.Services.Communication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
 using OutOfSchool.WebApi.Util.FakeImplementations;
+using Quartz;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -200,7 +201,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
             services.AddElasticsearchSynchronization(
-                builder => builder.Bind(Configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName)));
+                builder => builder.Bind(Configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName)),
+                Configuration);
 
             // entities services
             services.AddTransient<IAddressService, AddressService>();
