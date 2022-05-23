@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
@@ -23,7 +24,7 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly IEmailSender emailSender;
         private readonly ILogger<AccountController> logger;
         private readonly IRazorViewToStringRenderer renderer;
-
+        private readonly IStringLocalizer<SharedResource> localizer;
         private string userId;
         private string path;
 
@@ -32,13 +33,15 @@ namespace OutOfSchool.IdentityServer.Controllers
             UserManager<User> userManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
-            IRazorViewToStringRenderer renderer)
+            IRazorViewToStringRenderer renderer,
+            IStringLocalizer<SharedResource> localizer)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.emailSender = emailSender;
             this.logger = logger;
             this.renderer = renderer;
+            this.localizer = localizer;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -60,6 +63,26 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
+            if (model.Submit == localizer["Cancel"])
+            {
+                if (!string.IsNullOrWhiteSpace(model.Email))
+                {
+                    logger.LogInformation($"{path} Cancel click, but user enter the new email, show confirmation.");
+
+                    return View("Email/CancelChangeEmail");
+                }
+                else
+                {
+                    logger.LogInformation($"{path} Cancel click, close window.");
+
+                    return new ContentResult()
+                    {
+                        ContentType = "text/html",
+                        Content = "<script>window.close();</script>",
+                    };
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 logger.LogError($"{path} Input data was not valid for User(id): {userId}. " +
@@ -68,9 +91,26 @@ namespace OutOfSchool.IdentityServer.Controllers
                 return View("Email/ChangeEmail", new ChangeEmailViewModel());
             }
 
+            if (model.CurrentEmail != User.Identity.Name.ToLower())
+            {
+                logger.LogError($"{path} Current Email mismatch. Entered current Email: {model.CurrentEmail}");
+
+                model.Submit = "emailMismatch";
+                return View("Email/ChangeEmail", model);
+            }
+
+            var userNewEmail = await userManager.FindByEmailAsync(model.Email);
+            if (userNewEmail != null)
+            {
+                logger.LogError($"{path} Email already used. Entered new Email: {model.Email}");
+
+                model.Submit = "emailUsed";
+                return View("Email/ChangeEmail", model);
+            }
+
             var user = await userManager.FindByEmailAsync(User.Identity.Name);
             var token = await userManager.GenerateChangeEmailTokenAsync(user, model.Email);
-            var callBackUrl = Url.Action(nameof(ConfirmEmailChange), "Account", new { userId = user.Id, email = model.Email, token }, Request.Scheme);
+            var callBackUrl = Url.Action(nameof(ConfirmChangeEmail), "Account", new { userId = user.Id, email = model.Email, token }, Request.Scheme);
 
             var email = model.Email;
             var subject = "Confirm email.";
@@ -87,11 +127,11 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             logger.LogInformation($"{path} Confirmation message was sent for User(id) + {userId}.");
 
-            return View("Email/ChangeEmail");
+            return View("Email/SendChangeEmail", model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> ConfirmEmailChange(string userId, string email, string token)
+        public async Task<IActionResult> ConfirmChangeEmail(string userId, string email, string token)
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
