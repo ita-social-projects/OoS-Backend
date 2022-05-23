@@ -33,7 +33,7 @@ webapi:
     repository: gcr.io/gcp101292-pozashkillya/oos-api
     pullPolicy: IfNotPresent
     tag: 1.0.0-RC1
-  extraEnvironment:
+  extraEnvironment: {}
     # ReverseProxy__BasePath: /webapi
   connectionString:
     username: webapi
@@ -47,7 +47,7 @@ identity:
     repository: gcr.io/gcp101292-pozashkillya/oos-auth
     pullPolicy: IfNotPresent
     tag: 1.0.0-RC1
-  extraEnvironment:
+  extraEnvironment: {}
     # ReverseProxy__BasePath: /identity
   connectionString:
     username: oos

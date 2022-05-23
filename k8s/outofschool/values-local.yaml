@@ -1,77 +1,7 @@
 # Local values override
 
-global:
-  extraEnvironment: {}
-
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-elasticsearch:
-  enabled: true
-  generateCertificate: true
-  replicas: 1
-  protocol: http
-  esJavaOpts: "-Xms512m -Xmx512m" # example: "-Xmx1g -Xms1g"
-  volumeClaimTemplate:
-    accessModes: [ "ReadWriteOnce" ]
-    storageClassName: "hostpath"
-    resources:
-      requests:
-        storage: 1Gi
-  resources:
-    requests:
-      cpu: "1000m"
-      memory: "1Gi"
-    limits:
-      cpu: "1000m"
-      memory: "1Gi"
-
-kibana:
-  enabled: true
-  resources:
-    requests:
-      cpu: "500m"
-      memory: "1Gi"
-    limits:
-      cpu: "1000m"
-      memory: "1Gi"
-  healthCheckPath: "/kibana/app/kibana"
-  kibanaConfig:
-    kibana.yml: |
-      server.basePath: "/kibana"
-      server.publicBaseUrl: http://localhost/kibana
-      server.rewriteBasePath: true
-  ingress:
-    enabled: true
-    hosts:
-      - host: "localhost"
-        paths:
-          - path: /kibana
-
-mysql:
-  enabled: true
-  primary:
-    persistence:
-      enabled: true
-      storageClass: "hostpath"
-      accessModes:
-      - ReadWriteOnce
-      size: 1Gi 
-    extraEnvVarsSecret: mysql-api-auth
-
-## If you want - you can enable PHPMyAdmin but don't turn ingress on, as it won't work localy atm
-## Use port forwarding: https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/
-phpmyadmin:
-  enabled: false
-  ingress:
-    enabled: false
-  db:
-    allowArbitraryServer: false
-    host: "outofschool-mysql"
-
 webapi:
-  enabled: true
+  enabled: false
   aspNetCoreEnvironment: Kubernetes
   image:
     repository: gcr.io/gcp101292-pozashkillya/oos-api
@@ -115,7 +45,7 @@ identity:
     m2m.client__ClientSecret: "verysecretkey"
     ReverseProxy__BasePath: /identity
   ingress:
-    enabled: true
+    enabled: false
     className: "nginx"
     annotations:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
@@ -159,8 +89,3 @@ frontend:
 
   autoscaling:
     enabled: false
-
-cert-manager:
-  enabled: false
-ingress-nginx:
-  enabled: false
