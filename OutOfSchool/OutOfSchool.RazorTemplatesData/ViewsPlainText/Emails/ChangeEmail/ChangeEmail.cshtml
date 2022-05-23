@@ -1,0 +1,20 @@
+@using OutOfSchool.RazorTemplatesData.Models.Emails
+@model UserActionViewModel
+
+@{
+    ViewData["EmailTitle"] = "Welcome!";
+}
+
+    Hi, @Model.FirstName @Model.LastName
+
+
+    Confirm your new email. Just click the link below.
+
+
+    @Model.ActionUrl
+
+
+    If you have any questions, just reply to this email—we're always happy to help out.
+
+
+    The Contoso Team

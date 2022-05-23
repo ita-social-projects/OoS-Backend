@@ -1,0 +1,31 @@
+@using OutOfSchool.RazorTemplatesData.Models.Emails
+@using OutOfSchool.RazorTemplatesData.Models.Shared
+@model UserActionViewModel
+
+@{
+    ViewData["EmailTitle"] = "Welcome!";
+}
+
+<p> Hi, @Model.FirstName @Model.LastName</p>
+
+<br/>
+
+<p>
+   Confirm your new email. Just press the button below.
+</p>
+
+<br />
+
+@await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Confirm Email", Model.ActionUrl))
+
+<br />
+
+<p>
+    If you have any questions, just reply to this email—we're always happy to help out.
+</p>
+
+<br />
+
+<p>
+    The Contoso Team
+</p>
