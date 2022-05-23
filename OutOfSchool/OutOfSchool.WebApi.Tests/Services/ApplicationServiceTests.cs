@@ -14,8 +14,8 @@ using NUnit.Framework;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Config;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -120,10 +120,19 @@ namespace OutOfSchool.WebApi.Tests.Services
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
                 ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
             };
+            var input = new ApplicationDto()
+            {
+                Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
+                WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
+                Status = ApplicationStatus.Pending,
+                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            };
             SetupCreate(newApplication);
 
             // Act
-            var result = await service.Create(newApplication.ToModel()).ConfigureAwait(false);
+            var result = await service.Create(input).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(
@@ -149,23 +158,31 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void CreateApplication_WhenLimitIsExceeded_ShouldThrowArgumentException()
         {
             // Arrange
-            var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
-            var application = WithApplication(id);
+            var application = new ApplicationDto()
+            {
+                Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
+                WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                Status = ApplicationStatus.Pending,
+            };
 
             // Act and Assert
-            service.Invoking(w => w.Create(application.ToModel())).Should().Throw<ArgumentException>();
+            service.Invoking(w => w.Create(application)).Should().Throw<ArgumentException>();
         }
 
         [Test]
         public void CreateApplication_WhenParametersAreNotValid_ShouldThrowArgumentException()
         {
             // Arrange
-            var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
-            var application = WithApplication(id);
+            var application = new ApplicationDto()
+            {
+                Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
+                WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                Status = ApplicationStatus.Pending,
+            };
 
             // Act and Assert
-            service.Invoking(w => w.Create(application.ToModel())).Should().Throw<ArgumentException>();
-        }       
+            service.Invoking(w => w.Create(application)).Should().Throw<ArgumentException>();
+        }
 
         [Test]
         public async Task GetAllByWorkshop_WhenIdIsValid_ShouldReturnApplications()
@@ -276,6 +293,8 @@ namespace OutOfSchool.WebApi.Tests.Services
             var existingApplications = WithApplicationsList();
             SetupGetAllBy(existingApplications);
             var filter = new ApplicationFilter();
+            var mockQuery = existingApplications.AsTestAsyncEnumerableQuery();
+            applicationRepositoryMock.Setup(r => r.Get<int>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<Expression<Func<Application, bool>>>(), null, true)).Returns(mockQuery);
 
             // Act
             var result = await service.GetAllByParent(existingApplications.First().ParentId, filter).ConfigureAwait(false);
@@ -287,6 +306,10 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public async Task GetAllByParent_WhenIdIsNotValid_ShouldReturnEmptyCollection()
         {
+            // Arrange
+            var mockQuery = new List<Application>().AsTestAsyncEnumerableQuery();
+            applicationRepositoryMock.Setup(r => r.Get<int>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<Expression<Func<Application, bool>>>(), null, true)).Returns(mockQuery);
+
             // Act
             var filter = new ApplicationFilter();
             var result = await service.GetAllByParent(Guid.NewGuid(), filter).ConfigureAwait(false);
@@ -352,8 +375,23 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
             var changedEntity = WithApplication(id);
-            SetupUpdate(changedEntity);
-            var expected = changedEntity.ToModel();
+
+            var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
+
+            applicationRepositoryMock.Setup(r => r.Get<It.IsAnyType>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Application, bool>>>(),
+                    It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                    It.IsAny<bool>()))
+                .Returns(applicationsMock.Object)
+                .Verifiable();
+
+            applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>())).ReturnsAsync(changedEntity);
+            applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
+            mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id });
+            var expected = new ApplicationDto() {Id = id};
 
             // Act
             var result = await service.Update(expected).ConfigureAwait(false);
@@ -366,12 +404,16 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void UpdateApplication_WhenThereIsNoApplicationWithId_ShouldTrowArgumentException()
         {
             // Arrange
-            var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
-            var application = WithApplication(id);
+            var application = new ApplicationDto()
+            {
+                Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
+                WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                Status = ApplicationStatus.Pending,
+            };
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Update(application.ToModel()).ConfigureAwait(false));
+                async () => await service.Update(application).ConfigureAwait(false));
         }
 
         [Test]
@@ -560,24 +602,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             mapper.Setup(m => m.Map<ApplicationDto>(application)).Returns(new ApplicationDto() { Id = application.Id });
         }
 
-        private void SetupUpdate(Application application)
-        {
-            var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
-
-            applicationRepositoryMock.Setup(r => r.Get<It.IsAnyType>(
-                It.IsAny<int>(),
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<Expression<Func<Application, bool>>>(),
-                It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
-                It.IsAny<bool>()))
-                .Returns(applicationsMock.Object)
-                .Verifiable();
-
-            applicationRepositoryMock.Setup(a => a.Update(mapper.Object.Map<Application>(application))).ReturnsAsync(application);
-            mapper.Setup(m => m.Map<ApplicationDto>(application)).Returns(new ApplicationDto() { Id = application.Id });
-        }
-
         private void SetupDelete(Application application)
         {
             var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
@@ -608,6 +632,14 @@ namespace OutOfSchool.WebApi.Tests.Services
                     WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
                     ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                    Parent = new Parent()
+                    {
+                        Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                        User = new User()
+                        {
+                            LastName = "Petroffski",
+                        },
+                    },
                 },
                 new Application()
                 {
@@ -616,6 +648,14 @@ namespace OutOfSchool.WebApi.Tests.Services
                     WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
                     ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                    Parent = new Parent()
+                    {
+                        Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                        User = new User()
+                        {
+                            LastName = "Petroffski",
+                        },
+                    },
                 },
                 new Application()
                 {
@@ -624,6 +664,14 @@ namespace OutOfSchool.WebApi.Tests.Services
                     WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
                     ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
                     ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                    Parent = new Parent()
+                    {
+                        Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                        User = new User()
+                        {
+                            LastName = "Petroffski",
+                        },
+                    },
                 },
             };
         }

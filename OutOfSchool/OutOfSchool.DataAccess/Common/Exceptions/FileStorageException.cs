@@ -8,29 +8,28 @@ namespace OutOfSchool.Services.Common.Exceptions
     /// to work with image storage.
     /// </summary>
     [Serializable]
-    public class ImageStorageException : Exception
+    public class FileStorageException : Exception
     {
-
-        public ImageStorageException()
+        public FileStorageException()
         {
         }
 
-        public ImageStorageException(Exception ex)
+        public FileStorageException(Exception ex)
             : this("Unhandled exception", ex)
         {
         }
 
-        public ImageStorageException(string message)
+        public FileStorageException(string message)
             : base(message)
         {
         }
 
-        public ImageStorageException(string message, Exception innerException)
+        public FileStorageException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
 
-        protected ImageStorageException(SerializationInfo info, StreamingContext context)
+        protected FileStorageException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }

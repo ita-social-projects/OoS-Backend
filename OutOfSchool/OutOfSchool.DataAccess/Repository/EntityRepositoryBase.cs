@@ -33,6 +33,7 @@ namespace OutOfSchool.Services.Repository
         public IUnitOfWork UnitOfWork => dbContext;
 
         /// <inheritdoc/>
+        // TODO: Investigate why sometimes can add entities with their own ids, given with the entity instead of EF Core generate it
         public virtual async Task<TValue> Create(TValue entity)
         {
             await dbSet.AddAsync(entity).ConfigureAwait(false);

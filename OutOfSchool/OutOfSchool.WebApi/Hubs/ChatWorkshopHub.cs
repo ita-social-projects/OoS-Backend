@@ -10,10 +10,9 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 
@@ -71,13 +70,13 @@ namespace OutOfSchool.WebApi.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var userId = GettingUserProperties.GetUserId(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
 
-            var userRoleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
+            var userRoleName = GettingUserProperties.GetUserRole(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userRoleName, nameof(userRoleName));
 
-            var userSubroleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole);
+            var userSubroleName = GettingUserProperties.GetUserSubrole(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
 
             Role userRole = (Role)Enum.Parse(typeof(Role), userRoleName, true);
@@ -119,7 +118,7 @@ namespace OutOfSchool.WebApi.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var userId = GettingUserProperties.GetUserId(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
 
             logger.LogDebug($"UserId: {userId} connection:{Context.ConnectionId} disconnected.");
@@ -145,7 +144,7 @@ namespace OutOfSchool.WebApi.Hubs
 
                 if (!userHasRights)
                 {
-                    var messageToLog = $"{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role)} with UserId:{Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)} is trying to send message with one of not his own parameters: {nameof(chatMessageWorkshopCreateDto.WorkshopId)} {chatMessageWorkshopCreateDto.WorkshopId}, {nameof(chatMessageWorkshopCreateDto.ParentId)} {chatMessageWorkshopCreateDto.ParentId}";
+                    var messageToLog = $"{GettingUserProperties.GetUserRole(Context.User)} with UserId:{GettingUserProperties.GetUserId(Context.User)} is trying to send message with one of not his own parameters: {nameof(chatMessageWorkshopCreateDto.WorkshopId)} {chatMessageWorkshopCreateDto.WorkshopId}, {nameof(chatMessageWorkshopCreateDto.ParentId)} {chatMessageWorkshopCreateDto.ParentId}";
                     logger.LogWarning(messageToLog);
 
                     var messageForUser = localizer["Some of the message parameters were wrong. Please check your message and try again."];
@@ -241,17 +240,17 @@ namespace OutOfSchool.WebApi.Hubs
 
         private Task<bool> UserHasRigtsForChatRoomAsync(Guid workshopId, Guid parentId)
         {
-            var userId = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+            var userId = GettingUserProperties.GetUserId(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userId, nameof(userId));
 
-            var userRole = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Role);
+            var userRole = GettingUserProperties.GetUserRole(Context.User);
             LogErrorThrowExceptionIfPropertyIsNull(userRole, nameof(userRole));
 
             bool userRoleIsProvider = userRole.Equals(Role.Provider.ToString(), StringComparison.OrdinalIgnoreCase);
 
             if (userRoleIsProvider)
             {
-                var userSubroleName = Context.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Subrole);
+                var userSubroleName = GettingUserProperties.GetUserSubrole(Context.User);
                 LogErrorThrowExceptionIfPropertyIsNull(userSubroleName, nameof(userSubroleName));
                 Subrole userSubrole = (Subrole)Enum.Parse(typeof(Subrole), userSubroleName, true);
 

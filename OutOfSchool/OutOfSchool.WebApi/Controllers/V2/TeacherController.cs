@@ -86,12 +86,12 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <param name="dto">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HasPermission(Permissions.TeacherAddNew)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(TeacherCreationDto))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(TeacherCreationResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Consumes("multipart/form-data")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] TeacherCreationDto dto)
+        public async Task<IActionResult> Create([FromForm] TeacherDTO dto)
         {
             var creationResult = await teacherService.Create(dto).ConfigureAwait(false);
 
@@ -111,12 +111,12 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <param name="dto">Teacher to update.</param>
         /// <returns>Teacher.</returns>
         [HasPermission(Permissions.TeacherEdit)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TeacherUpdateDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TeacherUpdateResponse))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Consumes("multipart/form-data")]
         [HttpPut]
-        public async Task<IActionResult> Update([FromForm] TeacherUpdateDto dto)
+        public async Task<IActionResult> Update([FromForm] TeacherDTO dto)
         {
             var updateResult = await teacherService.Update(dto).ConfigureAwait(false);
 

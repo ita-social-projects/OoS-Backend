@@ -11,6 +11,7 @@ using OutOfSchool.Tests;
 
 namespace OutOfSchool.WebApi.Tests
 {
+    [Obsolete("These tests check if EF Core is working, no real value")]
     [TestFixture]
     public class EntityRepositoryTest
     {
@@ -19,15 +20,13 @@ namespace OutOfSchool.WebApi.Tests
         {
             using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
             {
-                var repository = new EntityRepository<Child>(context);
+                var repository = new EntityRepository<SocialGroup>(context);
 
                 // Act
-                var child = repository.GetById(1).Result;
+                var group = repository.GetById(1).Result;
 
                 // Assert
-                Assert.AreEqual("fn1", child.FirstName);
-                Assert.AreEqual("ln1", child.LastName);
-                Assert.AreEqual("mn1", child.MiddleName);
+                Assert.NotNull(group);
             }
         }
 

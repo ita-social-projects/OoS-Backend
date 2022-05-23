@@ -98,10 +98,10 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        /// <exception cref="ArgumentNullException">If <see cref="WorkshopCreationDto"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">If <see cref="WorkshopDTO"/> is null.</exception>
         /// <exception cref="InvalidOperationException">If unreal to map teachers.</exception>
         /// <exception cref="DbUpdateException">If unreal to update entity.</exception>
-        public async Task<WorkshopCreationResultDto> CreateV2(WorkshopCreationDto dto)
+        public async Task<WorkshopCreationResultDto> CreateV2(WorkshopDTO dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation("Workshop creating was started.");
@@ -110,7 +110,20 @@ namespace OutOfSchool.WebApi.Services
             await FillDirectionsFields(dto).ConfigureAwait(false);
 
             Func<Task<Workshop>> operation = async () =>
-                await workshopRepository.Create(mapper.Map<Workshop>(dto)).ConfigureAwait(false);
+            {
+                var workshop = await workshopRepository.Create(mapper.Map<Workshop>(dto)).ConfigureAwait(false);
+
+                if (dto.Teachers != null)
+                {
+                    foreach (var teacherDto in dto.Teachers)
+                    {
+                        teacherDto.WorkshopId = workshop.Id;
+                        await teacherService.Create(teacherDto).ConfigureAwait(false);
+                    }
+                }
+
+                return workshop;
+            };
 
             var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
@@ -124,11 +137,6 @@ namespace OutOfSchool.WebApi.Services
             if (dto.CoverImage != null)
             {
                 uploadingCoverImageResult = await AddCoverImage(newWorkshop, dto.CoverImage).ConfigureAwait(false);
-            }
-
-            if (dto.Teachers != null)
-            {
-                await AddTeacherImages(newWorkshop, dto.Teachers).ConfigureAwait(false);
             }
 
             await UpdateWorkshop().ConfigureAwait(false);
@@ -242,7 +250,7 @@ namespace OutOfSchool.WebApi.Services
 
         /// <inheritdoc/>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        public async Task<WorkshopUpdateResultDto> UpdateV2(WorkshopUpdateDto dto)
+        public async Task<WorkshopUpdateResultDto> UpdateV2(WorkshopDTO dto)
         {
             _ = dto ?? throw new ArgumentNullException(nameof(dto));
             logger.LogInformation($"Updating {nameof(Workshop)} with Id = {dto.Id} started.");
@@ -260,7 +268,7 @@ namespace OutOfSchool.WebApi.Services
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
-            await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherUpdateDto>()).ConfigureAwait(false);
+            await ChangeTeachers(currentWorkshop, dto.Teachers ?? new List<TeacherDTO>()).ConfigureAwait(false);
 
             mapper.Map(dto, currentWorkshop);
 
@@ -634,29 +642,6 @@ namespace OutOfSchool.WebApi.Services
             return uploadingCoverImageResult;
         }
 
-        private async Task AddTeacherImages(Workshop workshop, List<TeacherCreationDto> teacherCreationDtoList)
-        {
-            if (teacherCreationDtoList.Count != workshop.Teachers.Count)
-            {
-                throw new InvalidOperationException("Incorrect mapping teachers while creating a new workshop.");
-            }
-
-            for (var i = 0; i < teacherCreationDtoList.Count; i++)
-            {
-                var image = teacherCreationDtoList[i].AvatarImage;
-                if (image != null)
-                {
-                    var uploadingImageResult = await imageService
-                        .UploadImageAsync<Teacher>(image).ConfigureAwait(false);
-
-                    if (uploadingImageResult.Succeeded)
-                    {
-                        workshop.Teachers[i].AvatarImageId = uploadingImageResult.Value;
-                    }
-                }
-            }
-        }
-
         private async Task<ImageChangingResult> ChangeCoverImage(Workshop workshop, string dtoImageId, IFormFile newImage)
         {
             ImageChangingResult changingCoverImageResult = null;
@@ -676,24 +661,24 @@ namespace OutOfSchool.WebApi.Services
             return changingCoverImageResult;
         }
 
-        private async Task ChangeTeachers(Workshop currentWorkshop, List<TeacherUpdateDto> teacherUpdateDtoList)
+        private async Task ChangeTeachers(Workshop currentWorkshop, List<TeacherDTO> teacherDtoList)
         {
-            var deletedIds = currentWorkshop.Teachers.Select(x => x.Id).Except(teacherUpdateDtoList.Select(x => x.Id)).ToList();
+            var deletedIds = currentWorkshop.Teachers.Select(x => x.Id).Except(teacherDtoList.Select(x => x.Id)).ToList();
 
             foreach (var deletedId in deletedIds)
             {
                 await teacherService.Delete(deletedId).ConfigureAwait(false);
             }
 
-            foreach (var teacherUpdateDto in teacherUpdateDtoList)
+            foreach (var teacherDto in teacherDtoList)
             {
-                if (currentWorkshop.Teachers.Select(x => x.Id).Contains(teacherUpdateDto.Id))
+                if (currentWorkshop.Teachers.Select(x => x.Id).Contains(teacherDto.Id))
                 {
-                    await teacherService.Update(teacherUpdateDto).ConfigureAwait(false);
+                    await teacherService.Update(teacherDto).ConfigureAwait(false);
                 }
                 else
                 {
-                    var newTeacher = mapper.Map<TeacherCreationDto>(teacherUpdateDto);
+                    var newTeacher = mapper.Map<TeacherDTO>(teacherDto);
                     newTeacher.WorkshopId = currentWorkshop.Id;
                     await teacherService.Create(newTeacher).ConfigureAwait(false);
                 }

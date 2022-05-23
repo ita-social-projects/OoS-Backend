@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Services;
 
@@ -46,7 +44,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Block(BlockedProviderParentBlockDto blockedProviderParentBlockDto)
         {
-            var userId = GetUserId();
+            var userId = GettingUserProperties.GetUserId(HttpContext);
             var result = await blockedProviderParentService.Block(blockedProviderParentBlockDto, userId).ConfigureAwait(false);
 
             if (!result.Succeeded)
@@ -79,7 +77,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnBlock(BlockedProviderParentUnblockDto blockedProviderParentUnblockDto)
         {
-            var userId = GetUserId();
+            var userId = GettingUserProperties.GetUserId(HttpContext);
             var result = await blockedProviderParentService.Unblock(blockedProviderParentUnblockDto, userId).ConfigureAwait(false);
 
             if (!result.Succeeded)
@@ -111,14 +109,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public async Task<IActionResult> GetBlock(Guid parentId, Guid providerId)
         {
             return Ok(await blockedProviderParentService.GetBlock(parentId, providerId).ConfigureAwait(false));
-        }
-
-        private string GetUserId()
-        {
-            var userId = HttpContext.User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub)
-                ?? throw new AuthenticationException($"Can not get user's claim {nameof(IdentityResourceClaimsTypes.Sub)} from HttpContext.");
-
-            return userId;
         }
     }
 }

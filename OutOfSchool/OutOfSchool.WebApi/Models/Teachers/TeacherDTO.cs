@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -34,6 +35,9 @@ namespace OutOfSchool.WebApi.Models
         public string Description { get; set; } = string.Empty;
 
         public string AvatarImageId { get; set; }
+
+        [JsonProperty(NullValueHandling=NullValueHandling.Ignore)]
+        public IFormFile AvatarImage { get; set; }
 
         public Guid WorkshopId { get; set; }
     }

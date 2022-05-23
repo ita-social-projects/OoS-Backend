@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Entity to add.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopCreationResultDto"/>.</returns>
-        Task<WorkshopCreationResultDto> CreateV2(WorkshopCreationDto dto);
+        Task<WorkshopCreationResultDto> CreateV2(WorkshopDTO dto);
 
         /// <summary>
         /// Get entity by it's key.
@@ -47,7 +47,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Entity that will be to updated.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
-        Task<WorkshopUpdateResultDto> UpdateV2(WorkshopUpdateDto dto);
+        Task<WorkshopUpdateResultDto> UpdateV2(WorkshopDTO dto);
 
         /// <summary>
         ///  Delete entity.

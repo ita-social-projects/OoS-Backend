@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.WebApi.Services
@@ -14,7 +15,7 @@ namespace OutOfSchool.WebApi.Services
         {
         }
 
-        public async Task<WorkshopCreationResultDto> Create(WorkshopCreationDto dto)
+        public new async Task<WorkshopCreationResultDto> Create(WorkshopDTO dto)
         {
             var creationResult = await workshopService.CreateV2(dto).ConfigureAwait(false);
 
@@ -27,7 +28,7 @@ namespace OutOfSchool.WebApi.Services
             return creationResult;
         }
 
-        public async Task<WorkshopUpdateResultDto> Update(WorkshopUpdateDto dto)
+        public new async Task<WorkshopUpdateResultDto> Update(WorkshopDTO dto)
         {
             var workshop = await workshopService.UpdateV2(dto).ConfigureAwait(false);
 

@@ -15,18 +15,18 @@ namespace OutOfSchool.WebApi.Services.Images
     /// Provides APIs for validating images by their options.
     /// </summary>
     /// <typeparam name="TEntity">This type encapsulates data for which should get validating options.</typeparam>
-    public class ImageValidatorService<TEntity> : IImageValidatorService<TEntity>
+    public class ImageValidator<TEntity> : IImageValidator
     {
         private readonly ImageOptions<TEntity> options;
 
-        private readonly ILogger<ImageValidatorService<TEntity>> logger;
+        private readonly ILogger<ImageValidator<TEntity>> logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImageValidatorService{TEntity}"/> class.
+        /// Initializes a new instance of the <see cref="ImageValidator{TEntity}"/> class.
         /// </summary>
         /// <param name="options">Image options.</param>
         /// <param name="logger">Logger.</param>
-        public ImageValidatorService(IOptions<ImageOptions<TEntity>> options, ILogger<ImageValidatorService<TEntity>> logger)
+        public ImageValidator(IOptions<ImageOptions<TEntity>> options, ILogger<ImageValidator<TEntity>> logger)
         {
             this.options = options.Value;
             this.logger = logger;
@@ -35,15 +35,16 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <inheritdoc/>
         public OperationResult Validate(Stream stream)
         {
-            if (!ImageSizeValid(stream.Length))
-            {
-                return OperationResult.Failed(ImagesOperationErrorCode.InvalidSizeError.GetOperationError());
-            }
-
             try
             {
+                _ = stream ?? throw new ArgumentNullException(nameof(stream));
+                if (!FileSizeValid(stream.Length))
+                {
+                    return OperationResult.Failed(ImagesOperationErrorCode.InvalidSizeError.GetOperationError());
+                }
+
                 using var image = Image.FromStream(stream); // check disposing, using memory
-                if (!ImageFormatValid(image.RawFormat.ToString()))
+                if (!FileFormatValid(image.RawFormat.ToString()))
                 {
                     return OperationResult.Failed(ImagesOperationErrorCode.InvalidFormatError.GetOperationError());
                 }
@@ -68,7 +69,7 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public bool ImageSizeValid(long size)
+        public bool FileSizeValid(long size)
         {
             return size <= options.MaxSizeBytes;
         }
@@ -85,7 +86,7 @@ namespace OutOfSchool.WebApi.Services.Images
         }
 
         /// <inheritdoc/>
-        public bool ImageFormatValid(string format)
+        public bool FileFormatValid(string format)
         {
             return options.SupportedFormats.Contains(format, StringComparer.OrdinalIgnoreCase);
         }

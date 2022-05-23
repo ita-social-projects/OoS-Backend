@@ -162,45 +162,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.AboutPortal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AboutPortal");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.AboutPortalItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<Guid>("AboutPortalId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<string>("SectionName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AboutPortalId");
-
-                    b.ToTable("AboutPortalItems");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Address", b =>
                 {
                     b.Property<long>("Id")
@@ -481,6 +442,48 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("DepartmentId");
 
                     b.ToTable("Classes");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CompanyInformation");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformationItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<Guid>("CompanyInformationId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("SectionName")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyInformationId");
+
+                    b.ToTable("CompanyInformationItems");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
@@ -938,29 +941,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         });
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.SupportInformation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(3000)
-                        .HasColumnType("varchar(3000)");
-
-                    b.Property<string>("SectionName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SupportInformation");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Teacher", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1288,17 +1268,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.AboutPortalItem", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.AboutPortal", "AboutPortal")
-                        .WithMany("AboutPortalItems")
-                        .HasForeignKey("AboutPortalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AboutPortal");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Application", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Child", "Child")
@@ -1401,6 +1370,17 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformationItem", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.CompanyInformation", "CompanyInformation")
+                        .WithMany("CompanyInformationItems")
+                        .HasForeignKey("CompanyInformationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CompanyInformation");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.DateTimeRange", b =>
@@ -1578,14 +1558,14 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.AboutPortal", b =>
-                {
-                    b.Navigation("AboutPortalItems");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatRoomWorkshop", b =>
                 {
                     b.Navigation("ChatMessages");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
+                {
+                    b.Navigation("CompanyInformationItems");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Department", b =>

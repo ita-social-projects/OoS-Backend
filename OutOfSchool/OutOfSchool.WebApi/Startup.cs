@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using AutoMapper;
+using Google.Cloud.Storage.V1;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
@@ -28,7 +30,9 @@ using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Config.DataAccess;
 using OutOfSchool.WebApi.Config.Images;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Extensions.Startup;
@@ -38,6 +42,7 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Communication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
+using OutOfSchool.WebApi.Util.FakeImplementations;
 using Quartz;
 using Serilog;
 
@@ -154,6 +159,7 @@ namespace OutOfSchool.WebApi
             services.Configure<ImagesLimits<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
 
             // Image options
+            services.Configure<GcpStorageImagesSourceConfig>(Configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
             services.AddSingleton<MongoDb>();
             services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
@@ -224,10 +230,10 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
             services.AddScoped<IImageService, ImageService>();
-            services.AddScoped<IImageValidatorService<Workshop>, ImageValidatorService<Workshop>>();
-            services.AddScoped<IImageValidatorService<Teacher>, ImageValidatorService<Teacher>>();
-            services.AddTransient<IAboutPortalService, AboutPortalService>();
-            services.AddTransient<ISupportInformationService, SupportInformationService>();
+            services.AddScoped<IImageValidator, ImageValidator<Workshop>>();
+            services.AddScoped<IImageValidator, ImageValidator<Teacher>>();
+            services.AddTransient<ICompanyInformationService, CompanyInformationService>();
+
             services.AddScoped<IWorkshopImagesInteractionService, WorkshopImagesInteractionService>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
@@ -245,11 +251,11 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
             services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
-            services.AddTransient<IEntityRepository<SupportInformation>, EntityRepository<SupportInformation>>();
+            services.AddTransient<IEntityRepository<CompanyInformation>, EntityRepository<CompanyInformation>>();
 
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
-            services.AddTransient<ISensitiveEntityRepository<AboutPortal>, SensitiveEntityRepository<AboutPortal>>();
-            services.AddTransient<ISensitiveEntityRepository<AboutPortalItem>, SensitiveEntityRepository<AboutPortalItem>>();
+            services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
+            services.AddTransient<ISensitiveEntityRepository<CompanyInformationItem>, SensitiveEntityRepository<CompanyInformationItem>>();
 
             services.AddTransient<IApplicationRepository, ApplicationRepository>();
             services
@@ -262,10 +268,10 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IProviderRepository, ProviderRepository>();
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
-            services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
+            //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
+            services.AddImagesStorage(turnOnFakeStorage: Configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
-            services.AddTransient<IAboutPortalRepository, AboutPortalRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
             services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
 
