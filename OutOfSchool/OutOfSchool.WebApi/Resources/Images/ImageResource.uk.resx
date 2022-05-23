@@ -121,7 +121,7 @@
     <value>Виникла помилка під час обновлення фото</value>
   </data>
   <data name="DefaultError" xml:space="preserve">
-    <value>Нажаль, ми не змогли виконати цю операцію</value>
+    <value>На жаль, ми не змогли виконати цю операцію</value>
   </data>
   <data name="ExceedingCountOfImagesError" xml:space="preserve">
     <value>Неможливо завантажити так багато фото через обмеження на кількість зображень.</value>
@@ -148,7 +148,7 @@
     <value>Виникла помилка під час видалення</value>
   </data>
   <data name="UnexpectedValidationError" xml:space="preserve">
-    <value>Будь-ласка, переконайтесь у коректності фото</value>
+    <value>Будь ласка, переконайтесь у коректності фото</value>
   </data>
   <data name="UploadingError" xml:space="preserve">
     <value>Виникла помилка під час завантаження</value>
