@@ -111,15 +111,11 @@ namespace OutOfSchool.WebApi.Services.Images
 
             var result = new MultipleImageChangingResult();
 
-            var shouldRemove = !new HashSet<string>(oldImageIds).SetEquals(entity.Images.Select(x => x.ExternalStorageId));
+            var removingList = entity.Images.Select(x => x.ExternalStorageId).Except(oldImageIds).ToList();
 
-            if (shouldRemove)
+            if (removingList.Any())
             {
-                var removingList = entity.Images.Select(x => x.ExternalStorageId).Except(oldImageIds).ToList();
-                if (removingList.Any())
-                {
-                    result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(entity, removingList).ConfigureAwait(false);
-                }
+                result.RemovedMultipleResult = await RemoveManyImagesProcessAsync(entity, removingList).ConfigureAwait(false);
             }
 
             if (newImages?.Count > 0)
