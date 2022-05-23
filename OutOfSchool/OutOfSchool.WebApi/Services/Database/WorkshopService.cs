@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ITeacherService teacherService;
         private readonly ILogger<WorkshopService> logger;
         private readonly IMapper mapper;
-        private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesMediator;
+        private readonly IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkshopService"/> class.
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="teacherService">Teacher service.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Automapper DI service.</param>
-        /// <param name="workshopImagesMediator">Workshop images mediator.</param>
+        /// <param name="workshopImagesService">Workshop images mediator.</param>
         public WorkshopService(
             IWorkshopRepository workshopRepository,
             IClassRepository classRepository,
@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Services
             ITeacherService teacherService,
             ILogger<WorkshopService> logger,
             IMapper mapper,
-            IImageDependentEntityImagesInteractionService<Workshop> workshopImagesMediator)
+            IImageDependentEntityImagesInteractionService<Workshop> workshopImagesService)
         {
             this.workshopRepository = workshopRepository;
             this.classRepository = classRepository;
@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Services
             this.teacherService = teacherService;
             this.logger = logger;
             this.mapper = mapper;
-            this.workshopImagesMediator = workshopImagesMediator;
+            this.workshopImagesService = workshopImagesService;
         }
 
         /// <inheritdoc/>
@@ -124,12 +124,12 @@ namespace OutOfSchool.WebApi.Services
                 if (dto.ImageFiles?.Count > 0)
                 {
                     workshop.Images = new List<Image<Workshop>>();
-                    uploadingResult = await workshopImagesMediator.AddManyImagesAsync(workshop, dto.ImageFiles).ConfigureAwait(false);
+                    uploadingResult = await workshopImagesService.AddManyImagesAsync(workshop, dto.ImageFiles).ConfigureAwait(false);
                 }
 
                 if (dto.CoverImage != null)
                 {
-                    uploadingCoverImageResult = await workshopImagesMediator.AddCoverImageAsync(workshop, dto.CoverImage).ConfigureAwait(false);
+                    uploadingCoverImageResult = await workshopImagesService.AddCoverImageAsync(workshop, dto.CoverImage).ConfigureAwait(false);
                 }
 
                 await UpdateWorkshop().ConfigureAwait(false);
@@ -264,7 +264,7 @@ namespace OutOfSchool.WebApi.Services
                 var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
 
                 dto.ImageIds ??= new List<string>();
-                multipleImageChangingResult = await workshopImagesMediator.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
+                multipleImageChangingResult = await workshopImagesService.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
                     .ConfigureAwait(false);
 
                 // In case if AddressId was changed. AddressId is one and unique for workshop.
@@ -275,7 +275,7 @@ namespace OutOfSchool.WebApi.Services
 
                 mapper.Map(dto, currentWorkshop);
 
-                changingCoverImageResult = await workshopImagesMediator.ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
+                changingCoverImageResult = await workshopImagesService.ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
 
                 await UpdateWorkshop().ConfigureAwait(false);
 
@@ -342,24 +342,12 @@ namespace OutOfSchool.WebApi.Services
 
                 if (entity.Images.Count > 0)
                 {
-                    var removingResult = await workshopImagesMediator.RemoveManyImagesAsync(entity, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
-
-                    // TODO: uncomment when create sync-transaction between images and main db
-                    // if (removingResult.MultipleKeyValueOperationResult is { Succeeded: false })
-                    // {
-                    //     throw new InvalidOperationException($"Unreal to delete {nameof(Workshop)} [id = {id}] because unable to delete images.");
-                    // }
+                    await workshopImagesService.RemoveManyImagesAsync(entity, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
                 }
 
                 if (!string.IsNullOrEmpty(entity.CoverImageId))
                 {
-                    var removingCoverImageResult = await workshopImagesMediator.RemoveCoverImageAsync(entity).ConfigureAwait(false);
-
-                    // TODO: uncomment when create sync-transaction between images and main db
-                    // if (!removingCoverImageResult.Succeeded)
-                    // {
-                    //     throw new InvalidOperationException($"Unreal to delete {nameof(Workshop)} [id = {id}] because unable to delete cover image.");
-                    // }
+                    await workshopImagesService.RemoveCoverImageAsync(entity).ConfigureAwait(false);
                 }
 
                 foreach (var teacher in entity.Teachers.ToList())
