@@ -19,21 +19,6 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Address, AddressDto>(address, cfg => { cfg.CreateMap<Address, AddressDto>(); });
         }
 
-        public static ApplicationDto ToModel(this Application application)
-        {
-            return Mapper<Application, ApplicationDto>(application, cfg =>
-            {
-                cfg.CreateMap<Address, AddressDto>();
-                cfg.CreateMap<Teacher, TeacherDTO>();
-                cfg.CreateMap<Workshop, WorkshopCard>()
-                    .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id));
-                cfg.CreateMap<Child, ChildDto>()
-                    .ForMember(c => c.Parent, m => m.Ignore());
-                cfg.CreateMap<Parent, ParentDTO>();
-                cfg.CreateMap<Application, ApplicationDto>();
-            });
-        }
-
         public static ChatMessageWorkshopDto ToModel(this ChatMessageWorkshop chatMessage)
         {
             return Mapper<ChatMessageWorkshop, ChatMessageWorkshopDto>(chatMessage, cfg => { cfg.CreateMap<ChatMessageWorkshop, ChatMessageWorkshopDto>(); });
@@ -169,16 +154,6 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static WorkshopCard ToModelSimple(this Workshop workshop)
-        {
-            return Mapper<Workshop, WorkshopCard>(workshop, cfg =>
-            {
-                cfg.CreateMap<Workshop, WorkshopCard>()
-                    .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id))
-                    .ForMember(w => w.Address, m => m.Ignore());
-            });
-        }
-
         #endregion
 
         #region ToDomain
@@ -186,20 +161,6 @@ namespace OutOfSchool.WebApi.Extensions
         public static Address ToDomain(this AddressDto addressDto)
         {
             return Mapper<AddressDto, Address>(addressDto, cfg => { cfg.CreateMap<AddressDto, Address>(); });
-        }
-
-        public static Application ToDomain(this ApplicationDto applicationDTO)
-        {
-            return Mapper<ApplicationDto, Application>(applicationDTO, cfg =>
-            {
-                cfg.CreateMap<AddressDto, Address>();
-                cfg.CreateMap<TeacherDTO, Teacher>();
-                cfg.CreateMap<WorkshopCard, Workshop>()
-                    .ForMember(dest => dest.DirectionId, opt => opt.Ignore());
-                cfg.CreateMap<ChildDto, Child>();
-                cfg.CreateMap<ParentDTO, Parent>();
-                cfg.CreateMap<ApplicationDto, Application>();
-            });
         }
 
         public static ChatMessageWorkshop ToDomain(this ChatMessageWorkshopDto chatMessageDTO)
@@ -270,11 +231,6 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static Teacher ToDomain(this TeacherDTO teacherDto)
-        {
-            return Mapper<TeacherDTO, Teacher>(teacherDto, cfg => { cfg.CreateMap<TeacherDTO, Teacher>(); });
-        }
-
         public static User ToDomain(this ShortUserDto shortUserDto, User user)
         {
             return Mapper<ShortUserDto, User>(shortUserDto, cfg =>
@@ -301,19 +257,6 @@ namespace OutOfSchool.WebApi.Extensions
                     .ForMember(dest => dest.LockoutEnabled, opt => opt.MapFrom(src => user.LockoutEnabled))
                     .ForMember(dest => dest.LockoutEnd, opt => opt.MapFrom(src => user.LockoutEnd))
                     .ForMember(dest => dest.AccessFailedCount, opt => opt.MapFrom(src => user.AccessFailedCount));
-            });
-        }
-
-        public static Workshop ToDomain(this WorkshopDTO workshopDto)
-        {
-            return Mapper<WorkshopDTO, Workshop>(workshopDto, cfg =>
-            {
-                cfg.CreateMap<WorkshopDTO, Workshop>()
-                    .ForMember(dest => dest.Keywords, opt => opt.MapFrom(src => string.Join('¤', src.Keywords.Distinct())))
-                    .ForMember(dest => dest.Direction, opt => opt.Ignore());
-                cfg.CreateMap<AddressDto, Address>();
-                cfg.CreateMap<ProviderDto, Provider>();
-                cfg.CreateMap<TeacherDTO, Teacher>();
             });
         }
 
@@ -351,18 +294,6 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<WorkshopDTO, WorkshopCard>()
                     .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                     .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId));
-            });
-        }
-
-        public static WorkshopCard ToCard(this Workshop workshop)
-        {
-            return Mapper<Workshop, WorkshopCard>(workshop, cfg =>
-            {
-                cfg.CreateMap<Address, AddressDto>();
-                cfg.CreateMap<Workshop, WorkshopCard>()
-                .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-                .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id));
             });
         }
 

@@ -127,6 +127,8 @@ namespace OutOfSchool.IdentityServer
                             connectionString,
                             serverVersion,
                             sql => sql.MigrationsAssembly(migrationsAssembly));
+                    options.EnableTokenCleanup = true;
+                    options.TokenCleanupInterval = 3600;
                 })
                 .AddAspNetIdentity<User>()
                 .AddProfileService<ProfileService>()

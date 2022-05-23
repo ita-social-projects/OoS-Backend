@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Teacher to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherCreationResultDto> Create(TeacherCreationDto dto);
+        Task<TeacherCreationResultDto> Create(TeacherDTO dto);
 
         /// <summary>
         /// Get all entities.
@@ -40,7 +40,7 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="dto">Teacher to update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TeacherUpdateResultDto> Update(TeacherUpdateDto dto);
+        Task<TeacherUpdateResultDto> Update(TeacherDTO dto);
 
         /// <summary>
         /// Delete entity.

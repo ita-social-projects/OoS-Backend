@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using NUnit.Framework;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -19,10 +21,8 @@ namespace OutOfSchool.WebApi.Tests.Services
     [TestFixture]
     public class ClassServiceTests
     {
-        private DbContextOptions<OutOfSchoolDbContext> options;
-        private OutOfSchoolDbContext context;
-        private IClassRepository repo;
-        private IWorkshopRepository repositoryWorkshop;
+        private Mock<IClassRepository> repo;
+        private Mock<IWorkshopRepository> repositoryWorkshop;
         private IClassService service;
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger<ClassService>> logger;
@@ -31,25 +31,20 @@ namespace OutOfSchool.WebApi.Tests.Services
         [SetUp]
         public void SetUp()
         {
-            var builder =
-                new DbContextOptionsBuilder<OutOfSchoolDbContext>().UseInMemoryDatabase(
-                    databaseName: "OutOfSchoolTestDB");
-
-            options = builder.Options;
-            context = new OutOfSchoolDbContext(options);
-
-            repo = new ClassRepository(context);
-            repositoryWorkshop = new WorkshopRepository(context);
+            repo = new Mock<IClassRepository>();
+            repositoryWorkshop = new Mock<IWorkshopRepository>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ClassService>>();
             mapper = new Mock<IMapper>();
-            service = new ClassService(repo, repositoryWorkshop, logger.Object, localizer.Object, mapper.Object);
-
-            SeedDatabase();
+            service = new ClassService(
+                repo.Object,
+                repositoryWorkshop.Object,
+                logger.Object,
+                localizer.Object,
+                mapper.Object);
         }
 
         [Test]
-        [Order(1)]
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
         {
             // Arrange
@@ -67,29 +62,46 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
 
             mapper.Setup(m => m.Map<Class>(It.IsAny<ClassDto>())).Returns(expected);
-            // mapper.Setup(m => m.Map<ClassDto>(It.IsAny<Class>())).Returns(input);
+            mapper.Setup(m => m.Map<ClassDto>(It.IsAny<Class>())).Returns(input);
+            repo.Setup(r => r.Create(expected)).ReturnsAsync(expected);
 
             // Act
             var result = await service.Create(input).ConfigureAwait(false);
 
             // Assert
+            repo.Verify(r => r.Create(expected), Times.Once);
             Assert.AreEqual(expected.Title, result.Title);
             Assert.AreEqual(expected.Description, result.Description);
         }
 
         [Test]
-        [Order(2)]
         public async Task Create_NotUniqueEntity_ReturnsArgumentException()
         {
             // Arrange
-            // TODO: Make independent test
-            var expected = (await repo.GetAll()).FirstOrDefault();
             var input = new ClassDto()
             {
-                Title = expected.Title,
-                Description = expected.Description,
-                DepartmentId = expected.DepartmentId,
+                Title = "Test1",
+                Description = "Test1",
+                DepartmentId = 1,
             };
+            var mockDbResponse = new List<Class>()
+            {
+                new Class()
+                {
+                    Title = "Test1",
+                    Description = "Test1",
+                    DepartmentId = 1,
+                },
+            }.AsTestAsyncEnumerableQuery();
+
+            repo.Setup(r => r.Get<int>(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Class, bool>>>(),
+                null,
+                true))
+                .Returns(mockDbResponse);
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
@@ -97,36 +109,92 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(3)]
         public async Task GetAll_WhenCalled_ReturnsAllEntities()
         {
             // Arrange
-            var expected = await repo.GetAll();
+            var expectedEntity = new List<Class>()
+            {
+                new Class()
+                {
+                    Title = "Test1",
+                    Description = "Test1",
+                    DepartmentId = 1,
+                },
+                new Class
+                {
+                    Title = "Test2",
+                    Description = "Test2",
+                    DepartmentId = 1,
+                },
+                new Class
+                {
+                    Title = "Test3",
+                    Description = "Test3",
+                    DepartmentId = 1,
+                },
+            };
+            var expectedDto = new List<ClassDto>()
+            {
+                new ClassDto()
+                {
+                    Title = "Test1",
+                    Description = "Test1",
+                    DepartmentId = 1,
+                },
+                new ClassDto
+                {
+                    Title = "Test2",
+                    Description = "Test2",
+                    DepartmentId = 1,
+                },
+                new ClassDto
+                {
+                    Title = "Test3",
+                    Description = "Test3",
+                    DepartmentId = 1,
+                },
+            };
+
+            repo.Setup(r => r.GetAll()).ReturnsAsync(expectedEntity);
+            mapper.Setup(m => m.Map<List<ClassDto>>(expectedEntity)).Returns(expectedDto);
 
             // Act
             var result = await service.GetAll().ConfigureAwait(false);
 
             // Assert
-            Assert.That(expected.Count(), Is.EqualTo(result.Count()));
+            repo.Verify(r => r.GetAll(), Times.Once);
+            Assert.That(expectedEntity.Count(), Is.EqualTo(result.Count()));
         }
 
         [Test]
-        [Order(4)]
         [TestCase(1)]
         public async Task GetById_WhenIdIsValid_ReturnsEntity(long id)
         {
             // Arrange
-            var expected = await repo.GetById(id);
+            var expected = new ClassDto()
+            {
+                Title = "Test1",
+                Description = "Test1",
+                DepartmentId = id,
+            };
+            var mockDbEntry = new Class()
+            {
+                Title = "Test1",
+                Description = "Test1",
+                DepartmentId = id,
+            };
+
+            repo.Setup(r => r.GetById(id)).ReturnsAsync(mockDbEntry);
+            mapper.Setup(m => m.Map<ClassDto>(mockDbEntry)).Returns(expected);
 
             // Act
             var result = await service.GetById(id).ConfigureAwait(false);
 
             // Assert
-            Assert.AreEqual(expected.Id, result.Id);
+            Assert.AreEqual(expected, result);
         }
 
         [Test]
-        [Order(5)]
         [TestCase(100)]
         public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
         {
@@ -136,11 +204,17 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        [Order(6)]
         public async Task Update_WhenEntityIsValid_UpdatesExistedEntity()
         {
             // Arrange
-            var changedEntity = new ClassDto()
+            var changedEntity = new Class()
+            {
+                Id = 1,
+                Title = "ChangedTitle1",
+                Description = "Bla-bla",
+                DepartmentId = 1,
+            };
+            var changedDto = new ClassDto()
             {
                 Id = 1,
                 Title = "ChangedTitle1",
@@ -148,164 +222,184 @@ namespace OutOfSchool.WebApi.Tests.Services
                 DepartmentId = 1,
             };
 
+            mapper.Setup(m => m.Map<ClassDto>(changedEntity)).Returns(changedDto);
+            mapper.Setup(m => m.Map<Class>(changedDto)).Returns(changedEntity);
+            repo.Setup(r => r.Update(changedEntity)).ReturnsAsync(changedEntity);
+
             // Act
-            var result = await service.Update(changedEntity).ConfigureAwait(false);
+            var result = await service.Update(changedDto).ConfigureAwait(false);
 
             // Assert
+            repo.Verify(r => r.Update(changedEntity), Times.Once);
             Assert.That(changedEntity.Title, Is.EqualTo(result.Title));
         }
 
         [Test]
-        [Order(7)]
         public void Update_WhenEntityIsInvalid_ThrowsDbUpdateConcurrencyException()
         {
             // Arrange
-            var changedEntity = new ClassDto()
+            var changedEntity = new Class()
             {
-                Title = "NewTitle1",
+                Id = 1,
+                Title = "ChangedTitle1",
+                Description = "Bla-bla",
                 DepartmentId = 1,
             };
+            var changedDto = new ClassDto()
+            {
+                Id = 1,
+                Title = "ChangedTitle1",
+                Description = "Bla-bla",
+                DepartmentId = 1,
+            };
+            mapper.Setup(m => m.Map<Class>(changedDto)).Returns(changedEntity);
+            repo.Setup(r => r.Update(changedEntity)).Throws<DbUpdateConcurrencyException>();
 
             // Act and Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(
-                async () => await service.Update(changedEntity).ConfigureAwait(false));
+                async () => await service.Update(changedDto).ConfigureAwait(false));
         }
 
         [Test]
-        [Order(8)]
         [TestCase(1)]
         public async Task Delete_WhenIdIsValid_DeletesEntity(long id)
         {
+            // Arrange
+            var deleted = new ClassDto()
+            {
+                Id = id,
+            };
+            repositoryWorkshop.Setup(w => w.GetByFilter(workshop => workshop.ClassId == id, It.IsAny<string>()))
+                .ReturnsAsync(new List<Workshop>());
+            mapper.Setup(m => m.Map<ClassDto>(It.IsAny<Class>())).Returns(deleted);
+
             // Act
-            var countBeforeDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
-
-            context.Entry<Class>(await repo.GetById(id).ConfigureAwait(false)).State = EntityState.Detached;
-
-            await service.Delete(id).ConfigureAwait(false);
-
-            var countAfterDeleting = (await service.GetAll().ConfigureAwait(false)).Count();
+            var result = await service.Delete(id).ConfigureAwait(false);
 
             // Assert
-            Assert.That(countAfterDeleting, Is.Not.EqualTo(countBeforeDeleting));
+            repo.Verify(r => r.Delete(It.IsAny<Class>()), Times.Once);
+            Assert.True(result.Succeeded);
         }
 
         [Test]
-        [Order(9)]
         [TestCase(10)]
         public void Delete_WhenIdIsInvalid_ThrowsDbUpdateConcurrencyException(long id)
         {
+            // Arrange
+            repositoryWorkshop.Setup(w => w.GetByFilter(workshop => workshop.ClassId == id, It.IsAny<string>()))
+                .ReturnsAsync(new List<Workshop>());
+            repo.Setup(r => r.Delete(It.IsAny<Class>())).Throws<DbUpdateConcurrencyException>();
+
             // Act and Assert
             Assert.ThrowsAsync<DbUpdateConcurrencyException>(
                 async () => await service.Delete(id).ConfigureAwait(false));
         }
 
         [Test]
-        [Order(10)]
         [TestCase(2)]
         public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsNotSucceeded(long id)
         {
+            // Arrange
+            repositoryWorkshop.Setup(w => w.GetByFilter(workshop => workshop.ClassId == id, It.IsAny<string>()))
+                .ReturnsAsync(new List<Workshop>()
+                {
+                    new Workshop()
+                    {
+                        Title = "Test1",
+                        ClassId = 1,
+                    },
+                });
+
             // Act
             var result = await service.Delete(id).ConfigureAwait(false);
 
             // Assert
+            repo.Verify(r => r.Delete(It.IsAny<Class>()), Times.Never);
             Assert.False(result.Succeeded);
             Assert.That(result.OperationResult.Errors, Is.Not.Empty);
         }
 
         [Test]
-        [Order(10)]
         [TestCase(1)]
         public async Task GetByDepartmentId_WhenIdIsValid_ReturnsEntities(long id)
         {
             // Arrange
-            var expected = await repo.GetAll().ConfigureAwait(false);
-            expected = expected.Where(x => x.DepartmentId == id);
+            var expectedEntity = new List<Class>()
+            {
+                new Class()
+                {
+                    Title = "Test1",
+                    Description = "Test1",
+                    DepartmentId = id,
+                },
+                new Class
+                {
+                    Title = "Test2",
+                    Description = "Test2",
+                    DepartmentId = id,
+                },
+                new Class
+                {
+                    Title = "Test3",
+                    Description = "Test3",
+                    DepartmentId = id,
+                },
+            };
+            var expectedDto = new List<ClassDto>()
+            {
+                new ClassDto()
+                {
+                    Title = "Test1",
+                    Description = "Test1",
+                    DepartmentId = id,
+                },
+                new ClassDto
+                {
+                    Title = "Test2",
+                    Description = "Test2",
+                    DepartmentId = id,
+                },
+                new ClassDto
+                {
+                    Title = "Test3",
+                    Description = "Test3",
+                    DepartmentId = id,
+                },
+            };
+
+            repo.Setup(r => r.Get<int>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Class, bool>>>(),
+                    null,
+                    true))
+                .Returns(expectedEntity.AsTestAsyncEnumerableQuery());
+            repo.Setup(r => r.DepartmentExists(id)).Returns(true);
+            mapper.Setup(m => m.Map<List<ClassDto>>(It.IsAny<List<Class>>())).Returns(expectedDto);
 
             // Act
-            var entities = await service.GetByDepartmentId(id);
+            var entities = await service.GetByDepartmentId(id).ConfigureAwait(false);
 
             // Assert
-            Assert.That(entities.Count(), Is.EqualTo(expected.Count()));
+            repo.Verify(
+                r => r.Get<int>(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Class, bool>>>(),
+                    null,
+                    true), Times.Once);
+            Assert.That(entities.Count(), Is.EqualTo(expectedEntity.Count()));
         }
 
         [Test]
-        [Order(11)]
         [TestCase(10)]
         public void GetByDepartmentId_WhenIdIsInvalid_ThrowsArgumentException(long id)
         {
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-            async () => await service.GetByDepartmentId(id).ConfigureAwait(false));
-        }
-
-        private void SeedDatabase()
-        {
-            using var ctx = new OutOfSchoolDbContext(options);
-            {
-                ctx.Database.EnsureDeleted();
-                ctx.Database.EnsureCreated();
-
-                var departments = new List<Department>()
-                {
-                   new Department()
-                   {
-                       Title = "Test1",
-                       Description = "Test1",
-                       DirectionId = 1,
-                   },
-                   new Department
-                   {
-                       Title = "Test2",
-                       Description = "Test2",
-                       DirectionId = 1,
-                   },
-                   new Department
-                   {
-                       Title = "Test3",
-                       Description = "Test3",
-                       DirectionId = 1,
-                   },
-                };
-
-                ctx.Departments.AddRangeAsync(departments);
-
-                var classes = new List<Class>()
-                {
-                   new Class()
-                   {
-                       Title = "Test1",
-                       Description = "Test1",
-                       DepartmentId = 1,
-                   },
-                   new Class
-                   {
-                       Title = "Test2",
-                       Description = "Test2",
-                       DepartmentId = 1,
-                   },
-                   new Class
-                   {
-                       Title = "Test3",
-                       Description = "Test3",
-                       DepartmentId = 1,
-                   },
-                };
-
-                ctx.Classes.AddRangeAsync(classes);
-
-                var workshops = new List<Workshop>()
-                {
-                   new Workshop()
-                   {
-                        Title = "Test1",
-                        ClassId = 2,
-                   },
-                };
-
-                ctx.Workshops.AddRangeAsync(workshops);
-
-                ctx.SaveChangesAsync();
-            }
+                async () => await service.GetByDepartmentId(id).ConfigureAwait(false));
         }
     }
 }
