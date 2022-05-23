@@ -1,4 +1,4 @@
-resource "helm_release" "cert-manager" {
+resource "helm_release" "cert_manager" {
   name             = "cert-manager"
   chart            = "../../k8s/cert-manager"
   namespace        = "cert-manager"

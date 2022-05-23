@@ -16,8 +16,9 @@ resource "helm_release" "mysql" {
     value = var.phpmyadmin_hostname
   }
   depends_on = [
-    kubernetes_secret.sql-credentials,
-    kubernetes_secret.sql-api-credentials,
+    kubernetes_secret.sql_credentials,
+    kubernetes_secret.sql_api_credentials,
+    kubernetes_secret.redis_credentials,
     helm_release.ingress
   ]
 }

@@ -83,6 +83,7 @@ module "k8s" {
   sql_auth_pass       = module.passwords.sql_auth_pass
   es_admin_pass       = module.passwords.es_admin_pass
   es_api_pass         = module.passwords.es_api_pass
+  redis_pass          = module.passwords.redis_pass
   csi_sa_email        = module.iam.csi_sa_email
   csi_sa_key          = module.iam.csi_sa_key
   letsencrypt_email   = var.letsencrypt_email
@@ -100,6 +101,7 @@ module "secrets" {
   sql_api_pass  = module.passwords.sql_api_pass
   sql_auth_pass = module.passwords.sql_auth_pass
   es_api_pass   = module.passwords.es_api_pass
+  redis_pass    = module.passwords.redis_pass
   labels        = var.labels
   sql_hostname  = var.sql_hostname
   sendgrid_key  = var.sendgrid_key
@@ -116,6 +118,8 @@ module "build" {
   api_secret          = module.secrets.sql_api_secret
   auth_secret         = module.secrets.sql_auth_secret
   es_api_pass_secret  = module.secrets.es_api_secret
+  redis_hostname      = var.redis_hostname
+  redis_secret        = module.secrets.redis_secret
   sender_email        = var.sender_email
   sendgrid_key_secret = module.secrets.sendgrid_key_secret
   bucket              = module.storage.image-bucket

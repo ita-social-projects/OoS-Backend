@@ -17,3 +17,7 @@ output "es_admin_pass" {
 output "es_api_pass" {
   value = random_password.es_api_pass.result
 }
+
+output "redis_pass" {
+  value = random_password.redis_pass.result
+}

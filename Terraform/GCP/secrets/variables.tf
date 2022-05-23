@@ -10,6 +10,10 @@ variable "es_api_pass" {
   type = string
 }
 
+variable "redis_pass" {
+  type = string
+}
+
 variable "labels" {
   type        = map(string)
   description = "A mapping of labels to assign to the resources."

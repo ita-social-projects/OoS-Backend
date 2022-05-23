@@ -1,4 +1,4 @@
-resource "kubectl_manifest" "elastic-ssl" {
+resource "kubectl_manifest" "elastic_ssl" {
   yaml_body = <<-EOF
   apiVersion: cert-manager.io/v1
   kind: Certificate
@@ -13,7 +13,7 @@ resource "kubectl_manifest" "elastic-ssl" {
     duration: 2160h0m0s
     issuerRef:
       kind: Issuer
-      name: ${kubectl_manifest.oos-issuer.name}
+      name: ${kubectl_manifest.oos_issuer.name}
     renewBefore: 168h0m0s
     secretName: elastic-certificates
   EOF
@@ -50,8 +50,8 @@ resource "helm_release" "elastic" {
     value = var.kibana_hostname
   }
   depends_on = [
-    kubernetes_secret.elastic-credentials,
-    kubectl_manifest.elastic-ssl,
+    kubernetes_secret.elastic_credentials,
+    kubectl_manifest.elastic_ssl,
     helm_release.ingress
   ]
 }

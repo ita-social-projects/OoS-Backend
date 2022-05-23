@@ -58,9 +58,25 @@ resource "google_secret_manager_secret_version" "secret-sendgrid-key" {
   secret_data = var.sendgrid_key
 }
 
+resource "google_secret_manager_secret" "redis_secret" {
+  secret_id = "redis-pass"
+
+  labels = var.labels
+
+  replication {
+    automatic = true
+  }
+}
+
+resource "google_secret_manager_secret_version" "redis_secret" {
+  secret      = google_secret_manager_secret.redis_secret.id
+  secret_data = var.redis_pass
+}
+
 locals {
   api_list          = split("/", google_secret_manager_secret_version.secret-app-connection.name)
   auth_list         = split("/", google_secret_manager_secret_version.secret-auth-connection.name)
   es_api_list       = split("/", google_secret_manager_secret_version.secret-es-api.name)
   sendgrid_key_list = split("/", google_secret_manager_secret_version.secret-sendgrid-key.name)
+  redis_list        = split("/", google_secret_manager_secret_version.redis_secret.name)
 }

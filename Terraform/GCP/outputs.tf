@@ -23,6 +23,11 @@ output "es_api_pass" {
   sensitive = true
 }
 
+output "redis_pass" {
+  value = module.passwords.redis_pass
+  sensitive = true
+}
+
 output "clusterstore_pass" {
   value     = module.sql.db_password
   sensitive = true

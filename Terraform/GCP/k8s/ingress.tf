@@ -9,6 +9,6 @@ resource "helm_release" "ingress" {
     "${file("${path.module}/values/ingress.yaml")}"
   ]
   depends_on = [
-    helm_release.cert-manager,
+    helm_release.cert_manager,
   ]
 }

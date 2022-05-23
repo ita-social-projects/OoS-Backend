@@ -1,4 +1,4 @@
-resource "kubernetes_secret" "sql-credentials" {
+resource "kubernetes_secret" "sql_credentials" {
   metadata {
     name      = "mysql-auth"
     namespace = data.kubernetes_namespace.oos.metadata[0].name
@@ -11,7 +11,7 @@ resource "kubernetes_secret" "sql-credentials" {
   }
 }
 
-resource "kubernetes_secret" "sql-api-credentials" {
+resource "kubernetes_secret" "sql_api_credentials" {
   metadata {
     name      = "mysql-api-auth"
     namespace = data.kubernetes_namespace.oos.metadata[0].name
@@ -22,7 +22,7 @@ resource "kubernetes_secret" "sql-api-credentials" {
   }
 }
 
-resource "kubernetes_secret" "elastic-credentials" {
+resource "kubernetes_secret" "elastic_credentials" {
   metadata {
     name      = "elasticsearch-credentials"
     namespace = data.kubernetes_namespace.oos.metadata[0].name
@@ -32,5 +32,16 @@ resource "kubernetes_secret" "elastic-credentials" {
     username = "elastic"
     password = var.es_admin_pass
     apipass  = var.es_api_pass
+  }
+}
+
+resource "kubernetes_secret" "redis_credentials" {
+  metadata {
+    name      = "redis-auth"
+    namespace = data.kubernetes_namespace.oos.metadata[0].name
+  }
+
+  data = {
+    password = var.redis_pass
   }
 }

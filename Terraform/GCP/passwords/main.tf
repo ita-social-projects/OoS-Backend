@@ -27,3 +27,9 @@ resource "random_password" "es_api_pass" {
   special          = true
   override_special = "_%@"
 }
+
+resource "random_password" "redis_pass" {
+  length           = 16
+  special          = true
+  override_special = "_%@"
+}

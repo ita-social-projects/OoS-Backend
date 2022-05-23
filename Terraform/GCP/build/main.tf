@@ -14,6 +14,8 @@ resource "google_cloudbuild_trigger" "backend-api" {
     _CONN_STRING_SECRET = var.api_secret
     _ES_PASSWORD        = var.es_api_pass_secret
     _BUCKET             = var.bucket
+    _REDIS_HOST         = var.redis_hostname
+    _REDIS_PASS         = var.redis_secret
   }
 
   filename = "app-cloudbuild.yml"

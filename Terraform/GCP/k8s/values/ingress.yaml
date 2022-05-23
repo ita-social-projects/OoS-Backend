@@ -22,3 +22,4 @@ ingress-nginx:
       maxReplicas: 2
   tcp:
     3306: "default/mysql:3306"
+    6379: "default/mysql-redis-master:6379"

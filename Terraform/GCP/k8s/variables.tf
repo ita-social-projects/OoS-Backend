@@ -33,6 +33,10 @@ variable "es_api_pass" {
   type = string
 }
 
+variable "redis_pass" {
+  type = string
+}
+
 variable "csi_sa_email" {
   type = string
 }

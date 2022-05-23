@@ -22,6 +22,14 @@ variable "es_api_pass_secret" {
   type = string
 }
 
+variable "redis_hostname" {
+  type = string
+}
+
+variable "redis_secret" {
+  type = string
+}
+
 variable "sender_email" {
   type = string
 }

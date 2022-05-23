@@ -88,6 +88,11 @@ variable "elastic_hostname" {
   description = "Hostname for Elastic"
 }
 
+variable "redis_hostname" {
+  type        = string
+  description = "Hostname for Redis"
+}
+
 variable "sender_email" {
   type        = string
   description = "Outgoing mail"
