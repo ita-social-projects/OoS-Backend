@@ -154,7 +154,7 @@ namespace OutOfSchool.WebApi.Services.Images
             _ = entity ?? throw new ArgumentNullException(nameof(entity));
             if (string.IsNullOrEmpty(entity.CoverImageId))
             {
-                throw new InvalidOperationException(@"Image id must be a non empty string");
+                throw new ArgumentException(@"Image id must be a non empty string", nameof(entity));
             }
 
             var removingCoverImageResult = await ImageService.RemoveImageAsync(entity.CoverImageId).ConfigureAwait(false);
