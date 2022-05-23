@@ -16,7 +16,7 @@ namespace OutOfSchool.Common.Extensions.Startup
         {
             var overrides = config
                 .GetSection("ConnectionStringsOverride")
-                .Get<Dictionary<string, TOptions>>();
+                .Get<Dictionary<string, TOptions>>() ?? new Dictionary<string, TOptions>();
 
             DbConnectionStringBuilder connectionStringBuilder;
 
@@ -36,6 +36,11 @@ namespace OutOfSchool.Common.Extensions.Startup
                 {
                     ConnectionString = config.GetConnectionString(connectionStringKey),
                 };
+            }
+
+            if (string.IsNullOrEmpty(connectionStringBuilder.ConnectionString))
+            {
+                throw new Exception("Provide a valid connection string or options");
             }
 
             if (!connectionStringBuilder.ContainsKey("guidformat") || connectionStringBuilder["guidformat"].ToString().ToLower() != "binary16")
