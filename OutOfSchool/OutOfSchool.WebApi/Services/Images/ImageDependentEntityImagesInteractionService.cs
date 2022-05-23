@@ -174,8 +174,8 @@ namespace OutOfSchool.WebApi.Services.Images
         {
             _ = entity ?? throw new ArgumentNullException(nameof(entity));
 
-            if (string.Equals(dtoImageId, entity.CoverImageId, StringComparison.Ordinal) &&
-                (!string.IsNullOrEmpty(dtoImageId) || newImage == null))
+            if ((!string.IsNullOrEmpty(dtoImageId) || newImage == null) &&
+                 string.Equals(dtoImageId, entity.CoverImageId, StringComparison.Ordinal))
             {
                 return new ImageChangingResult(); // whenever no need to change cover image
             }
