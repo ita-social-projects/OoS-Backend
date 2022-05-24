@@ -16,6 +16,6 @@ namespace OutOfSchool.WebApi.Config
 
         public string Password { get; set; }
 
-        public bool IsGuidFormatBinary16 { get; set; }
+        public string GuidFormat { get; set; }
     }
 }

@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 using Microsoft.Extensions.Configuration;
-using Moq;
 using MySqlConnector;
 using NUnit.Framework;
-using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.WebApi.Config;
 
@@ -31,7 +28,7 @@ namespace OutOfSchool.WebApi.Tests.Common
             ""Database"": ""test"",
             ""UserId"": ""root"",
             ""Password"": ""rootPassword"",
-            ""IsGuidFormatBinary16"": true
+            ""GuidFormat"": ""Binary16""
         }
         }}";
 
@@ -43,7 +40,7 @@ namespace OutOfSchool.WebApi.Tests.Common
             ""Database"": ""test"",
             ""UserId"": ""root"",
             ""Password"": ""rootPassword"",
-            ""IsGuidFormatBinary16"": false
+            ""GuidFormat"": ""Binary16""
         }
         }}";
 
@@ -55,7 +52,7 @@ namespace OutOfSchool.WebApi.Tests.Common
             ""Database"": ""test"",
             ""UserId"": ""root"",
             ""Password"": ""rootPassword"",
-            ""IsGuidFormatBinary16"": true
+            ""GuidFormat"": ""Binary16""
         }
         },
         ""ConnectionStrings"": {
@@ -114,7 +111,7 @@ namespace OutOfSchool.WebApi.Tests.Common
                     UserID = options.UserId,
                     Password = options.Password,
                     Database = options.Database,
-                    GuidFormat = options.IsGuidFormatBinary16 ? MySqlGuidFormat.Binary16 : MySqlGuidFormat.Default,
+                    GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
                 });
             var builder = new DbConnectionStringBuilder()
             {
@@ -142,7 +139,7 @@ namespace OutOfSchool.WebApi.Tests.Common
                         UserID = options.UserId,
                         Password = options.Password,
                         Database = options.Database,
-                        GuidFormat = options.IsGuidFormatBinary16 ? MySqlGuidFormat.Binary16 : MySqlGuidFormat.Default,
+                        GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
                     }));
             Assert.AreEqual(
                 ex?.Message,

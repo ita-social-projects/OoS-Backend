@@ -21,6 +21,7 @@ using Microsoft.Extensions.Hosting;
 using MySqlConnector;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.EmailSender;
@@ -70,7 +71,7 @@ namespace OutOfSchool.IdentityServer
                     UserID = options.UserId,
                     Password = options.Password,
                     Database = options.Database,
-                    GuidFormat = options.IsGuidFormatBinary16 ? MySqlGuidFormat.Binary16 : MySqlGuidFormat.Default,
+                    GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
                 });
             services
                 .AddDbContext<OutOfSchoolDbContext>(options => options

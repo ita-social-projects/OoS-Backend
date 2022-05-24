@@ -20,8 +20,7 @@ namespace OutOfSchool.Common.Extensions.Startup
 
             DbConnectionStringBuilder connectionStringBuilder;
 
-            TOptions options;
-            if (overrides.TryGetValue(connectionStringKey, out options) && options.UseOverride)
+            if (overrides.TryGetValue(connectionStringKey, out var options) && options.UseOverride)
             {
                 if (optionsToBuilder == null)
                 {
@@ -43,7 +42,7 @@ namespace OutOfSchool.Common.Extensions.Startup
                 throw new Exception("Provide a valid connection string or options");
             }
 
-            if (!connectionStringBuilder.ContainsKey("guidformat") || connectionStringBuilder["guidformat"].ToString().ToLower() != "binary16")
+            if (!connectionStringBuilder.ContainsKey("guidformat") || !string.Equals(connectionStringBuilder["guidformat"].ToString(), "binary16", StringComparison.OrdinalIgnoreCase))
             {
                 throw new Exception("The connection string should have a key: 'guidformat' and a value: 'binary16'");
             }
