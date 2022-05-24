@@ -308,7 +308,7 @@
     <value>Зберегти</value>
   </data>
   <data name="Change email {0} sent" xml:space="preserve">
-    <value>Інструкція по зміни емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
+    <value>Інструкція по зміні емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Скасувати</value>
