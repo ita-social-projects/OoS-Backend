@@ -43,19 +43,19 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public virtual async Task<TValue> RunInTransaction(Func<Task<TValue>> operation)
+        public virtual async Task<T> RunInTransaction<T>(Func<Task<T>> operation)
         {
             var executionStrategy = dbContext.Database.CreateExecutionStrategy();
 
-            TValue result = null;
-            await executionStrategy.ExecuteAsync(
+            return await executionStrategy.ExecuteAsync(
                 async () =>
                 {
                     await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync();
                     try
                     {
-                        result = await operation().ConfigureAwait(false);
+                        var result = await operation().ConfigureAwait(false);
                         await transaction.CommitAsync().ConfigureAwait(false);
+                        return result;
                     }
                     catch (Exception)
                     {
@@ -63,7 +63,6 @@ namespace OutOfSchool.Services.Repository
                         throw;
                     }
                 });
-            return result;
         }
 
         /// <inheritdoc/>

@@ -105,10 +105,7 @@ namespace OutOfSchool.WebApi.Services
             // In case if DirectionId and DepartmentId does not match ClassId
             await FillDirectionsFields(dto).ConfigureAwait(false);
 
-            MultipleImageUploadingResult uploadingResult = null;
-            Result<string> uploadingCoverImageResult = null;
-
-            async Task<Workshop> TransactionOperation()
+            async Task<(Workshop createdWorkshop, MultipleImageUploadingResult imagesUploadResult, Result<string> coverImageUploadResult)> CreateWorkshopAndDependencies()
             {
                 var workshop = await workshopRepository.Create(mapper.Map<Workshop>(dto)).ConfigureAwait(false);
 
@@ -121,12 +118,14 @@ namespace OutOfSchool.WebApi.Services
                     }
                 }
 
+                MultipleImageUploadingResult imagesUploadingResult = null;
                 if (dto.ImageFiles?.Count > 0)
                 {
                     workshop.Images = new List<Image<Workshop>>();
-                    uploadingResult = await workshopImagesService.AddManyImagesAsync(workshop, dto.ImageFiles).ConfigureAwait(false);
+                    imagesUploadingResult = await workshopImagesService.AddManyImagesAsync(workshop, dto.ImageFiles).ConfigureAwait(false);
                 }
 
+                Result<string> uploadingCoverImageResult = null;
                 if (dto.CoverImage != null)
                 {
                     uploadingCoverImageResult = await workshopImagesService.AddCoverImageAsync(workshop, dto.CoverImage).ConfigureAwait(false);
@@ -134,18 +133,18 @@ namespace OutOfSchool.WebApi.Services
 
                 await UpdateWorkshop().ConfigureAwait(false);
 
-                return workshop;
+                return (workshop, imagesUploadingResult, uploadingCoverImageResult);
             }
 
-            var newWorkshop = await workshopRepository.RunInTransaction(TransactionOperation).ConfigureAwait(false);
+            var (newWorkshop, imagesUploadResult, coverImageUploadResult) = await workshopRepository.RunInTransaction(CreateWorkshopAndDependencies).ConfigureAwait(false);
 
             logger.LogInformation($"Workshop with Id = {newWorkshop.Id} created successfully.");
 
             return new WorkshopCreationResultDto
             {
                 Workshop = mapper.Map<WorkshopDTO>(newWorkshop),
-                UploadingCoverImageResult = uploadingCoverImageResult?.OperationResult,
-                UploadingImagesResults = uploadingResult?.MultipleKeyValueOperationResult,
+                UploadingCoverImageResult = coverImageUploadResult?.OperationResult,
+                UploadingImagesResults = imagesUploadResult?.MultipleKeyValueOperationResult,
             };
         }
 
@@ -256,15 +255,12 @@ namespace OutOfSchool.WebApi.Services
             // In case if DirectionId and DepartmentId does not match ClassId
             await FillDirectionsFields(dto).ConfigureAwait(false);
 
-            ImageChangingResult changingCoverImageResult = null;
-            MultipleImageChangingResult multipleImageChangingResult = null;
-
-            async Task<Workshop> TransactionOperation()
+            async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult, ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
             {
                 var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
 
                 dto.ImageIds ??= new List<string>();
-                multipleImageChangingResult = await workshopImagesService.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
+                var multipleImageChangingResult = await workshopImagesService.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
                     .ConfigureAwait(false);
 
                 // In case if AddressId was changed. AddressId is one and unique for workshop.
@@ -275,20 +271,20 @@ namespace OutOfSchool.WebApi.Services
 
                 mapper.Map(dto, currentWorkshop);
 
-                changingCoverImageResult = await workshopImagesService.ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
+                var changingCoverImageResult = await workshopImagesService.ChangeCoverImageAsync(currentWorkshop, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
 
                 await UpdateWorkshop().ConfigureAwait(false);
 
-                return currentWorkshop;
+                return (currentWorkshop, multipleImageChangingResult, changingCoverImageResult);
             }
 
-            var updatedWorkshop = await workshopRepository.RunInTransaction(TransactionOperation).ConfigureAwait(false);
+            var (updatedWorkshop, multipleImageChangeResult, changeCoverImageResult) = await workshopRepository.RunInTransaction(UpdateWorkshopWithDependencies).ConfigureAwait(false);
 
             return new WorkshopUpdateResultDto
             {
                 Workshop = mapper.Map<WorkshopDTO>(updatedWorkshop),
-                UploadingCoverImageResult = changingCoverImageResult?.UploadingResult?.OperationResult,
-                UploadingImagesResults = multipleImageChangingResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
+                UploadingCoverImageResult = changeCoverImageResult?.UploadingResult?.OperationResult,
+                UploadingImagesResults = multipleImageChangeResult?.UploadedMultipleResult?.MultipleKeyValueOperationResult,
             };
         }
 
