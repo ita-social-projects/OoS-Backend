@@ -70,7 +70,7 @@ namespace OutOfSchool.WebApi.Services.Images
         public async Task<ImageChangingResult> ChangeImageAsync(TEntity entity, string oldImageId, IFormFile newImage)
         {
             _ = entity ?? throw new ArgumentNullException(nameof(entity));
-            Logger.LogTrace("Updating an image the for entity was started");
+            Logger.LogTrace("Updating an image for the entity was started");
 
             var result = new ImageChangingResult();
 
