@@ -1,10 +1,9 @@
 using System;
-using System.Data.Common;
 using System.Globalization;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using AutoMapper;
-using Google.Cloud.Storage.V1;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,10 +13,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
+using MySqlConnector;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData;
@@ -30,7 +30,6 @@ using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.DataAccess;
 using OutOfSchool.WebApi.Config.Images;
@@ -42,8 +41,6 @@ using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Communication;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
-using OutOfSchool.WebApi.Util.FakeImplementations;
-using Quartz;
 using Serilog;
 
 namespace OutOfSchool.WebApi
@@ -149,7 +146,7 @@ namespace OutOfSchool.WebApi
                 .ConfigurePrimaryHttpMessageHandler(handler =>
                     new HttpClientHandler()
                     {
-                        AutomaticDecompression = System.Net.DecompressionMethods.GZip,
+                        AutomaticDecompression = DecompressionMethods.GZip,
                     });
 
             services.AddScoped<IProviderAdminService, ProviderAdminService>();
@@ -165,22 +162,25 @@ namespace OutOfSchool.WebApi
             services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
             services.Configure<ImageOptions<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
 
-            var connectionString = Configuration.GetConnectionString("DefaultConnection");
-            var connectionStringBuilder = new DbConnectionStringBuilder();
-            connectionStringBuilder.ConnectionString = connectionString;
-            if (!connectionStringBuilder.ContainsKey("guidformat") ||
-                connectionStringBuilder["guidformat"].ToString().ToLower() != "binary16")
-            {
-                throw new Exception(
-                    "The connection string should have a key: \"guidformat\" and a value: \"binary16\"");
-            }
-
+            // TODO: Move version check into an extension to reuse code across apps
             var mySQLServerVersion = Configuration["MySQLServerVersion"];
             var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
             if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
             {
                 throw new Exception("MySQL Server version should be 8 or higher.");
             }
+
+            var connectionString = Configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
+                "DefaultConnection",
+                options => new MySqlConnectionStringBuilder
+                {
+                    Server = options.Server,
+                    Port = options.Port,
+                    UserID = options.UserId,
+                    Password = options.Password,
+                    Database = options.Database,
+                    GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+                });
 
             services.AddDbContext<OutOfSchoolDbContext>(builder =>
                     builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
