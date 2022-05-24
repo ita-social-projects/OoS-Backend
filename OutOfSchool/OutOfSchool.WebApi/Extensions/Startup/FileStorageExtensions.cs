@@ -22,14 +22,22 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                 return services.AddTransient<IImageFilesStorage, FakeImagesStorage>();
             }
 
-            return services.AddTransient<IImageFilesStorage, GcpImagesStorage>(provider =>
+            services.AddSingleton(provider =>
             {
                 var config = provider.GetRequiredService<IOptions<GcpStorageImagesSourceConfig>>();
                 var googleCredential = config.Value.RetrieveGoogleCredential();
-                var storageClient = StorageClient.Create(googleCredential);
-                var storageContext = new GcpStorageContext(storageClient, config.Value.BucketName);
-                return new GcpImagesStorage(storageContext);
+                return StorageClient.Create(googleCredential);
             });
+
+            services.AddSingleton<IGcpStorageContext, GcpStorageContext>(provider =>
+            {
+                var config = provider.GetRequiredService<IOptions<GcpStorageImagesSourceConfig>>();
+                var storageClient = provider.GetRequiredService<StorageClient>();
+                return new GcpStorageContext(storageClient, config.Value.BucketName);
+            });
+
+            return services.AddScoped<IImageFilesStorage, GcpImagesStorage>(provider
+                => new GcpImagesStorage(provider.GetRequiredService<IGcpStorageContext>()));
         }
     }
 }

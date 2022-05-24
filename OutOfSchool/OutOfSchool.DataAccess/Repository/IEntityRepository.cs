@@ -26,8 +26,9 @@ namespace OutOfSchool.Services.Repository
         /// Runs operation in transaction.
         /// </summary>
         /// <param name="operation">Method that represents the operation.</param>
+        /// <typeparam name="T">The type operation must return after transaction.</typeparam>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<TEntity> RunInTransaction(Func<Task<TEntity>> operation);
+        Task<T> RunInTransaction<T>(Func<Task<T>> operation);
 
         /// <summary>
         /// Update information about element.
