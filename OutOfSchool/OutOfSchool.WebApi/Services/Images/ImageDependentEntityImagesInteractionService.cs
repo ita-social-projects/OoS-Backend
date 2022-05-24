@@ -369,7 +369,11 @@ namespace OutOfSchool.WebApi.Services.Images
 
                 await ImageService.RemoveManyImagesAsync(imageIds).ConfigureAwait(false);
 
-                var imagesRemovingResult = new MultipleImageRemovingResult();
+                var imagesRemovingResult = new MultipleImageRemovingResult
+                {
+                    RemovedIds = new List<string>(),
+                    MultipleKeyValueOperationResult = new MultipleKeyValueOperationResult(),
+                };
                 for (short i = 0; i < imageIds.Count; i++)
                 {
                     RemoveImageFromEntity(entity, imageIds[i]);
