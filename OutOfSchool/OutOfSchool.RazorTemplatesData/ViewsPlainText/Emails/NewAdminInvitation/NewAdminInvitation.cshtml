@@ -1,5 +1,16 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using OutOfSchool.RazorTemplatesData.Models.Emails
+@model AdminInvitationViewModel
+
 @{
+    ViewData["EmailTitle"] = "Welcome!";
 }
+
+Для реєстрації на платформі перейдіть за посиланням та заповність ваші данні в особистому кабінеті.
+
+@Model.ConfirmationUrl
+
+Логін: @Model.Email
+
+Пароль:  @Model.Password
+
+If you have any questions, just reply to this email—we're always happy to help out.

@@ -1,5 +1,25 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using OutOfSchool.RazorTemplatesData.Models.Emails
+@using OutOfSchool.RazorTemplatesData.Models.Shared
+@model AdminInvitationViewModel
+
 @{
+    ViewData["EmailTitle"] = "Welcome!";
 }
+
+<p>Для реєстрації на платформі перейдіть за посиланням та заповність ваші данні в особистому кабінеті.</p>
+
+<br />
+
+<p>Логін: @Model.Email</p>
+
+<br />
+
+<p>Пароль:  @Model.Password</p>
+
+<br />
+
+@await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Confirm Email", Model.ConfirmationUrl))
+
+<br />
+
+<p>If you have any questions, just reply to this email—we're always happy to help out.</p>

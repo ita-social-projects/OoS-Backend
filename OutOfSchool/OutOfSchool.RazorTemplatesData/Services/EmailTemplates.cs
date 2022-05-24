@@ -3,18 +3,16 @@
     public static class EmailTemplates
     {
         /// <summary>
-        /// Bass path to the html email templates
+        /// Base path to the html email templates
         /// </summary>
         private static string MainPath => "/Views/Emails/";
 
         /// <summary>
-        /// Bass path to the plain text email templates
+        /// Base path to the plain text email templates
         /// </summary>
         private static string MainPathPlainText => "/ViewsPlainText/Emails/";
 
-        /// <summary>
-        /// Supported email templates
-        /// </summary>
+        // Supported email templates
         public static string ConfirmEmail => "ConfirmEmail";
         public static string ChangeEmail => "ChangeEmail";
         public static string ResetPassword => "ResetPassword";
