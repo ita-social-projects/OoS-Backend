@@ -947,7 +947,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("binary(16)");
 
-                    b.Property<string>("CoverImageId")
+                    b.Property<string>("AvatarImageId")
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("DateOfBirth")
