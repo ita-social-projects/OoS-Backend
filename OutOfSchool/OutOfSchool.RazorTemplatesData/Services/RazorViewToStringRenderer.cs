@@ -16,18 +16,18 @@ namespace OutOfSchool.RazorTemplatesData.Services
 {
     public class RazorViewToStringRenderer : IRazorViewToStringRenderer
     {
-        private readonly IRazorViewEngine _viewEngine;
-        private readonly ITempDataProvider _tempDataProvider;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IRazorViewEngine viewEngine;
+        private readonly ITempDataProvider tempDataProvider;
+        private readonly IServiceProvider serviceProvider;
 
         public RazorViewToStringRenderer(
             IRazorViewEngine viewEngine,
             ITempDataProvider tempDataProvider,
             IServiceProvider serviceProvider)
         {
-            _viewEngine = viewEngine;
-            _tempDataProvider = tempDataProvider;
-            _serviceProvider = serviceProvider;
+            this.viewEngine = viewEngine;
+            this.tempDataProvider = tempDataProvider;
+            this.serviceProvider = serviceProvider;
         }
 
         /// <inheritdoc/>
@@ -63,7 +63,7 @@ namespace OutOfSchool.RazorTemplatesData.Services
                 },
                 new TempDataDictionary(
                     actionContext.HttpContext,
-                    _tempDataProvider),
+                    tempDataProvider),
                 output,
                 new HtmlHelperOptions());
 
@@ -74,13 +74,13 @@ namespace OutOfSchool.RazorTemplatesData.Services
 
         private IView FindView(ActionContext actionContext, string viewName)
         {
-            var getViewResult = _viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
+            var getViewResult = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
             if (getViewResult.Success)
             {
                 return getViewResult.View;
             }
 
-            var findViewResult = _viewEngine.FindView(actionContext, viewName, isMainPage: true);
+            var findViewResult = viewEngine.FindView(actionContext, viewName, isMainPage: true);
             if (findViewResult.Success)
             {
                 return findViewResult.View;
@@ -98,7 +98,7 @@ namespace OutOfSchool.RazorTemplatesData.Services
         {
             var httpContext = new DefaultHttpContext
             {
-                RequestServices = _serviceProvider
+                RequestServices = serviceProvider
             };
             return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
         }
