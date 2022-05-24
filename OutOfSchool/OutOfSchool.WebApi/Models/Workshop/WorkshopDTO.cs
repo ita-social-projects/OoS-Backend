@@ -87,7 +87,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
 
-        public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
+        public InstitutionType ProviderInstitution { get; set; } = InstitutionType.Comprehensive;
 
         [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public IEnumerable<string> Keywords { get; set; } = default;

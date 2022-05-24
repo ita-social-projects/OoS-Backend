@@ -84,7 +84,7 @@ namespace OutOfSchool.Services.Models
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
 
-        public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
+        public InstitutionType ProviderInstitution { get; set; } = InstitutionType.Comprehensive;
 
         [MaxLength(200)]
         public string Keywords { get; set; } = string.Empty;

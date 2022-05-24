@@ -389,7 +389,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Assert.That(providerDto.DirectorDateOfBirth, Is.EqualTo(provider.DirectorDateOfBirth));
                 Assert.That(providerDto.PhoneNumber, Is.EqualTo(provider.PhoneNumber));
                 Assert.That(providerDto.Founder, Is.EqualTo(provider.Founder));
-                Assert.That(providerDto.Ownership, Is.EqualTo(provider.Ownership));
+                Assert.That(providerDto.Institution, Is.EqualTo(provider.Institution));
                 Assert.That(providerDto.Type, Is.EqualTo(provider.Type));
                 Assert.That(providerDto.Status, Is.EqualTo(provider.Status));
                 //Assert.That(providerDto.Rating, Is.EqualTo(provider.Rating));

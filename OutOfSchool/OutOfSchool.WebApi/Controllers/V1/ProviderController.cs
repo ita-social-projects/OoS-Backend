@@ -116,7 +116,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="providerModel">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [HasPermission(Permissions.ProviderAddNew)]
+        //[HasPermission(Permissions.ProviderAddNew)]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

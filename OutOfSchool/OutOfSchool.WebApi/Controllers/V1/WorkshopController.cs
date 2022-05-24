@@ -218,7 +218,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId, dto.Id).ConfigureAwait(false);
 
-            if (dto.ProviderOwnership == OwnershipType.Common || dto.ProviderOwnership == OwnershipType.State)
+            if (dto.ProviderInstitution == InstitutionType.Specialized
+                || dto.ProviderInstitution == InstitutionType.Comprehensive) // check this logic
             {
                 dto.Status = WorkshopStatus.Open;
             }

@@ -73,10 +73,10 @@ namespace OutOfSchool.Services.Models
         public string Founder { get; set; } = string.Empty;
 
         [Required]
-        public OwnershipType Ownership { get; set; }
+        public InstitutionType Institution { get; set; }
 
         [Required]
-        public ProviderType Type { get; set; }
+        public OrganizationType Type { get; set; }
 
         public bool Status { get; set; } = default;
 

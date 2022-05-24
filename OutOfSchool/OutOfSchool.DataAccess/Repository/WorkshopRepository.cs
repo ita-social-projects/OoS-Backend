@@ -66,7 +66,7 @@ namespace OutOfSchool.Services.Repository
             await workshops.ForEachAsync(ws =>
                                             {
                                                 ws.ProviderTitle = provider.FullTitle;
-                                                ws.ProviderOwnership = provider.Ownership;
+                                                ws.ProviderInstitution = provider.Institution;
                                             });
 
             await db.SaveChangesAsync();

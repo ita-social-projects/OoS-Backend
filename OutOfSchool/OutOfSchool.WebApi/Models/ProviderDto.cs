@@ -71,11 +71,11 @@ namespace OutOfSchool.WebApi.Models
 
         // TODO: validation of the enum fields ?
         [Required]
-        public OwnershipType Ownership { get; set; }
+        public InstitutionType Institution { get; set; }
 
         // TODO: validation of the enum fields ?
         [Required]
-        public ProviderType Type { get; set; }
+        public OrganizationType Type { get; set; }
 
         public bool Status { get; set; } = default;
 

@@ -4,10 +4,10 @@ using Newtonsoft.Json.Converters;
 namespace OutOfSchool.Common.Enums
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum OwnershipType
+    public enum InstitutionType
     {
-        State,
-        Common,
-        Private,
+        Comprehensive,
+        Prof,
+        Specialized,
     }
 }

@@ -58,7 +58,7 @@ namespace OutOfSchool.Services.Models.Configurations
                 .IsRequired()
                 .HasMaxLength(30);
 
-            builder.Property(x => x.Ownership)
+            builder.Property(x => x.Institution)
                 .IsRequired();
 
             builder.Property(x => x.Type)

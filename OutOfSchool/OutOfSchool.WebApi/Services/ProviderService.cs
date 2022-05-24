@@ -281,7 +281,7 @@ namespace OutOfSchool.WebApi.Services
         private static bool IsNeedInRelatedWorkshopsUpdating(ProviderDto providerDto, Provider checkProvider)
         {
             return checkProvider.FullTitle != providerDto.FullTitle
-                   || checkProvider.Ownership != providerDto.Ownership;
+                   || checkProvider.Institution != providerDto.Institution;
         }
     }
 }

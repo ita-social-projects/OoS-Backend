@@ -22,7 +22,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string ProviderTitle { get; set; }
 
-        public OwnershipType ProviderOwnership { get; set; }
+        public InstitutionType ProviderInstitution { get; set; }
 
         public string Description { get; set; }
 
