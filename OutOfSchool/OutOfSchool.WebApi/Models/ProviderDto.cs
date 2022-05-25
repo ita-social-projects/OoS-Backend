@@ -94,5 +94,8 @@ namespace OutOfSchool.WebApi.Models
         public AddressDto ActualAddress { get; set; }
 
         public long? InstitutionStatusId { get; set; } = default;
+
+        [Required]
+        public InstitutionType InstitutionType { get; set; }
     }
 }

@@ -67,13 +67,16 @@ namespace OutOfSchool.Services.Models.Configurations
             builder.Property(x => x.UserId)
                 .IsRequired();
 
-            //builder.HasOne(x => x.LegalAddress)
+            builder.Property(x => x.InstitutionType)
+                .IsRequired();
+
+            // builder.HasOne(x => x.LegalAddress)
             //    .WithOne()
             //    .OnDelete(DeleteBehavior.NoAction)
             //    .HasForeignKey(x => x.)
             //    .IsRequired();
 
-            //builder.HasOne(x => x.ActualAddress)
+            // builder.HasOne(x => x.ActualAddress)
             //    .WithMany()
             //    .OnDelete(DeleteBehavior.Cascade)
             //    .HasForeignKey(x => x.ActualAddressId);

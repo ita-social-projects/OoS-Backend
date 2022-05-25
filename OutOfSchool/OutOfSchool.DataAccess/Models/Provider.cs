@@ -102,5 +102,8 @@ namespace OutOfSchool.Services.Models
         public virtual InstitutionStatus InstitutionStatus { get; set; }
 
         public virtual ICollection<ProviderAdmin> ProviderAdmins { get; set; }
+
+        [Required]
+        public InstitutionType InstitutionType { get; set; }
     }
 }
