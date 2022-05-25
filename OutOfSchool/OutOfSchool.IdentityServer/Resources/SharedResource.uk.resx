@@ -242,7 +242,8 @@
     <value>Введіть ваш емейл на який буде надіслано інструкцію для скидання пароля</value>
   </data>
   <data name="Check your email for instructions" xml:space="preserve">
-    <value>Перевірте вашу пошту для отримання інструкцій</value>
+    <value>Інструкція з відновлення паролю була надіслана на ваш емейл.
+Зайдіть на емейл і виконайте дії вказані в листі.</value>
   </data>
   <data name="Reset password confirmation" xml:space="preserve">
     <value>Підтвердження зміни паролю</value>
@@ -306,5 +307,14 @@
   </data>
    <data name="Save" xml:space="preserve">
     <value>Зберегти</value>
+  </data>
+  <data name="Change password email message" xml:space="preserve">
+    <value>Підтвердіть зміну паролю </value>
+  </data>
+  <data name="Change password invalid token" xml:space="preserve">
+    <value>Token не пройшов перевірку</value>
+  </data>
+  <data name="Change password failed" xml:space="preserve">
+    <value>Помилка при зміні паролю. Зверниться до адміністратора.</value>
   </data>
 </root>
