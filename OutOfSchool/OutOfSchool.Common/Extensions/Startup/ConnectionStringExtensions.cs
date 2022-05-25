@@ -42,9 +42,12 @@ namespace OutOfSchool.Common.Extensions.Startup
                 throw new Exception("Provide a valid connection string or options");
             }
 
-            if (!connectionStringBuilder.ContainsKey("guidformat") || !string.Equals(connectionStringBuilder["guidformat"].ToString(), "binary16", StringComparison.OrdinalIgnoreCase))
+            if (typeof(IMySqlGuidConnectionOptions).IsAssignableFrom(typeof(TOptions)))
             {
-                throw new Exception("The connection string should have a key: 'guidformat' and a value: 'binary16'");
+                if (!connectionStringBuilder.ContainsKey("guidformat") || !string.Equals(connectionStringBuilder["guidformat"].ToString(), "binary16", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new Exception("The connection string should have a key: 'guidformat' and a value: 'binary16'");
+                }
             }
 
             return connectionStringBuilder.ConnectionString;

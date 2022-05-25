@@ -2,7 +2,7 @@ using OutOfSchool.Common.Config;
 
 namespace OutOfSchool.WebApi.Config
 {
-    public class WebApiConnectionOptions : IMySqlConnectionOptions
+    public class WebApiConnectionOptions : IMySqlGuidConnectionOptions
     {
         public bool UseOverride { get; set; }
 
