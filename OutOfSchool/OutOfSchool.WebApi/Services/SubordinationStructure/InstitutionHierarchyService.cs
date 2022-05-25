@@ -118,7 +118,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
 
             var institutionHierarchy = await repository.GetById(id).ConfigureAwait(false);
 
-            logger.LogInformation($"Successfully got a Direction with Id = {id}.");
+            logger.LogInformation($"Successfully got a InstitutionHierarchy with Id = {id}.");
 
             return mapper.Map<InstitutionHierarchyDto>(institutionHierarchy);
         }
