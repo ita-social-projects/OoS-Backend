@@ -28,7 +28,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
             .RuleFor(x => x.LegalAddress, _ => AddressDtoGenerator.Generate())
             .RuleFor(x => x.ActualAddress, _ => AddressDtoGenerator.Generate())
-            .RuleFor(x => x.InstitutionType, f => f.Random.ArrayElement((InstitutionType[])Enum.GetValues(typeof(InstitutionType))));
+            .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>());
 
         /// <summary>
         /// Creates new instance of the <see cref="Provider"/> class with random data.
