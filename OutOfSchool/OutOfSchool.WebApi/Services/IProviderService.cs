@@ -19,13 +19,6 @@ namespace OutOfSchool.WebApi.Services
         Task<ProviderDto> Create(ProviderDto providerDto);
 
         /// <summary>
-        /// Add entity to the database.
-        /// </summary>
-        /// <param name="dto">Entity to add.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ProviderDto"/>.</returns>
-        Task<ProviderDto> CreateV2(ProviderDto dto);
-
-        /// <summary>
         /// Get all entities.
         /// </summary>
         /// <returns>List of all providers.</returns>
@@ -55,25 +48,11 @@ namespace OutOfSchool.WebApi.Services
         Task<ProviderDto> Update(ProviderDto providerDto, string userId);
 
         /// <summary>
-        /// Update existing entity in the database.
-        /// </summary>
-        /// <param name="dto">Entity that will be to updated.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ProviderDto"/>.</returns>
-        Task<ProviderDto> UpdateV2(ProviderDto dto, string UserId);
-
-        /// <summary>
         ///  Delete entity.
         /// </summary>
         /// <param name="id">Provider's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task Delete(Guid id);
-
-        /// <summary>
-        ///  Delete entity.
-        /// </summary>
-        /// <param name="id">Key in the table.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task DeleteV2(Guid id);
 
         /// <summary>
         ///  Gets Id of Provider, which owns a Workshop with specified Id.

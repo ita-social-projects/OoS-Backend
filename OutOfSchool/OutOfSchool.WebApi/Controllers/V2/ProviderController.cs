@@ -24,7 +24,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     public class ProviderController : ControllerBase
     {
-        private readonly IProviderService providerService;
+        private readonly IProviderServiceV2 providerService;
         private readonly ILogger<ProviderController> logger;
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// <param name="providerService">Service for Provider model.</param>
         /// <param name="logger"><see cref="Microsoft.Extensions.Logging.ILogger{T}"/> Logger.</param>
         public ProviderController(
-            IProviderService providerService,
+            IProviderServiceV2 providerService,
             ILogger<ProviderController> logger)
         {
             this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
@@ -135,7 +135,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
             try
             {
-                var createdProvider = await providerService.CreateV2(providerModel).ConfigureAwait(false);
+                var createdProvider = await providerService.Create(providerModel).ConfigureAwait(false);
 
                 return CreatedAtAction(
                     nameof(GetById),
@@ -167,7 +167,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
             try
             {
                 var userId = GettingUserProperties.GetUserId(User);
-                var provider = await providerService.UpdateV2(providerModel, userId).ConfigureAwait(false);
+                var provider = await providerService.Update(providerModel, userId).ConfigureAwait(false);
 
                 if (provider == null)
                 {
@@ -197,7 +197,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
         {
             try
             {
-                await providerService.DeleteV2(uid).ConfigureAwait(false);
+                await providerService.Delete(uid).ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)
             {
