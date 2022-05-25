@@ -27,8 +27,8 @@ namespace OutOfSchool.WebApi.Services.Images
         /// </summary>
         /// <typeparam name="TEntity">The entity you wanna validate image specs.</typeparam>
         /// <param name="images">Contains images to upload.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ImageUploadingResult"/> of the operation.</returns>
-        Task<ImageUploadingResult> UploadManyImagesAsync<TEntity>(IList<IFormFile> images);
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="MultipleImageUploadingResult"/> of the operation.</returns>
+        Task<MultipleImageUploadingResult> UploadManyImagesAsync<TEntity>(IList<IFormFile> images);
 
         /// <summary>
         /// Uploads the given image into a storage.
@@ -42,8 +42,8 @@ namespace OutOfSchool.WebApi.Services.Images
         /// Removes images from a storage.
         /// </summary>
         /// <param name="imageIds">Image Ids.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="ImageRemovingResult"/> of the operation.</returns>
-        Task<ImageRemovingResult> RemoveManyImagesAsync(IList<string> imageIds);
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="MultipleImageRemovingResult"/> of the operation.</returns>
+        Task<MultipleImageRemovingResult> RemoveManyImagesAsync(IList<string> imageIds);
 
         /// <summary>
         /// Uploads the given image into a storage.
@@ -51,7 +51,5 @@ namespace OutOfSchool.WebApi.Services.Images
         /// <param name="imageId">Image Id.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="OperationResult"/> of the operation.</returns>
         Task<OperationResult> RemoveImageAsync(string imageId);
-
-        Task<ImageChangingResult> ChangeImageAsync(string currentImage, IFormFile newImage);
     }
 }

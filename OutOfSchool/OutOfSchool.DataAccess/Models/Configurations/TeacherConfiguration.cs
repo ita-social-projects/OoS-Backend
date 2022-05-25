@@ -36,6 +36,8 @@ namespace OutOfSchool.Services.Models.Configurations
                 .WithMany(x => x.Teachers)
                 .HasForeignKey(x => x.WorkshopId)
                 .IsRequired();
+
+            builder.Ignore(x => x.Images);
         }
     }
 }

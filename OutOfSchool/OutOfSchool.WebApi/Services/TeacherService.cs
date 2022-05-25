@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services
     public class TeacherService : ITeacherService
     {
         private readonly ISensitiveEntityRepository<Teacher> teacherRepository;
-        private readonly IImageService imageService;
+        private readonly IEntityCoverImageInteractionService<Teacher> teacherImagesService;
         private readonly ILogger<TeacherService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
@@ -34,15 +34,15 @@ namespace OutOfSchool.WebApi.Services
         /// Initializes a new instance of the <see cref="TeacherService"/> class.
         /// </summary>
         /// <param name="teacherRepository">Repository for Teacher entity.</param>
-        /// <param name="imageService">Image service.</param>
+        /// <param name="teacherImagesService">Teacher images mediator.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
-        public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IImageService imageService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
+        public TeacherService(ISensitiveEntityRepository<Teacher> teacherRepository, IEntityCoverImageInteractionService<Teacher> teacherImagesService, ILogger<TeacherService> logger, IStringLocalizer<SharedResource> localizer, IMapper mapper)
         {
             this.localizer = localizer;
             this.teacherRepository = teacherRepository;
-            this.imageService = imageService;
+            this.teacherImagesService = teacherImagesService;
             this.logger = logger;
             this.mapper = mapper;
         }
@@ -59,11 +59,15 @@ namespace OutOfSchool.WebApi.Services
 
             var newTeacher = await teacherRepository.Create(teacher).ConfigureAwait(false);
 
-            var uploadingResult = await imageService.UploadImageAsync<Teacher>(dto.AvatarImage).ConfigureAwait(false);
-            if (uploadingResult.Succeeded)
+            Result<string> uploadingResult = null;
+            if (dto.AvatarImage != null)
             {
-                teacher.AvatarImageId = uploadingResult.Value;
-                await UpdateTeacher().ConfigureAwait(false);
+                uploadingResult = await teacherImagesService.AddCoverImageAsync(newTeacher, dto.AvatarImage).ConfigureAwait(false);
+                if (uploadingResult.Succeeded)
+                {
+                    teacher.CoverImageId = uploadingResult.Value;
+                    await UpdateTeacher().ConfigureAwait(false);
+                }
             }
 
             logger.LogInformation($"Teacher with Id = {newTeacher.Id} created successfully.");
@@ -71,7 +75,7 @@ namespace OutOfSchool.WebApi.Services
             return new TeacherCreationResultDto
             {
                 Teacher = mapper.Map<TeacherDTO>(newTeacher),
-                UploadingAvatarImageResult = uploadingResult.OperationResult,
+                UploadingAvatarImageResult = uploadingResult?.OperationResult,
             };
         }
 
@@ -118,7 +122,7 @@ namespace OutOfSchool.WebApi.Services
 
             mapper.Map(dto, teacher);
 
-            var changingAvatarResult = await ChangeAvatarImage(teacher, dto.AvatarImageId, dto.AvatarImage).ConfigureAwait(false);
+            var changingAvatarResult = await teacherImagesService.ChangeCoverImageAsync(teacher, dto.AvatarImageId, dto.AvatarImage).ConfigureAwait(false);
 
             await UpdateTeacher().ConfigureAwait(false);
 
@@ -136,14 +140,9 @@ namespace OutOfSchool.WebApi.Services
 
             var entity = await teacherRepository.GetById(id).ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(entity.AvatarImageId))
+            if (!string.IsNullOrEmpty(entity.CoverImageId))
             {
-                var removingResult = await imageService.RemoveImageAsync(entity.AvatarImageId).ConfigureAwait(false);
-
-                if (!removingResult.Succeeded)
-                {
-                    throw new InvalidOperationException($"Unreal to delete {nameof(Teacher)} [id = {id}] because unable to delete images.");
-                }
+                await teacherImagesService.RemoveCoverImageAsync(entity).ConfigureAwait(false);
             }
 
             try
@@ -157,25 +156,6 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Deleting Teacher with Id = {id} failed.");
                 throw;
             }
-        }
-
-        private async Task<ImageChangingResult> ChangeAvatarImage(Teacher teacher, string dtoImageId, IFormFile newImage)
-        {
-            ImageChangingResult changingAvatarResult = null;
-            if (!string.Equals(dtoImageId, teacher.AvatarImageId, StringComparison.Ordinal)
-                || (string.IsNullOrEmpty(dtoImageId) && newImage != null))
-            {
-                changingAvatarResult = await imageService.ChangeImageAsync(teacher.AvatarImageId, newImage).ConfigureAwait(false);
-
-                teacher.AvatarImageId = changingAvatarResult.UploadingResult switch
-                {
-                    null when changingAvatarResult.RemovingResult is { Succeeded: false } => teacher.AvatarImageId,
-                    { Succeeded: true } => changingAvatarResult.UploadingResult.Value,
-                    _ => null
-                };
-            }
-
-            return changingAvatarResult;
         }
 
         private async Task UpdateTeacher()

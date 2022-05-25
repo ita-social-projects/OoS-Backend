@@ -58,12 +58,12 @@ namespace OutOfSchool.WebApi.Services.Images
             }
             catch (ArgumentException ex)
             {
-                logger.LogError(ex, $"Unable to validate stream: {ex.Message}");
+                logger.LogError(ex, "Unable to validate stream: {Message}", ex.Message);
                 return OperationResult.Failed(ImagesOperationErrorCode.InvalidFormatError.GetOperationError());
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Unable to validate stream: {ex.Message}");
+                logger.LogError(ex, "Unable to validate stream: {Message}", ex.Message);
                 return OperationResult.Failed(ImagesOperationErrorCode.UnexpectedValidationError.GetOperationError());
             }
         }

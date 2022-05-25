@@ -32,7 +32,8 @@ steps:
     - --cpu=2
     - --memory=512Mi
     - --max-instances=3
-    - --concurrency=80
+    - --concurrency=200
+    - --timeout=120
     - --set-env-vars=ASPNETCORE_ENVIRONMENT=Google
     - --set-env-vars=Elasticsearch__User=webapi
     - --set-env-vars=ConnectionStrings__ExternalImageStorage__DatabaseName=outofschool
@@ -40,8 +41,8 @@ steps:
     # Cloud Run fails to set the variable as an array :(
     # Using index instead
     - --set-env-vars=Elasticsearch__Urls__0=https://elastic.dmytrominochkin.cloud/
-    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Elasticsearch__Password=$_ES_PASSWORD
-    # Disable http2 because prod will be http1.1 for now
+    - --set-env-vars=Redis__Server=$_REDIS_HOST
+    - --set-secrets=ConnectionStrings__DefaultConnection=$_CONN_STRING_SECRET,Elasticsearch__Password=$_ES_PASSWORD,Redis__Password=$_REDIS_PASS
     - --no-use-http2
 # Clean old versions except previous Cloud Run
 - name: 'gcr.io/cloud-builders/gcloud'
