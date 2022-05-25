@@ -42,6 +42,7 @@ using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Communication;
 using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Services.SubordinationStructure;
 using OutOfSchool.WebApi.Util;
 using OutOfSchool.WebApi.Util.FakeImplementations;
 using Serilog;
@@ -225,6 +226,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IValidationService, ValidationService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
+            services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
 
             services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
             services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();

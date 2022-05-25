@@ -1,8 +1,7 @@
-﻿using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.SubordinationStructure;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Models.SubordinationStructure
 {
@@ -16,7 +15,7 @@ namespace OutOfSchool.WebApi.Models.SubordinationStructure
 
         public int HierarchyLevel { get; set; }
 
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
 
         public virtual InstitutionHierarchy Parent { get; set; }
 

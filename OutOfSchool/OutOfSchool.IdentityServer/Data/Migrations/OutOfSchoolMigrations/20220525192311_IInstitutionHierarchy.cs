@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
-    public partial class Institution : Migration
+    public partial class IInstitutionHierarchy : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -52,7 +52,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     Title = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     HierarchyLevel = table.Column<int>(type: "int", nullable: false),
-                    ParentId = table.Column<Guid>(type: "binary(16)", nullable: false),
+                    ParentId = table.Column<Guid>(type: "binary(16)", nullable: true),
                     InstitutionId = table.Column<Guid>(type: "binary(16)", nullable: false)
                 },
                 constraints: table =>
@@ -63,7 +63,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         column: x => x.ParentId,
                         principalTable: "InstitutionHierarchies",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_InstitutionHierarchies_Institutions_InstitutionId",
                         column: x => x.InstitutionId,

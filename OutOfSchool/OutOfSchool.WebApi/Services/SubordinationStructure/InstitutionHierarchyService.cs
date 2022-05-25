@@ -1,4 +1,8 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -6,10 +10,6 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Services.SubordinationStructure
 {
@@ -62,38 +62,11 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         }
 
         /// <inheritdoc/>
-        //public async Task<Result<InstitutionHierarchyDto>> Delete([FromService] repository Guid id)
         public async Task<Result<InstitutionHierarchyDto>> Delete(Guid id)
         {
             logger.LogInformation($"Deleting InstitutionHierarchy with Id = {id} started.");
 
             var entity = new InstitutionHierarchy() { Id = id };
-
-            //var workShops = await repositoryWorkshop
-            //    .GetByFilter(w => w.InstitutionHierarchyId == id)
-            //    .ConfigureAwait(false);
-
-            //if (workShops.Any())
-            //{
-            //    return Result<InstitutionHierarchyDto>.Failed(new OperationError
-            //    {
-            //        Code = "400",
-            //        Description = localizer["Some workshops assosiated with this InstitutionHierarchy. Deletion prohibited."],
-            //    });
-            //}
-
-            //var providers = await repositoryProvider
-            //    .GetByFilter(w => w.InstitutionHierarchyId == id)
-            //    .ConfigureAwait(false);
-
-            //if (providers.Any())
-            //{
-            //    return Result<InstitutionHierarchyDto>.Failed(new OperationError
-            //    {
-            //        Code = "400",
-            //        Description = localizer["Some providers assosiated with this InstitutionHierarchy. Deletion prohibited."],
-            //    });
-            //}
 
             try
             {
@@ -125,7 +98,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<InstitutionHierarchyDto>> GetAllChildren(Guid parentId)
+        public async Task<IEnumerable<InstitutionHierarchyDto>> GetChildren(Guid? parentId)
         {
             logger.LogInformation("Getting all children InstitutionHierarchies started.");
 

@@ -14,7 +14,7 @@ namespace OutOfSchool.Services.Models.SubordinationStructure
 
         public int HierarchyLevel { get; set; }
 
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
 
         public virtual InstitutionHierarchy Parent { get; set; }
 

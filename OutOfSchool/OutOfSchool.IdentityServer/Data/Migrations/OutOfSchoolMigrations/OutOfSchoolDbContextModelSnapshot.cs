@@ -1009,7 +1009,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<Guid>("InstitutionId")
                         .HasColumnType("binary(16)");
 
-                    b.Property<Guid>("ParentId")
+                    b.Property<Guid?>("ParentId")
                         .HasColumnType("binary(16)");
 
                     b.Property<string>("Title")
@@ -1617,9 +1617,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.InstitutionHierarchy", "Parent")
                         .WithMany()
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ParentId");
 
                     b.Navigation("Institution");
 

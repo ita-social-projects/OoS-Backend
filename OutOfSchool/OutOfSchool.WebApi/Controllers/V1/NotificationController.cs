@@ -122,7 +122,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// </summary>
         /// <param name="id">Notification id.</param>
         /// <returns>Notification.</returns>
-        /// <response code="200">All user's nofiticaitions.</response>
+        /// <response code="200">Returns Nofiticaition.</response>
         /// <response code="400">Id was wrong.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
