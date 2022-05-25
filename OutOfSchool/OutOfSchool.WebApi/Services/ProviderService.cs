@@ -9,9 +9,12 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
+using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -27,8 +30,8 @@ namespace OutOfSchool.WebApi.Services
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
         private readonly IEntityRepository<Address> addressRepository;
-        private readonly IAddressService addressService;
         private readonly IWorkshopServicesCombiner workshopServiceCombiner;
+        private readonly IImageDependentEntityImagesInteractionService<Provider> providerImagesService;
 
         // TODO: It should be removed after models revision.
         //       Temporary instance to fill 'Provider' model 'User' property
@@ -45,6 +48,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="mapper">Mapper.</param>
         /// <param name="addressRepository">AddressRepository.</param>
         /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
+        /// <param name="providerAdminRepository">Provider admin repository.</param>
+        /// <param name="providerImagesService">Images service.</param>
         public ProviderService(
             IProviderRepository providerRepository,
             IEntityRepository<User> usersRepository,
@@ -54,17 +59,19 @@ namespace OutOfSchool.WebApi.Services
             IMapper mapper,
             IEntityRepository<Address> addressRepository,
             IWorkshopServicesCombiner workshopServiceCombiner,
-            IProviderAdminRepository providerAdminRepository)
+            IProviderAdminRepository providerAdminRepository,
+            IImageDependentEntityImagesInteractionService<Provider> providerImagesService)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-            this.mapper = mapper;
-            this.addressRepository = addressRepository;
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this.addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
             this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
             this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
             this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.workshopServiceCombiner = workshopServiceCombiner;
-            this.providerAdminRepository = providerAdminRepository;
+            this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
+            this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
+            this.providerImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
         }
 
         /// <inheritdoc/>
@@ -104,6 +111,57 @@ namespace OutOfSchool.WebApi.Services
             var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
 
             logger.LogDebug($"Provider with Id = {newProvider?.Id} created successfully.");
+
+            return newProvider.ToModel();
+        }
+
+        /// <inheritdoc/>
+        public async Task<ProviderDto> CreateV2(ProviderDto providerDto)
+        {
+            _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
+
+            logger.LogDebug("Provider creating was started");
+
+            if (providerRepository.ExistsUserId(providerDto.UserId))
+            {
+                throw new InvalidOperationException(localizer["You can not create more than one account."]);
+            }
+
+            // Note: clear the actual address if it is equal to the legal to avoid data duplication in the database
+            if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
+            {
+                providerDto.ActualAddress = null;
+            }
+
+            var providerDomainModel = providerDto.ToDomain();
+
+            // BUG: concurrency issue:
+            //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
+            if (providerRepository.SameExists(providerDomainModel))
+            {
+                throw new InvalidOperationException(localizer["There is already a provider with such a data"]);
+            }
+
+            var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
+            providerDomainModel.User = users.Single();
+            providerDomainModel.User.IsRegistered = true;
+
+            var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
+
+            if (providerDto.ImageFiles?.Count > 0)
+            {
+                newProvider.Images = new List<Image<Provider>>();
+                await providerImagesService.AddManyImagesAsync(newProvider, providerDto.ImageFiles).ConfigureAwait(false);
+            }
+
+            if (providerDto.CoverImage != null)
+            {
+                await providerImagesService.AddCoverImageAsync(newProvider, providerDto.CoverImage).ConfigureAwait(false);
+            }
+
+            await UpdateProvider().ConfigureAwait(false);
+
+            logger.LogDebug("Provider with Id = {ProviderId} created successfully", newProvider?.Id);
 
             return newProvider.ToModel();
         }
@@ -271,6 +329,93 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<ProviderDto> UpdateV2(ProviderDto providerDto, string userId)
+        {
+            _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            logger.LogDebug("Updating Provider with Id = {Id} was started", providerDto.Id);
+
+            try
+            {
+                var checkProvider =
+                    (await providerRepository.GetByFilter(p => p.Id == providerDto.Id).ConfigureAwait(false))
+                    .FirstOrDefault();
+
+                if (checkProvider?.UserId != userId)
+                {
+                    return null;
+                }
+
+                providerDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
+
+                if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
+                {
+                    providerDto.ActualAddress = null;
+                }
+
+                if (providerDto.ActualAddress is null && checkProvider.ActualAddress is { })
+                {
+                    var checkProviderActualAddress = checkProvider.ActualAddress;
+                    checkProvider.ActualAddressId = null;
+                    checkProvider.ActualAddress = null;
+                    mapper.Map(providerDto, checkProvider);
+                    await addressRepository.Delete(checkProviderActualAddress).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (providerDto.ActualAddress != null)
+                    {
+                        providerDto.ActualAddress.Id = checkProvider.ActualAddress?.Id ?? 0;
+                    }
+
+                    if (IsNeedInRelatedWorkshopsUpdating(providerDto, checkProvider))
+                    {
+                        checkProvider = await providerRepository.RunInTransaction(async () =>
+                        {
+                            var workshops = await workshopServiceCombiner
+                                .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
+                                .ConfigureAwait(false);
+
+                            mapper.Map(providerDto, checkProvider);
+                            await UpdateProvider().ConfigureAwait(false);
+
+                            foreach (var workshop in workshops)
+                            {
+                                logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
+                                                      $"in workshops with Id = {workshop?.Id} updated successfully.");
+                            }
+
+                            return checkProvider;
+                        }).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        mapper.Map(providerDto, checkProvider);
+                    }
+
+                    await providerImagesService.ChangeImagesAsync(checkProvider, providerDto.ImageIds ?? new List<string>(), providerDto.ImageFiles)
+                        .ConfigureAwait(false);
+
+                    await providerImagesService.ChangeCoverImageAsync(checkProvider, providerDto.CoverImageId, providerDto.CoverImage).ConfigureAwait(false);
+
+                    await UpdateProvider().ConfigureAwait(false);
+                }
+
+                logger.LogInformation("Provider with Id = {CheckProviderId} was updated successfully", checkProvider?.Id);
+
+                return mapper.Map<ProviderDto>(checkProvider);
+            }
+            finally
+            {
+                logger.LogTrace("Updating Provider with Id = {Id} was finished", providerDto.Id);
+            }
+        }
+
+        /// <inheritdoc/>
         public async Task Delete(Guid id)
         {
             // BUG: Possible bug with deleting provider not owned by the user itself.
@@ -294,6 +439,38 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task DeleteV2(Guid id)
+        {
+            // BUG: Possible bug with deleting provider not owned by the user itself.
+            // TODO: add unit tests to check ownership functionality
+            logger.LogInformation("Deleting Provider with Id = {Id} started", id);
+
+            try
+            {
+                var entity = await providerRepository.GetById(id).ConfigureAwait(false);
+
+                if (entity.Images.Count > 0)
+                {
+                    await providerImagesService.RemoveManyImagesAsync(entity, entity.Images.Select(x => x.ExternalStorageId).ToList()).ConfigureAwait(false);
+                }
+
+                if (!string.IsNullOrEmpty(entity.CoverImageId))
+                {
+                    await providerImagesService.RemoveCoverImageAsync(entity).ConfigureAwait(false);
+                }
+
+                await providerRepository.Delete(entity).ConfigureAwait(false);
+
+                logger.LogInformation("Provider with Id = {Id} successfully deleted", id);
+            }
+            catch (ArgumentNullException ex)
+            {
+                logger.LogError(ex, "Deleting failed. Provider with Id = {Id} doesn't exist in the system", id);
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
         public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
             await workshopServiceCombiner.GetWorkshopProviderId(workshopId).ConfigureAwait(false);
 
@@ -301,6 +478,19 @@ namespace OutOfSchool.WebApi.Services
         {
             return checkProvider.FullTitle != providerDto.FullTitle
                    || checkProvider.Ownership != providerDto.Ownership;
+        }
+
+        private async Task UpdateProvider()
+        {
+            try
+            {
+                await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            }
+            catch (DbUpdateException ex)
+            {
+                logger.LogError(ex, "Updating a provider failed");
+                throw;
+            }
         }
     }
 }
