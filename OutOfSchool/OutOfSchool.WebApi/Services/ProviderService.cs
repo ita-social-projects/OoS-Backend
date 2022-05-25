@@ -304,7 +304,7 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private protected async Task DeleteProviderWithActionBefore(Guid id, Func<Provider, Task> actionBeforeUpdating = null)
+        private protected async Task DeleteProviderWithActionBefore(Guid id, Func<Provider, Task> actionBeforeDeleting = null)
         {
             // BUG: Possible bug with deleting provider not owned by the user itself.
             // TODO: add unit tests to check ownership functionality
@@ -314,9 +314,9 @@ namespace OutOfSchool.WebApi.Services
             {
                 var entity = await providerRepository.GetById(id).ConfigureAwait(false);
 
-                if (actionBeforeUpdating != null)
+                if (actionBeforeDeleting != null)
                 {
-                    await actionBeforeUpdating.Invoke(entity).ConfigureAwait(false);
+                    await actionBeforeDeleting.Invoke(entity).ConfigureAwait(false);
                 }
 
                 await providerRepository.Delete(entity).ConfigureAwait(false);
