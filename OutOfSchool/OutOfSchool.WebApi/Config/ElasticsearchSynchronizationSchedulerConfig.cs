@@ -12,6 +12,6 @@ namespace OutOfSchool.WebApi.Config
 
         public bool UseQuartz { get; set; }
 
-        public string QuartzConnectionString { get; set; }
+        public string QuartzConnectionStringKey { get; set; }
     }
 }

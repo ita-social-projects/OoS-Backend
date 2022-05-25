@@ -1,6 +1,8 @@
-namespace OutOfSchool.Common.Config
+using OutOfSchool.Common.Config;
+
+namespace OutOfSchool.WebApi.Config
 {
-    public interface IMySqlConnectionOptions
+    public class QuartzConnectionOptions : IMySqlConnectionOptions
     {
         public bool UseOverride { get; set; }
 

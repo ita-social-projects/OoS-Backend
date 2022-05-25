@@ -39,8 +39,7 @@ namespace OutOfSchool.WebApi.Tests.Common
             ""Port"": 3306,
             ""Database"": ""test"",
             ""UserId"": ""root"",
-            ""Password"": ""rootPassword"",
-            ""GuidFormat"": ""Binary16""
+            ""Password"": ""rootPassword""
         }
         }}";
 

@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using MySqlConnector;
+using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Elasticsearch;
@@ -40,7 +42,18 @@ namespace OutOfSchool.WebApi.Extensions
                     q.SetProperty("quartz.jobStore.type", "Quartz.Impl.AdoJobStore.JobStoreTX, Quartz");
                     q.SetProperty("quartz.jobStore.dataSource", "default");
                     q.SetProperty("quartz.dataSource.default.provider", "MySql");
-                    q.SetProperty("quartz.dataSource.default.connectionString", elasticSynchronizationSchedulerConfig.QuartzConnectionString);
+                    q.SetProperty(
+                        "quartz.dataSource.default.connectionString",
+                        configuration.GetMySqlConnectionString<QuartzConnectionOptions>(
+                            elasticSynchronizationSchedulerConfig.QuartzConnectionStringKey,
+                            options => new MySqlConnectionStringBuilder
+                            {
+                                Server = options.Server,
+                                Port = options.Port,
+                                UserID = options.UserId,
+                                Password = options.Password,
+                                Database = options.Database,
+                            }));
                     q.SetProperty("quartz.jobStore.clustered", "true");
                     q.SetProperty("quartz.jobStore.driverDelegateType", "Quartz.Impl.AdoJobStore.StdAdoDelegate, Quartz");
                     q.SetProperty("quartz.jobStore.useProperties", "true");

@@ -2,7 +2,7 @@ using OutOfSchool.Common.Config;
 
 namespace OutOfSchool.IdentityServer.Config
 {
-    public class IdentityConnectionOptions : IMySqlConnectionOptions
+    public class IdentityConnectionOptions : IMySqlGuidConnectionOptions
     {
         public bool UseOverride { get; set; }
 
