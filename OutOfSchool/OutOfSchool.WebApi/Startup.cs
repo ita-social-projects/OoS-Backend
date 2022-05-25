@@ -29,6 +29,7 @@ using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Config;
@@ -272,6 +273,11 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
             services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
+
+            // Institution hierarchy
+            services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
+            services.AddTransient<ISensitiveEntityRepository<InstitutionFieldDescription>, SensitiveEntityRepository<InstitutionFieldDescription>>();
+            services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

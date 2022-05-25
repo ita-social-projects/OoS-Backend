@@ -1,10 +1,12 @@
-﻿using System;
+﻿using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.Services.Models.SubordinationStructure
+namespace OutOfSchool.WebApi.Models.SubordinationStructure
 {
-    public class InstitutionHierarchy : IKeyedEntity<Guid>
+    public class InstitutionHierarchyDto
     {
         public Guid Id { get; set; }
 
@@ -23,6 +25,6 @@ namespace OutOfSchool.Services.Models.SubordinationStructure
 
         public virtual Institution Institution { get; set; }
 
-        public virtual ICollection<Direction> Directions { get; set; }
+        public List<DirectionDto> Directions { get; set; }
     }
 }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.SubordinationStructure
 {
-    public class Institution
+    public class Institution : IKeyedEntity<Guid>
     {
         public Guid Id { get; set; }
 

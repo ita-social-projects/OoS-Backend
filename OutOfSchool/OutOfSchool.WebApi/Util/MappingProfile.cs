@@ -5,9 +5,11 @@ using System.Security.Cryptography;
 using AutoMapper;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Notifications;
+using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util.CustomComparers;
@@ -100,6 +102,8 @@ namespace OutOfSchool.WebApi.Util
                     return dtoItems;
                 }));
             CreateMap<CompanyInformationDto, CompanyInformation>();
+
+            CreateMap<InstitutionHierarchy, InstitutionHierarchyDto>().ReverseMap();
 
             CreateMap<Notification, NotificationDto>().ReverseMap()
                 .ForMember(n => n.Id, n => n.Ignore());
