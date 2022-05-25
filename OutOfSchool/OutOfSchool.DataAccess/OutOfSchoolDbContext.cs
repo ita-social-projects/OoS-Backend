@@ -61,6 +61,8 @@ namespace OutOfSchool.Services
 
         public DbSet<Image<Workshop>> WorkshopImages { get; set; }
 
+        public DbSet<Image<Provider>> ProviderImages { get; set; }
+
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public DbSet<CompanyInformation> CompanyInformation { get; set; }
@@ -90,6 +92,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new ChatRoomWorkshopConfiguration());
             builder.ApplyConfiguration(new ChildConfiguration());
             builder.ApplyConfiguration(new ProviderConfiguration());
+            builder.ApplyConfiguration(new EntityImagesConfiguration<Provider>());
             builder.ApplyConfiguration(new ProviderAdminConfiguration());
             builder.ApplyConfiguration(new WorkshopConfiguration());
             builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());

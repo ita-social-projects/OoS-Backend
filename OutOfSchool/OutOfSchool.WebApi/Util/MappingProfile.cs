@@ -64,13 +64,16 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
                  .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => src.EdrpouIpn.ToString()))
                  .ForMember(dest => dest.Rating, opt => opt.Ignore())
-                 .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore());
+                 .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
+                 .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
 
             CreateMap<ProviderDto, Provider>()
                  .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => long.Parse(src.EdrpouIpn)))
                  .ForMember(dest => dest.Workshops, opt => opt.Ignore())
                  .ForMember(dest => dest.User, opt => opt.Ignore())
-                 .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore());
+                 .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
+                 .ForMember(dest => dest.Images, opt => opt.Ignore())
+                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
 
             CreateMap<TeacherDTO, Teacher>()
                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
