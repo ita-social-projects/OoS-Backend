@@ -16,6 +16,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Tests.Services
 {
@@ -42,7 +43,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             providersRepositoryMock = CreateProvidersRepositoryMock(fakeProviders);
 
-            // TODO: configure mock and writer tests for provider admins 
+            // TODO: configure mock and writer tests for provider admins
             providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
             usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
             var addressRepo = new Mock<IEntityRepository<Address>>();
@@ -51,6 +52,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var logger = new Mock<ILogger<ProviderService>>();
             mapper = new Mock<IMapper>();
             var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
+            var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
 
             providerService = new ProviderService(
                 providersRepositoryMock.Object,
@@ -61,7 +63,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 mapper.Object,
                 addressRepo.Object,
                 workshopServicesCombiner.Object,
-                providerAdminRepositoryMock.Object);
+                providerAdminRepositoryMock.Object,
+                providerImagesService.Object);
         }
 
         [Test]

@@ -1,3 +1,6 @@
+using OutOfSchool.Services.Models.Images;
+using OutOfSchool.WebApi.Services.Images;
+
 namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
 {
     using System.Linq;
@@ -53,6 +56,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             var providerAdminRepository = new Mock<IProviderAdminRepository>();
             var userRepository = new Mock<IEntityRepository<User>>();
             var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
+            var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
 
             this.providerService = new ProviderService(
                 providerRepository,
@@ -63,7 +67,8 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 this.mapper,
                 addressRepository.Object,
                 workshopServicesCombiner.Object,
-                providerAdminRepository.Object);
+                providerAdminRepository.Object,
+                providerImagesService.Object);
         }
 
         [Test]
