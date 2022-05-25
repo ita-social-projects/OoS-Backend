@@ -159,7 +159,7 @@ namespace OutOfSchool.IdentityServer.Services
                         Email = user.Email,
                         Password = password,
                     };
-                    var htmlMessage = await renderer.GetHtmlStringAsync(EmailTemplates.NewAdminInvitation, adminInvitationViewModel);
+                    var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
 
                     await emailSender.SendAsync(user.Email, subject, htmlMessage);
 

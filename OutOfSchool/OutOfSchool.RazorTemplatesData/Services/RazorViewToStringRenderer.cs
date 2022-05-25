@@ -33,7 +33,7 @@ namespace OutOfSchool.RazorTemplatesData.Services
         /// <inheritdoc/>
         public async Task<string> GetHtmlStringAsync<TModel>(string emailName, TModel model)
         {
-            var viewName = EmailTemplates.GetViewName(emailName);
+            var viewName = RazorTemplates.GetViewName(emailName);
 
             return await RenderViewToStringAsync(viewName, model);
         }
@@ -41,7 +41,7 @@ namespace OutOfSchool.RazorTemplatesData.Services
         /// <inheritdoc/>
         public async Task<string> GetPlainTextStringAsync<TModel>(string emailName, TModel model)
         {
-            var viewName = EmailTemplates.GetViewName(emailName, false);
+            var viewName = RazorTemplates.GetViewName(emailName, false);
 
             return await RenderViewToStringAsync(viewName, model);
         }

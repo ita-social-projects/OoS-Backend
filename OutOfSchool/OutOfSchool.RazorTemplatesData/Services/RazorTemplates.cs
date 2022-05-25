@@ -1,6 +1,6 @@
 ﻿namespace OutOfSchool.RazorTemplatesData.Services
 {
-    public static class EmailTemplates
+    public static class RazorTemplates
     {
         /// <summary>
         /// Base path to the html email templates

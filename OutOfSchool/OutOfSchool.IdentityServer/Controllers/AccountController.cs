@@ -81,7 +81,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 LastName = user.LastName,
                 ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
             };
-            var htmlMessage = await renderer.GetHtmlStringAsync(EmailTemplates.ChangeEmail, userActionViewModel);
+            var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.ChangeEmail, userActionViewModel);
 
             await emailSender.SendAsync(email, subject, htmlMessage);
 
@@ -153,7 +153,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 LastName = user.LastName,
                 ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
             };
-            var htmlMessage = await renderer.GetHtmlStringAsync(EmailTemplates.ConfirmEmail, userActionViewModel);
+            var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.ConfirmEmail, userActionViewModel);
 
             await emailSender.SendAsync(email, subject, htmlMessage);
 
@@ -234,7 +234,7 @@ namespace OutOfSchool.IdentityServer.Controllers
                 ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
             };
 
-            var htmlMessage = await renderer.GetHtmlStringAsync(EmailTemplates.ResetPassword, userActionViewModel);
+            var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
 
             await emailSender.SendAsync(email, subject, htmlMessage);
 
