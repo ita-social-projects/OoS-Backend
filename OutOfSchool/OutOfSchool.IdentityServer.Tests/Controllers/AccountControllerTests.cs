@@ -10,6 +10,7 @@ using OutOfSchool.IdentityServer.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using OutOfSchool.Services.Models;
 using System.Threading.Tasks;
+using OutOfSchool.RazorTemplatesData.Services;
 
 namespace OutOfSchool.IdentityServer.Tests.Controllers
 {
@@ -21,6 +22,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         private readonly Mock<IEmailSender> fakeEmailSender;
         private readonly Mock<ILogger<AccountController>> fakeLogger;
         private readonly Mock<IStringLocalizer<SharedResource>> fakeLocalizer;
+        private readonly Mock<IRazorViewToStringRenderer> fakeRazorViewToStringRenderer;
 
         public AccountControllerTests()
         {
@@ -29,6 +31,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             fakeEmailSender = new Mock<IEmailSender>();
             fakeLogger = new Mock<ILogger<AccountController>>();
             fakeLocalizer = new Mock<IStringLocalizer<SharedResource>>();
+            fakeRazorViewToStringRenderer = new Mock<IRazorViewToStringRenderer>();
         }
 
         [SetUp]
@@ -43,7 +46,8 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
                 fakeUserManager.Object,
                 fakeEmailSender.Object,
                 fakeLogger.Object,
-                fakeLocalizer.Object
+                fakeLocalizer.Object,
+                fakeRazorViewToStringRenderer.Object
                 );
         }
 

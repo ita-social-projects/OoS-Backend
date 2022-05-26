@@ -235,7 +235,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
+                ActionUrl = callBackUrl,
             };
 
             var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
