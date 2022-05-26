@@ -267,7 +267,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             {
                 logger.LogError($"{path} User with Email:{model.Email} was not found. User(id): {userId}");
 
-                return View("Password/ResetPasswordConfirmation");
+                return View("Password/ResetPasswordFailed", localizer["Change password failed"]);
             }
 
             var result = await userManager.ResetPasswordAsync(user, model.Token, model.Password);
