@@ -603,19 +603,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Favorites");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
-                {
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("ExternalStorageId")
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("EntityId", "ExternalStorageId");
-
-                    b.ToTable("ProviderImages");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.Property<Guid>("EntityId")
@@ -776,9 +763,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<long?>("ActualAddressId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("CoverImageId")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1441,17 +1425,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Provider", "Entity")
-                        .WithMany("Images")
-                        .HasForeignKey("EntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Entity");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Entity")
@@ -1622,8 +1595,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
-                    b.Navigation("Images");
-
                     b.Navigation("ProviderAdmins");
 
                     b.Navigation("Workshops");
