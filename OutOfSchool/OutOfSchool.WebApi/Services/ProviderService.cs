@@ -209,7 +209,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (actionAfterCreation != null)
             {
-                await actionAfterCreation.Invoke(newProvider).ConfigureAwait(false);
+                await actionAfterCreation(newProvider).ConfigureAwait(false);
                 await UpdateProvider().ConfigureAwait(false);
             }
 
@@ -288,7 +288,7 @@ namespace OutOfSchool.WebApi.Services
 
                     if (actionBeforeUpdating != null)
                     {
-                        await actionBeforeUpdating.Invoke(checkProvider).ConfigureAwait(false);
+                        await actionBeforeUpdating(checkProvider).ConfigureAwait(false);
                     }
 
                     await UpdateProvider().ConfigureAwait(false);
@@ -316,7 +316,7 @@ namespace OutOfSchool.WebApi.Services
 
                 if (actionBeforeDeleting != null)
                 {
-                    await actionBeforeDeleting.Invoke(entity).ConfigureAwait(false);
+                    await actionBeforeDeleting(entity).ConfigureAwait(false);
                 }
 
                 await providerRepository.Delete(entity).ConfigureAwait(false);
