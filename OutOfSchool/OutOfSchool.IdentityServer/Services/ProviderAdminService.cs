@@ -13,6 +13,8 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
 using OutOfSchool.IdentityServer.Services.Intefaces;
 using OutOfSchool.IdentityServer.Services.Password;
+using OutOfSchool.RazorTemplatesData.Models.Emails;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -29,6 +31,7 @@ namespace OutOfSchool.IdentityServer.Services
 
         private readonly UserManager<User> userManager;
         private readonly OutOfSchoolDbContext context;
+        private readonly IRazorViewToStringRenderer renderer;
 
         public ProviderAdminService(
             IMapper mapper,
@@ -36,7 +39,8 @@ namespace OutOfSchool.IdentityServer.Services
             ILogger<ProviderAdminService> logger,
             IEmailSender emailSender,
             UserManager<User> userManager,
-            OutOfSchoolDbContext context)
+            OutOfSchoolDbContext context,
+            IRazorViewToStringRenderer renderer)
         {
             this.mapper = mapper;
             this.userManager = userManager;
@@ -44,6 +48,7 @@ namespace OutOfSchool.IdentityServer.Services
             this.providerAdminRepository = providerAdminRepository;
             this.logger = logger;
             this.emailSender = emailSender;
+            this.renderer = renderer;
         }
 
         public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -148,11 +153,13 @@ namespace OutOfSchool.IdentityServer.Services
                         new {userId = user.Id, token},
                         "https");
                     var subject = "Запрошення!";
-                    var htmlMessage = $"Для реєстрації на платформі перейдіть " +
-                                      $"за посиланням та заповність ваші данні в особистому кабінеті.<br>" +
-                                      $"{confirmationLink}<br><br>" +
-                                      $"Логін: {user.Email}<br>" +
-                                      $"Пароль: {password}";
+                    var adminInvitationViewModel = new AdminInvitationViewModel
+                    {
+                        ConfirmationUrl = confirmationLink,
+                        Email = user.Email,
+                        Password = password,
+                    };
+                    var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.NewAdminInvitation, adminInvitationViewModel);
 
                     await emailSender.SendAsync(user.Email, subject, htmlMessage);
 

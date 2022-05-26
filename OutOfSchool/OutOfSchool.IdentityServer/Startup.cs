@@ -30,6 +30,7 @@ using OutOfSchool.IdentityServer.KeyManagement;
 using OutOfSchool.IdentityServer.Services;
 using OutOfSchool.IdentityServer.Services.Intefaces;
 using OutOfSchool.IdentityServer.Util;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
@@ -168,6 +169,8 @@ namespace OutOfSchool.IdentityServer
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+
+            services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

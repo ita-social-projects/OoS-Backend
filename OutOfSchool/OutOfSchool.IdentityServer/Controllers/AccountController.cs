@@ -10,6 +10,8 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.EmailSender;
 using OutOfSchool.IdentityServer.ViewModels;
+using OutOfSchool.RazorTemplatesData.Models.Emails;
+using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.IdentityServer.Controllers
@@ -20,6 +22,8 @@ namespace OutOfSchool.IdentityServer.Controllers
         private readonly UserManager<User> userManager;
         private readonly IEmailSender emailSender;
         private readonly ILogger<AccountController> logger;
+        private readonly IRazorViewToStringRenderer renderer;
+
         private string userId;
         private string path;
 
@@ -27,12 +31,14 @@ namespace OutOfSchool.IdentityServer.Controllers
             SignInManager<User> signInManager,
             UserManager<User> userManager,
             IEmailSender emailSender,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger,
+            IRazorViewToStringRenderer renderer)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.emailSender = emailSender;
             this.logger = logger;
+            this.renderer = renderer;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -68,7 +74,15 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var email = model.Email;
             var subject = "Confirm email.";
-            var htmlMessage = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
+
+            var userActionViewModel = new UserActionViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
+            };
+            var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.ChangeEmail, userActionViewModel);
+
             await emailSender.SendAsync(email, subject, htmlMessage);
 
             logger.LogInformation($"{path} Confirmation message was sent for User(id) + {userId}.");
@@ -132,7 +146,15 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var email = user.Email;
             var subject = "Confirm email.";
-            var htmlMessage = $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
+
+            var userActionViewModel = new UserActionViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
+            };
+            var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.ConfirmEmail, userActionViewModel);
+
             await emailSender.SendAsync(email, subject, htmlMessage);
 
             logger.LogInformation($"Confirmation message was sent. User(id): {userId}.");
@@ -205,7 +227,15 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var email = model.Email;
             var subject = "Reset Password";
-            var htmlMessage = $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>clicking here</a>.";
+            var userActionViewModel = new UserActionViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
+            };
+
+            var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
+
             await emailSender.SendAsync(email, subject, htmlMessage);
 
             logger.LogInformation($"{path} Message to change password was sent. User(id): {user.Id}.");
