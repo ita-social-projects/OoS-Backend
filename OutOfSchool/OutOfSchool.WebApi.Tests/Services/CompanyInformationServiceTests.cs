@@ -22,7 +22,7 @@ namespace OutOfSchool.WebApi.Tests.Services
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
         private OutOfSchoolDbContext context;
-        private IEntityRepository<CompanyInformation> repository;
+        private ISensitiveEntityRepository<CompanyInformation> repository;
         private ICompanyInformationService service;
         private Mock<ILogger<CompanyInformationService>> logger;
         private Mock<IMapper> mapper;
@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             logger = new Mock<ILogger<CompanyInformationService>>();
             mapper = new Mock<IMapper>();
-            repository = new EntityRepository<CompanyInformation>(context);
+            repository = new SensitiveEntityRepository<CompanyInformation>(context);
             service = new CompanyInformationService(repository, logger.Object, mapper.Object);
 
             SeedDatabase();
