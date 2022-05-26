@@ -40,11 +40,11 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
             IMapper mapper)
         {
             this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            this.repositoryWorkshop = repositoryWorkshop;
-            this.repositoryProvider = repositoryProvider;
-            this.localizer = localizer;
-            this.logger = logger;
-            this.mapper = mapper;
+            this.repositoryWorkshop = repositoryWorkshop ?? throw new ArgumentNullException(nameof(repositoryWorkshop));
+            this.repositoryProvider = repositoryProvider ?? throw new ArgumentNullException(nameof(repositoryProvider));
+            this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         /// <inheritdoc/>
@@ -84,7 +84,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<InstitutionHierarchyDto>> GetAll()
+        public async Task<List<InstitutionHierarchyDto>> GetAll()
         {
             logger.LogInformation("Getting all InstitutionHierarchies started.");
 
@@ -98,7 +98,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<InstitutionHierarchyDto>> GetChildren(Guid? parentId)
+        public async Task<List<InstitutionHierarchyDto>> GetChildren(Guid? parentId)
         {
             logger.LogInformation("Getting all children InstitutionHierarchies started.");
 

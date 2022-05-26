@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         /// </summary>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
-        Task<IEnumerable<InstitutionHierarchyDto>> GetAll();
+        Task<List<InstitutionHierarchyDto>> GetAll();
 
         /// <summary>
         /// Get all InstitutionHierarchy objects from DB.
@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         /// <param name="parentId">Key in the table for parent field.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
-        Task<IEnumerable<InstitutionHierarchyDto>> GetChildren(Guid? parentId);
+        Task<List<InstitutionHierarchyDto>> GetChildren(Guid? parentId);
 
         /// <summary>
         /// To recieve the InstitutionHierarchy object with define id.
