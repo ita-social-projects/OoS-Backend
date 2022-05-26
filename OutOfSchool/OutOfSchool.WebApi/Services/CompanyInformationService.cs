@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
     {
         private const int LimitOfItems = 10;
 
-        private readonly IEntityRepository<CompanyInformation> companyInformationRepository;
+        private readonly ISensitiveEntityRepository<CompanyInformation> companyInformationRepository;
         private readonly ILogger<CompanyInformationService> logger;
         private readonly IMapper mapper;
 
@@ -31,7 +31,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="logger">Logger.</param>
         /// <param name="mapper">Mapper.</param>
         public CompanyInformationService(
-            IEntityRepository<CompanyInformation> companyInformationRepository,
+            ISensitiveEntityRepository<CompanyInformation> companyInformationRepository,
             ILogger<CompanyInformationService> logger,
             IMapper mapper)
         {
