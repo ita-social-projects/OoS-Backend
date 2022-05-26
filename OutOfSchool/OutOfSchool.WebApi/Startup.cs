@@ -154,6 +154,7 @@ namespace OutOfSchool.WebApi
             // Images limits options
             services.Configure<ImagesLimits<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
             services.Configure<ImagesLimits<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
+            services.Configure<ImagesLimits<Provider>>(Configuration.GetSection($"Images:{nameof(Provider)}:Limits"));
 
             // Image options
             services.Configure<GcpStorageImagesSourceConfig>(Configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
@@ -161,6 +162,7 @@ namespace OutOfSchool.WebApi
             services.AddSingleton<MongoDb>();
             services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
             services.Configure<ImageOptions<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
+            services.Configure<ImageOptions<Provider>>(Configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
 
             // TODO: Move version check into an extension to reuse code across apps
             var mySQLServerVersion = Configuration["MySQLServerVersion"];
@@ -217,6 +219,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IFavoriteService, FavoriteService>();
             services.AddTransient<IParentService, ParentService>();
             services.AddTransient<IProviderService, ProviderService>();
+            services.AddTransient<IProviderServiceV2, ProviderServiceV2>();
             services.AddTransient<IRatingService, RatingService>();
             services.AddTransient<ISocialGroupService, SocialGroupService>();
             services.AddTransient<IStatusService, StatusService>();
@@ -235,6 +238,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ICompanyInformationService, CompanyInformationService>();
 
             services.AddScoped<IImageDependentEntityImagesInteractionService<Workshop>, ImageDependentEntityImagesInteractionService<Workshop>>();
+            services.AddScoped<IImageDependentEntityImagesInteractionService<Provider>, ImageDependentEntityImagesInteractionService<Provider>>();
             services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();

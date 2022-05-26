@@ -9,9 +9,12 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Images;
+using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -27,7 +30,6 @@ namespace OutOfSchool.WebApi.Services
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
         private readonly IEntityRepository<Address> addressRepository;
-        private readonly IAddressService addressService;
         private readonly IWorkshopServicesCombiner workshopServiceCombiner;
 
         // TODO: It should be removed after models revision.
@@ -45,6 +47,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="mapper">Mapper.</param>
         /// <param name="addressRepository">AddressRepository.</param>
         /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
+        /// <param name="providerAdminRepository">Provider admin repository.</param>
+        /// <param name="providerImagesService">Images service.</param>
         public ProviderService(
             IProviderRepository providerRepository,
             IEntityRepository<User> usersRepository,
@@ -54,59 +58,26 @@ namespace OutOfSchool.WebApi.Services
             IMapper mapper,
             IEntityRepository<Address> addressRepository,
             IWorkshopServicesCombiner workshopServiceCombiner,
-            IProviderAdminRepository providerAdminRepository)
+            IProviderAdminRepository providerAdminRepository,
+            IImageDependentEntityImagesInteractionService<Provider> providerImagesService)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
-            this.mapper = mapper;
-            this.addressRepository = addressRepository;
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this.addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
             this.providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
             this.usersRepository = usersRepository ?? throw new ArgumentNullException(nameof(usersRepository));
             this.ratingService = ratingService ?? throw new ArgumentNullException(nameof(ratingService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.workshopServiceCombiner = workshopServiceCombiner;
-            this.providerAdminRepository = providerAdminRepository;
+            this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
+            this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
+            ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
         }
+
+        private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
 
         /// <inheritdoc/>
         public async Task<ProviderDto> Create(ProviderDto providerDto)
-        {
-            logger.LogDebug("Provider creating was started.");
-
-            if (providerDto == null)
-            {
-                throw new ArgumentNullException(nameof(providerDto));
-            }
-
-            if (providerRepository.ExistsUserId(providerDto.UserId))
-            {
-                throw new InvalidOperationException(localizer["You can not create more than one account."]);
-            }
-
-            // Note: clear the actual address if it is equal to the legal to avoid data duplication in the database
-            if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
-            {
-                providerDto.ActualAddress = null;
-            }
-
-            var providerDomainModel = providerDto.ToDomain();
-
-            // BUG: concurrency issue:
-            //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
-            if (providerRepository.SameExists(providerDomainModel))
-            {
-                throw new InvalidOperationException(localizer["There is already a provider with such a data."]);
-            }
-
-            var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
-            providerDomainModel.User = users.Single();
-            providerDomainModel.User.IsRegistered = true;
-
-            var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
-
-            logger.LogDebug($"Provider with Id = {newProvider?.Id} created successfully.");
-
-            return newProvider.ToModel();
-        }
+            => await CreateProviderWithActionAfterAsync(providerDto).ConfigureAwait(false);
 
         /// <inheritdoc/>
         public async Task<IEnumerable<ProviderDto>> GetAll()
@@ -195,8 +166,67 @@ namespace OutOfSchool.WebApi.Services
 
         /// <inheritdoc/>
         public async Task<ProviderDto> Update(ProviderDto providerDto, string userId)
+            => await UpdateProviderWithActionBeforeSavingChanges(providerDto, userId).ConfigureAwait(false);
+
+        /// <inheritdoc/>
+        public async Task Delete(Guid id) => await DeleteProviderWithActionBefore(id).ConfigureAwait(false);
+
+        /// <inheritdoc/>
+        public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
+            await workshopServiceCombiner.GetWorkshopProviderId(workshopId).ConfigureAwait(false);
+
+        private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
         {
-            logger.LogDebug($"Updating Provider with Id = {providerDto?.Id} started.");
+            _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
+
+            logger.LogDebug("Provider creating was started");
+
+            if (providerRepository.ExistsUserId(providerDto.UserId))
+            {
+                throw new InvalidOperationException(localizer["You can not create more than one account."]);
+            }
+
+            // Note: clear the actual address if it is equal to the legal to avoid data duplication in the database
+            if (providerDto.LegalAddress.Equals(providerDto.ActualAddress))
+            {
+                providerDto.ActualAddress = null;
+            }
+
+            var providerDomainModel = providerDto.ToDomain();
+
+            // BUG: concurrency issue:
+            //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
+            if (providerRepository.SameExists(providerDomainModel))
+            {
+                throw new InvalidOperationException(localizer["There is already a provider with such a data"]);
+            }
+
+            var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
+            providerDomainModel.User = users.Single();
+            providerDomainModel.User.IsRegistered = true;
+
+            var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
+
+            if (actionAfterCreation != null)
+            {
+                await actionAfterCreation(newProvider).ConfigureAwait(false);
+                await UpdateProvider().ConfigureAwait(false);
+            }
+
+            logger.LogDebug("Provider with Id = {ProviderId} created successfully", newProvider?.Id);
+
+            return newProvider.ToModel();
+        }
+
+        private protected async Task<ProviderDto> UpdateProviderWithActionBeforeSavingChanges(ProviderDto providerDto, string userId, Func<Provider, Task> actionBeforeUpdating = null)
+        {
+            _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            logger.LogDebug("Updating Provider with Id = {Id} was started", providerDto.Id);
 
             try
             {
@@ -236,16 +266,16 @@ namespace OutOfSchool.WebApi.Services
                         checkProvider = await providerRepository.RunInTransaction(async () =>
                         {
                             var workshops = await workshopServiceCombiner
-                                                .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
-                                                .ConfigureAwait(false);
+                                .PartialUpdateByProvider(mapper.Map<Provider>(providerDto))
+                                .ConfigureAwait(false);
 
                             mapper.Map(providerDto, checkProvider);
-                            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+                            await UpdateProvider().ConfigureAwait(false);
 
                             foreach (var workshop in workshops)
                             {
                                 logger.LogInformation($"Provider's properties with Id = {checkProvider?.Id} " +
-                                                        $"in workshops with Id = {workshop?.Id} updated succesfully.");
+                                                      $"in workshops with Id = {workshop?.Id} updated successfully.");
                             }
 
                             return checkProvider;
@@ -254,53 +284,69 @@ namespace OutOfSchool.WebApi.Services
                     else
                     {
                         mapper.Map(providerDto, checkProvider);
-                        await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
                     }
+
+                    if (actionBeforeUpdating != null)
+                    {
+                        await actionBeforeUpdating(checkProvider).ConfigureAwait(false);
+                    }
+
+                    await UpdateProvider().ConfigureAwait(false);
                 }
 
-                logger.LogInformation($"Provider with Id = {checkProvider?.Id} updated succesfully.");
+                logger.LogInformation("Provider with Id = {CheckProviderId} was updated successfully", checkProvider?.Id);
 
                 return mapper.Map<ProviderDto>(checkProvider);
             }
-            catch (DbUpdateConcurrencyException)
+            finally
             {
-                logger.LogError(
-                    $"Updating failed. Provider with Id = {providerDto?.Id} doesn't exist in the system.");
-                throw;
+                logger.LogTrace("Updating Provider with Id = {Id} was finished", providerDto.Id);
             }
         }
 
-        /// <inheritdoc/>
-        public async Task Delete(Guid id)
+        private protected async Task DeleteProviderWithActionBefore(Guid id, Func<Provider, Task> actionBeforeDeleting = null)
         {
             // BUG: Possible bug with deleting provider not owned by the user itself.
             // TODO: add unit tests to check ownership functionality
-
-            logger.LogInformation($"Deleting Provider with Id = {id} started.");
+            logger.LogInformation("Deleting Provider with Id = {Id} started", id);
 
             try
             {
                 var entity = await providerRepository.GetById(id).ConfigureAwait(false);
 
+                if (actionBeforeDeleting != null)
+                {
+                    await actionBeforeDeleting(entity).ConfigureAwait(false);
+                }
+
                 await providerRepository.Delete(entity).ConfigureAwait(false);
 
-                logger.LogInformation($"Provider with Id = {id} succesfully deleted.");
+                logger.LogInformation("Provider with Id = {Id} successfully deleted", id);
             }
-            catch (ArgumentNullException)
+            catch (ArgumentNullException ex)
             {
-                logger.LogError($"Deleting failed. Provider with Id = {id} doesn't exist in the system.");
+                logger.LogError(ex, "Deleting failed. Provider with Id = {Id} doesn't exist in the system", id);
                 throw;
             }
         }
-
-        /// <inheritdoc/>
-        public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
-            await workshopServiceCombiner.GetWorkshopProviderId(workshopId).ConfigureAwait(false);
 
         private static bool IsNeedInRelatedWorkshopsUpdating(ProviderDto providerDto, Provider checkProvider)
         {
             return checkProvider.FullTitle != providerDto.FullTitle
                    || checkProvider.Ownership != providerDto.Ownership;
+        }
+
+        private async Task UpdateProvider()
+        {
+            try
+            {
+                await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            }
+            catch (DbUpdateException ex)
+            {
+                logger.LogError(ex, "Updating a provider failed");
+                throw;
+            }
         }
     }
 }

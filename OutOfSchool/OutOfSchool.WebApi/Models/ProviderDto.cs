@@ -1,8 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -77,7 +82,19 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public ProviderType Type { get; set; }
 
-        public bool Status { get; set; } = default;
+        public bool Status { get; set; }
+
+        [MaxLength(256)]
+        public string CoverImageId { get; set; } = string.Empty;
+
+        [JsonProperty(NullValueHandling=NullValueHandling.Ignore)]
+        public IFormFile CoverImage { get; set; }
+
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
+        public IList<string> ImageIds { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<IFormFile> ImageFiles { get; set; }
 
         public float Rating { get; set; }
 
@@ -89,6 +106,7 @@ namespace OutOfSchool.WebApi.Models
         public string UserId { get; set; }
 
         [Required]
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
         public AddressDto LegalAddress { get; set; }
 
         public AddressDto ActualAddress { get; set; }

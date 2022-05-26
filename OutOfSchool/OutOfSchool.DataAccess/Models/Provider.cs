@@ -5,10 +5,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models
 {
-    public class Provider : IKeyedEntity<Guid>
+    public class Provider : IKeyedEntity<Guid>, IImageDependentEntity<Provider>
     {
         public Guid Id { get; set; }
 
@@ -105,5 +106,9 @@ namespace OutOfSchool.Services.Models
 
         [Required]
         public InstitutionType InstitutionType { get; set; }
+
+        public string CoverImageId { get; set; }
+
+        public virtual List<Image<Provider>> Images { get; set; }
     }
 }
