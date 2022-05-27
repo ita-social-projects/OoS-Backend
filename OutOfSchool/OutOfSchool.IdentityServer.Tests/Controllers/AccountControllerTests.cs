@@ -92,7 +92,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             string modelMessage = (LocalizedString)((ViewResult)result).Model;
 
             // Assert
-            Assert.AreEqual(modelMessage, "error");
+            Assert.AreEqual("error", modelMessage);
         }
 
         [Test]
@@ -110,7 +110,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             string modelMessage = (LocalizedString)((ViewResult)result).Model;
 
             // Assert
-            Assert.AreEqual(modelMessage, "error");
+            Assert.AreEqual("error", modelMessage);
         }
 
         [Test]
@@ -161,7 +161,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             string modelMessage = (LocalizedString)((ViewResult)result).Model;
 
             // Assert
-            Assert.AreEqual(modelMessage, "error");
+            Assert.AreEqual("error", modelMessage);
         }
 
         [Test]
@@ -178,7 +178,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             ViewResult viewResult = (ViewResult)result;
 
             // Assert
-            Assert.AreEqual(viewResult.ViewName, "Password/ResetPasswordConfirmation");
+            Assert.AreEqual("Password/ResetPasswordConfirmation", viewResult.ViewName);
         }
 
         [Test]
@@ -195,7 +195,7 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
             ViewResult viewResult = (ViewResult)result;
 
             // Assert
-            Assert.AreEqual(viewResult.ViewName, "Password/ResetPasswordFailed");
+            Assert.AreEqual("Password/ResetPasswordFailed", viewResult.ViewName);
         }
         #endregion
 
