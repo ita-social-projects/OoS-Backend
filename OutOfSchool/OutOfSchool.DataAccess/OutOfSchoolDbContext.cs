@@ -82,6 +82,8 @@ namespace OutOfSchool.Services
 
         public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
 
+        public DbSet<ProviderSectionItem> ProviderSectionItems { get; set; }
+
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();

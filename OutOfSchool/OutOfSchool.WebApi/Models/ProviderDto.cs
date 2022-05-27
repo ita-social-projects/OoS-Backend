@@ -115,5 +115,8 @@ namespace OutOfSchool.WebApi.Models
 
         [Required]
         public InstitutionType InstitutionType { get; set; }
+
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
+        public IEnumerable<ProviderSectionItemDto> ProviderSectionItems { get; set; }
     }
 }
