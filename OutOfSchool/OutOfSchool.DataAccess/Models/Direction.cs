@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models
 {
@@ -17,5 +18,7 @@ namespace OutOfSchool.Services.Models
         public string Description { get; set; } = string.Empty;
 
         public virtual List<Department> Departments { get; set; }
+
+        public virtual ICollection<InstitutionHierarchy> InstitutionHierarchies { get; set; }
     }
 }

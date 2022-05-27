@@ -29,7 +29,7 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectionService"/> class.
         /// </summary>
-        /// <param name="entityRepository">Repository for Direction entity.</param>
+        /// <param name="repository">Repository for Direction entity.</param>
         /// <param name="repositoryWorkshop">Workshop repository.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>

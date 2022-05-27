@@ -9,6 +9,7 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Configurations;
 using OutOfSchool.Services.Models.Configurations.Images;
 using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services
 {
@@ -72,6 +73,12 @@ namespace OutOfSchool.Services
         public DbSet<Notification> Notifications { get; set; }
 
         public DbSet<BlockedProviderParent> BlockedProviderParents { get; set; }
+
+        public DbSet<Institution> Institutions { get; set; }
+
+        public DbSet<InstitutionHierarchy> InstitutionHierarchies { get; set; }
+
+        public DbSet<InstitutionFieldDescription> InstitutionFieldDescriptions { get; set; }
 
         public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
 
