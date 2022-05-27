@@ -3,10 +3,17 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
-    public partial class IInstitutionHierarchy : Migration
+    public partial class InstitutionHierarchyAndProviderImages : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<string>(
+                name: "CoverImageId",
+                table: "Providers",
+                type: "longtext",
+                nullable: true)
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateTable(
                 name: "Institutions",
                 columns: table => new
@@ -19,6 +26,26 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Institutions", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ProviderImages",
+                columns: table => new
+                {
+                    EntityId = table.Column<Guid>(type: "binary(16)", nullable: false),
+                    ExternalStorageId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProviderImages", x => new { x.EntityId, x.ExternalStorageId });
+                    table.ForeignKey(
+                        name: "FK_ProviderImages_Providers_EntityId",
+                        column: x => x.EntityId,
+                        principalTable: "Providers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -128,10 +155,17 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 name: "InstitutionFieldDescriptions");
 
             migrationBuilder.DropTable(
+                name: "ProviderImages");
+
+            migrationBuilder.DropTable(
                 name: "InstitutionHierarchies");
 
             migrationBuilder.DropTable(
                 name: "Institutions");
+
+            migrationBuilder.DropColumn(
+                name: "CoverImageId",
+                table: "Providers");
         }
     }
 }

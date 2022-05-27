@@ -9,8 +9,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220525192311_IInstitutionHierarchy")]
-    partial class IInstitutionHierarchy
+    [Migration("20220527131408_InstitutionHierarchyAndProviderImages")]
+    partial class InstitutionHierarchyAndProviderImages
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -620,6 +620,19 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Favorites");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
+                {
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("ExternalStorageId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("EntityId", "ExternalStorageId");
+
+                    b.ToTable("ProviderImages");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.Property<Guid>("EntityId")
@@ -781,6 +794,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long?>("ActualAddressId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("CoverImageId")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -825,6 +841,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
                     b.Property<long?>("InstitutionStatusId")
                         .HasColumnType("bigint");
+
+                    b.Property<int>("InstitutionType")
+                        .HasColumnType("int");
 
                     b.Property<long>("LegalAddressId")
                         .HasColumnType("bigint");
@@ -1033,7 +1052,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("binary(16)");
 
-                    b.Property<string>("AvatarImageId")
+                    b.Property<string>("CoverImageId")
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("DateOfBirth")
@@ -1523,6 +1542,17 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Workshop");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Provider>", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Provider", "Entity")
+                        .WithMany("Images")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Entity");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.Images.Image<OutOfSchool.Services.Models.Workshop>", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", "Entity")
@@ -1721,6 +1751,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Provider", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("ProviderAdmins");
 
                     b.Navigation("Workshops");
