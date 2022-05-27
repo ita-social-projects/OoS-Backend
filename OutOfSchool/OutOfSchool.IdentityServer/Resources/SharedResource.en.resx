@@ -327,4 +327,13 @@
   <data name="Change email mismatch current email {0}" xml:space="preserve">
     <value>Email {0} dont match with current email</value>
   </data>
+  <data name="Change password email message" xml:space="preserve">
+    <value>Confirm password change</value>
+  </data>
+  <data name="Change password invalid token" xml:space="preserve">
+    <value>Token is not valid</value>
+  </data>
+  <data name="Change password failed" xml:space="preserve">
+    <value>Change password failed. Please contact administrator.</value>
+  </data>  
 </root>

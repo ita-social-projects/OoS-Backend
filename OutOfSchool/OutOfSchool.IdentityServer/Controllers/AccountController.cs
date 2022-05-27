@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -40,6 +41,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             this.userManager = userManager;
             this.emailSender = emailSender;
             this.logger = logger;
+            this.localizer = localizer;
             this.renderer = renderer;
             this.localizer = localizer;
         }
@@ -263,7 +265,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             }
 
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
-            var callBackUrl = Url.Action("ResetPassword", "Account", new { token }, Request.Scheme);
+            var callBackUrl = Url.Action("ResetPassword", "Account", new { token, user.Email }, Request.Scheme);
 
             var email = model.Email;
             var subject = "Reset Password";
@@ -271,7 +273,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                ActionUrl = HtmlEncoder.Default.Encode(callBackUrl),
+                ActionUrl = callBackUrl,
             };
 
             var htmlMessage = await renderer.GetHtmlStringAsync(RazorTemplates.ResetPassword, userActionViewModel);
@@ -284,17 +286,35 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpGet]
-        public IActionResult ResetPassword(string token = null)
+        public async Task<IActionResult> ResetPassword(string token = null, string email = null)
         {
             logger.LogDebug($"{path} started. User(id): {userId}");
 
-            if (token == null)
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(email))
             {
-                logger.LogError($"{path} Token was not supplied for reset password. User(id): {userId}");
-                return BadRequest("A token must be supplied for password reset.");
+                logger.LogError($"{path} Token or email was not supplied for reset password. User(id): {userId}");
+                return BadRequest("A token and email must be supplied for password reset.");
             }
 
-            return View("Password/ResetPassword", new ResetPasswordViewModel() { Token = token });
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                logger.LogError($"{path} User not found. Email: {email}");
+
+                // If message will be "user not found", someone can use this url to check registered emails. I decide to show "invalid token"
+                return View("Password/ResetPasswordFailed", localizer["Change password invalid token"]);
+            }
+
+            var purpose = UserManager<User>.ResetPasswordTokenPurpose;
+            var checkToken = await userManager.VerifyUserTokenAsync(user, userManager.Options.Tokens.PasswordResetTokenProvider, purpose, token);
+            if (!checkToken)
+            {
+                logger.LogError($"{path} Token is not valid for user: {user.Id}");
+
+                return View("Password/ResetPasswordFailed", localizer["Change password invalid token"]);
+            }
+
+            return View("Password/ResetPassword", new ResetPasswordViewModel() { Token = token, Email = email });
         }
 
         [HttpPost]
@@ -306,7 +326,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             {
                 logger.LogError($"{path} Input data was not valid. User(id): {userId}");
 
-                return BadRequest(ModelState);
+                return View("Password/ResetPassword", new ResetPasswordViewModel());
             }
 
             var user = await userManager.FindByEmailAsync(model.Email);
@@ -314,7 +334,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             {
                 logger.LogError($"{path} User with Email:{model.Email} was not found. User(id): {userId}");
 
-                return View("Password/ResetPasswordConfirmation");
+                return View("Password/ResetPasswordFailed", localizer["Change password failed"]);
             }
 
             var result = await userManager.ResetPasswordAsync(user, model.Token, model.Password);
@@ -328,8 +348,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             logger.LogError($"{path} Reset password was failed. User(id): {userId}. " +
                     $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
-            // TODO: In my opinion we shouldn't return Ok in this cause.
-            return Ok();
+            return View("Password/ResetPasswordFailed", localizer["Change password failed"]);
         }
 
         [HttpGet]
