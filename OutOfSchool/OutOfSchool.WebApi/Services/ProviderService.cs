@@ -49,7 +49,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopServiceCombiner">WorkshopServiceCombiner.</param>
         /// <param name="providerAdminRepository">Provider admin repository.</param>
         /// <param name="providerImagesService">Images service.</param>
-        /// <param name="providerAdminRepository">ProviderAdminRepository.</param>
         /// <param name="changesLogService">ChangesLogService.</param>
         public ProviderService(
             IProviderRepository providerRepository,
