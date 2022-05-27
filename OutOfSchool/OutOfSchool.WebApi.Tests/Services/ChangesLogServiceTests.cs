@@ -115,7 +115,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void AddEntityAddressChangesLogToDbContext_WhenTrackingIsNotEnabledForTheField_DoesNotLogChanges()
         {
             // Arrange
-            var addressPropertyName = "LegalAddress";
+            var addressPropertyName = "ActualAddress";
             var changesLogService = GetChangesLogService();
 
             // Act
