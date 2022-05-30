@@ -19,6 +19,8 @@ using OutOfSchool.WebApi.Services;
 namespace OutOfSchool.WebApi.Tests.Services
 {
     [TestFixture]
+    [Obsolete("Full refactor of directions, won't be needed in current implementation")]
+    [Ignore("Full refactor of directions, won't be needed in current implementation")]
     public class DirectionServiceTests
     {
         private DbContextOptions<OutOfSchoolDbContext> options;
