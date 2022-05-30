@@ -110,5 +110,7 @@ namespace OutOfSchool.Services.Models
         public string CoverImageId { get; set; }
 
         public virtual List<Image<Provider>> Images { get; set; }
+
+        public virtual ICollection<ProviderSectionItem> ProviderSectionItems { get; set; }
     }
 }

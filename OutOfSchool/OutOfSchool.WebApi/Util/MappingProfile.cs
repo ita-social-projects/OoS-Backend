@@ -61,6 +61,8 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>();
             CreateMap<BlockedProviderParent, BlockedProviderParentDto>().ReverseMap();
 
+            CreateMap<ProviderSectionItem, ProviderSectionItemDto>().ReverseMap();
+
             CreateMap<Provider, ProviderDto>()
                  .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
                  .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
@@ -99,13 +101,7 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Parent, ParentDTO>().ReverseMap();
 
             CreateMap<CompanyInformationItem, CompanyInformationItemDto>().ReverseMap();
-            CreateMap<CompanyInformation, CompanyInformationDto>()
-                .ForMember(dest => dest.CompanyInformationItems, opt => opt.MapFrom((dto, entity, dest, ctx) =>
-                {
-                    var dtoItems = ctx.Mapper.Map<List<CompanyInformationItem>>(dto.CompanyInformationItems);
-                    return dtoItems;
-                }));
-            CreateMap<CompanyInformationDto, CompanyInformation>();
+            CreateMap<CompanyInformation, CompanyInformationDto>().ReverseMap();
 
             CreateMap<InstitutionHierarchy, InstitutionHierarchyDto>().ReverseMap();
 

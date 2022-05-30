@@ -90,7 +90,7 @@ namespace OutOfSchool.WebApi.Services
                 ? "Provider table is empty."
                 : $"All {providers.Count()} records were successfully received from the Provider table");
 
-            var providersDTO = providers.Select(provider => provider.ToModel()).ToList();
+            var providersDTO = providers.Select(provider => mapper.Map<ProviderDto>(provider)).ToList();
 
             // TODO: move ratings calculations out of getting all providers.
             var averageRatings =
@@ -123,7 +123,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Successfully got a Provider with Id = {id}.");
 
-            var providerDTO = provider.ToModel();
+            var providerDTO = mapper.Map<ProviderDto>(provider);
 
             var rating = ratingService.GetAverageRating(providerDTO.Id, RatingType.Provider);
 
@@ -192,7 +192,7 @@ namespace OutOfSchool.WebApi.Services
                 providerDto.ActualAddress = null;
             }
 
-            var providerDomainModel = providerDto.ToDomain();
+            var providerDomainModel = mapper.Map<Provider>(providerDto);
 
             // BUG: concurrency issue:
             //      while first repository with this particular user id is not saved to DB - we can create any number of repositories for this user.
@@ -215,7 +215,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogDebug("Provider with Id = {ProviderId} created successfully", newProvider?.Id);
 
-            return newProvider.ToModel();
+            return mapper.Map<ProviderDto>(newProvider);
         }
 
         private protected async Task<ProviderDto> UpdateProviderWithActionBeforeSavingChanges(ProviderDto providerDto, string userId, Func<Provider, Task> actionBeforeUpdating = null)
