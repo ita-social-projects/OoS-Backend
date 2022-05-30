@@ -461,8 +461,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Description = "Desc1",
                 Price = 1000,
                 WithDisabilityOptions = true,
-                Head = "Head1",
-                HeadDateOfBirth = new DateTime(1980, month: 12, 28),
                 ProviderTitle = "ProviderTitle",
                 DisabilityOptionsDesc = "Desc1",
                 Website = "website1",

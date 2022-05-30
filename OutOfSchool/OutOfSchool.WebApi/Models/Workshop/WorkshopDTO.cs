@@ -79,14 +79,6 @@ namespace OutOfSchool.WebApi.Models
         [JsonProperty(NullValueHandling=NullValueHandling.Ignore)]
         public IFormFile CoverImage { get; set; }
 
-        [Required(ErrorMessage = "Head's information is required")]
-        [MaxLength(50, ErrorMessage = "Field should not be longer than 50 characters")]
-        public string Head { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Head's date of birth is required")]
-        [DataType(DataType.Date)]
-        public DateTime HeadDateOfBirth { get; set; }
-
         [Required]
         [MaxLength(60)]
         public string ProviderTitle { get; set; } = string.Empty;
