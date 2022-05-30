@@ -30,7 +30,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
         private Mock<IEntityRepository<User>> usersRepositoryMock;
         private Mock<IRatingService> ratingService;
-        private Mock<IMapper> mapper;
+        private IMapper mapper;
 
         private List<Provider> fakeProviders;
         private User fakeUser;
@@ -50,9 +50,11 @@ namespace OutOfSchool.WebApi.Tests.Services
             ratingService = new Mock<IRatingService>();
             var localizer = new Mock<IStringLocalizer<SharedResource>>();
             var logger = new Mock<ILogger<ProviderService>>();
-            mapper = new Mock<IMapper>();
             var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
             var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
+
+            var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
+            mapper = config.CreateMapper();
 
             providerService = new ProviderService(
                 providersRepositoryMock.Object,
@@ -60,7 +62,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 ratingService.Object,
                 logger.Object,
                 localizer.Object,
-                mapper.Object,
+                mapper,
                 addressRepo.Object,
                 workshopServicesCombiner.Object,
                 providerAdminRepositoryMock.Object,
@@ -72,11 +74,11 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var entityToBeCreated = ProvidersGenerator.Generate(); // argument for service's Create method
-            var expected = entityToBeCreated.ToModel();
+            var expected = mapper.Map<ProviderDto>(entityToBeCreated);
             providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>())).ReturnsAsync(entityToBeCreated);
 
             // Act
-            var result = await providerService.Create(entityToBeCreated.ToModel()).ConfigureAwait(false);
+            var result = await providerService.Create(expected).ConfigureAwait(false);
             var actualProvider = result;
 
             // Assert
@@ -127,7 +129,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).
                 Callback<Provider>(p => receivedProvider = p);
 
-
             // Act
             await providerService.Create(expectedEntity).ConfigureAwait(false);
 
@@ -145,7 +146,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             providersRepositoryMock.Setup(x => x.Create(It.IsAny<Provider>())).Callback<Provider>(p => receivedProvider = p);
 
             // Act
-            await providerService.Create(expectedEntity.ToModel());
+            await providerService.Create(mapper.Map<ProviderDto>(expectedEntity));// expectedEntity.ToModel());
 
             // Assert
             Assert.That(receivedProvider.ActualAddress, Is.Not.Null);
@@ -157,7 +158,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             providersRepositoryMock.Setup(r => r.SameExists(It.IsAny<Provider>())).Returns(true);
-            var randomProvider = fakeProviders.RandomItem().ToModel();
+            var randomProvider = mapper.Map<ProviderDto>(fakeProviders.RandomItem());// fakeProviders.RandomItem().ToModel();
 
             // Act & Assert
             Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(randomProvider));
@@ -167,7 +168,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetAll_WhenCalled_ReturnsAllEntities()
         {
             // Arrange
-            var expectedCollection = fakeProviders.Select(p => p.ToModel()).ToList(); // expected collection of dto's to return
+            var expectedCollection = fakeProviders.Select(p => mapper.Map<ProviderDto>(p)).ToList(); // expected collection of dto's to return
             var fakeRatings = RatingsGenerator.GetAverageRatingForRange(fakeProviders.Select(p => p.Id)); // expected ratings
             expectedCollection.ForEach(p => p.Rating = fakeRatings.Where(r => r.Key == p.Id)
             .Select(p => p.Value.Item1).FirstOrDefault()); // seed rating to use in assertion
@@ -198,7 +199,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var actualProviderDto = await providerService.GetById(existingProvider.Id).ConfigureAwait(false);
 
             // Assert
-            TestHelper.AssertDtosAreEqual(existingProvider.ToModel(), actualProviderDto);
+            TestHelper.AssertDtosAreEqual(mapper.Map<ProviderDto>(existingProvider), actualProviderDto);
         }
 
         [Test]
@@ -209,7 +210,6 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = await providerService.GetById(noneExistingId).ConfigureAwait(false);
-
 
             // Assert
             Assert.That(result, Is.Null);
@@ -224,23 +224,18 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             var updatedTitle = Guid.NewGuid().ToString();
             provider.FullTitle = updatedTitle;
-            var providerToUpdateDto = provider.ToModel();
+            var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
 
             providersRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), string.Empty))
                 .ReturnsAsync(filteredCollection);
-            mapper.Setup(mapper => mapper.Map(providerToUpdateDto, It.IsAny<Provider>()))
-                .Returns(providerToUpdateDto.ToDomain());
             providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
                 .ReturnsAsync(1);
-            mapper.Setup(mapper => mapper.Map<ProviderDto>(It.IsAny<Provider>()))
-                .Returns(provider.ToModel());
 
             // Act
             var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
 
             // Assert
             TestHelper.AssertDtosAreEqual(providerToUpdateDto, result);
-
         }
 
         [Test]
@@ -261,7 +256,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task Delete_WhenIdIsValid_CalledProvidersRepositoryDeleteMethod()
         {
             // Arrange
-            var providerToDeleteDto = fakeProviders.RandomItem().ToModel();
+            var providerToDeleteDto = mapper.Map<ProviderDto>(fakeProviders.RandomItem());//fakeProviders.RandomItem().ToModel();
             var deleteMethodArguments = new List<Provider>();
             providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
                 .ReturnsAsync(fakeProviders.Single(p => p.Id == providerToDeleteDto.Id));
@@ -269,7 +264,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             await providerService.Delete(providerToDeleteDto.Id).ConfigureAwait(false);
-            var result = deleteMethodArguments.Single().ToModel();
+            var result = mapper.Map<ProviderDto>(deleteMethodArguments.Single());//deleteMethodArguments.Single().ToModel();
 
             // Assert
             TestHelper.AssertDtosAreEqual(providerToDeleteDto, result);
@@ -289,12 +284,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             providersRepositoryMock.Setup(p => p.Delete(provider)).Returns(Task.CompletedTask);
             providersRepositoryMock.Setup(p => p.GetById(provider.Id)).ThrowsAsync(new ArgumentNullException());
 
-
             // Act and Assert
             Assert.ThrowsAsync<ArgumentNullException>(
                 async () => await providerService.Delete(fakeProviderInvalidId).ConfigureAwait(false));
         }
-
 
         private static Mock<IEntityRepository<User>> CreateUsersRepositoryMock(User fakeUser)
         {
