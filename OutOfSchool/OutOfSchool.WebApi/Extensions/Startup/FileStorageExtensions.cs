@@ -7,7 +7,12 @@ using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.WebApi.Services.Elasticsearch;
+using OutOfSchool.WebApi.Services.Gcp;
+using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Util;
 using OutOfSchool.WebApi.Util.FakeImplementations;
+using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup
 {
@@ -15,6 +20,8 @@ namespace OutOfSchool.WebApi.Extensions.Startup
     {
         public static IServiceCollection AddImagesStorage(this IServiceCollection services, bool turnOnFakeStorage = false)
         {
+            _ = services ?? throw new ArgumentNullException(nameof(services));
+
             var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Development;
 
             if (turnOnFakeStorage && isDevelopment)
@@ -38,6 +45,24 @@ namespace OutOfSchool.WebApi.Extensions.Startup
 
             return services.AddScoped<IImageFilesStorage, GcpImagesStorage>(provider
                 => new GcpImagesStorage(provider.GetRequiredService<IGcpStorageContext>()));
+        }
+
+        public static IServiceCollection AddGcpSynchronization(this IServiceCollection services)
+        {
+            _ = services ?? throw new ArgumentNullException(nameof(services));
+
+            services.AddScoped<IGcpStorageSynchronizationService, GcpImagesStorageSynchronizationService>();
+
+            var gcpImagesJobKey = new JobKey("gcpImagesJob", "gcp");
+
+            QuartzPool.AddJob<GcpStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
+            QuartzPool.AddTrigger(t => t
+                .WithIdentity("gcpImagesJobTrigger", "gcp")
+                .ForJob(gcpImagesJobKey)
+                .StartNow()
+                .WithSimpleSchedule(x => x.WithIntervalInSeconds(30).RepeatForever()));
+
+            return services;
         }
     }
 }
