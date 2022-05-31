@@ -1,14 +1,21 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Google.Api.Gax;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Storage.v1.Data;
 using Google.Cloud.Storage.V1;
 using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
+using Object = System.Object;
 
 namespace OutOfSchool.Services.Repository.Files
 {
@@ -24,6 +31,12 @@ namespace OutOfSchool.Services.Repository.Files
         private protected StorageClient StorageClient { get; }
 
         private protected string BucketName { get; }
+
+        public async Task<IAsyncEnumerable<Objects>> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null)
+        {
+            var objects = await Task.Run(() => StorageClient.ListObjectsAsync(BucketName, prefix: prefix, options: options));
+            return objects.AsRawResponses();
+        }
 
         /// <inheritdoc/>
         public virtual async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)
