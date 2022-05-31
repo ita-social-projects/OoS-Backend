@@ -7,6 +7,7 @@ using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Elasticsearch;
+using OutOfSchool.WebApi.Util;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions
@@ -32,44 +33,14 @@ namespace OutOfSchool.WebApi.Extensions
 
             if (elasticSynchronizationSchedulerConfig.UseQuartz)
             {
-                var jobKey = new JobKey("elasticsearchJob");
+                var jobKey = new JobKey("elasticsearchJob", "elasticsearch");
 
-                services.AddQuartz(q =>
-                {
-                    q.SchedulerId = "Elasticsearch";
-                    q.SchedulerName = "Elasticsearch";
-                    q.SetProperty("quartz.serializer.type", "json");
-                    q.SetProperty("quartz.jobStore.type", "Quartz.Impl.AdoJobStore.JobStoreTX, Quartz");
-                    q.SetProperty("quartz.jobStore.dataSource", "default");
-                    q.SetProperty("quartz.dataSource.default.provider", "MySql");
-                    q.SetProperty(
-                        "quartz.dataSource.default.connectionString",
-                        configuration.GetMySqlConnectionString<QuartzConnectionOptions>(
-                            elasticSynchronizationSchedulerConfig.QuartzConnectionStringKey,
-                            options => new MySqlConnectionStringBuilder
-                            {
-                                Server = options.Server,
-                                Port = options.Port,
-                                UserID = options.UserId,
-                                Password = options.Password,
-                                Database = options.Database,
-                            }));
-                    q.SetProperty("quartz.jobStore.clustered", "true");
-                    q.SetProperty("quartz.jobStore.driverDelegateType", "Quartz.Impl.AdoJobStore.StdAdoDelegate, Quartz");
-                    q.SetProperty("quartz.jobStore.useProperties", "true");
-                    q.UseMicrosoftDependencyInjectionJobFactory();
-                    q.AddJob<ElasticsearchSynchronizationQuartz>(j => j.WithIdentity(jobKey));
-                    q.AddTrigger(t => t
+                QuartzPool.AddJob<ElasticsearchSynchronizationQuartz>(j => j.WithIdentity(jobKey));
+                QuartzPool.AddTrigger(t => t
                        .WithIdentity("elasticsearchJobTrigger")
                        .ForJob(jobKey)
                        .StartNow()
                        .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig.DelayBetweenTasksInMilliseconds)).RepeatForever()));
-                });
-
-                services.AddQuartzServer(options =>
-                {
-                    options.WaitForJobsToComplete = true;
-                });
             }
             else
             {
