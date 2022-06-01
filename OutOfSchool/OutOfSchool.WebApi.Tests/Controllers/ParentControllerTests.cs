@@ -28,6 +28,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private Mock<IStringLocalizer<SharedResource>> localizer;
 
         private List<ParentDTO> parents;
+        private List<ParentDtoWithContactInfo> parentsWithContactInfo;
         private List<ChildDto> children;
         private List<ApplicationDto> application;
         private ParentDTO parent;
@@ -53,8 +54,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
 
             parents = FakeParents();
+            parentsWithContactInfo = parents.Select(p => new ParentDtoWithContactInfo() { Id = p.Id, UserId = p.UserId }).ToList();
             parent = FakeParent();
-            children = ChildDtoGenerator.Generate(2).WithParent(parents.RandomItem()).WithSocial(new SocialGroupDto { Id = 2 });
+            children = ChildDtoGenerator.Generate(2).WithParent(parentsWithContactInfo.RandomItem()).WithSocial(new SocialGroupDto { Id = 2 });
             application = FakeApplications();
         }
 

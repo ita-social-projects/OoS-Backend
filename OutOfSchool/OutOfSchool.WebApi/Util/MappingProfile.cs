@@ -99,6 +99,12 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
+            CreateMap<Parent, ParentDtoWithContactInfo>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(s => s.User.Email))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(s => s.User.PhoneNumber))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(s => s.User.LastName))
+                .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(s => s.User.MiddleName))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(s => s.User.FirstName));
 
             CreateMap<CompanyInformationItem, CompanyInformationItemDto>().ReverseMap();
             CreateMap<CompanyInformation, CompanyInformationDto>().ReverseMap();

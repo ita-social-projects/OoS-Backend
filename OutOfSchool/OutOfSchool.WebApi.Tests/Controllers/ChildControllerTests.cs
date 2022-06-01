@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         private ChildDto child;
         private string currentUserId;
 
-        private ParentDTO existingParent;
+        private ParentDtoWithContactInfo existingParent;
 
         [SetUp]
         public void Setup()
@@ -43,10 +43,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
-            existingParent = ParentDtoGenerator.Generate();
+            existingParent = ParentDtoWithContactInfoGenerator.Generate();
             existingParent.UserId = currentUserId;
 
-            var parent2 = ParentDtoGenerator.Generate();
+            var parent2 = ParentDtoWithContactInfoGenerator.Generate();
 
             children =
                 ChildDtoGenerator.Generate(2)

@@ -32,7 +32,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         /// <returns>A <see cref="List{T}"/> of <see cref="Child"/> objects.</returns>
         public static List<ChildDto> Generate(int count) => faker.Generate(count);
 
-        public static ChildDto WithParent(this ChildDto child, ParentDTO parent)
+        public static ChildDto WithParent(this ChildDto child, ParentDtoWithContactInfo parent)
         {
             _ = child ?? throw new ArgumentNullException(nameof(child));
 
@@ -42,7 +42,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             return child;
         }
 
-        public static List<ChildDto> WithParent(this List<ChildDto> children, ParentDTO parent)
+        public static List<ChildDto> WithParent(this List<ChildDto> children, ParentDtoWithContactInfo parent)
         {
             _ = children ?? throw new ArgumentNullException(nameof(children));
 
