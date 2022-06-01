@@ -18,15 +18,16 @@ namespace OutOfSchool.Services.Repository
             where TEntity : class, IKeyedEntity, new();
 
         /// <summary>
-        /// Create and add ChangesLog record for the Address entity converted to string. Log record is stored with ID of the parent entity.
+        /// Create and add ChangesLog record for the property converted to string. Log record is stored with ID of the parent entity.
         /// </summary>
         /// <typeparam name="TEntity">Entity type that exists in the DB.</typeparam>
-        /// <param name="entity">Entity with the modified address.</param>
-        /// <param name="addressPropertyName">Address property name.</param>
-        /// <param name="addressProjector">Function to project Address to string.</param>
+        /// <typeparam name="TProperty">Property type.</typeparam>
+        /// <param name="entity">Modified entity.</param>
+        /// <param name="propertyName">Property name.</param>
+        /// <param name="valueProjector">Function to project property value to string.</param>
         /// <param name="userId">User ID.</param>
         /// <returns>An added ChangesLog record, or null.</returns>
-        ChangesLog AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressPropertyName, Func<Address, string> addressProjector, string userId)
+        ChangesLog AddPropertyChangesLogToDbContext<TEntity, TProperty>(TEntity entity, string propertyName, Func<TProperty, string> valueProjector, string userId)
             where TEntity : class, IKeyedEntity, new();
     }
 }

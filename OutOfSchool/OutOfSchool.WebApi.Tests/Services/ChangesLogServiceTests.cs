@@ -77,7 +77,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var addressPropertyName = "LegalAddress";
-            changesLogRepository.Setup(repo => repo.AddEntityAddressChangesLogToDbContext(
+            changesLogRepository.Setup(repo => repo.AddPropertyChangesLogToDbContext(
                 It.IsAny<Provider>(),
                 addressPropertyName,
                 It.IsAny<Func<Address, string>>(),

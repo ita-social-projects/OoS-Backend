@@ -52,18 +52,18 @@ namespace OutOfSchool.Services.Repository
             return result;
         }
 
-        public ChangesLog AddEntityAddressChangesLogToDbContext<TEntity>(
+        public ChangesLog AddPropertyChangesLogToDbContext<TEntity, TProperty>(
             TEntity entity,
-            string addressPropertyName,
-            Func<Address, string> addressProjector,
+            string propertyName,
+            Func<TProperty, string> valueProjector,
             string userId)
             where TEntity : class, IKeyedEntity, new()
         {
             ChangesLog result = null;
             var entry = dbContext.Entry(entity);
-            var addressEntity = entry.Reference(addressPropertyName).TargetEntry;
+            var propertyEntityEntry = entry.Reference(propertyName).TargetEntry;
 
-            if (addressEntity.State != EntityState.Modified)
+            if (propertyEntityEntry.State != EntityState.Modified)
             {
                 return result;
             }
@@ -73,11 +73,11 @@ namespace OutOfSchool.Services.Repository
 
             result = CreateChangesLogRecord(
                 entityType,
-                addressPropertyName,
+                propertyName,
                 entityIdGuid,
                 entityIdLong,
-                addressProjector((Address)addressEntity.OriginalValues.ToObject()),
-                addressProjector((Address)addressEntity.CurrentValues.ToObject()),
+                valueProjector((TProperty)propertyEntityEntry.OriginalValues.ToObject()),
+                valueProjector((TProperty)propertyEntityEntry.CurrentValues.ToObject()),
                 userId);
 
             if (result != null)

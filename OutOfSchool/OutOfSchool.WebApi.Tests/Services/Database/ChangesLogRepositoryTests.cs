@@ -154,7 +154,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             var newLegalAddress = ProjectAddress(provider.LegalAddress);
 
-            var added = changesLogRepository.AddEntityAddressChangesLogToDbContext(
+            var added = changesLogRepository.AddPropertyChangesLogToDbContext<Provider, Address>(
                 provider,
                 "LegalAddress",
                 ProjectAddress,
@@ -180,7 +180,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             var provider = await context.Providers.Include(p => p.LegalAddress).FirstOrDefaultAsync();
 
             // Act
-            var added = changesLogRepository.AddEntityAddressChangesLogToDbContext(
+            var added = changesLogRepository.AddPropertyChangesLogToDbContext<Provider, Address>(
                 provider,
                 "LegalAddress",
                 ProjectAddress,
@@ -205,7 +205,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Assert
             Assert.Throws(
                 typeof(InvalidOperationException),
-                () => changesLogRepository.AddEntityAddressChangesLogToDbContext(
+                () => changesLogRepository.AddPropertyChangesLogToDbContext<Provider, Address>(
                 provider,
                 "DoesNotExist",
                 ProjectAddress,
@@ -222,10 +222,10 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Act
             var provider = new ProviderTest { LegalAddress = AddressGenerator.Generate() };
 
-            // Assert
+            // Assert6
             Assert.Throws(
                 typeof(InvalidOperationException),
-                () => changesLogRepository.AddEntityAddressChangesLogToDbContext(
+                () => changesLogRepository.AddPropertyChangesLogToDbContext<ProviderTest, Address>(
                 provider,
                 "LegalAddress",
                 ProjectAddress,

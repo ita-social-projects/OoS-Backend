@@ -55,25 +55,7 @@ namespace OutOfSchool.WebApi.Services
 
         public int AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressPropertyName, string userId)
             where TEntity : class, IKeyedEntity, new()
-        {
-            if (!IsLoggingAllowed<TEntity>(addressPropertyName))
-            {
-                logger.LogDebug($"Logging is not allowed for the '{typeof(TEntity).Name}.{addressPropertyName}' field.");
-
-                return 0;
-            }
-
-            logger.LogDebug($"Logging of the '{typeof(TEntity).Name}.{addressPropertyName}' changes started.");
-
-            var result = changesLogRepository
-                .AddEntityAddressChangesLogToDbContext(entity, addressPropertyName, ProjectAddress, userId);
-
-            var count = result == null ? 0 : 1;
-
-            logger.LogDebug($"Added {count} records to the Changes Log.");
-
-            return count;
-        }
+            => AddPropertyChangesLogToDbContext<TEntity, Address>(entity, addressPropertyName, ProjectAddress, userId);
 
         public async Task<SearchResult<ChangesLogDto>> GetChangesLog(ChangesLogFilter filter)
         {
@@ -94,6 +76,32 @@ namespace OutOfSchool.WebApi.Services
                 Entities = entities,
                 TotalAmount = count,
             };
+        }
+
+        private int AddPropertyChangesLogToDbContext<TEntity, TProperty>(
+            TEntity entity,
+            string propertyName,
+            Func<TProperty, string> valueProjector,
+            string userId)
+            where TEntity : class, IKeyedEntity, new()
+        {
+            if (!IsLoggingAllowed<TEntity>(propertyName))
+            {
+                logger.LogDebug($"Logging is not allowed for the '{typeof(TEntity).Name}.{propertyName}' field.");
+
+                return 0;
+            }
+
+            logger.LogDebug($"Logging of the '{typeof(TEntity).Name}.{propertyName}' changes started.");
+
+            var result = changesLogRepository
+                .AddPropertyChangesLogToDbContext<TEntity, TProperty>(entity, propertyName, valueProjector, userId);
+
+            var count = result == null ? 0 : 1;
+
+            logger.LogDebug($"Added {count} records to the Changes Log.");
+
+            return count;
         }
 
         private bool IsLoggingAllowed<TEntity>(out string[] supportedFields)
