@@ -51,6 +51,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         {
             _ = services ?? throw new ArgumentNullException(nameof(services));
 
+            services.AddScoped<IGcpImagesSyncDataRepository, GcpImagesSyncDataRepository>();
             services.AddScoped<IGcpStorageSynchronizationService, GcpImagesStorageSynchronizationService>();
 
             var gcpImagesJobKey = new JobKey("gcpImagesJob", "gcp");

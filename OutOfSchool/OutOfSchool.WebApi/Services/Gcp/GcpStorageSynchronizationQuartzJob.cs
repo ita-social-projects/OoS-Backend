@@ -1,11 +1,8 @@
-using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OutOfSchool.WebApi.Services.Gcp;
 using Quartz;
 
-namespace OutOfSchool.WebApi.Services.Images
+namespace OutOfSchool.WebApi.Services.Gcp
 {
     public class GcpStorageSynchronizationQuartzJob : IJob
     {

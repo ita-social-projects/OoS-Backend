@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Apis.Storage.v1.Data;
@@ -21,22 +22,16 @@ namespace OutOfSchool.WebApi.Services.Gcp
     {
         private readonly ILogger<GcpImagesStorageSynchronizationService> logger;
         private readonly IImageFilesStorage imagesStorage;
-        private readonly IWorkshopRepository workshopRepository;
-        private readonly ISensitiveEntityRepository<Teacher> teacherRepository;
-        private readonly IProviderRepository providerRepository;
+        private readonly IGcpImagesSyncDataRepository gcpImagesSyncDataRepository;
 
         public GcpImagesStorageSynchronizationService(
             ILogger<GcpImagesStorageSynchronizationService> logger,
-            IWorkshopRepository workshopRepository,
-            ISensitiveEntityRepository<Teacher> teacherRepository,
-            IProviderRepository providerRepository,
-            IImageFilesStorage imagesStorage)
+            IImageFilesStorage imagesStorage,
+            IGcpImagesSyncDataRepository gcpImagesSyncDataRepository)
         {
-            this.logger = logger;
-            this.imagesStorage = imagesStorage;
-            this.workshopRepository = workshopRepository;
-            this.teacherRepository = teacherRepository;
-            this.providerRepository = providerRepository;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.imagesStorage = imagesStorage ?? throw new ArgumentNullException(nameof(imagesStorage));
+            this.gcpImagesSyncDataRepository = gcpImagesSyncDataRepository ?? throw new ArgumentNullException(nameof(gcpImagesSyncDataRepository));
         }
 
         // TODO: add try/catch
@@ -59,7 +54,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
                     .ToHashSet();
 
                 var notAttachedIds = await SynchronizeAll(mappedObjects, cancellationToken).ConfigureAwait(false);
-
+                deleteIds.AddRange(notAttachedIds);
                 // TODO: uncomment this
                 // await RemoveNotAttachedIds(notAttachedIds).ConfigureAwait(false);
 
@@ -67,41 +62,24 @@ namespace OutOfSchool.WebApi.Services.Gcp
             }
         }
 
-        private static async Task<List<string>> SynchronizeEntityCoverImages<TRepository, TEntity, TKey>(TRepository repository, IEnumerable<string> searchIds)
-            where TRepository : IEntityRepositoryBase<TKey, TEntity>
-            where TEntity : class, IKeyedEntity<TKey>, IImageDependentEntity<TEntity>, new()
-        {
-            return await repository
-                .GetByFilterNoTracking(x => searchIds.Contains(x.CoverImageId))
-                .Select(x => x.CoverImageId)
-                .ToListAsync().ConfigureAwait(false);
-        }
-
-        private static async Task<List<string>> SynchronizeEntityImages<TRepository, TEntity, TKey>(TRepository repository, IEnumerable<string> searchIds)
-            where TRepository : IEntityRepositoryBase<TKey, TEntity>
-            where TEntity : class, IKeyedEntity<TKey>, IImageDependentEntity<TEntity>, new()
-        {
-            return await repository
-                .GetByFilterNoTracking(x => !x.Images
-                    .Select(i => i.ExternalStorageId)
-                    .Intersect(searchIds).Any())
-                .SelectMany(x => x.Images.Select(i => i.ExternalStorageId))
-                .ToListAsync().ConfigureAwait(false);
-        }
-
         private List<Func<IEnumerable<string>, Task<List<string>>>> GetAllSyncFunctions()
         {
             return new List<Func<IEnumerable<string>, Task<List<string>>>>
             {
-                SynchronizeWorkshopImages,
-                SynchronizeProviderImages,
-                SynchronizeWorkshopCoverImages,
-                SynchronizeTeacherCoverImages,
-                SynchronizeProviderCoverImages,
+                // Entity images
+                gcpImagesSyncDataRepository.GetIntersectWorkshopImagesIds,
+                gcpImagesSyncDataRepository.GetIntersectProviderImagesIds,
+
+                // Entity cover images
+                gcpImagesSyncDataRepository.GetIntersectWorkshopCoverImagesIds,
+                gcpImagesSyncDataRepository.GetIntersectTeacherCoverImagesIds,
+                gcpImagesSyncDataRepository.GetIntersectProviderCoverImagesIds,
             };
         }
 
-        private async Task<HashSet<string>> SynchronizeAll(HashSet<string> searchIds, CancellationToken cancellationToken = default)
+        private async Task<HashSet<string>> SynchronizeAll(
+            HashSet<string> searchIds,
+            CancellationToken cancellationToken = default)
         {
             var allSyncFunctions = GetAllSyncFunctions();
 
@@ -116,23 +94,6 @@ namespace OutOfSchool.WebApi.Services.Gcp
 
             return searchIds;
         }
-
-        private async Task<List<string>> SynchronizeWorkshopCoverImages(IEnumerable<string> searchIds)
-            => await SynchronizeEntityCoverImages<IWorkshopRepository, Workshop, Guid>(workshopRepository, searchIds).ConfigureAwait(false);
-
-        private async Task<List<string>> SynchronizeTeacherCoverImages(IEnumerable<string> searchIds)
-            => await SynchronizeEntityCoverImages<ISensitiveEntityRepository<Teacher>, Teacher, Guid>(teacherRepository, searchIds).ConfigureAwait(false);
-
-        private async Task<List<string>> SynchronizeProviderCoverImages(IEnumerable<string> searchIds)
-            => await SynchronizeEntityCoverImages<IProviderRepository, Provider, Guid>(providerRepository, searchIds).ConfigureAwait(false);
-
-        private async Task<List<string>> SynchronizeWorkshopImages(IEnumerable<string> searchIds)
-            => await SynchronizeEntityImages<IWorkshopRepository, Workshop, Guid>(workshopRepository, searchIds)
-                .ConfigureAwait(false);
-
-        private async Task<List<string>> SynchronizeProviderImages(IEnumerable<string> searchIds)
-            => await SynchronizeEntityImages<ISensitiveEntityRepository<Teacher>, Teacher, Guid>(teacherRepository, searchIds)
-                .ConfigureAwait(false);
 
         private async Task<IAsyncEnumerable<Objects>> GetListsOfObjects(CancellationToken cancellationToken = default)
         {
@@ -159,13 +120,5 @@ namespace OutOfSchool.WebApi.Services.Gcp
                 }
             }
         }
-
-        // private HashSet<string> SynchronizeEntityImages(IEnumerable<string> searchIds)
-        // {
-        //     return workshopRepository
-        //         .GetByFilterNoTracking(x => x.Images.Select(r => r.ExternalStorageId).Intersect(searchIds))
-        //         .Select(x => x.CoverImageId)
-        //         .ToHashSet();
-        // }
     }
 }
