@@ -17,8 +17,6 @@ namespace OutOfSchool.WebApi.Models.SubordinationStructure
 
         public Guid? ParentId { get; set; }
 
-        public virtual InstitutionHierarchy Parent { get; set; }
-
         [Required]
         public Guid InstitutionId { get; set; }
 

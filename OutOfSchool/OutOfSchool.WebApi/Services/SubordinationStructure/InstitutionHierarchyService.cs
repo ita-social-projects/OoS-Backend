@@ -112,6 +112,40 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         }
 
         /// <inheritdoc/>
+        public async Task<List<InstitutionHierarchyDto>> GetParents(Guid childId)
+        {
+            logger.LogInformation("Getting all parents InstitutionHierarchies started.");
+
+            IEnumerable<InstitutionHierarchy> institutionHierarchiesTmp;
+            var result = new List<InstitutionHierarchyDto>();
+            var currentInstitutionHierarchy = await repository.GetById(childId).ConfigureAwait(false);
+
+            if (currentInstitutionHierarchy != null)
+            {
+                int amountOfLevels = currentInstitutionHierarchy.HierarchyLevel - 1;
+
+                for (int i = amountOfLevels; i > 0; i--)
+                {
+                    institutionHierarchiesTmp = await repository.GetByFilter(i => i.Id == currentInstitutionHierarchy.ParentId).ConfigureAwait(false);
+                    currentInstitutionHierarchy = institutionHierarchiesTmp.FirstOrDefault();
+
+                    if (currentInstitutionHierarchy is null)
+                    {
+                        break;
+                    }
+
+                    result.Add(mapper.Map<InstitutionHierarchyDto>(currentInstitutionHierarchy));
+                }
+            }
+
+            logger.LogInformation(!result.Any()
+                ? $"There is no parents in InstitutionHierarchy table for childId = {childId}."
+                : $"{result.Count} records were successfully received from the InstitutionHierarchy table for childId = {childId}.");
+
+            return result;
+        }
+
+        /// <inheritdoc/>
         public async Task<InstitutionHierarchyDto> GetById(Guid id)
         {
             logger.LogInformation($"Getting InstitutionHierarchy by Id started. Looking Id = {id}.");
