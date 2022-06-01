@@ -37,8 +37,10 @@ steps:
     - --set-env-vars=ASPNETCORE_ENVIRONMENT=$_ASPNETCORE_ENVIRONMENT
     - --set-env-vars=Elasticsearch__User=webapi
     - --set-env-vars=ConnectionStringsOverride__DefaultConnection__UserId=api
+    - --set-env-vars=ConnectionStringsOverride__DefaultConnection__Port=$_SQL_PORT
     - --set-env-vars=GoogleCloudPlatform__Storage__OosImages__BucketName=$_BUCKET
     - --set-env-vars=Redis__Server=$_REDIS_HOST
+    - --set-env-vars=Redis__Port=$_REDIS_PORT
     - --set-secrets=ConnectionStringsOverride__DefaultConnection__Password=$_DB_PASS,Elasticsearch__Password=$_ES_PASSWORD,Redis__Password=$_REDIS_PASS
     - --no-use-http2
 # Clean old versions except previous Cloud Run
