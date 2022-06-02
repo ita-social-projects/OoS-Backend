@@ -21,7 +21,9 @@ namespace OutOfSchool.WebApi.Services.Gcp
     public class GcpImagesStorageSynchronizationService : IGcpStorageSynchronizationService
     {
         private const string ListObjectOptionsFields = "items(name,timeCreated),nextPageToken";
-        private const int ListObjectOptionsPageSize = 5;
+
+        // TODO: must be changed to approximately 10000 after testing
+        private const int ListObjectOptionsPageSize = 25;
 
         private readonly ILogger<GcpImagesStorageSynchronizationService> logger;
         private readonly IImageFilesStorage imagesStorage;
@@ -42,8 +44,9 @@ namespace OutOfSchool.WebApi.Services.Gcp
             try
             {
                 logger.LogDebug("Gcp storage synchronization was started at utc time: {Time}", DateTime.UtcNow);
-                var dateTimeNowUtc = DateTime.Now;
-                var jokeData = dateTimeNowUtc;
+
+                // gcp returns data by local time
+                var dateTime = DateTime.Now.AddMinutes(-1);
 
                 var listsOfObjects = await GetListsOfObjects(cancellationToken).ConfigureAwait(false);
                 var tasks = new List<Task>();
@@ -57,7 +60,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
 
                     Console.WriteLine(objects.NextPageToken);
                     var mappedObjects = objects.Items
-                        .Where(x => x.TimeCreated <= jokeData)
+                        .Where(x => x.TimeCreated < dateTime)
                         .Select(x => x.Name)
                         .ToHashSet();
 
