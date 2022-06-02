@@ -288,7 +288,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
             services.AddImagesStorage(turnOnFakeStorage: Configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
-            services.AddGcpSynchronization();
+            services.AddGcpSynchronization(Configuration);
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
