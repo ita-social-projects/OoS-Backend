@@ -12,6 +12,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
 using OutOfSchool.IdentityServer.Services.Intefaces;
+using OutOfSchool.IdentityServer.Services.Interfaces;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.RazorTemplatesData.Services;
@@ -32,6 +33,7 @@ namespace OutOfSchool.IdentityServer.Services
         private readonly UserManager<User> userManager;
         private readonly OutOfSchoolDbContext context;
         private readonly IRazorViewToStringRenderer renderer;
+        private readonly IProviderAdminChangesLogService providerAdminChangesLogService;
 
         public ProviderAdminService(
             IMapper mapper,
@@ -40,7 +42,8 @@ namespace OutOfSchool.IdentityServer.Services
             IEmailSender emailSender,
             UserManager<User> userManager,
             OutOfSchoolDbContext context,
-            IRazorViewToStringRenderer renderer)
+            IRazorViewToStringRenderer renderer,
+            IProviderAdminChangesLogService providerAdminChangesLogService)
         {
             this.mapper = mapper;
             this.userManager = userManager;
@@ -49,6 +52,7 @@ namespace OutOfSchool.IdentityServer.Services
             this.logger = logger;
             this.emailSender = emailSender;
             this.renderer = renderer;
+            this.providerAdminChangesLogService = providerAdminChangesLogService;
         }
 
         public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -136,6 +140,9 @@ namespace OutOfSchool.IdentityServer.Services
                     }
 
                     await providerAdminRepository.Create(providerAdmin)
+                        .ConfigureAwait(false);
+
+                    await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Create)
                         .ConfigureAwait(false);
 
                     logger.LogInformation(
@@ -233,6 +240,10 @@ namespace OutOfSchool.IdentityServer.Services
 
                         return response;
                     }
+
+                    // Logging of changes will work when soft delete for Users is added
+                    await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Delete)
+                        .ConfigureAwait(false);
 
                     await transaction.CommitAsync();
                     response.IsSuccess = true;
