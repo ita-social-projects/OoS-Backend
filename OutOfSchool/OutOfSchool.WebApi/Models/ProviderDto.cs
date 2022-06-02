@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models
@@ -112,6 +113,8 @@ namespace OutOfSchool.WebApi.Models
         public AddressDto ActualAddress { get; set; }
 
         public long? InstitutionStatusId { get; set; } = default;
+
+        public InstitutionDto Institution { get; set; }
 
         [Required]
         public InstitutionType InstitutionType { get; set; }

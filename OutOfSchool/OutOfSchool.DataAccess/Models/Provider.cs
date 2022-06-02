@@ -6,6 +6,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models
 {
@@ -101,6 +102,10 @@ namespace OutOfSchool.Services.Models
         public long? InstitutionStatusId { get; set; }
 
         public virtual InstitutionStatus InstitutionStatus { get; set; }
+
+        public Guid? InstitutionId { get; set; }
+
+        public virtual Institution Institution { get; set; }
 
         public virtual ICollection<ProviderAdmin> ProviderAdmins { get; set; }
 

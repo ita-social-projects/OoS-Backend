@@ -837,6 +837,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
+                    b.Property<Guid?>("InstitutionId")
+                        .HasColumnType("binary(16)");
+
                     b.Property<long?>("InstitutionStatusId")
                         .HasColumnType("bigint");
 
@@ -877,6 +880,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasKey("Id");
 
                     b.HasIndex("ActualAddressId");
+
+                    b.HasIndex("InstitutionId");
 
                     b.HasIndex("InstitutionStatusId");
 
@@ -1600,6 +1605,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .WithMany()
                         .HasForeignKey("ActualAddressId");
 
+                    b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
+                        .WithMany()
+                        .HasForeignKey("InstitutionId");
+
                     b.HasOne("OutOfSchool.Services.Models.InstitutionStatus", "InstitutionStatus")
                         .WithMany("Providers")
                         .HasForeignKey("InstitutionStatusId");
@@ -1617,6 +1626,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("ActualAddress");
+
+                    b.Navigation("Institution");
 
                     b.Navigation("InstitutionStatus");
 
