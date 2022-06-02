@@ -43,6 +43,15 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
+        public virtual async Task<IEnumerable<TValue>> Create(IEnumerable<TValue> entities)
+        {
+            await dbSet.AddRangeAsync(entities).ConfigureAwait(false);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+            return await Task.FromResult(entities).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
         public virtual async Task<T> RunInTransaction<T>(Func<Task<T>> operation)
         {
             var executionStrategy = dbContext.Database.CreateExecutionStrategy();

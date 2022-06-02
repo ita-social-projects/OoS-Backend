@@ -22,19 +22,6 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <summary>
-        /// Add new element.
-        /// </summary>
-        /// <param name="applications">Entity to create.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        public async Task<IEnumerable<Application>> Create(IEnumerable<Application> applications)
-        {
-            await dbSet.AddRangeAsync(applications);
-            await dbContext.SaveChangesAsync();
-
-            return await Task.FromResult(applications);
-        }
-
-        /// <summary>
         /// Update information about element.
         /// </summary>
         /// <param name="entity">Entity to update.</param>

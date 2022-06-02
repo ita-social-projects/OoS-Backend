@@ -23,6 +23,16 @@ namespace OutOfSchool.Services.Repository
         Task<TEntity> Create(TEntity entity);
 
         /// <summary>
+        /// Add new elements.
+        /// </summary>
+        /// <param name="entities">Entities to create.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the entities that were created.</returns>
+        /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        Task<IEnumerable<TEntity>> Create(IEnumerable<TEntity> entities);
+
+        /// <summary>
         /// Runs operation in transaction.
         /// </summary>
         /// <param name="operation">Method that represents the operation.</param>
