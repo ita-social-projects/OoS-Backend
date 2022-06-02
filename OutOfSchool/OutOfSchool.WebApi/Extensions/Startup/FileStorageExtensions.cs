@@ -1,5 +1,7 @@
 using System;
+using Castle.Core.Configuration;
 using Google.Cloud.Storage.V1;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -47,12 +49,14 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                 => new GcpImagesStorage(provider.GetRequiredService<IGcpStorageContext>()));
         }
 
-        public static IServiceCollection AddGcpSynchronization(this IServiceCollection services)
+        public static IServiceCollection AddGcpSynchronization(this IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _ = services ?? throw new ArgumentNullException(nameof(services));
 
             services.AddScoped<IGcpImagesSyncDataRepository, GcpImagesSyncDataRepository>();
             services.AddScoped<IGcpStorageSynchronizationService, GcpImagesStorageSynchronizationService>();
+
+            var cronSchedule = configuration.GetValue<string>("Quartz:CronSchedules:GcpImagesSyncCronScheduleString");
 
             var gcpImagesJobKey = new JobKey("gcpImagesJob", "gcp");
 
@@ -61,7 +65,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                 .WithIdentity("gcpImagesJobTrigger", "gcp")
                 .ForJob(gcpImagesJobKey)
                 .StartNow()
-                .WithCronSchedule("0 0 0 * * ?"));
+                .WithCronSchedule(cronSchedule));
 
             return services;
         }
