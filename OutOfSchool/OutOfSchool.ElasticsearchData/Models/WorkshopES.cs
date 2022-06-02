@@ -38,6 +38,10 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public AddressES Address { get; set; }
 
+        public Guid? InstitutionHierarchyId { get; set; }
+
+        public string InstitutionHierarchy { get; set; }
+
         public long DirectionId { get; set; }
 
         public string Direction { get; set; }
@@ -49,6 +53,8 @@ namespace OutOfSchool.ElasticsearchData.Models
         public bool WithDisabilityOptions { get; set; }
 
         public string Keywords { get; set; }
+
+        public List<DirectionES> Directions { get; set; }
 
         [Nested]
         public List<DateTimeRangeES> DateTimeRanges { get; set; }

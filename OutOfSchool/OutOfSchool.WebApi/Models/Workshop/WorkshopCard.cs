@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
@@ -40,7 +41,11 @@ namespace OutOfSchool.WebApi.Models
         [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal Price { get; set; } = default;
 
+        public Guid? InstitutionHierarchyId { get; set; }
+
         public long DirectionId { get; set; }
+
+        public List<long> DirectionsId { get; set; }
 
         [Required]
         public Guid ProviderId { get; set; }

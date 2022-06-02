@@ -20,7 +20,9 @@ namespace OutOfSchool.WebApi.Extensions
                         dest => dest.Keywords,
                         opt =>
                             opt.MapFrom(src =>
-                                string.Join('¤', src.Keywords.Distinct())));
+                                string.Join('¤', src.Keywords.Distinct())))
+                    .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.Directions));
+
                 cfg.CreateMap<AddressDto, AddressES>()
                     .ForMember(
                         dest => dest.Point,
@@ -48,7 +50,8 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<WorkshopES, WorkshopCard>()
                     .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                    .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId));
+                    .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
+                    .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.Directions.Select(x => x.Id)));
                 cfg.CreateMap<AddressES, AddressDto>()
                     .ForMember(
                         dest => dest.Latitude,
@@ -66,7 +69,9 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<SearchResultES<WorkshopES>, SearchResult<WorkshopCard>>();
                 cfg.CreateMap<WorkshopES, WorkshopCard>()
                     .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
-                    .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId));
+                    .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
+                    .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.Directions.Select(x => x.Id)));
+
                 cfg.CreateMap<AddressES, AddressDto>()
                     .ForMember(
                         dest => dest.Latitude,

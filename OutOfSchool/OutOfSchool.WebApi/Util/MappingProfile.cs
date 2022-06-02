@@ -55,7 +55,10 @@ namespace OutOfSchool.WebApi.Util
                     dest => dest.Keywords,
                     opt => opt.MapFrom(src => src.Keywords.Split(SEPARATOR, StringSplitOptions.None)))
                 .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
-                .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)));
+                .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
+                .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
+                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions));
+
             CreateMap<Address, AddressDto>().ReverseMap();
 
             CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>();
@@ -92,10 +95,13 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Application, ApplicationDto>().ReverseMap();
             CreateMap<WorkshopCard, Workshop>()
                 .ForMember(dest => dest.Direction, opt => opt.Ignore());
+
             CreateMap<Workshop, WorkshopCard>()
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                 .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
-                .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id));
+                .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id))
+                .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)));
+
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
             CreateMap<Parent, ParentDTO>().ReverseMap();
@@ -122,10 +128,15 @@ namespace OutOfSchool.WebApi.Util
 
             CreateMap<Teacher, TeacherES>();
 
+            CreateMap<Direction, DirectionES>();
+
             CreateMap<Workshop, WorkshopES>()
                 .ForMember(dest => dest.Rating, opt => opt.Ignore())
-                .ForMember(dest => dest.Direction, opt => opt.Ignore());
-            #warning The next mapping is here to test UI Admin features. Will be removed or refactored
+                .ForMember(dest => dest.Direction, opt => opt.Ignore())
+                .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
+                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions));
+
+#warning The next mapping is here to test UI Admin features. Will be removed or refactored
             CreateMap<ShortUserDto, AdminDto>();
 
             CreateMap<User, ProviderAdminDto>()
