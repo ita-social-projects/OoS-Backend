@@ -24,6 +24,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
 
         // TODO: must be changed to approximately 10000 after testing
         private const int ListObjectOptionsPageSize = 25;
+        private const byte CountOfTasksAtOneTime = 10;
 
         private readonly ILogger<GcpImagesStorageSynchronizationService> logger;
         private readonly IImageFilesStorage imagesStorage;
@@ -58,7 +59,6 @@ namespace OutOfSchool.WebApi.Services.Gcp
                         break;
                     }
 
-                    Console.WriteLine(objects.NextPageToken);
                     var mappedObjects = objects.Items
                         .Where(x => x.TimeCreated < dateTime)
                         .Select(x => x.Name)
@@ -71,9 +71,9 @@ namespace OutOfSchool.WebApi.Services.Gcp
                             await RemoveNotAttachedIds(notAttachedIds).ConfigureAwait(false);
                         }, cancellationToken));
 
-                    if (tasks.Count % 10 == 0)
+                    if (tasks.Count % CountOfTasksAtOneTime == 0)
                     {
-                        await Task.WhenAll(tasks).ConfigureAwait(false); // in order to decrease CPU and memory using, works by parts count of 10 tasks
+                        await Task.WhenAll(tasks.GetRange(tasks.Count - CountOfTasksAtOneTime, CountOfTasksAtOneTime)).ConfigureAwait(false); // in order to decrease CPU and memory using, works by parts count of 10 tasks
                     }
                 }
 
