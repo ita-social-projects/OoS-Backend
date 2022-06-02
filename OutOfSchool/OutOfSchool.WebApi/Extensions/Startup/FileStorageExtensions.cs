@@ -61,7 +61,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                 .WithIdentity("gcpImagesJobTrigger", "gcp")
                 .ForJob(gcpImagesJobKey)
                 .StartNow()
-                .WithSimpleSchedule(x => x.WithIntervalInSeconds(30).RepeatForever()));
+                .WithCronSchedule("0 0 0 * * ?"));
 
             return services;
         }
