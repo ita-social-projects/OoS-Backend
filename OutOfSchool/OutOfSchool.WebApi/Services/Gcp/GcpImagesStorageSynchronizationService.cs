@@ -20,6 +20,9 @@ namespace OutOfSchool.WebApi.Services.Gcp
 {
     public class GcpImagesStorageSynchronizationService : IGcpStorageSynchronizationService
     {
+        private const string ListObjectOptionsFields = "items(name,timeCreated),nextPageToken";
+        private const int ListObjectOptionsPageSize = 5;
+
         private readonly ILogger<GcpImagesStorageSynchronizationService> logger;
         private readonly IImageFilesStorage imagesStorage;
         private readonly IGcpImagesSyncDataRepository gcpImagesSyncDataRepository;
@@ -34,31 +37,52 @@ namespace OutOfSchool.WebApi.Services.Gcp
             this.gcpImagesSyncDataRepository = gcpImagesSyncDataRepository ?? throw new ArgumentNullException(nameof(gcpImagesSyncDataRepository));
         }
 
-        // TODO: add try/catch
         public async Task SynchronizeAsync(CancellationToken cancellationToken = default)
         {
-            var dateTimeNowUtc = DateTime.Now;
-            var jokeData = dateTimeNowUtc.AddDays(-1);
-
-            var listsOfObjects = await GetListsOfObjects(cancellationToken).ConfigureAwait(false);
-
-            var deleteIds = new List<string>();
-
-            // TODO: add TPL usage for every pack of objects
-            await foreach (var objects in listsOfObjects.WithCancellation(cancellationToken))
+            try
             {
-                Debug.WriteLine(objects.NextPageToken);
-                var mappedObjects = objects.Items
-                    .Where(x => x.TimeCreated <= jokeData)
-                    .Select(x => x.Name)
-                    .ToHashSet();
+                logger.LogDebug("Gcp storage synchronization was started at utc time: {Time}", DateTime.UtcNow);
+                var dateTimeNowUtc = DateTime.Now;
+                var jokeData = dateTimeNowUtc;
 
-                var notAttachedIds = await SynchronizeAll(mappedObjects, cancellationToken).ConfigureAwait(false);
-                deleteIds.AddRange(notAttachedIds);
-                // TODO: uncomment this
-                // await RemoveNotAttachedIds(notAttachedIds).ConfigureAwait(false);
+                var listsOfObjects = await GetListsOfObjects(cancellationToken).ConfigureAwait(false);
+                var tasks = new List<Task>();
 
-                Console.WriteLine($"{objects.Items.Count} : {mappedObjects.Count()}");
+                await foreach (var objects in listsOfObjects.WithCancellation(cancellationToken))
+                {
+                    if (objects.Items is null || objects.Items.Count == 0)
+                    {
+                        break;
+                    }
+
+                    Console.WriteLine(objects.NextPageToken);
+                    var mappedObjects = objects.Items
+                        .Where(x => x.TimeCreated <= jokeData)
+                        .Select(x => x.Name)
+                        .ToHashSet();
+
+                    tasks.Add(Task.Run(
+                        async () =>
+                        {
+                            var notAttachedIds = await SynchronizeAll(mappedObjects, cancellationToken).ConfigureAwait(false);
+                            await RemoveNotAttachedIds(notAttachedIds).ConfigureAwait(false);
+                        }, cancellationToken));
+
+                    if (tasks.Count % 10 == 0)
+                    {
+                        await Task.WhenAll(tasks).ConfigureAwait(false); // in order to decrease CPU and memory using, works by parts count of 10 tasks
+                    }
+                }
+
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical(ex, "Gcp storage synchronization was interrupted by error at utc time: {Time}", DateTime.UtcNow);
+            }
+            finally
+            {
+                logger.LogDebug("Gcp storage synchronization was finished at utc time: {Time}", DateTime.UtcNow);
             }
         }
 
@@ -99,8 +123,8 @@ namespace OutOfSchool.WebApi.Services.Gcp
         {
             var options = new ListObjectsOptions
             {
-                Fields = "items(name,timeCreated),nextPageToken",
-                PageSize = 50,
+                Fields = ListObjectOptionsFields,
+                PageSize = ListObjectOptionsPageSize,
             };
 
             return await imagesStorage.GetBulkListsOfObjectsAsync(options: options).ConfigureAwait(false);
@@ -114,9 +138,9 @@ namespace OutOfSchool.WebApi.Services.Gcp
                 {
                     await imagesStorage.DeleteAsync(id).ConfigureAwait(false);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    logger.LogError(e, "Image was not deleted because the storage had thrown exception");
+                    logger.LogError(ex, "Image was not deleted because the storage had thrown exception");
                 }
             }
         }
