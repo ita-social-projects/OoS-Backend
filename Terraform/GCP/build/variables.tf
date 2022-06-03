@@ -56,3 +56,19 @@ variable "region" {
 variable "bucket" {
   type = string
 }
+
+variable "github_secret" {
+  type = string
+}
+
+variable "github_token_secret" {
+  type = string
+}
+
+variable "sql_port" {
+  type = number
+}
+
+variable "redis_port" {
+  type = number
+}
