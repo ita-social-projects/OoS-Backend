@@ -19,7 +19,7 @@ namespace OutOfSchool.IdentityServer.Services
 
         public async Task<int> SaveChangesLogAsync(ProviderAdmin entity, string userId, OperationType operationType)
         {
-            if (entity.ManagedWorkshops.Count > 0)
+            if (entity.ManagedWorkshops?.Count > 0)
             {
                 var logRecords = entity.ManagedWorkshops.Select(x => CreateChangesLogRecord(
                     entity.UserId,
