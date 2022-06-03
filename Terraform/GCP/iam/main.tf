@@ -31,3 +31,9 @@ resource "google_project_iam_member" "run-admin" {
   member  = "serviceAccount:${google_project_service_identity.build.email}"
   project = var.project
 }
+
+resource "google_project_iam_member" "secret_access" {
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_project_service_identity.build.email}"
+  project = var.project
+}
