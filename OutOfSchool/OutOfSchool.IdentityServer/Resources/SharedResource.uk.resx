@@ -265,7 +265,7 @@
   <data name="is already taken" xml:space="preserve">
     <value>вже зайнятий</value>
   </data>
-    <data name="Your account is blocked" xml:space="preserve">
+  <data name="Your account is blocked" xml:space="preserve">
     <value>Ваш акаунт заблокований. Звʼяжіться з адміністратором.</value>
   </data>
   <data name="Login or password is wrong" xml:space="preserve">
@@ -304,7 +304,32 @@
   <data name="Not registered yet?" xml:space="preserve">
     <value>Ще не зареєстровані?</value>
   </data>
-   <data name="Save" xml:space="preserve">
+  <data name="Save" xml:space="preserve">
     <value>Зберегти</value>
+  </data>
+  <data name="Change email {0} sent" xml:space="preserve">
+    <value>Інструкція по зміні емейлу була надіслана на {0}. Зайдіть на емейл і виконайте дії вказані в листі.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="Change email cancel" xml:space="preserve">
+    <value>Ви впевнені, що хочете скасувати зміну електронної адреси?</value>
+  </data>
+  <data name="Change email done" xml:space="preserve">
+    <value>Ваш email успішно змінений</value>
+  </data>
+  <data name="Change email message" xml:space="preserve">
+    <value>Ваші дані було змінено.
+Щоб підтвердити зміну імейлу, перейдіть за цим посиланням та введіть новий логін
+
+Login: {0}
+{1}</value>
+  </data>
+  <data name="Change email new email already used {0}" xml:space="preserve">
+    <value>Вказаний email {0} вже зареєстровано за іншим користувачем, введіть інший email</value>
+  </data>
+  <data name="Change email mismatch current email {0}" xml:space="preserve">
+    <value>Вказаний email {0} не співпадеє з поточним</value>
   </data>
 </root>

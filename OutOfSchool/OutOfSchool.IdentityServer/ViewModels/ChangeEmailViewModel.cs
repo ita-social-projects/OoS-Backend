@@ -13,5 +13,7 @@ namespace OutOfSchool.IdentityServer.ViewModels
         public string Email { get; set; }
 
         public string ReturnUrl { get; set; }
+
+        public string Submit { get; set; }
     }
 }
