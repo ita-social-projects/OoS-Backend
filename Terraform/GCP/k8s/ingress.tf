@@ -8,6 +8,14 @@ resource "helm_release" "ingress" {
   values = [
     "${file("${path.module}/values/ingress.yaml")}"
   ]
+  set {
+    name  = "ingress-nginx.tcp.${var.sql_port}"
+    value = "default/mysql:3306"
+  }
+  set {
+    name  = "ingress-nginx.tcp.${var.redis_port}"
+    value = "default/mysql-redis-master:6379"
+  }
   depends_on = [
     helm_release.cert_manager,
   ]

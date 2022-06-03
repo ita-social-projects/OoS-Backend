@@ -68,3 +68,11 @@ variable "elastic_hostname" {
   type        = string
   description = "Hostname for Elastic"
 }
+
+variable "sql_port" {
+  type = number
+}
+
+variable "redis_port" {
+  type = number
+}
