@@ -67,3 +67,11 @@ variable "db_password" {
 variable "db_host" {
   type = string
 }
+
+variable "subnet_cidr" {
+  type = string
+}
+
+variable "network_name" {
+  type = string
+}

@@ -24,7 +24,8 @@ resource "google_compute_instance_template" "k3s" {
   }
 
   network_interface {
-    network = "default"
+    network    = var.network_name
+    subnetwork = "outofschool"
     access_config {
       // Ephemeral IP
     }

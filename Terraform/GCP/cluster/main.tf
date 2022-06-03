@@ -1,8 +1,3 @@
-data "google_compute_subnetwork" "nodes_subnet" {
-  name   = "default"
-  region = var.region
-}
-
 module "masters" {
   source     = "./nodes"
   node_role  = "master"
@@ -16,7 +11,7 @@ module "masters" {
     random_number          = var.random_number
     external_hostname      = var.k8s_api_hostname
     external_lb_ip_address = google_compute_address.lb.address
-    cluster_cidr           = data.google_compute_subnetwork.nodes_subnet.ip_cidr_range
+    cluster_cidr           = var.subnet_cidr
   })
   random_number = var.random_number
   labels        = var.labels
@@ -26,6 +21,7 @@ module "masters" {
   admin_ips     = var.admin_ips
   ssh_user      = var.ssh_user
   ssh_key       = var.ssh_key
+  network_name  = var.network_name
 }
 
 locals {

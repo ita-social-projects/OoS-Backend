@@ -67,3 +67,7 @@ variable "ssh_key" {
   type        = string
   description = "SSH Public Key for instance"
 }
+
+variable "network_name" {
+  type = string
+}
