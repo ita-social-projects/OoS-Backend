@@ -241,9 +241,12 @@ namespace OutOfSchool.IdentityServer.Services
                         return response;
                     }
 
-                    // Logging of changes will work when soft delete for Users is added
-                    await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Delete)
-                        .ConfigureAwait(false);
+                    // TODO: enable logging of changes when soft delete for Users is added
+                    if (false)
+                    {
+                        await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Delete)
+                            .ConfigureAwait(false);
+                    }
 
                     await transaction.CommitAsync();
                     response.IsSuccess = true;
