@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
@@ -25,8 +25,8 @@ namespace OutOfSchool.Services.Models
 
         public virtual Parent Parent { get; set; }
 
-        public long? SocialGroupId { get; set; }
+        public virtual ICollection<SocialGroup> SocialGroups { get; set; }
 
-        public virtual SocialGroup SocialGroup { get; set; }
+        public virtual List<ChildSocialGroup> ChildSocialGroups { get; set; }
     }
 }

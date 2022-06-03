@@ -58,6 +58,7 @@ namespace OutOfSchool.WebApi.Extensions
             {
                 cfg.CreateMap<Child, ChildDto>();
                 cfg.CreateMap<Parent, ParentDtoWithContactInfo>();
+                cfg.CreateMap<SocialGroup, SocialGroupDto>();
             });
         }
 
