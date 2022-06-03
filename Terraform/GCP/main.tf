@@ -10,6 +10,54 @@ resource "random_integer" "ri" {
   max = 99999
 }
 
+module "vpc" {
+  source  = "terraform-google-modules/network/google"
+  version = "~> 5.0"
+
+  project_id   = var.project
+  network_name = "outofschool-${random_integer.ri.result}"
+  routing_mode = "REGIONAL"
+
+  subnets = [
+    {
+      subnet_name           = "outofschool"
+      subnet_ip             = "10.132.0.0/20"
+      subnet_region         = var.region
+      subnet_private_access = "true"
+      # subnet_flow_logs      = "true"
+      # subnet_flow_logs_interval = "INTERVAL_10_MIN"
+      # subnet_flow_logs_sampling = 0.7
+      # subnet_flow_logs_metadata = "INCLUDE_ALL_METADATA"
+    }
+  ]
+
+  firewall_rules = [
+    {
+      name = "fw-outofschool-${random_integer.ri.result}-allow-internal"
+
+      direction = "INGRESS"
+
+      allow = [
+        {
+          protocol = "tcp"
+          ports    = ["0-65535"]
+        },
+        {
+          protocol = "udp"
+          ports    = ["0-65535"]
+        },
+        {
+          protocol = "icmp"
+          ports    = []
+        }
+      ]
+
+      ranges   = ["10.132.0.0/20"] #10.128.0.0/9
+      priority = 65534
+    }
+  ]
+}
+
 module "storage" {
   source        = "./storage"
   random_number = random_integer.ri.result
@@ -33,6 +81,7 @@ module "sql" {
   zone          = var.zone
   region        = var.region
   random_number = random_integer.ri.result
+  network_id    = module.vpc.network_id
 }
 
 module "cluster" {
@@ -51,6 +100,8 @@ module "cluster" {
   db_username      = module.sql.db_username
   db_password      = module.sql.db_password
   db_host          = module.sql.db_host
+  subnet_cidr      = module.vpc.subnets["${var.region}/outofschool"].ip_cidr_range
+  network_name     = module.vpc.network_name
 }
 
 resource "time_sleep" "wait_30_seconds" {
@@ -91,20 +142,24 @@ module "k8s" {
   phpmyadmin_hostname = var.phpmyadmin_hostname
   kibana_hostname     = var.kibana_hostname
   elastic_hostname    = var.elastic_hostname
+  sql_port            = var.sql_port
+  redis_port          = var.redis_port
   depends_on = [
     time_sleep.wait_30_seconds
   ]
 }
 
 module "secrets" {
-  source        = "./secrets"
-  sql_api_pass  = module.passwords.sql_api_pass
-  sql_auth_pass = module.passwords.sql_auth_pass
-  es_api_pass   = module.passwords.es_api_pass
-  redis_pass    = module.passwords.redis_pass
-  labels        = var.labels
-  sql_hostname  = var.sql_hostname
-  sendgrid_key  = var.sendgrid_key
+  source               = "./secrets"
+  sql_api_pass         = module.passwords.sql_api_pass
+  sql_auth_pass        = module.passwords.sql_auth_pass
+  es_api_pass          = module.passwords.es_api_pass
+  redis_pass           = module.passwords.redis_pass
+  labels               = var.labels
+  sql_hostname         = var.sql_hostname
+  sendgrid_key         = var.sendgrid_key
+  github_deploy_base64 = var.github_deploy_base64
+  github_access_token  = var.github_access_token
 }
 
 module "build" {
@@ -123,4 +178,8 @@ module "build" {
   sender_email        = var.sender_email
   sendgrid_key_secret = module.secrets.sendgrid_key_secret
   bucket              = module.storage.image-bucket
+  github_secret       = module.secrets.github_secret
+  github_token_secret = module.secrets.github_token_secret
+  sql_port            = var.sql_port
+  redis_port          = var.redis_port
 }

@@ -102,3 +102,21 @@ variable "sendgrid_key" {
   type        = string
   description = "Outgoing mail api key"
 }
+
+variable "github_deploy_base64" {
+  type        = string
+  description = "Github Deploy key"
+}
+
+variable "github_access_token" {
+  type        = string
+  description = "Github Access Token to create releases"
+}
+
+variable "sql_port" {
+  type = number
+}
+
+variable "redis_port" {
+  type = number
+}
