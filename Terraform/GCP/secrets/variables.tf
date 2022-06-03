@@ -26,3 +26,11 @@ variable "sql_hostname" {
 variable "sendgrid_key" {
   type = string
 }
+
+variable "github_deploy_base64" {
+  type = string
+}
+
+variable "github_access_token" {
+  type = string
+}

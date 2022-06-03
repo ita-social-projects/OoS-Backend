@@ -17,3 +17,11 @@ output "redis_secret" {
 output "sendgrid_key_secret" {
   value = "${element(local.sendgrid_key_list, length(local.sendgrid_key_list) - 3)}:${element(local.sendgrid_key_list, length(local.sendgrid_key_list) - 1)}"
 }
+
+output "github_secret" {
+  value = google_secret_manager_secret_version.github_secret.name
+}
+
+output "github_token_secret" {
+  value = google_secret_manager_secret_version.github_token_secret.name
+}
