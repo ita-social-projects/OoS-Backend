@@ -11,3 +11,7 @@ variable "zone" {
 variable "random_number" {
   type = number
 }
+
+variable "network_id" {
+  type = string
+}
