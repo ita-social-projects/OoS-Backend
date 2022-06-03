@@ -68,7 +68,7 @@ namespace OutOfSchool.WebApi.Services
 
             var totalAmount = await childRepository.Count().ConfigureAwait(false);
 
-            var children = await childRepository.Get(offsetFilter.From, offsetFilter.Size, $"{nameof(Child.SocialGroup)}", null, x => x.Id, true)
+            var children = await childRepository.Get(offsetFilter.From, offsetFilter.Size, $"{nameof(Child.SocialGroups)}", null, x => x.Id, true)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

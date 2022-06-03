@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using OutOfSchool.Services.Enums;
@@ -36,7 +37,7 @@ namespace OutOfSchool.WebApi.Models
 
         public Guid ParentId { get; set; } = default;
 
-        public long? SocialGroupId { get; set; } = default;
+        public List<SocialGroupDto> SocialGroups { get; set; }
 
         // TODO: define if we really need this in dto
         [JsonIgnore]
