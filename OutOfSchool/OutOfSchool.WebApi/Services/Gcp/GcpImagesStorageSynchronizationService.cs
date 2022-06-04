@@ -22,9 +22,8 @@ namespace OutOfSchool.WebApi.Services.Gcp
     {
         private const string ListObjectOptionsFields = "items(name,timeCreated),nextPageToken";
 
-        // TODO: must be changed to approximately 10000 after testing
-        private const int ListObjectOptionsPageSize = 25;
-        private const byte CountOfTasksAtOneTime = 10;
+        // TODO: must be changed to approximately 500 after testing
+        private const int ListObjectOptionsPageSize = 50;
 
         private readonly ILogger<GcpImagesStorageSynchronizationService> logger;
         private readonly IImageFilesStorage imagesStorage;
@@ -44,13 +43,12 @@ namespace OutOfSchool.WebApi.Services.Gcp
         {
             try
             {
-                logger.LogDebug("Gcp storage synchronization was started at utc time: {Time}", DateTime.UtcNow);
+                logger.LogDebug("Gcp storage synchronization was started");
 
                 // gcp returns data by local time
                 var dateTime = DateTime.Now.AddMinutes(-1);
 
-                var listsOfObjects = await GetListsOfObjects(cancellationToken).ConfigureAwait(false);
-                var tasks = new List<Task>();
+                var listsOfObjects = await GetListsOfObjects().ConfigureAwait(false);
 
                 await foreach (var objects in listsOfObjects.WithCancellation(cancellationToken))
                 {
@@ -64,28 +62,17 @@ namespace OutOfSchool.WebApi.Services.Gcp
                         .Select(x => x.Name)
                         .ToHashSet();
 
-                    tasks.Add(Task.Run(
-                        async () =>
-                        {
-                            var notAttachedIds = await SynchronizeAll(mappedObjects, cancellationToken).ConfigureAwait(false);
-                            await RemoveNotAttachedIds(notAttachedIds).ConfigureAwait(false);
-                        }, cancellationToken));
-
-                    if (tasks.Count % CountOfTasksAtOneTime == 0)
-                    {
-                        await Task.WhenAll(tasks.GetRange(tasks.Count - CountOfTasksAtOneTime, CountOfTasksAtOneTime)).ConfigureAwait(false); // in order to decrease CPU and memory using, works by parts count of 10 tasks
-                    }
+                    var notAttachedIds = await SynchronizeAll(mappedObjects).ConfigureAwait(false);
+                    await RemoveNotAttachedIds(notAttachedIds).ConfigureAwait(false);
                 }
-
-                await Task.WhenAll(tasks).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, "Gcp storage synchronization was interrupted by error at utc time: {Time}", DateTime.UtcNow);
+                logger.LogCritical(ex, "Gcp storage synchronization was interrupted by error");
             }
             finally
             {
-                logger.LogDebug("Gcp storage synchronization was finished at utc time: {Time}", DateTime.UtcNow);
+                logger.LogDebug("Gcp storage synchronization was finished");
             }
         }
 
@@ -104,9 +91,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
             };
         }
 
-        private async Task<HashSet<string>> SynchronizeAll(
-            HashSet<string> searchIds,
-            CancellationToken cancellationToken = default)
+        private async Task<HashSet<string>> SynchronizeAll(HashSet<string> searchIds)
         {
             var allSyncFunctions = GetAllSyncFunctions();
 
@@ -122,7 +107,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
             return searchIds;
         }
 
-        private async Task<IAsyncEnumerable<Objects>> GetListsOfObjects(CancellationToken cancellationToken = default)
+        private async Task<IAsyncEnumerable<Objects>> GetListsOfObjects()
         {
             var options = new ListObjectsOptions
             {
@@ -140,10 +125,11 @@ namespace OutOfSchool.WebApi.Services.Gcp
                 try
                 {
                     await imagesStorage.DeleteAsync(id).ConfigureAwait(false);
+                    logger.LogDebug("Image with id = {ImageId} was successfully deleted by synchronizer", id);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Image was not deleted because the storage had thrown exception");
+                    logger.LogError(ex, "Image was not deleted by synchronizer because the storage had thrown exception. Maybe it's already removed by user");
                 }
             }
         }
