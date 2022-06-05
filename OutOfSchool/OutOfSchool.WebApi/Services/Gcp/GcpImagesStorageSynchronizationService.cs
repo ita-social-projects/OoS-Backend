@@ -37,7 +37,21 @@ namespace OutOfSchool.WebApi.Services.Gcp
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.imagesStorage = imagesStorage ?? throw new ArgumentNullException(nameof(imagesStorage));
             this.gcpImagesSyncDataRepository = gcpImagesSyncDataRepository ?? throw new ArgumentNullException(nameof(gcpImagesSyncDataRepository));
+
+            GetAllSyncFunctions = new List<Func<IEnumerable<string>, Task<List<string>>>>
+            {
+                // Entity images
+                gcpImagesSyncDataRepository.GetIntersectWorkshopImagesIds,
+                gcpImagesSyncDataRepository.GetIntersectProviderImagesIds,
+
+                // Entity cover images
+                gcpImagesSyncDataRepository.GetIntersectWorkshopCoverImagesIds,
+                gcpImagesSyncDataRepository.GetIntersectTeacherCoverImagesIds,
+                gcpImagesSyncDataRepository.GetIntersectProviderCoverImagesIds,
+            };
         }
+
+        private List<Func<IEnumerable<string>, Task<List<string>>>> GetAllSyncFunctions { get; }
 
         public async Task SynchronizeAsync(CancellationToken cancellationToken = default)
         {
@@ -76,26 +90,9 @@ namespace OutOfSchool.WebApi.Services.Gcp
             }
         }
 
-        private List<Func<IEnumerable<string>, Task<List<string>>>> GetAllSyncFunctions()
-        {
-            return new List<Func<IEnumerable<string>, Task<List<string>>>>
-            {
-                // Entity images
-                gcpImagesSyncDataRepository.GetIntersectWorkshopImagesIds,
-                gcpImagesSyncDataRepository.GetIntersectProviderImagesIds,
-
-                // Entity cover images
-                gcpImagesSyncDataRepository.GetIntersectWorkshopCoverImagesIds,
-                gcpImagesSyncDataRepository.GetIntersectTeacherCoverImagesIds,
-                gcpImagesSyncDataRepository.GetIntersectProviderCoverImagesIds,
-            };
-        }
-
         private async Task<HashSet<string>> SynchronizeAll(HashSet<string> searchIds)
         {
-            var allSyncFunctions = GetAllSyncFunctions();
-
-            foreach (var syncFunction in allSyncFunctions)
+            foreach (var syncFunction in GetAllSyncFunctions)
             {
                 var syncResult = await syncFunction(searchIds).ConfigureAwait(false);
                 if (syncResult != null)
