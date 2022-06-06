@@ -207,8 +207,7 @@ namespace OutOfSchool.IdentityServer.Services
                 await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
                 try
                 {
-                    var providerAdmin = context.ProviderAdmins
-                        .SingleOrDefault(pa => pa.UserId == providerAdminId);
+                    var providerAdmin = GetProviderAdmin(providerAdminId);
 
                     if (providerAdmin is null)
                     {
@@ -279,19 +278,22 @@ namespace OutOfSchool.IdentityServer.Services
             string requestId)
         {
             var response = new ResponseDto();
-            var user = await userManager.FindByIdAsync(providerAdminId);
 
-            if (user is null)
+            var providerAdmin = GetProviderAdmin(providerAdminId);
+
+            if (providerAdmin is null)
             {
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.NotFound;
 
                 logger.LogError($"ProviderAdmin(id) {providerAdminId} not found. " +
-                            $"Request(id): {requestId}" +
+                                $"Request(id): {requestId}" +
                                 $"User(id): {userId}");
 
                 return response;
             }
+
+            var user = await userManager.FindByIdAsync(providerAdminId);
 
             var executionStrategy = context.Database.CreateExecutionStrategy();
             return await executionStrategy.Execute(BlockProviderAdminOperation).ConfigureAwait(false);
@@ -334,6 +336,9 @@ namespace OutOfSchool.IdentityServer.Services
                         return response;
                     }
 
+                    await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Block)
+                        .ConfigureAwait(false);
+
                     await transaction.CommitAsync().ConfigureAwait(false);
 
                     logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully blocked by " +
@@ -358,5 +363,8 @@ namespace OutOfSchool.IdentityServer.Services
                 }
             }
         }
+
+        private ProviderAdmin GetProviderAdmin(string providerAdminId)
+            => context.ProviderAdmins.SingleOrDefault(pa => pa.UserId == providerAdminId);
     }
 }
