@@ -33,6 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IMapper> mapper;
         private Mock<INotificationService> notificationService;
         private Mock<IProviderAdminService> providerAdminService;
+        private Mock<IChangesLogService> changesLogService;
 
         private Mock<IOptions<ApplicationsConstraintsConfig>> applicationsConstraintsConfig;
 
@@ -44,6 +45,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             childRepositoryMock = new Mock<IEntityRepository<Child>>();
             notificationService = new Mock<INotificationService>();
             providerAdminService = new Mock<IProviderAdminService>();
+            changesLogService = new Mock<IChangesLogService>();
 
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<ApplicationService>>();
@@ -66,7 +68,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 mapper.Object,
                 applicationsConstraintsConfig.Object,
                 notificationService.Object,
-                providerAdminService.Object);
+                providerAdminService.Object,
+                changesLogService.Object);
         }
 
         [Test]
@@ -375,6 +378,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd");
             var changedEntity = WithApplication(id);
+            var userId = Guid.NewGuid().ToString();
 
             var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
 
@@ -388,13 +392,13 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Returns(applicationsMock.Object)
                 .Verifiable();
 
-            applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>())).ReturnsAsync(changedEntity);
+            applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>())).ReturnsAsync(changedEntity);
             applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
             mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id });
             var expected = new ApplicationDto() {Id = id};
 
             // Act
-            var result = await service.Update(expected).ConfigureAwait(false);
+            var result = await service.Update(expected, userId).ConfigureAwait(false);
 
             // Assert
             AssertApplicationsDTOsAreEqual(expected, result);
@@ -404,6 +408,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void UpdateApplication_WhenThereIsNoApplicationWithId_ShouldTrowArgumentException()
         {
             // Arrange
+            var userId = Guid.NewGuid().ToString();
             var application = new ApplicationDto()
             {
                 Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8bd"),
@@ -413,14 +418,15 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentException>(
-                async () => await service.Update(application).ConfigureAwait(false));
+                async () => await service.Update(application, userId).ConfigureAwait(false));
         }
 
         [Test]
         public void UpdateApplication_WhenModelIsNull_ShouldThrowArgumentException()
         {
             // Act and Assert
-            service.Invoking(s => s.Update(null)).Should().ThrowAsync<ArgumentException>();
+            var userId = Guid.NewGuid().ToString();
+            service.Invoking(s => s.Update(null, userId)).Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]

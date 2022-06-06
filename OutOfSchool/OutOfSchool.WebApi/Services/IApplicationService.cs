@@ -80,8 +80,9 @@ namespace OutOfSchool.WebApi.Services
         /// Update entity.
         /// </summary>
         /// <param name="applicationDto">Application entity to update.</param>
+        /// <param name="userId">Id of the user that requests update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<ApplicationDto> Update(ApplicationDto applicationDto);
+        Task<ApplicationDto> Update(ApplicationDto applicationDto, string userId);
 
         /// <summary>
         /// Delete entity.

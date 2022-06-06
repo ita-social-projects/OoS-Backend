@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +28,21 @@ namespace OutOfSchool.Services.Repository
         /// The task result contains the entity that was updated.</returns>
         /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
-        public new async Task<Application> Update(Application entity)
+        public new Task<Application> Update(Application entity)
+        {
+            return Update(entity, null);
+        }
+
+        /// <summary>
+        /// Update information about element.
+        /// </summary>
+        /// <param name="entity">Entity to update.</param>
+        /// <param name="onSaveChanges">Called before SaveChangesAsync method is invoked.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the entity that was updated.</returns>
+        /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        public async Task<Application> Update(Application entity, Action<Application> onSaveChanges)
         {
             var application = dbSet.Find(entity.Id);
 
@@ -37,7 +50,9 @@ namespace OutOfSchool.Services.Repository
 
             dbContext.Entry(application).State = EntityState.Modified;
 
-            await this.dbContext.SaveChangesAsync();
+            onSaveChanges?.Invoke(application);
+
+            await dbContext.SaveChangesAsync();
             return entity;
         }
 
