@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Util.FakeImplementations
 {
     public class FakeImagesStorage : IImageFilesStorage
     {
-        public Task<IAsyncEnumerable<Objects>> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null)
+        public IAsyncEnumerable<Objects> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null)
         {
             throw new NotSupportedException();
         }
