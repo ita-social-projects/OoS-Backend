@@ -1,0 +1,1020 @@
+﻿USE out_of_school;
+
+#delete from directioninstitutionhierarchy;
+#delete from institutionfielddescriptions;
+#delete from institutionhierarchies where HierarchyLevel = 4;
+#delete from institutionhierarchies where HierarchyLevel = 3;
+#delete from institutionhierarchies where HierarchyLevel = 2;
+#delete from institutionhierarchies where HierarchyLevel = 1;
+#delete from institutions;
+
+#Institutions
+
+INSERT INTO institutions (Id, Title, NumberOfHierarchyLevels)
+VALUES (UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), "МОН", 2)
+, (UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), "МКІП", 4)
+, (UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), "Мінспорт", 2)
+, (UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), "Інше", 1);
+
+#InstitutionHierarchies
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("ca358dfc-fe24-41b6-9f58-8a97819fa276"), "Науково-технічний напрям", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("cf9f9a91-c2d8-4e51-8889-2d1e82ad2b20"), "Початково-технічний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("ca358dfc-fe24-41b6-9f58-8a97819fa276"))
+, (UUID_TO_BIN("0c6208ad-0375-433b-893a-55a0a8d8e3ab"), "Спортивно-технічний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("ca358dfc-fe24-41b6-9f58-8a97819fa276"))
+, (UUID_TO_BIN("260f0232-a004-4fd7-a2a1-57fbac948f08"), "Предметно-технічний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("ca358dfc-fe24-41b6-9f58-8a97819fa276"))
+, (UUID_TO_BIN("bc616135-8d41-4af8-88a8-b5189099ebff"), "Інформаційно-технічний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("ca358dfc-fe24-41b6-9f58-8a97819fa276"))
+, (UUID_TO_BIN("9e1a5ba4-f60d-4b2b-ba81-46daa02fe071"), "Художньо-технічний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("ca358dfc-fe24-41b6-9f58-8a97819fa276"))
+, (UUID_TO_BIN("e0743d18-f29b-4dfd-b211-604a09634b40"), "Виробничо-технічний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("ca358dfc-fe24-41b6-9f58-8a97819fa276"))
+, (UUID_TO_BIN("1072b427-4c19-4868-a46c-be65513ce8c0"), "Художньо-естетичний", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("aeb9194a-5adc-441c-8184-ae4e4f401e8b"), "Музичний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("1072b427-4c19-4868-a46c-be65513ce8c0"))
+, (UUID_TO_BIN("ef72d171-da4c-4199-9041-29f63176bbdc"), "Вокальний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("1072b427-4c19-4868-a46c-be65513ce8c0"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("f0aabc1f-3dfd-4f53-aa59-6f50da1538a3"), "Хореографічний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("1072b427-4c19-4868-a46c-be65513ce8c0"))
+, (UUID_TO_BIN("221c6488-5f74-4992-80d9-25ebd01678b9"), "Театральний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("1072b427-4c19-4868-a46c-be65513ce8c0"))
+, (UUID_TO_BIN("217b8796-dee6-4ee5-9ef9-59a7926819b4"), "Цирковий", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("1072b427-4c19-4868-a46c-be65513ce8c0"))
+, (UUID_TO_BIN("6febd768-6d30-42c6-b0e3-ca1dd51ab1bb"), "Образотворчий", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("1072b427-4c19-4868-a46c-be65513ce8c0"))
+, (UUID_TO_BIN("bcb10b12-4c1f-4417-8f6a-64285508b5c4"), "Декоративно-ужитковий", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("1072b427-4c19-4868-a46c-be65513ce8c0"))
+, (UUID_TO_BIN("63c3cd68-6a38-465d-a29a-6c2daf00c2eb"), "Фото- та кіномистецтва", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("1072b427-4c19-4868-a46c-be65513ce8c0"))
+, (UUID_TO_BIN("a48de359-a1c3-48b4-ae1a-9e9a6e011870"), "Еколого-натуралістичний", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("0fa0ee70-e68f-47c3-9326-918864f00122"), "Лісівничий", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("a48de359-a1c3-48b4-ae1a-9e9a6e011870"))
+, (UUID_TO_BIN("8e9f9a27-75c1-42a5-8716-a52c9c14b268"), "Еколого-біологічний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("a48de359-a1c3-48b4-ae1a-9e9a6e011870"))
+, (UUID_TO_BIN("32b083a0-26c1-4c11-91b0-1f4d586b293f"), "Туристсько-краєзнавчий", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("f735c1c4-738b-4418-9902-972a2af7dc0f"), "Туристсько-краєзнавчий", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("32b083a0-26c1-4c11-91b0-1f4d586b293f"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("c4ffdd34-b08d-4e1b-a682-8736a9f72a89"), "Туристсько-спортивний", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("32b083a0-26c1-4c11-91b0-1f4d586b293f"))
+, (UUID_TO_BIN("b191719b-493b-480b-a78d-247c54aea663"), "Військово-патріотичний", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"), "Дослідницько-експериментальний", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("59cb07de-c8f7-4d0f-a8cc-995f928c3bc6"), "Наукове відділення економіки", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"))
+, (UUID_TO_BIN("6bcf8df9-27d6-4854-9f24-22fe6715793c"), "Наукове відділення математики", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"))
+, (UUID_TO_BIN("34b4abd1-7d1a-495e-980b-eac806e005d3"), "Наукове відділення фізики і астрономії", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"))
+, (UUID_TO_BIN("ff868830-9ab6-46a3-a25f-e7523b60bc55"), "Наукове відділення «Філософії  та суспільствознавства»", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"))
+, (UUID_TO_BIN("7c29f5e0-b6b0-4e8f-b053-10ef5e5d0c66"), "Наукове відділення наук про Землю", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"))
+, (UUID_TO_BIN("f299977d-0e1b-46f5-a23e-750fcffbd746"), "Наукове відділення історії", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"))
+, (UUID_TO_BIN("5faeeb10-8c6e-4046-a03c-2bbb22f9f2be"), "Наукове відділення мовознавства", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("b6acb90d-4c3f-4ec7-9eef-a72ff1a127b7"), "Наукове відділення хімії та біології", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"))
+, (UUID_TO_BIN("09bb0d6f-1d90-4e6b-b5fd-36e5ac3923f1"), "Наукове відділення технічних наук", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"))
+, (UUID_TO_BIN("d390f389-e689-492c-801b-d9710c3e27d9"), "Наукове відділення літературознавства, фольклористики та мистецтвознавства", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("7f9b4be5-2513-44fc-abb6-1f534b1bf928"))
+, (UUID_TO_BIN("153b28ff-13fc-4ab9-8c48-a98ef07f186c"), "Пластово-Скаутський", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("83254574-ed5d-49b3-be4c-12af0741bbf4"), "Пласт", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("153b28ff-13fc-4ab9-8c48-a98ef07f186c"))
+, (UUID_TO_BIN("b8975692-5816-40a6-8e1c-8603270e0054"), "Скаутинг", 2, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), UUID_TO_BIN("153b28ff-13fc-4ab9-8c48-a98ef07f186c"))
+, (UUID_TO_BIN("d213186a-d4ad-4215-9917-5b8f6434bdbf"), "Фізкультурно-спортивний або спортивний", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("29b7ced1-f171-4303-b0d1-b7bcbdee8e40"), "Бібліотечно-бібліографічний", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("80ccf63f-d85b-4068-af6b-ae9c44b525d7"), "Соціально-реабілітаційний", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("05d54c28-33a9-468e-9d6c-5b6944c9801a"), "Оздоровчий", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null);
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("c5873f92-5cc7-4698-ba46-0b4c08075fdc"), "Гуманітарний", 1, UUID_TO_BIN("a64f0d46-549d-4ba4-8ef3-4f7716ea24d2"), null)
+, (UUID_TO_BIN("b9ba8140-0f43-441d-8642-7e2063edb93f"), "Мистецький", 1, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), null)
+, (UUID_TO_BIN("595f62da-bea5-4781-9d39-7cbd8e5644c7"), "Музичний", 2, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("b9ba8140-0f43-441d-8642-7e2063edb93f"))
+, (UUID_TO_BIN("e83a9943-04fe-478f-9f6f-2de4a10b75f9"), "Фортепіано", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("595f62da-bea5-4781-9d39-7cbd8e5644c7"))
+, (UUID_TO_BIN("5985eb00-7ffc-48bc-bddb-24ced5bdc73d"), "Клас фортепіано", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("e83a9943-04fe-478f-9f6f-2de4a10b75f9"))
+, (UUID_TO_BIN("a99cd73e-e117-41ba-8323-3a40296613e6"), "Клас електронних клавішних (синтезатор)", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("e83a9943-04fe-478f-9f6f-2de4a10b75f9"))
+, (UUID_TO_BIN("4c3197ba-d31f-43da-9179-29d1cb8fe31c"), "Народних інструментів", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("595f62da-bea5-4781-9d39-7cbd8e5644c7"))
+, (UUID_TO_BIN("5ad6d969-3dac-48aa-b4cc-cf48a638cb46"), "Клас бандури", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("4c3197ba-d31f-43da-9179-29d1cb8fe31c"))
+, (UUID_TO_BIN("3d48b8d1-7f21-40c2-a221-8677e2c3a047"), "Клас цимбал", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("4c3197ba-d31f-43da-9179-29d1cb8fe31c"))
+, (UUID_TO_BIN("0da9a1e0-56f7-4460-8445-cc479ef31aa7"), "Клас домри", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("4c3197ba-d31f-43da-9179-29d1cb8fe31c"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("5300bc35-cfcc-4e93-8dba-30e495778bd9"), "Клас баяну", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("4c3197ba-d31f-43da-9179-29d1cb8fe31c"))
+, (UUID_TO_BIN("9ce0ba18-35f9-4fb0-aac3-88343fd51418"), "Клас акордеону", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("4c3197ba-d31f-43da-9179-29d1cb8fe31c"))
+, (UUID_TO_BIN("6a4d56a8-72d5-4252-b931-66a5708ecba7"), "Духових та ударних інструментів", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("595f62da-bea5-4781-9d39-7cbd8e5644c7"))
+, (UUID_TO_BIN("ec756fd1-91c9-4803-b635-d5dd83bcdf47"), "Клас ударних", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("6a4d56a8-72d5-4252-b931-66a5708ecba7"))
+, (UUID_TO_BIN("8b903004-695a-4232-8be3-b55eb6de3598"), "Клас барабану", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("6a4d56a8-72d5-4252-b931-66a5708ecba7"))
+, (UUID_TO_BIN("f6fece94-289a-46ae-9f24-6b4be122b7e1"), "Клас флейти", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("6a4d56a8-72d5-4252-b931-66a5708ecba7"))
+, (UUID_TO_BIN("d75c61d2-9051-42ce-886f-0e0aef3ea759"), "Клас кларнету", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("6a4d56a8-72d5-4252-b931-66a5708ecba7"))
+, (UUID_TO_BIN("912f60ae-0fac-4fb3-ae5c-d217ffebc364"), "Клас саксофону", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("6a4d56a8-72d5-4252-b931-66a5708ecba7"))
+, (UUID_TO_BIN("43fc0fcf-ce04-44f9-9028-2553fa6505e1"), "Клас ксилофону", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("6a4d56a8-72d5-4252-b931-66a5708ecba7"))
+, (UUID_TO_BIN("8b28a2ac-e0a1-4b8a-b901-eac8dae4be2e"), "Клас труби", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("6a4d56a8-72d5-4252-b931-66a5708ecba7"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("d6558b67-1d82-4064-a233-50e327bc8d47"), "Струнних та смичкових інструменти", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("595f62da-bea5-4781-9d39-7cbd8e5644c7"))
+, (UUID_TO_BIN("df3b53c0-033a-4a78-ac13-946159e702ae"), "Клас скрипки", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("d6558b67-1d82-4064-a233-50e327bc8d47"))
+, (UUID_TO_BIN("3e35deb3-ab73-4cf2-b487-cb111fadb39a"), "Клас віолончелі", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("d6558b67-1d82-4064-a233-50e327bc8d47"))
+, (UUID_TO_BIN("fa70dc78-5090-4b86-9000-76190f3a0702"), "Клас арфи", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("d6558b67-1d82-4064-a233-50e327bc8d47"))
+, (UUID_TO_BIN("4ccd4eeb-34c7-4df0-9bcf-95f6be7ff7c6"), "Клас електрогітари", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("d6558b67-1d82-4064-a233-50e327bc8d47"))
+, (UUID_TO_BIN("528650d8-dff0-48c8-a50d-c2b190f6d319"), "Клас бас-гітари", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("d6558b67-1d82-4064-a233-50e327bc8d47"))
+, (UUID_TO_BIN("54b0a909-41fe-47d6-9052-3e8283a4927a"), "Клас гітари", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("d6558b67-1d82-4064-a233-50e327bc8d47"))
+, (UUID_TO_BIN("c290aced-9c80-47ec-aee4-bb8232076bcb"), "Хорового мистецтва", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("595f62da-bea5-4781-9d39-7cbd8e5644c7"))
+, (UUID_TO_BIN("436a910b-bc7a-4ac3-9ab3-abe666709ed2"), "Клас хорового співу", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c290aced-9c80-47ec-aee4-bb8232076bcb"))
+, (UUID_TO_BIN("65a41acf-c0af-440b-989d-81fff83cddd8"), "Сольного співу", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("595f62da-bea5-4781-9d39-7cbd8e5644c7"))
+, (UUID_TO_BIN("9645eb8f-64c1-41d0-8621-3820794e992d"), "Клас естрадного співу", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("65a41acf-c0af-440b-989d-81fff83cddd8"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("4e970fc2-0eca-4e9c-aef0-c7cf33d56491"), "Клас народного співу", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("65a41acf-c0af-440b-989d-81fff83cddd8"))
+, (UUID_TO_BIN("8db3a72b-1040-4d05-a2e3-2a51bd461a6c"), "Клас академічного співу", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("65a41acf-c0af-440b-989d-81fff83cddd8"))
+, (UUID_TO_BIN("e2000030-d134-4037-ac52-ebd05443502d"), "Фольклорного мистецтва", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("595f62da-bea5-4781-9d39-7cbd8e5644c7"))
+, (UUID_TO_BIN("086bb677-3962-426f-8ed9-e87e0b701365"), "Клас музичного фольклору", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("e2000030-d134-4037-ac52-ebd05443502d"))
+, (UUID_TO_BIN("1f32e747-9e2b-453f-8e64-b4aca6b80508"), "Образотворчий", 2, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("b9ba8140-0f43-441d-8642-7e2063edb93f"))
+, (UUID_TO_BIN("ae47a797-329e-4418-acf6-daca06df46a4"), "Художнього мистецтва", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("1f32e747-9e2b-453f-8e64-b4aca6b80508"))
+, (UUID_TO_BIN("5932f8ae-d9a3-49fc-a80d-c13e7d053a6b"), "Клас малювання (рисунок, живопис, композиція)", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("ae47a797-329e-4418-acf6-daca06df46a4"))
+, (UUID_TO_BIN("01a70c8e-b59c-44ca-8deb-512feb11e856"), "Клас ліплення", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("ae47a797-329e-4418-acf6-daca06df46a4"))
+, (UUID_TO_BIN("ab736133-1703-46e4-8769-7e2dfc4dc8af"), "Клас скульптури", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("ae47a797-329e-4418-acf6-daca06df46a4"))
+, (UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"), "Декоративного мистецтва", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("1f32e747-9e2b-453f-8e64-b4aca6b80508"))
+, (UUID_TO_BIN("3f0a6f9f-1363-403a-bd02-7ccd5abd2c3b"), "Клас вишивки", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("1b829a32-68ae-49f6-a151-cf3a8d1920a4"), "Клас витинанки", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("f62ce34f-5673-4ea7-97a6-752d02a9e70d"), "Клас Петриківського розпису", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("ced5b917-55a2-4b62-a8b3-ae1c1d392ecd"), "Клас декоративних розписів України", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("a978104e-13a3-463b-a89b-ee3bd4197d8b"), "Клас ткацтва", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("e7c56985-0855-4ebc-a46b-5fd9ae710c30"), "Клас килимарства", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("1b364ca2-ed32-4703-a00e-d590ca524e40"), "Клас гончарства", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("160c65c8-e4c1-4cf8-9033-e4b1c93687f1"), "Клас кераміки", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("90c86ce3-1c0e-48e1-82bf-dd1e59abd22c"), "Клас різьблення", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("31cadc6c-513c-4798-987c-582c4fed4c38"), "Клас лозоплетіння", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("a8aa98c5-b146-47b8-be45-bbd856f55238"), "Клас паперопластика", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("1a3f4bfd-7bdf-40b5-86e7-7e5ce64a1929"), "Клас бісероплетіння", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("81a8cacf-0f9f-4b1c-9788-73ab60217dc5"), "Клас виготовлення народних ляльок", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("2dafc5cb-a8fb-4103-b667-1468f6d4cf47"), "Клас батику", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c2653cee-ed5c-41ea-8de3-1aca7a9895b9"))
+, (UUID_TO_BIN("e3f88b45-05e0-4f01-a841-c35d5f574743"), "Хореографічний", 2, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("b9ba8140-0f43-441d-8642-7e2063edb93f"))
+, (UUID_TO_BIN("f8e00cb2-9e45-4b40-900e-095ce8df4fe6"), "Хореографічний", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("e3f88b45-05e0-4f01-a841-c35d5f574743"))
+, (UUID_TO_BIN("3cc860ab-d426-481a-8128-53ac70bae046"), "Клас народно-сценічного танцю", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("f8e00cb2-9e45-4b40-900e-095ce8df4fe6"))
+, (UUID_TO_BIN("74dc85b1-d489-4b4b-8287-595058be01c2"), "Клас бального танцю", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("f8e00cb2-9e45-4b40-900e-095ce8df4fe6"))
+, (UUID_TO_BIN("11ccf3e1-ccd2-4d77-8b3a-93247d60848a"), "Клас класичного танцю", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("f8e00cb2-9e45-4b40-900e-095ce8df4fe6"))
+, (UUID_TO_BIN("2906fe18-2830-4415-8ee9-7fa04b5e9fda"), "Клас сучасного танцю", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("f8e00cb2-9e45-4b40-900e-095ce8df4fe6"))
+, (UUID_TO_BIN("3082d61d-fd01-403d-b38c-668667f8389e"), "Кіно", 2, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("b9ba8140-0f43-441d-8642-7e2063edb93f"))
+, (UUID_TO_BIN("b2979355-2378-493c-a2c1-ab721fd7f902"), "Кіно та мультимедії", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("3082d61d-fd01-403d-b38c-668667f8389e"))
+, (UUID_TO_BIN("826c5474-6dc6-4903-a25f-ce9e6bfc754a"), "Клас кіномистецтва", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("b2979355-2378-493c-a2c1-ab721fd7f902"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("d352181c-06e9-45a8-a819-9a5a4ed4fd6f"), "Клас мультимедіа", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("b2979355-2378-493c-a2c1-ab721fd7f902"))
+, (UUID_TO_BIN("3b8d5e47-4315-4aa0-9bf2-c475270c9304"), "Клас анімації", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("b2979355-2378-493c-a2c1-ab721fd7f902"))
+, (UUID_TO_BIN("956b1c43-b3d1-4688-949d-61def7edd79e"), "Театральний", 2, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("b9ba8140-0f43-441d-8642-7e2063edb93f"))
+, (UUID_TO_BIN("34b4c880-35d6-4bb5-9686-4be521aaf448"), "Циркового мистецтво", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("956b1c43-b3d1-4688-949d-61def7edd79e"))
+, (UUID_TO_BIN("6bf579cc-593e-4cc8-ae95-c409150abb9d"), "Цирковий клас", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("34b4c880-35d6-4bb5-9686-4be521aaf448"))
+, (UUID_TO_BIN("c94c6049-3a33-4466-90cf-021c89c718ee"), "Театральне", 3, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("956b1c43-b3d1-4688-949d-61def7edd79e"))
+, (UUID_TO_BIN("ac1e3ba3-961e-432f-9326-fbf1888265f3"), "Клас драматичного театру", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c94c6049-3a33-4466-90cf-021c89c718ee"))
+, (UUID_TO_BIN("70df18fe-2f05-4613-8452-c8b351f2e003"), "Клас музичного театру", 4, UUID_TO_BIN("a3bdce94-c08e-478f-8774-2e45412ed749"), UUID_TO_BIN("c94c6049-3a33-4466-90cf-021c89c718ee"))
+, (UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"), "Олімпійські види спорту", 1, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), null)
+, (UUID_TO_BIN("3ebca00a-f178-4b74-9b23-4d96fdea7181"), "I.001. Бадмінтон", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("77edef98-38c5-489d-b06f-9a16fea4e1da"), "I.002. Баскетбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("9c482d85-59ae-457b-a01e-3ca047963024"), "I.003. Бейсбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("4dae7193-5214-4117-9889-515895e06d87"), "I.004. Біатлон", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("93a2c26a-767f-42fb-80a0-b8d5951d2a83"), "I.005. Бобслей", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("09645fc7-e72e-4002-b3f9-fde8abd9706b"), "I.006. Бокс", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("a4872714-df5c-42f9-9f01-22bc1a81b74d"), "I.007. Боротьба вільна", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("343a23ed-df96-4098-95bb-f3abff7694f4"), "I.008. Боротьба греко-римська", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("e2dba45e-9ddd-418c-8a7b-490c99c9f8a6"), "I.009. Важка атлетика", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("9a66487a-b84a-4b40-9ca8-037b1f9a1e6d"), "I.010. Велосипедний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("b6f4daca-ed90-41c2-9ff1-5b422fcbd038"), "I.011. Веслувальний слалом", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("1436e4e2-8351-462c-9e19-b288b12bac53"), "I.012. Веслування академічне", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("f4b3e67a-355c-4ede-8ecb-b014865ab963"), "I.013. Веслування на байдарках і каное", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("36c5e111-2b20-4756-91ed-20dfc57da6bc"), "I.014. Вітрильний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("0c1ca2d5-a91d-4f75-a89b-ca8240f241ae"), "I.015. Водне поло", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("b8567217-d908-4b15-abe0-39d4a1bb40a5"), "I.016. Волейбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("14a844c7-bc7c-4b95-ab81-f03b613c54a1"), "I.017. Волейбол пляжний", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("bc397453-f16a-4da9-8eb3-af68f637c8e5"), "I.018. Гандбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("9b158186-8bde-41a6-aa39-27b30ad205af"), "I.019. Гімнастика спортивна", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("80655989-77c9-4f45-ab8d-c4f44267affb"), "I.020. Гімнастика художня", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("a02a1b07-4b23-472c-be22-a9945d694728"), "I.021. Гірськолижний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("93f839b5-9fef-4b3f-9244-ecc007d5e303"), "I.022. Гольф", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("d79fe354-129a-4965-8ed7-e27c0186b034"), "I.023. Дзюдо", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("6a02cadd-9d4e-4bcb-be98-863ff5fd6b72"), "I.024. Кінний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("59862c50-03e3-4903-954c-b082fc8b4fff"), "I.025. Ковзанярський спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("12d35761-b6fc-4a42-ba8f-367730fa7100"), "I.026. Кьорлінг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("a23aeaab-e8d0-4b74-ba34-2f4da5b142d0"), "I.027. Легка атлетика", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("f895550e-7c5c-497b-9f19-ab65d8665ea3"), "I.028. Лижне двоборство", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("31258afa-5967-4640-9850-fb2853295526"), "I.029. Лижні гонки", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("0a3e0fe3-aa4a-4bcb-a2b7-3ce08fcc3045"), "I.030. Плавання", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("f31729b9-3d5f-48f4-b0bc-830dd3f7dcbe"), "I.031. Плавання синхронне", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("3a08235c-8497-4430-b387-8d7b204ebb68"), "I.032. Регбі", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("cf7e40fc-fe2b-46b1-a065-14f979c32244"), "I.033. Санний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("34b2c8f5-a064-44fc-a06d-38d23042753e"), "I.034. Сноуборд", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("ceacd3df-fa9e-47c4-90c0-42fe720fc6c2"), "I.035. Софтбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("8fd5a1bb-b01b-454b-812a-44441a16ad45"), "I.036. Стрибки на батуті", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("7b00f595-2257-4092-8532-1b6215c45c20"), "I.037. Стрибки на лижах з трампліна", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("2281d7d6-b992-444c-bf8f-383604fa7a98"), "I.038. Стрибки у воду", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("2c62539e-9262-4579-8467-2aaff4a5a368"), "I.039. Стрільба з лука", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("2bb5703c-9a54-47cc-b0cd-1ca4337bb452"), "I.040. Стрільба кульова", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("baf0c989-58df-4e98-9c7c-34be9843bf2a"), "I.041. Стрільба стендова", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("fff14c6a-53a1-4659-86c1-fed0effb6ecb"), "I.042. Сучасне п'ятиборство", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("7fd2d215-6792-4abd-bf27-661ce1a7a22d"), "I.043. Теніс", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("48794484-3e18-4de1-8b28-26916cdfa926"), "I.044. Теніс настільний", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("b45e92c7-f288-4f61-9172-5a16b689d366"), "I.045. Триатлон", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("12668866-ae0a-4622-9938-b1e76fa2b1dc"), "I.046. Тхеквондо (ВТФ)", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("997d4e2d-3220-42d6-9a8f-fcae04f24915"), "I.047. Фехтування", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("6eec3ad7-04dc-4ec5-9ba2-0fd0a0702af2"), "I.048. Фігурне катання на ковзанах", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("e836b55b-8e16-4575-975f-83c498d32e18"), "I.049. Фристайл", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("41c42f29-cc75-49a4-bbb7-a86f47f38c80"), "I.050. Футбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("4eeb060a-67a1-448f-bb7b-12b680a1866e"), "I.051. Хокей з шайбою", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("db07ac14-699a-44d2-8a74-2b4b47d11c9b"), "I.052. Хокей на траві", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("78ed8349-e7c1-4568-b3a6-8bfa833a758b"), "I.053. Шорт-трек", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("e6bb60f7-016d-4fde-98a2-759f7cc08ce4"), "I.055. Карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("c4a7e1b8-3bee-467b-a3fa-1610ea79055e"), "I.056. Скелелазіння", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("2f5dee7f-4e70-4f51-a206-db8d4737a7cc"))
+, (UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"), "Неолімпійські види спорту", 1, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), null)
+, (UUID_TO_BIN("56599248-a331-4d19-bc3e-62e0c148cc61"), "II.001. Авіамодельний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("352829af-bcc2-4e76-aa89-352a87259436"), "II.002. Автомобільний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("8a6d2cb9-9f51-43dd-b0bd-e15e2179d1b0"), "II.003. Автомодельний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("a55c9793-f1cb-4a22-9ae9-c689dcd72809"), "II.004. Айкідо", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("37e6c0ba-76cd-4ca2-be86-7c1b7b740223"), "II.005. Аквабайк", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("68649344-087a-494e-ad03-194258445227"), "II.006. Акробатичний рок-н-рол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("80cdecf0-c4cf-4a95-a355-1cd0672fa087"), "II.007. Альпінізм", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("de732f34-8885-4f86-8940-1885b865d493"), "II.008. Американський футбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("db96e3c8-d432-480a-a814-4b0f5aa6dc49"), "II.009. Армспорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("c966aa30-722e-43f5-bd39-a2e6d044f6d3"), "II.010. Багатоборство тілоохоронців", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("7e520b58-16e0-4bde-8846-62a09f5ded94"), "II.011. Більярдний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("baa6ca83-92dd-4fc5-ab86-6e606c76a364"), "II.012. Богатирське багатоборство", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("12c1d75f-6dcb-4e79-bed9-a569ce00f8d9"), "II.013. Бодібілдинг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("63e3919a-6b55-43e5-8679-8b1011c291e9"), "II.014. Бойове самбо", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("a2be6015-20ca-4cc2-959d-a19dc282ecfb"), "II.015. Боротьба Кураш", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("6fb0860a-0198-4a44-8296-88c0f45360d8"), "II.016. Боротьба на поясах", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("22b143bd-5b1b-46a8-b35a-d4aac153aebb"), "II.017. Боротьба на поясах Алиш", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("c6736e3e-ae9c-40ae-bd80-a9475c405ff8"), "II.018. Боротьба самбо", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("8153756c-13bd-48c7-a5b1-92c9aee97c56"), "II.019. Боулінг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("f054d85d-2626-4fc9-9afc-e74779a8498f"), "II.020. Вейкбординг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("f16f61f6-6cb6-4d40-8425-7e00cfcf1f0f"), "II.021. Вертолітний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("0776f88d-8882-4905-9978-bbebb18ce878"), "II.022. Веслування на човнах \"Дракон\"", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("866a8995-4ab9-4717-a86a-c3f53fc709f3"), "II.023. Військово-спортивні багатоборства", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("d75df0c1-cf04-46cd-95a2-a518a17de315"), "II.024. Воднолижний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("21e0f7e0-b3a4-48e8-8147-3668bda9dc9f"), "II.025. Водно-моторний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("8141c6b8-aaae-4b90-9c93-c90f4b14b941"), "II.026. Гирьовий спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("7547e144-c143-40ab-a43f-889f88f3306d"), "II.027. Го", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("1a9378bf-a055-47ed-886a-2eca594e4bda"), "II.028. Годзю-рю карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("dfbf98e0-56d2-4bf2-997d-9937294738ff"), "II.029. Голубиний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("f600c3dd-06c3-4065-8328-a90b0e6d3fba"), "II.030. Городковий спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("4c68b0ca-4721-49f5-8e77-b96713aad301"), "II.131. Дартс", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("491d4765-6169-432d-9257-37d6d762c4c1"), "II.032. Дельтапланерний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("922f711a-992a-4f19-a489-8df0fcc9b689"), "II.033. Джиу-джитсу", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("13dcded2-e5ae-4acc-9138-9fde892c473d"), "II.034. Естетична групова гімнастика", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("83497a7e-f652-4065-b33c-f53768911129"), "II.035. Змішані єдиноборства (ММА)", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("c5e815c5-3f13-4078-8cd5-99d60e243483"), "II.036. Карате JKA WF", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("c929a7b3-1609-4675-b8bf-f389593e60fe"), "II.037. Карате JKS", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("53563f15-80a6-4074-a8c3-d365ed95e4ff"), "II.038. Карате WKC", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("b1dd7bf4-cf78-4eec-9e04-2d4815617ea2"), "II.040. Кікбоксинг WKA", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("554a4b96-9fb7-42d1-81bf-a32fe2efe8ae"), "II.041. Кікбоксинг WPKA", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("63659317-569b-4a3c-ad7a-449dbce52ecb"), "II.042. Кікбоксинг WAKO", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("50f0ff40-8233-4cb7-9543-2703bc32b83e"), "II.043. Кікбоксинг BTKA", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("588e2ec0-3ace-4264-bc70-b566ee58a58c"), "II.044. Кіокушин карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("f876c6ff-9961-41d1-9996-bc6d99057c5e"), "II.045. Кіокушинкай карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("064aae2f-75dd-4617-bcac-c9313aa3a8ff"), "II.046. Кіокушинкайкан карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("b0e310cd-57fb-42fb-91eb-48cb6cac3be7"), "II.047. Козацький двобій", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("c962771b-794f-442b-ae6a-3de5d1b09fe8"), "II.048. Комбат Дзю-Дзюцу", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("aa2b0ed8-6b1a-4c8a-b71c-405bc7ceff00"), "II.049. Косіки карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("88d274dc-78d8-4da7-a9ec-dc48eab35dbe"), "II.050. Кунгфу", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("dd3c6aa2-e8c0-48d6-b5f1-a768068d067d"), "II.051. Літаковий спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("10ce0c70-2433-4a90-88c7-c1fcf4c1ad75"), "II.052. Міні-гольф", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("e7a9f204-a8fc-4f0c-9b83-ef434771c341"), "II.053. Морські багатоборства", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("22db885f-75d1-4843-b584-140eba01876a"), "II.054. Мотоциклетний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("170fbdc7-0263-4143-9904-1c1c34d18b46"), "II.055. Панкратіон", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("dd430b75-3635-4436-8d48-515fccbe7ecc"), "II.056. Парапланерний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("fee0c69f-b3fe-4e50-95f7-e240eb13152a"), "II.057. Парашутний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("6d822bf8-9709-43cc-9f03-3adab9c5b70b"), "II.058. Пауерліфтинг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("143542c1-9d17-48c8-bde6-a7e5655fd685"), "II.059. Пейнтбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("cb517fbc-7e94-4916-a3a5-300955f2ba41"), "II.060. Перетягування канату", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("f86dd50b-04b5-4aec-a2d5-5cb47c8cf888"), "II.061. Петанк", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("07b5e200-7cce-4296-a399-443df7d1f265"), "II.062. Підводний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("2533e208-97ca-4e6d-ab56-e9636c137cc4"), "II.063. Планерний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("f3e337a5-d32f-4222-a361-f2406b004fc7"), "II.064. Пляжний гандбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("691b9f59-76e3-40ce-8285-f306319cf11f"), "II.065. Пляжний футбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("ad2c04a2-d39b-4b58-bd23-2cdf91eac153"), "II.066. Повітроплавальний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("7952c4e3-bc58-4e3e-9384-1918cdb65010"), "II.067. Пожежно-прикладний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("84a14613-134c-4f6c-96f1-f3f1f052efc7"), "II.068. Поліатлон", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("58ed3cce-1b87-44a4-a921-1a117a9a6fb4"), "II.069. Професійний бокс", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("6e60bfa8-e7c2-447e-9edf-a85f4293d9a3"), "II.070. Радіоспорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("f8bd2984-701e-4a44-ad6f-c910dcd785bb"), "II.071. Ракетомодельний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("25619134-3f6f-4eb8-9784-03a6ae8db20c"), "II.072. Регбіліг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("e343e971-7e4a-4e1f-98da-1c92d55d3e22"), "II.073. Риболовний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("d53d1c27-f321-4493-a515-cf7b7f7f6362"), "II.074. Роликовий спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("9363c8a9-577d-441b-9335-fe32a10ef24a"), "II.075. Рукопашний бій", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("9b6b1078-d6f9-4fff-8f6a-9ef454980f77"), "II.076. Сквош", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("3a44b7b0-20f3-42c5-a3c4-3146682671f4"), "II.078. Спорт із собаками", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("ada7213f-4466-4dc6-9ef4-fb0f453796f0"), "II.079. Спорт надлегких літальних апаратів", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("275bace6-4890-4e44-8bc6-be953c282f42"), "II.080. Спортивна аеробіка", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("2b831a6a-8e00-40b2-8edf-65b91300a881"), "II.081. Спортивна акробатика", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("ff29dd31-b041-482e-89dc-35e4ffbb3282"), "II.082. Спортивне орієнтування", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("92448a1c-f18c-4631-85e7-5008f9831569"), "II.083. Спортивний бридж", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("9b8cb54a-dfe8-46f7-b913-2e321847c0fe"), "II.084. Спортивний туризм", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("642d691a-3a2d-4d0b-8b22-aeb004c711aa"), "II.085. Спортивні танці", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("baeb538e-942e-4644-a946-7e0e6f00e316"), "II.086. Спортінг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("d4ce564d-0f9f-45b4-9e60-099caee617fc"), "II.088. Стронгмен", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("250c2983-0a7d-4947-94a6-8c219b8ac36d"), "II.089. Судномодельний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("09252d62-5e09-4560-8a75-9f2a90fedeb1"), "II.090. Сумо", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("77bd6fe5-6792-49f5-a9f1-c0a6fe4e0c0f"), "II.091. Таеквондо (ІТФ)", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("8a80ccd4-2305-4c03-a375-e15aa4e98714"), "II.092. Таїландський бокс Муей Тай", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("7447ed4d-c5b7-4b67-bc4a-f4a337e55bb4"), "II.093. Танцювальний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("8b654c3e-1f96-44ec-af95-77ff72791ae5"), "II.094. Традиційне карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("5745fbcc-d977-48a8-8723-be9a62192630"), "II.095. Українська боротьба на поясах", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("4b6a9acf-c518-484a-8d48-c5ffeac6a554"), "II.096. Український рукопаш \"Спас\"", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("696c5ee4-61d9-4fd1-a079-a0d4c57497af"), "II.097. Універсальний бій", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("a7309849-3ac6-4253-91c0-44541752c21e"), "II.098. Ушу", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("3cef2ec6-14a8-4126-9fa2-5dc4255033ac"), "II.099. Фітнес", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("0db6e2be-2f74-40eb-b804-18efec57134f"), "II.100. Флорбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("793f4edb-cfc9-41a5-8215-7ffb3dbd0f07"), "II.101. Французький бокс Сават", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("b15cdac8-0298-4fd5-af5b-82f8dd7270b8"), "II.102. Фрі-файт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("35b3d5cf-73b5-45fb-9061-1483656a34ad"), "II.103. Фунакоші шотокан карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("d04a156e-3b92-43ca-894f-9d7f5acf8021"), "II.104. Футзал", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("466951ea-0dde-4d2e-afc2-de7616844c6f"), "II.105. Хортинг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("12733af2-26eb-4ca9-9e33-12e5f6373838"), "II.106. Черліденг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("d148a48c-8410-49d9-818f-a7c5c34c87f3"), "II.107. Шахи", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("85d6b75e-b72a-46b8-9313-60eaefc94233"), "II.108. Шашки", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("61b69e51-25e8-4f96-b886-0a83702bbb54"), "II.109. Шотокан карате-до С. К. І. Ф", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("3a066a7e-3bc3-47e0-a4c0-4bab6cad53b7"), "II. 110. Практична стрільба", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("44b0e1f7-1871-4561-9ecf-92a22ba1d429"), "II.111. Кйокушінкаі карате унія", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("b2f99e76-0e50-4597-b16b-c4927191b530"), "II.112. Спорт з літаючим диском", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("9176bcbe-a3d0-438f-8c7a-b461db016837"), "II.113. Середньовічний бій", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("fe5cd05e-e3cf-4cc7-a159-647b5e782b7f"), "II.114. Кікбоксинг \"ІСКА", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("92ea6c66-0b95-45e4-832c-9c11373b6729"), "II.115. Комбат самозахист ІСО", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("10a58355-843e-45a5-9fc1-17b7b545c7d7"), "II.119. Спортивний покер", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("daa49909-3254-45a0-b5b7-3811420e2dd6"), "II.121. Кануполо", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("30c14673-fcd5-43b5-910a-866292e3e2f0"), "II.122. Кіберспорт (електронний спорт)", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("3b774b16-5087-4862-9da9-bf7cb318b026"), "II.123. Кіокушин БуДо карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("b941b235-8704-4522-815e-4f5a43983d92"), "II. 124. Поло", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("b17b373c-66fc-425d-97bc-195e5a19ca51"), "II. 125. Таеквон-До", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("18ac7913-d9df-4e62-ac83-08820aefcfcb"))
+, (UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"), "Види спорту осіб з інвалідністю з ураженням опорно-рухового апарату, вадами зору, слуху та розумового і фізичного розвитку", 1, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), null)
+, (UUID_TO_BIN("d8b37845-abb5-4e18-9609-c3fd8cf8e7a1"), "III.001. Армспорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("13c6d8b4-9f40-4196-9b82-1e436d8bfbb6"), "III.002. Бадмінтон", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("791c179d-7d16-4a5d-bf3d-47e16401d12b"), "III.003. Баскетбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("92ae2576-e130-49aa-919d-866157e702f7"), "III.004. Баскетбол на візках", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("41017df9-6788-4255-873c-9e437a4236f0"), "III.005. Біатлон", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("fe209fa4-2f9c-4452-b2e0-bf6e4bbee9f3"), "III.006. Більярдний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("bffb5cef-03d2-42d4-a197-c110d340fc46"), "III.007. Боротьба вільна", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("cee3c8dc-e762-4b4c-8b41-bcb73f6f64a6"), "III.008. Боротьба греко-римська", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("c77ce966-950b-4120-a0be-7678fd696d8a"), "III.009. Боулінг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("2b9048db-5f3f-47d7-b256-7ba62449b699"), "III.010. Бочча", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("cc77966d-8ed6-466c-ae00-93d7467e5ecb"), "III.011. Велосипедний спорт-трек", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("fff45671-372e-4253-8416-46322758e466"), "III.012. Велосипедний спорт-шосе", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("23482f0f-2334-4216-bdec-a72d66aa9049"), "III.013. Веслування академічне", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("f2860aea-63a6-4932-92fb-7a5d6bb89f4c"), "III.014. Вітрильний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("c25549af-b521-48a4-8d6c-116b3d48c5c0"), "III.015.Водне поло", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("e701b654-6328-4590-8ea7-fc4ee41e8a75"), "III.016. Волейбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("5ebca633-66ae-4fde-a75b-8f92bf68f14c"), "III.017. Волейбол сидячи", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("5e0e094e-4c93-4554-9a01-7fd54daab5ad"), "III.018. Гандбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("f0650a16-d010-4748-bb0a-e992af95052e"), "III.019. Гімнастика спортивна", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("20a196dd-4040-4e48-8dfd-87c6c2277e13"), "III.020. Гімнастика художня", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("3c23be47-1800-4869-b842-c8ba6b8ba3f7"), "III.021. Гірськолижний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("789fe2fe-e878-488e-82e4-27a083f7e39d"), "III.022. Голбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("1d8f9781-e16b-497b-95ef-016fc09de8f0"), "III.023. Дзюдо", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("d85cdce9-d604-4a50-8bba-aad8331069c7"), "III.024. Карате", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("aca4c764-e654-42ac-9cb6-4fbfe31d0aee"), "III.025. Керлінг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("bf4bc937-10f9-48ca-9825-fbb79cb416b5"), "III.026. Керлінг на візках", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("69c7372d-34a1-46b4-88e6-f695853174e9"), "III.027. Кінний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("ca14a785-bb6d-4123-b585-838745ec7e1f"), "III.028. Ковзанярський спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("9cdd1a49-14be-40d2-8e4f-0623ec5e00db"), "III.029. Легка атлетика", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("8287f5b5-6011-4f14-b6b5-8e6a8f964b16"), "III.030. Лижні перегони", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("aea3a4e5-ccf8-471c-a7e7-56e942794d5d"), "III.031. Параканое", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("293cc241-233d-4750-891d-affaefe000e2"), "III.032. Паратриатлон", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("e5de2f7b-2074-4af1-873a-e8f38c6c8b06"), "III.033. Пауерліфтинг", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("044f4204-5b37-4082-892b-4cfbb41b6730"), "III.034. Плавання", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("e81b6f3e-1a1c-4184-814e-9b66f9c76d3f"), "III.035. Пляжний волейбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("453d051f-09ad-4956-a7b9-c6a48093b967"), "III.036. Регбі на візках", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("c3770c54-cb38-4c97-9d98-77f82ee7eca1"), "III.037. Риболовний спорт", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("96bbb11e-6043-4cf6-846d-243fdd5d052a"), "III.038. Спортивне орієнтування", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("719b6609-060c-4e50-8e78-460cda2572a5"), "III.039. Спортивний туризм", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("4113a743-0c68-4a14-a0e3-514641e28211"), "III.040. Спортивні танці на візках", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("eeacc0ab-69a3-4429-9924-e45e6fefcb8b"), "III.041. Стрільба з лука", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("17122fc4-ee98-495f-a71c-0b82afb96c16"), "III.042. Стрільба кульова", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("3779d8ae-b498-40f2-87b8-1f24db359bfc"), "III.043. Теніс", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("1a22deea-99d4-441d-9ce8-7b2a11cd53f8"), "III.044. Теніс на візках", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("c1df3897-7c96-4eec-b92c-68a7cd960908"), "III.045. Теніс настільний", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("afaedd99-2d44-4626-847a-75cc20a2b752"), "III.046. Тхеквондо", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"));
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("69024a2c-4f02-45ce-8572-bfcffe14d672"), "III.047. Фехтування на візках", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("e9f71e8a-94b6-461b-9436-4afca6d2e530"), "III.048. Футбол", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("abf318cd-0996-4f27-85a6-91f8fcda1c7e"), "III.049. Футзал", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("d470a968-8d5b-4f83-a1de-c7792996c517"), "III.050. Шахи", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("fa73a583-f497-4b38-9e75-7720ab510acd"), "III.051. Шашки", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("a6afebdf-d45f-4b74-b4e8-27a19b660035"), "III. 052. Гольф.", 2, UUID_TO_BIN("82eacc56-f803-4b77-b4d5-c7fa76d1d5cd"), UUID_TO_BIN("3ea6ae61-9e36-4796-b9ea-5e7d5bcd1bd3"))
+, (UUID_TO_BIN("fd3dda52-9f70-4323-8b57-933dd2230538"), "Наука та техніка", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("7fafb4b8-010c-46ed-9d0c-ac669a4dd111"), "IT, Програмування", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("131a8ed9-8068-4542-9a02-e8d273ec76a6"), "Фотогуртки", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("68384405-ac11-4b65-9b15-a44d20fecebf"), "Конструювання", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null);
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("dded7101-e99c-4153-8195-6bba71929bc7"), "Музика", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("6f210f9e-cb86-4e99-9a88-ab15efa3068c"), "Співи", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("9058f2f4-eca7-47be-8c11-99aca333ed59"), "Танці", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("39928cb0-1c07-4616-96a2-6c0b768a9784"), "Театр, цирк та кіно", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("b90200e1-ea61-4c47-8045-fafa27b22d3b"), "Малювання", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("eeb64344-c0d3-4d5e-bcdf-9257db33dfe8"), "Рукоділля", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("4e70f2a8-6642-400c-a22d-436942c3a358"), "Садівництво", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("63d3a07a-eecc-40ed-b693-fab9ef4fb19e"), "Екологія", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("97c91b50-0f7d-4a45-82c2-bcf89530910f"), "Туризм", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("de3dc0ab-f4fb-410f-bd2a-ba034ff7a1d6"), "Інші", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null);
+
+INSERT INTO institutionhierarchies (Id, Title, HierarchyLevel, InstitutionId, ParentId)
+VALUES (UUID_TO_BIN("a8519d13-0337-45de-98fe-668af6c6bc09"), "Наука та практичні досліди", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("2d672193-0cc7-452d-b4fa-29d59c5062ac"), "Пласт/Скаутинг", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("a10d686e-a426-47c4-8f47-bb7e12142ee7"), "Спорт", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("da6c0cd8-db10-419b-bc58-04902d850561"), "Книжки та про них", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("a9474f01-6c74-4907-b888-726b7d1a49af"), "Реабілітація", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("da1a2a29-13c3-43ec-bcde-f8fdce76aa71"), "Оздоровлення", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null)
+, (UUID_TO_BIN("b45f6c84-172d-48f2-a988-208e7f261a50"), "Мови/Гуманітарій", 1, UUID_TO_BIN("3b2ed7bc-7548-4133-8104-2332c905adc6"), null);
+
+
+#directions
+INSERT INTO directions (Title, Description) 
+SELECT "Наука та техніка", "Наука та техніка" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Наука та техніка" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "IT, Програмування", "IT, Програмування" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "IT, Програмування" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Фотогуртки", "Фотогуртки" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Фотогуртки" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Рукоділля", "Рукоділля" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Рукоділля" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Конструювання", "Конструювання" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Конструювання" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Музика", "Музика" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Музика" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Співи", "Співи" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Співи" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Танці", "Танці" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Танці" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Театр, цирк та кіно", "Театр, цирк та кіно" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Театр, цирк та кіно" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Малювання", "Малювання" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Малювання" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Театр, цирк та кіно", "Театр, цирк та кіно" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Театр, цирк та кіно" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Фотогуртки", "Фотогуртки" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Фотогуртки" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Садівництво", "Садівництво" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Садівництво" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Екологія", "Екологія" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Екологія" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Туризм", "Туризм" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Туризм" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Інші", "Інші" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Інші" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Наука та практичні досліди", "Наука та практичні досліди" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Наука та практичні досліди" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Пласт/Скаутинг", "Пласт/Скаутинг" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Пласт/Скаутинг" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Спорт", "Спорт" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Спорт" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Книжки та про них", "Книжки та про них" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Книжки та про них" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Реабілітація", "Реабілітація" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Реабілітація" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Оздоровлення", "Оздоровлення" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Оздоровлення" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Мови/Гуманітарій", "Мови/Гуманітарій" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Мови/Гуманітарій" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Музика", "Музика" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Музика" LIMIT 1);
+
+INSERT INTO directions (Title, Description) 
+SELECT "Фотогуртки", "Фотогуртки" 
+WHERE NOT EXISTS (SELECT * FROM directions 
+      WHERE Title = "Фотогуртки" LIMIT 1);
+
+
+#directioninstitutionhierarchy
+
+set @directionId = (select Id from directions where Title = "Наука та техніка" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("cf9f9a91-c2d8-4e51-8889-2d1e82ad2b20"))
+, (@directionId, UUID_TO_BIN("0c6208ad-0375-433b-893a-55a0a8d8e3ab"))
+, (@directionId, UUID_TO_BIN("260f0232-a004-4fd7-a2a1-57fbac948f08"))
+, (@directionId, UUID_TO_BIN("fd3dda52-9f70-4323-8b57-933dd2230538"));
+
+set @directionId = (select Id from directions where Title = "IT, Програмування" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("bc616135-8d41-4af8-88a8-b5189099ebff"))
+, (@directionId, UUID_TO_BIN("7fafb4b8-010c-46ed-9d0c-ac669a4dd111"));
+
+set @directionId = (select Id from directions where Title = "Фотогуртки" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("9e1a5ba4-f60d-4b2b-ba81-46daa02fe071"));
+
+set @directionId = (select Id from directions where Title = "Рукоділля" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("9e1a5ba4-f60d-4b2b-ba81-46daa02fe071"))
+, (@directionId, UUID_TO_BIN("bcb10b12-4c1f-4417-8f6a-64285508b5c4"))
+, (@directionId, UUID_TO_BIN("086bb677-3962-426f-8ed9-e87e0b701365"))
+, (@directionId, UUID_TO_BIN("ab736133-1703-46e4-8769-7e2dfc4dc8af"))
+, (@directionId, UUID_TO_BIN("3f0a6f9f-1363-403a-bd02-7ccd5abd2c3b"))
+, (@directionId, UUID_TO_BIN("1b829a32-68ae-49f6-a151-cf3a8d1920a4"))
+, (@directionId, UUID_TO_BIN("f62ce34f-5673-4ea7-97a6-752d02a9e70d"))
+, (@directionId, UUID_TO_BIN("ced5b917-55a2-4b62-a8b3-ae1c1d392ecd"))
+, (@directionId, UUID_TO_BIN("a978104e-13a3-463b-a89b-ee3bd4197d8b"))
+, (@directionId, UUID_TO_BIN("e7c56985-0855-4ebc-a46b-5fd9ae710c30"))
+, (@directionId, UUID_TO_BIN("1b364ca2-ed32-4703-a00e-d590ca524e40"))
+, (@directionId, UUID_TO_BIN("160c65c8-e4c1-4cf8-9033-e4b1c93687f1"))
+, (@directionId, UUID_TO_BIN("90c86ce3-1c0e-48e1-82bf-dd1e59abd22c"))
+, (@directionId, UUID_TO_BIN("31cadc6c-513c-4798-987c-582c4fed4c38"))
+, (@directionId, UUID_TO_BIN("a8aa98c5-b146-47b8-be45-bbd856f55238"))
+, (@directionId, UUID_TO_BIN("1a3f4bfd-7bdf-40b5-86e7-7e5ce64a1929"))
+, (@directionId, UUID_TO_BIN("81a8cacf-0f9f-4b1c-9788-73ab60217dc5"))
+, (@directionId, UUID_TO_BIN("2dafc5cb-a8fb-4103-b667-1468f6d4cf47"))
+, (@directionId, UUID_TO_BIN("eeb64344-c0d3-4d5e-bcdf-9257db33dfe8"));
+
+set @directionId = (select Id from directions where Title = "Конструювання" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("e0743d18-f29b-4dfd-b211-604a09634b40"))
+, (@directionId, UUID_TO_BIN("68384405-ac11-4b65-9b15-a44d20fecebf"));
+
+set @directionId = (select Id from directions where Title = "Музика" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("aeb9194a-5adc-441c-8184-ae4e4f401e8b"))
+, (@directionId, UUID_TO_BIN("5985eb00-7ffc-48bc-bddb-24ced5bdc73d"))
+, (@directionId, UUID_TO_BIN("a99cd73e-e117-41ba-8323-3a40296613e6"))
+, (@directionId, UUID_TO_BIN("5ad6d969-3dac-48aa-b4cc-cf48a638cb46"))
+, (@directionId, UUID_TO_BIN("3d48b8d1-7f21-40c2-a221-8677e2c3a047"))
+, (@directionId, UUID_TO_BIN("0da9a1e0-56f7-4460-8445-cc479ef31aa7"))
+, (@directionId, UUID_TO_BIN("5300bc35-cfcc-4e93-8dba-30e495778bd9"))
+, (@directionId, UUID_TO_BIN("9ce0ba18-35f9-4fb0-aac3-88343fd51418"))
+, (@directionId, UUID_TO_BIN("ec756fd1-91c9-4803-b635-d5dd83bcdf47"))
+, (@directionId, UUID_TO_BIN("8b903004-695a-4232-8be3-b55eb6de3598"))
+, (@directionId, UUID_TO_BIN("f6fece94-289a-46ae-9f24-6b4be122b7e1"))
+, (@directionId, UUID_TO_BIN("d75c61d2-9051-42ce-886f-0e0aef3ea759"))
+, (@directionId, UUID_TO_BIN("912f60ae-0fac-4fb3-ae5c-d217ffebc364"))
+, (@directionId, UUID_TO_BIN("43fc0fcf-ce04-44f9-9028-2553fa6505e1"))
+, (@directionId, UUID_TO_BIN("8b28a2ac-e0a1-4b8a-b901-eac8dae4be2e"))
+, (@directionId, UUID_TO_BIN("df3b53c0-033a-4a78-ac13-946159e702ae"))
+, (@directionId, UUID_TO_BIN("3e35deb3-ab73-4cf2-b487-cb111fadb39a"))
+, (@directionId, UUID_TO_BIN("fa70dc78-5090-4b86-9000-76190f3a0702"))
+, (@directionId, UUID_TO_BIN("4ccd4eeb-34c7-4df0-9bcf-95f6be7ff7c6"))
+, (@directionId, UUID_TO_BIN("528650d8-dff0-48c8-a50d-c2b190f6d319"))
+, (@directionId, UUID_TO_BIN("54b0a909-41fe-47d6-9052-3e8283a4927a"))
+, (@directionId, UUID_TO_BIN("dded7101-e99c-4153-8195-6bba71929bc7"));
+
+set @directionId = (select Id from directions where Title = "Співи" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("ef72d171-da4c-4199-9041-29f63176bbdc"))
+, (@directionId, UUID_TO_BIN("436a910b-bc7a-4ac3-9ab3-abe666709ed2"))
+, (@directionId, UUID_TO_BIN("9645eb8f-64c1-41d0-8621-3820794e992d"))
+, (@directionId, UUID_TO_BIN("4e970fc2-0eca-4e9c-aef0-c7cf33d56491"))
+, (@directionId, UUID_TO_BIN("8db3a72b-1040-4d05-a2e3-2a51bd461a6c"))
+, (@directionId, UUID_TO_BIN("6f210f9e-cb86-4e99-9a88-ab15efa3068c"));
+
+set @directionId = (select Id from directions where Title = "Танці" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("f0aabc1f-3dfd-4f53-aa59-6f50da1538a3"))
+, (@directionId, UUID_TO_BIN("3cc860ab-d426-481a-8128-53ac70bae046"))
+, (@directionId, UUID_TO_BIN("74dc85b1-d489-4b4b-8287-595058be01c2"))
+, (@directionId, UUID_TO_BIN("11ccf3e1-ccd2-4d77-8b3a-93247d60848a"))
+, (@directionId, UUID_TO_BIN("2906fe18-2830-4415-8ee9-7fa04b5e9fda"))
+, (@directionId, UUID_TO_BIN("9058f2f4-eca7-47be-8c11-99aca333ed59"));
+
+set @directionId = (select Id from directions where Title = "Театр, цирк та кіно" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("221c6488-5f74-4992-80d9-25ebd01678b9"))
+, (@directionId, UUID_TO_BIN("217b8796-dee6-4ee5-9ef9-59a7926819b4"))
+, (@directionId, UUID_TO_BIN("826c5474-6dc6-4903-a25f-ce9e6bfc754a"))
+, (@directionId, UUID_TO_BIN("d352181c-06e9-45a8-a819-9a5a4ed4fd6f"))
+, (@directionId, UUID_TO_BIN("3b8d5e47-4315-4aa0-9bf2-c475270c9304"))
+, (@directionId, UUID_TO_BIN("6bf579cc-593e-4cc8-ae95-c409150abb9d"))
+, (@directionId, UUID_TO_BIN("ac1e3ba3-961e-432f-9326-fbf1888265f3"))
+, (@directionId, UUID_TO_BIN("70df18fe-2f05-4613-8452-c8b351f2e003"))
+, (@directionId, UUID_TO_BIN("39928cb0-1c07-4616-96a2-6c0b768a9784"));
+
+set @directionId = (select Id from directions where Title = "Малювання" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("6febd768-6d30-42c6-b0e3-ca1dd51ab1bb"))
+, (@directionId, UUID_TO_BIN("5932f8ae-d9a3-49fc-a80d-c13e7d053a6b"))
+, (@directionId, UUID_TO_BIN("01a70c8e-b59c-44ca-8deb-512feb11e856"))
+, (@directionId, UUID_TO_BIN("b90200e1-ea61-4c47-8045-fafa27b22d3b"));
+
+set @directionId = (select Id from directions where Title = "Театр, цирк та кіно" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("63c3cd68-6a38-465d-a29a-6c2daf00c2eb"));
+
+set @directionId = (select Id from directions where Title = "Фотогуртки" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("63c3cd68-6a38-465d-a29a-6c2daf00c2eb"));
+
+set @directionId = (select Id from directions where Title = "Садівництво" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("0fa0ee70-e68f-47c3-9326-918864f00122"))
+, (@directionId, UUID_TO_BIN("4e70f2a8-6642-400c-a22d-436942c3a358"));
+
+set @directionId = (select Id from directions where Title = "Екологія" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("8e9f9a27-75c1-42a5-8716-a52c9c14b268"))
+, (@directionId, UUID_TO_BIN("63d3a07a-eecc-40ed-b693-fab9ef4fb19e"));
+
+set @directionId = (select Id from directions where Title = "Туризм" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("f735c1c4-738b-4418-9902-972a2af7dc0f"))
+, (@directionId, UUID_TO_BIN("c4ffdd34-b08d-4e1b-a682-8736a9f72a89"))
+, (@directionId, UUID_TO_BIN("97c91b50-0f7d-4a45-82c2-bcf89530910f"));
+
+set @directionId = (select Id from directions where Title = "Інші" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("b191719b-493b-480b-a78d-247c54aea663"))
+, (@directionId, UUID_TO_BIN("de3dc0ab-f4fb-410f-bd2a-ba034ff7a1d6"));
+
+set @directionId = (select Id from directions where Title = "Наука та практичні досліди" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("59cb07de-c8f7-4d0f-a8cc-995f928c3bc6"))
+, (@directionId, UUID_TO_BIN("6bcf8df9-27d6-4854-9f24-22fe6715793c"))
+, (@directionId, UUID_TO_BIN("34b4abd1-7d1a-495e-980b-eac806e005d3"))
+, (@directionId, UUID_TO_BIN("ff868830-9ab6-46a3-a25f-e7523b60bc55"))
+, (@directionId, UUID_TO_BIN("7c29f5e0-b6b0-4e8f-b053-10ef5e5d0c66"))
+, (@directionId, UUID_TO_BIN("f299977d-0e1b-46f5-a23e-750fcffbd746"))
+, (@directionId, UUID_TO_BIN("5faeeb10-8c6e-4046-a03c-2bbb22f9f2be"))
+, (@directionId, UUID_TO_BIN("b6acb90d-4c3f-4ec7-9eef-a72ff1a127b7"))
+, (@directionId, UUID_TO_BIN("09bb0d6f-1d90-4e6b-b5fd-36e5ac3923f1"))
+, (@directionId, UUID_TO_BIN("d390f389-e689-492c-801b-d9710c3e27d9"))
+, (@directionId, UUID_TO_BIN("a8519d13-0337-45de-98fe-668af6c6bc09"));
+
+set @directionId = (select Id from directions where Title = "Пласт/Скаутинг" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("83254574-ed5d-49b3-be4c-12af0741bbf4"))
+, (@directionId, UUID_TO_BIN("b8975692-5816-40a6-8e1c-8603270e0054"))
+, (@directionId, UUID_TO_BIN("2d672193-0cc7-452d-b4fa-29d59c5062ac"));
+
+set @directionId = (select Id from directions where Title = "Спорт" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("d213186a-d4ad-4215-9917-5b8f6434bdbf"))
+, (@directionId, UUID_TO_BIN("3ebca00a-f178-4b74-9b23-4d96fdea7181"))
+, (@directionId, UUID_TO_BIN("77edef98-38c5-489d-b06f-9a16fea4e1da"))
+, (@directionId, UUID_TO_BIN("9c482d85-59ae-457b-a01e-3ca047963024"))
+, (@directionId, UUID_TO_BIN("4dae7193-5214-4117-9889-515895e06d87"))
+, (@directionId, UUID_TO_BIN("93a2c26a-767f-42fb-80a0-b8d5951d2a83"))
+, (@directionId, UUID_TO_BIN("09645fc7-e72e-4002-b3f9-fde8abd9706b"))
+, (@directionId, UUID_TO_BIN("a4872714-df5c-42f9-9f01-22bc1a81b74d"))
+, (@directionId, UUID_TO_BIN("343a23ed-df96-4098-95bb-f3abff7694f4"))
+, (@directionId, UUID_TO_BIN("e2dba45e-9ddd-418c-8a7b-490c99c9f8a6"))
+, (@directionId, UUID_TO_BIN("9a66487a-b84a-4b40-9ca8-037b1f9a1e6d"))
+, (@directionId, UUID_TO_BIN("b6f4daca-ed90-41c2-9ff1-5b422fcbd038"))
+, (@directionId, UUID_TO_BIN("1436e4e2-8351-462c-9e19-b288b12bac53"))
+, (@directionId, UUID_TO_BIN("f4b3e67a-355c-4ede-8ecb-b014865ab963"))
+, (@directionId, UUID_TO_BIN("36c5e111-2b20-4756-91ed-20dfc57da6bc"))
+, (@directionId, UUID_TO_BIN("0c1ca2d5-a91d-4f75-a89b-ca8240f241ae"))
+, (@directionId, UUID_TO_BIN("b8567217-d908-4b15-abe0-39d4a1bb40a5"))
+, (@directionId, UUID_TO_BIN("14a844c7-bc7c-4b95-ab81-f03b613c54a1"))
+, (@directionId, UUID_TO_BIN("bc397453-f16a-4da9-8eb3-af68f637c8e5"))
+, (@directionId, UUID_TO_BIN("9b158186-8bde-41a6-aa39-27b30ad205af"))
+, (@directionId, UUID_TO_BIN("80655989-77c9-4f45-ab8d-c4f44267affb"))
+, (@directionId, UUID_TO_BIN("a02a1b07-4b23-472c-be22-a9945d694728"))
+, (@directionId, UUID_TO_BIN("93f839b5-9fef-4b3f-9244-ecc007d5e303"))
+, (@directionId, UUID_TO_BIN("d79fe354-129a-4965-8ed7-e27c0186b034"))
+, (@directionId, UUID_TO_BIN("6a02cadd-9d4e-4bcb-be98-863ff5fd6b72"))
+, (@directionId, UUID_TO_BIN("59862c50-03e3-4903-954c-b082fc8b4fff"))
+, (@directionId, UUID_TO_BIN("12d35761-b6fc-4a42-ba8f-367730fa7100"))
+, (@directionId, UUID_TO_BIN("a23aeaab-e8d0-4b74-ba34-2f4da5b142d0"))
+, (@directionId, UUID_TO_BIN("f895550e-7c5c-497b-9f19-ab65d8665ea3"))
+, (@directionId, UUID_TO_BIN("31258afa-5967-4640-9850-fb2853295526"))
+, (@directionId, UUID_TO_BIN("0a3e0fe3-aa4a-4bcb-a2b7-3ce08fcc3045"))
+, (@directionId, UUID_TO_BIN("f31729b9-3d5f-48f4-b0bc-830dd3f7dcbe"))
+, (@directionId, UUID_TO_BIN("3a08235c-8497-4430-b387-8d7b204ebb68"))
+, (@directionId, UUID_TO_BIN("cf7e40fc-fe2b-46b1-a065-14f979c32244"))
+, (@directionId, UUID_TO_BIN("34b2c8f5-a064-44fc-a06d-38d23042753e"))
+, (@directionId, UUID_TO_BIN("ceacd3df-fa9e-47c4-90c0-42fe720fc6c2"))
+, (@directionId, UUID_TO_BIN("8fd5a1bb-b01b-454b-812a-44441a16ad45"))
+, (@directionId, UUID_TO_BIN("7b00f595-2257-4092-8532-1b6215c45c20"))
+, (@directionId, UUID_TO_BIN("2281d7d6-b992-444c-bf8f-383604fa7a98"))
+, (@directionId, UUID_TO_BIN("2c62539e-9262-4579-8467-2aaff4a5a368"))
+, (@directionId, UUID_TO_BIN("2bb5703c-9a54-47cc-b0cd-1ca4337bb452"))
+, (@directionId, UUID_TO_BIN("baf0c989-58df-4e98-9c7c-34be9843bf2a"))
+, (@directionId, UUID_TO_BIN("fff14c6a-53a1-4659-86c1-fed0effb6ecb"))
+, (@directionId, UUID_TO_BIN("7fd2d215-6792-4abd-bf27-661ce1a7a22d"))
+, (@directionId, UUID_TO_BIN("48794484-3e18-4de1-8b28-26916cdfa926"))
+, (@directionId, UUID_TO_BIN("b45e92c7-f288-4f61-9172-5a16b689d366"))
+, (@directionId, UUID_TO_BIN("12668866-ae0a-4622-9938-b1e76fa2b1dc"))
+, (@directionId, UUID_TO_BIN("997d4e2d-3220-42d6-9a8f-fcae04f24915"))
+, (@directionId, UUID_TO_BIN("6eec3ad7-04dc-4ec5-9ba2-0fd0a0702af2"))
+, (@directionId, UUID_TO_BIN("e836b55b-8e16-4575-975f-83c498d32e18"))
+, (@directionId, UUID_TO_BIN("41c42f29-cc75-49a4-bbb7-a86f47f38c80"))
+, (@directionId, UUID_TO_BIN("4eeb060a-67a1-448f-bb7b-12b680a1866e"))
+, (@directionId, UUID_TO_BIN("db07ac14-699a-44d2-8a74-2b4b47d11c9b"))
+, (@directionId, UUID_TO_BIN("78ed8349-e7c1-4568-b3a6-8bfa833a758b"))
+, (@directionId, UUID_TO_BIN("e6bb60f7-016d-4fde-98a2-759f7cc08ce4"))
+, (@directionId, UUID_TO_BIN("c4a7e1b8-3bee-467b-a3fa-1610ea79055e"))
+, (@directionId, UUID_TO_BIN("56599248-a331-4d19-bc3e-62e0c148cc61"))
+, (@directionId, UUID_TO_BIN("352829af-bcc2-4e76-aa89-352a87259436"))
+, (@directionId, UUID_TO_BIN("8a6d2cb9-9f51-43dd-b0bd-e15e2179d1b0"))
+, (@directionId, UUID_TO_BIN("a55c9793-f1cb-4a22-9ae9-c689dcd72809"))
+, (@directionId, UUID_TO_BIN("37e6c0ba-76cd-4ca2-be86-7c1b7b740223"))
+, (@directionId, UUID_TO_BIN("68649344-087a-494e-ad03-194258445227"))
+, (@directionId, UUID_TO_BIN("80cdecf0-c4cf-4a95-a355-1cd0672fa087"))
+, (@directionId, UUID_TO_BIN("de732f34-8885-4f86-8940-1885b865d493"))
+, (@directionId, UUID_TO_BIN("db96e3c8-d432-480a-a814-4b0f5aa6dc49"))
+, (@directionId, UUID_TO_BIN("c966aa30-722e-43f5-bd39-a2e6d044f6d3"))
+, (@directionId, UUID_TO_BIN("7e520b58-16e0-4bde-8846-62a09f5ded94"))
+, (@directionId, UUID_TO_BIN("baa6ca83-92dd-4fc5-ab86-6e606c76a364"))
+, (@directionId, UUID_TO_BIN("12c1d75f-6dcb-4e79-bed9-a569ce00f8d9"))
+, (@directionId, UUID_TO_BIN("63e3919a-6b55-43e5-8679-8b1011c291e9"))
+, (@directionId, UUID_TO_BIN("a2be6015-20ca-4cc2-959d-a19dc282ecfb"))
+, (@directionId, UUID_TO_BIN("6fb0860a-0198-4a44-8296-88c0f45360d8"))
+, (@directionId, UUID_TO_BIN("22b143bd-5b1b-46a8-b35a-d4aac153aebb"))
+, (@directionId, UUID_TO_BIN("c6736e3e-ae9c-40ae-bd80-a9475c405ff8"))
+, (@directionId, UUID_TO_BIN("8153756c-13bd-48c7-a5b1-92c9aee97c56"))
+, (@directionId, UUID_TO_BIN("f054d85d-2626-4fc9-9afc-e74779a8498f"))
+, (@directionId, UUID_TO_BIN("f16f61f6-6cb6-4d40-8425-7e00cfcf1f0f"))
+, (@directionId, UUID_TO_BIN("0776f88d-8882-4905-9978-bbebb18ce878"))
+, (@directionId, UUID_TO_BIN("866a8995-4ab9-4717-a86a-c3f53fc709f3"))
+, (@directionId, UUID_TO_BIN("d75df0c1-cf04-46cd-95a2-a518a17de315"))
+, (@directionId, UUID_TO_BIN("21e0f7e0-b3a4-48e8-8147-3668bda9dc9f"))
+, (@directionId, UUID_TO_BIN("8141c6b8-aaae-4b90-9c93-c90f4b14b941"))
+, (@directionId, UUID_TO_BIN("7547e144-c143-40ab-a43f-889f88f3306d"))
+, (@directionId, UUID_TO_BIN("1a9378bf-a055-47ed-886a-2eca594e4bda"))
+, (@directionId, UUID_TO_BIN("dfbf98e0-56d2-4bf2-997d-9937294738ff"))
+, (@directionId, UUID_TO_BIN("f600c3dd-06c3-4065-8328-a90b0e6d3fba"))
+, (@directionId, UUID_TO_BIN("4c68b0ca-4721-49f5-8e77-b96713aad301"))
+, (@directionId, UUID_TO_BIN("491d4765-6169-432d-9257-37d6d762c4c1"))
+, (@directionId, UUID_TO_BIN("922f711a-992a-4f19-a489-8df0fcc9b689"))
+, (@directionId, UUID_TO_BIN("13dcded2-e5ae-4acc-9138-9fde892c473d"))
+, (@directionId, UUID_TO_BIN("83497a7e-f652-4065-b33c-f53768911129"))
+, (@directionId, UUID_TO_BIN("c5e815c5-3f13-4078-8cd5-99d60e243483"))
+, (@directionId, UUID_TO_BIN("c929a7b3-1609-4675-b8bf-f389593e60fe"))
+, (@directionId, UUID_TO_BIN("53563f15-80a6-4074-a8c3-d365ed95e4ff"))
+, (@directionId, UUID_TO_BIN("b1dd7bf4-cf78-4eec-9e04-2d4815617ea2"))
+, (@directionId, UUID_TO_BIN("554a4b96-9fb7-42d1-81bf-a32fe2efe8ae"))
+, (@directionId, UUID_TO_BIN("63659317-569b-4a3c-ad7a-449dbce52ecb"))
+, (@directionId, UUID_TO_BIN("50f0ff40-8233-4cb7-9543-2703bc32b83e"))
+, (@directionId, UUID_TO_BIN("588e2ec0-3ace-4264-bc70-b566ee58a58c"))
+, (@directionId, UUID_TO_BIN("f876c6ff-9961-41d1-9996-bc6d99057c5e"))
+, (@directionId, UUID_TO_BIN("064aae2f-75dd-4617-bcac-c9313aa3a8ff"))
+, (@directionId, UUID_TO_BIN("b0e310cd-57fb-42fb-91eb-48cb6cac3be7"))
+, (@directionId, UUID_TO_BIN("c962771b-794f-442b-ae6a-3de5d1b09fe8"))
+, (@directionId, UUID_TO_BIN("aa2b0ed8-6b1a-4c8a-b71c-405bc7ceff00"))
+, (@directionId, UUID_TO_BIN("88d274dc-78d8-4da7-a9ec-dc48eab35dbe"))
+, (@directionId, UUID_TO_BIN("dd3c6aa2-e8c0-48d6-b5f1-a768068d067d"))
+, (@directionId, UUID_TO_BIN("10ce0c70-2433-4a90-88c7-c1fcf4c1ad75"))
+, (@directionId, UUID_TO_BIN("e7a9f204-a8fc-4f0c-9b83-ef434771c341"))
+, (@directionId, UUID_TO_BIN("22db885f-75d1-4843-b584-140eba01876a"))
+, (@directionId, UUID_TO_BIN("170fbdc7-0263-4143-9904-1c1c34d18b46"))
+, (@directionId, UUID_TO_BIN("dd430b75-3635-4436-8d48-515fccbe7ecc"))
+, (@directionId, UUID_TO_BIN("fee0c69f-b3fe-4e50-95f7-e240eb13152a"))
+, (@directionId, UUID_TO_BIN("6d822bf8-9709-43cc-9f03-3adab9c5b70b"))
+, (@directionId, UUID_TO_BIN("143542c1-9d17-48c8-bde6-a7e5655fd685"))
+, (@directionId, UUID_TO_BIN("cb517fbc-7e94-4916-a3a5-300955f2ba41"))
+, (@directionId, UUID_TO_BIN("f86dd50b-04b5-4aec-a2d5-5cb47c8cf888"))
+, (@directionId, UUID_TO_BIN("07b5e200-7cce-4296-a399-443df7d1f265"))
+, (@directionId, UUID_TO_BIN("2533e208-97ca-4e6d-ab56-e9636c137cc4"))
+, (@directionId, UUID_TO_BIN("f3e337a5-d32f-4222-a361-f2406b004fc7"))
+, (@directionId, UUID_TO_BIN("691b9f59-76e3-40ce-8285-f306319cf11f"))
+, (@directionId, UUID_TO_BIN("ad2c04a2-d39b-4b58-bd23-2cdf91eac153"))
+, (@directionId, UUID_TO_BIN("7952c4e3-bc58-4e3e-9384-1918cdb65010"))
+, (@directionId, UUID_TO_BIN("84a14613-134c-4f6c-96f1-f3f1f052efc7"))
+, (@directionId, UUID_TO_BIN("58ed3cce-1b87-44a4-a921-1a117a9a6fb4"))
+, (@directionId, UUID_TO_BIN("6e60bfa8-e7c2-447e-9edf-a85f4293d9a3"))
+, (@directionId, UUID_TO_BIN("f8bd2984-701e-4a44-ad6f-c910dcd785bb"))
+, (@directionId, UUID_TO_BIN("25619134-3f6f-4eb8-9784-03a6ae8db20c"))
+, (@directionId, UUID_TO_BIN("e343e971-7e4a-4e1f-98da-1c92d55d3e22"))
+, (@directionId, UUID_TO_BIN("d53d1c27-f321-4493-a515-cf7b7f7f6362"))
+, (@directionId, UUID_TO_BIN("9363c8a9-577d-441b-9335-fe32a10ef24a"))
+, (@directionId, UUID_TO_BIN("9b6b1078-d6f9-4fff-8f6a-9ef454980f77"))
+, (@directionId, UUID_TO_BIN("3a44b7b0-20f3-42c5-a3c4-3146682671f4"))
+, (@directionId, UUID_TO_BIN("ada7213f-4466-4dc6-9ef4-fb0f453796f0"))
+, (@directionId, UUID_TO_BIN("275bace6-4890-4e44-8bc6-be953c282f42"))
+, (@directionId, UUID_TO_BIN("2b831a6a-8e00-40b2-8edf-65b91300a881"))
+, (@directionId, UUID_TO_BIN("ff29dd31-b041-482e-89dc-35e4ffbb3282"))
+, (@directionId, UUID_TO_BIN("92448a1c-f18c-4631-85e7-5008f9831569"))
+, (@directionId, UUID_TO_BIN("9b8cb54a-dfe8-46f7-b913-2e321847c0fe"))
+, (@directionId, UUID_TO_BIN("642d691a-3a2d-4d0b-8b22-aeb004c711aa"))
+, (@directionId, UUID_TO_BIN("baeb538e-942e-4644-a946-7e0e6f00e316"))
+, (@directionId, UUID_TO_BIN("d4ce564d-0f9f-45b4-9e60-099caee617fc"))
+, (@directionId, UUID_TO_BIN("250c2983-0a7d-4947-94a6-8c219b8ac36d"))
+, (@directionId, UUID_TO_BIN("09252d62-5e09-4560-8a75-9f2a90fedeb1"))
+, (@directionId, UUID_TO_BIN("77bd6fe5-6792-49f5-a9f1-c0a6fe4e0c0f"))
+, (@directionId, UUID_TO_BIN("8a80ccd4-2305-4c03-a375-e15aa4e98714"))
+, (@directionId, UUID_TO_BIN("7447ed4d-c5b7-4b67-bc4a-f4a337e55bb4"))
+, (@directionId, UUID_TO_BIN("8b654c3e-1f96-44ec-af95-77ff72791ae5"))
+, (@directionId, UUID_TO_BIN("5745fbcc-d977-48a8-8723-be9a62192630"))
+, (@directionId, UUID_TO_BIN("4b6a9acf-c518-484a-8d48-c5ffeac6a554"))
+, (@directionId, UUID_TO_BIN("696c5ee4-61d9-4fd1-a079-a0d4c57497af"))
+, (@directionId, UUID_TO_BIN("a7309849-3ac6-4253-91c0-44541752c21e"))
+, (@directionId, UUID_TO_BIN("3cef2ec6-14a8-4126-9fa2-5dc4255033ac"))
+, (@directionId, UUID_TO_BIN("0db6e2be-2f74-40eb-b804-18efec57134f"))
+, (@directionId, UUID_TO_BIN("793f4edb-cfc9-41a5-8215-7ffb3dbd0f07"))
+, (@directionId, UUID_TO_BIN("b15cdac8-0298-4fd5-af5b-82f8dd7270b8"))
+, (@directionId, UUID_TO_BIN("35b3d5cf-73b5-45fb-9061-1483656a34ad"))
+, (@directionId, UUID_TO_BIN("d04a156e-3b92-43ca-894f-9d7f5acf8021"))
+, (@directionId, UUID_TO_BIN("466951ea-0dde-4d2e-afc2-de7616844c6f"))
+, (@directionId, UUID_TO_BIN("12733af2-26eb-4ca9-9e33-12e5f6373838"))
+, (@directionId, UUID_TO_BIN("d148a48c-8410-49d9-818f-a7c5c34c87f3"))
+, (@directionId, UUID_TO_BIN("85d6b75e-b72a-46b8-9313-60eaefc94233"))
+, (@directionId, UUID_TO_BIN("61b69e51-25e8-4f96-b886-0a83702bbb54"))
+, (@directionId, UUID_TO_BIN("3a066a7e-3bc3-47e0-a4c0-4bab6cad53b7"))
+, (@directionId, UUID_TO_BIN("44b0e1f7-1871-4561-9ecf-92a22ba1d429"))
+, (@directionId, UUID_TO_BIN("b2f99e76-0e50-4597-b16b-c4927191b530"))
+, (@directionId, UUID_TO_BIN("9176bcbe-a3d0-438f-8c7a-b461db016837"))
+, (@directionId, UUID_TO_BIN("fe5cd05e-e3cf-4cc7-a159-647b5e782b7f"))
+, (@directionId, UUID_TO_BIN("92ea6c66-0b95-45e4-832c-9c11373b6729"))
+, (@directionId, UUID_TO_BIN("10a58355-843e-45a5-9fc1-17b7b545c7d7"))
+, (@directionId, UUID_TO_BIN("daa49909-3254-45a0-b5b7-3811420e2dd6"))
+, (@directionId, UUID_TO_BIN("30c14673-fcd5-43b5-910a-866292e3e2f0"))
+, (@directionId, UUID_TO_BIN("3b774b16-5087-4862-9da9-bf7cb318b026"))
+, (@directionId, UUID_TO_BIN("b941b235-8704-4522-815e-4f5a43983d92"))
+, (@directionId, UUID_TO_BIN("b17b373c-66fc-425d-97bc-195e5a19ca51"))
+, (@directionId, UUID_TO_BIN("d8b37845-abb5-4e18-9609-c3fd8cf8e7a1"))
+, (@directionId, UUID_TO_BIN("13c6d8b4-9f40-4196-9b82-1e436d8bfbb6"))
+, (@directionId, UUID_TO_BIN("791c179d-7d16-4a5d-bf3d-47e16401d12b"))
+, (@directionId, UUID_TO_BIN("92ae2576-e130-49aa-919d-866157e702f7"))
+, (@directionId, UUID_TO_BIN("41017df9-6788-4255-873c-9e437a4236f0"))
+, (@directionId, UUID_TO_BIN("fe209fa4-2f9c-4452-b2e0-bf6e4bbee9f3"))
+, (@directionId, UUID_TO_BIN("bffb5cef-03d2-42d4-a197-c110d340fc46"))
+, (@directionId, UUID_TO_BIN("cee3c8dc-e762-4b4c-8b41-bcb73f6f64a6"))
+, (@directionId, UUID_TO_BIN("c77ce966-950b-4120-a0be-7678fd696d8a"))
+, (@directionId, UUID_TO_BIN("2b9048db-5f3f-47d7-b256-7ba62449b699"))
+, (@directionId, UUID_TO_BIN("cc77966d-8ed6-466c-ae00-93d7467e5ecb"))
+, (@directionId, UUID_TO_BIN("fff45671-372e-4253-8416-46322758e466"))
+, (@directionId, UUID_TO_BIN("23482f0f-2334-4216-bdec-a72d66aa9049"))
+, (@directionId, UUID_TO_BIN("f2860aea-63a6-4932-92fb-7a5d6bb89f4c"))
+, (@directionId, UUID_TO_BIN("c25549af-b521-48a4-8d6c-116b3d48c5c0"))
+, (@directionId, UUID_TO_BIN("e701b654-6328-4590-8ea7-fc4ee41e8a75"))
+, (@directionId, UUID_TO_BIN("5ebca633-66ae-4fde-a75b-8f92bf68f14c"))
+, (@directionId, UUID_TO_BIN("5e0e094e-4c93-4554-9a01-7fd54daab5ad"))
+, (@directionId, UUID_TO_BIN("f0650a16-d010-4748-bb0a-e992af95052e"))
+, (@directionId, UUID_TO_BIN("20a196dd-4040-4e48-8dfd-87c6c2277e13"))
+, (@directionId, UUID_TO_BIN("3c23be47-1800-4869-b842-c8ba6b8ba3f7"))
+, (@directionId, UUID_TO_BIN("789fe2fe-e878-488e-82e4-27a083f7e39d"))
+, (@directionId, UUID_TO_BIN("1d8f9781-e16b-497b-95ef-016fc09de8f0"))
+, (@directionId, UUID_TO_BIN("d85cdce9-d604-4a50-8bba-aad8331069c7"))
+, (@directionId, UUID_TO_BIN("aca4c764-e654-42ac-9cb6-4fbfe31d0aee"))
+, (@directionId, UUID_TO_BIN("bf4bc937-10f9-48ca-9825-fbb79cb416b5"))
+, (@directionId, UUID_TO_BIN("69c7372d-34a1-46b4-88e6-f695853174e9"))
+, (@directionId, UUID_TO_BIN("ca14a785-bb6d-4123-b585-838745ec7e1f"))
+, (@directionId, UUID_TO_BIN("9cdd1a49-14be-40d2-8e4f-0623ec5e00db"))
+, (@directionId, UUID_TO_BIN("8287f5b5-6011-4f14-b6b5-8e6a8f964b16"))
+, (@directionId, UUID_TO_BIN("aea3a4e5-ccf8-471c-a7e7-56e942794d5d"))
+, (@directionId, UUID_TO_BIN("293cc241-233d-4750-891d-affaefe000e2"))
+, (@directionId, UUID_TO_BIN("e5de2f7b-2074-4af1-873a-e8f38c6c8b06"))
+, (@directionId, UUID_TO_BIN("044f4204-5b37-4082-892b-4cfbb41b6730"))
+, (@directionId, UUID_TO_BIN("e81b6f3e-1a1c-4184-814e-9b66f9c76d3f"))
+, (@directionId, UUID_TO_BIN("453d051f-09ad-4956-a7b9-c6a48093b967"))
+, (@directionId, UUID_TO_BIN("c3770c54-cb38-4c97-9d98-77f82ee7eca1"))
+, (@directionId, UUID_TO_BIN("96bbb11e-6043-4cf6-846d-243fdd5d052a"))
+, (@directionId, UUID_TO_BIN("719b6609-060c-4e50-8e78-460cda2572a5"))
+, (@directionId, UUID_TO_BIN("4113a743-0c68-4a14-a0e3-514641e28211"))
+, (@directionId, UUID_TO_BIN("eeacc0ab-69a3-4429-9924-e45e6fefcb8b"))
+, (@directionId, UUID_TO_BIN("17122fc4-ee98-495f-a71c-0b82afb96c16"))
+, (@directionId, UUID_TO_BIN("3779d8ae-b498-40f2-87b8-1f24db359bfc"))
+, (@directionId, UUID_TO_BIN("1a22deea-99d4-441d-9ce8-7b2a11cd53f8"))
+, (@directionId, UUID_TO_BIN("c1df3897-7c96-4eec-b92c-68a7cd960908"))
+, (@directionId, UUID_TO_BIN("afaedd99-2d44-4626-847a-75cc20a2b752"))
+, (@directionId, UUID_TO_BIN("69024a2c-4f02-45ce-8572-bfcffe14d672"))
+, (@directionId, UUID_TO_BIN("e9f71e8a-94b6-461b-9436-4afca6d2e530"))
+, (@directionId, UUID_TO_BIN("abf318cd-0996-4f27-85a6-91f8fcda1c7e"))
+, (@directionId, UUID_TO_BIN("d470a968-8d5b-4f83-a1de-c7792996c517"))
+, (@directionId, UUID_TO_BIN("fa73a583-f497-4b38-9e75-7720ab510acd"))
+, (@directionId, UUID_TO_BIN("a6afebdf-d45f-4b74-b4e8-27a19b660035"))
+, (@directionId, UUID_TO_BIN("a10d686e-a426-47c4-8f47-bb7e12142ee7"));
+
+set @directionId = (select Id from directions where Title = "Книжки та про них" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("29b7ced1-f171-4303-b0d1-b7bcbdee8e40"))
+, (@directionId, UUID_TO_BIN("da6c0cd8-db10-419b-bc58-04902d850561"));
+
+set @directionId = (select Id from directions where Title = "Реабілітація" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("80ccf63f-d85b-4068-af6b-ae9c44b525d7"))
+, (@directionId, UUID_TO_BIN("a9474f01-6c74-4907-b888-726b7d1a49af"));
+
+set @directionId = (select Id from directions where Title = "Оздоровлення" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("05d54c28-33a9-468e-9d6c-5b6944c9801a"))
+, (@directionId, UUID_TO_BIN("da1a2a29-13c3-43ec-bcde-f8fdce76aa71"));
+
+set @directionId = (select Id from directions where Title = "Мови/Гуманітарій" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("c5873f92-5cc7-4698-ba46-0b4c08075fdc"))
+, (@directionId, UUID_TO_BIN("b45f6c84-172d-48f2-a988-208e7f261a50"));
+
+set @directionId = (select Id from directions where Title = "Музика" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("086bb677-3962-426f-8ed9-e87e0b701365"));
+
+set @directionId = (select Id from directions where Title = "Фотогуртки" limit 1);
+
+INSERT INTO directioninstitutionhierarchy (DirectionsId, InstitutionHierarchiesId)
+VALUES (@directionId, UUID_TO_BIN("131a8ed9-8068-4542-9a02-e8d273ec76a6"));
+

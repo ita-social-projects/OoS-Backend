@@ -19,6 +19,19 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 type: "binary(16)",
                 nullable: true);
 
+            migrationBuilder.AlterColumn<string>(
+                name: "Title",
+                table: "InstitutionHierarchies",
+                type: "varchar(200)",
+                maxLength: 200,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "varchar(100)",
+                oldMaxLength: 100,
+                oldNullable: true)
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .OldAnnotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Workshops_InstitutionHierarchyId",
                 table: "Workshops",
@@ -71,6 +84,19 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             migrationBuilder.DropColumn(
                 name: "InstitutionId",
                 table: "Providers");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Title",
+                table: "InstitutionHierarchies",
+                type: "varchar(100)",
+                maxLength: 100,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "varchar(200)",
+                oldMaxLength: 200,
+                oldNullable: true)
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .OldAnnotation("MySql:CharSet", "utf8mb4");
         }
     }
 }

@@ -9,7 +9,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220602195014_WorkshopProviderInstitutionHierarchy")]
+    [Migration("20220606102535_WorkshopProviderInstitutionHierarchy")]
     partial class WorkshopProviderInstitutionHierarchy
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1063,8 +1063,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("binary(16)");
 
                     b.Property<string>("Title")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.HasKey("Id");
 

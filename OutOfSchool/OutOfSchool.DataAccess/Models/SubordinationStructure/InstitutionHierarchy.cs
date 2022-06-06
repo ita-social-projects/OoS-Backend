@@ -9,7 +9,7 @@ namespace OutOfSchool.Services.Models.SubordinationStructure
         public Guid Id { get; set; }
 
         [MinLength(1)]
-        [MaxLength(100)]
+        [MaxLength(200)]
         public string Title { get; set; }
 
         public int HierarchyLevel { get; set; }
