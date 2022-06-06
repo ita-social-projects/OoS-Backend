@@ -32,11 +32,8 @@ namespace OutOfSchool.Services.Repository.Files
 
         private protected string BucketName { get; }
 
-        public async Task<IAsyncEnumerable<Objects>> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null)
-        {
-            var objects = await Task.Run(() => StorageClient.ListObjectsAsync(BucketName, prefix: prefix, options: options));
-            return objects.AsRawResponses();
-        }
+        public IAsyncEnumerable<Objects> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null)
+            => StorageClient.ListObjectsAsync(BucketName, prefix: prefix, options: options).AsRawResponses();
 
         /// <inheritdoc/>
         public virtual async Task<TFile> GetByIdAsync(string fileId, CancellationToken cancellationToken = default)

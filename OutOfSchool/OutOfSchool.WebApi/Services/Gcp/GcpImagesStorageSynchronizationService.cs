@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
                 // gcp returns data by local time
                 var dateTime = DateTime.Now.AddMinutes(-1);
 
-                var listsOfObjects = await GetListsOfObjects().ConfigureAwait(false);
+                var listsOfObjects = GetListsOfObjects().ConfigureAwait(false);
 
                 await foreach (var objects in listsOfObjects.WithCancellation(cancellationToken))
                 {
@@ -104,7 +104,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
             return searchIds;
         }
 
-        private async Task<IAsyncEnumerable<Objects>> GetListsOfObjects()
+        private IAsyncEnumerable<Objects> GetListsOfObjects()
         {
             var options = new ListObjectsOptions
             {
@@ -112,7 +112,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
                 PageSize = ListObjectOptionsPageSize,
             };
 
-            return await imagesStorage.GetBulkListsOfObjectsAsync(options: options).ConfigureAwait(false);
+            return imagesStorage.GetBulkListsOfObjectsAsync(options: options);
         }
 
         private async Task RemoveNotAttachedIds(IEnumerable<string> idsToRemove)
