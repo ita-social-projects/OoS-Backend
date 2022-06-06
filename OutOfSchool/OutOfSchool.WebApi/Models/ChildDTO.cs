@@ -38,8 +38,6 @@ namespace OutOfSchool.WebApi.Models
 
         public long? SocialGroupId { get; set; } = default;
 
-        // TODO: define if we really need this in dto
-        [JsonIgnore]
-        public ParentDTO Parent { get; set; }
+        public ParentDtoWithContactInfo Parent{ get; set; }
     }
 }
