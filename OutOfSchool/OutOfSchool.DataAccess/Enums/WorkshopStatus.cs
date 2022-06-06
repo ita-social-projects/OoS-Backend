@@ -7,6 +7,6 @@ namespace OutOfSchool.Services.Enums
     public enum WorkshopStatus
     {
         Open = 1,
-        Closed,
+        Closed = 2,
     }
 }

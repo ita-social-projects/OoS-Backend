@@ -79,6 +79,14 @@ namespace OutOfSchool.WebApi.Services
 
             ModelNullValidation(applicationDto);
 
+            var workshopStatus = await CheckWorkshopStatus(applicationDto.WorkshopId).ConfigureAwait(false);
+
+            if (workshopStatus == WorkshopStatus.Closed)
+            {
+                logger.LogInformation("Unable to create a new application for a workshop because workshop status is closed.");
+                throw new ArgumentException("Unable to create a new application for a workshop because workshop status is closed.");
+            }
+
             var allowedNewApplicationForChild = await AllowedNewApplicationByChildStatus(applicationDto.WorkshopId, applicationDto.ChildId).ConfigureAwait(false);
 
             if (!allowedNewApplicationForChild)
@@ -474,6 +482,18 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return recipientIds.Distinct();
+        }
+
+        private async Task<WorkshopStatus> CheckWorkshopStatus(Guid id)
+        {
+            var workshop = await workshopRepository.GetById(id).ConfigureAwait(false);
+            if (workshop is null)
+            {
+                logger.LogInformation("Operation failed. Workshop in Application dto is null");
+                throw new ArgumentException(localizer["Workshop in Application dto is null."], nameof(workshop));
+            }
+
+            return workshop.Status;
         }
 
         public async Task<bool> AllowedNewApplicationByChildStatus(Guid workshopId, Guid childId)
