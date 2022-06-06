@@ -19,6 +19,10 @@ using Object = System.Object;
 
 namespace OutOfSchool.Services.Repository.Files
 {
+    /// <summary>
+    /// Represents a base file storage.
+    /// </summary>
+    /// <typeparam name="TFile">File model.</typeparam>
     public abstract class GcpFilesStorageBase<TFile> : IFilesStorage<TFile, string>
         where TFile : FileModel, new()
     {
@@ -32,6 +36,7 @@ namespace OutOfSchool.Services.Repository.Files
 
         private protected string BucketName { get; }
 
+        /// <inheritdoc/>
         public IAsyncEnumerable<Objects> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null)
             => StorageClient.ListObjectsAsync(BucketName, prefix: prefix, options: options).AsRawResponses();
 

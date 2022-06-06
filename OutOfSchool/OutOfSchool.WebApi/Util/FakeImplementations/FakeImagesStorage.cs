@@ -11,6 +11,9 @@ using Object = Google.Apis.Storage.v1.Data.Object;
 
 namespace OutOfSchool.WebApi.Util.FakeImplementations
 {
+    /// <summary>
+    /// Only for development purposes. Used as fake storage whenever no need to interplay with gcp storage.
+    /// </summary>
     public class FakeImagesStorage : IImageFilesStorage
     {
         public IAsyncEnumerable<Objects> GetBulkListsOfObjectsAsync(string prefix = null, ListObjectsOptions options = null)

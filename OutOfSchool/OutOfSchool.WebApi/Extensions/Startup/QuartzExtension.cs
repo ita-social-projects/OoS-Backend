@@ -52,7 +52,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
 
             services.AddQuartzServer(options => { options.WaitForJobsToComplete = true; });
 
-            QuartzPool.Done();
+            QuartzPool.ClearAll();
 
             return services;
         }

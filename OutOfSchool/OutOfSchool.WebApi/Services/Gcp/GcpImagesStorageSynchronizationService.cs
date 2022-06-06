@@ -18,6 +18,9 @@ using Object = Google.Apis.Storage.v1.Data.Object;
 
 namespace OutOfSchool.WebApi.Services.Gcp
 {
+    /// <summary>
+    /// Represents a gcp image files sync storage. It's used to synchronize gcp files with a database.
+    /// </summary>
     public class GcpImagesStorageSynchronizationService : IGcpStorageSynchronizationService
     {
         private const string ListObjectOptionsFields = "items(name,timeCreated),nextPageToken";
@@ -53,6 +56,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
 
         private List<Func<IEnumerable<string>, Task<List<string>>>> GetAllSyncFunctions { get; }
 
+        /// <inheritdoc/>
         public async Task SynchronizeAsync(CancellationToken cancellationToken = default)
         {
             try

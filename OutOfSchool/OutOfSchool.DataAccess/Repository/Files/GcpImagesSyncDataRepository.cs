@@ -8,6 +8,9 @@ using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Repository.Files
 {
+    /// <summary>
+    /// Represents an images sync repository.
+    /// </summary>
     public class GcpImagesSyncDataRepository : IGcpImagesSyncDataRepository
     {
         private readonly OutOfSchoolDbContext dbContext;
@@ -30,12 +33,15 @@ namespace OutOfSchool.Services.Repository.Files
 
         #region EntityCoverImages
 
+        /// <inheritdoc/>
         public async Task<List<string>> GetIntersectWorkshopCoverImagesIds(IEnumerable<string> searchIds)
             => await GetIntersectEntityCoverImagesIds(workshopSet, searchIds).ConfigureAwait(false);
 
+        /// <inheritdoc/>
         public async Task<List<string>> GetIntersectTeacherCoverImagesIds(IEnumerable<string> searchIds)
             => await GetIntersectEntityCoverImagesIds(teacherSet, searchIds).ConfigureAwait(false);
 
+        /// <inheritdoc/>
         public async Task<List<string>> GetIntersectProviderCoverImagesIds(IEnumerable<string> searchIds)
             => await GetIntersectEntityCoverImagesIds(providerSet, searchIds).ConfigureAwait(false);
 
@@ -43,9 +49,11 @@ namespace OutOfSchool.Services.Repository.Files
 
         #region EntityImages
 
+        /// <inheritdoc/>
         public async Task<List<string>> GetIntersectWorkshopImagesIds(IEnumerable<string> searchIds)
             => await GetIntersectEntityImagesIds(workshopImagesSet, searchIds).ConfigureAwait(false);
 
+        /// <inheritdoc/>
         public async Task<List<string>> GetIntersectProviderImagesIds(IEnumerable<string> searchIds)
             => await GetIntersectEntityImagesIds(providerImagesSet, searchIds).ConfigureAwait(false);
 
