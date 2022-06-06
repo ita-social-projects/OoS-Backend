@@ -1,12 +1,12 @@
 ﻿USE out_of_school;
 
-#delete from directioninstitutionhierarchy;
-#delete from institutionfielddescriptions;
-#delete from institutionhierarchies where HierarchyLevel = 4;
-#delete from institutionhierarchies where HierarchyLevel = 3;
-#delete from institutionhierarchies where HierarchyLevel = 2;
-#delete from institutionhierarchies where HierarchyLevel = 1;
-#delete from institutions;
+delete from directioninstitutionhierarchy;
+delete from institutionfielddescriptions;
+delete from institutionhierarchies where HierarchyLevel = 4;
+delete from institutionhierarchies where HierarchyLevel = 3;
+delete from institutionhierarchies where HierarchyLevel = 2;
+delete from institutionhierarchies where HierarchyLevel = 1;
+delete from institutions;
 
 #Institutions
 
