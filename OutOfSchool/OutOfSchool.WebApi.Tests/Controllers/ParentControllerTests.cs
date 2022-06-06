@@ -85,7 +85,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     MiddleName = "MiddleName",
                     DateOfBirth = new DateTime(2005, 2, 23),
                     Gender = Gender.Male,
-                    SocialGroupId = 1,
+                    SocialGroups = new List<SocialGroupDto>
+                    {
+                        new SocialGroupDto{ Id = 1, Name = "FakeSocialGroup" },
+                    },
                     ParentId = Guid.NewGuid(),
                 },
                 new ChildDto()
@@ -96,7 +99,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     MiddleName = "MiddleName",
                     DateOfBirth = new DateTime(2005, 2, 23),
                     Gender = Gender.Female,
-                    SocialGroupId = 1,
+                    SocialGroups = new List<SocialGroupDto>
+                    {
+                        new SocialGroupDto{ Id = 1, Name = "FakeSocialGroup" },
+                    },
                     ParentId = Guid.NewGuid(),
                 },
             };

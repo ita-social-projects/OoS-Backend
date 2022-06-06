@@ -37,7 +37,7 @@ namespace OutOfSchool.WebApi.Models
 
         public Guid ParentId { get; set; } = default;
 
-        public List<SocialGroupDto> SocialGroups { get; set; }
+        public List<SocialGroupDto> SocialGroups { get; set; } = new List<SocialGroupDto>();
 
         // TODO: define if we really need this in dto
         [JsonIgnore]

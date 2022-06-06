@@ -174,6 +174,7 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ChildDto, Child>(childDto, cfg =>
             {
                 cfg.CreateMap<ChildDto, Child>();
+                cfg.CreateMap<SocialGroupDto, SocialGroup>();
                 cfg.CreateMap<ParentDTO, Parent>();
             });
         }
