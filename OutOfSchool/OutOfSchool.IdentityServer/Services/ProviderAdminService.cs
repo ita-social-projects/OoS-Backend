@@ -157,7 +157,7 @@ namespace OutOfSchool.IdentityServer.Services
                     var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
                     var confirmationLink = url.Action(
                         "EmailConfirmation", "Account",
-                        new {userId = user.Id, token},
+                        new { userId = user.Id, token },
                         "https");
                     var subject = "Запрошення!";
                     var adminInvitationViewModel = new AdminInvitationViewModel
@@ -273,7 +273,6 @@ namespace OutOfSchool.IdentityServer.Services
             return result;
         }
 
-        // TODO: Maybe add transactions later?
         public async Task<ResponseDto> BlockProviderAdminAsync(
             string providerAdminId,
             string userId,
@@ -294,42 +293,70 @@ namespace OutOfSchool.IdentityServer.Services
                 return response;
             }
 
-            user.IsBlocked = true;
-            var updateResult = await userManager.UpdateAsync(user);
+            var executionStrategy = context.Database.CreateExecutionStrategy();
+            return await executionStrategy.Execute(BlockProviderAdminOperation).ConfigureAwait(false);
 
-            if (!updateResult.Succeeded)
+            async Task<ResponseDto> BlockProviderAdminOperation()
             {
-                logger.LogError($"Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
-                            $"User(id): {userId}" +
-                            $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+                await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+                try
+                {
+                    user.IsBlocked = true;
+                    var updateResult = await userManager.UpdateAsync(user);
 
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                    if (!updateResult.Succeeded)
+                    {
+                        await transaction.RollbackAsync().ConfigureAwait(false);
 
-                return response;
+                        logger.LogError($"Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId}" +
+                                    $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+
+                        response.IsSuccess = false;
+                        response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                        return response;
+                    }
+
+                    var updateSecurityStamp = await userManager.UpdateSecurityStampAsync(user);
+
+                    if (!updateSecurityStamp.Succeeded)
+                    {
+                        await transaction.RollbackAsync().ConfigureAwait(false);
+
+                        logger.LogError($"Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId}" +
+                                    $"{string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description))}");
+
+                        response.IsSuccess = false;
+                        response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                        return response;
+                    }
+
+                    await transaction.CommitAsync().ConfigureAwait(false);
+
+                    logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully blocked by " +
+                                $"User(id): {userId}. Request(id): {requestId}");
+
+                    response.IsSuccess = true;
+                    response.HttpStatusCode = HttpStatusCode.OK;
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync().ConfigureAwait(false);
+
+                    logger.LogError($"Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId} {ex.Message}");
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
             }
-
-            var updateSecurityStamp = await userManager.UpdateSecurityStampAsync(user);
-
-            if (!updateSecurityStamp.Succeeded)
-            {
-                logger.LogError($"Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
-                            $"User(id): {userId}" +
-                            $"{string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description))}");
-
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                return response;
-            }
-
-            logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully blocked by " +
-                        $"User(id): {userId}. Request(id): {requestId}");
-
-            response.IsSuccess = true;
-            response.HttpStatusCode = HttpStatusCode.OK;
-
-            return response;
         }
     }
 }
