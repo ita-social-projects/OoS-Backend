@@ -73,6 +73,35 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
         }
 
         [Test]
+        public async Task AddChangesLogToDbContext_LongValues_AreLimited()
+        {
+            // Arrange
+            const int maxLength = 500;
+            using var context = GetContext();
+            var changesLogRepository = GetChangesLogRepository(context);
+            var trackedFields = new[] { "FullTitle" };
+            var provider = await context.Providers.FirstOrDefaultAsync();
+
+            var oldFullTitle = provider.FullTitle;
+
+            // Act
+            provider.FullTitle += new string('-', maxLength * 2);
+
+            var newFullTitle = provider.FullTitle;
+
+            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields);
+
+            // Assert
+            var fullTitleChanges = context.ChangesLog.Local
+                .Single(x => x.EntityType == "Provider" && x.FieldName == "FullTitle");
+
+            Assert.True(oldFullTitle.StartsWith(fullTitleChanges.OldValue));
+            Assert.True(newFullTitle.StartsWith(fullTitleChanges.NewValue));
+            Assert.AreEqual(Math.Min(maxLength, oldFullTitle.Length), fullTitleChanges.OldValue.Length);
+            Assert.AreEqual(Math.Min(maxLength, newFullTitle.Length), fullTitleChanges.NewValue.Length);
+        }
+
+        [Test]
         public async Task AddChangesLogToDbContext_WhenEntityIsNotModified_DoesNotAddLogToDbContext()
         {
             // Arrange

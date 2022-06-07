@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 
@@ -125,8 +126,8 @@ namespace OutOfSchool.Services.Repository
                 FieldName = fieldName,
                 EntityIdGuid = entityIdGuid,
                 EntityIdLong = entityIdLong,
-                OldValue = oldValue,
-                NewValue = newValue,
+                OldValue = oldValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>("OldValue") ?? 0),
+                NewValue = newValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>("NewValue") ?? 0),
                 UpdatedDate = DateTime.Now,
                 UserId = userId,
             };
