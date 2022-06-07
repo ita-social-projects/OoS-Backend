@@ -102,7 +102,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<Class, bool>>>(),
                 null,
-                true))
+                true,
+                false))
                 .Returns(mockDbResponse);
 
             // Act and Assert
@@ -375,7 +376,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Class, bool>>>(),
                     null,
-                    true))
+                    true,
+                    false))
                 .Returns(expectedEntity.AsTestAsyncEnumerableQuery());
             repo.Setup(r => r.DepartmentExists(id)).Returns(true);
             mapper.Setup(m => m.Map<List<ClassDto>>(It.IsAny<List<Class>>())).Returns(expectedDto);
@@ -391,7 +393,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Class, bool>>>(),
                     null,
-                    true), Times.Once);
+                    true,
+                    false), Times.Once);
             Assert.That(entities.Count(), Is.EqualTo(expectedEntity.Count()));
         }
 

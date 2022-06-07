@@ -108,7 +108,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
                 null,
-                true))
+                true,
+                false))
                 .Returns(mockDbResponse);
 
             // Act

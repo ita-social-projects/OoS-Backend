@@ -297,7 +297,14 @@ namespace OutOfSchool.WebApi.Tests.Services
             SetupGetAllBy(existingApplications);
             var filter = new ApplicationFilter();
             var mockQuery = existingApplications.AsTestAsyncEnumerableQuery();
-            applicationRepositoryMock.Setup(r => r.Get<int>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<Expression<Func<Application, bool>>>(), null, true)).Returns(mockQuery);
+            applicationRepositoryMock.Setup(r => r.Get<int>(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                null,
+                true,
+                false)).Returns(mockQuery);
 
             // Act
             var result = await service.GetAllByParent(existingApplications.First().ParentId, filter).ConfigureAwait(false);
@@ -311,7 +318,14 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var mockQuery = new List<Application>().AsTestAsyncEnumerableQuery();
-            applicationRepositoryMock.Setup(r => r.Get<int>(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<Expression<Func<Application, bool>>>(), null, true)).Returns(mockQuery);
+            applicationRepositoryMock.Setup(r => r.Get<int>(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<Expression<Func<Application, bool>>>(),
+                null,
+                true,
+                false)).Returns(mockQuery);
 
             // Act
             var filter = new ApplicationFilter();
@@ -388,6 +402,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(applicationsMock.Object)
                 .Verifiable();
@@ -395,7 +410,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>())).ReturnsAsync(changedEntity);
             applicationRepositoryMock.Setup(a => a.GetById(It.IsAny<Guid>())).ReturnsAsync(changedEntity);
             mapper.Setup(m => m.Map<ApplicationDto>(It.IsAny<Application>())).Returns(new ApplicationDto() { Id = id });
-            var expected = new ApplicationDto() {Id = id};
+            var expected = new ApplicationDto() { Id = id };
 
             // Act
             var result = await service.Update(expected, userId).ConfigureAwait(false);
@@ -479,6 +494,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Child, bool>>>(),
                     It.IsAny<Expression<Func<Child, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(childsMock.Object)
                 .Verifiable();
@@ -520,6 +536,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(applicationsMock.Object)
                 .Verifiable();
@@ -537,6 +554,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(emptyApplicationsList.Object)
                 .Verifiable();
@@ -555,6 +573,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(workshopsMock.Object)
                 .Verifiable();
@@ -564,6 +583,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(applicationsMock.Object)
                 .Verifiable();
@@ -582,6 +602,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(emptyWorkshopsList.Object)
                 .Verifiable();
@@ -591,6 +612,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(emptyApplicationsList.Object)
                 .Verifiable();
@@ -618,6 +640,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(applicationsMock.Object)
                 .Verifiable();

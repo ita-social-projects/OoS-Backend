@@ -127,9 +127,17 @@ namespace OutOfSchool.Services.Repository
         /// <param name="where">Filter.</param>
         /// <param name="orderBy">Filter that defines by wich property we want to order by.</param>
         /// <param name="ascending">Ascending or descending ordering.</param>
+        /// <param name="asNoTracking">Define if the result set will be tracked by the context.</param>
         /// <returns>>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains an ordered, filtered <see cref="IQueryable{T}"/>.</returns>
-        IQueryable<TEntity> Get<TOrderKey>(int skip = 0, int take = 0, string includeProperties = "", Expression<Func<TEntity, bool>> where = null, Expression<Func<TEntity, TOrderKey>> orderBy = null, bool ascending = true);
+        IQueryable<TEntity> Get<TOrderKey>(
+            int skip = 0,
+            int take = 0,
+            string includeProperties = "",
+            Expression<Func<TEntity, bool>> where = null,
+            Expression<Func<TEntity, TOrderKey>> orderBy = null,
+            bool ascending = true,
+            bool asNoTracking = false);
     }
 
     /// <summary>

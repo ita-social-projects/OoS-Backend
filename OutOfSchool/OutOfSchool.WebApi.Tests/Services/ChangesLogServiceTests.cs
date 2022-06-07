@@ -157,6 +157,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     "User",
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                     It.IsAny<Expression<Func<ChangesLog, dynamic>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
 

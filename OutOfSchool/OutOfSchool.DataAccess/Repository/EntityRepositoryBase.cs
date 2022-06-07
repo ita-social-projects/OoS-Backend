@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using OutOfSchool.Services.Extensions;
 
 namespace OutOfSchool.Services.Repository
 {
@@ -152,9 +153,9 @@ namespace OutOfSchool.Services.Repository
         /// <inheritdoc/>
         public virtual Task<bool> Any(Expression<Func<TValue, bool>> where = null)
         {
-           return where == null
-                    ? dbSet.AnyAsync()
-                    : dbSet.Where(where).AnyAsync();
+            return where == null
+                     ? dbSet.AnyAsync()
+                     : dbSet.Where(where).AnyAsync();
         }
 
         /// <inheritdoc/>
@@ -164,7 +165,8 @@ namespace OutOfSchool.Services.Repository
             string includeProperties = "",
             Expression<Func<TValue, bool>> where = null,
             Expression<Func<TValue, TOrderKey>> orderBy = null,
-            bool ascending = true)
+            bool ascending = true,
+            bool asNoTracking = false)
         {
             IQueryable<TValue> query = (IQueryable<TValue>)dbSet;
             if (where != null)
@@ -200,7 +202,7 @@ namespace OutOfSchool.Services.Repository
                 query = query.Include(includeProperty);
             }
 
-            return query;
+            return query.If(asNoTracking, q => q.AsNoTracking());
         }
     }
 }
