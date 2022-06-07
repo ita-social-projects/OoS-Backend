@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models.Changes
 {
     public class ChangesLogDto
     {

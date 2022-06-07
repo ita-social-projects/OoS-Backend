@@ -11,6 +11,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
