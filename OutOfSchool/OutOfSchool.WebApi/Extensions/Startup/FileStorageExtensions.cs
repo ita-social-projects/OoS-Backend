@@ -20,6 +20,13 @@ namespace OutOfSchool.WebApi.Extensions.Startup
 {
     public static class FileStorageExtensions
     {
+        /// <summary>
+        /// Adds images storage into the services.
+        /// </summary>
+        /// <param name="services">Service collection.</param>
+        /// <param name="turnOnFakeStorage">Parameter that checks whether we should use fake storage.</param>
+        /// <returns><see cref="IServiceCollection"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
         public static IServiceCollection AddImagesStorage(this IServiceCollection services, bool turnOnFakeStorage = false)
         {
             _ = services ?? throw new ArgumentNullException(nameof(services));
@@ -49,6 +56,13 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                 => new GcpImagesStorage(provider.GetRequiredService<IGcpStorageContext>()));
         }
 
+        /// <summary>
+        /// Adds all essential methods to synchronize gcp files with the main database.
+        /// </summary>
+        /// <param name="services">Service collection.</param>
+        /// <param name="configuration"><see cref="Castle.Core.Configuration.IConfiguration"/> instance.</param>
+        /// <returns><see cref="IServiceCollection"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
         public static IServiceCollection AddGcpSynchronization(this IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _ = services ?? throw new ArgumentNullException(nameof(services));
