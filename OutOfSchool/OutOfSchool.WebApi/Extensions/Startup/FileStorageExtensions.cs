@@ -10,6 +10,7 @@ using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Common.QuartzConstants;
+using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Services.Elasticsearch;
 using OutOfSchool.WebApi.Services.Gcp;
 using OutOfSchool.WebApi.Services.Images;
@@ -72,7 +73,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
             services.AddScoped<IGcpImagesSyncDataRepository, GcpImagesSyncDataRepository>();
             services.AddScoped<IGcpStorageSynchronizationService, GcpImagesStorageSynchronizationService>();
 
-            var cronSchedule = configuration.GetValue<string>("Quartz:CronSchedules:GcpImagesSyncCronScheduleString");
+            var cronSchedule = configuration.GetSection(QuartzCronScheduleConfig.Name).Get<QuartzCronScheduleConfig>();
 
             var gcpImagesJobKey = new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp);
 
@@ -81,7 +82,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                 .WithIdentity(JobTriggerConstants.GcpImagesSynchronization, GroupConstants.Gcp)
                 .ForJob(gcpImagesJobKey)
                 .StartNow()
-                .WithCronSchedule(cronSchedule));
+                .WithCronSchedule(cronSchedule.GcpImagesSyncCronScheduleString));
 
             return services;
         }
