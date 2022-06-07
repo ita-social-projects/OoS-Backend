@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MySqlConnector;
 using OutOfSchool.Common.Extensions.Startup;
+using OutOfSchool.WebApi.Common.QuartzConstants;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Elasticsearch;
@@ -33,11 +34,11 @@ namespace OutOfSchool.WebApi.Extensions
 
             if (elasticSynchronizationSchedulerConfig.UseQuartz)
             {
-                var jobKey = new JobKey("elasticsearchJob", "elasticsearch");
+                var jobKey = new JobKey(JobConstants.ElasticSearchSynchronization, GroupConstants.ElasticSearch);
 
                 QuartzPool.AddJob<ElasticsearchSynchronizationQuartz>(j => j.WithIdentity(jobKey));
                 QuartzPool.AddTrigger(t => t
-                       .WithIdentity("elasticsearchJobTrigger")
+                       .WithIdentity(JobTriggerConstants.ElasticSearchSynchronization, GroupConstants.ElasticSearch)
                        .ForJob(jobKey)
                        .StartNow()
                        .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig.DelayBetweenTasksInMilliseconds)).RepeatForever()));
