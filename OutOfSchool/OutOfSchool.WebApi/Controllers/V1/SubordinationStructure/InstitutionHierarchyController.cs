@@ -17,7 +17,6 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    [Authorize]
     public class InstitutionHierarchyController : Controller
     {
         private readonly IInstitutionHierarchyService service;
@@ -39,7 +38,7 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure
         /// <response code="204">No InstitutionHierarchy was found.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize]
+        [HasPermission(Permissions.WorkshopEdit)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<InstitutionHierarchyDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -66,7 +65,7 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure
         /// <response code="400">Id was wrong.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize]
+        [HasPermission(Permissions.WorkshopEdit)]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionHierarchyDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -86,7 +85,7 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure
         /// <response code="400">Id was wrong.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize]
+        [HasPermission(Permissions.WorkshopEdit)]
         [HttpGet("{id?}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionHierarchyDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -106,7 +105,7 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure
         /// <response code="400">Id was wrong.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
-        [Authorize]
+        [HasPermission(Permissions.WorkshopEdit)]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionHierarchyDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

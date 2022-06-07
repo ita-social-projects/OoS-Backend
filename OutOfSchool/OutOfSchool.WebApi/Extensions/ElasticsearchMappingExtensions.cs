@@ -8,6 +8,7 @@ using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Extensions
 {
+    // TODO: create a mapping profile instead of extensions
     public static class ElasticsearchMappingExtensions
     {
         // From DTO to ES models
