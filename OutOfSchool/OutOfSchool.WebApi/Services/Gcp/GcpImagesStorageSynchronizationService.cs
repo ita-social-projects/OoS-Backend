@@ -64,7 +64,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
                 logger.LogDebug("Gcp storage synchronization was started");
 
                 // gcp returns data by local time
-                var dateTime = DateTime.Now.AddMinutes(-1);
+                var dateTime = DateTime.Now.AddHours(-1);
 
                 var listsOfObjects = GetListsOfObjects().ConfigureAwait(false);
 
