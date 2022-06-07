@@ -1,3 +1,5 @@
+#if DEBUG
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -37,3 +39,5 @@ namespace OutOfSchool.WebApi.Util.FakeImplementations
         }
     }
 }
+
+#endif
