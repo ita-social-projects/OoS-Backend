@@ -1,9 +1,8 @@
-﻿using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.SubordinationStructure;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Models.SubordinationStructure;
 
 namespace OutOfSchool.WebApi.Services.SubordinationStructure
 {
@@ -28,12 +27,20 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         Task<List<InstitutionHierarchyDto>> GetAll();
 
         /// <summary>
-        /// Get all InstitutionHierarchy objects from DB.
+        /// Get all children of InstitutionHierarchy objects from DB.
         /// </summary>
         /// <param name="parentId">Key in the table for parent field.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
         Task<List<InstitutionHierarchyDto>> GetChildren(Guid? parentId);
+
+        /// <summary>
+        /// Get all parents of InstitutionHierarchy objects from DB.
+        /// </summary>
+        /// <param name="childId">Key in the table for child field.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
+        Task<List<InstitutionHierarchyDto>> GetParents(Guid childId);
 
         /// <summary>
         /// To recieve the InstitutionHierarchy object with define id.

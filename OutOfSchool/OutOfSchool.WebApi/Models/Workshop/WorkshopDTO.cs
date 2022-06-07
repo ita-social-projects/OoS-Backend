@@ -104,6 +104,10 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public long AddressId { get; set; }
 
+        public Guid? InstitutionHierarchyId { get; set; }
+
+        public string InstitutionHierarchy { get; set; }
+
         [Required]
         public long DirectionId { get; set; }
 
@@ -130,6 +134,8 @@ namespace OutOfSchool.WebApi.Models
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<IFormFile> ImageFiles { get; set; }
+
+        public List<DirectionDto> Directions { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

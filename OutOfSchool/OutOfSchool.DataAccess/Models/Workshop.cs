@@ -9,6 +9,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.Images;
+using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models
 {
@@ -89,6 +90,8 @@ namespace OutOfSchool.Services.Models
         [Required]
         public long AddressId { get; set; }
 
+        public Guid? InstitutionHierarchyId { get; set; }
+
         [Required]
         public long DirectionId { get; set; }
 
@@ -101,6 +104,8 @@ namespace OutOfSchool.Services.Models
         public WorkshopStatus Status { get; set; }
 
         public virtual Provider Provider { get; set; }
+
+        public virtual InstitutionHierarchy InstitutionHierarchy { get; set; }
 
         public virtual Direction Direction { get; set; }
 

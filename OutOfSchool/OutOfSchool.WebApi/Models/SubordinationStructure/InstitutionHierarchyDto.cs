@@ -10,14 +10,12 @@ namespace OutOfSchool.WebApi.Models.SubordinationStructure
         public Guid Id { get; set; }
 
         [MinLength(1)]
-        [MaxLength(100)]
+        [MaxLength(200)]
         public string Title { get; set; }
 
         public int HierarchyLevel { get; set; }
 
         public Guid? ParentId { get; set; }
-
-        public virtual InstitutionHierarchy Parent { get; set; }
 
         [Required]
         public Guid InstitutionId { get; set; }
