@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Quartz;
 
@@ -9,14 +10,11 @@ namespace OutOfSchool.WebApi.Util
     /// </summary>
     public static class QuartzPool
     {
-        private static List<Action<IServiceCollectionQuartzConfigurator>> quartzConfigActions
-            = new List<Action<IServiceCollectionQuartzConfigurator>>();
-
         /// <summary>
         /// Gets all quartz config actions.
         /// </summary>
-        public static IReadOnlyList<Action<IServiceCollectionQuartzConfigurator>> GetQuartzConfigActions
-            => quartzConfigActions.AsReadOnly();
+        public static ConcurrentBag<Action<IServiceCollectionQuartzConfigurator>> QuartzConfigActions { get; }
+            = new ConcurrentBag<Action<IServiceCollectionQuartzConfigurator>>();
 
         /// <summary>
         /// Adds a job to the quartz pool.
@@ -26,7 +24,7 @@ namespace OutOfSchool.WebApi.Util
         public static void AddJob<T>(Action<IJobConfigurator> configure = null)
             where T : IJob
         {
-            quartzConfigActions.Add(q => q.AddJob<T>(configure));
+            QuartzConfigActions.Add(q => q.AddJob<T>(configure));
         }
 
         /// <summary>
@@ -35,12 +33,12 @@ namespace OutOfSchool.WebApi.Util
         /// <param name="configure">Configures a given trigger.</param>
         public static void AddTrigger(Action<ITriggerConfigurator> configure = null)
         {
-            quartzConfigActions.Add(t => t.AddTrigger(configure));
+            QuartzConfigActions.Add(t => t.AddTrigger(configure));
         }
 
         /// <summary>
         /// Clears all quartz config actions in pool. Make sure they've been configured by default quartz before this action.
         /// </summary>
-        public static void ClearAll() => quartzConfigActions = new List<Action<IServiceCollectionQuartzConfigurator>>();
+        public static void ClearAll() => QuartzConfigActions.Clear();
     }
 }

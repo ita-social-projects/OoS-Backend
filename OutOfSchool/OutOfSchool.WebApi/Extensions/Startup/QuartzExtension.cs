@@ -13,6 +13,13 @@ namespace OutOfSchool.WebApi.Extensions.Startup
 {
     public static class QuartzExtension
     {
+        /// <summary>
+        /// Adds default Quartz.
+        /// </summary>
+        /// <param name="services">Service collection.</param>
+        /// <param name="configuration">App configuration.</param>
+        /// <returns><see cref="IServiceCollection"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
         public static IServiceCollection AddDefaultQuartz(
             this IServiceCollection services,
             IConfiguration configuration)
@@ -44,7 +51,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                 q.SetProperty("quartz.jobStore.useProperties", "true");
                 q.UseMicrosoftDependencyInjectionJobFactory();
 
-                foreach (var quartzAction in QuartzPool.GetQuartzConfigActions)
+                foreach (var quartzAction in QuartzPool.QuartzConfigActions)
                 {
                     quartzAction?.Invoke(q);
                 }
