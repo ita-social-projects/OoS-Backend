@@ -19,11 +19,11 @@ namespace OutOfSchool.WebApi.Services.Gcp
 
         public async Task Execute(IJobExecutionContext context)
         {
-            logger.LogDebug("Gcp storage synchronization job was started");
+            logger.LogInformation("Gcp storage synchronization job was started");
 
             await gcpStorageSynchronizationService.SynchronizeAsync().ConfigureAwait(false);
 
-            logger.LogDebug("Gcp storage synchronization job was finished");
+            logger.LogInformation("Gcp storage synchronization job was finished");
         }
     }
 }
