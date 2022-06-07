@@ -15,11 +15,24 @@ namespace OutOfSchool.WebApi.Extensions
 {
     public static class ElasticsearchSynchronizationExtension
     {
+        /// <summary>
+        /// Adds all essential methods to synchronize elasticsearch data with the main database.
+        /// </summary>
+        /// <param name="services">Service collection.</param>
+        /// <param name="configuration">App configuration.</param>
+        /// <param name="elasticsearchSynchronizationSchedulerConfig">Scheduler config.</param>
+        /// <returns><see cref="IServiceCollection"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
         public static IServiceCollection AddElasticsearchSynchronization(
             this IServiceCollection services,
-            Action<OptionsBuilder<ElasticsearchSynchronizationSchedulerConfig>> elasticsearchSynchronizationSchedulerConfig,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            Action<OptionsBuilder<ElasticsearchSynchronizationSchedulerConfig>> elasticsearchSynchronizationSchedulerConfig = null)
         {
+            _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
+            elasticsearchSynchronizationSchedulerConfig ??= builder =>
+                builder.Bind(configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName));
+
             services.AddTransient<IElasticsearchSynchronizationService, ElasticsearchSynchronizationService>();
 
             if (elasticsearchSynchronizationSchedulerConfig == null)

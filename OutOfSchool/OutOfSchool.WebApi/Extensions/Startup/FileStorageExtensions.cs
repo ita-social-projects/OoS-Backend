@@ -61,12 +61,13 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         /// Adds all essential methods to synchronize gcp files with the main database.
         /// </summary>
         /// <param name="services">Service collection.</param>
-        /// <param name="configuration"><see cref="Castle.Core.Configuration.IConfiguration"/> instance.</param>
+        /// <param name="configuration">App configuration.</param>
         /// <returns><see cref="IServiceCollection"/> instance.</returns>
         /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
         public static IServiceCollection AddGcpSynchronization(this IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _ = services ?? throw new ArgumentNullException(nameof(services));
+            _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             services.AddScoped<IGcpImagesSyncDataRepository, GcpImagesSyncDataRepository>();
             services.AddScoped<IGcpStorageSynchronizationService, GcpImagesStorageSynchronizationService>();
