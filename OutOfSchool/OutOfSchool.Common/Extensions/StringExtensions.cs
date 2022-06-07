@@ -14,5 +14,10 @@ namespace OutOfSchool.Common.Extensions
 
             return Enum.TryParse<TEnum>(value, true, out var result) ? result : defaultValue;
         }
+
+        public static string Limit(this string value, int maxLength)
+            => value.Length <= maxLength || maxLength <= 0
+            ? value
+            : value.Substring(0, maxLength);
     }
 }

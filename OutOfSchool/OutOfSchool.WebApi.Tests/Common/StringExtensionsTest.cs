@@ -39,6 +39,17 @@ namespace OutOfSchool.WebApi.Tests.Common
             Assert.AreEqual(Test.Example, result);
         }
 
+        [TestCase("abcde12345", 1, "a")]
+        [TestCase("abcde12345", 5, "abcde")]
+        [TestCase("abcde12345", 100, "abcde12345")]
+        [TestCase("abcde12345", 0, "abcde12345")]
+        [TestCase("abcde12345", -1, "abcde12345")]
+        public void Limit(string initialValue, int maxLength, string expectedResult)
+        {
+            var result = initialValue.Limit(maxLength);
+            Assert.AreEqual(expectedResult, result);
+        }
+
         internal enum Test
         {
             Default,
