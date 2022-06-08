@@ -27,6 +27,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IChangesLogRepository> changesLogRepository;
         private Mock<IProviderRepository> providerRepository;
         private Mock<IApplicationRepository> applicationRepository;
+        private Mock<IEntityRepository<ProviderAdminChangesLog>> providerAdminChangesLogRepository;
 
         private User user;
         private Provider provider;
@@ -42,6 +43,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             changesLogRepository = new Mock<IChangesLogRepository>(MockBehavior.Strict);
             providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
             applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
+            providerAdminChangesLogRepository = new Mock<IEntityRepository<ProviderAdminChangesLog>>(MockBehavior.Strict);
         }
 
         #region AddEntityChangesToDbContext
@@ -168,7 +170,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Setup(repo => repo.Get(
                     request.From,
                     request.Size,
-                    "User",
+                    string.Empty,
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                     It.IsAny<Expression<Func<ChangesLog, dynamic>>>(),
                     It.IsAny<bool>(),
@@ -212,6 +214,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 changesLogRepository.Object,
                 providerRepository.Object,
                 applicationRepository.Object,
+                providerAdminChangesLogRepository.Object,
                 logger.Object,
                 mapper.Object);
     }

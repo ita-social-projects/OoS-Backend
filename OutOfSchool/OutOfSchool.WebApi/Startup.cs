@@ -286,6 +286,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<INotificationRepository, NotificationRepository>();
             services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
             services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
+            services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
 
             // Institution hierarchy
             services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();

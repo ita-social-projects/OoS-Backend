@@ -22,6 +22,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IChangesLogRepository changesLogRepository;
         private readonly IProviderRepository providerRepository;
         private readonly IApplicationRepository applicationRepository;
+        private readonly IEntityRepository<ProviderAdminChangesLog> providerAdminChangesLogRepository;
         private readonly ILogger<ChangesLogService> logger;
         private readonly IMapper mapper;
 
@@ -30,6 +31,7 @@ namespace OutOfSchool.WebApi.Services
             IChangesLogRepository changesLogRepository,
             IProviderRepository providerRepository,
             IApplicationRepository applicationRepository,
+            IEntityRepository<ProviderAdminChangesLog> providerAdminChangesLogRepository,
             ILogger<ChangesLogService> logger,
             IMapper mapper)
         {
@@ -37,6 +39,7 @@ namespace OutOfSchool.WebApi.Services
             this.changesLogRepository = changesLogRepository;
             this.providerRepository = providerRepository;
             this.applicationRepository = applicationRepository;
+            this.providerAdminChangesLogRepository = providerAdminChangesLogRepository;
             this.logger = logger;
             this.mapper = mapper;
         }
@@ -125,6 +128,37 @@ namespace OutOfSchool.WebApi.Services
             };
         }
 
+        public async Task<SearchResult<ProviderAdminChangesLogDto>> GetProviderAdminChangesLogAsync(ProviderAdminChangesLogRequest request)
+        {
+            ValidateFilter(request);
+
+            var where = GetQueryFilter(request);
+            var (orderBy, ascending) = GetProviderAdminChangesOrderParams();
+
+            var count = await providerAdminChangesLogRepository.Count(where).ConfigureAwait(false);
+            var query = providerAdminChangesLogRepository
+                .Get(request.From, request.Size, string.Empty, where, orderBy, ascending, true)
+                .Select(x => new ProviderAdminChangesLogDto
+                {
+                    ProviderAdminId = x.ProviderAdminUserId,
+                    ProviderAdminFullName = $"{x.ProviderAdminUser.LastName} {x.ProviderAdminUser.FirstName} {x.ProviderAdminUser.MiddleName}".TrimEnd(),
+                    ProviderTitle = x.Provider.FullTitle,
+                    WorkshopTitle = x.ManagedWorkshop.Title,
+                    WorkshopCity = x.ManagedWorkshop.Address.City,
+                    OperationType = x.OperationType,
+                    OperationDate = x.OperationDate,
+                    User = mapper.Map<ShortUserDto>(x.User),
+                });
+
+            var entities = await query.ToListAsync().ConfigureAwait(false);
+
+            return new SearchResult<ProviderAdminChangesLogDto>
+            {
+                Entities = entities,
+                TotalAmount = count,
+            };
+        }
+
         private async Task<(IQueryable<ChangesLog>, int)> GetChangesLogAsync(ChangesLogFilter filter)
         {
             ValidateFilter(filter);
@@ -133,7 +167,7 @@ namespace OutOfSchool.WebApi.Services
             var (orderBy, ascending) = GetOrderParams();
 
             var count = await changesLogRepository.Count(where).ConfigureAwait(false);
-            var query = changesLogRepository.Get(filter.From, filter.Size, "User", where, orderBy, ascending, true);
+            var query = changesLogRepository.Get(filter.From, filter.Size, string.Empty, where, orderBy, ascending, true);
 
             return (query, count);
         }
@@ -205,6 +239,36 @@ namespace OutOfSchool.WebApi.Services
             return expr;
         }
 
+        private Expression<Func<ProviderAdminChangesLog, bool>> GetQueryFilter(ProviderAdminChangesLogRequest request)
+        {
+            Expression<Func<ProviderAdminChangesLog, bool>> expr = null;
+
+            expr = request.AdminType switch
+            {
+                ProviderAdminType.All => expr,
+                ProviderAdminType.Deputies => expr.And(x => x.ManagedWorkshopId == null),
+                ProviderAdminType.Assistants => expr.And(x => x.ManagedWorkshopId != null),
+                _ => throw new NotImplementedException(),
+            };
+
+            if (request.OperationType != null)
+            {
+                expr = expr.And(x => x.OperationType == request.OperationType);
+            }
+
+            if (request.DateFrom.HasValue)
+            {
+                expr = expr.And(x => x.OperationDate >= request.DateFrom.Value.Date);
+            }
+
+            if (request.DateTo.HasValue)
+            {
+                expr = expr.And(x => x.OperationDate < request.DateTo.Value.Date.AddDays(1));
+            }
+
+            return expr;
+        }
+
         private (Expression<Func<ChangesLog, dynamic>> orderBy, bool ascending) GetOrderParams()
         {
             // Returns default ordering so far...
@@ -213,7 +277,15 @@ namespace OutOfSchool.WebApi.Services
             return (orderBy, false);
         }
 
-        private void ValidateFilter(ChangesLogFilterBase filter)
+        private (Expression<Func<ProviderAdminChangesLog, dynamic>> orderBy, bool ascending) GetProviderAdminChangesOrderParams()
+        {
+            // Returns default ordering so far...
+            Expression<Func<ProviderAdminChangesLog, dynamic>> orderBy = x => x.OperationDate;
+
+            return (orderBy, false);
+        }
+
+        private void ValidateFilter(OffsetFilter filter)
         {
             ModelValidationHelper.ValidateOffsetFilter(filter);
         }
