@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
             this.imagesStorage = imagesStorage ?? throw new ArgumentNullException(nameof(imagesStorage));
             this.gcpImagesSyncDataRepository = gcpImagesSyncDataRepository ?? throw new ArgumentNullException(nameof(gcpImagesSyncDataRepository));
 
-            GetAllSyncFunctions = new List<Func<IEnumerable<string>, Task<List<string>>>>
+            GetAllSynchronizationFunctions = new List<Func<IEnumerable<string>, Task<List<string>>>>
             {
                 // Entity images
                 gcpImagesSyncDataRepository.GetIntersectWorkshopImagesIds,
@@ -54,7 +54,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
             };
         }
 
-        private List<Func<IEnumerable<string>, Task<List<string>>>> GetAllSyncFunctions { get; }
+        private List<Func<IEnumerable<string>, Task<List<string>>>> GetAllSynchronizationFunctions { get; }
 
         /// <inheritdoc/>
         public async Task SynchronizeAsync(CancellationToken cancellationToken = default)
@@ -96,9 +96,9 @@ namespace OutOfSchool.WebApi.Services.Gcp
 
         private async Task<HashSet<string>> SynchronizeAll(HashSet<string> searchIds)
         {
-            foreach (var syncFunction in GetAllSyncFunctions)
+            foreach (var synchronizationFunction in GetAllSynchronizationFunctions)
             {
-                var syncResult = await syncFunction(searchIds).ConfigureAwait(false);
+                var syncResult = await synchronizationFunction(searchIds).ConfigureAwait(false);
                 if (syncResult != null)
                 {
                     searchIds.ExceptWith(syncResult);
