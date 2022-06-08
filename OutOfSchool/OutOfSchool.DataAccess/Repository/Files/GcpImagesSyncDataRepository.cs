@@ -59,30 +59,30 @@ namespace OutOfSchool.Services.Repository.Files
 
         #endregion
 
-        private async Task<List<string>> GetIntersectEntityCoverImagesIds<TEntity>(
+        private Task<List<string>> GetIntersectEntityCoverImagesIds<TEntity>(
             IQueryable<TEntity> dbSet,
             IEnumerable<string> searchIds)
             where TEntity : class, IKeyedEntity, IImageDependentEntity<TEntity>, new()
         {
             _ = searchIds ?? throw new ArgumentNullException(nameof(searchIds));
 
-            return await dbSet
+            return dbSet
                 .Where(x => searchIds.Contains(x.CoverImageId))
                 .Select(x => x.CoverImageId)
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync();
         }
 
-        private async Task<List<string>> GetIntersectEntityImagesIds<TEntity>(
+        private Task<List<string>> GetIntersectEntityImagesIds<TEntity>(
             IQueryable<Image<TEntity>> dbSet,
             IEnumerable<string> searchIds)
             where TEntity : class, IKeyedEntity, IImageDependentEntity<TEntity>, new()
         {
             _ = searchIds ?? throw new ArgumentNullException(nameof(searchIds));
 
-            return await dbSet
+            return dbSet
                 .Select(x => x.ExternalStorageId)
                 .Where(x => searchIds.Contains(x))
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync();
         }
     }
 }
