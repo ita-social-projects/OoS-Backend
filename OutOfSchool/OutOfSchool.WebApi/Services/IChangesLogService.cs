@@ -33,11 +33,11 @@ namespace OutOfSchool.WebApi.Services
             where TEntity : class, IKeyedEntity, new();
 
         /// <summary>
-        /// Get entities from the database that match filter's parameters.
+        /// Get Provider entities that match filter's parameters.
         /// </summary>
-        /// <param name="filter">Filter with specified searching parameters.</param>
+        /// <param name="request">Filter with specified searching parameters.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains the <see cref="SearchResult{ChangesLogDto}"/> that contains found elements.</returns>
-        Task<SearchResult<ChangesLogDto>> GetChangesLog(ChangesLogFilter filter);
+        /// The task result contains the <see cref="SearchResult{ProviderChangesLogDto}"/> that contains found elements.</returns>
+        Task<SearchResult<ProviderChangesLogDto>> GetProviderChangesLogAsync(ProviderChangesLogRequest request);
     }
 }

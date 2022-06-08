@@ -13,6 +13,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Services;
 
@@ -24,17 +25,21 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<ILogger<ChangesLogService>> logger;
         private Mock<IMapper> mapper;
         private Mock<IChangesLogRepository> changesLogRepository;
+        private Mock<IProviderRepository> providerRepository;
 
         private User user;
+        private Provider provider;
 
         [SetUp]
         public void SetUp()
         {
             user = UserGenerator.Generate();
+            provider = ProvidersGenerator.Generate();
 
             logger = new Mock<ILogger<ChangesLogService>>();
-            mapper = new Mock<IMapper>();
+            mapper = new Mock<IMapper>(MockBehavior.Strict);
             changesLogRepository = new Mock<IChangesLogRepository>(MockBehavior.Strict);
+            providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
         }
 
         #region AddEntityChangesToDbContext
@@ -131,42 +136,62 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         #region GetChangesLog
         [Test]
-        public async Task GetChangesLog_WhenCalled_ReturnsSearchResult()
+        public async Task GetProviderChangesLog_WhenCalled_ReturnsSearchResult()
         {
             // Arange
             var changesLogService = GetChangesLogService();
-            var filter = new ChangesLogFilter();
+            var request = new ProviderChangesLogRequest();
 
             var entitiesCount = 5;
             var totalAmount = 10;
             var changesMock = Enumerable.Range(1, entitiesCount)
-                .Select(x => new ChangesLog { Id = x })
+                .Select(x => new ChangesLog { Id = x, EntityIdGuid = provider.Id, User = user })
+                .AsQueryable()
+                .BuildMock();
+            var providersMock = new List<Provider> { provider }
                 .AsQueryable()
                 .BuildMock();
 
-            mapper.Setup(m => m.Map<IReadOnlyCollection<ChangesLogDto>>(It.IsAny<IReadOnlyCollection<ChangesLog>>()))
-                .Returns(changesMock.Object.Select(x => new ChangesLogDto()).ToList());
+            mapper.Setup(m => m.Map<IReadOnlyCollection<ProviderChangesLogDto>>(It.IsAny<IReadOnlyCollection<ChangesLog>>()))
+                .Returns(changesMock.Object.Select(x => new ProviderChangesLogDto()).ToList());
+            mapper.Setup(m => m.Map<ChangesLogFilter>(It.IsAny<ProviderChangesLogRequest>()))
+                .Returns(new ChangesLogFilter());
+            mapper.Setup(m => m.Map<ShortUserDto>(user))
+                .Returns(new ShortUserDto { Id = user.Id });
 
             changesLogRepository
                 .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
                 .Returns(Task.FromResult(totalAmount));
             changesLogRepository
                 .Setup(repo => repo.Get(
-                    filter.From,
-                    filter.Size,
+                    request.From,
+                    request.Size,
                     "User",
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                     It.IsAny<Expression<Func<ChangesLog, dynamic>>>(),
                     It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
+            providerRepository.Setup(repo => repo.Get(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Expression<Func<Provider, bool>>>(),
+                    It.IsAny<Expression<Func<Provider, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()))
+                .Returns(providersMock.Object);
 
             // Act
-            var result = await changesLogService.GetChangesLog(filter);
+            var result = await changesLogService.GetProviderChangesLogAsync(request);
 
             // Assert
             Assert.AreEqual(totalAmount, result.TotalAmount);
             Assert.AreEqual(entitiesCount, result.Entities.Count);
+            Assert.True(result.Entities.Any(x => x.ProviderId == provider.Id));
+            Assert.True(result.Entities.Any(x => x.ProviderTitle == provider.FullTitle));
+            Assert.True(result.Entities.Any(x => x.ProviderCity == provider.LegalAddress.City));
+            Assert.True(result.Entities.All(x => x.User.Id == user.Id));
         }
         #endregion
 
@@ -180,6 +205,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             });
 
         private IChangesLogService GetChangesLogService()
-            => new ChangesLogService(CreateChangesLogOptions(), changesLogRepository.Object, logger.Object, mapper.Object);
+            => new ChangesLogService(CreateChangesLogOptions(), changesLogRepository.Object, providerRepository.Object, logger.Object, mapper.Object);
     }
 }

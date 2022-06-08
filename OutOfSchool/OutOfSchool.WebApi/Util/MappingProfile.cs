@@ -161,12 +161,10 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<DepartmentDto, Department>().ReverseMap();
             CreateMap<DirectionDto, Direction>().ReverseMap();
 
-            CreateMap<ChangesLog, ChangesLogDto>()
-                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(c => c.EntityIdGuid.HasValue
-                    ? c.EntityIdGuid.ToString()
-                    : c.EntityIdLong.ToString()));
-
             CreateMap<User, ShortUserDto>();
+
+            CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
+                .AfterMap((src, dest) => dest.EntityType = "Provider");
         }
     }
 }

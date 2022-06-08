@@ -96,8 +96,8 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="predicate">Filter with key.</param>
         /// <param name="includeProperties">Name of properties which should be included.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
+        /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
+        /// satisfy the condition specified by predicate.
         IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> predicate, string includeProperties = "");
 
         /// <summary>
@@ -128,8 +128,8 @@ namespace OutOfSchool.Services.Repository
         /// <param name="orderBy">Filter that defines by wich property we want to order by.</param>
         /// <param name="ascending">Ascending or descending ordering.</param>
         /// <param name="asNoTracking">Define if the result set will be tracked by the context.</param>
-        /// <returns>>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains an ordered, filtered <see cref="IQueryable{T}"/>.</returns>
+        /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
+        /// satisfy the condition specified by predicate. An ordered, filtered <see cref="IQueryable{T}"/>.</returns>
         IQueryable<TEntity> Get<TOrderKey>(
             int skip = 0,
             int take = 0,

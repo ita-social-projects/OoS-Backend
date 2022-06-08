@@ -20,17 +20,20 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IOptions<ChangesLogConfig> config;
         private readonly IChangesLogRepository changesLogRepository;
+        private readonly IProviderRepository providerRepository;
         private readonly ILogger<ChangesLogService> logger;
         private readonly IMapper mapper;
 
         public ChangesLogService(
             IOptions<ChangesLogConfig> config,
             IChangesLogRepository changesLogRepository,
+            IProviderRepository providerRepository,
             ILogger<ChangesLogService> logger,
             IMapper mapper)
         {
             this.config = config;
             this.changesLogRepository = changesLogRepository;
+            this.providerRepository = providerRepository;
             this.logger = logger;
             this.mapper = mapper;
         }
@@ -58,25 +61,47 @@ namespace OutOfSchool.WebApi.Services
             where TEntity : class, IKeyedEntity, new()
             => AddPropertyChangesLogToDbContext<TEntity, Address>(entity, addressPropertyName, ProjectAddress, userId);
 
-        public async Task<SearchResult<ChangesLogDto>> GetChangesLog(ChangesLogFilter filter)
+        public async Task<SearchResult<ProviderChangesLogDto>> GetProviderChangesLogAsync(ProviderChangesLogRequest request)
         {
-            ValidateFilter(filter);
-
-            var where = GetQueryFilter(filter);
-            var (orderBy, ascending) = GetOrderParams(filter);
-
-            var count = await changesLogRepository.Count(where).ConfigureAwait(false);
-            var log = await changesLogRepository.Get(filter.From, filter.Size, "User", where, orderBy, ascending)
-                .ToListAsync()
+            var (changesLog, count) = await GetChangesLogAsync(mapper.Map<ChangesLogFilter>(request))
                 .ConfigureAwait(false);
+            var providers = providerRepository.Get<int>();
 
-            var entities = mapper.Map<IReadOnlyCollection<ChangesLogDto>>(log);
+            var query = from l in changesLog
+                        join p in providers
+                            on l.EntityIdGuid equals p.Id
+                        select new ProviderChangesLogDto
+                        {
+                            FieldName = l.FieldName,
+                            OldValue = l.OldValue,
+                            NewValue = l.NewValue,
+                            UpdatedDate = l.UpdatedDate,
+                            User = mapper.Map<ShortUserDto>(l.User),
+                            ProviderId = l.EntityIdGuid.Value,
+                            ProviderTitle = p.FullTitle,
+                            ProviderCity = p.LegalAddress.City,
+                        };
 
-            return new SearchResult<ChangesLogDto>
+            var entities = await query.ToListAsync().ConfigureAwait(false);
+
+            return new SearchResult<ProviderChangesLogDto>
             {
                 Entities = entities,
                 TotalAmount = count,
             };
+        }
+
+        private async Task<(IQueryable<ChangesLog>, int)> GetChangesLogAsync(ChangesLogFilter filter)
+        {
+            ValidateFilter(filter);
+
+            var where = GetQueryFilter(filter);
+            var (orderBy, ascending) = GetOrderParams();
+
+            var count = await changesLogRepository.Count(where).ConfigureAwait(false);
+            var query = changesLogRepository.Get(filter.From, filter.Size, "User", where, orderBy, ascending, true);
+
+            return (query, count);
         }
 
         private int AddPropertyChangesLogToDbContext<TEntity, TProperty>(
@@ -146,7 +171,7 @@ namespace OutOfSchool.WebApi.Services
             return expr;
         }
 
-        private (Expression<Func<ChangesLog, dynamic>> orderBy, bool ascending) GetOrderParams(ChangesLogFilter filter)
+        private (Expression<Func<ChangesLog, dynamic>> orderBy, bool ascending) GetOrderParams()
         {
             // Returns default ordering so far...
             Expression<Func<ChangesLog, dynamic>> orderBy = x => x.UpdatedDate;
@@ -154,7 +179,7 @@ namespace OutOfSchool.WebApi.Services
             return (orderBy, false);
         }
 
-        private void ValidateFilter(ChangesLogFilter filter)
+        private void ValidateFilter(ChangesLogFilterBase filter)
         {
             ModelValidationHelper.ValidateOffsetFilter(filter);
         }

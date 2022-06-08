@@ -2,13 +2,9 @@
 
 namespace OutOfSchool.WebApi.Models.Changes
 {
-    public class ChangesLogDto
+    public abstract class ChangesLogDtoBase
     {
-        public string EntityType { get; set; }
-
         public string FieldName { get; set; }
-
-        public string EntityId { get; set; }
 
         public string OldValue { get; set; }
 
