@@ -21,6 +21,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IOptions<ChangesLogConfig> config;
         private readonly IChangesLogRepository changesLogRepository;
         private readonly IProviderRepository providerRepository;
+        private readonly IApplicationRepository applicationRepository;
         private readonly ILogger<ChangesLogService> logger;
         private readonly IMapper mapper;
 
@@ -28,12 +29,14 @@ namespace OutOfSchool.WebApi.Services
             IOptions<ChangesLogConfig> config,
             IChangesLogRepository changesLogRepository,
             IProviderRepository providerRepository,
+            IApplicationRepository applicationRepository,
             ILogger<ChangesLogService> logger,
             IMapper mapper)
         {
             this.config = config;
             this.changesLogRepository = changesLogRepository;
             this.providerRepository = providerRepository;
+            this.applicationRepository = applicationRepository;
             this.logger = logger;
             this.mapper = mapper;
         }
@@ -85,6 +88,37 @@ namespace OutOfSchool.WebApi.Services
             var entities = await query.ToListAsync().ConfigureAwait(false);
 
             return new SearchResult<ProviderChangesLogDto>
+            {
+                Entities = entities,
+                TotalAmount = count,
+            };
+        }
+
+        public async Task<SearchResult<ApplicationChangesLogDto>> GetApplicationChangesLogAsync(ApplicationChangesLogRequest request)
+        {
+            var (changesLog, count) = await GetChangesLogAsync(mapper.Map<ChangesLogFilter>(request))
+                .ConfigureAwait(false);
+            var applications = applicationRepository.Get<int>();
+
+            var query = from l in changesLog
+                        join a in applications
+                            on l.EntityIdGuid equals a.Id
+                        select new ApplicationChangesLogDto
+                        {
+                            FieldName = l.FieldName,
+                            OldValue = l.OldValue,
+                            NewValue = l.NewValue,
+                            UpdatedDate = l.UpdatedDate,
+                            User = mapper.Map<ShortUserDto>(l.User),
+                            ApplicationId = l.EntityIdGuid.Value,
+                            WorkshopTitle = a.Workshop.Title,
+                            WorkshopCity = a.Workshop.Address.City,
+                            ProviderTitle = a.Workshop.ProviderTitle,
+                        };
+
+            var entities = await query.ToListAsync().ConfigureAwait(false);
+
+            return new SearchResult<ApplicationChangesLogDto>
             {
                 Entities = entities,
                 TotalAmount = count,

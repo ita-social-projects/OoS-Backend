@@ -165,6 +165,9 @@ namespace OutOfSchool.WebApi.Util
 
             CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
                 .AfterMap((src, dest) => dest.EntityType = "Provider");
+
+            CreateMap<ApplicationChangesLogRequest, ChangesLogFilter>()
+                .AfterMap((src, dest) => dest.EntityType = "Application");
         }
     }
 }

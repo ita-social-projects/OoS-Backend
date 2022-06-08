@@ -39,5 +39,13 @@ namespace OutOfSchool.WebApi.Services
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains the <see cref="SearchResult{ProviderChangesLogDto}"/> that contains found elements.</returns>
         Task<SearchResult<ProviderChangesLogDto>> GetProviderChangesLogAsync(ProviderChangesLogRequest request);
+
+        /// <summary>
+        /// Get Application entities that match filter's parameters.
+        /// </summary>
+        /// <param name="request">Filter with specified searching parameters.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the <see cref="SearchResult{ApplicationChangesLogDto}"/> that contains found elements.</returns>
+        Task<SearchResult<ApplicationChangesLogDto>> GetApplicationChangesLogAsync(ApplicationChangesLogRequest request);
     }
 }

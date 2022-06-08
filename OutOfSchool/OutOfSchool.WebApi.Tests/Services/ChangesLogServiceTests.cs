@@ -26,6 +26,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IMapper> mapper;
         private Mock<IChangesLogRepository> changesLogRepository;
         private Mock<IProviderRepository> providerRepository;
+        private Mock<IApplicationRepository> applicationRepository;
 
         private User user;
         private Provider provider;
@@ -40,6 +41,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             mapper = new Mock<IMapper>(MockBehavior.Strict);
             changesLogRepository = new Mock<IChangesLogRepository>(MockBehavior.Strict);
             providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
+            applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
         }
 
         #region AddEntityChangesToDbContext
@@ -205,6 +207,12 @@ namespace OutOfSchool.WebApi.Tests.Services
             });
 
         private IChangesLogService GetChangesLogService()
-            => new ChangesLogService(CreateChangesLogOptions(), changesLogRepository.Object, providerRepository.Object, logger.Object, mapper.Object);
+            => new ChangesLogService(
+                CreateChangesLogOptions(),
+                changesLogRepository.Object,
+                providerRepository.Object,
+                applicationRepository.Object,
+                logger.Object,
+                mapper.Object);
     }
 }
