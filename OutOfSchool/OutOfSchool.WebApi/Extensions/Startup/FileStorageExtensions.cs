@@ -11,6 +11,7 @@ using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Common.QuartzConstants;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Config.Quartz;
 using OutOfSchool.WebApi.Services.Elasticsearch;
 using OutOfSchool.WebApi.Services.Gcp;
 using OutOfSchool.WebApi.Services.Images;

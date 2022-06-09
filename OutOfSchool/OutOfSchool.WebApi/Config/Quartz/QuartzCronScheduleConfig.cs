@@ -1,4 +1,4 @@
-namespace OutOfSchool.WebApi.Config
+namespace OutOfSchool.WebApi.Config.Quartz
 {
     public class QuartzCronScheduleConfig
     {
