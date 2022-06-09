@@ -88,6 +88,8 @@ namespace OutOfSchool.WebApi.Services
                             ProviderTitle = provider == null ? null : provider.FullTitle,
                             ProviderCity = provider == null || provider.LegalAddress == null
                                 ? null : provider.LegalAddress.City,
+                            InstitutionTitle = provider == null || provider.Institution == null
+                                ? null : provider.Institution.Title,
                         };
 
             var entities = await query.ToListAsync().ConfigureAwait(false);
@@ -120,6 +122,8 @@ namespace OutOfSchool.WebApi.Services
                             WorkshopTitle = app == null ? null : app.Workshop.Title,
                             WorkshopCity = app == null ? null : app.Workshop.Address.City,
                             ProviderTitle = app == null ? null : app.Workshop.ProviderTitle,
+                            InstitutionTitle = app == null || app.Workshop.Provider.Institution == null
+                                ? null : app.Workshop.Provider.Institution.Title,
                         };
 
             var entities = await query.ToListAsync().ConfigureAwait(false);
@@ -151,6 +155,8 @@ namespace OutOfSchool.WebApi.Services
                     OperationType = x.OperationType,
                     OperationDate = x.OperationDate,
                     User = mapper.Map<ShortUserDto>(x.User),
+                    InstitutionTitle = x.Provider.Institution == null
+                        ? null : x.Provider.Institution.Title,
                 });
 
             var entities = await query.ToListAsync().ConfigureAwait(false);

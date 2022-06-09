@@ -13,5 +13,7 @@ namespace OutOfSchool.WebApi.Models.Changes
         public DateTime UpdatedDate { get; set; }
 
         public ShortUserDto User { get; set; }
+
+        public string InstitutionTitle { get; set; }
     }
 }
