@@ -390,26 +390,16 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
+                    b.Property<long?>("SocialGroupId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Children");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.ChildSocialGroup", b =>
-                {
-                    b.Property<Guid>("ChildId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<long>("SocialGroupId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("ChildId", "SocialGroupId");
-
                     b.HasIndex("SocialGroupId");
 
-                    b.ToTable("ChildrenSocialGroups");
+                    b.ToTable("Children");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.City", b =>
@@ -1506,24 +1496,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.ChildSocialGroup", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Child", "Child")
-                        .WithMany("ChildSocialGroups")
-                        .HasForeignKey("ChildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("OutOfSchool.Services.Models.SocialGroup", "SocialGroup")
-                        .WithMany("ChildSocialGroups")
-                        .HasForeignKey("SocialGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("Children")
+                        .HasForeignKey("SocialGroupId");
 
-                    b.Navigation("Child");
+                    b.Navigation("Parent");
 
                     b.Navigation("SocialGroup");
                 });
@@ -1792,11 +1769,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("ChatMessages");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
-                {
-                    b.Navigation("ChildSocialGroups");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
                 {
                     b.Navigation("CompanyInformationItems");
@@ -1837,7 +1809,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.SocialGroup", b =>
                 {
-                    b.Navigation("ChildSocialGroups");
+                    b.Navigation("Children");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Workshop", b =>
