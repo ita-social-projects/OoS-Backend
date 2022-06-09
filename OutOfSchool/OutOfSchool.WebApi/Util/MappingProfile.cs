@@ -46,7 +46,6 @@ namespace OutOfSchool.WebApi.Util
 
                     return dateTimeRanges;
                 }))
-                .ForMember(dest => dest.Teachers, opt => opt.Ignore())
                 .ForMember(dest => dest.Images, opt => opt.Ignore())
                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
 
