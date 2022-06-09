@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -13,6 +14,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.WebApi.Common.Synchronization;
 using OutOfSchool.WebApi.Models;
 using Object = Google.Apis.Storage.v1.Data.Object;
 
@@ -63,8 +65,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
             {
                 logger.LogDebug("Gcp storage synchronization was started");
 
-                // gcp returns data by local time
-                var dateTime = DateTime.Now.AddHours(-1);
+                var dateTime = DateTime.UtcNow.AddMinutes(GapConstants.GcpImagesSynchronizationDateTimeAddMinutesGap);
 
                 var listsOfObjects = GetListsOfObjects().ConfigureAwait(false);
 
@@ -76,7 +77,7 @@ namespace OutOfSchool.WebApi.Services.Gcp
                     }
 
                     var mappedObjects = objects.Items
-                        .Where(x => x.TimeCreated < dateTime)
+                        .Where(x => x.TimeCreated != null && TimeZoneInfo.ConvertTimeToUtc(x.TimeCreated.Value) < dateTime)
                         .Select(x => x.Name)
                         .ToHashSet();
 
