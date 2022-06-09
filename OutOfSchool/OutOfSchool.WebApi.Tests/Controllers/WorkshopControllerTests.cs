@@ -70,6 +70,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         {
             workshopServiceMoq = new Mock<IWorkshopServicesCombiner>();
             providerServiceMoq = new Mock<IProviderService>();
+            providerAdminService = new Mock<IProviderAdminService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
 
             controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, providerAdminService.Object, localizer.Object, options.Object)
