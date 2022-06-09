@@ -75,7 +75,8 @@ namespace OutOfSchool.WebApi.Services
 
             var query = from l in changesLog
                         join p in providers
-                            on l.EntityIdGuid equals p.Id
+                            on l.EntityIdGuid equals p.Id into pg
+                        from provider in pg.DefaultIfEmpty()
                         select new ProviderChangesLogDto
                         {
                             FieldName = l.FieldName,
@@ -84,8 +85,9 @@ namespace OutOfSchool.WebApi.Services
                             UpdatedDate = l.UpdatedDate,
                             User = mapper.Map<ShortUserDto>(l.User),
                             ProviderId = l.EntityIdGuid.Value,
-                            ProviderTitle = p.FullTitle,
-                            ProviderCity = p.LegalAddress.City,
+                            ProviderTitle = provider == null ? null : provider.FullTitle,
+                            ProviderCity = provider == null || provider.LegalAddress == null
+                                ? null : provider.LegalAddress.City,
                         };
 
             var entities = await query.ToListAsync().ConfigureAwait(false);
@@ -105,7 +107,8 @@ namespace OutOfSchool.WebApi.Services
 
             var query = from l in changesLog
                         join a in applications
-                            on l.EntityIdGuid equals a.Id
+                            on l.EntityIdGuid equals a.Id into ag
+                        from app in ag.DefaultIfEmpty()
                         select new ApplicationChangesLogDto
                         {
                             FieldName = l.FieldName,
@@ -114,9 +117,9 @@ namespace OutOfSchool.WebApi.Services
                             UpdatedDate = l.UpdatedDate,
                             User = mapper.Map<ShortUserDto>(l.User),
                             ApplicationId = l.EntityIdGuid.Value,
-                            WorkshopTitle = a.Workshop.Title,
-                            WorkshopCity = a.Workshop.Address.City,
-                            ProviderTitle = a.Workshop.ProviderTitle,
+                            WorkshopTitle = app == null ? null : app.Workshop.Title,
+                            WorkshopCity = app == null ? null : app.Workshop.Address.City,
+                            ProviderTitle = app == null ? null : app.Workshop.ProviderTitle,
                         };
 
             var entities = await query.ToListAsync().ConfigureAwait(false);
