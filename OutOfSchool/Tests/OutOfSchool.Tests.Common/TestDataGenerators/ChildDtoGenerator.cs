@@ -60,7 +60,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
         {
             _ = child ?? throw new ArgumentNullException(nameof(child));
 
-            child.SocialGroupId = socialGroup?.Id ?? default;
+            child.SocialGroups?.Add(socialGroup);
 
             return child;
         }
