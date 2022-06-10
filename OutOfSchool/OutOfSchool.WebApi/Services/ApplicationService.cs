@@ -4,12 +4,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -209,7 +207,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> applicationFilter = a => a.ParentId == id;
 
-            var applications = applicationRepository.Get<int>(where: applicationFilter, includeProperties: "Workshop,Child,Parent");
+            var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
             var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
             logger.LogInformation(!filteredApplications.Any()
@@ -243,7 +241,7 @@ namespace OutOfSchool.WebApi.Services
             FilterNullValidation(filter);
 
             Expression<Func<Application, bool>> applicationFilter = a => a.WorkshopId == id;
-            var applications = applicationRepository.Get<int>(where: applicationFilter, includeProperties: "Workshop,Child,Parent");
+            var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
             var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
 
@@ -265,7 +263,7 @@ namespace OutOfSchool.WebApi.Services
             var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
-            var applications = applicationRepository.Get<int>(where: applicationFilter, includeProperties: "Workshop,Child,Parent");
+            var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
             var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
 
@@ -535,6 +533,8 @@ namespace OutOfSchool.WebApi.Services
 
                 predicate = predicate.And(tempPredicate);
             }
+
+            predicate = predicate.And(a => a.IsBlocked == filter.ShowBlocked);
 
             return predicate;
         }

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
 using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class ApplicationFilter
+    public class ApplicationFilter : OffsetFilter
     {
         public ApplicationStatus Status { get; set; }
 
@@ -15,6 +13,8 @@ namespace OutOfSchool.WebApi.Models
         public bool OrderByAlphabetically { get; set; } = true;
 
         public bool OrderByStatus { get; set; } = true;
+
+        public bool ShowBlocked { get; set; } = false;
 
         public IEnumerable<Guid> Workshops { get; set; } = null;
     }
