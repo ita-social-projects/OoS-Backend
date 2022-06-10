@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             changesLogRepository.Setup(repo => repo.AddChangesLogToDbContext(
                 It.IsAny<Provider>(),
                 It.IsAny<string>(),
-                options.Value.TrackedFields["Provider"],
+                options.Value.TrackedProperties["Provider"],
                 It.IsAny<Func<Type, object, string>>()))
                 .Returns(new List<ChangesLog> { new ChangesLog() });
             var changesLogService = GetChangesLogService();
@@ -270,7 +270,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private IOptions<ChangesLogConfig> CreateChangesLogOptions() =>
             Options.Create(new ChangesLogConfig
             {
-                TrackedFields = new Dictionary<string, string[]>
+                TrackedProperties = new Dictionary<string, string[]>
                 {
                     { "Provider", new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" } },
                 },

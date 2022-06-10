@@ -13,7 +13,7 @@ namespace OutOfSchool.Services.Models
 
         [Required]
         [MaxLength(128)]
-        public string FieldName { get; set; }
+        public string PropertyName { get; set; }
 
         public Guid? EntityIdGuid { get; set; }
 

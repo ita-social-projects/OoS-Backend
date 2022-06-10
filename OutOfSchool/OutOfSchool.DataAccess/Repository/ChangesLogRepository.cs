@@ -19,7 +19,7 @@ namespace OutOfSchool.Services.Repository
         public ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(
             TEntity entity,
             string userId,
-            IEnumerable<string> trackedFields,
+            IEnumerable<string> trackedProperties,
             Func<Type, object, string> valueProjector)
             where TEntity : class, IKeyedEntity, new()
         {
@@ -28,7 +28,7 @@ namespace OutOfSchool.Services.Repository
 
             var entityType = typeof(TEntity).Name;
             var (entityIdGuid, entityIdLong) = GetEntityId(entry);
-            var changedValues = GetChangedValues(entry, trackedFields, valueProjector);
+            var changedValues = GetChangedValues(entry, trackedProperties, valueProjector);
             foreach (var (propertyName, oldValue, newValue) in changedValues)
             {
                 result.Add(CreateChangesLogRecord(
@@ -52,18 +52,18 @@ namespace OutOfSchool.Services.Repository
         // TODO: logging of the Institution changes is yet to be configured
         private IEnumerable<(string PropertyName, string OldValue, string NewValue)> GetChangedValues(
             EntityEntry entityEntry,
-            IEnumerable<string> trackedFields,
+            IEnumerable<string> trackedProperties,
             Func<Type, object, string> valueProjector)
         {
             var properties = entityEntry.Properties
                 .Where(p => p.IsModified
-                    && trackedFields.Contains(p.Metadata.PropertyInfo.Name))
+                    && trackedProperties.Contains(p.Metadata.PropertyInfo.Name))
                 .Select(x => (x.Metadata.PropertyInfo.Name,
                     valueProjector(x.Metadata.ClrType, x.OriginalValue),
                     valueProjector(x.Metadata.ClrType, x.CurrentValue)));
 
             var references = entityEntry.References
-                .Where(x => trackedFields.Contains(x.Metadata.PropertyInfo.Name)
+                .Where(x => trackedProperties.Contains(x.Metadata.PropertyInfo.Name)
                     && x.TargetEntry?.State == EntityState.Modified)
                 .Select(x => (x.Metadata.PropertyInfo.Name,
                     valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.OriginalValues.ToObject()),
@@ -97,7 +97,7 @@ namespace OutOfSchool.Services.Repository
 
         private ChangesLog CreateChangesLogRecord(
             string entityType,
-            string fieldName,
+            string propertyName,
             Guid? entityIdGuid,
             long? entityIdLong,
             string oldValue,
@@ -106,7 +106,7 @@ namespace OutOfSchool.Services.Repository
             => new ChangesLog
             {
                 EntityType = entityType,
-                FieldName = fieldName,
+                PropertyName = propertyName,
                 EntityIdGuid = entityIdGuid,
                 EntityIdLong = entityIdLong,
                 OldValue = oldValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>("OldValue") ?? 0),

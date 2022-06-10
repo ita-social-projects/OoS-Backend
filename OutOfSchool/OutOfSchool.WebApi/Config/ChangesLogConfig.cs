@@ -6,6 +6,6 @@ namespace OutOfSchool.WebApi.Config
     {
         public const string Name = "ChangesLog";
 
-        public IReadOnlyDictionary<string, string[]> TrackedFields { get; set; }
+        public IReadOnlyDictionary<string, string[]> TrackedProperties { get; set; }
     }
 }

@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Arrange
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
-            var trackedFields = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
+            var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
             var provider = await context.Providers.FirstOrDefaultAsync();
 
             var oldFullTitle = provider.FullTitle;
@@ -56,13 +56,13 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             var newFullTitle = provider.FullTitle;
             var newDirector = provider.Director;
 
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue);
+            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
 
             // Assert
             var fullTitleChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.FieldName == "FullTitle");
+                .Single(x => x.EntityType == "Provider" && x.PropertyName == "FullTitle");
             var directorChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.FieldName == "Director");
+                .Single(x => x.EntityType == "Provider" && x.PropertyName == "Director");
 
             Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
             Assert.AreEqual(2, context.ChangesLog.Local.Count);
@@ -81,7 +81,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             const int maxLength = 500;
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
-            var trackedFields = new[] { "FullTitle" };
+            var trackedProperties = new[] { "FullTitle" };
             var provider = await context.Providers.FirstOrDefaultAsync();
 
             var oldFullTitle = provider.FullTitle;
@@ -91,11 +91,11 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             var newFullTitle = provider.FullTitle;
 
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue);
+            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
 
             // Assert
             var fullTitleChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.FieldName == "FullTitle");
+                .Single(x => x.EntityType == "Provider" && x.PropertyName == "FullTitle");
 
             Assert.True(oldFullTitle.StartsWith(fullTitleChanges.OldValue));
             Assert.True(newFullTitle.StartsWith(fullTitleChanges.NewValue));
@@ -109,11 +109,11 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Arrange
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
-            var trackedFields = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
+            var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
             var provider = await context.Providers.FirstOrDefaultAsync();
 
             // Act
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue);
+            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
 
             // Assert
             Assert.IsEmpty(added);
@@ -121,12 +121,12 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
         }
 
         [Test]
-        public async Task AddChangesLogToDbContext_WhenEntityIsModified_LogsOnlyTrackedFields()
+        public async Task AddChangesLogToDbContext_WhenEntityIsModified_LogsOnlyTrackedProperties()
         {
             // Arrange
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
-            var trackedFields = new[] { "FullTitle", "EdrpouIpn", "LegalAddress" };
+            var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "LegalAddress" };
             var provider = await context.Providers.FirstOrDefaultAsync();
 
             var oldFullTitle = provider.FullTitle;
@@ -137,11 +137,11 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             var newFullTitle = provider.FullTitle;
 
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue);
+            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
 
             // Assert
             var fullTitleChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.FieldName == "FullTitle");
+                .Single(x => x.EntityType == "Provider" && x.PropertyName == "FullTitle");
 
             Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
             Assert.AreEqual(1, context.ChangesLog.Local.Count);
@@ -156,7 +156,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Arrange
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
-            var trackedFields = new[] { "FullTitle" };
+            var trackedProperties = new[] { "FullTitle" };
 
             // Act
             var provider = new ProviderTest { FullTitle = "Full Title" };
@@ -164,7 +164,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Assert
             Assert.Throws(
                 typeof(InvalidOperationException),
-                () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue));
+                () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue));
         }
 
         [Test]
@@ -173,7 +173,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Arrange
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
-            var trackedFields = new[] { "LegalAddress" };
+            var trackedProperties = new[] { "LegalAddress" };
             var provider = await context.Providers.Include(p => p.LegalAddress).FirstOrDefaultAsync();
 
             var oldLegalAddress = ProjectAddress(provider.LegalAddress);
@@ -187,12 +187,12 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             var added = changesLogRepository.AddChangesLogToDbContext(
                 provider,
                 user.Id,
-                trackedFields,
+                trackedProperties,
                 valueProjector.ProjectValue);
 
             // Assert
             var legalAddressChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.FieldName == "LegalAddress");
+                .Single(x => x.EntityType == "Provider" && x.PropertyName == "LegalAddress");
 
             Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
             Assert.AreEqual(1, context.ChangesLog.Local.Count);
@@ -207,14 +207,14 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Arrange
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
-            var trackedFields = new[] { "LegalAddress" };
+            var trackedProperties = new[] { "LegalAddress" };
             var provider = await context.Providers.Include(p => p.LegalAddress).FirstOrDefaultAsync();
 
             // Act
             var added = changesLogRepository.AddChangesLogToDbContext(
                 provider,
                 user.Id,
-                trackedFields,
+                trackedProperties,
                 valueProjector.ProjectValue);
 
             // Assert

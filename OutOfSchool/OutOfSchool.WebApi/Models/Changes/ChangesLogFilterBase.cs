@@ -4,7 +4,7 @@ namespace OutOfSchool.WebApi.Models.Changes
 {
     public abstract class ChangesLogFilterBase : OffsetFilter
     {
-        public string FieldName { get; set; }
+        public string PropertyName { get; set; }
 
         public string EntityId { get; set; }
 

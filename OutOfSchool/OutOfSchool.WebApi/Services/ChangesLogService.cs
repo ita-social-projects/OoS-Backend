@@ -50,7 +50,7 @@ namespace OutOfSchool.WebApi.Services
         public int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
             where TEntity : class, IKeyedEntity, new()
         {
-            if (!IsLoggingAllowed<TEntity>(out var trackedFields))
+            if (!IsLoggingAllowed<TEntity>(out var trackedProperties))
             {
                 logger.LogDebug($"Logging is not allowed for the '{typeof(TEntity).Name}' entity type.");
 
@@ -59,7 +59,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogDebug($"Logging of the '{typeof(TEntity).Name}' entity changes started.");
 
-            var result = changesLogRepository.AddChangesLogToDbContext(entity, userId, trackedFields, valueProjector.ProjectValue);
+            var result = changesLogRepository.AddChangesLogToDbContext(entity, userId, trackedProperties, valueProjector.ProjectValue);
 
             logger.LogDebug($"Added {result.Count} records to the Changes Log.");
 
@@ -78,7 +78,7 @@ namespace OutOfSchool.WebApi.Services
                         from provider in pg.DefaultIfEmpty()
                         select new ProviderChangesLogDto
                         {
-                            FieldName = l.FieldName,
+                            FieldName = l.PropertyName,
                             OldValue = l.OldValue,
                             NewValue = l.NewValue,
                             UpdatedDate = l.UpdatedDate,
@@ -112,7 +112,7 @@ namespace OutOfSchool.WebApi.Services
                         from app in ag.DefaultIfEmpty()
                         select new ApplicationChangesLogDto
                         {
-                            FieldName = l.FieldName,
+                            FieldName = l.PropertyName,
                             OldValue = l.OldValue,
                             NewValue = l.NewValue,
                             UpdatedDate = l.UpdatedDate,
@@ -180,16 +180,16 @@ namespace OutOfSchool.WebApi.Services
             return (query, count);
         }
 
-        private bool IsLoggingAllowed<TEntity>(out string[] supportedFields)
-            => config.Value.TrackedFields.TryGetValue(typeof(TEntity).Name, out supportedFields);
+        private bool IsLoggingAllowed<TEntity>(out string[] trackedProperties)
+            => config.Value.TrackedProperties.TryGetValue(typeof(TEntity).Name, out trackedProperties);
 
         private Expression<Func<ChangesLog, bool>> GetQueryFilter(ChangesLogFilter filter)
         {
             Expression<Func<ChangesLog, bool>> expr = x => x.EntityType == filter.EntityType;
 
-            if (filter.FieldName != null)
+            if (filter.PropertyName != null)
             {
-                expr = expr.And(x => x.FieldName == filter.FieldName);
+                expr = expr.And(x => x.PropertyName == filter.PropertyName);
             }
 
             if (filter.EntityId != null)

@@ -12,13 +12,13 @@ namespace OutOfSchool.Services.Repository
         /// <typeparam name="TEntity">Entity type that exists in the DB.</typeparam>
         /// <param name="entity">Modified entity.</param>
         /// <param name="userId">User ID.</param>
-        /// <param name="trackedFields">List of fields to be logged.</param>
+        /// <param name="trackedProperties">List of properties to be logged.</param>
         /// <param name="valueProjector">Function to project property value to string.</param>
         /// <returns>A collection of the added ChangesLog records.</returns>
         ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(
             TEntity entity,
             string userId,
-            IEnumerable<string> trackedFields,
+            IEnumerable<string> trackedProperties,
             Func<Type, object, string> valueProjector)
             where TEntity : class, IKeyedEntity, new();
     }
