@@ -49,6 +49,7 @@ namespace OutOfSchool.Services.Repository
             return result;
         }
 
+        // TODO: logging of the Institution changes is yet to be configured
         private IEnumerable<(string PropertyName, string OldValue, string NewValue)> GetChangedValues(
             EntityEntry entityEntry,
             IEnumerable<string> trackedFields,
