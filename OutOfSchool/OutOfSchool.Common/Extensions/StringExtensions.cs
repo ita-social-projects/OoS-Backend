@@ -16,7 +16,7 @@ namespace OutOfSchool.Common.Extensions
         }
 
         public static string Limit(this string value, int maxLength)
-            => value.Length <= maxLength || maxLength <= 0
+            => value == null || value.Length <= maxLength || maxLength <= 0
             ? value
             : value.Substring(0, maxLength);
     }
