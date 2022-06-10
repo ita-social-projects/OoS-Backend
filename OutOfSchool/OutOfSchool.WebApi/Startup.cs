@@ -232,6 +232,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
             services.AddTransient<IChangesLogService, ChangesLogService>();
+            services.AddTransient<IValueProjector, ValueProjector>();
 
             services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
             services.AddTransient<IInstitutionService, InstitutionService>();

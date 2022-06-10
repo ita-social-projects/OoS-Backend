@@ -16,33 +16,29 @@ namespace OutOfSchool.Services.Repository
         {
         }
 
-        public ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(TEntity entity, string userId, IEnumerable<string> trackedFields)
+        public ICollection<ChangesLog> AddChangesLogToDbContext<TEntity>(
+            TEntity entity,
+            string userId,
+            IEnumerable<string> trackedFields,
+            Func<Type, object, string> valueProjector)
             where TEntity : class, IKeyedEntity, new()
         {
             var result = new List<ChangesLog>();
             var entry = dbContext.Entry(entity);
 
-            if (entry.State != EntityState.Modified)
-            {
-                return result;
-            }
-
             var entityType = typeof(TEntity).Name;
             var (entityIdGuid, entityIdLong) = GetEntityId(entry);
-            foreach (var prop in entry.Properties.Where(p => p.IsModified))
+            var changedValues = GetChangedValues(entry, trackedFields, valueProjector);
+            foreach (var (propertyName, oldValue, newValue) in changedValues)
             {
-                var fieldName = prop.GetColumnName();
-                if (trackedFields.Contains(fieldName))
-                {
-                    result.Add(CreateChangesLogRecord(
-                        entityType,
-                        fieldName,
-                        entityIdGuid,
-                        entityIdLong,
-                        prop.OriginalValue.ToString(),
-                        prop.CurrentValue.ToString(),
-                        userId));
-                }
+                result.Add(CreateChangesLogRecord(
+                    entityType,
+                    propertyName,
+                    entityIdGuid,
+                    entityIdLong,
+                    oldValue,
+                    newValue,
+                    userId));
             }
 
             if (result.Count > 0)
@@ -53,40 +49,26 @@ namespace OutOfSchool.Services.Repository
             return result;
         }
 
-        public ChangesLog AddPropertyChangesLogToDbContext<TEntity, TProperty>(
-            TEntity entity,
-            string propertyName,
-            Func<TProperty, string> valueProjector,
-            string userId)
-            where TEntity : class, IKeyedEntity, new()
+        private IEnumerable<(string PropertyName, string OldValue, string NewValue)> GetChangedValues(
+            EntityEntry entityEntry,
+            IEnumerable<string> trackedFields,
+            Func<Type, object, string> valueProjector)
         {
-            ChangesLog result = null;
-            var entry = dbContext.Entry(entity);
-            var propertyEntityEntry = entry.Reference(propertyName).TargetEntry;
+            var properties = entityEntry.Properties
+                .Where(p => p.IsModified
+                    && trackedFields.Contains(p.Metadata.PropertyInfo.Name))
+                .Select(x => (x.Metadata.PropertyInfo.Name,
+                    valueProjector(x.Metadata.ClrType, x.OriginalValue),
+                    valueProjector(x.Metadata.ClrType, x.CurrentValue)));
 
-            if (propertyEntityEntry.State != EntityState.Modified)
-            {
-                return result;
-            }
+            var references = entityEntry.References
+                .Where(x => trackedFields.Contains(x.Metadata.PropertyInfo.Name)
+                    && x.TargetEntry?.State == EntityState.Modified)
+                .Select(x => (x.Metadata.PropertyInfo.Name,
+                    valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.OriginalValues.ToObject()),
+                    valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.CurrentValues.ToObject())));
 
-            var entityType = typeof(TEntity).Name;
-            var (entityIdGuid, entityIdLong) = GetEntityId(entry);
-
-            result = CreateChangesLogRecord(
-                entityType,
-                propertyName,
-                entityIdGuid,
-                entityIdLong,
-                valueProjector((TProperty)propertyEntityEntry.OriginalValues.ToObject()),
-                valueProjector((TProperty)propertyEntityEntry.CurrentValues.ToObject()),
-                userId);
-
-            if (result != null)
-            {
-                dbContext.Add(result);
-            }
-
-            return result;
+            return properties.Concat(references);
         }
 
         private (Guid? entityIdGuid, long? entityIdLong) GetEntityId(EntityEntry entityEntry)

@@ -21,18 +21,6 @@ namespace OutOfSchool.WebApi.Services
             where TEntity : class, IKeyedEntity, new();
 
         /// <summary>
-        /// Create and add ChangesLog record for the Address in format {District, City, Region, Street, BuildingNumber}.
-        /// Log record is stored with ID of the parent entity.
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type that exists in the DB.</typeparam>
-        /// <param name="entity">Entity with the modified address.</param>
-        /// <param name="addressPropertyName">Address property name.</param>
-        /// <param name="userId">User ID.</param>
-        /// <returns>Number of the added ChangesLog records.</returns>
-        int AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressPropertyName, string userId)
-            where TEntity : class, IKeyedEntity, new();
-
-        /// <summary>
         /// Get Provider entities that match filter's parameters.
         /// </summary>
         /// <param name="request">Filter with specified searching parameters.</param>

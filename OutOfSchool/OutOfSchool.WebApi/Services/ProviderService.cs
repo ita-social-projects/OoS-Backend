@@ -357,7 +357,6 @@ namespace OutOfSchool.WebApi.Services
         private void LogProviderChanges(Provider provider, string userId)
         {
             changesLogService.AddEntityChangesToDbContext(provider, userId);
-            changesLogService.AddEntityAddressChangesLogToDbContext(provider, nameof(provider.LegalAddress), userId);
         }
     }
 }

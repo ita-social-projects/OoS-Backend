@@ -7,6 +7,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Services.Database
 {
@@ -14,6 +15,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
     public class ChangesLogRepositoryTests
     {
         private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
+        private ValueProjector valueProjector = new ValueProjector();
 
         private Provider provider;
         private User user;
@@ -54,7 +56,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             var newFullTitle = provider.FullTitle;
             var newDirector = provider.Director;
 
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields);
+            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue);
 
             // Assert
             var fullTitleChanges = context.ChangesLog.Local
@@ -89,7 +91,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             var newFullTitle = provider.FullTitle;
 
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields);
+            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue);
 
             // Assert
             var fullTitleChanges = context.ChangesLog.Local
@@ -111,7 +113,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             var provider = await context.Providers.FirstOrDefaultAsync();
 
             // Act
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields);
+            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue);
 
             // Assert
             Assert.IsEmpty(added);
@@ -135,7 +137,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             var newFullTitle = provider.FullTitle;
 
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields);
+            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue);
 
             // Assert
             var fullTitleChanges = context.ChangesLog.Local
@@ -162,17 +164,16 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Assert
             Assert.Throws(
                 typeof(InvalidOperationException),
-                () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields));
+                () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedFields, valueProjector.ProjectValue));
         }
-        #endregion
 
-        #region AddEntityAddressChangesLogToDbContext
         [Test]
-        public async Task AddEntityAddressChangesLogToDbContext_WhenAddressIsModified_AddsLogToDbContext()
+        public async Task AddChangesLogToDbContext_WhenAddressIsModified_AddsLogToDbContext()
         {
             // Arrange
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
+            var trackedFields = new[] { "LegalAddress" };
             var provider = await context.Providers.Include(p => p.LegalAddress).FirstOrDefaultAsync();
 
             var oldLegalAddress = ProjectAddress(provider.LegalAddress);
@@ -183,17 +184,17 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             var newLegalAddress = ProjectAddress(provider.LegalAddress);
 
-            var added = changesLogRepository.AddPropertyChangesLogToDbContext<Provider, Address>(
+            var added = changesLogRepository.AddChangesLogToDbContext(
                 provider,
-                "LegalAddress",
-                ProjectAddress,
-                user.Id);
+                user.Id,
+                trackedFields,
+                valueProjector.ProjectValue);
 
             // Assert
             var legalAddressChanges = context.ChangesLog.Local
                 .Single(x => x.EntityType == "Provider" && x.FieldName == "LegalAddress");
 
-            Assert.AreEqual(added, context.ChangesLog.Local.Single());
+            Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
             Assert.AreEqual(1, context.ChangesLog.Local.Count);
             Assert.AreEqual(oldLegalAddress, legalAddressChanges.OldValue);
             Assert.AreEqual(newLegalAddress, legalAddressChanges.NewValue);
@@ -201,64 +202,24 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
         }
 
         [Test]
-        public async Task AddEntityAddressChangesLogToDbContext_WhenAddressIsNotModified_DoesNotAddLogToDbContext()
+        public async Task AddChangesLogToDbContext_WhenAddressIsNotModified_DoesNotAddLogToDbContext()
         {
             // Arrange
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
+            var trackedFields = new[] { "LegalAddress" };
             var provider = await context.Providers.Include(p => p.LegalAddress).FirstOrDefaultAsync();
 
             // Act
-            var added = changesLogRepository.AddPropertyChangesLogToDbContext<Provider, Address>(
+            var added = changesLogRepository.AddChangesLogToDbContext(
                 provider,
-                "LegalAddress",
-                ProjectAddress,
-                user.Id);
+                user.Id,
+                trackedFields,
+                valueProjector.ProjectValue);
 
             // Assert
-            Assert.IsNull(added);
+            Assert.IsEmpty(added);
             Assert.IsEmpty(context.ChangesLog.Local);
-        }
-
-        [Test]
-        public async Task AddEntityAddressChangesLogToDbContext_WrongAddressFieldName_DoesNotAddLogToDbContext()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            var provider = await context.Providers.Include(p => p.LegalAddress).FirstOrDefaultAsync();
-
-            // Act
-            provider.LegalAddress.City += "new";
-
-            // Assert
-            Assert.Throws(
-                typeof(InvalidOperationException),
-                () => changesLogRepository.AddPropertyChangesLogToDbContext<Provider, Address>(
-                provider,
-                "DoesNotExist",
-                ProjectAddress,
-                user.Id));
-        }
-
-        [Test]
-        public void AddEntityAddressChangesLogToDbContext_InvalidEntityType_ThrowsException()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-
-            // Act
-            var provider = new ProviderTest { LegalAddress = AddressGenerator.Generate() };
-
-            // Assert6
-            Assert.Throws(
-                typeof(InvalidOperationException),
-                () => changesLogRepository.AddPropertyChangesLogToDbContext<ProviderTest, Address>(
-                provider,
-                "LegalAddress",
-                ProjectAddress,
-                user.Id));
         }
         #endregion
 

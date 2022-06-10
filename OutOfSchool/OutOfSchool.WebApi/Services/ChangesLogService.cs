@@ -25,6 +25,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<ProviderAdminChangesLog> providerAdminChangesLogRepository;
         private readonly ILogger<ChangesLogService> logger;
         private readonly IMapper mapper;
+        private readonly IValueProjector valueProjector;
 
         public ChangesLogService(
             IOptions<ChangesLogConfig> config,
@@ -33,7 +34,8 @@ namespace OutOfSchool.WebApi.Services
             IApplicationRepository applicationRepository,
             IEntityRepository<ProviderAdminChangesLog> providerAdminChangesLogRepository,
             ILogger<ChangesLogService> logger,
-            IMapper mapper)
+            IMapper mapper,
+            IValueProjector valueProjector)
         {
             this.config = config;
             this.changesLogRepository = changesLogRepository;
@@ -42,6 +44,7 @@ namespace OutOfSchool.WebApi.Services
             this.providerAdminChangesLogRepository = providerAdminChangesLogRepository;
             this.logger = logger;
             this.mapper = mapper;
+            this.valueProjector = valueProjector;
         }
 
         public int AddEntityChangesToDbContext<TEntity>(TEntity entity, string userId)
@@ -56,16 +59,12 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogDebug($"Logging of the '{typeof(TEntity).Name}' entity changes started.");
 
-            var result = changesLogRepository.AddChangesLogToDbContext(entity, userId, trackedFields);
+            var result = changesLogRepository.AddChangesLogToDbContext(entity, userId, trackedFields, valueProjector.ProjectValue);
 
             logger.LogDebug($"Added {result.Count} records to the Changes Log.");
 
             return result.Count;
         }
-
-        public int AddEntityAddressChangesLogToDbContext<TEntity>(TEntity entity, string addressPropertyName, string userId)
-            where TEntity : class, IKeyedEntity, new()
-            => AddPropertyChangesLogToDbContext<TEntity, Address>(entity, addressPropertyName, ProjectAddress, userId);
 
         public async Task<SearchResult<ProviderChangesLogDto>> GetProviderChangesLogAsync(ProviderChangesLogRequest request)
         {
@@ -181,38 +180,8 @@ namespace OutOfSchool.WebApi.Services
             return (query, count);
         }
 
-        private int AddPropertyChangesLogToDbContext<TEntity, TProperty>(
-            TEntity entity,
-            string propertyName,
-            Func<TProperty, string> valueProjector,
-            string userId)
-            where TEntity : class, IKeyedEntity, new()
-        {
-            if (!IsLoggingAllowed<TEntity>(propertyName))
-            {
-                logger.LogDebug($"Logging is not allowed for the '{typeof(TEntity).Name}.{propertyName}' field.");
-
-                return 0;
-            }
-
-            logger.LogDebug($"Logging of the '{typeof(TEntity).Name}.{propertyName}' changes started.");
-
-            var result = changesLogRepository
-                .AddPropertyChangesLogToDbContext<TEntity, TProperty>(entity, propertyName, valueProjector, userId);
-
-            var count = result == null ? 0 : 1;
-
-            logger.LogDebug($"Added {count} records to the Changes Log.");
-
-            return count;
-        }
-
         private bool IsLoggingAllowed<TEntity>(out string[] supportedFields)
             => config.Value.TrackedFields.TryGetValue(typeof(TEntity).Name, out supportedFields);
-
-        private bool IsLoggingAllowed<TEntity>(string addressPropertyName)
-            => IsLoggingAllowed<TEntity>(out var supportedFields)
-                && supportedFields.Contains(addressPropertyName);
 
         private Expression<Func<ChangesLog, bool>> GetQueryFilter(ChangesLogFilter filter)
         {
@@ -298,10 +267,5 @@ namespace OutOfSchool.WebApi.Services
         {
             ModelValidationHelper.ValidateOffsetFilter(filter);
         }
-
-        private string ProjectAddress(Address address) =>
-            address == null
-            ? null
-            : $"{address.District}, {address.City}, {address.Region}, {address.Street}, {address.BuildingNumber}";
     }
 }

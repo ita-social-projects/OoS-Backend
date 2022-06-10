@@ -28,6 +28,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IProviderRepository> providerRepository;
         private Mock<IApplicationRepository> applicationRepository;
         private Mock<IEntityRepository<ProviderAdminChangesLog>> providerAdminChangesLogRepository;
+        private Mock<IValueProjector> valueProjector;
 
         private User user;
         private Provider provider;
@@ -44,6 +45,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
             applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
             providerAdminChangesLogRepository = new Mock<IEntityRepository<ProviderAdminChangesLog>>(MockBehavior.Strict);
+            valueProjector = new Mock<IValueProjector>();
         }
 
         #region AddEntityChangesToDbContext
@@ -55,7 +57,8 @@ namespace OutOfSchool.WebApi.Tests.Services
             changesLogRepository.Setup(repo => repo.AddChangesLogToDbContext(
                 It.IsAny<Provider>(),
                 It.IsAny<string>(),
-                options.Value.TrackedFields["Provider"]))
+                options.Value.TrackedFields["Provider"],
+                It.IsAny<Func<Type, object, string>>()))
                 .Returns(new List<ChangesLog> { new ChangesLog() });
             var changesLogService = GetChangesLogService();
 
@@ -74,64 +77,6 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act
             var result = changesLogService.AddEntityChangesToDbContext(new Address(), user.Id);
-
-            // Assert
-            Assert.AreEqual(0, result);
-        }
-        #endregion
-
-        #region AddEntityAddressChangesLogToDbContext
-        [Test]
-        public void AddEntityAddressChangesLogToDbContext_WhenTrackingIsEnabledForTheEntity_AddsToContext()
-        {
-            // Arrange
-            var addressPropertyName = "LegalAddress";
-            changesLogRepository.Setup(repo => repo.AddPropertyChangesLogToDbContext(
-                It.IsAny<Provider>(),
-                addressPropertyName,
-                It.IsAny<Func<Address, string>>(),
-                It.IsAny<string>()))
-                .Returns(new ChangesLog());
-            var changesLogService = GetChangesLogService();
-
-            // Act
-            var result = changesLogService.AddEntityAddressChangesLogToDbContext(
-                new Provider(),
-                addressPropertyName,
-                user.Id);
-
-            // Assert
-            Assert.AreEqual(1, result);
-        }
-
-        [Test]
-        public void AddEntityAddressChangesLogToDbContext_WhenTrackingIsNotEnabledForTheEntity_DoesNotLogChanges()
-        {
-            // Arrange
-            var changesLogService = GetChangesLogService();
-
-            // Act
-            var result = changesLogService.AddEntityAddressChangesLogToDbContext(
-                new Address(),
-                "LegalAddress",
-                user.Id);
-
-            // Assert
-            Assert.AreEqual(0, result);
-        }
-
-        [Test]
-        public void AddEntityAddressChangesLogToDbContext_WhenTrackingIsNotEnabledForTheField_DoesNotLogChanges()
-        {
-            // Arrange
-            var addressPropertyName = "ActualAddress";
-            var changesLogService = GetChangesLogService();
-
-            // Act
-            var result = changesLogService.AddEntityAddressChangesLogToDbContext(
-                new Provider(),
-                addressPropertyName,
-                user.Id);
 
             // Assert
             Assert.AreEqual(0, result);
@@ -216,6 +161,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 applicationRepository.Object,
                 providerAdminChangesLogRepository.Object,
                 logger.Object,
-                mapper.Object);
+                mapper.Object,
+                valueProjector.Object);
     }
 }
