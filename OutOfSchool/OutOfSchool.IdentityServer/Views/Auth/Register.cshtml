@@ -13,9 +13,7 @@
 <div class="wrapper_body">
     <div class="wrapper">
         <h1 class="icon_title">@SharedLocalizer["Register"].Value.ToUpper()</h1>
-        <div class="registration_goal">
-                            @SharedLocalizer["Registration goal"]
-                        </div>
+        <div class="registration_goal">@SharedLocalizer["Registration goal"]</div>
         <div class="icon_wrapper">
             <form onsubmit="return validateForm(this)" onkeyup="validateFormOnKeyUp(this)" asp-controller="Auth"
                 asp-action="Register" method="post">
