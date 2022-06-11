@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.PermissionsModule;
@@ -80,8 +79,8 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure
         /// Get all children InstitutionHierarchy by it's id.
         /// </summary>
         /// <param name="id">InstitutionHierarchy id.</param>
-        /// <returns>List<InstitutionHierarchy></InstitutionHierarchy>.</returns>
-        /// <response code="200">Returns InstitutionHierarchy.</response>
+        /// <returns>List of InstitutionHierarchy.</returns>
+        /// <response code="200">Returns InstitutionHierarchies.</response>
         /// <response code="400">Id was wrong.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="500">If any server error occures.</response>
@@ -114,6 +113,27 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure
         public async Task<IActionResult> GetParents(Guid id)
         {
             return Ok(await service.GetParents(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Get all InstitutionHierarchies by institution id and hierarchy level.
+        /// </summary>
+        /// <param name="institutionId">Institution id.</param>
+        /// <param name="hierarchyLevel">Hierarchy level.</param>
+        /// <returns>List of InstitutionHierarchy.</returns>
+        /// <response code="200">Returns InstitutionHierarchies.</response>
+        /// <response code="400">Id was wrong.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="500">If any server error occures.</response>
+        [HasPermission(Permissions.WorkshopEdit)]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstitutionHierarchyDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetAllByInstitutionAndLevel(Guid institutionId, int hierarchyLevel)
+        {
+            return Ok(await service.GetAllByInstitutionAndLevel(institutionId, hierarchyLevel).ConfigureAwait(false));
         }
 
         /// <summary>

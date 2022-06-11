@@ -117,6 +117,7 @@ namespace OutOfSchool.WebApi.Util
 
             CreateMap<InstitutionHierarchy, InstitutionHierarchyDto>().ReverseMap();
             CreateMap<Institution, InstitutionDto>().ReverseMap();
+            CreateMap<InstitutionFieldDescription, InstitutionFieldDescriptionDto>().ReverseMap();
 
             CreateMap<Notification, NotificationDto>().ReverseMap()
                 .ForMember(n => n.Id, n => n.Ignore());
