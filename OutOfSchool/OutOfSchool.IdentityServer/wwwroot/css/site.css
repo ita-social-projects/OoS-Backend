@@ -51,7 +51,9 @@ h6 {
   font-size: 0.6875rem;
   line-height: 0.9375rem;
 }
-
+.checkbox:hover {
+  cursor: pointer;
+}
 .validation-summary-errors li {
   list-style-type: none !important;
   text-align: center !important;
@@ -102,7 +104,7 @@ a {
   font-size: 18px;
   line-height: 20px;
   color: #444444;
-  margin-bottom: 36px;
+  margin-bottom: 16px;
 }
 
 .icon_subtitle {
@@ -220,6 +222,16 @@ a {
   line-height: 18px;
   color: #aaaaaa;
 }
+.registration_goal {
+  margin: 0;
+  font-family: "Open Sans", sans-serif;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 13px;
+  line-height: 18px;
+  color: #aaaaaa;
+  text-align: center;
+}
 
 .registration_item-password {
   margin-bottom: 8px;
@@ -240,7 +252,6 @@ a {
   justify-content: space-between;
   align-items: center;
   padding-top: 8px;
-  margin-bottom: 16px;
 }
 
 .password_link {
@@ -506,8 +517,8 @@ a {
 
 .registration_submit:disabled,
 .registration_submit[disabled] {
-  border: 1px solid #999999;
-  background: #cccccc;
+  border: 1px solid #dddcdc;
+  background-color: #dddcdc;
   color: #666666;
 }
 

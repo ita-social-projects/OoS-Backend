@@ -13,6 +13,9 @@
 <div class="wrapper_body">
     <div class="wrapper">
         <h1 class="icon_title">@SharedLocalizer["Register"].Value.ToUpper()</h1>
+        <div class="registration_goal">
+                            @SharedLocalizer["Registration goal"]
+                        </div>
         <div class="icon_wrapper">
             <form onsubmit="return validateForm(this)" onkeyup="validateFormOnKeyUp(this)" asp-controller="Auth"
                 asp-action="Register" method="post">
@@ -121,9 +124,7 @@
                         </div>
                     </li>
                     <li class="registration_item registration_item-tip">
-                        <div class="registration_tip">
-                            @SharedLocalizer["The password must be at least 6 characters long"]
-                        </div>
+                        @SharedLocalizer["The password must be at least 8 characters long"]
                     </li>
                     <li class="registration_item">
                         <div>
@@ -143,7 +144,7 @@
                     </li>
                     <li class="registration_item registration_item-maturity">
                         <div class="registration_item-box">
-                            <input type="checkbox" name="maturity">
+                            <input type="checkbox" name="maturity" id="checkbox_age_confirm" class="checkbox">
                             <label for="maturity">
                                 @SharedLocalizer["I am 18 years old"]
                             </label>
@@ -154,7 +155,7 @@
                     </li>
                     <li class="registration_item registration_item-accept">
                         <div class="registration_item-box">
-                            <input type="checkbox" name="accept">
+                            <input type="checkbox" name="accept" id="checkbox_rules_agreement" class="checkbox">
                             <label for="accept">
                                 @SharedLocalizer["By registering I agree with"]
                                 <a href="#" class="link">@SharedLocalizer["Terms of use"]</a>

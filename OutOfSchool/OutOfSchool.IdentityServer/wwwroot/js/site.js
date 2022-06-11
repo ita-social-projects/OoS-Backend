@@ -11,6 +11,9 @@ let check_confirmPasswordEye = false;
 let password = document.getElementById('password');
 let repeatPassword = document.getElementById('repeat_password');
 
+let ageConfirm = document.getElementById('checkbox_age_confirm');
+let rulesAgreement = document.getElementById('checkbox_rules_agreement');
+
 btn_register.disabled = true;
 
 if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
@@ -121,7 +124,7 @@ function validateFormOnKeyUp(form) {
 function allFieldsValid(form) {
     let registrationInputs = form.getElementsByClassName("registration_input_required");
     for (var i = 0; i < registrationInputs.length; i++) {
-        if (registrationInputs.item(i).value === '')
+        if (registrationInputs.item(i).value === '' || !ageConfirm.checked || !rulesAgreement.checked)
             return false;
     }
     return true;
