@@ -165,7 +165,7 @@
   <data name="Register" xml:space="preserve">
     <value>Зареєструватися</value>
   </data>
-    <data name="Registration goal" xml:space="preserve">
+  <data name="Registration goal" xml:space="preserve">
     <value>Щоб мати змогу подавати заявки у гуртки або стати надавачем послуг</value>
   </data>
   <data name="Register as" xml:space="preserve">
