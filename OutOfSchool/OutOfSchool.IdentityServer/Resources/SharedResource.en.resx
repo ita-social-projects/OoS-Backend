@@ -291,6 +291,9 @@
   <data name="Password must contain at least one capital, number and symbol(@$!%*?&amp;)." xml:space="preserve">
     <value>Error! The password must be at least 8 characters long, including one uppercase letter, number, and special characters(@$!%*?&amp;).</value>
   </data>
+  <data name="Check the entered data. Please use only cyrillic and symbols( ' - )" xml:space="preserve">
+    <value>Check the entered data. Please use only Cyrillic and special characters( ' - ).</value>
+  </data>
   <data name="Passwords doesn't match" xml:space="preserve">
     <value>Passwords doesn't match</value>
   </data>

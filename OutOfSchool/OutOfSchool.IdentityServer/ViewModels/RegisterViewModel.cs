@@ -8,13 +8,21 @@ namespace OutOfSchool.IdentityServer.ViewModels
     {
         [Required(ErrorMessage = "FirstName is required")]
         [MaxLength(30)]
+        [RegularExpression(@"/^[А-Яа-яЇїІіЄєЁёҐґ''’\s-]*$/",
+            ErrorMessage = "Check the entered data. Please use only cyrillic and symbols( ' - )")]
+        [DataType(DataType.Password)]
         public string FirstName { get; set; }
 
         [Required(ErrorMessage = "LastName is required")]
         [MaxLength(30)]
+        [RegularExpression(@"/^[А-Яа-яЇїІіЄєЁёҐґ''’\s-]*$/",
+            ErrorMessage = "Check the entered data. Please use only cyrillic and symbols( ' - )")]
         public string LastName { get; set; }
 
         [MaxLength(30)]
+        [RegularExpression(@"/^[А-Яа-яЇїІіЄєЁёҐґ''’\s-]*$/")]
+        [RegularExpression(@"/^[А-Яа-яЇїІіЄєЁёҐґ''’\s-]*$/",
+            ErrorMessage = "Check the entered data. Please use only cyrillic and symbols( ' - )")]
         public string MiddleName { get; set; }
 
         [Required(ErrorMessage = "Password is required")]
