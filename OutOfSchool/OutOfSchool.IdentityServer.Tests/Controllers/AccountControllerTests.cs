@@ -46,8 +46,8 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
                 fakeUserManager.Object,
                 fakeEmailSender.Object,
                 fakeLogger.Object,
-                fakeLocalizer.Object,
-                fakeRazorViewToStringRenderer.Object
+                fakeRazorViewToStringRenderer.Object,
+                fakeLocalizer.Object
                 );
         }
 
