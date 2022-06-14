@@ -121,10 +121,16 @@ function validateFormOnKeyUp(form) {
         btn_register.disabled = !valid;
 }
 
+function validateCheckBox() {
+    if (ageConfirm.checked || rulesAgreement.checked){
+        this.validateFormOnKeyUp();
+    }
+}
+
 function allFieldsValid(form) {
     let registrationInputs = form.getElementsByClassName("registration_input_required");
     for (var i = 0; i < registrationInputs.length; i++) {
-        if (registrationInputs.item(i).value === '' || !ageConfirm.checked || !rulesAgreement.checked)
+        if (registrationInputs.item(i).value === '')
             return false;
     }
     return true;

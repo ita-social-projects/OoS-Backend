@@ -291,7 +291,7 @@
     <value>Потрібно підтвердження пароля</value>
   </data>
   <data name="Password must contain at least one capital, number and symbol(@$!%*?&amp;)." xml:space="preserve">
-    <value>Помилка! Пароль має складатися мінімум з 8-ми символів, із них одна головна літера, цифри та спецсимволи(@$!%*? &amp;).</value>
+    <value>Помилка! Пароль має складатися мінімум з 8-ми символів, із них одна головна літера, цифри та спецсимволи (@$!%*? &amp;).</value>
   </data>
   <data name="Check the entered data. Please use only cyrillic and symbols( ' - )" xml:space="preserve">
     <value>Перевірте введені дані. Використовуйте, будь ласка, тільки кирилицю та символи( ' - ).</value>
