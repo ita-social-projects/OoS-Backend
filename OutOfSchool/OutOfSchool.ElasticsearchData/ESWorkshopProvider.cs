@@ -248,11 +248,6 @@ namespace OutOfSchool.ElasticsearchData
                     break;
 
                 case nameof(OrderBy.Alphabet):
-                    sorts.Add(new FieldSort()
-                    {
-                        Field = "title.keyword",
-                        Order = SortOrder.Ascending,
-                    });
                     break;
 
                 case nameof(OrderBy.Nearest):
@@ -272,6 +267,12 @@ namespace OutOfSchool.ElasticsearchData
                     });
                     break;
             }
+
+            sorts.Add(new FieldSort
+            {
+                Field = "title.keyword",
+                Order = SortOrder.Ascending,
+            });
 
             return sorts;
         }
