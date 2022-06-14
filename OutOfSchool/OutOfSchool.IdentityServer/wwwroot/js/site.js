@@ -122,7 +122,7 @@ function validateFormOnKeyUp(form) {
 }
 
 function validateCheckBox() {
-    if (ageConfirm.checked || rulesAgreement.checked){
+    if (ageConfirm.checked && rulesAgreement.checked){
         this.validateFormOnKeyUp();
     }
 }
