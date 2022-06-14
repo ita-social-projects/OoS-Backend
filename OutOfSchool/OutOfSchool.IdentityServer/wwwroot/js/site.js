@@ -26,7 +26,7 @@ if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
 if (password.className.includes('input-validation-error')) {
     let elements = document.getElementsByClassName('registration_privacy_password');
     for (let element of elements) {
-        element.style.height = "65px";
+        element.style.height = "105px";
     } 
 }
 
@@ -121,13 +121,11 @@ function validateFormOnKeyUp(form) {
         btn_register.disabled = !valid;
 }
 
-function validateCheckBox() {
-    if (ageConfirm.checked && rulesAgreement.checked){
-        this.validateFormOnKeyUp();
-    }
-}
-
 function allFieldsValid(form) {
+    if(!ageConfirm.checked || !rulesAgreement.checked) {
+        return false;
+    }
+
     let registrationInputs = form.getElementsByClassName("registration_input_required");
     for (var i = 0; i < registrationInputs.length; i++) {
         if (registrationInputs.item(i).value === '')
