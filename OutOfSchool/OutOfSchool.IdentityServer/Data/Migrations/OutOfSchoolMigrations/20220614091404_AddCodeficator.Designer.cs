@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220614091404_AddCodeficator")]
+    partial class AddCodeficator
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -298,49 +300,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("ProviderId");
 
                     b.ToTable("BlockedProviderParents");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.ChangesLog", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid?>("EntityIdGuid")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<long?>("EntityIdLong")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("EntityType")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
-
-                    b.Property<string>("NewValue")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.Property<string>("OldValue")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.Property<string>("PropertyName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ChangesLog");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatMessageWorkshop", b =>
@@ -1003,45 +962,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("ProviderAdmins");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdminChangesLog", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid?>("ManagedWorkshopId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<DateTime>("OperationDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("OperationType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ProviderAdminUserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<Guid>("ProviderId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ManagedWorkshopId");
-
-                    b.HasIndex("ProviderAdminUserId");
-
-                    b.HasIndex("ProviderId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProviderAdminChangesLog");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderSectionItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1590,15 +1510,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Provider");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.ChangesLog", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatMessageWorkshop", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.ChatWorkshop.ChatRoomWorkshop", "ChatRoom")
@@ -1808,39 +1719,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("Provider");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.ProviderAdminChangesLog", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Workshop", "ManagedWorkshop")
-                        .WithMany()
-                        .HasForeignKey("ManagedWorkshopId");
-
-                    b.HasOne("OutOfSchool.Services.Models.User", "ProviderAdminUser")
-                        .WithMany()
-                        .HasForeignKey("ProviderAdminUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.Provider", "Provider")
-                        .WithMany()
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OutOfSchool.Services.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ManagedWorkshop");
-
-                    b.Navigation("Provider");
-
-                    b.Navigation("ProviderAdminUser");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ProviderSectionItem", b =>
