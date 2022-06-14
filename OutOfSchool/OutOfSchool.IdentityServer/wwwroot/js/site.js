@@ -76,7 +76,7 @@ confirmPasswordEye.addEventListener('click', function () {
     if (check_confirmPasswordEye) {
         confirmPasswordEye.src = "../icons/ic_eye.svg";
         check_confirmPasswordEye = false;
-        repeatPassword.style.fontSize = "30px";
+        repeatPassword.style.fontSize = "20px";
         repeatPassword.setAttribute("type", "Password");  
     } else {
         confirmPasswordEye.src = "../icons/eye.svg";
