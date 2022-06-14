@@ -114,7 +114,7 @@ function validateForm(form) {
     return (isValidMature && isValidAccept) ? true : false;
 }
 
-function validateFormOnClick(form) {
+function validateFormOnEvent(form) {
     let valid = allFieldsValid(form);
 
     if (btn_register.disabled === valid)

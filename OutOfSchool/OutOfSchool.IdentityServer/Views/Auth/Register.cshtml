@@ -15,7 +15,7 @@
         <h1 class="icon_title">@SharedLocalizer["Register"].Value.ToUpper()</h1>
         <div class="registration_goal">@SharedLocalizer["Registration goal"]</div>
         <div class="icon_wrapper">
-            <form onsubmit="return validateForm(this)" onclick="validateFormOnClick(this)" onkeyup="validateFormOnClick(this)" asp-controller="Auth"
+            <form onsubmit="return validateForm(this)" onclick="validateFormOnEvent(this)" onkeyup="validateFormOnEvent(this)" asp-controller="Auth"
                 asp-action="Register" method="post">
                 <input type="hidden" asp-for="ReturnUrl" />
                 <div asp-validation-summary="ModelOnly"></div>
