@@ -51,6 +51,15 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         Task<InstitutionHierarchyDto> GetById(Guid id);
 
         /// <summary>
+        /// Get all InstitutionHierarchy objects by institution id and level from DB.
+        /// </summary>
+        /// <param name="institutionId">Key in the table for Institution.</param>
+        /// <param name="hierarchyLevel">Hierarchy level for InstitutionHierarchy objects.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
+        Task<List<InstitutionHierarchyDto>> GetAllByInstitutionAndLevel(Guid institutionId, int hierarchyLevel);
+
+        /// <summary>
         /// To Update our object in DB.
         /// </summary>
         /// <param name="dto">InstitutionHierarchy with new properties.</param>

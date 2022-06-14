@@ -158,6 +158,22 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         }
 
         /// <inheritdoc/>
+        public async Task<List<InstitutionHierarchyDto>> GetAllByInstitutionAndLevel(Guid institutionId, int hierarchyLevel)
+        {
+            logger.LogInformation("Getting all InstitutionHierarchy objects by institution id and level started.");
+
+            var institutionHierarchies = await repository.GetByFilter(
+                    i => i.InstitutionId == institutionId
+                    && i.HierarchyLevel == hierarchyLevel).ConfigureAwait(false);
+
+            logger.LogInformation(!institutionHierarchies.Any()
+                ? $"There is no entities in InstitutionHierarchy table for institutionId = {institutionId} and hierarchyLevel = {hierarchyLevel}."
+                : $"{institutionHierarchies.Count()} records were successfully received from the InstitutionHierarchy table for institutionId = {institutionId} and hierarchyLevel = {hierarchyLevel}.");
+
+            return institutionHierarchies.Select(entity => mapper.Map<InstitutionHierarchyDto>(entity)).ToList();
+        }
+
+        /// <inheritdoc/>
         public async Task<InstitutionHierarchyDto> Update(InstitutionHierarchyDto dto)
         {
             logger.LogDebug("Updating InstitutionHierarchy is started.");
