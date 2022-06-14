@@ -6,6 +6,7 @@ using AutoMapper;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
@@ -181,6 +182,13 @@ namespace OutOfSchool.WebApi.Util
 
             CreateMap<ApplicationChangesLogRequest, ChangesLogFilter>()
                 .AfterMap((src, dest) => dest.EntityType = "Application");
+            CreateMap<AchievementDto, Achievement>().ReverseMap();
+
+            CreateMap<AchievementTeacherDto, AchievementTeacher>().ReverseMap();
+
+            CreateMap<AchievementCreateDTO, Achievement>()
+                .ForMember(dest => dest.Children, opt => opt.Ignore())
+                .ForMember(dest => dest.Teachers, opt => opt.Ignore());
         }
     }
 }
