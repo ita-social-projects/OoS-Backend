@@ -44,7 +44,7 @@ namespace OutOfSchool.Services.Repository
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task<Application> Update(Application entity, Action<Application> onSaveChanges)
         {
-            var application = dbSet.Find(entity.Id);
+            var application = await dbSet.FindAsync(entity.Id);
 
             dbContext.Entry(application).CurrentValues.SetValues(entity);
 

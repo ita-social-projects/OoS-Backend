@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
             var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
-            var provider = await context.Providers.FirstOrDefaultAsync();
+            var provider = await context.Providers.FirstAsync();
 
             var oldFullTitle = provider.FullTitle;
             var oldDirector = provider.Director;
@@ -82,7 +82,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
             var trackedProperties = new[] { "FullTitle" };
-            var provider = await context.Providers.FirstOrDefaultAsync();
+            var provider = await context.Providers.FirstAsync();
 
             var oldFullTitle = provider.FullTitle;
 
@@ -110,7 +110,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
             var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
-            var provider = await context.Providers.FirstOrDefaultAsync();
+            var provider = await context.Providers.FirstAsync();
 
             // Act
             var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
@@ -127,7 +127,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
             var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "LegalAddress" };
-            var provider = await context.Providers.FirstOrDefaultAsync();
+            var provider = await context.Providers.FirstAsync();
 
             var oldFullTitle = provider.FullTitle;
 
@@ -168,13 +168,49 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
         }
 
         [Test]
+        public void AddChangesLogToDbContext_TrackedPropertiesIsNull_ThrowsException()
+        {
+            // Arrange
+            using var context = GetContext();
+            var changesLogRepository = GetChangesLogRepository(context);
+            string[] trackedProperties = null;
+
+            // Act
+            var provider = new Provider();
+
+            // Assert
+            var ex = Assert.Throws(
+                typeof(ArgumentNullException),
+                () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue));
+            Assert.AreEqual("Value cannot be null. (Parameter 'trackedProperties')", ex.Message);
+        }
+
+        [Test]
+        public void AddChangesLogToDbContext_ValueProjectorIsNull_ThrowsException()
+        {
+            // Arrange
+            using var context = GetContext();
+            var changesLogRepository = GetChangesLogRepository(context);
+            var trackedProperties = new[] { "FullTitle" };
+
+            // Act
+            var provider = new Provider();
+
+            // Assert
+            var ex = Assert.Throws(
+                typeof(ArgumentNullException),
+                () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, null));
+            Assert.AreEqual("Value cannot be null. (Parameter 'valueProjector')", ex.Message);
+        }
+
+        [Test]
         public async Task AddChangesLogToDbContext_WhenAddressIsModified_AddsLogToDbContext()
         {
             // Arrange
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
             var trackedProperties = new[] { "LegalAddress" };
-            var provider = await context.Providers.Include(p => p.LegalAddress).FirstOrDefaultAsync();
+            var provider = await context.Providers.Include(p => p.LegalAddress).FirstAsync();
 
             var oldLegalAddress = ProjectAddress(provider.LegalAddress);
 
@@ -208,7 +244,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             using var context = GetContext();
             var changesLogRepository = GetChangesLogRepository(context);
             var trackedProperties = new[] { "LegalAddress" };
-            var provider = await context.Providers.Include(p => p.LegalAddress).FirstOrDefaultAsync();
+            var provider = await context.Providers.Include(p => p.LegalAddress).FirstAsync();
 
             // Act
             var added = changesLogRepository.AddChangesLogToDbContext(

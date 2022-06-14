@@ -7,13 +7,6 @@ namespace OutOfSchool.Services.Extensions
     {
         public static TSource If<TSource>(this TSource source, bool condition, Func<TSource, TSource> filter)
             where TSource : IQueryable
-        {
-            if (condition)
-            {
-                return filter(source);
-            }
-
-            return source;
-        }
+            => condition ? filter(source) : source;
     }
 }

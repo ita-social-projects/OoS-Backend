@@ -23,6 +23,16 @@ namespace OutOfSchool.Services.Repository
             Func<Type, object, string> valueProjector)
             where TEntity : class, IKeyedEntity, new()
         {
+            if (trackedProperties == null)
+            {
+                throw new ArgumentNullException(nameof(trackedProperties));
+            }
+
+            if (valueProjector == null)
+            {
+                throw new ArgumentNullException(nameof(valueProjector));
+            }
+
             var result = new List<ChangesLog>();
             var entry = dbContext.Entry(entity);
 
@@ -109,8 +119,8 @@ namespace OutOfSchool.Services.Repository
                 PropertyName = propertyName,
                 EntityIdGuid = entityIdGuid,
                 EntityIdLong = entityIdLong,
-                OldValue = oldValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>("OldValue") ?? 0),
-                NewValue = newValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>("NewValue") ?? 0),
+                OldValue = oldValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>(nameof(ChangesLog.OldValue)) ?? 0),
+                NewValue = newValue.Limit(dbContext.GetPropertyMaxLength<ChangesLog>(nameof(ChangesLog.NewValue)) ?? 0),
                 UpdatedDate = DateTime.Now,
                 UserId = userId,
             };
