@@ -227,7 +227,7 @@ a {
   font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-weight: normal;
-  font-size: 11px;
+  font-size: 11px !important;
   line-height: 18px;
   color: #aaaaaa;
   text-align: center;
