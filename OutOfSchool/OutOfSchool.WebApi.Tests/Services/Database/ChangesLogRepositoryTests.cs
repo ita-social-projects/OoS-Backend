@@ -60,9 +60,9 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             // Assert
             var fullTitleChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.PropertyName == "FullTitle");
+                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
             var directorChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.PropertyName == "Director");
+                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.Director));
 
             Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
             Assert.AreEqual(2, context.ChangesLog.Local.Count);
@@ -95,7 +95,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             // Assert
             var fullTitleChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.PropertyName == "FullTitle");
+                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
 
             Assert.True(oldFullTitle.StartsWith(fullTitleChanges.OldValue));
             Assert.True(newFullTitle.StartsWith(fullTitleChanges.NewValue));
@@ -141,7 +141,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             // Assert
             var fullTitleChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.PropertyName == "FullTitle");
+                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
 
             Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
             Assert.AreEqual(1, context.ChangesLog.Local.Count);
@@ -228,7 +228,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
 
             // Assert
             var legalAddressChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == "Provider" && x.PropertyName == "LegalAddress");
+                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.LegalAddress));
 
             Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
             Assert.AreEqual(1, context.ChangesLog.Local.Count);

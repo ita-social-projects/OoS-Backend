@@ -23,15 +23,8 @@ namespace OutOfSchool.Services.Repository
             Func<Type, object, string> valueProjector)
             where TEntity : class, IKeyedEntity, new()
         {
-            if (trackedProperties == null)
-            {
-                throw new ArgumentNullException(nameof(trackedProperties));
-            }
-
-            if (valueProjector == null)
-            {
-                throw new ArgumentNullException(nameof(valueProjector));
-            }
+            _ = trackedProperties ?? throw new ArgumentNullException(nameof(trackedProperties));
+            _ = valueProjector ?? throw new ArgumentNullException(nameof(valueProjector));
 
             var result = new List<ChangesLog>();
             var entry = dbContext.Entry(entity);
