@@ -114,7 +114,7 @@ function validateForm(form) {
     return (isValidMature && isValidAccept) ? true : false;
 }
 
-function validateFormOnKeyUp(form) {
+function validateFormOnClick(form) {
     let valid = allFieldsValid(form);
 
     if (btn_register.disabled === valid)
@@ -122,7 +122,7 @@ function validateFormOnKeyUp(form) {
 }
 
 function allFieldsValid(form) {
-    if(!ageConfirm.checked || !rulesAgreement.checked) {
+    if(!ageConfirm.checked || !rulesAgreement.checked){
         return false;
     }
 
