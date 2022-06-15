@@ -25,5 +25,9 @@ namespace OutOfSchool.Common
         public const string NameRegexViewModel = @"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$";
 
         public const string NameErrorMessage = "Check the entered data. Please use only cyrillic and symbols( ' - )";
+
+        public const string EmailRegexViewModel = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
+
+        public const string PasswordRegexViewModel = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
     }
 }

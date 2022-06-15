@@ -281,6 +281,9 @@
   <data name="Email is required" xml:space="preserve">
     <value>Потрібна електронна адреса</value>
   </data>
+  <data name="Email is not valid" xml:space="preserve">
+    <value>Будь ласка, введіть правильну електронну адресу</value>
+  </data>
   <data name="FirstName is required" xml:space="preserve">
     <value>Обов'язкове ім'я</value>
   </data>
@@ -305,8 +308,8 @@
   <data name="Phone number is required" xml:space="preserve">
     <value>Номер телефону обов’язковий</value>
   </data>
-  <data name="Email {0} is already taken" xml:space="preserve">
-    <value>Емейл {0} вже зайнятий</value>
+  <data name="Email is already taken" xml:space="preserve">
+    <value>Ця електронна адреса вже використовується</value>
   </data>
   <data name="Not registered yet?" xml:space="preserve">
     <value>Ще не зареєстровані?</value>

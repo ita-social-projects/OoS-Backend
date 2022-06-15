@@ -282,6 +282,9 @@
   <data name="FirstName is required" xml:space="preserve">
     <value>FirstName is required</value>
   </data>
+  <data name="Email is not valid" xml:space="preserve">
+    <value>Email is not valid</value>
+  </data>  
   <data name="LastName is required" xml:space="preserve">
     <value>LastName is required</value>
   </data>
@@ -303,8 +306,8 @@
   <data name="Phone number is required" xml:space="preserve">
     <value>Phone number is required</value>
   </data>
-  <data name="Email {0} is already taken" xml:space="preserve">
-    <value>Email {0} is already taken</value>
+  <data name="Email is already taken" xml:space="preserve">
+    <value>Email is already taken</value>
   </data>
   <data name="Not registered yet?" xml:space="preserve">
     <value>Not registered yet?</value>
