@@ -11,7 +11,7 @@ namespace OutOfSchool.WebApi.Extensions
     // TODO: create a mapping profile instead of extensions
     public static class ElasticsearchMappingExtensions
     {
-        const char SEPARATOR = '¤';
+        private const char SEPARATOR = '¤';
 
         // From DTO to ES models
         public static WorkshopES ToESModel(this WorkshopDTO workshopDto)

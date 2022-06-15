@@ -4,7 +4,7 @@ using System.Collections;
 namespace OutOfSchool.WebApi.Util.CustomValidation
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class CollectionNotEmpty : System.ComponentModel.DataAnnotations.ValidationAttribute
+    public class CollectionNotEmptyAttribute : System.ComponentModel.DataAnnotations.ValidationAttribute
     {
         public override bool IsValid(object value)
         {

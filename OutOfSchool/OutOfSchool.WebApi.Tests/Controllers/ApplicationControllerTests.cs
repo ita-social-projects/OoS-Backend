@@ -758,7 +758,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             return eSlist;
         }
 
-        private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem ()
+        private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem()
         {
             var id = Guid.NewGuid();
             return new WorkshopDescriptionItemDto
