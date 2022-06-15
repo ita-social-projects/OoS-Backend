@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Ardalis.SmartEnum" Version="2.1.0" />
       <PackageReference Include="Google.Cloud.Storage.V1" Version="3.7.0" />
       <PackageReference Include="H3Lib" Version="3.7.2" />
       <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="5.0.11" />
