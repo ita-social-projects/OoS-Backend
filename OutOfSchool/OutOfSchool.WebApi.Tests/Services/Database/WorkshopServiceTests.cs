@@ -458,7 +458,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Id = id,
                 Title = "ChangedTitle",
                 Phone = "1111111111",
-                Description = "Desc1",
+                //Description = "Desc1",
                 Price = 1000,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
@@ -485,6 +485,15 @@ namespace OutOfSchool.WebApi.Tests.Services
                     BuildingNumber = "BuildingNumber55",
                     Latitude = 10,
                     Longitude = 10,
+                },
+                WorkshopDescriptionItems = new[]
+                {
+                    new WorkshopDescriptionItem()
+                    {
+                        Id = Guid.NewGuid(),
+                        SectionName = "Workshop description heading 1",
+                        Description = "Workshop description text 1",
+                    },
                 },
             };
         }

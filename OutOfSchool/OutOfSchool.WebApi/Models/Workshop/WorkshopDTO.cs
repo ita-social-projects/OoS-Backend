@@ -13,6 +13,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Util.CustomValidation;
 using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models
@@ -64,9 +65,9 @@ namespace OutOfSchool.WebApi.Models
         [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal Price { get; set; } = default;
 
-        [Required(ErrorMessage = "Description is required")]
-        [MaxLength(500)]
-        public string Description { get; set; } = string.Empty;
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
+        [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
+        public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
         public bool WithDisabilityOptions { get; set; } = default;
 
