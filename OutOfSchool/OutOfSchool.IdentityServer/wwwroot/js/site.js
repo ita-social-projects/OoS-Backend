@@ -11,6 +11,9 @@ let check_confirmPasswordEye = false;
 let password = document.getElementById('password');
 let repeatPassword = document.getElementById('repeat_password');
 
+let ageConfirm = document.getElementById('checkbox_age_confirm');
+let rulesAgreement = document.getElementById('checkbox_rules_agreement');
+
 btn_register.disabled = true;
 
 if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
@@ -23,7 +26,7 @@ if (sessionStorage.getItem("Button") && sessionStorage.getItem("Role")) {
 if (password.className.includes('input-validation-error')) {
     let elements = document.getElementsByClassName('registration_privacy_password');
     for (let element of elements) {
-        element.style.height = "65px";
+        element.style.height = "105px";
     } 
 }
 
@@ -58,7 +61,7 @@ passwordEye.addEventListener('click', function () {
     if (check_passwordEye) {
         passwordEye.src = "../icons/ic_eye.svg";
         check_passwordEye = false;
-        password.style.fontSize = "30px";
+        password.style.fontSize = "20px";
         password.setAttribute("type", "Password");
        
     } else {
@@ -73,7 +76,7 @@ confirmPasswordEye.addEventListener('click', function () {
     if (check_confirmPasswordEye) {
         confirmPasswordEye.src = "../icons/ic_eye.svg";
         check_confirmPasswordEye = false;
-        repeatPassword.style.fontSize = "30px";
+        repeatPassword.style.fontSize = "20px";
         repeatPassword.setAttribute("type", "Password");  
     } else {
         confirmPasswordEye.src = "../icons/eye.svg";
@@ -111,7 +114,7 @@ function validateForm(form) {
     return (isValidMature && isValidAccept) ? true : false;
 }
 
-function validateFormOnKeyUp(form) {
+function validateFormOnEvent(form) {
     let valid = allFieldsValid(form);
 
     if (btn_register.disabled === valid)
@@ -119,6 +122,10 @@ function validateFormOnKeyUp(form) {
 }
 
 function allFieldsValid(form) {
+    if(!ageConfirm.checked || !rulesAgreement.checked){
+        return false;
+    }
+
     let registrationInputs = form.getElementsByClassName("registration_input_required");
     for (var i = 0; i < registrationInputs.length; i++) {
         if (registrationInputs.item(i).value === '')

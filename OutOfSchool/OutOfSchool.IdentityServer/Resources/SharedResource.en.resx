@@ -162,6 +162,9 @@
   <data name="Register" xml:space="preserve">
     <value>Register</value>
   </data>
+    <data name="Registration goal" xml:space="preserve">
+    <value>To be able to apply activities or become a service provider</value>
+  </data>
   <data name="Register as" xml:space="preserve">
     <value>Register as</value>
   </data>
@@ -180,8 +183,8 @@
   <data name="Terms of use" xml:space="preserve">
     <value>Terms of use</value>
   </data>
-  <data name="The password must be at least 6 characters long" xml:space="preserve">
-    <value>The password must be at least 6 characters long</value>
+  <data name="The password must be at least 8 characters long" xml:space="preserve">
+    <value>The password must be at least 8 characters long</value>
   </data>
   <data name="To be able to apply to clubs or become a service provider" xml:space="preserve">
     <value>To be able to apply to clubs or become a service provider</value>
@@ -286,7 +289,10 @@
     <value>Password confirmation is required</value>
   </data>
   <data name="Password must contain at least one capital, number and symbol(@$!%*?&amp;)." xml:space="preserve">
-    <value>Password must contain at least one capital, number and symbol(@$!%*?&amp;).</value>
+    <value>Error! The password must be at least 8 characters long, including one uppercase letter, number, and special characters (@$!%*?&amp;).</value>
+  </data>
+  <data name="Check the entered data. Please use only cyrillic and symbols( ' - )" xml:space="preserve">
+    <value>Check the entered data. Please use only Cyrillic and special characters( ' - ).</value>
   </data>
   <data name="Passwords doesn't match" xml:space="preserve">
     <value>Passwords doesn't match</value>

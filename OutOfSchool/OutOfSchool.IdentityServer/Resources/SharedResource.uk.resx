@@ -165,6 +165,9 @@
   <data name="Register" xml:space="preserve">
     <value>Зареєструватися</value>
   </data>
+  <data name="Registration goal" xml:space="preserve">
+    <value>Щоб мати змогу подавати заявки у гуртки або стати надавачем послуг</value>
+  </data>
   <data name="Register as" xml:space="preserve">
     <value>Зареєструватися як</value>
   </data>
@@ -183,8 +186,8 @@
   <data name="Terms of use" xml:space="preserve">
     <value>Правилами користування</value>
   </data>
-  <data name="The password must be at least 6 characters long" xml:space="preserve">
-    <value>Пароль має містити мінімум 6 символів</value>
+  <data name="The password must be at least 8 characters long" xml:space="preserve">
+    <value>Пароль має містити мінімум 8 символів</value>
   </data>
   <data name="To be able to apply to clubs or become a service provider" xml:space="preserve">
     <value>Щоб мати змогу подавати заявки у гуртки або стати надавачем послуг</value>
@@ -288,7 +291,10 @@
     <value>Потрібно підтвердження пароля</value>
   </data>
   <data name="Password must contain at least one capital, number and symbol(@$!%*?&amp;)." xml:space="preserve">
-    <value>Пароль повинен містити принаймні одну велику літеру, число та символ (@$!%*? &amp;).</value>
+    <value>Помилка! Пароль має складатися мінімум з 8-ми символів, із них одна головна літера, цифри та спецсимволи (@$!%*? &amp;).</value>
+  </data>
+  <data name="Check the entered data. Please use only cyrillic and symbols( ' - )" xml:space="preserve">
+    <value>Перевірте введені дані. Використовуйте, будь ласка, тільки кирилицю та символи( ' - ).</value>
   </data>
   <data name="Passwords doesn't match" xml:space="preserve">
     <value>Паролі не збігаються</value>

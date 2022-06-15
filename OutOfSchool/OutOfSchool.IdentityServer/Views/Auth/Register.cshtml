@@ -13,8 +13,9 @@
 <div class="wrapper_body">
     <div class="wrapper">
         <h1 class="icon_title">@SharedLocalizer["Register"].Value.ToUpper()</h1>
+        <div class="registration_goal">@SharedLocalizer["Registration goal"]</div>
         <div class="icon_wrapper">
-            <form onsubmit="return validateForm(this)" onkeyup="validateFormOnKeyUp(this)" asp-controller="Auth"
+            <form onsubmit="return validateForm(this)" onclick="validateFormOnEvent(this)" onkeyup="validateFormOnEvent(this)" asp-controller="Auth"
                 asp-action="Register" method="post">
                 <input type="hidden" asp-for="ReturnUrl" />
                 <div asp-validation-summary="ModelOnly"></div>
@@ -76,7 +77,7 @@
                     </li>
                     <li class="registration_item">
                         <label class="registration_label" asp-for="MiddleName">@SharedLocalizer["Middle name"]</label>
-                        <input class="registration_input registration_input_unrequired" type="text" asp-for="MiddleName"
+                        <input class="registration_input registration_input_required" type="text" asp-for="MiddleName"
                             id="middle_name">
                         <div>
                             <span asp-validation-for="MiddleName"></span>
@@ -121,9 +122,7 @@
                         </div>
                     </li>
                     <li class="registration_item registration_item-tip">
-                        <div class="registration_tip">
-                            @SharedLocalizer["The password must be at least 6 characters long"]
-                        </div>
+                        @SharedLocalizer["The password must be at least 8 characters long"]
                     </li>
                     <li class="registration_item">
                         <div>
@@ -143,7 +142,7 @@
                     </li>
                     <li class="registration_item registration_item-maturity">
                         <div class="registration_item-box">
-                            <input type="checkbox" name="maturity">
+                            <input type="checkbox" name="maturity" id="checkbox_age_confirm" class="checkbox registration_input_required">
                             <label for="maturity">
                                 @SharedLocalizer["I am 18 years old"]
                             </label>
@@ -154,7 +153,7 @@
                     </li>
                     <li class="registration_item registration_item-accept">
                         <div class="registration_item-box">
-                            <input type="checkbox" name="accept">
+                            <input type="checkbox" name="accept" id="checkbox_rules_agreement" class="checkbox registration_input_required">
                             <label for="accept">
                                 @SharedLocalizer["By registering I agree with"]
                                 <a href="#" class="link">@SharedLocalizer["Terms of use"]</a>
