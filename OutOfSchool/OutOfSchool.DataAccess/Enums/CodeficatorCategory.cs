@@ -1,23 +1,22 @@
-﻿namespace OutOfSchool.Services.Enums
+﻿using Ardalis.SmartEnum;
+
+namespace OutOfSchool.Services.Enums
 {
-    public static class CodeficatorCategory
+    public sealed class CodeficatorCategory : SmartEnum<CodeficatorCategory>
     {
-        public const string Region = "O"; // Автономна Республіка Крим, області.
+        public static readonly CodeficatorCategory Region = new CodeficatorCategory("O", 1); // Автономна Республіка Крим, області.
+        public static readonly CodeficatorCategory SpecialStatusCity = new CodeficatorCategory("K", 2); // Міста, що мають спеціальний статус.
+        public static readonly CodeficatorCategory District = new CodeficatorCategory("P", 3); // Райони в областях та Автономній Республіці Крим.
+        public static readonly CodeficatorCategory TerritorialCommunity = new CodeficatorCategory("H", 4); // Території територіальних громад (назви територіальних громад) в областях, територіальні громади Автономної Республіки Крим.
+        public static readonly CodeficatorCategory City = new CodeficatorCategory("M", 5); // Міста.
+        public static readonly CodeficatorCategory UrbanSettlement = new CodeficatorCategory("T", 6); // Селища міського типу.
+        public static readonly CodeficatorCategory Village = new CodeficatorCategory("C", 7); // Села.
+        public static readonly CodeficatorCategory Settlement = new CodeficatorCategory("X", 8); // Селища.
+        public static readonly CodeficatorCategory CityDistrict = new CodeficatorCategory("B", 9); // Райони в містах.
 
-        public const string SpecialStatusCity = "K"; // Міста, що мають спеціальний статус.
-
-        public const string District = "P"; // Райони в областях та Автономній Республіці Крим.
-
-        public const string TerritorialCommunity = "H"; // Території територіальних громад (назви територіальних громад) в областях, територіальні громади Автономної Республіки Крим.
-
-        public const string City = "M"; // Міста.
-
-        public const string UrbanSettlement = "T"; // Селища міського типу.
-
-        public const string Village = "C"; // Села.
-
-        public const string Settlement = "X"; // Селища.
-
-        public const string CityDistrict = "B";  // Райони в містах.
+        private CodeficatorCategory(string name, int value)
+        : base(name, value)
+        {
+        }
     }
 }
