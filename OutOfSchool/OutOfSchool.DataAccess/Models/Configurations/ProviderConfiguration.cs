@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models.Configurations
 {
@@ -64,6 +65,14 @@ namespace OutOfSchool.Services.Models.Configurations
 
             builder.Property(x => x.InstitutionType)
                 .IsRequired();
+
+            builder.Property(x => x.Status)
+                .IsRequired()
+                .HasDefaultValue(ProviderApprovalStatus.Pending);
+
+            builder.Property(x => x.LicenseStatus)
+                .IsRequired()
+                .HasDefaultValue(ProviderLicenseStatus.NotProvided);
 
             // builder.HasOne(x => x.LegalAddress)
             //    .WithOne()

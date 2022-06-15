@@ -76,7 +76,13 @@ namespace OutOfSchool.Services.Models
         [Required]
         public ProviderType Type { get; set; }
 
-        public bool Status { get; set; } = default;
+        [Required]
+        public ProviderApprovalStatus Status { get; set; }
+
+        [MaxLength(30)]
+        public string License { get; set; }
+
+        public ProviderLicenseStatus LicenseStatus { get; set; }
 
         [Required]
         public string UserId { get; set; }

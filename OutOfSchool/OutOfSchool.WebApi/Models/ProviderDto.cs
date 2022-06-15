@@ -79,7 +79,13 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public ProviderType Type { get; set; }
 
-        public bool Status { get; set; }
+        [Required]
+        public ProviderApprovalStatus Status { get; set; }
+
+        [MaxLength(15)]
+        public string License { get; set; }
+
+        public ProviderLicenseStatus LicenseStatus { get; set; }
 
         [MaxLength(256)]
         public string CoverImageId { get; set; } = string.Empty;
