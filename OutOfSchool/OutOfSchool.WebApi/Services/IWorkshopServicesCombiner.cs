@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
@@ -34,6 +35,14 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="dto">Entity that will be to updated.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
         Task<WorkshopDTO> Update(WorkshopDTO dto);
+
+        /// <summary>
+        /// Update status field for existing entity in the database.
+        /// </summary>
+        /// <param name="dto">Entity that will be to updated.</param>
+        /// <param name="dto">New status value.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
+        Task<WorkshopDTO> UpdateStatus(WorkshopDTO dto, WorkshopStatus status);
 
         /// <summary>
         ///  Delete entity.

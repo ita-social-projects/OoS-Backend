@@ -272,14 +272,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             if (dto.ProviderOwnership == OwnershipType.Private)
             {
-                dto.Status = status;
+                return Ok(await combinedWorkshopService.UpdateStatus(dto, status).ConfigureAwait(false));
             }
             else
             {
                 return BadRequest("Unable to update status for workshop with state or common ownership type.");
             }
-
-            return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>

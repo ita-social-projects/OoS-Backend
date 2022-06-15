@@ -20,23 +20,30 @@ using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
 {
-    public class WorkshopServicesCombiner : IWorkshopServicesCombiner
+    public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotificationReciever
     {
         private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly ILogger<WorkshopServicesCombiner> logger;
         private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
+        private readonly INotificationService notificationService;
+        private readonly IFavoriteService favoriteService;
+
 
         public WorkshopServicesCombiner(
             IWorkshopService workshopService,
             IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
             ILogger<WorkshopServicesCombiner> logger,
-            IElasticsearchSynchronizationService elasticsearchSynchronizationService)
+            IElasticsearchSynchronizationService elasticsearchSynchronizationService,
+            INotificationService notificationService,
+            IFavoriteService favoriteService)
         {
             this.workshopService = workshopService;
             this.elasticsearchService = elasticsearchService;
             this.logger = logger;
             this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
+            this.notificationService = notificationService;
+            this.favoriteService = favoriteService;
         }
 
         /// <inheritdoc/>
@@ -73,6 +80,27 @@ namespace OutOfSchool.WebApi.Services
                 .ConfigureAwait(false);
 
             return workshop;
+        }
+
+        public async Task<WorkshopDTO> UpdateStatus(WorkshopDTO dto, WorkshopStatus status)
+        {
+            dto.Status = status;
+            
+            var updatedDto = await Update(dto).ConfigureAwait(false);
+            
+            var additionalData = new Dictionary<string, string>()
+            {
+                { "Status", updatedDto.Status.ToString() },
+            };
+            
+            await notificationService.Create(
+                NotificationType.Workshop,
+                NotificationAction.Update,
+                updatedDto.Id,
+                this,
+                additionalData).ConfigureAwait(false);
+            
+            return updatedDto;
         }
 
         /// <inheritdoc/>
@@ -185,6 +213,26 @@ namespace OutOfSchool.WebApi.Services
             return filter != null && filter.MaxStartTime >= filter.MinStartTime
                                   && filter.MaxAge >= filter.MinAge
                                   && filter.MaxPrice >= filter.MinPrice;
+        } 
+        
+        public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+        {
+            var recipientIds = new List<string>();
+
+            var usersInFavoriteWorkshop = await favoriteService.GetAll().ConfigureAwait(false);
+            var usersIds = usersInFavoriteWorkshop.Where(x => x.WorkshopId == objectId).Select(x => x.UserId);
+
+            // var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
+            // var application = applications.FirstOrDefault();
+            //
+            // if (application is null)
+            // {
+            //     return recipientIds;
+            // }
+            
+            recipientIds.AddRange(usersIds);
+
+            return recipientIds.Distinct();
         }
     }
 }

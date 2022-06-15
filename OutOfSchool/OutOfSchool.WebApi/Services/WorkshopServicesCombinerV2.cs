@@ -10,8 +10,14 @@ namespace OutOfSchool.WebApi.Services
 {
     public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopServicesCombinerV2
     {
-        public WorkshopServicesCombinerV2(IWorkshopService workshopService, IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, ILogger<WorkshopServicesCombiner> logger, IElasticsearchSynchronizationService elasticsearchSynchronizationService)
-            : base(workshopService, elasticsearchService, logger, elasticsearchSynchronizationService)
+        public WorkshopServicesCombinerV2(
+            IWorkshopService workshopService,
+            IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, 
+            ILogger<WorkshopServicesCombiner> logger,
+            IElasticsearchSynchronizationService elasticsearchSynchronizationService,
+            INotificationService notificationService,
+            IFavoriteService favoriteService)
+            : base(workshopService, elasticsearchService, logger, elasticsearchSynchronizationService, notificationService, favoriteService)
         {
         }
 
