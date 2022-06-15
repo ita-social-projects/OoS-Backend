@@ -21,7 +21,13 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.MinAge, f => f.Random.Number(1, 18))
             //            .RuleFor(x => x.MaxAge, f => f.)
             .RuleFor(x => x.Price, f => f.Random.Decimal())
-            .RuleFor(x => x.Description, f => f.Lorem.Paragraph())
+            .RuleFor(x => x.WorkshopDescriptionItems, f => f.Make(new Random().Next(1, 4), () =>
+                new WorkshopDescriptionItem()
+                {
+                    Id = Guid.NewGuid(),
+                    SectionName = f.Lorem.Sentence(),
+                    Description = f.Lorem.Paragraph(),
+                }))
             .RuleFor(x => x.WithDisabilityOptions, f => f.Random.Bool())
             .RuleFor(x => x.DisabilityOptionsDesc, f => f.Lorem.Sentence())
             .RuleFor(x => x.CoverImageId, f => f.Image.LoremFlickrUrl())

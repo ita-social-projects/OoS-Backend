@@ -11,6 +11,8 @@ namespace OutOfSchool.WebApi.Extensions
     // TODO: create a mapping profile instead of extensions
     public static class ElasticsearchMappingExtensions
     {
+        const char SEPARATOR = '¤';
+
         // From DTO to ES models
         public static WorkshopES ToESModel(this WorkshopDTO workshopDto)
         {
@@ -21,8 +23,15 @@ namespace OutOfSchool.WebApi.Extensions
                         dest => dest.Keywords,
                         opt =>
                             opt.MapFrom(src =>
-                                string.Join('¤', src.Keywords.Distinct())))
-                    .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.Directions));
+                                string.Join(SEPARATOR, src.Keywords.Distinct())))
+                    .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.Directions))
+                    .ForMember(
+                        dest => dest.Description,
+                        opt =>
+                            opt.MapFrom(src =>
+                                src.WorkshopDescriptionItems
+                                    .Aggregate(string.Empty, (accumulator, wdi) =>
+                                        $"{accumulator}{wdi.SectionName}{SEPARATOR}{wdi.Description}{SEPARATOR}")));
 
                 cfg.CreateMap<AddressDto, AddressES>()
                     .ForMember(

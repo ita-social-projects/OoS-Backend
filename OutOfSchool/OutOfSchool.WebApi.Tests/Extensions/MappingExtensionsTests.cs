@@ -14,6 +14,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Extensions
@@ -244,7 +245,15 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Id = Guid.NewGuid(),
                 Title = "Title5",
                 Phone = "1111111111",
-                Description = "Desc5",
+                WorkshopDescriptionItems = new[]
+                {
+                    new WorkshopDescriptionItemDto
+                    {
+                        Id = Guid.NewGuid(),
+                        SectionName = "test heading1",
+                        Description = "test sentence of description1",
+                    },
+                },
                 Price = 5000,
                 IsPerMonth = true,
                 WithDisabilityOptions = true,
