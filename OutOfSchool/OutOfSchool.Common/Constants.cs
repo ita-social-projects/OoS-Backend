@@ -22,5 +22,8 @@ namespace OutOfSchool.Common
 
         public const int MySQLServerMinimalMajorVersion = 8;
 
+        public const string NameRegexViewModel = @"^(?i)[А-ЯҐЄІЇ](([\'\-][А-ЯҐЄІЇ])?[А-ЯҐЄІЇ]*)*$";
+
+        public const string NameErrorMessage = "Check the entered data. Please use only cyrillic and symbols( ' - )";
     }
 }
