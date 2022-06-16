@@ -165,6 +165,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(workshopsMock.Object)
                 .Verifiable();
@@ -182,6 +183,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(workshopsMock.Object)
                 .Verifiable();
@@ -192,6 +194,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(applicationsMock.Object)
                 .Verifiable();
@@ -202,6 +205,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Direction, bool>>>(),
                     It.IsAny<Expression<Func<Direction, It.IsAnyType>>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<bool>()))
                 .Returns(directionsMock.Object)
                 .Verifiable();

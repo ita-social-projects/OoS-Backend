@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace OutOfSchool.WebApi.Util
 {
@@ -88,6 +87,11 @@ namespace OutOfSchool.WebApi.Util
         /// <returns>Derived predicate.</returns>
         public static Expression<T> Compose<T>(this Expression<T> first, Expression<T> second, Func<Expression, Expression, Expression> merge)
         {
+            if (first == null)
+            {
+                return second;
+            }
+
             // zip parameters (map from parameters of second to parameters of first)
             var map = first.Parameters
                 .Select((f, i) => new { f, s = second.Parameters[i] })

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
@@ -284,7 +285,8 @@ namespace OutOfSchool.WebApi.Controllers.V1
                     providerId: application.Workshop.ProviderId,
                     workshopId: application.Workshop.WorkshopId).ConfigureAwait(false);
 
-                var updatedApplication = await applicationService.Update(application).ConfigureAwait(false);
+                var userId = GettingUserProperties.GetUserId(User);
+                var updatedApplication = await applicationService.Update(application, userId).ConfigureAwait(false);
 
                 return Ok(updatedApplication);
             }
@@ -366,7 +368,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
         private async Task CheckUserRights(Guid parentId = default, Guid providerId = default, Guid workshopId = default)
         {
-            var userId = User.FindFirst("sub")?.Value;
+            var userId = GettingUserProperties.GetUserId(User);
 
             bool userHasRights = true;
 

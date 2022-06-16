@@ -231,6 +231,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IValidationService, ValidationService>();
             services.AddTransient<IWorkshopService, WorkshopService>();
             services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
+            services.AddTransient<IChangesLogService, ChangesLogService>();
+            services.AddTransient<IValueProjector, ValueProjector>();
 
             services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
             services.AddTransient<IInstitutionService, InstitutionService>();
@@ -284,11 +286,15 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
             services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
+            services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
+            services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
 
             // Institution hierarchy
             services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
             services.AddTransient<ISensitiveEntityRepository<InstitutionFieldDescription>, SensitiveEntityRepository<InstitutionFieldDescription>>();
             services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
+
+            services.Configure<ChangesLogConfig>(Configuration.GetSection(ChangesLogConfig.Name));
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

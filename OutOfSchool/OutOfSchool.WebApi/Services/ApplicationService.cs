@@ -31,7 +31,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IMapper mapper;
         private readonly INotificationService notificationService;
         private readonly IProviderAdminService providerAdminService;
-
+        private readonly IChangesLogService changesLogService;
         private readonly ApplicationsConstraintsConfig applicationsConstraintsConfig;
 
         /// <summary>
@@ -46,6 +46,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="applicationsConstraintsConfig">Options for application's constraints.</param>
         /// <param name="notificationService">Notification service.</param>
         /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
+        /// <param name="changesLogService">ChangesLogService.</param>
         public ApplicationService(
             IApplicationRepository repository,
             ILogger<ApplicationService> logger,
@@ -55,7 +56,8 @@ namespace OutOfSchool.WebApi.Services
             IMapper mapper,
             IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig,
             INotificationService notificationService,
-            IProviderAdminService providerAdminService)
+            IProviderAdminService providerAdminService,
+            IChangesLogService changesLogService)
         {
             this.applicationRepository = repository;
             this.workshopRepository = workshopRepository;
@@ -65,7 +67,7 @@ namespace OutOfSchool.WebApi.Services
             this.mapper = mapper;
             this.notificationService = notificationService;
             this.providerAdminService = providerAdminService;
-
+            this.changesLogService = changesLogService;
             try
             {
                 this.applicationsConstraintsConfig = applicationsConstraintsConfig.Value;
@@ -311,7 +313,7 @@ namespace OutOfSchool.WebApi.Services
             return mapper.Map<ApplicationDto>(application);
         }
 
-        public async Task<ApplicationDto> Update(ApplicationDto applicationDto)
+        public async Task<ApplicationDto> Update(ApplicationDto applicationDto, string userId)
         {
             logger.LogInformation($"Updating Application with Id = {applicationDto?.Id} started.");
 
@@ -321,7 +323,9 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var updatedApplication = await applicationRepository.Update(mapper.Map<Application>(applicationDto))
+                var updatedApplication = await applicationRepository.Update(
+                    mapper.Map<Application>(applicationDto),
+                    x => changesLogService.AddEntityChangesToDbContext(x, userId))
                     .ConfigureAwait(false);
 
                 logger.LogInformation($"Application with Id = {applicationDto?.Id} updated succesfully.");

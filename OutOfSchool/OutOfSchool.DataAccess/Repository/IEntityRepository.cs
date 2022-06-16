@@ -23,6 +23,16 @@ namespace OutOfSchool.Services.Repository
         Task<TEntity> Create(TEntity entity);
 
         /// <summary>
+        /// Add new elements.
+        /// </summary>
+        /// <param name="entities">Entities to create.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the entities that were created.</returns>
+        /// <exception cref="DbUpdateException">An exception that is thrown when an error is encountered while saving to the database.</exception>
+        /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
+        Task<IEnumerable<TEntity>> Create(IEnumerable<TEntity> entities);
+
+        /// <summary>
         /// Runs operation in transaction.
         /// </summary>
         /// <param name="operation">Method that represents the operation.</param>
@@ -86,8 +96,8 @@ namespace OutOfSchool.Services.Repository
         /// </summary>
         /// <param name="predicate">Filter with key.</param>
         /// <param name="includeProperties">Name of properties which should be included.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="IEnumerable{T}"/> that contains elements.</returns>
+        /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
+        /// satisfy the condition specified by predicate.
         IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> predicate, string includeProperties = "");
 
         /// <summary>
@@ -117,9 +127,17 @@ namespace OutOfSchool.Services.Repository
         /// <param name="where">Filter.</param>
         /// <param name="orderBy">Filter that defines by wich property we want to order by.</param>
         /// <param name="ascending">Ascending or descending ordering.</param>
-        /// <returns>>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains an ordered, filtered <see cref="IQueryable{T}"/>.</returns>
-        IQueryable<TEntity> Get<TOrderKey>(int skip = 0, int take = 0, string includeProperties = "", Expression<Func<TEntity, bool>> where = null, Expression<Func<TEntity, TOrderKey>> orderBy = null, bool ascending = true);
+        /// <param name="asNoTracking">Define if the result set will be tracked by the context.</param>
+        /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
+        /// satisfy the condition specified by predicate. An ordered, filtered <see cref="IQueryable{T}"/>.</returns>
+        IQueryable<TEntity> Get<TOrderKey>(
+            int skip = 0,
+            int take = 0,
+            string includeProperties = "",
+            Expression<Func<TEntity, bool>> where = null,
+            Expression<Func<TEntity, TOrderKey>> orderBy = null,
+            bool ascending = true,
+            bool asNoTracking = false);
     }
 
     /// <summary>

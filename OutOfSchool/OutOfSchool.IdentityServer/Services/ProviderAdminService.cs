@@ -12,6 +12,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
 using OutOfSchool.IdentityServer.Services.Intefaces;
+using OutOfSchool.IdentityServer.Services.Interfaces;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
 using OutOfSchool.RazorTemplatesData.Services;
@@ -32,6 +33,7 @@ namespace OutOfSchool.IdentityServer.Services
         private readonly UserManager<User> userManager;
         private readonly OutOfSchoolDbContext context;
         private readonly IRazorViewToStringRenderer renderer;
+        private readonly IProviderAdminChangesLogService providerAdminChangesLogService;
 
         public ProviderAdminService(
             IMapper mapper,
@@ -40,7 +42,8 @@ namespace OutOfSchool.IdentityServer.Services
             IEmailSender emailSender,
             UserManager<User> userManager,
             OutOfSchoolDbContext context,
-            IRazorViewToStringRenderer renderer)
+            IRazorViewToStringRenderer renderer,
+            IProviderAdminChangesLogService providerAdminChangesLogService)
         {
             this.mapper = mapper;
             this.userManager = userManager;
@@ -49,6 +52,7 @@ namespace OutOfSchool.IdentityServer.Services
             this.logger = logger;
             this.emailSender = emailSender;
             this.renderer = renderer;
+            this.providerAdminChangesLogService = providerAdminChangesLogService;
         }
 
         public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -138,6 +142,9 @@ namespace OutOfSchool.IdentityServer.Services
                     await providerAdminRepository.Create(providerAdmin)
                         .ConfigureAwait(false);
 
+                    await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Create)
+                        .ConfigureAwait(false);
+
                     logger.LogInformation(
                         $"ProviderAdmin(id):{providerAdminDto.UserId} was successfully created by " +
                         $"User(id): {userId}. Request(id): {requestId}");
@@ -150,7 +157,7 @@ namespace OutOfSchool.IdentityServer.Services
                     var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
                     var confirmationLink = url.Action(
                         "EmailConfirmation", "Account",
-                        new {userId = user.Id, token},
+                        new { userId = user.Id, token },
                         "https");
                     var subject = "Запрошення!";
                     var adminInvitationViewModel = new AdminInvitationViewModel
@@ -200,8 +207,7 @@ namespace OutOfSchool.IdentityServer.Services
                 await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
                 try
                 {
-                    var providerAdmin = context.ProviderAdmins
-                        .SingleOrDefault(pa => pa.UserId == providerAdminId);
+                    var providerAdmin = GetProviderAdmin(providerAdminId);
 
                     if (providerAdmin is null)
                     {
@@ -234,6 +240,13 @@ namespace OutOfSchool.IdentityServer.Services
                         return response;
                     }
 
+                    // TODO: enable logging of changes when soft delete for Users is added
+                    if (false)
+                    {
+                        await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Delete)
+                            .ConfigureAwait(false);
+                    }
+
                     await transaction.CommitAsync();
                     response.IsSuccess = true;
                     response.HttpStatusCode = HttpStatusCode.OK;
@@ -259,63 +272,99 @@ namespace OutOfSchool.IdentityServer.Services
             return result;
         }
 
-        // TODO: Maybe add transactions later?
         public async Task<ResponseDto> BlockProviderAdminAsync(
             string providerAdminId,
             string userId,
             string requestId)
         {
             var response = new ResponseDto();
-            var user = await userManager.FindByIdAsync(providerAdminId);
 
-            if (user is null)
+            var providerAdmin = GetProviderAdmin(providerAdminId);
+
+            if (providerAdmin is null)
             {
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.NotFound;
 
                 logger.LogError($"ProviderAdmin(id) {providerAdminId} not found. " +
-                            $"Request(id): {requestId}" +
+                                $"Request(id): {requestId}" +
                                 $"User(id): {userId}");
 
                 return response;
             }
 
-            user.IsBlocked = true;
-            var updateResult = await userManager.UpdateAsync(user);
+            var user = await userManager.FindByIdAsync(providerAdminId);
 
-            if (!updateResult.Succeeded)
+            var executionStrategy = context.Database.CreateExecutionStrategy();
+            return await executionStrategy.Execute(BlockProviderAdminOperation).ConfigureAwait(false);
+
+            async Task<ResponseDto> BlockProviderAdminOperation()
             {
-                logger.LogError($"Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
-                            $"User(id): {userId}" +
-                            $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+                await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+                try
+                {
+                    user.IsBlocked = true;
+                    var updateResult = await userManager.UpdateAsync(user);
 
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                    if (!updateResult.Succeeded)
+                    {
+                        await transaction.RollbackAsync().ConfigureAwait(false);
 
-                return response;
+                        logger.LogError($"Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId}" +
+                                    $"{string.Join(Environment.NewLine, updateResult.Errors.Select(e => e.Description))}");
+
+                        response.IsSuccess = false;
+                        response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                        return response;
+                    }
+
+                    var updateSecurityStamp = await userManager.UpdateSecurityStampAsync(user);
+
+                    if (!updateSecurityStamp.Succeeded)
+                    {
+                        await transaction.RollbackAsync().ConfigureAwait(false);
+
+                        logger.LogError($"Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId}" +
+                                    $"{string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description))}");
+
+                        response.IsSuccess = false;
+                        response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                        return response;
+                    }
+
+                    await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Block)
+                        .ConfigureAwait(false);
+
+                    await transaction.CommitAsync().ConfigureAwait(false);
+
+                    logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully blocked by " +
+                                $"User(id): {userId}. Request(id): {requestId}");
+
+                    response.IsSuccess = true;
+                    response.HttpStatusCode = HttpStatusCode.OK;
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync().ConfigureAwait(false);
+
+                    logger.LogError($"Error happened while blocking ProviderAdmin. Request(id): {requestId}" +
+                                    $"User(id): {userId} {ex.Message}");
+
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+
+                    return response;
+                }
             }
-
-            var updateSecurityStamp = await userManager.UpdateSecurityStampAsync(user);
-
-            if (!updateSecurityStamp.Succeeded)
-            {
-                logger.LogError($"Error happened while updating security stamp. ProviderAdmin. Request(id): {requestId}" +
-                            $"User(id): {userId}" +
-                            $"{string.Join(Environment.NewLine, updateSecurityStamp.Errors.Select(e => e.Description))}");
-
-                response.IsSuccess = false;
-                response.HttpStatusCode = HttpStatusCode.InternalServerError;
-
-                return response;
-            }
-
-            logger.LogInformation($"ProviderAdmin(id):{providerAdminId} was successfully blocked by " +
-                        $"User(id): {userId}. Request(id): {requestId}");
-
-            response.IsSuccess = true;
-            response.HttpStatusCode = HttpStatusCode.OK;
-
-            return response;
         }
+
+        private ProviderAdmin GetProviderAdmin(string providerAdminId)
+            => context.ProviderAdmins.SingleOrDefault(pa => pa.UserId == providerAdminId);
     }
 }

@@ -29,6 +29,7 @@ using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.KeyManagement;
 using OutOfSchool.IdentityServer.Services;
 using OutOfSchool.IdentityServer.Services.Intefaces;
+using OutOfSchool.IdentityServer.Services.Interfaces;
 using OutOfSchool.IdentityServer.Util;
 using OutOfSchool.RazorTemplatesData.Services;
 using OutOfSchool.Services;
@@ -165,6 +166,9 @@ namespace OutOfSchool.IdentityServer
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
             services.AddTransient<IProviderAdminService, ProviderAdminService>();
+
+            services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
+            services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();

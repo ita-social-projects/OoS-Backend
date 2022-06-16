@@ -8,6 +8,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
+using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models.Teachers;
@@ -159,6 +160,14 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<ClassDto, Class>().ReverseMap();
             CreateMap<DepartmentDto, Department>().ReverseMap();
             CreateMap<DirectionDto, Direction>().ReverseMap();
+
+            CreateMap<User, ShortUserDto>();
+
+            CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
+                .AfterMap((src, dest) => dest.EntityType = "Provider");
+
+            CreateMap<ApplicationChangesLogRequest, ChangesLogFilter>()
+                .AfterMap((src, dest) => dest.EntityType = "Application");
         }
     }
 }
