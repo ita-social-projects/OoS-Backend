@@ -108,7 +108,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
                 ? $"There is no children in InstitutionHierarchy table for parentId = {parentId}."
                 : $"{institutionHierarchies.Count()} records were successfully received from the InstitutionHierarchy table for parentId = {parentId}.");
 
-            return institutionHierarchies.Select(entity => mapper.Map<InstitutionHierarchyDto>(entity)).ToList();
+            return institutionHierarchies.OrderBy(entity => entity.Title).Select(entity => mapper.Map<InstitutionHierarchyDto>(entity)).ToList();
         }
 
         /// <inheritdoc/>
@@ -170,7 +170,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
                 ? $"There is no entities in InstitutionHierarchy table for institutionId = {institutionId} and hierarchyLevel = {hierarchyLevel}."
                 : $"{institutionHierarchies.Count()} records were successfully received from the InstitutionHierarchy table for institutionId = {institutionId} and hierarchyLevel = {hierarchyLevel}.");
 
-            return institutionHierarchies.Select(entity => mapper.Map<InstitutionHierarchyDto>(entity)).ToList();
+            return institutionHierarchies.OrderBy(entity => entity.Title).Select(entity => mapper.Map<InstitutionHierarchyDto>(entity)).ToList();
         }
 
         /// <inheritdoc/>
