@@ -207,6 +207,10 @@ namespace OutOfSchool.WebApi.Services
             var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
             providerDomainModel.User = users.Single();
             providerDomainModel.User.IsRegistered = true;
+            providerDomainModel.Status = ProviderApprovalStatus.Pending;
+            providerDomainModel.LicenseStatus = providerDomainModel.License == null
+                ? ProviderLicenseStatus.NotProvided
+                : ProviderLicenseStatus.Pending;
 
             var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
 
