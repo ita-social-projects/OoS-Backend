@@ -90,6 +90,8 @@ namespace OutOfSchool.Services
 
         public DbSet<ProviderAdminChangesLog> ProviderAdminChangesLog { get; set; }
 
+        public DbSet<Codeficator> Codeficators { get; set; }
+
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();
