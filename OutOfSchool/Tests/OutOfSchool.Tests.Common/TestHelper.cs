@@ -64,21 +64,22 @@ namespace OutOfSchool.Tests.Common
             tuppledProperties.AssertPropertiesAreEqual();
         }
 
-        private static IEnumerable<(object , object)> GetTuppledProperties<TValue>(TValue expected, TValue actual)
+        private static IEnumerable<(object , object, string)> GetTuppledProperties<TValue>(TValue expected, TValue actual)
         {
             return expected.GetType().GetProperties()
-                .Select(p => p.GetValue(expected))
+                .Select(p => (p.Name, Value: p.GetValue(expected)))
                 .Zip(actual.GetType().GetProperties()
-                .Select(r => r.GetValue(actual)));
+                .Select(r => (r.Name, Value: r.GetValue(actual))))
+                .Select(t => (t.First.Value, t.Second.Value, t.First.Name));
         }
 
-        private static void AssertPropertiesAreEqual(this IEnumerable<(object, object)> tuppledProperties)
+        private static void AssertPropertiesAreEqual(this IEnumerable<(object, object, string)> tuppledProperties)
         {
             Assert.Multiple(() =>
             {
                 foreach (var property in tuppledProperties)
                 {
-                    Assert.AreEqual(property.Item1, property.Item2);
+                    Assert.AreEqual(property.Item1, property.Item2, $"Property: '{property.Item3}'");
                 }
             });
         }

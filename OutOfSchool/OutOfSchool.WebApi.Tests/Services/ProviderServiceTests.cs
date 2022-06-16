@@ -71,20 +71,31 @@ namespace OutOfSchool.WebApi.Tests.Services
                 changesLogService.Object);
         }
 
-        [Test]
-        public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity()
+        [TestCase(null, ProviderLicenseStatus.NotProvided)]
+        [TestCase("1234567890", ProviderLicenseStatus.Pending)]
+        public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity(string license, ProviderLicenseStatus expectedLicenseStatus)
         {
             // Arrange
-            var entityToBeCreated = ProvidersGenerator.Generate(); // argument for service's Create method
-            var expected = mapper.Map<ProviderDto>(entityToBeCreated);
-            providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>())).ReturnsAsync(entityToBeCreated);
+            var dto = ProviderDtoGenerator.Generate();
+            dto.License = license;
+            dto.Status = ProviderApprovalStatus.Approved;
+
+            var expected = mapper.Map<ProviderDto>(dto);
+            expected.Status = ProviderApprovalStatus.Pending;
+            expected.License = license;
+            expected.LicenseStatus = expectedLicenseStatus;
+            expected.CoverImageId = null;
+            expected.ImageIds = new List<string>();
+            expected.ProviderSectionItems = Enumerable.Empty<ProviderSectionItemDto>();
+
+            providersRepositoryMock.Setup(r => r.Create(It.IsAny<Provider>()))
+                .ReturnsAsync((Provider p) => p);
 
             // Act
-            var result = await providerService.Create(expected).ConfigureAwait(false);
-            var actualProvider = result;
+            var result = await providerService.Create(dto).ConfigureAwait(false);
 
             // Assert
-            TestHelper.AssertDtosAreEqual(expected, actualProvider);
+            TestHelper.AssertDtosAreEqual(expected, result);
         }
 
         [Test]
