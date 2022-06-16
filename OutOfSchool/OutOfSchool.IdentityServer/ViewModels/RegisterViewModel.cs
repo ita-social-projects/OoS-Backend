@@ -28,7 +28,7 @@ namespace OutOfSchool.IdentityServer.ViewModels
 
         [Required(ErrorMessage = "Password is required")]
         [RegularExpression(
-            @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$",
+            Constants.PasswordRegexViewModel,
             ErrorMessage = "Password must contain at least one capital, number and symbol(@$!%*?&).")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
@@ -39,7 +39,11 @@ namespace OutOfSchool.IdentityServer.ViewModels
         public string ConfirmPassword { get; set; }
 
         [DataType(DataType.EmailAddress)]
+        [MaxLength(256)]
         [Required(ErrorMessage = "Email is required")]
+        [RegularExpression(
+            Constants.EmailRegexViewModel,
+            ErrorMessage = "Email is not valid")]
         public string Email { get; set; }
 
         [DataType(DataType.PhoneNumber)]

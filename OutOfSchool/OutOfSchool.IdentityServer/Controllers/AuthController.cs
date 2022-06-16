@@ -218,28 +218,6 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         /// <summary>
-        /// Generates a view for user to register when we got a validation error in Post method.
-        /// This method needs for showing the view in the culture which we got from frontend.
-        /// </summary>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [HttpGet]
-        public IActionResult RegisterRetry()
-        {
-            if (TempData["model"] is string serializedModel)
-            {
-                RegisterViewModel model = JsonConvert.DeserializeObject<RegisterViewModel>(serializedModel);
-                TryValidateModel(model);
-                TempData.Remove("model");
-
-                return View("Register", model);
-            }
-            else
-            {
-                return BadRequest();
-            }
-        }
-
-        /// <summary>
         /// Creates user based on model.
         /// </summary>
         /// <param name="model"> View model that contains credentials for signing in.</param>
@@ -249,37 +227,24 @@ namespace OutOfSchool.IdentityServer.Controllers
         {
             logger.LogDebug($"{path} started.");
 
-            var serializedModel = JsonConvert.SerializeObject(model);
-            TempData["model"] = serializedModel;
-
-            CultureInfo cultureLoc = CultureInfo.CurrentCulture;
-
-            if (HttpContext.Request.Cookies.ContainsKey("culture"))
-            {
-                cultureLoc = new CultureInfo(HttpContext.Request.Cookies["culture"]);
-            }
-
-            var routeValuesErrors = new { culture = cultureLoc };
-
             if (!ModelState.IsValid)
             {
                 logger.LogError($"{path} Input data was not valid.");
 
-                return RedirectToAction("RegisterRetry", routeValuesErrors);
+                return View("Register", model);
             }
 
             if (Request.Form[Role.Provider.ToString()].Count == 1)
             {
                 model.Role = Role.Provider.ToString().ToLower();
             }
-            else
-            if (Request.Form[Role.Parent.ToString()].Count == 1)
+            else if (Request.Form[Role.Parent.ToString()].Count == 1)
             {
                 model.Role = Role.Parent.ToString().ToLower();
             }
             else
             {
-                return RedirectToAction("RegisterRetry", routeValuesErrors);
+                return View("Register", model);
             }
 
             var user = new User()
@@ -349,14 +314,14 @@ namespace OutOfSchool.IdentityServer.Controllers
                     {
                         if (error.Code == "DuplicateUserName")
                         {
-                            error.Description = localizer["Email {0} is already taken", error.Description.Substring(10).Split('\'')[0]];
+                            error.Description = localizer["Email is already taken"];
                         }
 
                         ModelState.AddModelError(string.Empty, error.Description);
                     }
                 }
 
-                return RedirectToAction("RegisterRetry", routeValuesErrors);
+                return View("Register", model);
             }
             catch (Exception ex)
             {
@@ -367,7 +332,7 @@ namespace OutOfSchool.IdentityServer.Controllers
 
                 logger.LogError("Error happened while creating Parent entity. " + ex.Message);
 
-                return RedirectToAction("RegisterRetry", routeValuesErrors);
+                return View("Register", model);
             }
         }
 
