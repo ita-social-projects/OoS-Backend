@@ -512,46 +512,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Classes");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Codeficator", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Category")
-                        .HasMaxLength(3)
-                        .HasColumnType("varchar(3)");
-
-                    b.Property<string>("Code")
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<ulong>("GeoHash")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("double");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("double");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
-
-                    b.Property<bool>("NeedCheck")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<long?>("ParentId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("Codeficators");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1670,15 +1630,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.Codeficator", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.Codeficator", "Parent")
-                        .WithMany("Childs")
-                        .HasForeignKey("ParentId");
-
-                    b.Navigation("Parent");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformationItem", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.CompanyInformation", "CompanyInformation")
@@ -1968,11 +1919,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             modelBuilder.Entity("OutOfSchool.Services.Models.Child", b =>
                 {
                     b.Navigation("ChildSocialGroups");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.Codeficator", b =>
-                {
-                    b.Navigation("Childs");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.CompanyInformation", b =>
