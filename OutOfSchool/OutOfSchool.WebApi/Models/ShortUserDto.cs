@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OutOfSchool.Common;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -28,6 +29,10 @@ namespace OutOfSchool.WebApi.Models
 
         [Required(ErrorMessage = "FirstName is required")]
         public string FirstName { get; set; }
+
+        [Required(ErrorMessage = "Gender is required")]
+        [Range(0, 1)]
+        public Gender Gender { get; set; } = default;
 
         public string Role { get; set; }
 

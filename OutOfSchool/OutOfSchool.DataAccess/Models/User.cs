@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 
 using Microsoft.AspNetCore.Identity;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models
 {
@@ -34,5 +35,7 @@ namespace OutOfSchool.Services.Models
 
         // for permissions managing at login and check if user is original provider or its admin
         public bool IsDerived { get; set; } = false;
+
+        public Gender Gender { get; set; }
     }
 }

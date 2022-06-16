@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -26,6 +27,10 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(30)]
         [RegularExpression(@"^([^0-9]*)$", ErrorMessage = "Middle name cannot contains digits")]
         public string MiddleName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Gender is required")]
+        [Range(0, 1)]
+        public Gender Gender { get; set; } = default;
 
         [Required(ErrorMessage = "Date of birth is required")]
         [DataType(DataType.Date)]
