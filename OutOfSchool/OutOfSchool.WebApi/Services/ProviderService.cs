@@ -237,9 +237,7 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var checkProvider =
-                    (await providerRepository.GetByFilter(p => p.Id == providerDto.Id).ConfigureAwait(false))
-                    .FirstOrDefault();
+                var checkProvider = await providerRepository.GetById(providerDto.Id).ConfigureAwait(false);
 
                 if (checkProvider?.UserId != userId)
                 {
