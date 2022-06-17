@@ -258,7 +258,7 @@ namespace OutOfSchool.WebApi.Services
             var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
             providerDomainModel.User = users.Single();
             providerDomainModel.User.IsRegistered = true;
-            providerDomainModel.Status = ProviderApprovalStatus.Pending;
+            providerDomainModel.Status = ProviderStatus.Pending;
             providerDomainModel.LicenseStatus = providerDomainModel.License == null
                 ? ProviderLicenseStatus.NotProvided
                 : ProviderLicenseStatus.Pending;
@@ -369,7 +369,7 @@ namespace OutOfSchool.WebApi.Services
             if (!(checkProvider.FullTitle == providerDto.FullTitle
                                 && checkProvider.EdrpouIpn == long.Parse(providerDto.EdrpouIpn)))
             {
-                checkProvider.Status = ProviderApprovalStatus.Pending;
+                checkProvider.Status = ProviderStatus.Pending;
 
                 // TODO: send notification to District admin
             }

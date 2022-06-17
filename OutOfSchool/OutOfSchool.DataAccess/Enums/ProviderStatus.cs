@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 namespace OutOfSchool.Services.Enums
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum ProviderApprovalStatus
+    public enum ProviderStatus
     {
         Pending,
         Editing,

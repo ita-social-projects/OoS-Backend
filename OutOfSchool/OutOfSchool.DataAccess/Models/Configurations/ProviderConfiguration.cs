@@ -68,7 +68,7 @@ namespace OutOfSchool.Services.Models.Configurations
 
             builder.Property(x => x.Status)
                 .IsRequired()
-                .HasDefaultValue(ProviderApprovalStatus.Pending);
+                .HasDefaultValue(ProviderStatus.Pending);
 
             builder.Property(x => x.LicenseStatus)
                 .IsRequired()

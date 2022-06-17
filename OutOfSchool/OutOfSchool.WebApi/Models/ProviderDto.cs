@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Models
         public ProviderType Type { get; set; }
 
         [Required]
-        public ProviderApprovalStatus Status { get; set; }
+        public ProviderStatus Status { get; set; }
 
         [MaxLength(15)]
         public string License { get; set; }

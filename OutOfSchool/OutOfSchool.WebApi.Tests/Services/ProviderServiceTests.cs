@@ -78,10 +78,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Arrange
             var dto = ProviderDtoGenerator.Generate();
             dto.License = license;
-            dto.Status = ProviderApprovalStatus.Approved;
+            dto.Status = ProviderStatus.Approved;
 
             var expected = mapper.Map<ProviderDto>(dto);
-            expected.Status = ProviderApprovalStatus.Pending;
+            expected.Status = ProviderStatus.Pending;
             expected.License = license;
             expected.LicenseStatus = expectedLicenseStatus;
             expected.CoverImageId = null;
@@ -233,7 +233,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var provider = fakeProviders.RandomItem();
-            provider.Status = ProviderApprovalStatus.Pending;
+            provider.Status = ProviderStatus.Pending;
 
             var updatedTitle = Guid.NewGuid().ToString();
             var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
@@ -253,10 +253,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             TestHelper.AssertDtosAreEqual(providerToUpdateDto, result);
         }
 
-        [TestCase(ProviderApprovalStatus.Pending)]
-        [TestCase(ProviderApprovalStatus.Editing)]
-        [TestCase(ProviderApprovalStatus.Approved)]
-        public async Task Update_UserTriesToChangeStatus_StatusIsNotChanged(ProviderApprovalStatus initialStatus)
+        [TestCase(ProviderStatus.Pending)]
+        [TestCase(ProviderStatus.Editing)]
+        [TestCase(ProviderStatus.Approved)]
+        public async Task Update_UserTriesToChangeStatus_StatusIsNotChanged(ProviderStatus initialStatus)
         {
             // Arrange
             var provider = fakeProviders.RandomItem();
@@ -264,7 +264,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             provider.Status = initialStatus;
 
             var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
-            providerToUpdateDto.Status = ProviderApprovalStatus.Approved;
+            providerToUpdateDto.Status = ProviderStatus.Approved;
             providerToUpdateDto.ShortTitle = updatedTitle;
 
             var expected = mapper.Map<ProviderDto>(provider);
@@ -283,10 +283,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             TestHelper.AssertDtosAreEqual(expected, result);
         }
 
-        [TestCase(ProviderApprovalStatus.Pending)]
-        [TestCase(ProviderApprovalStatus.Editing)]
-        [TestCase(ProviderApprovalStatus.Approved)]
-        public async Task Update_UserChangesFullTitle_StatusIsChangedToPending(ProviderApprovalStatus initialStatus)
+        [TestCase(ProviderStatus.Pending)]
+        [TestCase(ProviderStatus.Editing)]
+        [TestCase(ProviderStatus.Approved)]
+        public async Task Update_UserChangesFullTitle_StatusIsChangedToPending(ProviderStatus initialStatus)
         {
             // Arrange
             var provider = fakeProviders.RandomItem();
@@ -297,7 +297,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             providerToUpdateDto.FullTitle = updatedTitle;
 
             var expected = mapper.Map<ProviderDto>(provider);
-            expected.Status = ProviderApprovalStatus.Pending;
+            expected.Status = ProviderStatus.Pending;
             expected.FullTitle = updatedTitle;
 
             providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
@@ -314,10 +314,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             TestHelper.AssertDtosAreEqual(expected, result);
         }
 
-        [TestCase(ProviderApprovalStatus.Pending)]
-        [TestCase(ProviderApprovalStatus.Editing)]
-        [TestCase(ProviderApprovalStatus.Approved)]
-        public async Task Update_UserChangesEdrpouIpn_StatusIsChangedToPending(ProviderApprovalStatus initialStatus)
+        [TestCase(ProviderStatus.Pending)]
+        [TestCase(ProviderStatus.Editing)]
+        [TestCase(ProviderStatus.Approved)]
+        public async Task Update_UserChangesEdrpouIpn_StatusIsChangedToPending(ProviderStatus initialStatus)
         {
             // Arrange
             var provider = fakeProviders.RandomItem();
@@ -329,7 +329,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             providerToUpdateDto.EdrpouIpn = updatedEdrpouIpn;
 
             var expected = mapper.Map<ProviderDto>(provider);
-            expected.Status = ProviderApprovalStatus.Pending;
+            expected.Status = ProviderStatus.Pending;
             expected.EdrpouIpn = updatedEdrpouIpn;
 
             providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))

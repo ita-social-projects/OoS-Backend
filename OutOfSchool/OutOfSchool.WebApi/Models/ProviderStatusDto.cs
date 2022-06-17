@@ -10,6 +10,6 @@ namespace OutOfSchool.WebApi.Models
         public Guid ProviderId { get; set; }
 
         [Required]
-        public ProviderApprovalStatus Status { get; set; }
+        public ProviderStatus Status { get; set; }
     }
 }
