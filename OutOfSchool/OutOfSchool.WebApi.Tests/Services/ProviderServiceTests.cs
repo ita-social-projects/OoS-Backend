@@ -233,14 +233,15 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var provider = fakeProviders.RandomItem();
-            IEnumerable<Provider> filteredCollection = new List<Provider>() { provider };
 
             var updatedTitle = Guid.NewGuid().ToString();
-            provider.FullTitle = updatedTitle;
             var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+            providerToUpdateDto.FullTitle = updatedTitle;
 
-            providersRepositoryMock.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<Provider, bool>>>(), string.Empty))
-                .ReturnsAsync(filteredCollection);
+            providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(provider);
+            providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
+                .Returns((Func<Task<Provider>> f) => f.Invoke());
             providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
                 .ReturnsAsync(1);
 
