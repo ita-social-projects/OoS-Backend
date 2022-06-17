@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Redis;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
@@ -21,6 +22,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         private readonly ILogger<InstitutionHierarchyService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
+        private readonly ICacheService cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InstitutionHierarchyService"/> class.
@@ -31,13 +33,15 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         /// <param name="logger">Logger.</param>
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
+        /// <param name="cache">Redis cache service.</param>
         public InstitutionHierarchyService(
             ISensitiveEntityRepository<InstitutionHierarchy> repository,
             IWorkshopRepository repositoryWorkshop,
             IProviderRepository repositoryProvider,
             ILogger<InstitutionHierarchyService> logger,
             IStringLocalizer<SharedResource> localizer,
-            IMapper mapper)
+            IMapper mapper,
+            ICacheService cache)
         {
             this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
             this.repositoryWorkshop = repositoryWorkshop ?? throw new ArgumentNullException(nameof(repositoryWorkshop));
@@ -45,6 +49,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
         /// <inheritdoc/>
@@ -102,6 +107,17 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         {
             logger.LogInformation("Getting all children InstitutionHierarchies started.");
 
+            string cacheKey = $"InstitutionHierarchyService_GetChildren_{parentId}";
+
+            var institutionHierarchies = await cache.GetOrAddAsync(cacheKey, () =>
+                GetChildrenFromDatabase(parentId)).ConfigureAwait(false);
+
+            return institutionHierarchies;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<InstitutionHierarchyDto>> GetChildrenFromDatabase(Guid? parentId)
+        {
             var institutionHierarchies = await repository.GetByFilter(i => i.ParentId == parentId).ConfigureAwait(false);
 
             logger.LogInformation(!institutionHierarchies.Any()
@@ -116,6 +132,17 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         {
             logger.LogInformation("Getting all parents InstitutionHierarchies started.");
 
+            string cacheKey = $"InstitutionHierarchyService_GetParents_{childId}";
+
+            var institutionHierarchies = await cache.GetOrAddAsync(cacheKey, () =>
+                GetParentsFromDatabase(childId)).ConfigureAwait(false);
+
+            return institutionHierarchies;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<InstitutionHierarchyDto>> GetParentsFromDatabase(Guid childId)
+        {
             IEnumerable<InstitutionHierarchy> institutionHierarchiesTmp;
             var result = new List<InstitutionHierarchyDto>();
             var currentInstitutionHierarchy = await repository.GetById(childId).ConfigureAwait(false);
@@ -162,6 +189,17 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         {
             logger.LogInformation("Getting all InstitutionHierarchy objects by institution id and level started.");
 
+            string cacheKey = $"InstitutionHierarchyService_GetAllByInstitutionAndLevel_{institutionId}_{hierarchyLevel}";
+
+            var institutionHierarchies = await cache.GetOrAddAsync(cacheKey, () =>
+                GetAllByInstitutionAndLevelFromDatabase(institutionId, hierarchyLevel)).ConfigureAwait(false);
+
+            return institutionHierarchies;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<InstitutionHierarchyDto>> GetAllByInstitutionAndLevelFromDatabase(Guid institutionId, int hierarchyLevel)
+        {
             var institutionHierarchies = await repository.GetByFilter(
                     i => i.InstitutionId == institutionId
                     && i.HierarchyLevel == hierarchyLevel).ConfigureAwait(false);
