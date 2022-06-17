@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
@@ -177,6 +176,58 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
             await workshopServiceCombiner.GetWorkshopProviderId(workshopId).ConfigureAwait(false);
+
+        public async Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId)
+        {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            var provider = await providerRepository.GetById(dto.ProviderId).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                logger.LogError($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
+
+                return null;
+            }
+
+            provider.Status = dto.Status;
+            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+
+            logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
+
+            return dto;
+        }
+
+        public async Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId)
+        {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            var provider = await providerRepository.GetById(dto.ProviderId).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                logger.LogError($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
+
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(provider.License) && dto.LicenseStatus != ProviderLicenseStatus.NotProvided)
+            {
+                throw new ArgumentException("Provider license is not provided. It cannot be approved.");
+            }
+
+            if (!string.IsNullOrEmpty(provider.License) && dto.LicenseStatus == ProviderLicenseStatus.NotProvided)
+            {
+                throw new ArgumentException("Cannot set NotProvided license status when license is provided.");
+            }
+
+            provider.LicenseStatus = dto.LicenseStatus;
+            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+
+            logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.LicenseStatus}");
+
+            return dto;
+        }
 
         private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
         {

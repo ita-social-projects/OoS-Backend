@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
+using OutOfSchool.Common;
 using OutOfSchool.WebApi.Models;
 
 namespace OutOfSchool.WebApi.Services
@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Services
         /// Update entity.
         /// </summary>
         /// <param name="providerDto">Provider entity to add.</param>
-        /// <param name="userId">Id of user that request update.</param>
+        /// <param name="userId">Id of user that requests update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<ProviderDto> Update(ProviderDto providerDto, string userId);
 
@@ -60,5 +60,21 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopId">Workshop's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task<Guid> GetProviderIdForWorkshopById(Guid workshopId);
+
+        /// <summary>
+        /// Update Provider Status.
+        /// </summary>
+        /// <param name="dto">Provider to update.</param>
+        /// <param name="userId">Id of user that requests update.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+        Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId);
+
+        /// <summary>
+        /// Updates Provider LicenseStatus.
+        /// </summary>
+        /// <param name="dto">Provider to update.</param>
+        /// <param name="userId">Id of user that requests update.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+        Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId);
     }
 }
