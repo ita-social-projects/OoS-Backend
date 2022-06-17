@@ -239,6 +239,8 @@ namespace OutOfSchool.WebApi.Services
             {
                 var checkProvider = await providerRepository.GetById(providerDto.Id).ConfigureAwait(false);
 
+                ChangeProviderStatusIfNeeded(providerDto, checkProvider);
+
                 if (checkProvider?.UserId != userId)
                 {
                     return null;
@@ -308,6 +310,26 @@ namespace OutOfSchool.WebApi.Services
             finally
             {
                 logger.LogTrace("Updating Provider with Id = {Id} was finished", providerDto.Id);
+            }
+        }
+
+        private void ChangeProviderStatusIfNeeded(ProviderDto providerDto, Provider checkProvider)
+        {
+            if (!(checkProvider.FullTitle == providerDto.FullTitle
+                                && checkProvider.EdrpouIpn == long.Parse(providerDto.EdrpouIpn)))
+            {
+                checkProvider.Status = ProviderApprovalStatus.Pending;
+
+                // TODO: send notification to District admin
+            }
+
+            if (!checkProvider.License.Equals(providerDto.License, StringComparison.Ordinal))
+            {
+                checkProvider.LicenseStatus = providerDto.License == null
+                    ? ProviderLicenseStatus.NotProvided
+                    : ProviderLicenseStatus.Pending;
+
+                // TODO: send notification to District admin
             }
         }
 

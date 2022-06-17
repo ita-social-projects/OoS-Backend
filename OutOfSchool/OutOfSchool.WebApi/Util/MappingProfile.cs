@@ -101,7 +101,9 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.Institution, opt => opt.Ignore())
                  .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
                  .ForMember(dest => dest.Images, opt => opt.Ignore())
-                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+                 .ForMember(dest => dest.Status, opt => opt.Ignore())
+                 .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore());
 
             CreateMap<TeacherDTO, Teacher>()
                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())

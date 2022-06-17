@@ -233,6 +233,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var provider = fakeProviders.RandomItem();
+            provider.Status = ProviderApprovalStatus.Pending;
 
             var updatedTitle = Guid.NewGuid().ToString();
             var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
@@ -252,12 +253,166 @@ namespace OutOfSchool.WebApi.Tests.Services
             TestHelper.AssertDtosAreEqual(providerToUpdateDto, result);
         }
 
+        [TestCase(ProviderApprovalStatus.Pending)]
+        [TestCase(ProviderApprovalStatus.Editing)]
+        [TestCase(ProviderApprovalStatus.Approved)]
+        public async Task Update_UserTriesToChangeStatus_StatusIsNotChanged(ProviderApprovalStatus initialStatus)
+        {
+            // Arrange
+            var provider = fakeProviders.RandomItem();
+            var updatedTitle = Guid.NewGuid().ToString();
+            provider.Status = initialStatus;
+
+            var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+            providerToUpdateDto.Status = ProviderApprovalStatus.Approved;
+            providerToUpdateDto.ShortTitle = updatedTitle;
+
+            var expected = mapper.Map<ProviderDto>(provider);
+            expected.Status = initialStatus;
+            expected.ShortTitle = updatedTitle;
+
+            providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(provider);
+            providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+                .ReturnsAsync(1);
+
+            // Act
+            var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
+
+            // Assert
+            TestHelper.AssertDtosAreEqual(expected, result);
+        }
+
+        [TestCase(ProviderApprovalStatus.Pending)]
+        [TestCase(ProviderApprovalStatus.Editing)]
+        [TestCase(ProviderApprovalStatus.Approved)]
+        public async Task Update_UserChangesFullTitle_StatusIsChangedToPending(ProviderApprovalStatus initialStatus)
+        {
+            // Arrange
+            var provider = fakeProviders.RandomItem();
+            var updatedTitle = Guid.NewGuid().ToString();
+            provider.Status = initialStatus;
+
+            var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+            providerToUpdateDto.FullTitle = updatedTitle;
+
+            var expected = mapper.Map<ProviderDto>(provider);
+            expected.Status = ProviderApprovalStatus.Pending;
+            expected.FullTitle = updatedTitle;
+
+            providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(provider);
+            providersRepositoryMock.Setup(r => r.RunInTransaction(It.IsAny<Func<Task<Provider>>>()))
+                .Returns((Func<Task<Provider>> f) => f.Invoke());
+            providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+                .ReturnsAsync(1);
+
+            // Act
+            var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
+
+            // Assert
+            TestHelper.AssertDtosAreEqual(expected, result);
+        }
+
+        [TestCase(ProviderApprovalStatus.Pending)]
+        [TestCase(ProviderApprovalStatus.Editing)]
+        [TestCase(ProviderApprovalStatus.Approved)]
+        public async Task Update_UserChangesEdrpouIpn_StatusIsChangedToPending(ProviderApprovalStatus initialStatus)
+        {
+            // Arrange
+            var provider = fakeProviders.RandomItem();
+            provider.EdrpouIpn = 1234512345;
+            var updatedEdrpouIpn = "1234567890";
+            provider.Status = initialStatus;
+
+            var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+            providerToUpdateDto.EdrpouIpn = updatedEdrpouIpn;
+
+            var expected = mapper.Map<ProviderDto>(provider);
+            expected.Status = ProviderApprovalStatus.Pending;
+            expected.EdrpouIpn = updatedEdrpouIpn;
+
+            providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(provider);
+            providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+                .ReturnsAsync(1);
+
+            // Act
+            var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
+
+            // Assert
+            TestHelper.AssertDtosAreEqual(expected, result);
+        }
+
+        [TestCase(ProviderLicenseStatus.NotProvided)]
+        [TestCase(ProviderLicenseStatus.Pending)]
+        [TestCase(ProviderLicenseStatus.Approved)]
+        public async Task Update_UserChangesLicense_LicenseStatusIsChangedToPending(ProviderLicenseStatus initialStatus)
+        {
+            // Arrange
+            var provider = fakeProviders.RandomItem();
+            provider.License = "1234512345";
+            var updatedLicense = "1234567890";
+            provider.LicenseStatus = initialStatus;
+
+            var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+            providerToUpdateDto.License = updatedLicense;
+
+            var expected = mapper.Map<ProviderDto>(provider);
+            expected.LicenseStatus = ProviderLicenseStatus.Pending;
+            expected.License = updatedLicense;
+
+            providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(provider);
+            providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+                .ReturnsAsync(1);
+
+            // Act
+            var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
+
+            // Assert
+            TestHelper.AssertDtosAreEqual(expected, result);
+        }
+
+        [TestCase(ProviderLicenseStatus.NotProvided)]
+        [TestCase(ProviderLicenseStatus.Pending)]
+        [TestCase(ProviderLicenseStatus.Approved)]
+        public async Task Update_UserSetsLicenseToNull_LicenseStatusIsChangedToNotProvided(ProviderLicenseStatus initialStatus)
+        {
+            // Arrange
+            var provider = fakeProviders.RandomItem();
+            provider.License = "1234512345";
+            string updatedLicense = null;
+            provider.LicenseStatus = initialStatus;
+
+            var providerToUpdateDto = mapper.Map<ProviderDto>(provider);
+            providerToUpdateDto.License = updatedLicense;
+
+            var expected = mapper.Map<ProviderDto>(provider);
+            expected.LicenseStatus = ProviderLicenseStatus.NotProvided;
+            expected.License = updatedLicense;
+
+            providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(provider);
+            providersRepositoryMock.Setup(r => r.UnitOfWork.CompleteAsync())
+                .ReturnsAsync(1);
+
+            // Act
+            var result = await providerService.Update(providerToUpdateDto, providerToUpdateDto.UserId).ConfigureAwait(false);
+
+            // Assert
+            TestHelper.AssertDtosAreEqual(expected, result);
+        }
+
         [Test]
         public async Task Update_WhenUsersIdAndProvidersIdDoesntMatch_ReturnsNull()
         {
             // Arrange
-            var changedEntity = new ProviderDto();
+            var changedEntity = ProviderDtoGenerator.Generate();
             var noneExistingUserId = Guid.NewGuid().ToString();
+
+            providersRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+                .ReturnsAsync(fakeProviders.RandomItem());
 
             // Act
             var result = await providerService.Update(changedEntity, noneExistingUserId).ConfigureAwait(false);
@@ -323,7 +478,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                 return userExistsResult;
             }
 
-            providersRepository.Setup(r => r.ExistsUserId(It.IsAny<string>())).Callback<string>(user => UserExist(user)).Returns(() => userExistsResult);
+            providersRepository.Setup(r => r.ExistsUserId(It.IsAny<string>()))
+                .Callback<string>(user => UserExist(user))
+                .Returns(() => userExistsResult);
 
             return providersRepository;
         }
