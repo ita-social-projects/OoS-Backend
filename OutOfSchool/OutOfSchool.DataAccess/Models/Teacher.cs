@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 
 namespace OutOfSchool.Services.Models
@@ -13,6 +14,8 @@ namespace OutOfSchool.Services.Models
         public string LastName { get; set; }
 
         public string MiddleName { get; set; }
+
+        public Gender Gender { get; set; }
 
         public DateTime DateOfBirth { get; set; }
 

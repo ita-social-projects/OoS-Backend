@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Bogus;
-
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators
@@ -20,7 +20,8 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.LastName, f => f.Person.LastName)
             .RuleFor(x => x.DateOfBirth, f => f.Person.DateOfBirth)
             .RuleFor(x => x.Description, f => f.Commerce.ProductDescription())
-            .RuleFor(x => x.CoverImageId, f => f.Person.Avatar);
+            .RuleFor(x => x.CoverImageId, f => f.Person.Avatar)
+            .RuleFor(x => x.Gender, f => f.PickRandom<Gender>());
 
         /// <summary>
         /// Creates new instance of the <see cref="Teacher"/> class with random data.
