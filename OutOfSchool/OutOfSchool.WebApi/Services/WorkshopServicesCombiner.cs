@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
@@ -85,21 +86,21 @@ namespace OutOfSchool.WebApi.Services
         public async Task<WorkshopDTO> UpdateStatus(WorkshopDTO dto, WorkshopStatus status)
         {
             dto.Status = status;
-            
+
             var updatedDto = await Update(dto).ConfigureAwait(false);
-            
+
             var additionalData = new Dictionary<string, string>()
             {
                 { "Status", updatedDto.Status.ToString() },
             };
-            
+
             await notificationService.Create(
                 NotificationType.Workshop,
                 NotificationAction.Update,
                 updatedDto.Id,
                 this,
                 additionalData).ConfigureAwait(false);
-            
+
             return updatedDto;
         }
 
@@ -222,14 +223,6 @@ namespace OutOfSchool.WebApi.Services
             var usersInFavoriteWorkshop = await favoriteService.GetAll().ConfigureAwait(false);
             var usersIds = usersInFavoriteWorkshop.Where(x => x.WorkshopId == objectId).Select(x => x.UserId);
 
-            // var applications = await applicationRepository.GetByFilter(a => a.Id == objectId, "Workshop.Provider.User").ConfigureAwait(false);
-            // var application = applications.FirstOrDefault();
-            //
-            // if (application is null)
-            // {
-            //     return recipientIds;
-            // }
-            
             recipientIds.AddRange(usersIds);
 
             return recipientIds.Distinct();

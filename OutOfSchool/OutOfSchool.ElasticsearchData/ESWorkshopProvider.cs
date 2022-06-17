@@ -154,6 +154,23 @@ namespace OutOfSchool.ElasticsearchData
                     Value = filter.WithDisabilityOptions,
                 };
             }
+            else
+            {
+                queryContainer &= new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.WithDisabilityOptions),
+                    Value = filter.WithDisabilityOptions,
+                };
+            }
+
+            if (filter.Status != 0)
+            {
+                queryContainer &= new TermQuery()
+                {
+                    Field = Infer.Field<WorkshopES>(w => w.Status),
+                    Value = filter.Status,
+                };
+            }
 
             if (!string.IsNullOrWhiteSpace(filter.Workdays))
             {

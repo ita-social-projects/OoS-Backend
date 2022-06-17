@@ -58,5 +58,7 @@ namespace OutOfSchool.WebApi.Models
         public AddressDto Address { get; set; }
 
         public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
+
+        public bool WithDisabilityOptions { get; set; }
     }
 }

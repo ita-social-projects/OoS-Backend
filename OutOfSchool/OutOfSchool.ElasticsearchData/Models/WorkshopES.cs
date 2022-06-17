@@ -68,5 +68,7 @@ namespace OutOfSchool.ElasticsearchData.Models
         public List<DateTimeRangeES> DateTimeRanges { get; set; }
 
         public List<TeacherES> Teachers { get; set; }
+
+        public WorkshopStatus Status { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Util.JsonTools;
@@ -50,5 +51,7 @@ namespace OutOfSchool.WebApi.Models
         public decimal Latitude { get; set; } = 0;
 
         public decimal Longitude { get; set; } = 0;
+
+        public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
     }
 }
