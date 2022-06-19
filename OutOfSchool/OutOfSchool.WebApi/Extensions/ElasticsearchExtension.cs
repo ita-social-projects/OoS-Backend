@@ -10,8 +10,6 @@ using Nest;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.Elasticsearch;
-using OutOfSchool.WebApi.Util.ElasticSearch;
-using Serilog.Core;
 
 namespace OutOfSchool.WebApi.Extensions
 {
