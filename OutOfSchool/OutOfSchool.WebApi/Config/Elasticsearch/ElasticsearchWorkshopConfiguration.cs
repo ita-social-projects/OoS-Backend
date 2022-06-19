@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Config.Elasticsearch
                         .Text(t => t
                             .Name(n => n.Title)
                             .Fields(f =>
-                                f.Custom(new IcuCollationKeywordProperty("keyword", DefaultLanguage, DefaultCountry))))));
+                                f.Custom(new IcuCollationKeywordProperty(DefaultLanguage, DefaultCountry))))));
 
             return indexDescriptor;
         }

@@ -6,9 +6,8 @@ namespace OutOfSchool.WebApi.Util.Elasticsearch
 {
     public class IcuCollationKeywordProperty : IProperty
     {
-        public IcuCollationKeywordProperty(string name, string language, string country)
+        public IcuCollationKeywordProperty(string language, string country)
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
             Language = language ?? throw new ArgumentNullException(nameof(language));
             Country = country ?? throw new ArgumentNullException(nameof(country));
         }
@@ -17,7 +16,7 @@ namespace OutOfSchool.WebApi.Util.Elasticsearch
 
         IDictionary<string, string> IProperty.Meta { get; set; }
 
-        public PropertyName Name { get; set; }
+        public PropertyName Name { get; set; } = "keyword";
 
         public string Type { get; set; } = "icu_collation_keyword";
 
