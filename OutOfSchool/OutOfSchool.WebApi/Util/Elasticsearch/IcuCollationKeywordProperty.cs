@@ -4,6 +4,9 @@ using Nest;
 
 namespace OutOfSchool.WebApi.Util.Elasticsearch
 {
+    /// <summary>
+    /// Describes a new Elasticsearch keyword property with IcuCollation.
+    /// </summary>
     public class IcuCollationKeywordProperty : IProperty
     {
         public IcuCollationKeywordProperty(string language, string country)
