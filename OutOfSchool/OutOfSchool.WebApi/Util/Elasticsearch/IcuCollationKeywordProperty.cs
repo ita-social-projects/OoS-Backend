@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Nest;
 
-namespace OutOfSchool.WebApi.Util.ElasticSearch
+namespace OutOfSchool.WebApi.Util.Elasticsearch
 {
     public class IcuCollationKeywordProperty : IProperty
     {
