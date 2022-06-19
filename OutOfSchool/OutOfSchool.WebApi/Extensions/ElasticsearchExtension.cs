@@ -4,10 +4,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
 using IdentityModel;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Config.Elasticsearch;
+using OutOfSchool.WebApi.Util.ElasticSearch;
+using Serilog.Core;
 
 namespace OutOfSchool.WebApi.Extensions
 {
@@ -35,7 +39,7 @@ namespace OutOfSchool.WebApi.Extensions
             var pool = new StaticConnectionPool(uris);
 
             var settings = new ConnectionSettings(pool)
-                .DefaultIndex(config.DefaultIndex)
+                .DefaultIndex(config.WorkshopIndexName)
                 .BasicAuthentication(config.User, config.Password);
 
             if (config.EnableDebugMode)
@@ -72,7 +76,7 @@ namespace OutOfSchool.WebApi.Extensions
                     });
             }
 
-            AddDefaultMappings(settings, config.DefaultIndex);
+            AddDefaultMappings<WorkshopES>(settings, config.WorkshopIndexName);
 
             var client = new ElasticClient(settings);
 
@@ -83,24 +87,24 @@ namespace OutOfSchool.WebApi.Extensions
                 return;
             }
 
-            EnsureIndexCreated<WorkshopES>(client, config.DefaultIndex);
+            EnsureIndexCreated(client, config.WorkshopIndexName, new ElasticsearchWorkshopConfiguration());
         }
 
-        private static void AddDefaultMappings(ConnectionSettings settings, string indexName)
+        private static void AddDefaultMappings<TElasticsearchEntity>(ConnectionSettings settings, string indexName)
+        where TElasticsearchEntity : class, new()
         {
             settings
-                .DefaultMappingFor<WorkshopES>(m => m.IndexName(indexName));
+                .DefaultMappingFor<TElasticsearchEntity>(m => m.IndexName(indexName));
         }
 
         /// <summary>
         /// The method checks if the index with the specified name exists in the Elasticsearch and creates it if not.
         /// The created index will be strongly typed with the specified type.
         /// </summary>
-        /// <typeparam name="T">The type for strongly typed queries.</typeparam>
         /// <param name="client">Elasticsearch client.</param>
         /// <param name="indexName">Name of the index.</param>
-        private static void EnsureIndexCreated<T>(IElasticClient client, string indexName)
-            where T : class
+        /// <param name="configurator">Elasticsearch models configurator.</param>
+        private static void EnsureIndexCreated(IElasticClient client, string indexName, IElasticsearchEntityTypeConfiguration configurator)
         {
             // TODO: Remove this later, as Opensearch allows to ensure index exists
             var startTime = DateTime.UtcNow.ToEpochTime();
@@ -114,9 +118,11 @@ namespace OutOfSchool.WebApi.Extensions
 
             var resp = client.Indices.Exists(indexName);
 
-            if (resp.ApiCall.HttpStatusCode == 404)
+            if (resp.ApiCall.HttpStatusCode == StatusCodes.Status404NotFound)
             {
-                client.Indices.Create(indexName, index => index.Map<T>(x => x.AutoMap<T>()));
+                client.Indices.Create(
+                    indexName,
+                    configurator.Configure);
             }
         }
     }

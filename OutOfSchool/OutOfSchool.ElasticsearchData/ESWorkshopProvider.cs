@@ -34,7 +34,6 @@ namespace OutOfSchool.ElasticsearchData
                 Sort = sorts,
                 From = filter.From,
                 Size = filter.Size,
-
             };
 
             var resp = await ElasticClient.SearchAsync<WorkshopES>(req);
