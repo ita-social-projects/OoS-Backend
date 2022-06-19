@@ -269,7 +269,7 @@ namespace OutOfSchool.ElasticsearchData
 
             sorts.Add(new FieldSort
             {
-                Field = "title.keyword",
+                Field = WorkshopES.TitleKeyword,
                 Order = SortOrder.Ascending,
             });
 

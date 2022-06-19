@@ -16,9 +16,9 @@ namespace OutOfSchool.WebApi.Util.Elasticsearch
 
         IDictionary<string, string> IProperty.Meta { get; set; }
 
-        public PropertyName Name { get; set; } = "keyword";
+        public PropertyName Name { get; set; } = PropertyConstants.DefaultFieldsKeywordName;
 
-        public string Type { get; set; } = "icu_collation_keyword";
+        public string Type { get; set; } = PropertyConstants.IcuCollationKeywordTypeName;
 
         [PropertyName("language")]
         public string Language { get; }

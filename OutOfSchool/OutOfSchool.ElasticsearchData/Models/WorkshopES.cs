@@ -5,9 +5,11 @@ using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {
+    // TODO: check Nested attribute
     public class WorkshopES
     {
-        // TODO: check Nested attribute
+        public const string TitleKeyword = "title.keyword";
+
         [Keyword]
         public Guid Id { get; set; }
 
