@@ -5,21 +5,10 @@
 @{
     ViewData["EmailTitle"] = "Welcome!";
 }
-
-<p> Hi, @Model.FirstName @Model.LastName</p>
-
-<br/>
-
-<p>
-    We're excited to have you get started. First, you need to confirm your email. Just press the button below.
-</p>
-
-<br />
-
-@await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Confirm Email", Model.ActionUrl))
-
-<br />
-
-<p>
-    If you have any questions, just reply to this email—we're always happy to help out.
-</p>
+<main class="container">
+    <div class="content">
+        <h1 class="title">Вітаємо, @Model.FirstName @Model.LastName</h1>
+        <p class="text">Будь ласка, підтвердьте свою адресу електронної пошти.</p>
+            @await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Перейдіть за посиланням", Model.ActionUrl))
+    </div>
+</main>

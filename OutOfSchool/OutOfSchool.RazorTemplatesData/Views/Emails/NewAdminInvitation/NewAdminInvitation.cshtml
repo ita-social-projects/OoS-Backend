@@ -5,17 +5,16 @@
 @{
     ViewData["EmailTitle"] = "Запрошення!";
 }
-
-<p>Для реєстрації на платформі перейдіть за посиланням та заповніть ваші дані в особистому кабінеті.</p>
-
-<br />
-
-<p>Логін: @Model.Email</p>
-
-<br />
-
-<p>Пароль:  @Model.Password</p>
-
-<br />
-
-@await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Confirm Email", Model.ConfirmationUrl))
+<main class="wrapper">
+    <div class="container">
+        <div class="content">
+            <!-- <p class="text">Вас додали як адміністратора наступних гуртків <список гуртків> <br> для <назва школи>.</p> -->
+            <p class="text">Для реєстрації на платформі перейдіть за посиланням та заповніть ваші дані в особистому кабінеті.</p>
+            <div class="login">
+                Логін: <span> @Model.Email </span>, 
+                Пароль: <span> @Model.Password </span>
+            </div>
+            @await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Залогінитись", Model.ConfirmationUrl))
+        </div>
+    </div>
+</main>
