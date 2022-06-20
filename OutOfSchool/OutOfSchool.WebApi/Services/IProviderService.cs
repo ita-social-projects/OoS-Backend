@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.Common;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services
 {

@@ -14,6 +14,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Models.Notifications;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Models.Workshop;

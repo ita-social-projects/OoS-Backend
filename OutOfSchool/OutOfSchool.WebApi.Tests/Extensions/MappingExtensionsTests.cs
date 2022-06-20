@@ -15,6 +15,7 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Extensions

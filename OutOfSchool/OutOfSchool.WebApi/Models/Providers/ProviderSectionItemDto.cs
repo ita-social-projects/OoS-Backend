@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models.Providers
 {
     public class ProviderSectionItemDto
     {

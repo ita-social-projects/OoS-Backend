@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
     using OutOfSchool.Services.Repository;
     using OutOfSchool.Tests;
     using OutOfSchool.Tests.Common.TestDataGenerators;
-    using OutOfSchool.WebApi.Models;
+    using OutOfSchool.WebApi.Models.Providers;
     using OutOfSchool.WebApi.Services;
     using OutOfSchool.WebApi.Util;
 
