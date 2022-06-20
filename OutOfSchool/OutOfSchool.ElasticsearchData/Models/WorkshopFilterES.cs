@@ -43,6 +43,6 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public decimal Longitude { get; set; } = 0;
 
-        public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
+        public WorkshopStatus Status { get; set; } = 0;
     }
 }
