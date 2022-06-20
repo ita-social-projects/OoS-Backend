@@ -10,6 +10,7 @@ using H3Lib.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
@@ -229,12 +230,46 @@ namespace OutOfSchool.WebApi.Services
 
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
 
+            if (currentWorkshop.Status != dto.Status)
+            {
+                throw new WorkshopUpdateStatusException("Unable update workshop status. Please use UpdateStatus endpoint.");
+            }
+
             // In case if AddressId was changed. AddresId is one and unique for workshop.
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
 
             mapper.Map(dto, currentWorkshop);
             currentWorkshop.Teachers = dto.Teachers?.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
+
+            try
+            {
+                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+            }
+            catch (DbUpdateConcurrencyException exception)
+            {
+                logger.LogError($"Updating failed. Exception: {exception.Message}");
+                throw;
+            }
+
+            return mapper.Map<WorkshopDTO>(currentWorkshop);
+        }
+
+        /// <inheritdoc/>
+        public async Task<WorkshopDTO> UpdateStatus(Guid id, WorkshopStatus status)
+        {
+            logger.LogInformation($"Updating Workshop status with Id = {id} started.");
+
+            var currentWorkshop = await workshopRepository.GetWithNavigations(id).ConfigureAwait(false);
+
+            if (currentWorkshop.ProviderOwnership == OwnershipType.Private)
+            {
+                currentWorkshop.Status = status;
+            }
+            else
+            {
+                throw new WorkshopUpdateStatusException("Unable to update status for workshop with state or common ownership type.");
+            }
 
             try
             {
@@ -316,7 +351,6 @@ namespace OutOfSchool.WebApi.Services
             logger.LogInformation($"Deleting Workshop with Id = {id} started.");
 
             var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
-
             try
             {
                 await workshopRepository.Delete(entity).ConfigureAwait(false);
@@ -552,6 +586,11 @@ namespace OutOfSchool.WebApi.Services
             if (!string.IsNullOrWhiteSpace(filter.City))
             {
                 predicate = predicate.And(x => x.Address.City == filter.City);
+            }
+
+            if (filter.Status != 0)
+            {
+                predicate = predicate.And(x => x.Status == filter.Status);
             }
 
             return predicate;

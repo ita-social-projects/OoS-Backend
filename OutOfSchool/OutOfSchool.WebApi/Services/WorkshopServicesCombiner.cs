@@ -83,25 +83,24 @@ namespace OutOfSchool.WebApi.Services
             return workshop;
         }
 
-        public async Task<WorkshopDTO> UpdateStatus(WorkshopDTO dto, WorkshopStatus status)
+        /// <inheritdoc/>
+        public async Task<WorkshopDTO> UpdateStatus(Guid id, WorkshopStatus status)
         {
-            dto.Status = status;
-
-            var updatedDto = await Update(dto).ConfigureAwait(false);
+            var workshop = await workshopService.UpdateStatus(id, status).ConfigureAwait(false);
 
             var additionalData = new Dictionary<string, string>()
             {
-                { "Status", updatedDto.Status.ToString() },
+                { "Status", workshop.Status.ToString() },
             };
 
             await notificationService.Create(
                 NotificationType.Workshop,
                 NotificationAction.Update,
-                updatedDto.Id,
+                workshop.Id,
                 this,
                 additionalData).ConfigureAwait(false);
 
-            return updatedDto;
+            return workshop;
         }
 
         /// <inheritdoc/>

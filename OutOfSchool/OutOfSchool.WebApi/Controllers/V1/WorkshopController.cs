@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
@@ -223,18 +224,19 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId, dto.Id).ConfigureAwait(false);
 
-            var currentWorkshop = await combinedWorkshopService.GetById(dto.Id).ConfigureAwait(false);
-            if (currentWorkshop.Status != dto.Status)
-            {
-                return BadRequest("Unable update workshop status. Please use UpdateStatus endpoint");
-            }
-
             if (!userHasRights)
             {
                 return StatusCode(403, "Forbidden to update workshops, which are not related to you");
             }
 
-            return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
+            try
+            {
+                return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
+            }
+            catch (WorkshopUpdateStatusException e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         /// <summary>
@@ -257,26 +259,26 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromQuery] WorkshopStatus status)
         {
-            if (!ModelState.IsValid)
+            var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
+
+            if (workshop is null)
             {
-                return BadRequest(ModelState);
+                return NoContent();
             }
 
-            var dto = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
-            var userHasRights = await this.IsUserProvidersOwnerOrAdmin(dto.ProviderId, dto.Id).ConfigureAwait(false);
-
+            var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false);
             if (!userHasRights)
             {
                 return StatusCode(403, "Forbidden to update workshops, which are not related to you");
             }
 
-            if (dto.ProviderOwnership == OwnershipType.Private)
+            try
             {
-                return Ok(await combinedWorkshopService.UpdateStatus(dto, status).ConfigureAwait(false));
+                return Ok(await combinedWorkshopService.UpdateStatus(id, status).ConfigureAwait(false));
             }
-            else
+            catch (WorkshopUpdateStatusException e)
             {
-                return BadRequest("Unable to update status for workshop with state or common ownership type.");
+                return BadRequest(e.Message);
             }
         }
 

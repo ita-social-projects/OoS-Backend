@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -48,6 +49,14 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="dto">Entity that will be to updated.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopUpdateResultDto"/>.</returns>
         Task<WorkshopUpdateResultDto> UpdateV2(WorkshopDTO dto);
+
+        /// <summary>
+        /// Update status field for existing entity in the database.
+        /// </summary>
+        /// <param name="id">Entity id that will be to updated.</param>
+        /// <param name="status">New updated value for status</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopDTO"/>.</returns>
+        Task<WorkshopDTO> UpdateStatus(Guid id, WorkshopStatus status);
 
         /// <summary>
         ///  Delete entity.
