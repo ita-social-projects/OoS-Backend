@@ -12,7 +12,7 @@ namespace OutOfSchool.WebApi.Config
         public bool EnableDebugMode { get; set; }
 
         [Required]
-        public string DefaultIndex { get; set; }
+        public string WorkshopIndexName { get; set; }
 
         public string User { get; set; }
 
