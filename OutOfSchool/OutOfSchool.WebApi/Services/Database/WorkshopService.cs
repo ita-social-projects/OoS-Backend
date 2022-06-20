@@ -590,6 +590,7 @@ namespace OutOfSchool.WebApi.Services
 
             if (filter.Status != 0)
             {
+                //predicate = predicate.And(x => filter.Ids.Any(c => c == x.Id));
                 predicate = predicate.And(x => x.Status == filter.Status);
             }
 

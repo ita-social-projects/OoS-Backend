@@ -155,12 +155,18 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            if (filter.Status != 0)
+            if (filter.Status.Any())
             {
-                queryContainer &= new TermQuery()
+                var box = new List<object>();
+                foreach (var item in filter.Status)
+                {
+                    box.Add(item);
+                }
+
+                queryContainer &= new TermsQuery()
                 {
                     Field = Infer.Field<WorkshopES>(w => w.Status),
-                    Value = filter.Status,
+                    Terms = box,
                 };
             }
 
