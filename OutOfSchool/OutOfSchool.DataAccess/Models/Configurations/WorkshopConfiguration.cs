@@ -28,6 +28,9 @@ namespace OutOfSchool.Services.Models.Configurations
             builder.HasMany(x => x.Teachers)
                 .WithOne(x => x.Workshop)
                 .HasForeignKey(x => x.WorkshopId);
+            builder.HasMany(x => x.WorkshopDescriptionItems)
+                .WithOne(x => x.Workshop)
+                .HasForeignKey(x => x.WorkshopId);
         }
     }
 }

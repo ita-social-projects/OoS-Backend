@@ -59,12 +59,18 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
                 .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions));
 
+            CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
+
             CreateMap<Address, AddressDto>().ReverseMap();
 
             CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>();
             CreateMap<BlockedProviderParent, BlockedProviderParentDto>().ReverseMap();
 
-            CreateMap<ProviderSectionItem, ProviderSectionItemDto>().ReverseMap();
+            CreateMap<ProviderSectionItem, ProviderSectionItemDto>().ReverseMap()
+                .ForMember(
+                    dest =>
+                    dest.Name, opt =>
+                    opt.MapFrom(psi => psi.SectionName));
 
             CreateMap<Provider, ProviderDto>()
                  .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
@@ -142,7 +148,14 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Rating, opt => opt.Ignore())
                 .ForMember(dest => dest.Direction, opt => opt.Ignore())
                 .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions));
+                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions))
+                .ForMember(
+                    dest => dest.Description,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.WorkshopDescriptionItems
+                                .Aggregate(string.Empty, (accumulator, wdi) =>
+                                    $"{accumulator}{wdi.SectionName}{SEPARATOR}{wdi.Description}{SEPARATOR}")));
 
 #warning The next mapping is here to test UI Admin features. Will be removed or refactored
             CreateMap<ShortUserDto, AdminDto>();
