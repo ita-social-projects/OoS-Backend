@@ -9,6 +9,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
@@ -73,6 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerServiceMoq = new Mock<IProviderService>();
             providerAdminService = new Mock<IProviderAdminService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
+            providerAdminService = new Mock<IProviderAdminService>();
 
             controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, providerAdminService.Object, localizer.Object, options.Object)
             {
@@ -288,6 +290,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         [Test]
         public async Task UpdateWorkshop_WhenModelIsValid_ShouldReturnOkObjectResult()
         {
+            workshop.Status = WorkshopStatus.Closed;
             // Arrange
             providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
             workshopServiceMoq.Setup(x => x.Update(workshop)).ReturnsAsync(workshop);
@@ -299,7 +302,24 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual(Ok, result.StatusCode);
         }
+        #endregion
 
+        #region UpdateWorkshopStatus
+        [Test]
+        public async Task UpdateWorkshopStatus_WhenModelIsValid_ShouldReturnOkObjectResult()
+        {
+            // Arrange
+            providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+            workshopServiceMoq.Setup(x => x.UpdateStatus(workshop.Id, WorkshopStatus.Closed)).ReturnsAsync(workshop);
+
+            // Act
+            var result = await controller.UpdateStatus(workshop.Id, WorkshopStatus.Closed).ConfigureAwait(false);// as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            //Assert.AreEqual(Ok, result.StatusCode);
+        }
+        
         [Test]
         public async Task UpdateWorkshop_WhenModelIsInvalid_ShouldReturnBadRequestObjectResult()
         {
@@ -414,6 +434,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 },
                 Price = 6000,
                 WithDisabilityOptions = true,
+                Status = WorkshopStatus.Open,
                 ProviderTitle = "ProviderTitle",
                 DisabilityOptionsDesc = "Desc6",
                 Website = "website6",
