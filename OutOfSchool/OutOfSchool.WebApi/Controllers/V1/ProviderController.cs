@@ -246,7 +246,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             if (result is null)
             {
-                return NotFound();
+                return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
             }
 
             return Ok(result);
@@ -274,7 +274,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
                 if (result is null)
                 {
-                    return NotFound();
+                    return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
                 }
 
                 return Ok(result);
