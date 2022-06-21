@@ -588,10 +588,9 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(x => x.Address.City == filter.City);
             }
 
-            if (filter.Status != 0)
+            if (filter.Status.Any())
             {
-                //predicate = predicate.And(x => filter.Ids.Any(c => c == x.Id));
-                predicate = predicate.And(x => x.Status == filter.Status);
+                predicate = predicate.And(x => filter.Status.Contains(x.Status));
             }
 
             return predicate;
