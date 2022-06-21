@@ -128,20 +128,20 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         }
 
         /// <inheritdoc/>
-        public async Task<List<InstitutionHierarchyDto>> GetParents(Guid childId)
+        public async Task<List<InstitutionHierarchyDto>> GetParents(Guid childId, bool includeCurrentLevel)
         {
             logger.LogInformation("Getting all parents InstitutionHierarchies started.");
 
             string cacheKey = $"InstitutionHierarchyService_GetParents_{childId}";
 
             var institutionHierarchies = await cache.GetOrAddAsync(cacheKey, () =>
-                GetParentsFromDatabase(childId)).ConfigureAwait(false);
+                GetParentsFromDatabase(childId, includeCurrentLevel)).ConfigureAwait(false);
 
             return institutionHierarchies;
         }
 
         /// <inheritdoc/>
-        public async Task<List<InstitutionHierarchyDto>> GetParentsFromDatabase(Guid childId)
+        public async Task<List<InstitutionHierarchyDto>> GetParentsFromDatabase(Guid childId, bool includeCurrentLevel)
         {
             IEnumerable<InstitutionHierarchy> institutionHierarchiesTmp;
             var result = new List<InstitutionHierarchyDto>();
@@ -149,6 +149,11 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
 
             if (currentInstitutionHierarchy != null)
             {
+                if (includeCurrentLevel)
+                {
+                    result.Add(mapper.Map<InstitutionHierarchyDto>(currentInstitutionHierarchy));
+                }
+
                 int amountOfLevels = currentInstitutionHierarchy.HierarchyLevel - 1;
 
                 for (int i = amountOfLevels; i > 0; i--)

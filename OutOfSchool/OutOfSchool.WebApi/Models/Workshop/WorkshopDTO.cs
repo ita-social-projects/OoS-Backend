@@ -77,7 +77,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(256)]
         public string CoverImageId { get; set; } = string.Empty;
 
-        [JsonProperty(NullValueHandling=NullValueHandling.Ignore)]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public IFormFile CoverImage { get; set; }
 
         [Required]
@@ -108,6 +108,10 @@ namespace OutOfSchool.WebApi.Models
         public Guid? InstitutionHierarchyId { get; set; }
 
         public string InstitutionHierarchy { get; set; }
+
+        public Guid? InstitutionId { get; set; }
+
+        public string Institution { get; set; }
 
         [Required]
         public long DirectionId { get; set; }

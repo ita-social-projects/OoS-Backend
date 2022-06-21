@@ -43,6 +43,10 @@ namespace OutOfSchool.WebApi.Models
 
         public Guid? InstitutionHierarchyId { get; set; }
 
+        public Guid? InstitutionId { get; set; }
+
+        public string Institution { get; set; }
+
         public long DirectionId { get; set; }
 
         public List<long> DirectionsId { get; set; }

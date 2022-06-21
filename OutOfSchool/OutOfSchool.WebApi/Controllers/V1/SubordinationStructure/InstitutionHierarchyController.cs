@@ -99,6 +99,7 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure
         /// Get all parents InstitutionHierarchy by it's id.
         /// </summary>
         /// <param name="id">InstitutionHierarchy id.</param>
+        /// <param name="includeCurrentLevel">Include current child's level to result.</param>
         /// <returns>List<InstitutionHierarchy></InstitutionHierarchy>.</returns>
         /// <response code="200">Returns InstitutionHierarchy.</response>
         /// <response code="400">Id was wrong.</response>
@@ -110,9 +111,9 @@ namespace OutOfSchool.WebApi.Controllers.V1.SubordinationStructure
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetParents(Guid id)
+        public async Task<IActionResult> GetParents(Guid id, bool includeCurrentLevel = false)
         {
-            return Ok(await service.GetParents(id).ConfigureAwait(false));
+            return Ok(await service.GetParents(id, includeCurrentLevel).ConfigureAwait(false));
         }
 
         /// <summary>
