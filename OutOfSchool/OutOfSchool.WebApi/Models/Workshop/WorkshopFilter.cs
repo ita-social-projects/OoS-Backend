@@ -52,6 +52,6 @@ namespace OutOfSchool.WebApi.Models
 
         public decimal Longitude { get; set; } = 0;
 
-        public List<WorkshopStatus> Status { get; set; } = new List<WorkshopStatus>() { WorkshopStatus.Open };
+        public List<WorkshopStatus> Status { get; set; } = new List<WorkshopStatus>();
     }
 }
