@@ -24,7 +24,7 @@ output "es_api_pass" {
 }
 
 output "redis_pass" {
-  value = module.passwords.redis_pass
+  value     = module.passwords.redis_pass
   sensitive = true
 }
 
@@ -34,5 +34,5 @@ output "clusterstore_pass" {
 }
 
 output "image_bucket" {
-  value = module.storage.image-bucket
+  value = module.storage.image_bucket
 }

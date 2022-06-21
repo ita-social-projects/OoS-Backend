@@ -26,14 +26,12 @@ resource "google_compute_instance_template" "k3s" {
   network_interface {
     network    = var.network_name
     subnetwork = "outofschool"
-    access_config {
-      // Ephemeral IP
-    }
   }
 
   metadata = {
-    shutdown-script = var.shutdown
-    ssh-keys        = "${var.ssh_user}:${file(var.ssh_key)}"
+    shutdown-script        = var.shutdown
+    block-project-ssh-keys = true
+    enable-oslogin         = "TRUE"
   }
 
   metadata_startup_script = var.startup

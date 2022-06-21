@@ -35,7 +35,9 @@ gcloud services enable \
     iam.googleapis.com \
     servicenetworking.googleapis.com \
     sqladmin.googleapis.com \
-    gmail.googleapis.com
+    gmail.googleapis.com \
+    dns.googleapis.com \
+    oslogin.googleapis.com
 ```
 5. Init Terraform
 ```

@@ -20,14 +20,15 @@ module "vpc" {
 
   subnets = [
     {
-      subnet_name           = "outofschool"
-      subnet_ip             = "10.132.0.0/20"
-      subnet_region         = var.region
-      subnet_private_access = "true"
-      # subnet_flow_logs      = "true"
-      # subnet_flow_logs_interval = "INTERVAL_10_MIN"
-      # subnet_flow_logs_sampling = 0.7
-      # subnet_flow_logs_metadata = "INCLUDE_ALL_METADATA"
+      subnet_name               = "outofschool"
+      subnet_ip                 = "10.132.0.0/20"
+      subnet_region             = var.region
+      subnet_private_access     = "true"
+      subnet_flow_logs          = "true"
+      subnet_flow_logs_interval = "INTERVAL_10_MIN"
+      subnet_flow_logs_sampling = 0.5
+      subnet_flow_logs_metadata = "EXCLUDE_ALL_METADATA"
+      subnet_flow_logs_filter   = "false"
     }
   ]
 
@@ -58,6 +59,29 @@ module "vpc" {
   ]
 }
 
+module "cloud_router" {
+  source  = "terraform-google-modules/cloud-router/google"
+  version = "~> 2.0.0"
+  project = var.project
+  name    = "cloud-router-${random_integer.ri.result}"
+  network = module.vpc.network_name
+  region  = var.region
+
+  nats = [{
+    name = "nat-gateway-${random_integer.ri.result}"
+    log_config = {
+      enable = false
+      filter = "ALL"
+    }
+  }]
+}
+
+module "ops" {
+  source        = "./ops"
+  random_number = random_integer.ri.result
+  network_id    = module.vpc.network_id
+}
+
 module "storage" {
   source        = "./storage"
   random_number = random_integer.ri.result
@@ -69,7 +93,10 @@ module "iam" {
   random_number      = random_integer.ri.result
   access_group_email = var.access_group_email
   project            = var.project
-  bucket             = module.storage.image-bucket
+  bucket             = module.storage.image_bucket
+  logs_bucket        = module.storage.logs_bucket
+  ssh_user           = var.ssh_user
+  ssh_key            = var.ssh_key
 }
 
 module "passwords" {
@@ -95,8 +122,6 @@ module "cluster" {
   admin_ips        = var.admin_ips
   k8s_api_hostname = var.k8s_api_hostname
   credentials      = var.credentials
-  ssh_user         = var.ssh_user
-  ssh_key          = var.ssh_key
   db_username      = module.sql.db_username
   db_password      = module.sql.db_password
   db_host          = module.sql.db_host
@@ -177,7 +202,7 @@ module "build" {
   redis_secret        = module.secrets.redis_secret
   sender_email        = var.sender_email
   sendgrid_key_secret = module.secrets.sendgrid_key_secret
-  bucket              = module.storage.image-bucket
+  bucket              = module.storage.image_bucket
   github_secret       = module.secrets.github_secret
   github_token_secret = module.secrets.github_token_secret
   sql_port            = var.sql_port

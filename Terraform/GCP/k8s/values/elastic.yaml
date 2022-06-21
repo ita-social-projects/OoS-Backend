@@ -30,19 +30,6 @@ generateCertificate: false
 elasticsearch:
   replicas: 1
   protocol: http
-  esConfig:
-    elasticsearch.yml: |
-      xpack.license.self_generated.type: basic
-      xpack.security.enabled: true
-      xpack.security.transport.ssl.enabled: true
-      xpack.security.transport.ssl.verification_mode: certificate
-      xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/tls.key
-      xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/tls.crt
-      xpack.security.transport.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.crt
-      xpack.security.http.ssl.enabled: false
-      xpack.security.http.ssl.key: /usr/share/elasticsearch/config/certs/tls.key
-      xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/certs/tls.crt
-      xpack.security.http.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.crt
   secretMounts:
     - name: elastic-certificates
       secretName: elastic-certificates
@@ -102,11 +89,6 @@ elasticsearch:
   # esConfig:
   #   elasticsearch.yml: |
   #     node.store.allow_mmap: false
-  extraInitContainers:
-  - name: plugins
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
-    command: ['/bin/sh', '-c']
-    args: ['./bin/elasticsearch-plugin list | grep -q analysis-ukrainian || ./bin/elasticsearch-plugin install analysis-icu analysis-ukrainian mapper-murmur3 mapper-size']
   ingress:
     enabled: true
     annotations:

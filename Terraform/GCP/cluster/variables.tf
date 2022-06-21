@@ -46,16 +46,6 @@ variable "k8s_api_hostname" {
   description = "Hostname of K8S API"
 }
 
-variable "ssh_user" {
-  type        = string
-  description = "SSH User for instance"
-}
-
-variable "ssh_key" {
-  type        = string
-  description = "SSH Public Key for instance"
-}
-
 variable "db_username" {
   type = string
 }

@@ -5,4 +5,8 @@ resource "google_storage_bucket" "images" {
 
   uniform_bucket_level_access = true
   storage_class               = "REGIONAL"
+
+  logging {
+    log_bucket = google_storage_bucket.logs.name
+  }
 }

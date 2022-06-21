@@ -19,8 +19,6 @@ module "masters" {
   zone          = var.zone
   sa_email      = var.sa_email
   admin_ips     = var.admin_ips
-  ssh_user      = var.ssh_user
-  ssh_key       = var.ssh_key
   network_name  = var.network_name
 }
 

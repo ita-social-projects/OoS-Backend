@@ -3,19 +3,27 @@ resource "google_service_account" "csi" {
   display_name = "CSI Driver Service Account"
 }
 
+resource "time_rotating" "csi_key_rotation" {
+  rotation_days = 30
+}
+
 resource "google_service_account_key" "csi" {
   service_account_id = google_service_account.csi.name
+
+  keepers = {
+    rotation_time = time_rotating.csi_key_rotation.rotation_rfc3339
+  }
 }
 
 resource "google_project_iam_member" "csi-storage" {
-  role   = "roles/compute.storageAdmin"
-  member = "serviceAccount:${google_service_account.csi.email}"
+  role    = "roles/compute.storageAdmin"
+  member  = "serviceAccount:${google_service_account.csi.email}"
   project = var.project
 }
 
 resource "google_project_iam_member" "csi-sauser" {
-  role   = "roles/iam.serviceAccountUser"
-  member = "serviceAccount:${google_service_account.csi.email}"
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.csi.email}"
   project = var.project
 }
 
@@ -31,7 +39,7 @@ resource "google_project_iam_custom_role" "csi" {
 }
 
 resource "google_project_iam_member" "gke-csi" {
-  role   = google_project_iam_custom_role.csi.id
-  member = "serviceAccount:${google_service_account.csi.email}"
+  role    = google_project_iam_custom_role.csi.id
+  member  = "serviceAccount:${google_service_account.csi.email}"
   project = var.project
 }
