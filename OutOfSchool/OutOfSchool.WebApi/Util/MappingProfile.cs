@@ -48,7 +48,8 @@ namespace OutOfSchool.WebApi.Util
                     return dateTimeRanges;
                 }))
                 .ForMember(dest => dest.Images, opt => opt.Ignore())
-                .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+                .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+                .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore());
 
             CreateMap<Workshop, WorkshopDTO>()
                 .ForMember(
@@ -57,7 +58,9 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
                 .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
                 .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions));
+                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions))
+                .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
+                .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title));
 
             CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
@@ -106,7 +109,9 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                 .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
                 .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id))
-                .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)));
+                .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
+                .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
+                .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title));
 
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
@@ -149,6 +154,8 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Direction, opt => opt.Ignore())
                 .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
                 .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions))
+                .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
+                .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
                 .ForMember(
                     dest => dest.Description,
                     opt =>

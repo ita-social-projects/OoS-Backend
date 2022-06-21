@@ -46,17 +46,19 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         /// Get all parents of InstitutionHierarchy objects using Redis.
         /// </summary>
         /// <param name="childId">Key in the table for child field.</param>
+        /// <param name="includeCurrentLevel">Set 'true' if there is a need to include current child's level to result.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
-        Task<List<InstitutionHierarchyDto>> GetParents(Guid childId);
+        Task<List<InstitutionHierarchyDto>> GetParents(Guid childId, bool includeCurrentLevel);
 
         /// <summary>
         /// Get all parents of InstitutionHierarchy objects from DB.
         /// </summary>
         /// <param name="childId">Key in the table for child field.</param>
+        /// <param name="includeCurrentLevel">Set 'true' if there is a need to include current child's level to result.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
-        Task<List<InstitutionHierarchyDto>> GetParentsFromDatabase(Guid childId);
+        Task<List<InstitutionHierarchyDto>> GetParentsFromDatabase(Guid childId, bool includeCurrentLevel);
 
         /// <summary>
         /// To recieve the InstitutionHierarchy object with define id.

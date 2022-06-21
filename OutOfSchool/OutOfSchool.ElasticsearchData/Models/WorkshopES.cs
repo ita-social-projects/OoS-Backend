@@ -44,6 +44,10 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public string InstitutionHierarchy { get; set; }
 
+        public Guid? InstitutionId { get; set; }
+
+        public string Institution { get; set; }
+
         public long DirectionId { get; set; }
 
         public string Direction { get; set; }
