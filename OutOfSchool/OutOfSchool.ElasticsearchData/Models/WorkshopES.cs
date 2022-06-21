@@ -40,10 +40,12 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public AddressES Address { get; set; }
 
+        [Keyword]
         public Guid? InstitutionHierarchyId { get; set; }
 
         public string InstitutionHierarchy { get; set; }
 
+        [Keyword]
         public Guid? InstitutionId { get; set; }
 
         public string Institution { get; set; }
