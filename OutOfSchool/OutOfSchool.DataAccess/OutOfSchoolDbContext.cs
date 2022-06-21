@@ -94,6 +94,12 @@ namespace OutOfSchool.Services
 
         public DbSet<Codeficator> Codeficators { get; set; }
 
+        public DbSet<AchievementType> AchievementTypes { get; set; }
+
+        public DbSet<AchievementTeacher> AchievementTeachers { get; set; }
+
+        public DbSet<Achievement> Achievements { get; set; }
+
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
         public int Complete() => this.SaveChanges();
@@ -116,6 +122,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new WorkshopConfiguration());
             builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
             builder.ApplyConfiguration(new NotificationConfiguration());
+            builder.ApplyConfiguration(new AchievementConfiguration());
 
             builder.Seed();
             builder.UpdateIdentityTables();
