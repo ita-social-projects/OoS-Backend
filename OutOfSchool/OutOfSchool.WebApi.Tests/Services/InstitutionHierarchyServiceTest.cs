@@ -9,6 +9,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Redis;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common;
@@ -27,6 +28,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         private Mock<IStringLocalizer<SharedResource>> localizer;
         private Mock<ILogger<InstitutionHierarchyService>> logger;
         private Mock<IMapper> mapper;
+        private Mock<ICacheService> cache;
 
         [SetUp]
         public void SetUp()
@@ -37,13 +39,15 @@ namespace OutOfSchool.WebApi.Tests.Services
             localizer = new Mock<IStringLocalizer<SharedResource>>();
             logger = new Mock<ILogger<InstitutionHierarchyService>>();
             mapper = new Mock<IMapper>();
+            cache = new Mock<ICacheService>();
             service = new InstitutionHierarchyService(
                 repo.Object,
                 repositoryWorkshop.Object,
                 repositoryProvider.Object,
                 logger.Object,
                 localizer.Object,
-                mapper.Object);
+                mapper.Object,
+                cache.Object);
         }
 
         [Test]
@@ -388,7 +392,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             mapper.Setup(m => m.Map<List<InstitutionHierarchyDto>>(It.IsAny<List<InstitutionHierarchy>>())).Returns(expectedDto);
 
             // Act
-            var entities = await service.GetChildren(parentId).ConfigureAwait(false);
+            var entities = await service.GetChildrenFromDatabase(parentId).ConfigureAwait(false);
 
             // Assert
             Assert.That(expectedDto.Count(), Is.EqualTo(entities.Count()));
@@ -399,7 +403,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task GetChildren_WhenIdIsInvalid_ReturnNull(string idStr)
         {
             // Act
-            var expected = await service.GetChildren(Guid.Parse(idStr)).ConfigureAwait(false);
+            var expected = await service.GetChildrenFromDatabase(Guid.Parse(idStr)).ConfigureAwait(false);
 
             // Assert
             Assert.IsEmpty(expected);
