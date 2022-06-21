@@ -14,20 +14,27 @@ namespace OutOfSchool.WebApi.Services
     public interface IAchievementService
     {
         /// <summary>
-        /// Add new Achievement to the DB.
-        /// </summary>
-        /// <param name="dto">AchievementCreateDTO element.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The task result contains a <see cref="AchievementCreateDTO"/> that was created.</returns>
-        Task<AchievementDto> Create(AchievementCreateDTO dto);
-
-        /// <summary>
         /// To recieve the Achievement object with define id.
         /// </summary>
         /// <param name="id">Key in the table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a <see cref="AchievementDto"/> that was found.</returns>
         Task<AchievementDto> GetById(Guid id);
+
+        /// <summary>
+        /// To recieve all Achievement objects by Workshop id.
+        /// </summary>
+        /// <param name="id">Workshop Key in the table.</param>
+        /// <returns>List of Achievement objects.</returns>
+        Task<IEnumerable<AchievementDto>> GetByWorkshopId(Guid id);
+
+        /// <summary>
+        /// Add new Achievement to the DB.
+        /// </summary>
+        /// <param name="dto">AchievementCreateDTO element.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a <see cref="AchievementCreateDTO"/> that was created.</returns>
+        Task<AchievementDto> Create(AchievementCreateDTO dto);
 
         /// <summary>
         /// To Update our object in DB.
@@ -42,6 +49,6 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <param name="id">Key of the Achievement in table.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        Task<Result<AchievementDto>> Delete(Guid id);
+        Task Delete(Guid id);
     }
 }

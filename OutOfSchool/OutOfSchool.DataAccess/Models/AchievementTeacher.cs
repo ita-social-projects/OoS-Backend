@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models
 {
-    public class AchievementTeacher
+    public class AchievementTeacher : IKeyedEntity<long>
     {
         public long Id { get; set; }
 
@@ -12,7 +12,7 @@ namespace OutOfSchool.Services.Models
 
         public virtual Achievement Achievement { get; set; }
 
-        [Required(ErrorMessage = "Title is required")]
+        [Required]
         [DataType(DataType.Text)]
         [MaxLength(100)]
         [MinLength(1)]

@@ -23,7 +23,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
     public class AchievementController : ControllerBase
     {
-        private readonly IAchievementService service;
+        private readonly IAchievementService achievementService;
         private readonly IStringLocalizer<SharedResource> localizer;
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public AchievementController(IAchievementService service, IStringLocalizer<SharedResource> localizer)
         {
             this.localizer = localizer;
-            this.service = service;
+            this.achievementService = service;
         }
 
         /// <summary>
@@ -50,7 +50,30 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            return Ok(await service.GetById(id).ConfigureAwait(false));
+            return Ok(await achievementService.GetById(id).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// To recieve the Achievement list by Workshop id.
+        /// </summary>
+        /// <param name="workshopId">Key of the Workshop in the table.</param>
+        /// <returns>List of achievements.</returns>
+        /// <response code="200">The entity was found by given Id.</response>
+        /// <response code="500">If any server error occures. For example: Id was wrong.</response>
+        [AllowAnonymous]
+        [HttpGet("{workshopId}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AchievementDto>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByWorkshopId(Guid workshopId)
+        {
+            var achievements = await achievementService.GetByWorkshopId(workshopId).ConfigureAwait(false);
+
+            if (!achievements.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(achievements);
         }
 
         /// <summary>
@@ -81,7 +104,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 achievementDto.Id = default;
 
-                var achievement = await service.Create(achievementDto).ConfigureAwait(false);
+                var achievement = await achievementService.Create(achievementDto).ConfigureAwait(false);
 
                 return CreatedAtAction(
                      nameof(GetById),
@@ -117,7 +140,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(ModelState);
             }
 
-            return Ok(await service.Update(achievementDto).ConfigureAwait(false));
+            return Ok(await achievementService.Update(achievementDto).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -136,15 +159,18 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var result = await service.Delete(id).ConfigureAwait(false);
-            if (!result.Succeeded)
+            try
             {
-                return BadRequest(result.OperationResult);
+                await achievementService.Delete(id).ConfigureAwait(false);
+                return NoContent();
             }
 
-            return NoContent();
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

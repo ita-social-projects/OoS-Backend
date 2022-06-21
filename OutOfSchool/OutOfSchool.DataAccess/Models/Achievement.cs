@@ -9,7 +9,7 @@ namespace OutOfSchool.Services.Models
     {
         public Guid Id { get; set; }
 
-        [Required(ErrorMessage = "Title is required")]
+        [Required]
         [DataType(DataType.Text)]
         [MaxLength(2000)]
         [MinLength(1)]

@@ -19,11 +19,10 @@ namespace OutOfSchool.WebApi.Services
 {
     public class AchievementService: IAchievementService
     {
-        private readonly ISensitiveEntityRepository<Achievement> repository;
+        private readonly IAchievementRepository achievementRepository;
         private readonly ILogger<AchievementService> logger;
         private readonly IStringLocalizer<SharedResource> localizer;
         private readonly IMapper mapper;
-        private readonly OutOfSchoolDbContext context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AchievementService"/> class.
@@ -33,63 +32,16 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="localizer">Localizer.</param>
         /// <param name="mapper">Mapper.</param>
         public AchievementService(
-            ISensitiveEntityRepository<Achievement> repository,
+            IAchievementRepository repository,
             ILogger<AchievementService> logger,
             IStringLocalizer<SharedResource> localizer,
             IMapper mapper,
             OutOfSchoolDbContext context)
         {
             this.localizer = localizer;
-            this.repository = repository;
+            this.achievementRepository = repository;
             this.logger = logger;
             this.mapper = mapper;
-            this.context = context;
-        }
-
-        /// <inheritdoc/>
-        public async Task<AchievementDto> Create(AchievementCreateDTO dto)
-        {
-            logger.LogInformation("Achievement creating was started.");
-
-            var achievement = mapper.Map<Achievement>(dto);
-
-            achievement.Children = context.Children.Where(w => dto.ChildrenIDs.Contains(w.Id))
-                            .ToList();
-
-            achievement.Teachers = new List<AchievementTeacher>();
-
-            foreach (string Teacher in dto.Teachers)
-            {
-                achievement.Teachers.Add(new AchievementTeacher { Title = Teacher, Achievement = achievement });
-            }
-
-            var newAchievement = await repository.Create(achievement).ConfigureAwait(false);
-
-            logger.LogInformation($"Achievement with Id = {newAchievement?.Id} created successfully.");
-
-            return mapper.Map<AchievementDto>(newAchievement);
-        }
-
-        /// <inheritdoc/>
-        public async Task<Result<AchievementDto>> Delete(Guid id)
-        {
-            logger.LogInformation($"Deleting Achievement with Id = {id} started.");
-
-            var entity = new Achievement() { Id = id };
-
-            try
-            {
-                await repository.Delete(entity).ConfigureAwait(false);
-
-                logger.LogInformation($"Achievement with Id = {id} succesfully deleted.");
-
-                return Result<AchievementDto>.Success(mapper.Map<AchievementDto>(entity));
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                logger.LogError($"Deleting failed. Achievement with Id = {id} doesn't exist in the system.");
-                throw;
-            }
         }
 
         /// <inheritdoc/>
@@ -97,7 +49,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Achievement by Id started. Looking Id = {id}.");
 
-            var achievement = await repository.GetById(id).ConfigureAwait(false);
+            var achievement = await achievementRepository.GetById(id).ConfigureAwait(false);
 
             if (achievement == null)
             {
@@ -112,33 +64,56 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<AchievementDto>> GetByWorkshopId(Guid id)
+        {
+            logger.LogInformation("Getting all Achievements by Workshop Id started.");
+
+            var achievements = await achievementRepository.GetByWorkshopId(id).ConfigureAwait(false);
+
+            logger.LogInformation(!achievements.Any()
+                ? "This Workshop has no achievements."
+                : $"All {achievements.Count()} records were successfully received");
+
+            return mapper.Map<List<AchievementDto>>(achievements);
+        }
+
+        /// <inheritdoc/>
+        public async Task<AchievementDto> Create(AchievementCreateDTO dto)
+        {
+            logger.LogInformation("Achievement creating was started.");
+
+            if (dto is null)
+            {
+                logger.LogInformation("Operation failed, dto is null");
+                throw new ArgumentException(localizer["dto is null."], nameof(dto));
+            }
+
+            var achievement = mapper.Map<Achievement>(dto);
+
+            var newAchievement = await achievementRepository.Create(achievement, dto.ChildrenIDs, dto.Teachers).ConfigureAwait(false);
+
+            logger.LogInformation($"Achievement with Id = {newAchievement?.Id} created successfully.");
+
+            return mapper.Map<AchievementDto>(newAchievement);
+        }
+
+        /// <inheritdoc/>
         public async Task<AchievementDto> Update(AchievementCreateDTO dto)
         {
             logger.LogInformation($"Updating Achievement with Id = {dto?.Id} started.");
 
+            if (dto is null)
+            {
+                logger.LogInformation("Operation failed, dto is null");
+                throw new ArgumentException(localizer["dto is null."], nameof(dto));
+            }
+
             try
             {
-                var achievement = await repository.GetById(dto.Id).ConfigureAwait(false);
+                var updatedAchievement = await achievementRepository.Update(mapper.Map<Achievement>(dto), dto.ChildrenIDs, dto.Teachers)
+                   .ConfigureAwait(false);
 
-                achievement.AchievementTypeId = dto.AchievementTypeId;
-                achievement.Title = dto.Title;
-                achievement.AchievementDate = dto.AchievementDate;
-                achievement.WorkshopId = dto.WorkshopId;
-                achievement.Children.RemoveAll(x => dto.ChildrenIDs.IndexOf(x.Id) < 0);
-                achievement.Children.AddRange(context.Children.Where(w => dto.ChildrenIDs.Contains(w.Id)).ToList());
-
-                achievement.Teachers.RemoveAll(x => dto.Teachers.IndexOf(x.Title) < 0);
-                foreach (var Teacher in dto.Teachers)
-                {
-                    if (achievement.Teachers.Find(x => x.Title == Teacher) is null)
-                    {
-                        achievement.Teachers.Add(new AchievementTeacher { Title = Teacher, Achievement = achievement });
-                    }
-                }
-
-                var updatedAchievement = await repository.Update(achievement).ConfigureAwait(false);
-
-                logger.LogInformation($"Achievement with Id = {achievement?.Id} updated succesfully.");
+                logger.LogInformation($"Achievement with Id = {updatedAchievement?.Id} updated succesfully.");
 
                 return mapper.Map<AchievementDto>(updatedAchievement);
             }
@@ -148,5 +123,33 @@ namespace OutOfSchool.WebApi.Services
                 throw;
             }
         }
+
+        /// <inheritdoc/>
+        public async Task Delete(Guid id)
+        {
+            logger.LogInformation($"Deleting Achievement with Id = {id} started.");
+
+            var achievement = achievementRepository.Get<int>(where: a => a.Id == id);
+
+            if (!achievement.Any())
+            {
+                logger.LogInformation($"Operation failed. Achievement with Id = {id} doesn't exist in the system.");
+                throw new ArgumentException(localizer[$"Achievement with Id = {id} doesn't exist in the system."]);
+            }
+
+            var entity = new Achievement { Id = id };
+
+            try
+            {
+                await achievementRepository.Delete(entity).ConfigureAwait(false);
+
+                logger.LogInformation($"Achievement with Id = {id} succesfully deleted.");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                logger.LogError($"Deleting failed. Achievement with Id = {id} doesn't exist in the system.");
+                throw;
+            }
+        }        
     }
 }

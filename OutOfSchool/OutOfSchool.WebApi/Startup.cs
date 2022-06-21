@@ -290,7 +290,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
 
             services.AddTransient<IEntityRepository<AchievementType>, EntityRepository<AchievementType>>();
-            services.AddTransient<ISensitiveEntityRepository<Achievement>, SensitiveEntityRepository<Achievement>>();
+            services.AddTransient<IEntityRepository<AchievementTeacher>, EntityRepository<AchievementTeacher>>();
+            services.AddTransient<IAchievementRepository, AchievementRepository>();
             services.AddTransient<IAchievementService, AchievementService>();
 
             // Institution hierarchy
