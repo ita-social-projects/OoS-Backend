@@ -255,7 +255,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                     },
                 },
                 Price = 5000,
-                IsPerMonth = true,
+                PayRate = OutOfSchool.Common.Enums.PayRateType.Classes,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
                 DisabilityOptionsDesc = "Desc5",
@@ -327,7 +327,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Assert.AreEqual(workshopDto.Id, result.WorkshopId);
                 Assert.AreEqual(workshopDto.Title, result.Title);
                 Assert.AreEqual(workshopDto.Price, result.Price);
-                Assert.AreEqual(workshopDto.IsPerMonth, result.IsPerMonth);
+                Assert.AreEqual(workshopDto.PayRate, result.PayRate);
                 Assert.AreEqual(workshopDto.ProviderId, result.ProviderId);
                 Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
                 Assert.AreEqual(workshopDto.MinAge, result.MinAge);

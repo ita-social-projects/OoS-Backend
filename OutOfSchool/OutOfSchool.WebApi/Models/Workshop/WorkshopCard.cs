@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Models
         public string Title { get; set; } = string.Empty;
 
         [Required]
-        public bool IsPerMonth { get; set; }
+        public PayRateType PayRate { get; set; }
 
         public string CoverImageId { get; set; } = string.Empty;
 
