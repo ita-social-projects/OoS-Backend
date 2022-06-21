@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Services.Enums;
@@ -184,9 +185,9 @@ namespace OutOfSchool.WebApi.Tests.Services
             var expectedCollection = fakeProviders.Select(p => mapper.Map<ProviderDto>(p)).ToList(); // expected collection of dto's to return
             var fakeRatings = RatingsGenerator.GetAverageRatingForRange(fakeProviders.Select(p => p.Id)); // expected ratings
             expectedCollection.ForEach(p => p.Rating = fakeRatings.Where(r => r.Key == p.Id)
-            .Select(p => p.Value.Item1).FirstOrDefault()); // seed rating to use in assertion
+                .Select(p => p.Value.Item1).FirstOrDefault()); // seed rating to use in assertion
             expectedCollection.ForEach(p => p.NumberOfRatings = fakeRatings.Where(r => r.Key == p.Id)
-            .Select(p => p.Value.Item2).FirstOrDefault()); // seed number of ratings to use in assertion
+                .Select(p => p.Value.Item2).FirstOrDefault()); // seed number of ratings to use in assertion
 
             providersRepositoryMock.Setup(r => r.GetAll()).ReturnsAsync(fakeProviders);
             ratingService
@@ -198,6 +199,51 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Assert
             TestHelper.AssertTwoCollectionsEqualByValues(expectedCollection, actualProviders);
+        }
+
+        [Test]
+        public async Task GetByFilter_WhenCalled_ReturnsEntities()
+        {
+            // Arrange
+            var filter = new ProviderFilter();
+            var providersMock = fakeProviders.AsQueryable().BuildMock();
+
+            var fakeRatings = RatingsGenerator.GetAverageRatingForRange(fakeProviders.Select(p => p.Id)); // expected ratings
+            var expected = fakeProviders
+                .Select(p => mapper.Map<ProviderDto>(p))
+                .ToList();
+            expected
+                .ForEach(p => p.Rating = fakeRatings
+                    .Where(r => r.Key == p.Id)
+                    .Select(p => p.Value.Item1)
+                    .FirstOrDefault());
+            expected
+                .ForEach(p => p.NumberOfRatings = fakeRatings
+                    .Where(r => r.Key == p.Id)
+                    .Select(p => p.Value.Item2)
+                    .FirstOrDefault());
+            providersRepositoryMock
+                .Setup(repo => repo.Count(It.IsAny<Expression<Func<Provider, bool>>>()))
+                .ReturnsAsync(fakeRatings.Count);
+            providersRepositoryMock
+                .Setup(repo => repo.Get(
+                    filter.From,
+                    filter.Size,
+                    string.Empty,
+                    It.IsAny<Expression<Func<Provider, bool>>>(),
+                    It.IsAny<Expression<Func<Provider, dynamic>>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()))
+                .Returns(providersMock.Object);
+            ratingService.Setup(r => r.GetAverageRatingForRange(It.IsAny<IEnumerable<Guid>>(), RatingType.Provider))
+                .Returns(fakeRatings);
+
+            // Act
+            var result = await providerService.GetByFilter().ConfigureAwait(false);
+
+            // Assert
+            TestHelper.AssertTwoCollectionsEqualByValues(expected, result.Entities);
+            Assert.AreEqual(fakeProviders.Count, result.TotalAmount);
         }
 
         [Test]

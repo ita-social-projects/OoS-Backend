@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using OutOfSchool.Common;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services
@@ -23,6 +23,14 @@ namespace OutOfSchool.WebApi.Services
         /// </summary>
         /// <returns>List of all providers.</returns>
         Task<IEnumerable<ProviderDto>> GetAll();
+
+        /// <summary>
+        /// Get entities from the database that match filter's parameters.
+        /// </summary>
+        /// <param name="filter">Filter with specified searching parameters.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the <see cref="SearchResult{ProviderDto}"/> that contains found elements.</returns>
+        Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter = null);
 
         /// <summary>
         /// Get entity by it's key.

@@ -45,19 +45,20 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Get all Provider from the database.
+        /// Get Providers that match filter's parameters.
         /// </summary>
+        /// <param name="filter">Entity that represents searching parameters.</param>
         /// <returns>List of all Providers.</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
         {
-            var providers = await providerService.GetAll().ConfigureAwait(false);
+            var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 
-            if (!providers.Any())
+            if (providers.TotalAmount < 1)
             {
                 return NoContent();
             }

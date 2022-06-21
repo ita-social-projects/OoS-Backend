@@ -20,6 +20,7 @@ using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 
@@ -88,11 +89,17 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProviders_WhenCalled_ReturnsOkResultObject_WithExpectedCollectionDtos()
         {
             // Arrange
-            var expected = providers.Select(x => x.ToModel());
-            providerService.Setup(x => x.GetAll()).ReturnsAsync(providers.Select(p => p.ToModel()));
+            var expected = new SearchResult<ProviderDto>
+            {
+                TotalAmount = 10,
+                Entities = providers.Select(x => x.ToModel()).ToList(),
+            };
+
+            providerService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+                .ReturnsAsync(expected);
 
             // Act
-            var result = await providerController.Get().ConfigureAwait(false);
+            var result = await providerController.Get(new ProviderFilter()).ConfigureAwait(false);
 
             // Assert
             result.AssertResponseOkResultAndValidateValue(expected);
@@ -102,10 +109,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetProviders_WhenNoRecordsInDB_ReturnsNoContentResult()
         {
             // Arrange
-            providerService.Setup(x => x.GetAll()).ReturnsAsync(Enumerable.Empty<ProviderDto>());
+            providerService.Setup(x => x.GetByFilter(It.IsAny<ProviderFilter>()))
+                .ReturnsAsync(new SearchResult<ProviderDto> { TotalAmount = 0, Entities = new List<ProviderDto>() });
 
             // Act
-            var result = await providerController.Get().ConfigureAwait(false);
+            var result = await providerController.Get(new ProviderFilter()).ConfigureAwait(false);
 
             // Assert
             Assert.IsInstanceOf<NoContentResult>(result);

@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
-using OutOfSchool.Common;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -93,23 +94,35 @@ namespace OutOfSchool.WebApi.Services
                 : $"All {providers.Count()} records were successfully received from the Provider table");
 
             var providersDTO = providers.Select(provider => mapper.Map<ProviderDto>(provider)).ToList();
-
-            // TODO: move ratings calculations out of getting all providers.
-            var averageRatings =
-                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
-
-            foreach (var provider in providersDTO)
-            {
-                var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
-                if (averageRatingsForProvider.Key != Guid.Empty)
-                {
-                    var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
-                    provider.Rating = rating;
-                    provider.NumberOfRatings = numberOfVotes;
-                }
-            }
+            PopulateRatings(providersDTO);
 
             return providersDTO;
+        }
+
+        /// <inheritdoc/>
+        public async Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter)
+        {
+            logger.LogDebug("Getting Providers by filter started.");
+
+            filter ??= new ProviderFilter();
+            ModelValidationHelper.ValidateOffsetFilter(filter);
+
+            var where = GetQueryFilter(filter);
+            var (orderBy, ascending) = GetOrderParams();
+
+            var count = await providerRepository.Count(where).ConfigureAwait(false);
+            var entities = await providerRepository.Get(filter.From, filter.Size, string.Empty, where, orderBy, ascending, true)
+                .Select(x => mapper.Map<ProviderDto>(x))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            PopulateRatings(entities);
+
+            return new SearchResult<ProviderDto>
+            {
+                Entities = entities,
+                TotalAmount = count,
+            };
         }
 
         /// <inheritdoc/>
@@ -432,6 +445,47 @@ namespace OutOfSchool.WebApi.Services
         private void LogProviderChanges(Provider provider, string userId)
         {
             changesLogService.AddEntityChangesToDbContext(provider, userId);
+        }
+
+        private void PopulateRatings(List<ProviderDto> providersDTO)
+        {
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
+
+            foreach (var provider in providersDTO)
+            {
+                var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
+                if (averageRatingsForProvider.Key != Guid.Empty)
+                {
+                    var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
+                    provider.Rating = rating;
+                    provider.NumberOfRatings = numberOfVotes;
+                }
+            }
+        }
+
+        private Expression<Func<Provider, bool>> GetQueryFilter(ProviderFilter filter)
+        {
+            Expression<Func<Provider, bool>> expr = null;
+
+            if (filter.Status.Any())
+            {
+                expr = expr.And(x => filter.Status.Contains(x.Status));
+            }
+
+            if (filter.LicenseStatus.Any())
+            {
+                expr = expr.And(x => filter.LicenseStatus.Contains(x.LicenseStatus));
+            }
+
+            return expr;
+        }
+
+        private (Expression<Func<Provider, dynamic>> orderBy, bool ascending) GetOrderParams()
+        {
+            Expression<Func<Provider, dynamic>> orderBy = x => x.Id;
+
+            return (orderBy, true);
         }
     }
 }
