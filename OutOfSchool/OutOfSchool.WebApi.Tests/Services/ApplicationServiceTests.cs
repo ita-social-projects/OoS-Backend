@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -117,7 +118,9 @@ namespace OutOfSchool.WebApi.Tests.Services
             var newApplication = new Application()
             {
                 Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
-                WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+
+                // Workshop id with Status = Open
+                WorkshopId = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
                 CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
                 Status = ApplicationStatus.Pending,
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
@@ -126,7 +129,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var input = new ApplicationDto()
             {
                 Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
-                WorkshopId = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+                WorkshopId = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
                 CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
                 Status = ApplicationStatus.Pending,
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
@@ -185,6 +188,71 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Act and Assert
             service.Invoking(w => w.Create(application)).Should().Throw<ArgumentException>();
+        }
+
+        [Test]
+        public void CreateApplication_WhenStatusWorkshopIsClosed_ShouldReturnArgumentException()
+        {
+            var input = new ApplicationDto()
+            {
+                Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
+
+                // Workshop id with Status = Closed
+                WorkshopId = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
+            };
+
+            var mockWorkshop = new Workshop()
+            {
+                Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
+                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                Status = WorkshopStatus.Closed,
+            };
+
+            workshopRepositoryMock.Setup(x => x.GetById(input.WorkshopId)).ReturnsAsync(mockWorkshop);
+
+            // Act and assert
+            Assert.ThrowsAsync<ArgumentException>(
+                async () => await service.Create(input).ConfigureAwait(false));
+        }
+
+        [Test]
+        public async Task CreateApplication_WhenStatusWorkshopIsOpen_ShouldReturnApplication()
+        {
+            // Arrange
+            var newApplication = new Application()
+            {
+                Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
+
+                // Workshop id with Status = Open
+                WorkshopId = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
+                CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
+                Status = ApplicationStatus.Pending,
+                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            };
+
+            var input = new ApplicationDto()
+            {
+                Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
+                WorkshopId = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
+                CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
+                Status = ApplicationStatus.Pending,
+                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            };
+
+            SetupCreate(newApplication);
+
+            // Act
+            var result = await service.Create(input).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeEquivalentTo(
+            new ModelWithAdditionalData<ApplicationDto, int>
+            {
+                Model = ExpectedApplicationCreate(newApplication),
+                AdditionalData = 0,
+            });
         }
 
         [Test]
@@ -480,12 +548,16 @@ namespace OutOfSchool.WebApi.Tests.Services
         private void SetupCreate(Application application)
         {
             var childsMock = WithChildList().AsQueryable().BuildMock();
+            var workshopMock = WithWorkshopsList().FirstOrDefault(x => x.Id == application.WorkshopId);
 
             applicationRepositoryMock.Setup(a => a.GetByFilter(
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<string>()))
                 .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { application }));
-            childRepositoryMock.Setup(r => r.Get(
+
+            workshopRepositoryMock.Setup(x => x.GetById(application.WorkshopId)).ReturnsAsync(workshopMock);
+
+            childRepositoryMock.Setup(r => r.Get<It.IsAnyType>(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -712,11 +784,13 @@ namespace OutOfSchool.WebApi.Tests.Services
                 {
                     Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
                     ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                    Status = WorkshopStatus.Closed,
                 },
                 new Workshop()
                 {
                     Id = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
                     ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                    Status = WorkshopStatus.Open,
                 },
                 new Workshop()
                 {
