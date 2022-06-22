@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services
     /// <summary>
     /// Implements the interface with CRUD functionality for Provider entity.
     /// </summary>
-    public class ProviderService : IProviderService
+    public class ProviderService : IProviderService, INotificationReciever
     {
         private readonly IProviderRepository providerRepository;
         private readonly IProviderAdminRepository providerAdminRepository;
@@ -31,6 +31,8 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Address> addressRepository;
         private readonly IWorkshopServicesCombiner workshopServiceCombiner;
         private readonly IChangesLogService changesLogService;
+        private readonly INotificationService notificationService;
+        private readonly IProviderAdminService providerAdminService;
 
         // TODO: It should be removed after models revision.
         //       Temporary instance to fill 'Provider' model 'User' property
@@ -50,6 +52,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="providerAdminRepository">Provider admin repository.</param>
         /// <param name="providerImagesService">Images service.</param>
         /// <param name="changesLogService">ChangesLogService.</param>
+        /// <param name="notificationService">Notification service.</param>
+        /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
         public ProviderService(
             IProviderRepository providerRepository,
             IEntityRepository<User> usersRepository,
@@ -61,7 +65,9 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopServicesCombiner workshopServiceCombiner,
             IProviderAdminRepository providerAdminRepository,
             IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
-            IChangesLogService changesLogService)
+            IChangesLogService changesLogService,
+            INotificationService notificationService,
+            IProviderAdminService providerAdminService)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -73,7 +79,9 @@ namespace OutOfSchool.WebApi.Services
             this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
             this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
             ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
-            this.changesLogService = changesLogService;
+            this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
+            this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+            this.providerAdminService = providerAdminService;
         }
 
         private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -208,6 +216,8 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
 
+            await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
+
             return dto;
         }
 
@@ -239,7 +249,43 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.LicenseStatus}");
 
+            await SendNotification(provider, NotificationAction.Update, false, true).ConfigureAwait(false);
+
             return dto;
+        }
+
+        async Task<IEnumerable<string>> INotificationReciever.GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+        {
+            var recipientIds = new List<string>();
+
+            var provider = await providerRepository.GetById(objectId).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                return recipientIds;
+            }
+
+            if (action == NotificationAction.Create)
+            {
+                // TODO: approval request is sent to district admin
+                // AND Service provider waits until(district admin / ministry admin / tech admin) approves the profile
+            }
+            else if (action == NotificationAction.Update)
+            {
+                if (provider.Status == ProviderStatus.Pending || provider.LicenseStatus == ProviderLicenseStatus.Pending)
+                {
+                    // TODO: create a NEW approve request to District admin
+                }
+                else if (provider.Status == ProviderStatus.Editing
+                    || provider.Status == ProviderStatus.Approved
+                    || provider.LicenseStatus == ProviderLicenseStatus.Approved)
+                {
+                    recipientIds.Add(provider.UserId);
+                    recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                }
+            }
+
+            return recipientIds.Distinct();
         }
 
         private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
@@ -286,6 +332,8 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogDebug("Provider with Id = {ProviderId} created successfully", newProvider?.Id);
 
+            await SendNotification(newProvider, NotificationAction.Create, true, true).ConfigureAwait(false);
+
             return mapper.Map<ProviderDto>(newProvider);
         }
 
@@ -303,12 +351,12 @@ namespace OutOfSchool.WebApi.Services
             {
                 var checkProvider = await providerRepository.GetById(providerDto.Id).ConfigureAwait(false);
 
-                ChangeProviderStatusIfNeeded(providerDto, checkProvider);
-
                 if (checkProvider?.UserId != userId)
                 {
                     return null;
                 }
+
+                ChangeProviderStatusIfNeeded(providerDto, checkProvider, out var statusChanged, out var licenseChanged);
 
                 providerDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
 
@@ -369,6 +417,12 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation("Provider with Id = {CheckProviderId} was updated successfully", checkProvider?.Id);
 
+                if (statusChanged || licenseChanged)
+                {
+                    await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged)
+                        .ConfigureAwait(false);
+                }
+
                 return mapper.Map<ProviderDto>(checkProvider);
             }
             finally
@@ -377,23 +431,28 @@ namespace OutOfSchool.WebApi.Services
             }
         }
 
-        private void ChangeProviderStatusIfNeeded(ProviderDto providerDto, Provider checkProvider)
+        private void ChangeProviderStatusIfNeeded(
+            ProviderDto providerDto,
+            Provider checkProvider,
+            out bool statusChanged,
+            out bool licenseChanged)
         {
+            statusChanged = false;
+            licenseChanged = false;
+
             if (!(checkProvider.FullTitle == providerDto.FullTitle
-                                && checkProvider.EdrpouIpn == long.Parse(providerDto.EdrpouIpn)))
+                && checkProvider.EdrpouIpn == long.Parse(providerDto.EdrpouIpn)))
             {
                 checkProvider.Status = ProviderStatus.Pending;
-
-                // TODO: send notification to District admin
+                statusChanged = true;
             }
 
             if (!checkProvider.License.Equals(providerDto.License, StringComparison.Ordinal))
             {
-                checkProvider.LicenseStatus = providerDto.License == null
+                checkProvider.LicenseStatus = string.IsNullOrEmpty(providerDto.License)
                     ? ProviderLicenseStatus.NotProvided
                     : ProviderLicenseStatus.Pending;
-
-                // TODO: send notification to District admin
+                licenseChanged = !string.IsNullOrEmpty(providerDto.License);
             }
         }
 
@@ -486,6 +545,36 @@ namespace OutOfSchool.WebApi.Services
             Expression<Func<Provider, dynamic>> orderBy = x => x.Id;
 
             return (orderBy, true);
+        }
+
+        private async Task SendNotification(
+            Provider provider,
+            NotificationAction notificationAction,
+            bool addStatusData,
+            bool addLicenseStatusData)
+        {
+            if (provider != null)
+            {
+                var additionalData = new Dictionary<string, string>();
+
+                if (addStatusData)
+                {
+                    additionalData.Add("Status", provider.Status.ToString());
+                }
+
+                if (addLicenseStatusData)
+                {
+                    additionalData.Add("LicenseStatus", provider.LicenseStatus.ToString());
+                }
+
+                await notificationService.Create(
+                    NotificationType.Provider,
+                    notificationAction,
+                    provider.Id,
+                    this,
+                    additionalData)
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

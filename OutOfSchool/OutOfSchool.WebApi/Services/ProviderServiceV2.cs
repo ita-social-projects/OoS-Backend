@@ -27,8 +27,23 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopServicesCombiner workshopServiceCombiner,
             IProviderAdminRepository providerAdminRepository,
             IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
-            IChangesLogService changesLogService)
-                : base(providerRepository, usersRepository, ratingService, logger, localizer, mapper, addressRepository, workshopServiceCombiner, providerAdminRepository, providerImagesService, changesLogService)
+            IChangesLogService changesLogService,
+            INotificationService notificationService,
+            IProviderAdminService providerAdminService)
+            : base(
+                  providerRepository,
+                  usersRepository,
+                  ratingService,
+                  logger,
+                  localizer,
+                  mapper,
+                  addressRepository,
+                  workshopServiceCombiner,
+                  providerAdminRepository,
+                  providerImagesService,
+                  changesLogService,
+                  notificationService,
+                  providerAdminService)
         {
         }
 
