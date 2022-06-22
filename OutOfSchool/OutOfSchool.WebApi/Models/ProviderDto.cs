@@ -46,10 +46,6 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(Constants.UnifiedUrlLength)]
         public string Instagram { get; set; } = string.Empty;
 
-        [MaxLength(500)]
-        [Required(ErrorMessage = "Description is required")]
-        public string Description { get; set; }
-
         // TODO: validate regex with unit tests
         [Required(ErrorMessage = "EDRPOU/INP code is required")]
         [RegularExpression(

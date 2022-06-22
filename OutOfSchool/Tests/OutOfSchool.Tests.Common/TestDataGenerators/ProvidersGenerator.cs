@@ -20,7 +20,6 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.Website, f => f.Internet.Url())
             .RuleFor(x => x.Facebook, f => f.Internet.Url())
             .RuleFor(x => x.Instagram, f => f.Internet.Url())
-            .RuleFor(x => x.Description, f => f.Company.CatchPhrase())
             .RuleFor(x => x.DirectorDateOfBirth, f => f.Person.DateOfBirth)
             .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnNumber)
             .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)

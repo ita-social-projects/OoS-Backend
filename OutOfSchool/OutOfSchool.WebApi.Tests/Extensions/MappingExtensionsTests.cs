@@ -390,7 +390,6 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Assert.That(providerDto.Email, Is.EqualTo(provider.Email));
                 Assert.That(providerDto.Facebook, Is.EqualTo(provider.Facebook));
                 Assert.That(providerDto.Instagram, Is.EqualTo(provider.Instagram));
-                Assert.That(providerDto.Description, Is.EqualTo(provider.Description));
                 Assert.That(providerDto.EdrpouIpn, Is.EqualTo(provider.EdrpouIpn.ToString()));
                 Assert.That(providerDto.Director, Is.EqualTo(provider.Director));
                 Assert.That(providerDto.DirectorDateOfBirth, Is.EqualTo(provider.DirectorDateOfBirth));
