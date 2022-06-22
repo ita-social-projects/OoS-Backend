@@ -26,6 +26,8 @@ steps:
     - $_REGION
     - --platform
     - managed
+    - --ingress
+    - internal-and-cloud-load-balancing
     - --allow-unauthenticated
     - --service-account
     - $_SERVICE_ACCOUNT
