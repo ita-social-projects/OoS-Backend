@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using AutoMapper;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Models;
@@ -282,7 +280,7 @@ namespace OutOfSchool.WebApi.Extensions
                 .ForMember(dest => dest.ProviderOwnership, opt => opt.MapFrom(src => src.Workshop.ProviderOwnership))
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title))
-                .ForMember(dest => dest.IsPerMonth, opt => opt.MapFrom(src => src.Workshop.IsPerMonth))
+                .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.Workshop.PayRate))
                 .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
                 .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Workshop.MinAge))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Workshop.Price))

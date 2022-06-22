@@ -80,7 +80,7 @@ namespace OutOfSchool.Services.Models
         public string Keywords { get; set; } = string.Empty;
 
         [Required]
-        public bool IsPerMonth { get; set; }
+        public PayRateType PayRate { get; set; }
 
         [Required]
         public Guid ProviderId { get; set; }

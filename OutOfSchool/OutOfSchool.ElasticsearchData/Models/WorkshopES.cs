@@ -34,7 +34,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public decimal Price { get; set; }
 
-        public bool IsPerMonth { get; set; }
+        public PayRateType PayRate { get; set; }
 
         public long AddressId { get; set; }
 

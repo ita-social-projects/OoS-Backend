@@ -11,7 +11,6 @@ using Newtonsoft.Json.Converters;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util.CustomValidation;
 using OutOfSchool.WebApi.Util.JsonTools;
@@ -90,7 +89,7 @@ namespace OutOfSchool.WebApi.Models
         public IEnumerable<string> Keywords { get; set; } = default;
 
         [Required]
-        public bool IsPerMonth { get; set; }
+        public PayRateType PayRate { get; set; }
 
         public float Rating { get; set; }
 
