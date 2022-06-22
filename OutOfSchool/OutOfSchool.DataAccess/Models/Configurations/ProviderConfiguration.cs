@@ -39,11 +39,6 @@ namespace OutOfSchool.Services.Models.Configurations
                 // TODO: use constant from ?? after url validation implementation
                 .HasMaxLength(256);
 
-            builder.Property(x => x.Description)
-                .IsRequired()
-                .HasMaxLength(500)
-                .IsUnicode();
-
             builder.Property(x => x.Director)
                 .HasMaxLength(50)
                 .IsUnicode();
