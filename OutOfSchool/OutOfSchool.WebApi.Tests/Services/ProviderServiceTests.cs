@@ -201,29 +201,6 @@ namespace OutOfSchool.WebApi.Tests.Services
         }
 
         [Test]
-        public async Task GetAll_WhenCalled_ReturnsAllEntities()
-        {
-            // Arrange
-            var expectedCollection = fakeProviders.Select(p => mapper.Map<ProviderDto>(p)).ToList(); // expected collection of dto's to return
-            var fakeRatings = RatingsGenerator.GetAverageRatingForRange(fakeProviders.Select(p => p.Id)); // expected ratings
-            expectedCollection.ForEach(p => p.Rating = fakeRatings.Where(r => r.Key == p.Id)
-                .Select(p => p.Value.Item1).FirstOrDefault()); // seed rating to use in assertion
-            expectedCollection.ForEach(p => p.NumberOfRatings = fakeRatings.Where(r => r.Key == p.Id)
-                .Select(p => p.Value.Item2).FirstOrDefault()); // seed number of ratings to use in assertion
-
-            providersRepositoryMock.Setup(r => r.GetAll()).ReturnsAsync(fakeProviders);
-            ratingService
-                .Setup(r => r.GetAverageRatingForRange(It.IsAny<IEnumerable<Guid>>(), RatingType.Provider))
-                .Returns(fakeRatings);
-
-            // Act
-            var actualProviders = await providerService.GetAll().ConfigureAwait(false);
-
-            // Assert
-            TestHelper.AssertTwoCollectionsEqualByValues(expectedCollection, actualProviders);
-        }
-
-        [Test]
         public async Task GetByFilter_WhenCalled_ReturnsEntities()
         {
             // Arrange

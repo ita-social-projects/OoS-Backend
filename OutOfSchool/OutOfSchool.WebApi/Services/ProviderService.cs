@@ -91,23 +91,6 @@ namespace OutOfSchool.WebApi.Services
             => await CreateProviderWithActionAfterAsync(providerDto).ConfigureAwait(false);
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ProviderDto>> GetAll()
-        {
-            logger.LogDebug("Getting all Providers started.");
-
-            var providers = await providerRepository.GetAll().ConfigureAwait(false);
-
-            logger.LogInformation(!providers.Any()
-                ? "Provider table is empty."
-                : $"All {providers.Count()} records were successfully received from the Provider table");
-
-            var providersDTO = providers.Select(provider => mapper.Map<ProviderDto>(provider)).ToList();
-            PopulateRatings(providersDTO);
-
-            return providersDTO;
-        }
-
-        /// <inheritdoc/>
         public async Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter)
         {
             logger.LogDebug("Getting Providers by filter started.");

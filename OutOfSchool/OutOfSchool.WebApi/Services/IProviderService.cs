@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
@@ -17,12 +16,6 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="providerDto">Provider entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<ProviderDto> Create(ProviderDto providerDto);
-
-        /// <summary>
-        /// Get all entities.
-        /// </summary>
-        /// <returns>List of all providers.</returns>
-        Task<IEnumerable<ProviderDto>> GetAll();
 
         /// <summary>
         /// Get entities from the database that match filter's parameters.
