@@ -14,7 +14,9 @@
       "launchUrl": "Auth/Login",
       "applicationUrl": "http://localhost:5443;https://localhost:5444",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SUPER_ADMIN_EMAIL": "admin@adm.com",
+        "SUPER_ADMIN_PASSWORD": "Qwerty3%"
       }
     },
     "DevContainer": {

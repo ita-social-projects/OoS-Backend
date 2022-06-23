@@ -14,9 +14,10 @@ using Microsoft.Extensions.Hosting;
 
 using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.KeyManagement;
+using OutOfSchool.IdentityServer.Util;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
-
+using OutOfSchool.Services.Models;
 using Serilog;
 
 namespace OutOfSchool.IdentityServer
@@ -41,6 +42,8 @@ namespace OutOfSchool.IdentityServer
             try
             {
                 var host = CreateHostBuilder(args).Build();
+                var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+                                  ?? throw new InvalidOperationException("Environment state cannot be null value");
                 using (var scope = host.Services.CreateScope())
                 {
                     var context = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
@@ -66,12 +69,15 @@ namespace OutOfSchool.IdentityServer
 
                     context.Database.Migrate();
                     identityContext.Database.Migrate();
-                    var manager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
-                    if (!manager.Roles.Any())
+                    if (!roleManager.Roles.Any())
                     {
-                        RolesInit(manager);
+                        RolesInit(roleManager);
                     }
+
+                    AdminUtils.AddSuperAdmin(userManager, environment);
 
                     foreach (var client in StaticConfig.Clients(clientSecret, identityOptions.AdditionalIdentityClients))
                     {
