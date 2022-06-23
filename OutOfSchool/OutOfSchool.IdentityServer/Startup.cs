@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using GrpcServiceServer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MySqlConnector;
+using Microsoft.Extensions.Options;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions;
@@ -118,6 +120,9 @@ namespace OutOfSchool.IdentityServer
             var issuerSection = config.GetSection(IssuerConfig.Name);
             services.Configure<IssuerConfig>(issuerSection);
 
+            // GRPC options
+            services.Configure<GRPCConfig>(config.GetSection(GRPCConfig.Name));
+
             services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
                 .AddConfigurationStore(options =>
                 {
@@ -175,6 +180,7 @@ namespace OutOfSchool.IdentityServer
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
             services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+            services.AddGrpc();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -242,6 +248,16 @@ namespace OutOfSchool.IdentityServer
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
+
+            var gRPCConfig = config.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
+
+            if (gRPCConfig.Enabled)
+            {
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapGrpcService<ProviderAdminServiceGRPC>().RequireHost($"*:{gRPCConfig.Port}");
+                });
+            }
         }
     }
 }

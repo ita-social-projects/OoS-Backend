@@ -12,7 +12,7 @@
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "Auth/Login",
-      "applicationUrl": "http://localhost:5443;https://localhost:5444",
+      "applicationUrl": "http://localhost:5443;https://localhost:5444;https://localhost:5002",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
