@@ -298,6 +298,11 @@ namespace OutOfSchool.WebApi.Services
             {
                 var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
 
+                if (currentWorkshop.Status != dto.Status)
+                {
+                    throw new WorkshopUpdateStatusException("Unable update workshop status. Please use UpdateStatus endpoint.");
+                }
+
                 dto.ImageIds ??= new List<string>();
                 var multipleImageChangingResult = await workshopImagesService.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)
                     .ConfigureAwait(false);
