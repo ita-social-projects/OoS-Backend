@@ -14,10 +14,9 @@ namespace OutOfSchool.IdentityServer.Util
             .WriteTo.Console()
             .CreateLogger();
 
-        internal static void AddSuperAdmin(UserManager<User> userManager, string environment)
+        internal static void AddSuperAdmin(UserManager<User> userManager)
         {
             _ = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _ = environment ?? throw new ArgumentNullException(nameof(environment));
 
             var superAdminExists =
                 userManager.Users.SingleOrDefault(x =>
@@ -25,11 +24,7 @@ namespace OutOfSchool.IdentityServer.Util
 
             if (!superAdminExists)
             {
-                var superAdmin = CreateRequiredSuperAdmin(userManager);
-                if (environment.Equals(Environments.Production, StringComparison.OrdinalIgnoreCase))
-                {
-                    // TODO: send email with essential information by the new admins' template.
-                }
+                CreateRequiredSuperAdmin(userManager);
             }
             else
             {

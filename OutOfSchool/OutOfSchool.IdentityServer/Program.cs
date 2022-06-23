@@ -77,7 +77,7 @@ namespace OutOfSchool.IdentityServer
                         RolesInit(roleManager);
                     }
 
-                    AdminUtils.AddSuperAdmin(userManager, environment);
+                    AdminUtils.AddSuperAdmin(userManager);
 
                     foreach (var client in StaticConfig.Clients(clientSecret, identityOptions.AdditionalIdentityClients))
                     {
