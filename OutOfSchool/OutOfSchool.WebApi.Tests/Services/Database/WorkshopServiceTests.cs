@@ -11,10 +11,12 @@ using MockQueryable.Moq;
 using Moq;
 using Nest;
 using NUnit.Framework;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
@@ -235,6 +237,61 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         #endregion
 
+        #region UpdateStatus
+        [Test]
+        public async Task UpdateStatus_FromOpenToClosed_WhenEntityIsValid_ShouldReturnUpdatedEntity([Random(1, 100, 1)] long classId)
+        {
+            // Arrange
+            var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
+            var changedFirstEntity = WithWorkshop(id);
+
+            SetupUpdate(changedFirstEntity, WithClassEntity(classId));
+            var expectedStatus = WorkshopStatus.Closed;
+
+            // Act
+            var result = await workshopService.UpdateStatus(id, WorkshopStatus.Closed).ConfigureAwait(false);
+
+            // Assert
+            result.Status.Should().BeEquivalentTo(expectedStatus);
+        }
+
+        [Test]
+        public void UpdateStatus_WhenEntityIsNotValid_ShouldReturn_WorkshopUpdateStatusException([Random(1, 100, 1)] long classId)
+        {
+            // Arrange
+            var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
+            var changedFirstEntity = WithWorkshop(id);
+            changedFirstEntity.ProviderOwnership = OwnershipType.State;
+            changedFirstEntity.Status = WorkshopStatus.Closed;
+
+            SetupUpdate(changedFirstEntity, WithClassEntity(classId));
+
+            // Act and Assert
+            workshopService.Invoking(w => w.UpdateStatus(id, WorkshopStatus.Closed)).Should().Throw<WorkshopUpdateStatusException>();
+        }
+
+        [Test]
+        public void Update_WhenTryUpdateStatus_ShouldReturn_WorkshopUpdateStatusException([Random(1, 100, 1)] long classId)
+        {
+            // Arrange
+            var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
+            var changedFirstEntity = WithWorkshop(id);
+            changedFirstEntity.Status = WorkshopStatus.Closed;
+
+            var mockWorkshop = new Workshop()
+            {
+                Id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8"),
+                Status = WorkshopStatus.Open,
+            };
+
+            SetupUpdate(changedFirstEntity, WithClassEntity(classId));
+            workshopRepository.Setup(w => w.GetWithNavigations(id)).ReturnsAsync(mockWorkshop);
+
+            // Act and Assert
+            workshopService.Invoking(w => w.Update(changedFirstEntity.ToModel())).Should().Throw<WorkshopUpdateStatusException>();
+        }
+        #endregion
+        
         #region Delete
 
         [Test]
@@ -362,13 +419,15 @@ namespace OutOfSchool.WebApi.Tests.Services
             mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>())).Returns(emptylistWorkshopCards);
         }
 
-        private void SetupUpdate(Workshop workshop, Class classentity)
+        private void SetupUpdate(Workshop workshop,  Class classentity)
         {
             classRepository.Setup(c => c.GetById(It.IsAny<long>())).ReturnsAsync(classentity);
             workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshop);
             workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
+            var workshopDto = workshop.ToModel();
+            workshopDto.Status = WorkshopStatus.Closed;
             mapper.Setup(m => m.Map<WorkshopDTO>(workshop))
-                .Returns(workshop.ToModel());
+                .Returns(workshopDto);
         }
 
         private void SetupDelete(Workshop workshop)
@@ -469,6 +528,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Email = "email1@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
+                ProviderOwnership = OwnershipType.Private,
+                Status = WorkshopStatus.Open,
                 CoverImageId = "image1",
                 ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
                 DirectionId = 1,
