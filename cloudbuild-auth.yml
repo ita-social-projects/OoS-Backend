@@ -38,6 +38,7 @@ steps:
     - --set-env-vars=Email__AddressFrom=$_SENDER_EMAIL
     - --set-env-vars=ConnectionStringsOverride__DefaultConnection__UserId=oos
     - --set-env-vars=ConnectionStringsOverride__DefaultConnection__Port=$_SQL_PORT
+    - --set-env-vars=AppDefaults__Version=$SHORT_SHA
     - --set-secrets=ConnectionStringsOverride__DefaultConnection__Password=$_DB_PASS,Email__SendGridKey=$_SENDGRID_KEY
     # Disable http2 because prod will be http1.1 for now
     - --no-use-http2
