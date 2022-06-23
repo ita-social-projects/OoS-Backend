@@ -19,18 +19,18 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public async Task<ProviderAdmin> GetByIdAsync(string id, Guid providerId)
+        public async Task<ProviderAdmin> GetByIdAsync(string userId, Guid providerId)
         {
             return await db.ProviderAdmins
                 .Where(pa => pa.ProviderId == providerId)
-                .SingleOrDefaultAsync(pa => pa.UserId == id);
+                .SingleOrDefaultAsync(pa => pa.UserId == userId);
         }
 
         public async Task<bool> IsExistProviderAdminDeputyWithUserIdAsync(Guid providerId, string userId)
         {
             var providerAdmin = await GetByIdAsync(userId, providerId);
 
-            return providerAdmin != null && providerAdmin.IsDeputy == true;
+            return providerAdmin != null && providerAdmin.IsDeputy;
         }
 
         public async Task<bool> IsExistProviderWithUserIdAsync(string userId)
