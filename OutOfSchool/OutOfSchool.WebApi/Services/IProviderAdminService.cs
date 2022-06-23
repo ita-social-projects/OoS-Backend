@@ -28,5 +28,7 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<string>> GetProviderAdminsIds(Guid workshopId);
 
         Task<IEnumerable<string>> GetProviderDeputiesIds(Guid providerId);
+
+        Task<IEnumerable<WorkshopCard>> GetWorkshopsThatProviderAdminCanManage(string userId, bool isProviderDeputy);
     }
 }
