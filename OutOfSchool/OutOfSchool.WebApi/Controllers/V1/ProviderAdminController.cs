@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return Ok(providerAdminDto);
             }
 
-            return StatusCode((int)response.HttpStatusCode);
+            return StatusCode((int)response.HttpStatusCode, response.Message);
         }
 
         /// <summary>

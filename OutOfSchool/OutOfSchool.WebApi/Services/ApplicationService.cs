@@ -299,6 +299,40 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<IEnumerable<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false)
+        {
+            logger.LogInformation($"Getting Applications by ProviderAdmin userId started. Looking ProviderAdmin userId = {userId}.");
+
+            FilterNullValidation(filter);
+
+            if (providerId == Guid.Empty)
+            {
+                FillProviderAdminInfo(userId, out providerId, out isDeputy);
+            }
+
+            List<Guid> workshopIds = new List<Guid>();
+
+            if (!isDeputy)
+            {
+                workshopIds = (await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false)).ToList();
+            }
+
+            Expression<Func<Workshop, bool>> workshopFilter = w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
+            var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
+
+            Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
+            var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
+
+            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
+
+            logger.LogInformation(!filteredApplications.Any()
+                ? $"There is no applications in the Db with AdminProvider Id = {userId}."
+                : $"Successfully got Applications with AdminProvider Id = {userId}.");
+
+            return mapper.Map<List<ApplicationDto>>(filteredApplications);
+        }
+
+        /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status)
         {
             logger.LogInformation($"Getting Applications by Status started. Looking Status = {status}.");
@@ -585,6 +619,21 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return sortExpression;
+        }
+
+        private void FillProviderAdminInfo(string userId, out Guid providerId, out bool isDeputy)
+        {
+            var providerAdmin = providerAdminService.GetById(userId).GetAwaiter().GetResult();
+
+            if (providerAdmin == null)
+            {
+                logger.LogInformation($"ProviderAdmin with userId = {userId} not exists.");
+
+                throw new ArgumentException(localizer[$"There is no providerAdmin with userId = {userId}"]);
+            }
+
+            providerId = providerAdmin.ProviderId;
+            isDeputy = providerAdmin.IsDeputy;
         }
     }
 }

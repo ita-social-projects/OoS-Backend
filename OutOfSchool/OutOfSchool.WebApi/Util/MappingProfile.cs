@@ -231,6 +231,8 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<AchievementCreateDTO, Achievement>()
                 .ForMember(dest => dest.Children, opt => opt.Ignore())
                 .ForMember(dest => dest.Teachers, opt => opt.Ignore());
+
+            CreateMap<ProviderAdmin, ProviderAdminProviderRelationDto>();
         }
     }
 }
