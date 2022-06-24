@@ -110,6 +110,8 @@ namespace OutOfSchool.WebApi.Models
 
         public long? InstitutionStatusId { get; set; } = default;
 
+        public Guid? InstitutionId { get; set; }
+
         public InstitutionDto Institution { get; set; }
 
         [Required]
