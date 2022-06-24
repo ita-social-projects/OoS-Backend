@@ -56,7 +56,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <param name="id"> Parent's id. If null will be return entities for the main level (with Category equal O or K). </param>
         /// <returns> List of chaild entities.</returns>
         [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CodeficatorDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CodeficatorDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

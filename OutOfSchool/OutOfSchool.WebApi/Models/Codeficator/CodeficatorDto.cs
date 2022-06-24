@@ -20,9 +20,5 @@ namespace OutOfSchool.WebApi.Models.Codeficator
         public double Latitude { get; set; }
 
         public double Longitude { get; set; }
-
-        public ulong GeoHash { get; set; }
-
-        public bool NeedCheck { get; set; }
     }
 }

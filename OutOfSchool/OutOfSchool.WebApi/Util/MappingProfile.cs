@@ -120,7 +120,7 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Institution, InstitutionDto>().ReverseMap();
             CreateMap<InstitutionFieldDescription, InstitutionFieldDescriptionDto>().ReverseMap();
 
-            CreateMap<Codeficator, CodeficatorDto>().ReverseMap();
+            CreateMap<Codeficator, CodeficatorDto>();
             CreateMap<Codeficator, CodeficatorWithParentDto>();
 
             CreateMap<Notification, NotificationDto>().ReverseMap()
