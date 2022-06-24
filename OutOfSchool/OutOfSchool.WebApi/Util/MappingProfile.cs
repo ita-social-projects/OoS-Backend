@@ -82,6 +82,7 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<Provider, ProviderDto>()
                  .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
                  .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
+                 .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
                  .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => src.EdrpouIpn.ToString()))
                  .ForMember(dest => dest.Rating, opt => opt.Ignore())
                  .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
@@ -91,6 +92,7 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => long.Parse(src.EdrpouIpn)))
                  .ForMember(dest => dest.Workshops, opt => opt.Ignore())
                  .ForMember(dest => dest.User, opt => opt.Ignore())
+                 .ForMember(dest => dest.Institution, opt => opt.Ignore())
                  .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
                  .ForMember(dest => dest.Images, opt => opt.Ignore())
                  .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
