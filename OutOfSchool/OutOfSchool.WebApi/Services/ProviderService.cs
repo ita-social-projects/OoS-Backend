@@ -255,16 +255,35 @@ namespace OutOfSchool.WebApi.Services
             }
             else if (action == NotificationAction.Update)
             {
-                if (provider.Status == ProviderStatus.Pending || provider.LicenseStatus == ProviderLicenseStatus.Pending)
+                if (additionalData != null
+                    && additionalData.TryGetValue("Status", out var statusValue)
+                    && Enum.TryParse(statusValue, out ProviderStatus status))
                 {
-                    // TODO: create a NEW approve request to District admin
+                    if (status == ProviderStatus.Pending)
+                    {
+                        // TODO: create a NEW approve request to District admin
+                    }
+                    else if (status == ProviderStatus.Editing
+                        || status == ProviderStatus.Approved)
+                    {
+                        recipientIds.Add(provider.UserId);
+                        recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                    }
                 }
-                else if (provider.Status == ProviderStatus.Editing
-                    || provider.Status == ProviderStatus.Approved
-                    || provider.LicenseStatus == ProviderLicenseStatus.Approved)
+
+                if (additionalData != null
+                    && additionalData.TryGetValue("LicenseStatus", out var licenseStatusValue)
+                    && Enum.TryParse(licenseStatusValue, out ProviderLicenseStatus licenseStatus))
                 {
-                    recipientIds.Add(provider.UserId);
-                    recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                    if (licenseStatus == ProviderLicenseStatus.Pending)
+                    {
+                        // TODO: create a NEW approve request to District admin
+                    }
+                    else if (licenseStatus == ProviderLicenseStatus.Approved)
+                    {
+                        recipientIds.Add(provider.UserId);
+                        recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                    }
                 }
             }
 
