@@ -14,6 +14,7 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Common;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 
@@ -44,8 +45,8 @@ namespace OutOfSchool.WebApi.Controllers.V2
         /// Get Providers that match filter's parameters.
         /// </summary>
         /// <param name="filter">Entity that represents searching parameters.</param>
-        /// <returns>List of all Providers.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderDto>))]
+        /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]

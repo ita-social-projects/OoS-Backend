@@ -189,11 +189,12 @@ namespace OutOfSchool.WebApi.Services
 
             if (provider is null)
             {
-                logger.LogError($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
+                logger.LogInformation($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
 
                 return null;
             }
 
+            // TODO: validate if current user has permission to update the provider status
             provider.Status = dto.Status;
             await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
@@ -212,21 +213,25 @@ namespace OutOfSchool.WebApi.Services
 
             if (provider is null)
             {
-                logger.LogError($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
+                logger.LogInformation($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
 
                 return null;
             }
 
             if (string.IsNullOrEmpty(provider.License) && dto.LicenseStatus != ProviderLicenseStatus.NotProvided)
             {
+                logger.LogInformation($"Provider(id) {provider.Id} license is not provided. It cannot be approved. UserId: {userId}");
                 throw new ArgumentException("Provider license is not provided. It cannot be approved.");
             }
 
             if (!string.IsNullOrEmpty(provider.License) && dto.LicenseStatus == ProviderLicenseStatus.NotProvided)
             {
+                logger.LogInformation("Cannot set NotProvided license status when license is provided. " +
+                    $"Provider: {provider.Id}. License: {provider.License}. UserId: {userId}");
                 throw new ArgumentException("Cannot set NotProvided license status when license is provided.");
             }
 
+            // TODO: validate if current user has permission to update the provider status
             provider.LicenseStatus = dto.LicenseStatus;
             await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
 
