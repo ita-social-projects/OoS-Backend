@@ -1,0 +1,108 @@
+﻿@font-face {
+  font-family: "Innerspace";
+  src:
+      local("Innerspace"),
+      url(.fonts/Innerspace/Innerspace-normal.ttf) format("truetype"),
+      url(.fonts/Innerspace/Innerspace-bold.ttf) format("truetype");
+  }
+  html, body {
+      height: 100%;
+  }
+  body {
+      margin: 0;
+      font-family: "Open Sans", sans-serif;
+      font-size: 0.8125rem;
+      line-height: 1.125rem;
+      background-color: #F8F8F8;
+      color: #333333;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+  font-family: "Innerspace";
+  color: #000000;
+  margin: 0;
+  }
+  h1 {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  }
+  h2 {
+  font-size: 1.5rem;
+  line-height: 1.6875rem;
+  }
+  h3 {
+  font-size: 1.125rem;
+  line-height: 1.25rem;
+  }
+  h4 {
+  font-size: 1rem;
+  line-height: 1.125rem;
+  }
+  h5 {
+  font-size: 0.8125rem;
+  line-height: 0.9375rem;
+  }
+  h6 {
+  font-size: 0.6875rem;
+  line-height: 0.9375rem;
+  }
+
+  a {
+  text-decoration: none;
+  color: inherit;
+  }
+  .header__logo {
+      width: 100%;
+  }
+  .container {
+      margin: 0 auto;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+  }
+  .title {
+      margin-top: 36px;
+      font-family: 'Innerspace', sans-serif;
+      font-style: normal;
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 20px;
+  }
+  .text {
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 18px;
+      color: #333333;
+  }
+ .password {
+      padding: 24px 112px;
+      background-color: hsla(235, 94%, 60%, 0.1);
+      border-radius: 5px;
+      color: #3849F9;
+      font-family: 'Innerspace', sans-serif;
+     letter-spacing: 7px;
+     font-weight: 700;
+      font-size: 18px;
+      line-height: 20px;
+ }
+ .footer {
+      background-color: #EBEBEB;
+      padding: 16px 34px;
+      bottom: 0;
+      display: flex;
+      justify-content: space-between;
+  }
+  .min-logo {
+      height: 18px;
+      margin-right: 20px;
+  }
+  .wrapper {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+  }
+  main {
+      flex: 1 1 auto;
+  }

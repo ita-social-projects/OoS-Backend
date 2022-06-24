@@ -406,7 +406,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Id = Guid.NewGuid(),
                 Title = "Title6",
                 Phone = "1111111111",
-                Description = "Desc6",
+                WorkshopDescriptionItems = new[]
+                {
+                    FakeWorkshopDescriptionItem(),
+                    FakeWorkshopDescriptionItem(),
+                },
                 Price = 6000,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
@@ -471,7 +475,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title1",
                     Phone = "1111111111",
-                    Description = "Desc1",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 1000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -497,7 +504,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title2",
                     Phone = "1111111111",
-                    Description = "Desc2",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                        FakeWorkshopDescriptionItem(),
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 2000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -523,7 +535,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title3",
                     Phone = "1111111111",
-                    Description = "Desc3",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                        FakeWorkshopDescriptionItem(),
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 3000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -545,7 +562,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title4",
                     Phone = "1111111111",
-                    Description = "Desc4",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 4000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -567,7 +588,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title5",
                     Phone = "1111111111",
-                    Description = "Desc5",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 5000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -610,6 +634,17 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             }
 
             return eSlist;
+        }
+
+        private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem()
+        {
+            var id = Guid.NewGuid();
+            return new WorkshopDescriptionItemDto
+            {
+                Id = id,
+                SectionName = "test heading",
+                Description = $"test description text sentence for id: {id.ToString()}",
+            };
         }
     }
 }

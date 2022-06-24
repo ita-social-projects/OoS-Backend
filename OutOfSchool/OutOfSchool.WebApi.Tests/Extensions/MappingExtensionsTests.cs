@@ -14,6 +14,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Extensions
@@ -244,9 +245,17 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Id = Guid.NewGuid(),
                 Title = "Title5",
                 Phone = "1111111111",
-                Description = "Desc5",
+                WorkshopDescriptionItems = new[]
+                {
+                    new WorkshopDescriptionItemDto
+                    {
+                        Id = Guid.NewGuid(),
+                        SectionName = "test heading1",
+                        Description = "test sentence of description1",
+                    },
+                },
                 Price = 5000,
-                IsPerMonth = true,
+                PayRate = OutOfSchool.Common.Enums.PayRateType.Classes,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
                 DisabilityOptionsDesc = "Desc5",
@@ -318,7 +327,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Assert.AreEqual(workshopDto.Id, result.WorkshopId);
                 Assert.AreEqual(workshopDto.Title, result.Title);
                 Assert.AreEqual(workshopDto.Price, result.Price);
-                Assert.AreEqual(workshopDto.IsPerMonth, result.IsPerMonth);
+                Assert.AreEqual(workshopDto.PayRate, result.PayRate);
                 Assert.AreEqual(workshopDto.ProviderId, result.ProviderId);
                 Assert.AreEqual(workshopDto.ProviderTitle, result.ProviderTitle);
                 Assert.AreEqual(workshopDto.MinAge, result.MinAge);
@@ -381,7 +390,6 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                 Assert.That(providerDto.Email, Is.EqualTo(provider.Email));
                 Assert.That(providerDto.Facebook, Is.EqualTo(provider.Facebook));
                 Assert.That(providerDto.Instagram, Is.EqualTo(provider.Instagram));
-                Assert.That(providerDto.Description, Is.EqualTo(provider.Description));
                 Assert.That(providerDto.EdrpouIpn, Is.EqualTo(provider.EdrpouIpn.ToString()));
                 Assert.That(providerDto.Director, Is.EqualTo(provider.Director));
                 Assert.That(providerDto.DirectorDateOfBirth, Is.EqualTo(provider.DirectorDateOfBirth));

@@ -8,7 +8,7 @@ namespace OutOfSchool.WebApi.Models
         public Guid Id { get; set; }
 
         [MaxLength(200)]
-        public string Name { get; set; }
+        public string SectionName { get; set; }
 
         [MaxLength(2000)]
         public string Description { get; set; }

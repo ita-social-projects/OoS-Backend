@@ -17,6 +17,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64)
                 .HasAnnotation("ProductVersion", "5.0.11");
 
+            modelBuilder.Entity("AchievementChild", b =>
+                {
+                    b.Property<Guid>("AchievementsId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<Guid>("ChildrenId")
+                        .HasColumnType("binary(16)");
+
+                    b.HasKey("AchievementsId", "ChildrenId");
+
+                    b.HasIndex("ChildrenId");
+
+                    b.ToTable("AchievementChild");
+                });
+
             modelBuilder.Entity("DirectionInstitutionHierarchy", b =>
                 {
                     b.Property<long>("DirectionsId")
@@ -175,6 +190,109 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Achievement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<DateTime>("AchievementDate")
+                        .HasColumnType("date");
+
+                    b.Property<long>("AchievementTypeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<Guid>("WorkshopId")
+                        .HasColumnType("binary(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AchievementTypeId");
+
+                    b.HasIndex("WorkshopId");
+
+                    b.ToTable("Achievements");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.AchievementTeacher", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("AchievementId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AchievementId");
+
+                    b.ToTable("AchievementTeachers");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.AchievementType", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AchievementTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Title = "Реципієнти міжнародних грантів"
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            Title = "Призери міжнародних культурних конкурсів та фестивалів"
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            Title = "Соціально активні категорії учнів"
+                        },
+                        new
+                        {
+                            Id = 6L,
+                            Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти"
+                        },
+                        new
+                        {
+                            Id = 7L,
+                            Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів"
+                        });
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Address", b =>
@@ -888,12 +1006,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<string>("CoverImageId")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .IsUnicode(true)
-                        .HasColumnType("varchar(500)");
-
                     b.Property<string>("Director")
                         .HasMaxLength(50)
                         .IsUnicode(true)
@@ -1379,11 +1491,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("DepartmentId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
                     b.Property<long>("DirectionId")
                         .HasColumnType("bigint");
 
@@ -1407,9 +1514,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<Guid?>("InstitutionHierarchyId")
                         .HasColumnType("binary(16)");
 
-                    b.Property<bool>("IsPerMonth")
-                        .HasColumnType("tinyint(1)");
-
                     b.Property<string>("Keywords")
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
@@ -1418,6 +1522,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("int");
 
                     b.Property<int>("MinAge")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PayRate")
                         .HasColumnType("int");
 
                     b.Property<string>("Phone")
@@ -1469,6 +1576,32 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("Workshops");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDescriptionItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<string>("SectionName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<Guid>("WorkshopId")
+                        .HasColumnType("binary(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkshopId");
+
+                    b.ToTable("WorkshopDescriptionItems");
+                });
+
             modelBuilder.Entity("ProviderAdminWorkshop", b =>
                 {
                     b.Property<Guid>("ManagedWorkshopsId")
@@ -1482,6 +1615,21 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.HasIndex("ProviderAdminsUserId");
 
                     b.ToTable("ProviderAdminWorkshop");
+                });
+
+            modelBuilder.Entity("AchievementChild", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Achievement", null)
+                        .WithMany()
+                        .HasForeignKey("AchievementsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Child", null)
+                        .WithMany()
+                        .HasForeignKey("ChildrenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DirectionInstitutionHierarchy", b =>
@@ -1548,6 +1696,36 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Achievement", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.AchievementType", "AchievementType")
+                        .WithMany()
+                        .HasForeignKey("AchievementTypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
+                        .WithMany()
+                        .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AchievementType");
+
+                    b.Navigation("Workshop");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.AchievementTeacher", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Achievement", "Achievement")
+                        .WithMany("Teachers")
+                        .HasForeignKey("AchievementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Achievement");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Application", b =>
@@ -1951,6 +2129,17 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Provider");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.WorkshopDescriptionItem", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.Workshop", "Workshop")
+                        .WithMany("WorkshopDescriptionItems")
+                        .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Workshop");
+                });
+
             modelBuilder.Entity("ProviderAdminWorkshop", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Workshop", null)
@@ -1964,6 +2153,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasForeignKey("ProviderAdminsUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.Achievement", b =>
+                {
+                    b.Navigation("Teachers");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.ChatWorkshop.ChatRoomWorkshop", b =>
@@ -2035,6 +2229,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Images");
 
                     b.Navigation("Teachers");
+
+                    b.Navigation("WorkshopDescriptionItems");
                 });
 #pragma warning restore 612, 618
         }

@@ -5,9 +5,11 @@ using OutOfSchool.Common.Enums;
 
 namespace OutOfSchool.ElasticsearchData.Models
 {
+    // TODO: check Nested attribute
     public class WorkshopES
     {
-        // TODO: check Nested attribute
+        public const string TitleKeyword = "title.keyword";
+
         [Keyword]
         public Guid Id { get; set; }
 
@@ -24,7 +26,7 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public OwnershipType ProviderOwnership { get; set; }
 
-        public string Description { get; set; }
+        public string Description { get; set; } // Sum of all WorkshopDescriptionItems (SectionName + Description)
 
         public int MinAge { get; set; }
 
@@ -32,15 +34,21 @@ namespace OutOfSchool.ElasticsearchData.Models
 
         public decimal Price { get; set; }
 
-        public bool IsPerMonth { get; set; }
+        public PayRateType PayRate { get; set; }
 
         public long AddressId { get; set; }
 
         public AddressES Address { get; set; }
 
+        [Keyword]
         public Guid? InstitutionHierarchyId { get; set; }
 
         public string InstitutionHierarchy { get; set; }
+
+        [Keyword]
+        public Guid? InstitutionId { get; set; }
+
+        public string Institution { get; set; }
 
         public long DirectionId { get; set; }
 

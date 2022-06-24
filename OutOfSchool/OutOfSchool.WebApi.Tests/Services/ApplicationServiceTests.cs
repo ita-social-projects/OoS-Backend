@@ -225,7 +225,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.GetAllByWorkshop(Guid.NewGuid(), filter).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEmpty();
+            result.Entities.Should().BeEmpty();
         }
 
         [Test]
@@ -276,7 +276,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.GetAllByProvider(Guid.NewGuid(), filter).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEmpty();
+            result.Entities.Should().BeEmpty();
         }
 
         [Test]

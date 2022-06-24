@@ -44,10 +44,6 @@ namespace OutOfSchool.Services.Models
         [MaxLength(Constants.UnifiedUrlLength)]
         public string Instagram { get; set; } = string.Empty;
 
-        [MaxLength(500)]
-        [Required(ErrorMessage = "Description is required")]
-        public string Description { get; set; }
-
         [Required(ErrorMessage = "EDRPOU/IPN code is required")]
         [RegularExpression(
             @"^(\d{8}|\d{10})$",

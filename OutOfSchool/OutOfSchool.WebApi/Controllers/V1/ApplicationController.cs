@@ -126,7 +126,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.ApplicationRead)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -144,7 +144,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             var applications = await applicationService.GetAllByParent(id, filter).ConfigureAwait(false);
 
-            if (!applications.Any())
+            if (!applications.Entities.Any())
             {
                 return NoContent();
             }
@@ -163,14 +163,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.ApplicationRead)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("{property:regex(^provider$|^workshop$)}/{id}")]
         public async Task<IActionResult> GetByPropertyId(string property, Guid id, [FromQuery] ApplicationFilter filter)
         {
-            IEnumerable<ApplicationDto> applications = default;
+            SearchResult<ApplicationDto> applications = default;
 
             try
             {
@@ -188,7 +188,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(ex.Message);
             }
 
-            if (!applications.Any())
+            if (!applications.Entities.Any())
             {
                 return NoContent();
             }
@@ -334,7 +334,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 .ConfigureAwait(false));
         }
 
-        private async Task<IEnumerable<ApplicationDto>> GetByWorkshopId(Guid id, ApplicationFilter filter)
+        private async Task<SearchResult<ApplicationDto>> GetByWorkshopId(Guid id, ApplicationFilter filter)
         {
             var workshop = await workshopService.GetById(id).ConfigureAwait(false);
 
@@ -350,7 +350,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return applications;
         }
 
-        private async Task<IEnumerable<ApplicationDto>> GetByProviderId(Guid id, ApplicationFilter filter)
+        private async Task<SearchResult<ApplicationDto>> GetByProviderId(Guid id, ApplicationFilter filter)
         {
             var provider = await providerService.GetById(id).ConfigureAwait(false);
 

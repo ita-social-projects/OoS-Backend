@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "GrpcService";
+
+package ProviderAdmin;
+
+service GRPCProviderAdmin {
+  rpc CreateProviderAdmin (CreateProviderAdminRequest) returns (CreateProviderAdminReply);
+}
+
+message CreateProviderAdminRequest {
+  string FirstName = 1;
+  string LastName = 2;
+  string MiddleName = 3;
+  string Email = 4;
+  string PhoneNumber = 5;
+  google.protobuf.Timestamp CreatingTime = 6;
+  string ReturnUrl = 7;
+  string ProviderId = 8;
+  string UserId = 9;
+  bool IsDeputy = 10;
+  repeated string ManagedWorkshopIds = 11;
+  string RequestId = 12;
+}
+
+message CreateProviderAdminReply {
+  string FirstName = 1;
+  string LastName = 2;
+  string MiddleName = 3;
+  string Email = 4;
+  string PhoneNumber = 5;
+  google.protobuf.Timestamp CreatingTime = 6;
+  string ReturnUrl = 7;
+  string ProviderId = 8;
+  string UserId = 9;
+  bool IsDeputy = 10;
+  repeated string ManagedWorkshopIds = 11;
+  bool IsSuccess = 12;
+}

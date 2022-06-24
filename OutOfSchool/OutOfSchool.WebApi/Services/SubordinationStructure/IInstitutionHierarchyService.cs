@@ -27,7 +27,7 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         Task<List<InstitutionHierarchyDto>> GetAll();
 
         /// <summary>
-        /// Get all children of InstitutionHierarchy objects from DB.
+        /// Get all children of InstitutionHierarchy objects using Redis.
         /// </summary>
         /// <param name="parentId">Key in the table for parent field.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
@@ -35,12 +35,30 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         Task<List<InstitutionHierarchyDto>> GetChildren(Guid? parentId);
 
         /// <summary>
+        /// Get all children of InstitutionHierarchy objects from DB.
+        /// </summary>
+        /// <param name="parentId">Key in the table for parent field.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
+        Task<List<InstitutionHierarchyDto>> GetChildrenFromDatabase(Guid? parentId);
+
+        /// <summary>
+        /// Get all parents of InstitutionHierarchy objects using Redis.
+        /// </summary>
+        /// <param name="childId">Key in the table for child field.</param>
+        /// <param name="includeCurrentLevel">Set 'true' if there is a need to include current child's level to result.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
+        Task<List<InstitutionHierarchyDto>> GetParents(Guid childId, bool includeCurrentLevel);
+
+        /// <summary>
         /// Get all parents of InstitutionHierarchy objects from DB.
         /// </summary>
         /// <param name="childId">Key in the table for child field.</param>
+        /// <param name="includeCurrentLevel">Set 'true' if there is a need to include current child's level to result.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
-        Task<List<InstitutionHierarchyDto>> GetParents(Guid childId);
+        Task<List<InstitutionHierarchyDto>> GetParentsFromDatabase(Guid childId, bool includeCurrentLevel);
 
         /// <summary>
         /// To recieve the InstitutionHierarchy object with define id.
@@ -51,13 +69,22 @@ namespace OutOfSchool.WebApi.Services.SubordinationStructure
         Task<InstitutionHierarchyDto> GetById(Guid id);
 
         /// <summary>
-        /// Get all InstitutionHierarchy objects by institution id and level from DB.
+        /// Get all InstitutionHierarchy objects by institution id and level using Redis.
         /// </summary>
         /// <param name="institutionId">Key in the table for Institution.</param>
         /// <param name="hierarchyLevel">Hierarchy level for InstitutionHierarchy objects.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
         Task<List<InstitutionHierarchyDto>> GetAllByInstitutionAndLevel(Guid institutionId, int hierarchyLevel);
+
+        /// <summary>
+        /// Get all InstitutionHierarchy objects by institution id and level from DB.
+        /// </summary>
+        /// <param name="institutionId">Key in the table for Institution.</param>
+        /// <param name="hierarchyLevel">Hierarchy level for InstitutionHierarchy objects.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a List of <see cref="InstitutionHierarchyDto"/> that were found.</returns>
+        Task<List<InstitutionHierarchyDto>> GetAllByInstitutionAndLevelFromDatabase(Guid institutionId, int hierarchyLevel);
 
         /// <summary>
         /// To Update our object in DB.

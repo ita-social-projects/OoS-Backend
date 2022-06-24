@@ -88,6 +88,43 @@ namespace OutOfSchool.Services.Extensions
                     Description = "provider admin permissions",
                 }
                 );
+
+            builder.Entity<AchievementType>().HasData(
+                new AchievementType
+                {
+                    Id = 1L,
+                    Title = "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)",
+                },
+                new AchievementType
+                {
+                    Id = 2L,
+                    Title = "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів",
+                },
+                new AchievementType
+                {
+                    Id = 3L,
+                    Title = "Реципієнти міжнародних грантів",
+                },
+                new AchievementType
+                {
+                    Id = 4L,
+                    Title = "Призери міжнародних культурних конкурсів та фестивалів",
+                },
+                new AchievementType
+                {
+                    Id = 5L,
+                    Title = "Соціально активні категорії учнів",
+                },
+                new AchievementType
+                {
+                    Id = 6L,
+                    Title = "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти",
+                },
+                new AchievementType
+                {
+                    Id = 7L,
+                    Title = "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів",
+                });
         }
 
         /// <summary>

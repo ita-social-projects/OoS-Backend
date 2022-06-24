@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using AutoMapper;
+using Google.Protobuf.WellKnownTypes;
+using GrpcService;
+using OutOfSchool.Common.Models;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
@@ -49,7 +53,8 @@ namespace OutOfSchool.WebApi.Util
                     return dateTimeRanges;
                 }))
                 .ForMember(dest => dest.Images, opt => opt.Ignore())
-                .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+                .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+                .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore());
 
             CreateMap<Workshop, WorkshopDTO>()
                 .ForMember(
@@ -58,18 +63,27 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Direction, opt => opt.MapFrom(src => src.Direction.Title))
                 .ForMember(dest => dest.ImageIds, opt => opt.MapFrom(src => src.Images.Select(x => x.ExternalStorageId)))
                 .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions));
+                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions))
+                .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
+                .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title));
+
+            CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>().ReverseMap();
 
             CreateMap<Address, AddressDto>().ReverseMap();
 
             CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>();
             CreateMap<BlockedProviderParent, BlockedProviderParentDto>().ReverseMap();
 
-            CreateMap<ProviderSectionItem, ProviderSectionItemDto>().ReverseMap();
+            CreateMap<ProviderSectionItem, ProviderSectionItemDto>().ReverseMap()
+                .ForMember(
+                    dest =>
+                    dest.Name, opt =>
+                    opt.MapFrom(psi => psi.SectionName));
 
             CreateMap<Provider, ProviderDto>()
                  .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
                  .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
+                 .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.Institution))
                  .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => src.EdrpouIpn.ToString()))
                  .ForMember(dest => dest.Rating, opt => opt.Ignore())
                  .ForMember(dest => dest.NumberOfRatings, opt => opt.Ignore())
@@ -79,6 +93,7 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => long.Parse(src.EdrpouIpn)))
                  .ForMember(dest => dest.Workshops, opt => opt.Ignore())
                  .ForMember(dest => dest.User, opt => opt.Ignore())
+                 .ForMember(dest => dest.Institution, opt => opt.Ignore())
                  .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
                  .ForMember(dest => dest.Images, opt => opt.Ignore())
                  .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
@@ -101,7 +116,9 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                 .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
                 .ForMember(dest => dest.DirectionId, opt => opt.MapFrom(src => src.Direction.Id))
-                .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)));
+                .ForMember(dest => dest.DirectionsId, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions.Select(x => x.Id)))
+                .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
+                .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title));
 
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
@@ -146,7 +163,16 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Rating, opt => opt.Ignore())
                 .ForMember(dest => dest.Direction, opt => opt.Ignore())
                 .ForMember(dest => dest.InstitutionHierarchy, opt => opt.MapFrom(src => src.InstitutionHierarchy.Title))
-                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions));
+                .ForMember(dest => dest.Directions, opt => opt.MapFrom(src => src.InstitutionHierarchy.Directions))
+                .ForMember(dest => dest.InstitutionId, opt => opt.MapFrom(src => src.InstitutionHierarchy.InstitutionId))
+                .ForMember(dest => dest.Institution, opt => opt.MapFrom(src => src.InstitutionHierarchy.Institution.Title))
+                .ForMember(
+                    dest => dest.Description,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.WorkshopDescriptionItems
+                                .Aggregate(string.Empty, (accumulator, wdi) =>
+                                    $"{accumulator}{wdi.SectionName}{SEPARATOR}{wdi.Description}{SEPARATOR}")));
 
 #warning The next mapping is here to test UI Admin features. Will be removed or refactored
             CreateMap<ShortUserDto, AdminDto>();
@@ -165,6 +191,36 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<DepartmentDto, Department>().ReverseMap();
             CreateMap<DirectionDto, Direction>().ReverseMap();
 
+            CreateMap<CreateProviderAdminDto, CreateProviderAdminRequest>()
+                .ForMember(c => c.CreatingTime, m => m.MapFrom(c => Timestamp.FromDateTimeOffset(c.CreatingTime)))
+                .ForMember(c => c.ProviderId, m => m.MapFrom(c => c.ProviderId.ToString()))
+                .ForMember(c => c.ManagedWorkshopIds, m => m.MapFrom((dto, entity) =>
+                {
+                    var managedWorkshopIds = new List<string>();
+
+                    foreach (var item in dto.ManagedWorkshopIds)
+                    {
+                        managedWorkshopIds.Add(item.ToString());
+                    }
+
+                    return managedWorkshopIds;
+                }));
+
+            CreateMap<CreateProviderAdminReply, CreateProviderAdminDto>()
+                .ForMember(c => c.CreatingTime, m => m.MapFrom(c => c.CreatingTime.ToDateTimeOffset()))
+                .ForMember(c => c.ProviderId, m => m.MapFrom(c => Guid.Parse(c.ProviderId)))
+                .ForMember(c => c.ManagedWorkshopIds, opt => opt.MapFrom((dto, entity) =>
+                {
+                    var managedWorkshopIds = new List<Guid>();
+
+                    foreach (var item in dto.ManagedWorkshopIds)
+                    {
+                        managedWorkshopIds.Add(Guid.Parse(item));
+                    }
+
+                    return managedWorkshopIds;
+                }));
+
             CreateMap<User, ShortUserDto>();
 
             CreateMap<ProviderChangesLogRequest, ChangesLogFilter>()
@@ -172,6 +228,13 @@ namespace OutOfSchool.WebApi.Util
 
             CreateMap<ApplicationChangesLogRequest, ChangesLogFilter>()
                 .AfterMap((src, dest) => dest.EntityType = "Application");
+            CreateMap<AchievementDto, Achievement>().ReverseMap();
+
+            CreateMap<AchievementTeacherDto, AchievementTeacher>().ReverseMap();
+
+            CreateMap<AchievementCreateDTO, Achievement>()
+                .ForMember(dest => dest.Children, opt => opt.Ignore())
+                .ForMember(dest => dest.Teachers, opt => opt.Ignore());
         }
     }
 }

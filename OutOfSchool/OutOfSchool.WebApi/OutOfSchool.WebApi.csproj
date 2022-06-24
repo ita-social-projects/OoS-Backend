@@ -12,7 +12,14 @@
     <CodeAnalysisRuleSet>..\StyleCopAnalyzersRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+	  <Protobuf Include="..\OutOfSchool.GRPC\Protos\ProviderAdmin.proto" GrpcServices="Client" />
     <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.20.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.45.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.45.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="H3Lib" Version="3.7.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.17" />
@@ -62,6 +69,7 @@
     <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
     <ProjectReference Include="..\OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj" />
     <ProjectReference Include="..\OutOfSchool.ElasticsearchData\OutOfSchool.ElasticsearchData.csproj" />
+    <ProjectReference Include="..\OutOfSchool.gRPC\OutOfSchool.GRPC.csproj" />
     <ProjectReference Include="..\OutOfSchool.Redis\OutOfSchool.Redis.csproj" />
   </ItemGroup>
   <ItemGroup>
