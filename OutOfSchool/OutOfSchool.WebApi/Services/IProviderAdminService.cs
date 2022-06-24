@@ -29,6 +29,19 @@ namespace OutOfSchool.WebApi.Services
 
         Task<IEnumerable<string>> GetProviderDeputiesIds(Guid providerId);
 
+        /// <summary>
+        /// Get workshops that provider admin can manage.
+        /// </summary>
+        /// <param name="userId">Key in the table.</param>
+        /// <param name="isProviderDeputy">Is providerAdmin deputy or no.</param>
+        /// <returns>List of the workshops that providerAdmin can mansge.</returns>
         Task<IEnumerable<WorkshopCard>> GetWorkshopsThatProviderAdminCanManage(string userId, bool isProviderDeputy);
+
+        /// <summary>
+        /// Get entity by it's key.
+        /// </summary>
+        /// <param name="userId">Key in the table.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        Task<ProviderAdminProviderRelationDto> GetById(string userId);
     }
 }

@@ -55,6 +55,16 @@ namespace OutOfSchool.WebApi.Services
         Task<SearchResult<ApplicationDto>> GetAllByProvider(Guid id, ApplicationFilter filter);
 
         /// <summary>
+        /// Get applications by provider admin userId.
+        /// </summary>
+        /// <param name="userId">Key in the table.</param>
+        /// <param name="filter">Application filter.</param>
+        /// <param name="providerId">Key in the table.</param>
+        /// <param name="isDeputy">True if provider admin is deputy.</param>
+        /// <returns>List of applications.</returns>
+        Task<IEnumerable<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false);
+
+        /// <summary>
         /// Get applications by status.
         /// </summary>
         /// <param name="status">Status of application.</param>
