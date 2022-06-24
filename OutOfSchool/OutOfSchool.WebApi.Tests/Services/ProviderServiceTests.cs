@@ -76,6 +76,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 providerAdminService.Object);
         }
 
+        #region Create
+
         [TestCase(null, ProviderLicenseStatus.NotProvided)]
         [TestCase("1234567890", ProviderLicenseStatus.Pending)]
         public async Task Create_WhenEntityIsValid_ReturnsCreatedEntity(string license, ProviderLicenseStatus expectedLicenseStatus)
@@ -200,6 +202,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.ThrowsAsync<InvalidOperationException>(async () => await providerService.Create(randomProvider));
         }
 
+        #endregion
+
+        #region GetByFilter
+
         [Test]
         public async Task GetByFilter_WhenCalled_ReturnsEntities()
         {
@@ -245,6 +251,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.AreEqual(fakeProviders.Count, result.TotalAmount);
         }
 
+        #endregion
+
+        #region GetById
+
         [Test]
         public async Task GetById_WhenIdIsValid_ReturnsEntity()
         {
@@ -272,6 +282,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Assert
             Assert.That(result, Is.Null);
         }
+
+        #endregion
+
+        #region Update
 
         [Test]
         public async Task Update_UserCanUpdateExistingEntityOfRelatedProvider_UpdatesExistedEntity()
@@ -498,6 +512,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.Null(result);
         }
 
+        #endregion
+
+        #region Delete
+
         [Test]
         public async Task Delete_WhenIdIsValid_CalledProvidersRepositoryDeleteMethod()
         {
@@ -534,6 +552,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.ThrowsAsync<ArgumentNullException>(
                 async () => await providerService.Delete(fakeProviderInvalidId).ConfigureAwait(false));
         }
+
+        #endregion
+
+        #region UpdateStatus
 
         [Test]
         public async Task UpdateStatus_WhenDtoIsValid_UpdatesProviderEntity()
@@ -594,6 +616,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             // Assert
             Assert.IsNull(result);
         }
+
+        #endregion
+
+        #region UpdateLicenseStatus
 
         [Test]
         public async Task UpdateLicenseStatus_WhenDtoIsValid_UpdatesProviderEntity()
@@ -698,6 +724,89 @@ namespace OutOfSchool.WebApi.Tests.Services
             Assert.ThrowsAsync<ArgumentException>(
                 async () => await providerService.UpdateLicenseStatus(dto, fakeUser.Id));
         }
+
+        #endregion
+
+        #region GetNotificationsRecipientIds
+
+        [Test]
+        public async Task GetNotificationsRecipientIds_WhenProviderNotFound_ReturnsEmptyList()
+        {
+            // Arrange
+            var provider = ProvidersGenerator.Generate();
+            var additionalData = new Dictionary<string, string>
+            {
+                { "Status", "Approved" },
+            };
+
+            providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+                .ReturnsAsync(null as Provider);
+
+            // Act
+            var recipientIds = await (providerService as INotificationReciever).GetNotificationsRecipientIds(
+                NotificationAction.Update,
+                additionalData,
+                provider.Id);
+
+            // Assert
+            Assert.IsEmpty(recipientIds);
+        }
+
+        [TestCaseSource(nameof(AdditionalTestData))]
+        public async Task GetNotificationsRecipientIds_WhenIsUpdatedStatusOrLicenseStatus_ReturnsProviderAdminsList(Dictionary<string, string> additionalData)
+        {
+            // Arrange
+            var provider = ProvidersGenerator.Generate();
+            var providerDeputiesIds = new List<string>
+            {
+                Guid.NewGuid().ToString(),
+                Guid.NewGuid().ToString(),
+            };
+
+            providersRepositoryMock.Setup(r => r.GetById(provider.Id))
+                .ReturnsAsync(provider);
+            providerAdminService.Setup(s => s.GetProviderDeputiesIds(provider.Id))
+                .ReturnsAsync(providerDeputiesIds);
+
+            var expected = providerDeputiesIds.Concat(new[] { provider.UserId });
+
+            // Act
+            var recipientIds = await (providerService as INotificationReciever).GetNotificationsRecipientIds(
+                NotificationAction.Update,
+                additionalData,
+                provider.Id);
+
+            // Assert
+            CollectionAssert.AreEquivalent(expected, recipientIds);
+        }
+
+        #endregion
+
+        #region TestDataSets
+
+        private static IEnumerable<object> AdditionalTestData()
+        {
+            yield return new Dictionary<string, string> { { nameof(Provider.Status), ProviderStatus.Approved.ToString() }, };
+            yield return new Dictionary<string, string> { { nameof(Provider.Status), ProviderStatus.Editing.ToString() }, };
+            yield return new Dictionary<string, string> { { nameof(Provider.LicenseStatus), ProviderLicenseStatus.Approved.ToString() }, };
+            yield return new Dictionary<string, string>
+            {
+                { nameof(Provider.Status), ProviderStatus.Pending.ToString() },
+                { nameof(Provider.LicenseStatus), ProviderLicenseStatus.Approved.ToString() },
+            };
+            yield return new Dictionary<string, string>
+            {
+                { nameof(Provider.Status), ProviderStatus.Approved.ToString() },
+                { nameof(Provider.LicenseStatus), ProviderLicenseStatus.NotProvided.ToString() },
+            };
+            yield return new Dictionary<string, string>
+            {
+                { nameof(Provider.Status), ProviderStatus.Approved.ToString() },
+                { nameof(Provider.LicenseStatus), ProviderLicenseStatus.Approved.ToString() },
+            };
+        }
+
+        #endregion
 
         private static Mock<IEntityRepository<User>> CreateUsersRepositoryMock(User fakeUser)
         {
