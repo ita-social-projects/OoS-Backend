@@ -126,7 +126,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.ApplicationRead)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -163,7 +163,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <response code="204">No entity with given Id was found.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.ApplicationRead)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ApplicationDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ApplicationDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
