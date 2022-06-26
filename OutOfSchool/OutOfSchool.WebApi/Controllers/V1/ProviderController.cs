@@ -66,6 +66,31 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
+        /// Get all Providers from the database.
+        /// </summary>
+        /// <param name="filter">Filter to get a part of all providers that were found.</param>
+        /// <returns>The result is a <see cref="SearchResult{ProviderDto}"/> that contains the count of all found providers and a list of providers that were received.</returns>
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByFilter([FromQuery] SearchStringFilter filter)
+        {
+            var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
+
+            if (providers.TotalAmount < 1)
+            {
+                return NoContent();
+            }
+
+            return Ok(providers);
+        }
+
+        /// <summary>
         /// Get Provider by it's Id.
         /// </summary>
         /// <param name="providerId">Provider's id.</param>

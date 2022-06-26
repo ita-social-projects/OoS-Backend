@@ -25,6 +25,14 @@ namespace OutOfSchool.WebApi.Services
         Task<IEnumerable<ProviderDto>> GetAll();
 
         /// <summary>
+        /// Get Provider objects from DB by filter.
+        /// </summary>
+        /// <param name="filter">Filter for Provider dto.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains a List of <see cref="ProviderDto"/> that were found.</returns>
+        Task<SearchResult<ProviderDto>> GetByFilter(SearchStringFilter filter);
+
+        /// <summary>
         /// Get entity by it's key.
         /// </summary>
         /// <param name="id">Key in the table.</param>

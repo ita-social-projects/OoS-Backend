@@ -77,14 +77,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetByFilter([FromQuery] SearchStringFilter filter)
 {
-            var classes = await serviceParent.GetByFilter(filter).ConfigureAwait(false);
+            var parents = await serviceParent.GetByFilter(filter).ConfigureAwait(false);
 
-            if (classes.TotalAmount < 1)
+            if (parents.TotalAmount < 1)
             {
                 return NoContent();
             }
 
-            return Ok(classes);
+            return Ok(parents);
         }
 
         /// <summary>

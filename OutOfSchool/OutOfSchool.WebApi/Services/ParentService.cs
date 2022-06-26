@@ -90,7 +90,7 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<ParentDTO>> GetByFilter(SearchStringFilter filter)
         {
-            logger.LogInformation("Getting all Classes started.");
+            logger.LogInformation("Getting all Parents started (by filter).");
 
             if (filter is null)
             {

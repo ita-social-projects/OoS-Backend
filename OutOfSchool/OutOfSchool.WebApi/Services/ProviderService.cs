@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -8,12 +9,10 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -96,21 +95,43 @@ namespace OutOfSchool.WebApi.Services
             var providersDTO = providers.Select(provider => mapper.Map<ProviderDto>(provider)).ToList();
 
             // TODO: move ratings calculations out of getting all providers.
-            var averageRatings =
-                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
-
-            foreach (var provider in providersDTO)
-            {
-                var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
-                if (averageRatingsForProvider.Key != Guid.Empty)
-                {
-                    var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
-                    provider.Rating = rating;
-                    provider.NumberOfRatings = numberOfVotes;
-                }
-            }
+            FillRatingsForProviders(providersDTO);
 
             return providersDTO;
+        }
+
+        /// <inheritdoc/>
+        public async Task<SearchResult<ProviderDto>> GetByFilter(SearchStringFilter filter)
+        {
+            logger.LogInformation("Getting all Providers started (by filter).");
+
+            if (filter is null)
+            {
+                filter = new SearchStringFilter();
+            }
+
+            var filterPredicate = PredicateBuild(filter);
+
+            int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
+            var providers = await providerRepository
+                .Get<string>(filter.From, filter.Size, string.Empty, filterPredicate, x => x.User.FirstName, true)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            logger.LogInformation(!providers.Any()
+                ? "Parents table is empty."
+                : $"All {providers.Count} records were successfully received from the Parent table");
+
+            var providersDTO = providers.Select(provider => mapper.Map<ProviderDto>(provider)).ToList();
+            FillRatingsForProviders(providersDTO);
+
+            var result = new SearchResult<ProviderDto>()
+            {
+                TotalAmount = count,
+                Entities = providersDTO,
+            };
+
+            return result;
         }
 
         /// <inheritdoc/>
@@ -177,6 +198,47 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
             await workshopServiceCombiner.GetWorkshopProviderId(workshopId).ConfigureAwait(false);
+
+        private Expression<Func<Provider, bool>> PredicateBuild(SearchStringFilter filter)
+        {
+            var predicate = PredicateBuilder.True<Provider>();
+
+            if (!string.IsNullOrWhiteSpace(filter.SearchString))
+            {
+                var tempPredicate = PredicateBuilder.False<Provider>();
+
+                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.Email.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            return predicate;
+        }
+
+        private void FillRatingsForProviders(List<ProviderDto> providersDTO)
+        {
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
+
+            foreach (var provider in providersDTO)
+            {
+                var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
+                if (averageRatingsForProvider.Key != Guid.Empty)
+                {
+                    var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
+                    provider.Rating = rating;
+                    provider.NumberOfRatings = numberOfVotes;
+                }
+            }
+        }
 
         private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
         {
