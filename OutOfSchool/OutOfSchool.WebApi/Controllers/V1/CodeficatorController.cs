@@ -95,5 +95,28 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             return Ok(addressParts);
         }
+
+        /// <summary>
+        /// Get all address's parts from the database.
+        /// </summary>
+        /// <param name="namePart">Part of name for search.</param>
+        /// <returns> All address parts for the codeficator. </returns>
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AllAddressPartsDto))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("search")]
+        public async Task<IActionResult> SerchByPartOfName(string namePart)
+        {
+            var fullAddressNames = await codeficatorService.GetFullAddressesByPartOfName(namePart).ConfigureAwait(false);
+
+            if (!fullAddressNames.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(fullAddressNames);
+        }
     }
 }

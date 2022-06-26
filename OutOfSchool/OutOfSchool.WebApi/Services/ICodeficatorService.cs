@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
 
 namespace OutOfSchool.WebApi.Services
@@ -31,5 +32,12 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id"> Codeficator's id. </param>
         /// <returns>The task result contains the <see cref="Task{AllAddressPartsDto}"/>.</returns>
         public Task<AllAddressPartsDto> GetAllAddressPartsById(long id);
+
+        /// <summary>
+        /// Get full addresses' names from the database.
+        /// </summary>
+        /// <param name="namePart">Part of name for search.</param>
+        /// <returns>The task result contains the <see cref="Task{Dictionary}"/>.</returns>
+        public Task<Dictionary<long, string>> GetFullAddressesByPartOfName(string namePart);
     }
 }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
 
 namespace OutOfSchool.WebApi.Services
@@ -60,6 +62,14 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return new AllAddressPartsDto { AddressParts = mapper.Map<CodeficatorWithParentDto>(codeficator) };
+        }
+
+        /// <inheritdoc/>
+        public async Task<Dictionary<long, string>> GetFullAddressesByPartOfName(string namePart)
+        {
+            var fullAddresses = await codeficatorRepository.GetFullAddressesByPartOfName(namePart).ConfigureAwait(false);
+
+            return fullAddresses.ToDictionary(key => key.Id, value => value.FullName);
         }
 
         #region privateMethods
