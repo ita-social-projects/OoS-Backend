@@ -73,7 +73,12 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<BlockedProviderParentBlockDto, BlockedProviderParent>();
             CreateMap<BlockedProviderParent, BlockedProviderParentDto>().ReverseMap();
 
-            CreateMap<ProviderSectionItem, ProviderSectionItemDto>().ReverseMap()
+            CreateMap<ProviderSectionItem, ProviderSectionItemDto>()
+                .ForMember(
+                    dest =>
+                    dest.SectionName, opt =>
+                    opt.MapFrom(psi => psi.Name));
+            CreateMap<ProviderSectionItemDto, ProviderSectionItem>()
                 .ForMember(
                     dest =>
                     dest.Name, opt =>
