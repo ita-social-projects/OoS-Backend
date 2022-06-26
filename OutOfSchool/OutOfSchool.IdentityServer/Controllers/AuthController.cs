@@ -154,41 +154,48 @@ namespace OutOfSchool.IdentityServer.Controllers
 
             var user = await userManager.FindByEmailAsync(model.Username);
 
-            if (user != null && user.IsBlocked)
+            if (user != null)
             {
-                logger.LogInformation($"{path} User is blocked. Login was failed.");
-
-                // TODO: add localization
-                ModelState.AddModelError(string.Empty,localizer["Your account is blocked"]);
-                return View(new LoginViewModel
+                if (user.IsBlocked)
                 {
-                    ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
-                    ReturnUrl = model.ReturnUrl,
-                });
-            }
+                    logger.LogInformation($"{path} User is blocked. Login was failed.");
 
-            var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
-
-            if (result.Succeeded)
-            {
-                logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
-
-                user.LastLogin = DateTimeOffset.UtcNow;
-                var lastLoginResult = await userManager.UpdateAsync(user);
-                if (!lastLoginResult.Succeeded)
-                {
-                    throw new InvalidOperationException($"Unexpected error occurred setting the last login date" +
-                        $" ({lastLoginResult.ToString()}) for user with ID '{user.Id}'.");
+                    ModelState.AddModelError(string.Empty, localizer["Your account is blocked"]);
+                    return View(new LoginViewModel
+                    {
+                        ExternalProviders = await signInManager.GetExternalAuthenticationSchemesAsync(),
+                        ReturnUrl = model.ReturnUrl,
+                    });
                 }
 
-                return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
-            }
+                var result = await signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
 
-            if (result.IsLockedOut)
-            {
-                logger.LogWarning($"{path} Attempting to sign-in is locked out.");
+                if (result.Succeeded)
+                {
+                    logger.LogInformation($"{path} Successfully logged. User(id): {userId}.");
 
-                return BadRequest();
+                    user.LastLogin = DateTimeOffset.UtcNow;
+                    var lastLoginResult = await userManager.UpdateAsync(user);
+                    if (!lastLoginResult.Succeeded)
+                    {
+                        throw new InvalidOperationException($"Unexpected error occurred setting the last login date" +
+                                                            $" ({lastLoginResult}) for user with ID '{user.Id}'.");
+                    }
+
+                    if (user.MustChangePassword)
+                    {
+                        return RedirectToAction(nameof(AccountController.ChangePassword), "Account", new {returnUrl = model.ReturnUrl, redirectedFromLogin = true});
+                    }
+
+                    return string.IsNullOrEmpty(model.ReturnUrl) ? Redirect(nameof(Login)) : Redirect(model.ReturnUrl);
+                }
+
+                if (result.IsLockedOut)
+                {
+                    logger.LogWarning($"{path} Attempting to sign-in is locked out.");
+
+                    return BadRequest();
+                }
             }
 
             logger.LogInformation($"{path} Login was failed.");

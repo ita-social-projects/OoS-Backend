@@ -353,9 +353,9 @@ namespace OutOfSchool.IdentityServer.Controllers
 
         [HttpGet]
         [Authorize]
-        public IActionResult ChangePassword(string returnUrl = "Login")
+        public IActionResult ChangePassword(string returnUrl = "Login", bool redirectedFromLogin = false)
         {
-            return View("Password/ChangePassword", new ChangePasswordViewModel() { ReturnUrl = returnUrl });
+            return View("Password/ChangePassword", new ChangePasswordViewModel() { ReturnUrl = returnUrl, RedirectedFromLogin = redirectedFromLogin});
         }
 
         [HttpPost]
@@ -375,7 +375,17 @@ namespace OutOfSchool.IdentityServer.Controllers
             var result = await userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
             if (result.Succeeded)
             {
+                if (user.MustChangePassword)
+                {
+                    user.MustChangePassword = false;
+                    await userManager.UpdateAsync(user);
+                }
+
                 logger.LogInformation($"{path} Password was changed. User(id): {userId}.");
+                if (model.RedirectedFromLogin)
+                {
+                    return Redirect(model.ReturnUrl);
+                }
 
                 return View("Password/ChangePasswordConfirmation");
             }
@@ -383,6 +393,7 @@ namespace OutOfSchool.IdentityServer.Controllers
             logger.LogError($"{path} Changing password was failed for User(id): {userId}." +
                     $"{string.Join(System.Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
+            // TODO: make bad result instead of Redirect
             return Redirect(model.ReturnUrl);
         }
     }

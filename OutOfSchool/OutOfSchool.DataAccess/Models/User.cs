@@ -36,6 +36,9 @@ namespace OutOfSchool.Services.Models
         // for permissions managing at login and check if user is original provider or its admin
         public bool IsDerived { get; set; } = false;
 
+        // If it's true then user must change his password as soon as possible (should do it after logging into the system)
+        public bool MustChangePassword { get; set; }
+
         public Gender Gender { get; set; }
     }
 }

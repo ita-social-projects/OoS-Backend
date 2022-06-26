@@ -20,6 +20,8 @@ namespace OutOfSchool.IdentityServer.ViewModels
         [Compare(nameof(NewPassword), ErrorMessage = "Passwords doesn't match")]
         public string ConfirmNewPassword { get; set; }
 
+        public bool RedirectedFromLogin { get; set; }
+
         public string ReturnUrl { get; set; }
     }
 }
