@@ -139,7 +139,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogInformation(!classes.Any()
                 ? "Class table is empty."
-                : $"All {classes.Count()} records were successfully received from the Class table");
+                : $"All {classes.Count} records were successfully received from the Class table");
 
             var result = new SearchResult<ClassDto>()
             {

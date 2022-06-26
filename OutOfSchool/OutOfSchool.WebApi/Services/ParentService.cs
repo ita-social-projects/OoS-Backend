@@ -10,6 +10,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -87,6 +88,37 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<SearchResult<ParentDTO>> GetByFilter(SearchStringFilter filter)
+        {
+            logger.LogInformation("Getting all Classes started.");
+
+            if (filter is null)
+            {
+                filter = new SearchStringFilter();
+            }
+
+            var filterPredicate = PredicateBuild(filter);
+
+            int count = await repositoryParent.Count(filterPredicate).ConfigureAwait(false);
+            var parents = await repositoryParent
+                .Get<string>(filter.From, filter.Size, string.Empty, filterPredicate, x => x.User.FirstName, true)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            logger.LogInformation(!parents.Any()
+                ? "Parents table is empty."
+                : $"All {parents.Count} records were successfully received from the Parent table");
+
+            var result = new SearchResult<ParentDTO>()
+            {
+                TotalAmount = count,
+                Entities = parents.Select(entity => entity.ToModel()).ToList(),
+            };
+
+            return result;
+        }
+
+        /// <inheritdoc/>
         public async Task<ParentDTO> GetByUserId(string id)
         {
             logger.LogInformation($"Getting Parent by UserId started. Looking UserId is {id}.");
@@ -146,6 +178,30 @@ namespace OutOfSchool.WebApi.Services
                 logger.LogError($"Updating failed. User with Id = {dto?.Id} doesn't exist in the system.");
                 throw;
             }
+        }
+
+        private Expression<Func<Parent, bool>> PredicateBuild(SearchStringFilter filter)
+        {
+            var predicate = PredicateBuilder.True<Parent>();
+
+            if (!string.IsNullOrWhiteSpace(filter.SearchString))
+            {
+                var tempPredicate = PredicateBuilder.False<Parent>();
+
+                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.Email.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            return predicate;
         }
     }
 }
