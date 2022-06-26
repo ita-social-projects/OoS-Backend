@@ -199,47 +199,6 @@ namespace OutOfSchool.WebApi.Services
         public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
             await workshopServiceCombiner.GetWorkshopProviderId(workshopId).ConfigureAwait(false);
 
-        private Expression<Func<Provider, bool>> PredicateBuild(SearchStringFilter filter)
-        {
-            var predicate = PredicateBuilder.True<Provider>();
-
-            if (!string.IsNullOrWhiteSpace(filter.SearchString))
-            {
-                var tempPredicate = PredicateBuilder.False<Provider>();
-
-                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
-                {
-                    tempPredicate = tempPredicate.Or(
-                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCulture)
-                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCulture)
-                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCulture)
-                            || x.Email.StartsWith(word, StringComparison.InvariantCulture)
-                            || x.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
-                }
-
-                predicate = predicate.And(tempPredicate);
-            }
-
-            return predicate;
-        }
-
-        private void FillRatingsForProviders(List<ProviderDto> providersDTO)
-        {
-            var averageRatings =
-                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
-
-            foreach (var provider in providersDTO)
-            {
-                var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
-                if (averageRatingsForProvider.Key != Guid.Empty)
-                {
-                    var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
-                    provider.Rating = rating;
-                    provider.NumberOfRatings = numberOfVotes;
-                }
-            }
-        }
-
         private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
         {
             _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
@@ -419,6 +378,47 @@ namespace OutOfSchool.WebApi.Services
         private void LogProviderChanges(Provider provider, string userId)
         {
             changesLogService.AddEntityChangesToDbContext(provider, userId);
+        }
+
+        private Expression<Func<Provider, bool>> PredicateBuild(SearchStringFilter filter)
+        {
+            var predicate = PredicateBuilder.True<Provider>();
+
+            if (!string.IsNullOrWhiteSpace(filter.SearchString))
+            {
+                var tempPredicate = PredicateBuilder.False<Provider>();
+
+                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.Email.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            return predicate;
+        }
+
+        private void FillRatingsForProviders(List<ProviderDto> providersDTO)
+        {
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
+
+            foreach (var provider in providersDTO)
+            {
+                var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
+                if (averageRatingsForProvider.Key != Guid.Empty)
+                {
+                    var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
+                    provider.Rating = rating;
+                    provider.NumberOfRatings = numberOfVotes;
+                }
+            }
         }
     }
 }
