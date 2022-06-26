@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
+using Grpc.Core;
+using GrpcService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,9 +19,10 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Communication;
+using OutOfSchool.WebApi.Services.GRPC;
+using OutOfSchool.WebApi.Services.ProviderAdminOperations;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -32,6 +35,8 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<ProviderAdminService> logger;
         private readonly IMapper mapper;
         private readonly ResponseDto responseDto;
+        private readonly IGRPCCommonService gRPCCommonService;
+        private readonly IProviderAdminOperationsService providerAdminOperationsService;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,
@@ -41,7 +46,9 @@ namespace OutOfSchool.WebApi.Services
             IProviderAdminRepository providerAdminRepository,
             IEntityRepository<User> userRepository,
             IMapper mapper,
-            ILogger<ProviderAdminService> logger)
+            ILogger<ProviderAdminService> logger,
+            IGRPCCommonService gRPCCommonService,
+            IProviderAdminOperationsService providerAdminOperationsService)
             : base(httpClientFactory, communicationConfig.Value)
         {
             this.identityServerConfig = identityServerConfig.Value;
@@ -50,6 +57,8 @@ namespace OutOfSchool.WebApi.Services
             this.userRepository = userRepository;
             this.mapper = mapper;
             this.logger = logger;
+            this.gRPCCommonService = gRPCCommonService;
+            this.providerAdminOperationsService = providerAdminOperationsService;
             responseDto = new ResponseDto();
         }
 
@@ -85,29 +94,9 @@ namespace OutOfSchool.WebApi.Services
                 return responseDto;
             }
 
-            var request = new Request()
-            {
-                HttpMethodType = HttpMethodType.Post,
-                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
-                Token = token,
-                Data = providerAdminDto,
-                RequestId = Guid.NewGuid(),
-            };
-
-            logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
-                $"was sent. User(id): {userId}. Url: {request.Url}");
-
-            var response = await SendRequest(request)
-                    .ConfigureAwait(false);
-
-            if (response.IsSuccess)
-            {
-                responseDto.IsSuccess = true;
-                responseDto.Result = JsonConvert
-                    .DeserializeObject<CreateProviderAdminDto>(response.Result.ToString());
-
-                return responseDto;
-            }
+            ResponseDto response = await providerAdminOperationsService
+                                        .CreateProviderAdminAsync(userId, providerAdminDto, token)
+                                        .ConfigureAwait(false);
 
             return response;
         }
@@ -162,7 +151,7 @@ namespace OutOfSchool.WebApi.Services
                 if (!(responseDto.Result is null))
                 {
                     responseDto.Result = JsonConvert
-                    .DeserializeObject<ActionResult>(response.Result.ToString());
+                        .DeserializeObject<ActionResult>(response.Result.ToString());
 
                     return responseDto;
                 }
@@ -338,6 +327,86 @@ namespace OutOfSchool.WebApi.Services
                                                                                    && p.IsDeputy).ConfigureAwait(false);
 
             return providersDeputies.Select(d => d.UserId);
+        }
+
+        private async Task<ResponseDto> CreateProviderAdminRESTAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+        {
+            var request = new Request()
+            {
+                HttpMethodType = HttpMethodType.Post,
+                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateProviderAdmin),
+                Token = token,
+                Data = providerAdminDto,
+                RequestId = Guid.NewGuid(),
+            };
+
+            logger.LogDebug($"{request.HttpMethodType} Request(id): {request.RequestId} " +
+                $"was sent. User(id): {userId}. Url: {request.Url}");
+
+            var response = await SendRequest(request)
+                    .ConfigureAwait(false);
+
+            if (response.IsSuccess)
+            {
+                responseDto.IsSuccess = true;
+                responseDto.Result = JsonConvert
+                    .DeserializeObject<CreateProviderAdminDto>(response.Result.ToString());
+
+                return responseDto;
+            }
+
+            return response;
+        }
+
+        private async Task<ResponseDto> CreateProviderAdminGRPCAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+        {
+            using var channel = gRPCCommonService.CreateAuthenticatedChannel(token);
+            var client = new GRPCProviderAdmin.GRPCProviderAdminClient(channel);
+
+            var createProviderAdminRequest = mapper.Map<CreateProviderAdminRequest>(providerAdminDto);
+
+            var response = new ResponseDto()
+            {
+                IsSuccess = true,
+                HttpStatusCode = HttpStatusCode.OK,
+            };
+
+            string requestId = Guid.NewGuid().ToString();
+            createProviderAdminRequest.RequestId = requestId;
+
+            logger.LogDebug($"GRPC: Request(id): {requestId} was sent. " +
+                $"User(id): {userId}. Method: CreateProviderAdminAsync.");
+
+            try
+            {
+                var reply = await client.CreateProviderAdminAsync(createProviderAdminRequest);
+
+                if (reply.IsSuccess)
+                {
+                    var providerAdminDtoGRPC = mapper.Map<CreateProviderAdminDto>(reply);
+
+                    responseDto.IsSuccess = true;
+                    responseDto.Result = providerAdminDtoGRPC;
+
+                    return responseDto;
+                }
+                else
+                {
+                    response.IsSuccess = false;
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                }
+            }
+            catch (RpcException ex)
+            {
+                logger.LogError($"GRPC: Request(id): {requestId}. " +
+                    $"Admin was not created by User(id): {userId}. {ex.Message}");
+
+                response.IsSuccess = false;
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                response.Message = ex.Message;
+            }
+
+            return response;
         }
     }
 }

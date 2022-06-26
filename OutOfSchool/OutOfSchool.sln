@@ -1,9 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.WebApi", "OutOfSchool.WebApi\OutOfSchool.WebApi.csproj", "{CD28DCB5-C0F3-4011-B56C-AD2BCF795F72}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8} = {FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.DataAccess", "OutOfSchool.DataAccess\OutOfSchool.DataAccess.csproj", "{4DBB87B9-8B99-4A06-A623-0B852F054543}"
 EndProject
@@ -34,6 +37,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.Redis", "OutOfSchool.Redis\OutOfSchool.Redis.csproj", "{ED7E72ED-6A6C-4C49-BC59-4B3FEF9E503C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.RazorTemplatesData", "OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj", "{8B05B816-EAB3-40FA-B549-3072F933F759}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.GRPC", "OutOfSchool.gRPC\OutOfSchool.GRPC.csproj", "{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,6 +94,10 @@ Global
 		{8B05B816-EAB3-40FA-B549-3072F933F759}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B05B816-EAB3-40FA-B549-3072F933F759}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B05B816-EAB3-40FA-B549-3072F933F759}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

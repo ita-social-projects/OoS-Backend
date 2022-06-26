@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(Guid id, ApplicationFilter filter);
+        Task<SearchResult<ApplicationDto>> GetAllByWorkshop(Guid id, ApplicationFilter filter);
 
         /// <summary>
         /// Get applications by provider id.
@@ -52,7 +52,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByProvider(Guid id, ApplicationFilter filter);
+        Task<SearchResult<ApplicationDto>> GetAllByProvider(Guid id, ApplicationFilter filter);
 
         /// <summary>
         /// Get applications by status.
@@ -67,7 +67,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="id">Key in the table.</param>
         /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter);
+        Task<SearchResult<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter);
 
         /// <summary>
         /// Get applications by child id.

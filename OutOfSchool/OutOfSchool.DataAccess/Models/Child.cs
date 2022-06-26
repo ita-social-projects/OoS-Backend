@@ -28,5 +28,7 @@ namespace OutOfSchool.Services.Models
         public virtual ICollection<SocialGroup> SocialGroups { get; set; }
 
         public virtual List<ChildSocialGroup> ChildSocialGroups { get; set; }
+
+        public virtual List<Achievement> Achievements { get; set; }
     }
 }

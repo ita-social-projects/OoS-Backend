@@ -34,7 +34,6 @@ namespace OutOfSchool.ElasticsearchData
                 Sort = sorts,
                 From = filter.From,
                 Size = filter.Size,
-
             };
 
             var resp = await ElasticClient.SearchAsync<WorkshopES>(req);
@@ -270,7 +269,7 @@ namespace OutOfSchool.ElasticsearchData
 
             sorts.Add(new FieldSort
             {
-                Field = "title.keyword",
+                Field = WorkshopES.TitleKeyword,
                 Order = SortOrder.Ascending,
             });
 

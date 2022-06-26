@@ -202,12 +202,14 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter)
+        public async Task<SearchResult<ApplicationDto>> GetAllByParent(Guid id, ApplicationFilter filter)
         {
             logger.LogInformation($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
             FilterNullValidation(filter);
 
             Expression<Func<Application, bool>> applicationFilter = a => a.ParentId == id;
+
+            var totalAmount = await applicationRepository.Count(where: applicationFilter).ConfigureAwait(false);
 
             var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
@@ -216,7 +218,13 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There is no applications in the Db with Parent Id = {id}."
                 : $"Successfully got Applications with Parent Id = {id}.");
 
-            return mapper.Map<List<ApplicationDto>>(filteredApplications);
+            var searchResult = new SearchResult<ApplicationDto>()
+            {
+                TotalAmount = totalAmount,
+                Entities = mapper.Map<List<ApplicationDto>>(filteredApplications),
+            };
+
+            return searchResult;
         }
 
         /// <inheritdoc/>
@@ -236,13 +244,14 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByWorkshop(Guid id, ApplicationFilter filter)
+        public async Task<SearchResult<ApplicationDto>> GetAllByWorkshop(Guid id, ApplicationFilter filter)
         {
             logger.LogInformation($"Getting Applications by Workshop Id started. Looking Workshop Id = {id}.");
 
             FilterNullValidation(filter);
 
             Expression<Func<Application, bool>> applicationFilter = a => a.WorkshopId == id;
+            var totalAmount = await applicationRepository.Count(where: applicationFilter).ConfigureAwait(false);
             var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
             var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
@@ -251,11 +260,17 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There is no applications in the Db with Workshop Id = {id}."
                 : $"Successfully got Applications with Workshop Id = {id}.");
 
-            return mapper.Map<List<ApplicationDto>>(filteredApplications);
+            var searchResult = new SearchResult<ApplicationDto>()
+            {
+                TotalAmount = totalAmount,
+                Entities = mapper.Map<List<ApplicationDto>>(filteredApplications),
+            };
+
+            return searchResult;
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByProvider(Guid id, ApplicationFilter filter)
+        public async Task<SearchResult<ApplicationDto>> GetAllByProvider(Guid id, ApplicationFilter filter)
         {
             logger.LogInformation($"Getting Applications by Provider Id started. Looking Provider Id = {id}.");
 
@@ -265,6 +280,7 @@ namespace OutOfSchool.WebApi.Services
             var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
+            var totalAmount = await applicationRepository.Count(where: applicationFilter).ConfigureAwait(false);
             var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
 
             var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
@@ -273,7 +289,13 @@ namespace OutOfSchool.WebApi.Services
                 ? $"There is no applications in the Db with Provider Id = {id}."
                 : $"Successfully got Applications with Provider Id = {id}.");
 
-            return mapper.Map<List<ApplicationDto>>(filteredApplications);
+            var searchResult = new SearchResult<ApplicationDto>()
+            {
+                TotalAmount = totalAmount,
+                Entities = mapper.Map<List<ApplicationDto>>(filteredApplications),
+            };
+
+            return searchResult;
         }
 
         /// <inheritdoc/>

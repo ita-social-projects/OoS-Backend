@@ -11,8 +11,8 @@ using Newtonsoft.Json.Converters;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Util.CustomValidation;
 using OutOfSchool.WebApi.Util.JsonTools;
 
 namespace OutOfSchool.WebApi.Models
@@ -64,9 +64,9 @@ namespace OutOfSchool.WebApi.Models
         [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal Price { get; set; } = default;
 
-        [Required(ErrorMessage = "Description is required")]
-        [MaxLength(500)]
-        public string Description { get; set; } = string.Empty;
+        [ModelBinder(BinderType = typeof(JsonModelBinder))]
+        [CollectionNotEmpty(ErrorMessage = "At least one description is required")]
+        public IEnumerable<WorkshopDescriptionItemDto> WorkshopDescriptionItems { get; set; }
 
         public bool WithDisabilityOptions { get; set; } = default;
 
@@ -76,7 +76,7 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(256)]
         public string CoverImageId { get; set; } = string.Empty;
 
-        [JsonProperty(NullValueHandling=NullValueHandling.Ignore)]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public IFormFile CoverImage { get; set; }
 
         [Required]
@@ -89,7 +89,7 @@ namespace OutOfSchool.WebApi.Models
         public IEnumerable<string> Keywords { get; set; } = default;
 
         [Required]
-        public bool IsPerMonth { get; set; }
+        public PayRateType PayRate { get; set; }
 
         public float Rating { get; set; }
 
@@ -107,6 +107,10 @@ namespace OutOfSchool.WebApi.Models
         public Guid? InstitutionHierarchyId { get; set; }
 
         public string InstitutionHierarchy { get; set; }
+
+        public Guid? InstitutionId { get; set; }
+
+        public string Institution { get; set; }
 
         [Required]
         public long DirectionId { get; set; }

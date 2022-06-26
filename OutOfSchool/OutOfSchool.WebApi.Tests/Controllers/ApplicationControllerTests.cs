@@ -14,6 +14,7 @@ using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 
 
@@ -165,7 +166,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(parent);
-            applicationService.Setup(s => s.GetAllByParent(parent.Id, It.IsAny<ApplicationFilter>())).ReturnsAsync(applications.Where(a => a.ParentId == parent.Id));
+            List<ApplicationDto> app = applications.Where(a => a.ParentId == parent.Id).ToList();
+            applicationService.Setup(s => s.GetAllByParent(parent.Id, It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app.Count(), Entities = app });
             var filter = new ApplicationFilter();
 
             // Act
@@ -184,7 +186,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(newParent);
-            applicationService.Setup(s => s.GetAllByParent(newParent.Id, It.IsAny<ApplicationFilter>())).ReturnsAsync(applications.Where(a => a.ParentId == newParent.Id));
+            List<ApplicationDto> app = applications.Where(a => a.ParentId == newParent.Id).ToList();
+            applicationService.Setup(s => s.GetAllByParent(newParent.Id, It.IsAny<ApplicationFilter>())).ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app.Count(), Entities = app });
             var filter = new ApplicationFilter();
 
             // Act
@@ -203,8 +206,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
 
             httpContext.Setup(c => c.User.IsInRole("parent")).Returns(true);
             parentService.Setup(s => s.GetByUserId(userId)).ReturnsAsync(anotherParent);
+            List<ApplicationDto> app = applications.Where(a => a.ParentId == parent.Id).ToList();
             applicationService.Setup(s => s.GetAllByParent(parent.Id, It.IsAny<ApplicationFilter>()))
-                .ReturnsAsync(applications.Where(a => a.ParentId == parent.Id));
+                .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app.Count(), Entities = app });
             var filter = new ApplicationFilter();
 
             // Act
@@ -223,8 +227,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
             providerService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(provider);
             providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+            List<ApplicationDto> app = applications.ToList();
             applicationService.Setup(s => s.GetAllByProvider(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
-                .ReturnsAsync(applications);
+                .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app.Count(), Entities = app });
 
             // Act
             var result = await controller.GetByPropertyId(property, provider.Id, It.IsAny<ApplicationFilter>()).ConfigureAwait(false) as OkObjectResult;
@@ -242,8 +247,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContext.Setup(c => c.User.IsInRole("provider")).Returns(true);
             workshopService.Setup(s => s.GetById(It.IsAny<Guid>())).ReturnsAsync(workshopDto);
             providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+            List<ApplicationDto> app = applications.ToList();
             applicationService.Setup(s => s.GetAllByWorkshop(It.IsAny<Guid>(), It.IsAny<ApplicationFilter>()))
-                .ReturnsAsync(applications);
+                .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app.Count(), Entities = app });
 
             // Act
             var result = await controller.GetByPropertyId(property, workshopDto.Id, It.IsAny<ApplicationFilter>()).ConfigureAwait(false) as OkObjectResult;
@@ -284,10 +290,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(newProvider);
             workshopService.Setup(s => s.GetById(id)).ReturnsAsync(newWorkshop);
             providerService.Setup(s => s.GetById(id)).ReturnsAsync(newProvider);
+            List<ApplicationDto> app1 = applications.Where(a => a.Workshop.ProviderId == id).ToList();
             applicationService.Setup(s => s.GetAllByProvider(id, filter))
-                .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
+                .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count(), Entities = app1 });
+            List<ApplicationDto> app2 = applications.Where(a => a.WorkshopId == id).ToList();
             applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
-                .ReturnsAsync(applications.Where(a => a.WorkshopId == id));
+                .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app2.Count(), Entities = app2 });
 
             // Act
             var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as NoContentResult;
@@ -312,10 +320,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerService.Setup(s => s.GetByUserId(userId, It.IsAny<bool>())).ReturnsAsync(anotherProvider);
             providerService.Setup(s => s.GetById(id)).ReturnsAsync(anotherProvider);
             workshopService.Setup(s => s.GetById(id)).ReturnsAsync(anotherWorkshop);
+            List<ApplicationDto> app1 = applications.Where(a => a.Workshop.ProviderId == id).ToList();
             applicationService.Setup(s => s.GetAllByProvider(id, filter))
-                .ReturnsAsync(applications.Where(a => a.Workshop.ProviderId == id));
+                .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app1.Count(), Entities = app1 });
+            List<ApplicationDto> app2 = applications.Where(a => a.WorkshopId == id).ToList();
             applicationService.Setup(s => s.GetAllByWorkshop(id, filter))
-                .ReturnsAsync(applications.Where(a => a.WorkshopId == id));
+                .ReturnsAsync(new SearchResult<ApplicationDto>() { TotalAmount = app2.Count(), Entities = app2 });
 
             // Act
             var result = await controller.GetByPropertyId(property, id, filter).ConfigureAwait(false) as BadRequestObjectResult;
@@ -536,7 +546,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Id = Guid.NewGuid(),
                 Title = "Title6",
                 Phone = "1111111111",
-                Description = "Desc6",
+                WorkshopDescriptionItems = new[]
+                {
+                    FakeWorkshopDescriptionItem(),
+                    FakeWorkshopDescriptionItem(),
+                    FakeWorkshopDescriptionItem(),
+                },
                 Price = 6000,
                 WithDisabilityOptions = true,
                 ProviderTitle = "ProviderTitle",
@@ -601,7 +616,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title1",
                     Phone = "1111111111",
-                    Description = "Desc1",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 1000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -627,7 +646,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title2",
                     Phone = "1111111111",
-                    Description = "Desc2",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 2000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -653,7 +675,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title3",
                     Phone = "1111111111",
-                    Description = "Desc3",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                        FakeWorkshopDescriptionItem(),
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 3000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -675,7 +702,11 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title4",
                     Phone = "1111111111",
-                    Description = "Desc4",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 4000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -697,7 +728,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Id = Guid.NewGuid(),
                     Title = "Title5",
                     Phone = "1111111111",
-                    Description = "Desc5",
+                    WorkshopDescriptionItems = new[]
+                    {
+                        FakeWorkshopDescriptionItem(),
+                    },
                     Price = 5000,
                     WithDisabilityOptions = true,
                     ProviderId = Guid.NewGuid(),
@@ -731,6 +765,17 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             }
 
             return eSlist;
+        }
+
+        private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem()
+        {
+            var id = Guid.NewGuid();
+            return new WorkshopDescriptionItemDto
+            {
+                Id = id,
+                SectionName = "test heading",
+                Description = $"test description text sentence for id: {id.ToString()}",
+            };
         }
     }
 }

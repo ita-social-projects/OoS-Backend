@@ -60,9 +60,7 @@ namespace OutOfSchool.Services.Models
         [Range(0, 10000, ErrorMessage = "Field value should be in a range from 1 to 10 000")]
         public decimal Price { get; set; } = default;
 
-        [Required(ErrorMessage = "Description is required")]
-        [MaxLength(500)]
-        public string Description { get; set; } = string.Empty;
+        public virtual ICollection<WorkshopDescriptionItem> WorkshopDescriptionItems { get; set; }
 
         public bool WithDisabilityOptions { get; set; } = default;
 
@@ -82,7 +80,7 @@ namespace OutOfSchool.Services.Models
         public string Keywords { get; set; } = string.Empty;
 
         [Required]
-        public bool IsPerMonth { get; set; }
+        public PayRateType PayRate { get; set; }
 
         [Required]
         public Guid ProviderId { get; set; }

@@ -86,11 +86,19 @@ namespace OutOfSchool.Services
 
         public DbSet<ProviderSectionItem> ProviderSectionItems { get; set; }
 
+        public DbSet<WorkshopDescriptionItem> WorkshopDescriptionItems { get; set; }
+
         public DbSet<ChangesLog> ChangesLog { get; set; }
 
         public DbSet<ProviderAdminChangesLog> ProviderAdminChangesLog { get; set; }
 
         public DbSet<Codeficator> Codeficators { get; set; }
+
+        public DbSet<AchievementType> AchievementTypes { get; set; }
+
+        public DbSet<AchievementTeacher> AchievementTeachers { get; set; }
+
+        public DbSet<Achievement> Achievements { get; set; }
 
         public async Task<int> CompleteAsync() => await this.SaveChangesAsync();
 
@@ -114,6 +122,7 @@ namespace OutOfSchool.Services
             builder.ApplyConfiguration(new WorkshopConfiguration());
             builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
             builder.ApplyConfiguration(new NotificationConfiguration());
+            builder.ApplyConfiguration(new AchievementConfiguration());
 
             builder.Seed();
             builder.UpdateIdentityTables();

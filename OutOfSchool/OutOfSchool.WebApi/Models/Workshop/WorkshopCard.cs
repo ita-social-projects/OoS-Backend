@@ -25,7 +25,7 @@ namespace OutOfSchool.WebApi.Models
         public string Title { get; set; } = string.Empty;
 
         [Required]
-        public bool IsPerMonth { get; set; }
+        public PayRateType PayRate { get; set; }
 
         public string CoverImageId { get; set; } = string.Empty;
 
@@ -42,6 +42,10 @@ namespace OutOfSchool.WebApi.Models
         public decimal Price { get; set; } = default;
 
         public Guid? InstitutionHierarchyId { get; set; }
+
+        public Guid? InstitutionId { get; set; }
+
+        public string Institution { get; set; }
 
         public long DirectionId { get; set; }
 

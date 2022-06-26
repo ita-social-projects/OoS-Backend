@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using AutoMapper;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
+using OutOfSchool.WebApi.Models.Workshop;
 
 namespace OutOfSchool.WebApi.Extensions
 {
@@ -84,6 +83,10 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<Provider, ProviderDto>(provider, cfg =>
             {
                 cfg.CreateMap<Address, AddressDto>();
+                cfg.CreateMap<ProviderSectionItem, ProviderSectionItemDto>()
+                    .ForMember(
+                        dest => dest.SectionName, opt =>
+                        opt.MapFrom(src => src.Name));
                 cfg.CreateMap<Provider, ProviderDto>()
                  .ForMember(dest => dest.ActualAddress, opt => opt.MapFrom(src => src.ActualAddress))
                  .ForMember(dest => dest.LegalAddress, opt => opt.MapFrom(src => src.LegalAddress))
@@ -152,6 +155,7 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<Address, AddressDto>();
                 cfg.CreateMap<Provider, ProviderDto>();
                 cfg.CreateMap<Teacher, TeacherDTO>();
+                cfg.CreateMap<WorkshopDescriptionItem, WorkshopDescriptionItemDto>();
             });
         }
 
@@ -201,6 +205,10 @@ namespace OutOfSchool.WebApi.Extensions
             return Mapper<ProviderDto, Provider>(providerDto, cfg =>
             {
                 cfg.CreateMap<AddressDto, Address>();
+                cfg.CreateMap<ProviderSectionItemDto, ProviderSectionItem>()
+                    .ForMember(
+                        dest => dest.Name, opt =>
+                            opt.MapFrom(src => src.SectionName));
                 cfg.CreateMap<ProviderDto, Provider>()
                  .ForMember(dest => dest.EdrpouIpn, opt => opt.MapFrom(src => long.Parse(src.EdrpouIpn)))
                  .ForMember(dest => dest.Workshops, opt => opt.Ignore())
@@ -280,7 +288,7 @@ namespace OutOfSchool.WebApi.Extensions
                 .ForMember(dest => dest.ProviderOwnership, opt => opt.MapFrom(src => src.Workshop.ProviderOwnership))
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Workshop.Rating))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Workshop.Title))
-                .ForMember(dest => dest.IsPerMonth, opt => opt.MapFrom(src => src.Workshop.IsPerMonth))
+                .ForMember(dest => dest.PayRate, opt => opt.MapFrom(src => src.Workshop.PayRate))
                 .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Workshop.MaxAge))
                 .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Workshop.MinAge))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Workshop.Price))

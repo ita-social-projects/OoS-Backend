@@ -22,6 +22,7 @@ using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.ElasticsearchData;
 using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.GRPC;
 using OutOfSchool.Redis;
 using OutOfSchool.Services;
 using OutOfSchool.Services.Contexts;
@@ -40,8 +41,10 @@ using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Communication;
+using OutOfSchool.WebApi.Services.GRPC;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Services.SubordinationStructure;
+using OutOfSchool.WebApi.Services.ProviderAdminOperations;
 using OutOfSchool.WebApi.Util;
 using Serilog;
 
@@ -251,6 +254,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
             services.AddTransient<ICodeficatorService, CodeficatorService>();
+            services.AddTransient<IGRPCCommonService, GRPCCommonService>();
 
             // entities repositories
             services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
@@ -290,6 +294,11 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
             services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
 
+            services.AddTransient<IEntityRepository<AchievementType>, EntityRepository<AchievementType>>();
+            services.AddTransient<IEntityRepository<AchievementTeacher>, EntityRepository<AchievementTeacher>>();
+            services.AddTransient<IAchievementRepository, AchievementRepository>();
+            services.AddTransient<IAchievementService, AchievementService>();
+
             // Institution hierarchy
             services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
             services.AddTransient<ISensitiveEntityRepository<InstitutionFieldDescription>, SensitiveEntityRepository<InstitutionFieldDescription>>();
@@ -326,6 +335,21 @@ namespace OutOfSchool.WebApi
 
             // Notification options
             services.Configure<NotificationsConfig>(Configuration.GetSection(NotificationsConfig.Name));
+
+            // GRPC
+            services.AddOptions<GRPCConfig>()
+                .Bind(Configuration.GetSection(GRPCConfig.Name))
+                .ValidateDataAnnotations();
+
+            var gRPCConfig = Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
+            if (gRPCConfig.Enabled)
+            {
+                services.AddTransient<IProviderAdminOperationsService, ProviderAdminOperationsGRPCService>();
+            }
+            else
+            {
+                services.AddTransient<IProviderAdminOperationsService, ProviderAdminOperationsRESTService>();
+            }
 
             // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
             services.AddSingleton(swaggerConfig);
