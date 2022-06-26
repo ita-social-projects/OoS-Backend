@@ -22,7 +22,8 @@ TwoFactorEnabled,
 LockoutEnd,
 LockoutEnabled,
 AccessFailedCount,
-IsRegistered)
+IsRegistered,
+MustChangePassword)
 VALUES
 ('fe78ed30-7df9-412b-8f1c-a21f3175334f', #Id
 NOW(), #CreatingTime
@@ -45,12 +46,14 @@ NOW(), #CreatingTime
 NULL, #LockoutEnd
 1, #LockoutEnabled
 0, #AccessFailedCount
-1) #IsRegistered
+1, #IsRegistered
+1) #MustChangePassword
 ON DUPLICATE KEY UPDATE # to reset sensitive data   
 Email='admin@adm.com', #Email
 PasswordHash = 'AQAAAAEAACcQAAAAEB+AG8yyfG66fAkFIJ1mMdDx5ChM/wxoUHIwBuJt4cuO+jDCrPMw7D9BLYRtkvbrpg==', #PasswordHash  ->   Kf%ms3nAp7%aH
 SecurityStamp = 'G4GRJFN7ET7EVVDQ4NEQQOY6SETRULJB', #SecurityStamp
-ConcurrencyStamp = 'ed689760-8ab0-45fa-8b13-ec431c093627'; #ConcurrencyStamp
+ConcurrencyStamp = 'ed689760-8ab0-45fa-8b13-ec431c093627', #ConcurrencyStamp
+MustChangePassword = 1; #MustChangePassword
 
 INSERT INTO AspNetUserRoles
 (UserId, RoleId)
