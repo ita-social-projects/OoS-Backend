@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.IdentityServer.ViewModels
 {
-    public class ChangePasswordLoginViewModel
+    public class ChangePasswordLoginViewModel : IValidatableObject
     {
         [Required(ErrorMessage = "Email is required")]
         [DataType(DataType.EmailAddress)]
@@ -24,5 +25,13 @@ namespace OutOfSchool.IdentityServer.ViewModels
         public string ConfirmNewPassword { get; set; }
 
         public string ReturnUrl { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (CurrentPassword.Equals(NewPassword))
+            {
+                yield return new ValidationResult("Current password cannot be equal to new password");
+            }
+        }
     }
 }
