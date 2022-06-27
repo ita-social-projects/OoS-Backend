@@ -18,6 +18,7 @@ using OutOfSchool.Services;
 using OutOfSchool.Services.Extensions;
 
 using Serilog;
+using Serilog.Context;
 
 namespace OutOfSchool.IdentityServer
 {
@@ -35,6 +36,8 @@ namespace OutOfSchool.IdentityServer
 
             var loggerConfigBuilder = new LoggerConfiguration()
                 .ReadFrom.Configuration(config);
+
+            GlobalLogContext.PushProperty("AppVersion", config.GetSection("AppDefaults:Version").Value);
 
             Log.Logger = loggerConfigBuilder.CreateLogger();
 
