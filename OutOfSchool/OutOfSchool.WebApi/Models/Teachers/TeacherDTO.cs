@@ -39,10 +39,10 @@ namespace OutOfSchool.WebApi.Models
         [MaxLength(300)]
         public string Description { get; set; } = string.Empty;
 
-        public string AvatarImageId { get; set; }
+        public string CoverImageId { get; set; }
 
         [JsonProperty(NullValueHandling=NullValueHandling.Ignore)]
-        public IFormFile AvatarImage { get; set; }
+        public IFormFile CoverImage { get; set; }
 
         public Guid WorkshopId { get; set; }
     }
