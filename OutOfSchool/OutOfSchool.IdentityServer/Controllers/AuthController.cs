@@ -225,12 +225,23 @@ namespace OutOfSchool.IdentityServer.Controllers
             });
         }
 
+        /// <summary>
+        /// Generates a view for user to log in with changing password.
+        /// </summary>
+        /// <param name="email">User's email.</param>
+        /// <param name="returnUrl">URL used to redirect user back to client.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the result.</returns>
         [HttpGet]
         public IActionResult ChangePasswordLogin(string email, string returnUrl = "Login")
         {
             return View(new ChangePasswordLoginViewModel { Email = email, ReturnUrl = returnUrl });
         }
 
+        /// <summary>
+        /// Authenticate user with changing password based on model.
+        /// </summary>
+        /// <param name="model"> View model that contains credentials for logging in.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [HttpPost]
         public async Task<IActionResult> ChangePasswordLogin(ChangePasswordLoginViewModel model)
         {
