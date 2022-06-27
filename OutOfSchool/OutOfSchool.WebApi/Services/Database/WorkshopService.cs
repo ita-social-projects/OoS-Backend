@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using AutoMapper;
+using Castle.Components.DictionaryAdapter;
 using H3Lib;
 using H3Lib.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -83,8 +84,11 @@ namespace OutOfSchool.WebApi.Services
             // In case if DirectionId and DepartmentId does not match ClassId
             await this.FillDirectionsFields(dto).ConfigureAwait(false);
 
+            var workshop = mapper.Map<Workshop>(dto);
+            workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
+
             Func<Task<Workshop>> operation = async () =>
-                await workshopRepository.Create(mapper.Map<Workshop>(dto)).ConfigureAwait(false);
+                await workshopRepository.Create(workshop).ConfigureAwait(false);
 
             var newWorkshop = await workshopRepository.RunInTransaction(operation).ConfigureAwait(false);
 
@@ -232,6 +236,8 @@ namespace OutOfSchool.WebApi.Services
             dto.Address.Id = currentWorkshop.AddressId;
 
             mapper.Map(dto, currentWorkshop);
+            currentWorkshop.Teachers = dto.Teachers?.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
+
             try
             {
                 await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
