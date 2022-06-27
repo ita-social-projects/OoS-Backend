@@ -47,6 +47,11 @@ namespace OutOfSchool.IdentityServer.Util
 
                     return managedWorkshopIds;
                 }));
+
+            CreateMap<CreateInstitutionAdminDto, User>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+
+            CreateMap<CreateInstitutionAdminDto, InstitutionAdmin>();
         }
     }
 }
