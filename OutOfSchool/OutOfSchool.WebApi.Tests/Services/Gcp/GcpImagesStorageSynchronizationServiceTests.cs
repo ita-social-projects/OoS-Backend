@@ -115,7 +115,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Gcp
         public async Task SynchronizeAsync_WhenGcpItemsIsEmpty()
         {
             // Arrange
-            var gcpObjects = new Objects {Items = new List<Object>() };
+            var gcpObjects = new Objects { Items = new List<Object>() };
             var dbFileIds = ImagesGenerator.CreateRandomImageIds(3);
             const int countResult = 0;
             SetupDefaultImageFilesStorageMock(gcpObjects);
@@ -132,7 +132,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Gcp
         public void SynchronizeAsync_WhenGcpItemsIsNull()
         {
             // Arrange
-            var gcpObjects = new Objects {Items = null };
+            var gcpObjects = new Objects { Items = null };
             var dbFileIds = ImagesGenerator.CreateRandomImageIds(3);
             imageFilesStorageMock.Setup(x => x.GetBulkListsOfObjectsAsync(It.IsAny<string>(), It.IsAny<ListObjectsOptions>()))
                 .Returns(CreateAsyncEnumerableGcpObjects(gcpObjects));
@@ -228,8 +228,11 @@ namespace OutOfSchool.WebApi.Tests.Services.Gcp
             return objects;
         }
 
-        private static IAsyncEnumerable<Objects> CreateAsyncEnumerableGcpObjects(Objects objects)
-            => new List<Objects> { objects }.ToAsyncEnumerable();
+        private static async IAsyncEnumerable<Objects> CreateAsyncEnumerableGcpObjects(Objects objects)
+        {
+            await Task.CompletedTask;
+            yield return objects;
+        }
 
         private static void DeleteObjectWithName(Objects objects, string name)
         {
