@@ -8,5 +8,8 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="5.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
-
+  <Target Name="PostClean" AfterTargets="Clean">
+    <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
+    <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
+  </Target>
 </Project>

@@ -38,7 +38,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.Redis", "OutOfS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutOfSchool.RazorTemplatesData", "OutOfSchool.RazorTemplatesData\OutOfSchool.RazorTemplatesData.csproj", "{8B05B816-EAB3-40FA-B549-3072F933F759}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.GRPC", "OutOfSchool.gRPC\OutOfSchool.GRPC.csproj", "{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfSchool.GRPC", "OutOfSchool.GRPC\OutOfSchool.GRPC.csproj", "{FDDEE291-850B-4CB7-A5D6-4A3854C24EF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
