@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.Common;
 
 namespace OutOfSchool.IdentityServer.ViewModels
 {
@@ -10,7 +11,7 @@ namespace OutOfSchool.IdentityServer.ViewModels
 
         [Required(ErrorMessage = "Password is required")]
         [RegularExpression(
-            @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+            Constants.PasswordRegexViewModel,
             ErrorMessage = "Password must contain at least one capital, number and symbol(@$!%*?&).")]
         [DataType(DataType.Password)]
         public string NewPassword { get; set; }
