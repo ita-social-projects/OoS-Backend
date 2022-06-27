@@ -13,6 +13,11 @@ namespace OutOfSchool.Services.Models
         public string UserId { get; set; }
 
         public Guid InstitutionId { get; set; }
+
         public virtual Institution Institution { get; set; }
+
+        public long CodeficatorId { get; set; }
+
+        public virtual Codeficator Codeficator { get; set; }
     }
 }
