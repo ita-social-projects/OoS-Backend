@@ -8,6 +8,12 @@
 
         public const string BlockProviderAdmin = "provideradmin/block/";
 
+        public const string CreateInstitutionAdmin = "institutionadmin/create";
+
+        public const string DeleteInstitutionAdmin = "institutionadmin/delete/";
+
+        public const string BlockInstitutionAdmin = "institutionadmin/block/";
+
         public const int BufferSize = 1024;
     }
 }
