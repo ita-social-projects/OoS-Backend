@@ -10,6 +10,7 @@ using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;
@@ -18,12 +19,12 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
 {
     public ProviderServiceV2(
         IProviderRepository providerRepository,
-        IEntityRepository<User> usersRepository,
+        IEntityRepository<string, User> usersRepository,
         IRatingService ratingService,
         ILogger<ProviderServiceV2> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
-        IEntityRepository<Address> addressRepository,
+        IEntityRepository<long, Address> addressRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
         IProviderAdminRepository providerAdminRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
@@ -31,19 +32,19 @@ public class ProviderServiceV2 : ProviderService, IProviderServiceV2
         INotificationService notificationService,
         IProviderAdminService providerAdminService)
         : base(
-            providerRepository,
-            usersRepository,
-            ratingService,
-            logger,
-            localizer,
-            mapper,
-            addressRepository,
-            workshopServiceCombiner,
-            providerAdminRepository,
-            providerImagesService,
-            changesLogService,
-            notificationService,
-            providerAdminService)
+              providerRepository,
+              usersRepository,
+              ratingService,
+              logger,
+              localizer,
+              mapper,
+              addressRepository,
+              workshopServiceCombiner,
+              providerAdminRepository,
+              providerImagesService,
+              changesLogService,
+              notificationService,
+              providerAdminService)
     {
     }
 

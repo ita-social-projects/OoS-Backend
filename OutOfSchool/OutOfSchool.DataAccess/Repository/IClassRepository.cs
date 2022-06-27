@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IClassRepository : IEntityRepository<Class>, IExistable<Class>
+public interface IClassRepository : IEntityRepository<long, Class>, IExistable<Class>
 {
     /// <summary>
     /// Checks entity departmentId existens.

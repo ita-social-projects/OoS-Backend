@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Extensions;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
@@ -14,28 +15,29 @@ namespace OutOfSchool.Services.Repository;
 /// Repository for accessing the database.
 /// </summary>
 /// <typeparam name="TKey">Key type.</typeparam>
-/// <typeparam name="TValue">Entity type.</typeparam>
-public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase<TKey, TValue>
-    where TValue : class, new()
+/// <typeparam name="TEntity">Entity type.</typeparam>
+public abstract class EntityRepositoryBase<TKey, TEntity> : IEntityRepositoryBase<TKey, TEntity>
+    where TEntity : class, IKeyedEntity<TKey>, new()
+    where TKey : IEquatable<TKey>
 {
     protected readonly OutOfSchoolDbContext dbContext;
-    protected readonly DbSet<TValue> dbSet;
+    protected readonly DbSet<TEntity> dbSet;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="EntityRepository{T}"/> class.
+    /// Initializes a new instance of the <see cref="EntityRepositoryBase{TKey, TEntity}"/> class.
     /// </summary>
     /// <param name="dbContext">OutOfSchoolDbContext.</param>
     protected EntityRepositoryBase(OutOfSchoolDbContext dbContext)
     {
         this.dbContext = dbContext;
-        dbSet = this.dbContext.Set<TValue>();
+        dbSet = this.dbContext.Set<TEntity>();
     }
 
     public IUnitOfWork UnitOfWork => dbContext;
 
     /// <inheritdoc/>
     // TODO: Investigate why sometimes can add entities with their own ids, given with the entity instead of EF Core generate it
-    public virtual async Task<TValue> Create(TValue entity)
+    public virtual async Task<TEntity> Create(TEntity entity)
     {
         await dbSet.AddAsync(entity).ConfigureAwait(false);
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -44,7 +46,7 @@ public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase
     }
 
     /// <inheritdoc/>
-    public virtual async Task<IEnumerable<TValue>> Create(IEnumerable<TValue> entities)
+    public virtual async Task<IEnumerable<TEntity>> Create(IEnumerable<TEntity> entities)
     {
         await dbSet.AddRangeAsync(entities).ConfigureAwait(false);
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -76,7 +78,7 @@ public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase
     }
 
     /// <inheritdoc/>
-    public virtual async Task Delete(TValue entity)
+    public virtual async Task Delete(TEntity entity)
     {
         dbContext.Entry(entity).State = EntityState.Deleted;
 
@@ -84,17 +86,17 @@ public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase
     }
 
     /// <inheritdoc/>
-    public virtual async Task<IEnumerable<TValue>> GetAll()
+    public virtual async Task<IEnumerable<TEntity>> GetAll()
     {
         return await dbSet.ToListAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public virtual async Task<IEnumerable<TValue>> GetAllWithDetails(string includeProperties = "")
+    public virtual async Task<IEnumerable<TEntity>> GetAllWithDetails(string includeProperties = "")
     {
-        IQueryable<TValue> query = dbSet;
+        IQueryable<TEntity> query = dbSet;
         foreach (var includeProperty in includeProperties.Split(
-                     new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
         {
             query = query.Include(includeProperty);
         }
@@ -102,7 +104,7 @@ public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase
         return await query.ToListAsync();
     }
 
-    public virtual async Task<IEnumerable<TValue>> GetByFilter(Expression<Func<TValue, bool>> predicate, string includeProperties = "")
+    public virtual async Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> predicate, string includeProperties = "")
     {
         var query = this.dbSet.Where(predicate);
 
@@ -116,7 +118,7 @@ public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase
     }
 
     /// <inheritdoc/>
-    public virtual IQueryable<TValue> GetByFilterNoTracking(Expression<Func<TValue, bool>> predicate, string includeProperties = "")
+    public virtual IQueryable<TEntity> GetByFilterNoTracking(Expression<Func<TEntity, bool>> predicate, string includeProperties = "")
     {
         var query = this.dbSet.Where(predicate);
 
@@ -130,10 +132,10 @@ public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase
     }
 
     /// <inheritdoc/>
-    public virtual Task<TValue> GetById(TKey id) => dbSet.FindAsync(id).AsTask();
+    public virtual Task<TEntity> GetById(TKey id) => dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
 
     /// <inheritdoc/>
-    public virtual async Task<TValue> Update(TValue entity)
+    public virtual async Task<TEntity> Update(TEntity entity)
     {
         dbContext.Entry(entity).State = EntityState.Modified;
 
@@ -143,31 +145,31 @@ public abstract class EntityRepositoryBase<TKey, TValue> : IEntityRepositoryBase
     }
 
     /// <inheritdoc/>
-    public virtual Task<int> Count(Expression<Func<TValue, bool>> where = null)
+    public virtual Task<int> Count(Expression<Func<TEntity, bool>> where = null)
     {
         return where == null
-            ? dbSet.CountAsync()
-            : dbSet.Where(where).CountAsync();
+               ? dbSet.CountAsync()
+               : dbSet.Where(where).CountAsync();
     }
 
     /// <inheritdoc/>
-    public virtual Task<bool> Any(Expression<Func<TValue, bool>> where = null)
+    public virtual Task<bool> Any(Expression<Func<TEntity, bool>> where = null)
     {
         return where == null
-            ? dbSet.AnyAsync()
-            : dbSet.Where(where).AnyAsync();
+                 ? dbSet.AnyAsync()
+                 : dbSet.Where(where).AnyAsync();
     }
 
     /// <inheritdoc/>
-    public virtual IQueryable<TValue> Get(
+    public virtual IQueryable<TEntity> Get(
         int skip = 0,
         int take = 0,
         string includeProperties = "",
-        Expression<Func<TValue, bool>> where = null,
-        Dictionary<Expression<Func<TValue, object>>, SortDirection> orderBy = null,
+        Expression<Func<TEntity, bool>> where = null,
+        Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
         bool asNoTracking = false)
     {
-        IQueryable<TValue> query = (IQueryable<TValue>)dbSet;
+        IQueryable<TEntity> query = dbSet;
         if (where != null)
         {
             query = query.Where(where);

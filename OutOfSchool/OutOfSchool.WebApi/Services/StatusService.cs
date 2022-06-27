@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services;
 public class StatusService : IStatusService
 {
 
-    private readonly IEntityRepository<InstitutionStatus> repository;
+    private readonly IEntityRepository<long, InstitutionStatus> repository;
     private readonly ILogger<StatusService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -28,7 +28,7 @@ public class StatusService : IStatusService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public StatusService(IEntityRepository<InstitutionStatus> repository, ILogger<StatusService> logger, IStringLocalizer<SharedResource> localizer)
+    public StatusService(IEntityRepository<long, InstitutionStatus> repository, ILogger<StatusService> logger, IStringLocalizer<SharedResource> localizer)
     {
         this.localizer = localizer;
         this.repository = repository;

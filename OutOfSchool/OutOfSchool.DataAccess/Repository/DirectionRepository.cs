@@ -8,7 +8,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class DirectionRepository : EntityRepository<Direction>, IDirectionRepository
+public class DirectionRepository : EntityRepository<long, Direction>, IDirectionRepository
 {
     public DirectionRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)

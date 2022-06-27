@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.ChatWorkshop;
 
-public class ChatMessageWorkshop
+public class ChatMessageWorkshop : IKeyedEntity<Guid>
 {
     public Guid Id { get; set; }
 

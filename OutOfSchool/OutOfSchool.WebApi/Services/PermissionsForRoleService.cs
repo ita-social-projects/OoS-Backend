@@ -14,7 +14,7 @@ namespace OutOfSchool.WebApi.Services;
 
 public class PermissionsForRoleService : IPermissionsForRoleService
 {
-    private readonly IEntityRepository<PermissionsForRole> repository;
+    private readonly IEntityRepository<long, PermissionsForRole> repository;
     private readonly ILogger<PermissionsForRoleService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -24,7 +24,7 @@ public class PermissionsForRoleService : IPermissionsForRoleService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public PermissionsForRoleService(IEntityRepository<PermissionsForRole> repository, ILogger<PermissionsForRoleService> logger, IStringLocalizer<SharedResource> localizer)
+    public PermissionsForRoleService(IEntityRepository<long, PermissionsForRole> repository, ILogger<PermissionsForRoleService> logger, IStringLocalizer<SharedResource> localizer)
     {
         this.localizer = localizer;
         this.repository = repository;

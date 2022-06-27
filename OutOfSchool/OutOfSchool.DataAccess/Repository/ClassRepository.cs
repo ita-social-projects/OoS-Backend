@@ -3,10 +3,10 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ClassRepository : EntityRepository<Class>, IClassRepository
+public class ClassRepository : EntityRepository<long, Class>, IClassRepository
 {
     public ClassRepository(OutOfSchoolDbContext dbContext)
-        : base(dbContext)
+     : base(dbContext)
     {
     }
 

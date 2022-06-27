@@ -21,7 +21,7 @@ public class AddressServiceTests
 {
     private DbContextOptions<OutOfSchoolDbContext> options;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<Address> repo;
+    private IEntityRepository<long, Address> repo;
     private IAddressService service;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<AddressService>> logger;
@@ -36,7 +36,7 @@ public class AddressServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        repo = new EntityRepository<Address>(context);
+        repo = new EntityRepository<long, Address>(context);
         logger = new Mock<ILogger<AddressService>>();
         service = new AddressService(repo, logger.Object, localizer.Object);
 
@@ -180,63 +180,63 @@ public class AddressServiceTests
             context.Database.EnsureCreated();
 
             var addresses = new List<Address>()
+        {
+            new Address()
             {
-                new Address()
-                {
-                    Id = 1,
-                    Region = "Region1",
-                    District = "District1",
-                    City = "City1",
-                    Street = "Street1",
-                    BuildingNumber = "BuildingNumber1",
-                    Latitude = 41.45383,
-                    Longitude = 51.56765,
-                },
-                new Address()
-                {
-                    Id = 2,
-                    Region = "Region2",
-                    District = "District2",
-                    City = "City2",
-                    Street = "Street2",
-                    BuildingNumber = "BuildingNumber2",
-                    Latitude = 42.45383,
-                    Longitude = 52.56765,
-                },
-                new Address()
-                {
-                    Id = 3,
-                    Region = "Region3",
-                    District = "District3",
-                    City = "City3",
-                    Street = "Street3",
-                    BuildingNumber = "BuildingNumber3",
-                    Latitude = 43.45383,
-                    Longitude = 53.56765,
-                },
-                new Address()
-                {
-                    Id = 4,
-                    Region = "Region4",
-                    District = "District4",
-                    City = "City4",
-                    Street = "Street4",
-                    BuildingNumber = "BuildingNumber4",
-                    Latitude = 44.45383,
-                    Longitude = 54.56765,
-                },
-                new Address()
-                {
-                    Id = 5,
-                    Region = "Region5",
-                    District = "District5",
-                    City = "City5",
-                    Street = "Street5",
-                    BuildingNumber = "BuildingNumber5",
-                    Latitude = 45.45383,
-                    Longitude = 55.56765,
-                },
-            };
+                Id = 1,
+                Region = "Region1",
+                District = "District1",
+                City = "City1",
+                Street = "Street1",
+                BuildingNumber = "BuildingNumber1",
+                Latitude = 41.45383,
+                Longitude = 51.56765,
+            },
+            new Address()
+            {
+                Id = 2,
+                Region = "Region2",
+                District = "District2",
+                City = "City2",
+                Street = "Street2",
+                BuildingNumber = "BuildingNumber2",
+                Latitude = 42.45383,
+                Longitude = 52.56765,
+            },
+            new Address()
+            {
+                Id = 3,
+                Region = "Region3",
+                District = "District3",
+                City = "City3",
+                Street = "Street3",
+                BuildingNumber = "BuildingNumber3",
+                Latitude = 43.45383,
+                Longitude = 53.56765,
+            },
+            new Address()
+            {
+                Id = 4,
+                Region = "Region4",
+                District = "District4",
+                City = "City4",
+                Street = "Street4",
+                BuildingNumber = "BuildingNumber4",
+                Latitude = 44.45383,
+                Longitude = 54.56765,
+            },
+            new Address()
+            {
+                Id = 5,
+                Region = "Region5",
+                District = "District5",
+                City = "City5",
+                Street = "Street5",
+                BuildingNumber = "BuildingNumber5",
+                Latitude = 45.45383,
+                Longitude = 55.56765,
+            },
+        };
 
             context.Addresses.AddRange(addresses);
             context.SaveChanges();

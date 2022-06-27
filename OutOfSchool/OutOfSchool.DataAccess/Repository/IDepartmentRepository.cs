@@ -2,7 +2,7 @@
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IDepartmentRepository : IEntityRepository<Department>, IExistable<Department>
+public interface IDepartmentRepository : IEntityRepository<long, Department>, IExistable<Department>
 {
     /// <summary>
     /// Checks entity directionId existens.

@@ -10,9 +10,7 @@ using GrpcService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using Newtonsoft.Json;
-
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Models;
@@ -32,7 +30,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
 
     private readonly IdentityServerConfig identityServerConfig;
     private readonly ProviderAdminConfig providerAdminConfig;
-    private readonly IEntityRepository<User> userRepository;
+    private readonly IEntityRepository<string, User> userRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly ILogger<ProviderAdminService> logger;
     private readonly IMapper mapper;
@@ -47,7 +45,7 @@ public class ProviderAdminService : CommunicationService, IProviderAdminService
         IOptions<ProviderAdminConfig> providerAdminConfig,
         IOptions<CommunicationConfig> communicationConfig,
         IProviderAdminRepository providerAdminRepository,
-        IEntityRepository<User> userRepository,
+        IEntityRepository<string, User> userRepository,
         IMapper mapper,
         ILogger<ProviderAdminService> logger,
         IGRPCCommonService gRPCCommonService,

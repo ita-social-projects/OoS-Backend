@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OutOfSchool.Services.Models;
 
-public class ProviderAdmin
+public class ProviderAdmin : IKeyedEntity<(string, Guid)>
 {
     public string UserId { get; set; }
 
@@ -20,4 +19,15 @@ public class ProviderAdmin
     public bool IsDeputy { get; set; }
 
     public virtual List<Workshop> ManagedWorkshops { get; set; }
+
+    [NotMapped]
+    public (string, Guid) Id
+    {
+        get => (UserId, ProviderId);
+        set
+        {
+            UserId = value.Item1;
+            ProviderId = value.Item2;
+        }
+    }
 }

@@ -20,7 +20,7 @@ public class CityServiceTests
 {
     private ICityService service;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<City> repository;
+    private IEntityRepository<long, City> repository;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<CityService>> logger;
     private DbContextOptions<OutOfSchoolDbContext> options;
@@ -34,7 +34,7 @@ public class CityServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        repository = new EntityRepository<City>(context);
+        repository = new EntityRepository<long, City>(context);
         logger = new Mock<ILogger<CityService>>();
         service = new CityService(repository, logger.Object, localizer.Object);
 
@@ -187,29 +187,29 @@ public class CityServiceTests
             context.Database.EnsureCreated();
 
             var cities = new List<City>()
+        {
+            new City()
             {
-                new City()
-                {
-                    Id = 1,
-                    Name = "NoName",
-                    Region = "Test",
-                    District = "Test",
-                },
-                new City()
-                {
-                    Id = 2,
-                    Name = "HaveName",
-                    Region = "Test",
-                    District = "Test",
-                },
-                new City()
-                {
-                    Id = 3,
-                    Name = "MissName",
-                    Region = "Test",
-                    District = "Test",
-                },
-            };
+                Id = 1,
+                Name = "NoName",
+                Region = "Test",
+                District = "Test",
+            },
+            new City()
+            {
+                Id = 2,
+                Name = "HaveName",
+                Region = "Test",
+                District = "Test",
+            },
+            new City()
+            {
+                Id = 3,
+                Name = "MissName",
+                Region = "Test",
+                District = "Test",
+            },
+        };
 
             context.Cities.AddRange(cities);
             context.SaveChanges();

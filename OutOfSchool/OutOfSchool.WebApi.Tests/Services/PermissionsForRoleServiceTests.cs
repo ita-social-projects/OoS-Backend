@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Tests.Services;
 public class PermissionsForRoleServiceTests
 {
     private IPermissionsForRoleService service;
-    private IEntityRepository<PermissionsForRole> repository;
+    private IEntityRepository<long, PermissionsForRole> repository;
     private DbContextOptions<OutOfSchoolDbContext> options;
 
     [SetUp]
@@ -34,7 +34,7 @@ public class PermissionsForRoleServiceTests
         options = builder.Options;
         var context = new OutOfSchoolDbContext(options);
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
-        repository = new EntityRepository<PermissionsForRole>(context);
+        repository = new EntityRepository<long, PermissionsForRole>(context);
         var logger = new Mock<ILogger<PermissionsForRoleService>>();
         service = new PermissionsForRoleService(repository, logger.Object, localizer.Object);
 

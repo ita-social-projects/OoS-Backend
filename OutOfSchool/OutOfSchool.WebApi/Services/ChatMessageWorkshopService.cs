@@ -21,7 +21,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class ChatMessageWorkshopService : IChatMessageWorkshopService
 {
-    private readonly IEntityRepository<ChatMessageWorkshop> messageRepository;
+    private readonly IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
     private readonly IChatRoomWorkshopService roomService;
     private readonly ILogger<ChatMessageWorkshopService> logger;
 
@@ -32,7 +32,7 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
     /// <param name="roomRepository">Repository for the ChatRoom entity.</param>
     /// <param name="logger">Logger.</param>
     public ChatMessageWorkshopService(
-        IEntityRepository<ChatMessageWorkshop> chatMessageRepository,
+        IEntityRepository<Guid, ChatMessageWorkshop> chatMessageRepository,
         IChatRoomWorkshopService roomRepository,
         ILogger<ChatMessageWorkshopService> logger)
     {
@@ -128,9 +128,9 @@ public class ChatMessageWorkshopService : IChatMessageWorkshopService
         try
         {
             var sortExpression = new Dictionary<Expression<Func<ChatMessageWorkshop, object>>, SortDirection>
-            {
-                { x => x.CreatedDateTime, SortDirection.Descending },
-            };
+        {
+            { x => x.CreatedDateTime, SortDirection.Descending },
+        };
 
             var query = messageRepository.Get(
                 skip: offsetFilter.From,

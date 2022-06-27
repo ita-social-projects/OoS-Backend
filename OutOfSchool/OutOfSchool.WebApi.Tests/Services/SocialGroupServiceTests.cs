@@ -20,7 +20,7 @@ public class SocialGroupServiceTests
 {
     private ISocialGroupService service;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<SocialGroup> repository;
+    private IEntityRepository<long, SocialGroup> repository;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<SocialGroupService>> logger;
     private DbContextOptions<OutOfSchoolDbContext> options;
@@ -35,7 +35,7 @@ public class SocialGroupServiceTests
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
         localizer = new Mock<IStringLocalizer<SharedResource>>();
-        repository = new EntityRepository<SocialGroup>(context);
+        repository = new EntityRepository<long, SocialGroup>(context);
         logger = new Mock<ILogger<SocialGroupService>>();
         service = new SocialGroupService(repository, logger.Object, localizer.Object);
 
@@ -155,11 +155,11 @@ public class SocialGroupServiceTests
             context.Database.EnsureCreated();
 
             var socialGroups = new List<SocialGroup>()
-            {
-                new SocialGroup { Name = "NoName", },
-                new SocialGroup { Name = "HaveName", },
-                new SocialGroup { Name = "MissName", },
-            };
+        {
+            new SocialGroup { Name = "NoName", },
+            new SocialGroup { Name = "HaveName", },
+            new SocialGroup { Name = "MissName", },
+        };
 
             context.SocialGroups.AddRange(socialGroups);
             context.SaveChanges();

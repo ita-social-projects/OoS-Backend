@@ -5,11 +5,13 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
 public interface IEntityRepositoryBase<TKey, TEntity>
-    where TEntity : class, new()
+    where TEntity : class, IKeyedEntity<TKey>, new()
+    where TKey : IEquatable<TKey>
 {
     IUnitOfWork UnitOfWork { get; }
 
@@ -141,14 +143,15 @@ public interface IEntityRepositoryBase<TKey, TEntity>
 /// <summary>
 /// Interface of repository for accessing the database.
 /// </summary>
-/// <typeparam name="TEntity"> Entity type.</typeparam>
-public interface IEntityRepository<TEntity> : IEntityRepositoryBase<long, TEntity>
-    where TEntity : class, new()
+/// <typeparam name="TKey">Key type.</typeparam>
+/// <typeparam name="TEntity">Entity type.</typeparam>
+public interface IEntityRepository<TKey, TEntity> : IEntityRepositoryBase<TKey, TEntity>
+    where TEntity : class, IKeyedEntity<TKey>, new()
+    where TKey : IEquatable<TKey>
 {
 }
 
 public interface ISensitiveEntityRepository<TEntity> : IEntityRepositoryBase<Guid, TEntity>
-    where TEntity : class, new()
+    where TEntity : class, IKeyedEntity<Guid>, new()
 {
-
 }

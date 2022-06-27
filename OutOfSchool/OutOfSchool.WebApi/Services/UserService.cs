@@ -19,7 +19,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class UserService : IUserService
 {
-    private readonly IEntityRepository<User> repository;
+    private readonly IEntityRepository<string, User> repository;
     private readonly ILogger<UserService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -29,7 +29,7 @@ public class UserService : IUserService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public UserService(IEntityRepository<User> repository, ILogger<UserService> logger, IStringLocalizer<SharedResource> localizer)
+    public UserService(IEntityRepository<string, User> repository, ILogger<UserService> logger, IStringLocalizer<SharedResource> localizer)
     {
         this.localizer = localizer;
         this.repository = repository;

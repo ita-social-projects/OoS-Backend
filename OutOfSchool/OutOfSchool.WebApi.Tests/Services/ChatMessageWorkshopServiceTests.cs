@@ -30,7 +30,7 @@ public class ChatMessageWorkshopServiceTests
         WorkshopId = Guid.NewGuid(),
     };
 
-    private IEntityRepository<ChatMessageWorkshop> messageRepository;
+    private IEntityRepository<Guid, ChatMessageWorkshop> messageRepository;
     private Mock<IChatRoomWorkshopService> roomServiceMock;
     private Mock<ILogger<ChatMessageWorkshopService>> loggerMock;
 
@@ -50,7 +50,7 @@ public class ChatMessageWorkshopServiceTests
         options = builder.Options;
         dbContext = new OutOfSchoolDbContext(options);
 
-        messageRepository = new EntityRepository<ChatMessageWorkshop>(dbContext);
+        messageRepository = new EntityRepository<Guid, ChatMessageWorkshop>(dbContext);
         roomServiceMock = new Mock<IChatRoomWorkshopService>();
         loggerMock = new Mock<ILogger<ChatMessageWorkshopService>>();
 

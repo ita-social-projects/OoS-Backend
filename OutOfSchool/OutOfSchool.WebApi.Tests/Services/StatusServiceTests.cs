@@ -23,7 +23,7 @@ public class StatusServiceTests
 {
     private IStatusService service;
     private OutOfSchoolDbContext context;
-    private IEntityRepository<InstitutionStatus> repository;
+    private IEntityRepository<long, InstitutionStatus> repository;
     private DbContextOptions<OutOfSchoolDbContext> options;
 
     [SetUp]
@@ -34,7 +34,7 @@ public class StatusServiceTests
 
         options = builder.Options;
         context = new OutOfSchoolDbContext(options);
-        repository = new EntityRepository<InstitutionStatus>(context);
+        repository = new EntityRepository<long, InstitutionStatus>(context);
         var logger = new Mock<ILogger<StatusService>>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         service = new StatusService(repository, logger.Object, localizer.Object);

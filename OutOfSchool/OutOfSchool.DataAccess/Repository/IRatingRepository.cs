@@ -5,7 +5,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IRatingRepository : IEntityRepository<Rating>
+public interface IRatingRepository : IEntityRepository<long, Rating>
 {
     Tuple<double, int> GetAverageRating(Guid entityId, RatingType type);
 
