@@ -5,5 +5,6 @@
         Provider,
         Parent,
         Admin,
+        InstitutionAdmin
     }
 }
