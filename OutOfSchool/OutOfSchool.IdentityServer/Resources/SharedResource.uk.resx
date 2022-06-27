@@ -148,7 +148,7 @@
     <value>Прізвище</value>
   </data>
   <data name="Login" xml:space="preserve">
-    <value>Логін</value>
+    <value>Увійти</value>
   </data>
   <data name="Middle name" xml:space="preserve">
     <value>По-батькові</value>
@@ -350,5 +350,11 @@ Login: {0}
   </data>
   <data name="Change password failed" xml:space="preserve">
     <value>Помилка при зміні паролю. Зверниться до адміністратора.</value>
-  </data>  
+  </data>
+  <data name="User is not allowed to change password login action" xml:space="preserve">
+    <value>Користувач не має доступу до логіну зі зміною паролю</value>
+  </data>
+  <data name="Login with changing password" xml:space="preserve">
+    <value>Увійти зі зміною паролю</value>
+  </data>
 </root>
