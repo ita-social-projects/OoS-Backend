@@ -32,6 +32,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.DataAccess;
 using OutOfSchool.WebApi.Config.Images;
@@ -41,6 +42,7 @@ using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Communication;
+using OutOfSchool.WebApi.Services.Gcp;
 using OutOfSchool.WebApi.Services.GRPC;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Services.SubordinationStructure;
@@ -164,7 +166,7 @@ namespace OutOfSchool.WebApi
             // Image options
             services.Configure<GcpStorageImagesSourceConfig>(Configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
-            services.AddSingleton<MongoDb>();
+            //services.AddSingleton<MongoDb>();
             services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
             services.Configure<ImageOptions<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
             services.Configure<ImageOptions<Provider>>(Configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
@@ -207,9 +209,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
-            services.AddElasticsearchSynchronization(
-                builder => builder.Bind(Configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName)),
-                Configuration);
+            services.AddElasticsearchSynchronization(Configuration);
 
             // entities services
             services.AddTransient<IAddressService, AddressService>();
@@ -286,6 +286,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
             services.AddImagesStorage(turnOnFakeStorage: Configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
+            services.AddGcpSynchronization(Configuration);
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
@@ -357,6 +358,7 @@ namespace OutOfSchool.WebApi
             services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddSignalR();
+            services.AddDefaultQuartz(Configuration);
 
             services.AddStackExchangeRedisCache(options =>
             {
