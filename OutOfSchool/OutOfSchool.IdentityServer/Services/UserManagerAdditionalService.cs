@@ -22,13 +22,17 @@ namespace OutOfSchool.IdentityServer.Services
             UserManager<User> userManager,
             OutOfSchoolDbContext storeContext)
         {
-            this.logger = logger;
-            this.userManager = userManager;
-            this.storeContext = storeContext;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            this.storeContext = storeContext ?? throw new ArgumentNullException(nameof(storeContext));
         }
 
         public async Task<IdentityResult> ChangePasswordWithRequiredMustChangePasswordAsync(User user, string currentPassword, string newPassword)
         {
+            _ = user ?? throw new ArgumentNullException(nameof(user));
+            _ = currentPassword ?? throw new ArgumentNullException(nameof(currentPassword));
+            _ = newPassword ?? throw new ArgumentNullException(nameof(newPassword));
+
             var executionStrategy = storeContext.Database.CreateExecutionStrategy();
             return await executionStrategy.ExecuteAsync(
                 async () =>
