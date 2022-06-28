@@ -109,8 +109,7 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<TeacherDTO, Teacher>()
                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
                 .ForMember(dest => dest.WorkshopId, opt => opt.Ignore());
-            CreateMap<Teacher, TeacherDTO>()
-                .ForMember(dest => dest.AvatarImageId, opt => opt.MapFrom(src => src.CoverImageId));
+            CreateMap<Teacher, TeacherDTO>();
 
             CreateMap<DateTimeRange, DateTimeRangeDto>()
                 .ForMember(dtr => dtr.Workdays, cfg => cfg.MapFrom(dtr => dtr.Workdays.ToDaysBitMaskEnumerable().ToList()));
