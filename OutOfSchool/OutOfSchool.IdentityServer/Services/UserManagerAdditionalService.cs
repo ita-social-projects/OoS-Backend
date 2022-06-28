@@ -68,7 +68,7 @@ namespace OutOfSchool.IdentityServer.Services
                     {
                         logger.LogError(ex, "ChangePasswordWithRequiredMustChangePassword failed");
                         await transaction.RollbackAsync().ConfigureAwait(false);
-                        return IdentityResult.Failed();
+                        throw;
                     }
                     finally
                     {
