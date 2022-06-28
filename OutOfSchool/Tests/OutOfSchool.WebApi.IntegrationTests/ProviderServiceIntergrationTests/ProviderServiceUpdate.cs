@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
     using OutOfSchool.Services.Repository;
     using OutOfSchool.Tests;
     using OutOfSchool.Tests.Common.TestDataGenerators;
-    using OutOfSchool.WebApi.Models;
+    using OutOfSchool.WebApi.Models.Providers;
     using OutOfSchool.WebApi.Services;
     using OutOfSchool.WebApi.Util;
 
@@ -58,6 +58,8 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
             var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
             var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
             var changesLogService = new Mock<IChangesLogService>();
+            var notificationService = new Mock<INotificationService>();
+            var providerAdminService = new Mock<IProviderAdminService>();
 
             this.providerService = new ProviderService(
                 providerRepository,
@@ -70,7 +72,9 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 workshopServicesCombiner.Object,
                 providerAdminRepository.Object,
                 providerImagesService.Object,
-                changesLogService.Object);
+                changesLogService.Object,
+                notificationService.Object,
+                providerAdminService.Object);
         }
 
         [Test]

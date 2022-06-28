@@ -6,6 +6,7 @@ using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Extensions
 {

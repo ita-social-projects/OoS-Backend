@@ -14,6 +14,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Models.Notifications;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Models.Workshop;
@@ -101,7 +102,9 @@ namespace OutOfSchool.WebApi.Util
                  .ForMember(dest => dest.Institution, opt => opt.Ignore())
                  .ForMember(dest => dest.InstitutionStatus, opt => opt.Ignore())
                  .ForMember(dest => dest.Images, opt => opt.Ignore())
-                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore());
+                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
+                 .ForMember(dest => dest.Status, opt => opt.Ignore())
+                 .ForMember(dest => dest.LicenseStatus, opt => opt.Ignore());
 
             CreateMap<TeacherDTO, Teacher>()
                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())

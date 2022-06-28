@@ -4,11 +4,10 @@ using Newtonsoft.Json.Converters;
 namespace OutOfSchool.Services.Enums
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum NotificationType
+    public enum ProviderLicenseStatus
     {
-        Application,
-        Chat,
-        Workshop,
-        Provider,
+        NotProvided,
+        Pending,
+        Approved,
     }
 }

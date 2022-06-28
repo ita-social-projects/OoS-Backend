@@ -15,6 +15,7 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bogus;
 using OutOfSchool.Common.PermissionsModule;
@@ -103,12 +104,13 @@ namespace OutOfSchool.Tests.Common
         /// <summary>
         /// Gets random Edrpou/Ipn number.
         /// </summary>
-        public static long EdrpouIpnNumber => long.Parse(faker.Random.ReplaceNumbers(faker.PickRandom(EdrpouIpnFormats)));
+        public static long EdrpouIpnNumber => long.Parse(EdrpouIpnString);
 
         /// <summary>
         /// Gets random Edrpou/Ipn string.
         /// </summary>
-        public static string EdrpouIpnString => faker.Random.ReplaceNumbers(faker.PickRandom(EdrpouIpnFormats));
+        public static string EdrpouIpnString =>
+            Regex.Replace(faker.Random.ReplaceNumbers(faker.PickRandom(EdrpouIpnFormats)), "^0", "1");
 
         /// <summary>
         /// Gets random "job area" string to use as fake role name in our test cases
