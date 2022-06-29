@@ -253,6 +253,7 @@ namespace OutOfSchool.WebApi
             services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
+            services.AddTransient<ICodeficatorService, CodeficatorService>();
             services.AddTransient<IGRPCCommonService, GRPCCommonService>();
 
             // entities repositories
@@ -303,6 +304,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
             services.AddTransient<ISensitiveEntityRepository<InstitutionFieldDescription>, SensitiveEntityRepository<InstitutionFieldDescription>>();
             services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
+
+            services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 
             services.Configure<ChangesLogConfig>(Configuration.GetSection(ChangesLogConfig.Name));
 

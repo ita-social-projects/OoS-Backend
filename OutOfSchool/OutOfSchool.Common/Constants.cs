@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OutOfSchool.Common
+﻿namespace OutOfSchool.Common
 {
     public static class Constants
     {
@@ -29,5 +25,7 @@ namespace OutOfSchool.Common
         public const string EmailRegexViewModel = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
 
         public const string PasswordRegexViewModel = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
+
+        public const string AddressSeparator = ", ";
     }
 }

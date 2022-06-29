@@ -13,6 +13,7 @@ using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
+using OutOfSchool.WebApi.Models.Codeficator;
 using OutOfSchool.WebApi.Models.Notifications;
 using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
@@ -143,6 +144,9 @@ namespace OutOfSchool.WebApi.Util
             CreateMap<InstitutionHierarchy, InstitutionHierarchyDto>().ReverseMap();
             CreateMap<Institution, InstitutionDto>().ReverseMap();
             CreateMap<InstitutionFieldDescription, InstitutionFieldDescriptionDto>().ReverseMap();
+
+            CreateMap<Codeficator, CodeficatorDto>();
+            CreateMap<Codeficator, CodeficatorWithParentDto>();
 
             CreateMap<Notification, NotificationDto>().ReverseMap()
                 .ForMember(n => n.Id, n => n.Ignore());
