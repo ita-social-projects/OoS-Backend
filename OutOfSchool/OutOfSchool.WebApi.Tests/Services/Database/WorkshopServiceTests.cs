@@ -212,7 +212,7 @@ public class WorkshopServiceTests
         // Arrange
         var id = new Guid("ca2cc30c-419c-4b00-a344-b23f0cbf18d8");
         var changedFirstEntity = WithWorkshop(id);
-        var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshopId(changedFirstEntity.Id);
+        var teachers = TeachersGenerator.Generate(teachersInWorkshop).WithWorkshop(changedFirstEntity);
         changedFirstEntity.Teachers = teachers;
         SetupUpdate(changedFirstEntity, WithClassEntity(classId));
         var expectedTeachers = teachers.Select(s => s.ToModel());
@@ -434,7 +434,7 @@ public class WorkshopServiceTests
         mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>())).Returns(emptylistWorkshopCards);
     }
 
-    private void SetupUpdate(Workshop workshop,  Class classentity)
+    private void SetupUpdate(Workshop workshop, Class classentity)
     {
         classRepository.Setup(c => c.GetById(It.IsAny<long>())).ReturnsAsync(classentity);
         workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
@@ -636,7 +636,7 @@ public class WorkshopServiceTests
                 ProviderId = w.ProviderId,
             });
         return new SearchResult<WorkshopCard>()
-            { Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
+        { Entities = mappeddtos.ToList().AsReadOnly(), TotalAmount = workshops.Count() };
     }
 
     private Expression<Func<Workshop, bool>> ExpectedPredicateWithIds(WorkshopFilter filter)

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Bogus;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Models;
@@ -43,11 +43,14 @@ public static class WorkshopGenerator
     public static List<Workshop> WithProvider(this List<Workshop> workshops, Provider provider)
         => TestDataHelper.ApplyOnCollection(workshops, (workshop, provider) => WithProvider(workshop, provider), provider);
 
-    public static Workshop WithAddress(this Workshop workshop, Address address)
-        => TestDataHelper.ApplyOnItem(workshop, (workshop, address) => { workshop.Address = address; workshop.AddressId = address.Id; }, address);
+    public static Workshop WithAddress(this Workshop workshop, Address address = null)
+    {
+        address ??= AddressGenerator.Generate();
+        return TestDataHelper.ApplyOnItem(workshop, (workshop, address) => { workshop.Address = address; workshop.AddressId = address.Id; }, address);
+    }
 
-    public static List<Workshop> WithAddress(this List<Workshop> workshops, Address address)
-        => TestDataHelper.ApplyOnCollection(workshops, (workshop, address) => WithAddress(workshop, address), address);
+    public static List<Workshop> WithAddress(this List<Workshop> workshops, Address address = null)
+        => workshops.Select(x => WithAddress(x, address)).ToList();
 
     public static Workshop WithDirection(this Workshop workshop, Direction direction)
         => TestDataHelper.ApplyOnItem(workshop, (workshop, direction) => { workshop.Direction = direction; workshop.DirectionId = direction.Id; }, direction);
@@ -60,4 +63,34 @@ public static class WorkshopGenerator
 
     public static List<Workshop> WithDepartment(this List<Workshop> workshops, Department department)
         => TestDataHelper.ApplyOnCollection(workshops, (item, value) => WithDepartment(item, value), department);
+
+    public static Workshop WithApplications(this Workshop workshop)
+    {
+        workshop.Applications = ApplicationGenerator.Generate(new Random().Next(1, 4))
+            .WithWorkshop(workshop);
+        return workshop;
+    }
+
+    public static List<Workshop> WithApplications(this List<Workshop> workshops)
+        => workshops.Select(x => x.WithApplications()).ToList();
+
+    public static Workshop WithTeachers(this Workshop workshop)
+    {
+        workshop.Teachers = TeachersGenerator.Generate(new Random().Next(1, 4))
+            .WithWorkshop(workshop);
+        return workshop;
+    }
+
+    public static List<Workshop> WithTeachers(this List<Workshop> workshops)
+        => workshops.Select(x => x.WithTeachers()).ToList();
+
+    public static Workshop WithImages(this Workshop workshop)
+    {
+        workshop.Images = ImagesGenerator.Generate<Workshop>(new Random().Next(1, 4), workshop);
+        return workshop;
+    }
+
+    public static List<Workshop> WithImages(this List<Workshop> workshops)
+        => workshops.Select(x => x.WithImages()).ToList();
+}
 }

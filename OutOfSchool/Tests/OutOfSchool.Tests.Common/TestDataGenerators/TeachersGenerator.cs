@@ -37,26 +37,27 @@ public static class TeachersGenerator
     public static List<Teacher> Generate(int count) => faker.Generate(count);
 
     /// <summary>
-    /// Assigns given <paramref name="workshopId"/> to the given <paramref name="teacher"/>
+    /// Assigns given <paramref name="workshop"/> to the given <paramref name="teacher"/>
     /// </summary>
-    /// <returns><see cref="Teacher"/> object with assigned <paramref name="workshopId"/>.</returns>
-    public static Teacher WithWorkshopId(this Teacher teacher, Guid workshopId)
+    /// <returns><see cref="Teacher"/> object with assigned <paramref name="workshop"/>.</returns>
+    public static Teacher WithWorkshopId(this Teacher teacher, Workshop workshop)
     {
         _ = teacher ?? throw new ArgumentNullException(nameof(teacher));
 
-        teacher.WorkshopId = workshopId;
+        teacher.Workshop = workshop;
+        teacher.WorkshopId = workshop.Id;
 
         return teacher;
     }
 
     /// <summary>
-    /// Assigns given <paramref name="workshopId"/> to the each item of the given <paramref name="teachers"/> collection
+    /// Assigns given <paramref name="workshop"/> to the each item of the given <paramref name="teachers"/> collection
     /// </summary>
-    /// <returns>Input collection with assigned <paramref name="workshopId"/>.</returns>
-    public static List<Teacher> WithWorkshopId(this List<Teacher> teachers, Guid workshopId)
+    /// <returns>Input collection with assigned <paramref name="workshop"/>.</returns>
+    public static List<Teacher> WithWorkshop(this List<Teacher> teachers, Workshop workshop)
     {
         _ = teachers ?? throw new ArgumentNullException(nameof(teachers));
-        teachers.ForEach(t => t.WithWorkshopId(workshopId));
+        teachers.ForEach(t => t.WithWorkshopId(workshop));
 
         return teachers;
     }
