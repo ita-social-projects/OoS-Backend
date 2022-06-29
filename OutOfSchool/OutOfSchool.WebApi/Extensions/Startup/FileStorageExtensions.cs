@@ -62,30 +62,26 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         /// <summary>
         /// Adds all essential methods to synchronize gcp files with the main database.
         /// </summary>
+        /// <param name="quartz">Quartz Configurator.</param>
         /// <param name="services">Service collection.</param>
-        /// <param name="configuration">App configuration.</param>
-        /// <returns><see cref="IServiceCollection"/> instance.</returns>
+        /// <param name="quartzConfig">Quartz configuration.</param>
         /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-        public static IServiceCollection AddGcpSynchronization(this IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public static void AddGcpSynchronization(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
         {
             _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));
 
             services.AddScoped<IGcpImagesSyncDataRepository, GcpImagesSyncDataRepository>();
             services.AddScoped<IGcpStorageSynchronizationService, GcpImagesStorageSynchronizationService>();
 
-            var cronSchedule = configuration.GetSection(QuartzCronScheduleConfig.Name).Get<QuartzCronScheduleConfig>();
-
             var gcpImagesJobKey = new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp);
 
-            QuartzPool.AddJob<GcpStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
-            QuartzPool.AddTrigger(t => t
+            quartz.AddJob<GcpStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
+            quartz.AddTrigger(t => t
                 .WithIdentity(JobTriggerConstants.GcpImagesSynchronization, GroupConstants.Gcp)
                 .ForJob(gcpImagesJobKey)
                 .StartNow()
-                .WithCronSchedule(cronSchedule.GcpImagesSyncCronScheduleString));
-
-            return services;
+                .WithCronSchedule(quartzConfig.CronSchedules.GcpImagesSyncCronScheduleString));
         }
     }
 }

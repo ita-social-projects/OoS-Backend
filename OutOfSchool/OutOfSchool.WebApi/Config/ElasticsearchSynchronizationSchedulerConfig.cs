@@ -9,9 +9,5 @@ namespace OutOfSchool.WebApi.Config
         public int OperationsPerTask { get; set; }
 
         public int DelayBetweenTasksInMilliseconds { get; set; }
-
-        public bool UseQuartz { get; set; }
-
-        public string QuartzConnectionStringKey { get; set; }
     }
 }
