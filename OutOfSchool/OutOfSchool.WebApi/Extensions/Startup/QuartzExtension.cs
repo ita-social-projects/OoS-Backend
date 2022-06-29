@@ -19,11 +19,13 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         /// </summary>
         /// <param name="services">Service collection.</param>
         /// <param name="configuration">App configuration.</param>
+        /// <param name="quartzConnectionString">Connection string key for Quartz.</param>
         /// <returns><see cref="IServiceCollection"/> instance.</returns>
         /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
         public static IServiceCollection AddDefaultQuartz(
             this IServiceCollection services,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            string quartzConnectionString = "QuartzConnection")
         {
             _ = services ?? throw new ArgumentNullException(nameof(services));
 
@@ -38,7 +40,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                     s.UseMySql(sqlServer =>
                     {
                         sqlServer.ConnectionString = configuration.GetMySqlConnectionString<QuartzConnectionOptions>(
-                            QuartzConnectionOptions.Name,
+                            quartzConnectionString,
                             options => new MySqlConnectionStringBuilder
                             {
                                 Server = options.Server,

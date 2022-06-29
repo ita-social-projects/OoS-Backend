@@ -36,6 +36,7 @@ using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.DataAccess;
 using OutOfSchool.WebApi.Config.Images;
+using OutOfSchool.WebApi.Config.Quartz;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Extensions.Startup;
 using OutOfSchool.WebApi.Hubs;
@@ -286,7 +287,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
             services.AddImagesStorage(turnOnFakeStorage: Configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
-            services.AddGcpSynchronization(Configuration);
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
@@ -358,7 +358,10 @@ namespace OutOfSchool.WebApi
             services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddSignalR();
-            services.AddDefaultQuartz(Configuration);
+
+            var quartzConfig = Configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
+            services.AddDefaultQuartz(Configuration, quartzConfig.ConnectionStringKey);
+            services.AddGcpSynchronization(quartzConfig);
 
             services.AddStackExchangeRedisCache(options =>
             {

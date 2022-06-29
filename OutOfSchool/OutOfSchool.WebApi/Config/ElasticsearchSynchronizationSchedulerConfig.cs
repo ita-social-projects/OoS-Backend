@@ -11,7 +11,5 @@ namespace OutOfSchool.WebApi.Config
         public int DelayBetweenTasksInMilliseconds { get; set; }
 
         public bool UseQuartz { get; set; }
-
-        public string QuartzConnectionStringKey { get; set; }
     }
 }
