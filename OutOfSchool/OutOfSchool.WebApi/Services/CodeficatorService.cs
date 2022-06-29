@@ -65,9 +65,9 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Dictionary<long, string>> GetFullAddressesByPartOfName(string namePart)
+        public async Task<Dictionary<long, string>> GetFullAddressesByPartOfName(CodeficatorFilter filter)
         {
-            var fullAddresses = await codeficatorRepository.GetFullAddressesByPartOfName(namePart).ConfigureAwait(false);
+            var fullAddresses = await codeficatorRepository.GetFullAddressesByPartOfName(filter.Name, filter.Size).ConfigureAwait(false);
 
             return fullAddresses.ToDictionary(key => key.Id, value => value.FullName);
         }

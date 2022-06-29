@@ -31,9 +31,9 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public async Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart)
+        public async Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, int take)
         {
-            var query2 = from e in db.Codeficators
+            var query2 = (from e in db.Codeficators
                          from p in db.Codeficators.Where(x1 => e.ParentId == x1.Id).DefaultIfEmpty()
                          from pp in db.Codeficators.Where(x2 => p.ParentId == x2.Id).DefaultIfEmpty()
                          from ppp in db.Codeficators.Where(x3 => pp.ParentId == x3.Id).DefaultIfEmpty()
@@ -48,7 +48,7 @@ namespace OutOfSchool.Services.Repository
                              TerritorialCommunity = p.Name,
                              District = pp.Name,
                              Region = ppp.Name,
-                         };
+                         }).Take(take);
 
             return await query2.ToListAsync();
         }

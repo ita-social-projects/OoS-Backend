@@ -99,7 +99,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         /// <summary>
         /// Get all address's parts from the database.
         /// </summary>
-        /// <param name="namePart">Part of name for search.</param>
+        /// <param name="filter">Filter for the search.</param>
         /// <returns> All address parts for the codeficator. </returns>
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AllAddressPartsDto))]
@@ -107,9 +107,14 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("search")]
-        public async Task<IActionResult> SerchByPartOfName(string namePart)
+        public async Task<IActionResult> SerchByPartOfName([FromQuery] CodeficatorFilter filter)
         {
-            var fullAddressNames = await codeficatorService.GetFullAddressesByPartOfName(namePart).ConfigureAwait(false);
+            if (filter == null || string.IsNullOrEmpty(filter.Name))
+            {
+                return BadRequest();
+            }
+
+            var fullAddressNames = await codeficatorService.GetFullAddressesByPartOfName(filter).ConfigureAwait(false);
 
             if (!fullAddressNames.Any())
             {

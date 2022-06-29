@@ -21,7 +21,8 @@ namespace OutOfSchool.Services.Repository
         /// Get elements' list by a part of name.
         /// </summary>
         /// <param name="namePart">Part of name for search.</param>
+        /// <param name="take">Size of returned collection.</param>
         /// <returns>The task result contains a <see cref="List{CodeficatorAddressDto}"/> that contains elements' full addresses.</returns>
-        public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart);
+        public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, int take);
     }
 }

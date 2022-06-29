@@ -36,8 +36,8 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Get full addresses' names from the database.
         /// </summary>
-        /// <param name="namePart">Part of name for search.</param>
+        /// <param name="filter">Filter for the search.</param>
         /// <returns>The task result contains the <see cref="Task{Dictionary}"/>.</returns>
-        public Task<Dictionary<long, string>> GetFullAddressesByPartOfName(string namePart);
+        public Task<Dictionary<long, string>> GetFullAddressesByPartOfName(CodeficatorFilter filter);
     }
 }
