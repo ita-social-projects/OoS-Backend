@@ -73,7 +73,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -81,11 +80,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
         public async Task<IActionResult> GetByFilter([FromQuery] SearchStringFilter filter)
         {
             var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
-
-            if (providers.TotalAmount < 1)
-            {
-                return NoContent();
-            }
 
             return Ok(providers);
         }

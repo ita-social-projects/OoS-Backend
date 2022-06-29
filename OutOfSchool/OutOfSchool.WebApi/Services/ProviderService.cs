@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -120,7 +121,13 @@ namespace OutOfSchool.WebApi.Services
                 };
 
             var providers = await providerRepository
-                .Get<Provider>(filter.From, filter.Size, string.Empty, filterPredicate, sortExpression)
+                .Get<Provider>(
+                    skip: filter.From,
+                    take: filter.Size,
+                    includeProperties: "ActualAddress,LegalAddress,Institution,ProviderSectionItems,Images",
+                    where: filterPredicate,
+                    orderBy: sortExpression,
+                    asNoTracking: true)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

@@ -21,5 +21,11 @@ namespace OutOfSchool.Common.Extensions
             : value == null || value.Length <= maxLength || maxLength == 0
                 ? value
                 : value.Substring(0, maxLength);
+
+        public static bool StartsWithInvariant(this string s, string stringForComparison)
+            => s.StartsWith(stringForComparison, StringComparison.InvariantCulture);
+
+        public static bool ContainsInvariant(this string s, string stringForComparison)
+            => s.Contains(stringForComparison, StringComparison.InvariantCulture);
     }
 }
