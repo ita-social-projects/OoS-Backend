@@ -1,13 +1,9 @@
 using System;
-using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
 using OutOfSchool.Common.Extensions.Startup;
-using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.Quartz;
-using OutOfSchool.WebApi.Services.Elasticsearch;
-using OutOfSchool.WebApi.Util;
 using Quartz;
 
 namespace OutOfSchool.WebApi.Extensions.Startup
@@ -20,12 +16,14 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         /// <param name="services">Service collection.</param>
         /// <param name="configuration">App configuration.</param>
         /// <param name="quartzConnectionString">Connection string key for Quartz.</param>
+        /// <param name="configureJobs">Expose Quartz Configurator to Configure Jobs.</param>
         /// <returns><see cref="IServiceCollection"/> instance.</returns>
         /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
         public static IServiceCollection AddDefaultQuartz(
             this IServiceCollection services,
             IConfiguration configuration,
-            string quartzConnectionString = "QuartzConnection")
+            string quartzConnectionString = "QuartzConnection",
+            Action<IServiceCollectionQuartzConfigurator> configureJobs = null)
         {
             _ = services ?? throw new ArgumentNullException(nameof(services));
 
@@ -56,15 +54,10 @@ namespace OutOfSchool.WebApi.Extensions.Startup
 
                 q.UseMicrosoftDependencyInjectionJobFactory();
 
-                foreach (var quartzAction in QuartzPool.QuartzConfigActions)
-                {
-                    quartzAction?.Invoke(q);
-                }
+                configureJobs?.Invoke(q);
             });
 
             services.AddQuartzServer(options => { options.WaitForJobsToComplete = true; });
-
-            QuartzPool.ClearAll();
 
             return services;
         }

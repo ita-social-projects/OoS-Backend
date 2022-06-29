@@ -210,8 +210,6 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
 
-            services.AddElasticsearchSynchronization(Configuration);
-
             // entities services
             services.AddTransient<IAddressService, AddressService>();
             services.AddTransient<IApplicationService, ApplicationService>();
@@ -360,8 +358,14 @@ namespace OutOfSchool.WebApi
             services.AddSignalR();
 
             var quartzConfig = Configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
-            services.AddDefaultQuartz(Configuration, quartzConfig.ConnectionStringKey);
-            services.AddGcpSynchronization(quartzConfig);
+            services.AddDefaultQuartz(
+                Configuration,
+                quartzConfig.ConnectionStringKey,
+                q =>
+            {
+                q.AddGcpSynchronization(services, quartzConfig);
+                q.AddElasticsearchSynchronization(services, Configuration);
+            });
 
             services.AddStackExchangeRedisCache(options =>
             {

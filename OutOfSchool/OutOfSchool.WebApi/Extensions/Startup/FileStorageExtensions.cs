@@ -62,11 +62,11 @@ namespace OutOfSchool.WebApi.Extensions.Startup
         /// <summary>
         /// Adds all essential methods to synchronize gcp files with the main database.
         /// </summary>
+        /// <param name="quartz">Quartz Configurator.</param>
         /// <param name="services">Service collection.</param>
         /// <param name="quartzConfig">Quartz configuration.</param>
-        /// <returns><see cref="IServiceCollection"/> instance.</returns>
         /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-        public static IServiceCollection AddGcpSynchronization(this IServiceCollection services, QuartzConfig quartzConfig)
+        public static void AddGcpSynchronization(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
         {
             _ = services ?? throw new ArgumentNullException(nameof(services));
             _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));
@@ -76,14 +76,12 @@ namespace OutOfSchool.WebApi.Extensions.Startup
 
             var gcpImagesJobKey = new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp);
 
-            QuartzPool.AddJob<GcpStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
-            QuartzPool.AddTrigger(t => t
+            quartz.AddJob<GcpStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
+            quartz.AddTrigger(t => t
                 .WithIdentity(JobTriggerConstants.GcpImagesSynchronization, GroupConstants.Gcp)
                 .ForJob(gcpImagesJobKey)
                 .StartNow()
                 .WithCronSchedule(quartzConfig.CronSchedules.GcpImagesSyncCronScheduleString));
-
-            return services;
         }
     }
 }
