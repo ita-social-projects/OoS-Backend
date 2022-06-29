@@ -50,7 +50,7 @@ namespace OutOfSchool.WebApi.Extensions
             var jobKey = new JobKey(JobConstants.ElasticSearchSynchronization, GroupConstants.ElasticSearch);
 
             quartz.AddJob<ElasticsearchSynchronizationQuartz>(j => j.WithIdentity(jobKey));
-            // TODO: rewrite as a crod trigger
+            // TODO: rewrite as a cron trigger
             quartz.AddTrigger(t => t
                 .WithIdentity(JobTriggerConstants.ElasticSearchSynchronization, GroupConstants.ElasticSearch)
                 .ForJob(jobKey)
