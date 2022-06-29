@@ -53,6 +53,7 @@ namespace OutOfSchool.WebApi.Extensions.Startup
                 });
 
                 q.UseMicrosoftDependencyInjectionJobFactory();
+                q.UseTimeZoneConverter();
 
                 configureJobs?.Invoke(q);
             });
