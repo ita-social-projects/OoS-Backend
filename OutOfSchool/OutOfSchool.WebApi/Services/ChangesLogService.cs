@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Config;
@@ -139,11 +140,11 @@ namespace OutOfSchool.WebApi.Services
             ValidateFilter(request);
 
             var where = GetQueryFilter(request);
-            var (orderBy, ascending) = GetProviderAdminChangesOrderParams();
+            var sortExpression = GetProviderAdminChangesOrderParams();
 
             var count = await providerAdminChangesLogRepository.Count(where).ConfigureAwait(false);
             var query = providerAdminChangesLogRepository
-                .Get(request.From, request.Size, string.Empty, where, orderBy, ascending, true)
+                .Get<ProviderAdminChangesLog>(request.From, request.Size, string.Empty, where, sortExpression, true)
                 .Select(x => new ProviderAdminChangesLogDto
                 {
                     ProviderAdminId = x.ProviderAdminUserId,
@@ -172,10 +173,10 @@ namespace OutOfSchool.WebApi.Services
             ValidateFilter(filter);
 
             var where = GetQueryFilter(filter);
-            var (orderBy, ascending) = GetOrderParams();
+            var sortExpression = GetOrderParams();
 
             var count = await changesLogRepository.Count(where).ConfigureAwait(false);
-            var query = changesLogRepository.Get(filter.From, filter.Size, string.Empty, where, orderBy, ascending, true);
+            var query = changesLogRepository.Get<ChangesLog>(filter.From, filter.Size, string.Empty, where, sortExpression, true);
 
             return (query, count);
         }
@@ -247,20 +248,26 @@ namespace OutOfSchool.WebApi.Services
             return expr;
         }
 
-        private (Expression<Func<ChangesLog, dynamic>> orderBy, bool ascending) GetOrderParams()
+        private Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection> GetOrderParams()
         {
             // Returns default ordering so far...
-            Expression<Func<ChangesLog, dynamic>> orderBy = x => x.UpdatedDate;
+            var sortExpression = new Dictionary<Expression<Func<ChangesLog, object>>, SortDirection>
+                {
+                    { x => x.UpdatedDate, SortDirection.Descending },
+                };
 
-            return (orderBy, false);
+            return sortExpression;
         }
 
-        private (Expression<Func<ProviderAdminChangesLog, dynamic>> orderBy, bool ascending) GetProviderAdminChangesOrderParams()
+        private Dictionary<Expression<Func<ProviderAdminChangesLog, dynamic>>, SortDirection> GetProviderAdminChangesOrderParams()
         {
             // Returns default ordering so far...
-            Expression<Func<ProviderAdminChangesLog, dynamic>> orderBy = x => x.OperationDate;
+            var sortExpression = new Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>
+                {
+                    { x => x.OperationDate, SortDirection.Descending },
+                };
 
-            return (orderBy, false);
+            return sortExpression;
         }
 
         private void ValidateFilter(OffsetFilter filter)

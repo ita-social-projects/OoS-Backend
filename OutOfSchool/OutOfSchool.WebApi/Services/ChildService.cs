@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -68,7 +71,12 @@ namespace OutOfSchool.WebApi.Services
 
             var totalAmount = await childRepository.Count().ConfigureAwait(false);
 
-            var children = await childRepository.Get(offsetFilter.From, offsetFilter.Size, $"{nameof(Child.SocialGroups)}", null, x => x.Id, true)
+            var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
+                {
+                    { x => x.Id, SortDirection.Ascending },
+                };
+
+            var children = await childRepository.Get<Child>(offsetFilter.From, offsetFilter.Size, $"{nameof(Child.SocialGroups)}", null, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -114,8 +122,13 @@ namespace OutOfSchool.WebApi.Services
 
             var totalAmount = await childRepository.Count(x => x.ParentId == parentId).ConfigureAwait(false);
 
+            var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
+                {
+                    { x => x.FirstName, SortDirection.Ascending },
+                };
+
             var children = await childRepository
-                .Get<string>(offsetFilter.From, offsetFilter.Size, "SocialGroup", x => x.ParentId == parentId, x => x.FirstName, true)
+                .Get<Child>(offsetFilter.From, offsetFilter.Size, "SocialGroup", x => x.ParentId == parentId, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -142,8 +155,13 @@ namespace OutOfSchool.WebApi.Services
 
             var totalAmount = await childRepository.Count(x => x.Parent.UserId == userId).ConfigureAwait(false);
 
+            var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
+                {
+                    { x => x.FirstName, SortDirection.Ascending },
+                };
+
             var children = await childRepository
-                .Get<string>(offsetFilter.From, offsetFilter.Size, string.Empty, x => x.Parent.UserId == userId, x => x.FirstName, true)
+                .Get<Child>(offsetFilter.From, offsetFilter.Size, string.Empty, x => x.Parent.UserId == userId, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

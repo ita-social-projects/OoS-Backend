@@ -127,22 +127,20 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
                 .Returns(Task.FromResult(totalAmount));
             changesLogRepository
-                .Setup(repo => repo.Get(
+                .Setup(repo => repo.Get<ChangesLog>(
                     request.From,
                     request.Size,
                     string.Empty,
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                    It.IsAny<Expression<Func<ChangesLog, dynamic>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny< Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
-            providerRepository.Setup(repo => repo.Get(
+            providerRepository.Setup(repo => repo.Get<int>(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Provider, bool>>>(),
-                    It.IsAny<Expression<Func<Provider, It.IsAnyType>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(providersMock.Object);
 
@@ -184,22 +182,20 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
                 .Returns(Task.FromResult(totalAmount));
             changesLogRepository
-                .Setup(repo => repo.Get(
+                .Setup(repo => repo.Get<ChangesLog>(
                     request.From,
                     request.Size,
                     string.Empty,
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                    It.IsAny<Expression<Func<ChangesLog, dynamic>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny< Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
-            applicationRepository.Setup(repo => repo.Get(
+            applicationRepository.Setup(repo => repo.Get<int>(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
-                    It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(applicationsMock.Object);
 
@@ -245,13 +241,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Setup(repo => repo.Count(It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>()))
                 .Returns(Task.FromResult(totalAmount));
             providerAdminChangesLogRepository
-                .Setup(repo => repo.Get(
+                .Setup(repo => repo.Get<ProviderAdminChangesLog>(
                     request.From,
                     request.Size,
                     string.Empty,
                     It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>(),
-                    It.IsAny<Expression<Func<ProviderAdminChangesLog, dynamic>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
 

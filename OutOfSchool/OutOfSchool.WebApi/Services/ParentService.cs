@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -100,8 +101,14 @@ namespace OutOfSchool.WebApi.Services
             var filterPredicate = PredicateBuild(filter);
 
             int count = await repositoryParent.Count(filterPredicate).ConfigureAwait(false);
+
+            var sortExpression = new Dictionary<Expression<Func<Parent, object>>, SortDirection>
+                {
+                    { x => x.User.FirstName, SortDirection.Ascending },
+                };
+
             var parents = await repositoryParent
-                .Get<string>(filter.From, filter.Size, string.Empty, filterPredicate, x => x.User.FirstName, true)
+                .Get<string>(filter.From, filter.Size, string.Empty, filterPredicate, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

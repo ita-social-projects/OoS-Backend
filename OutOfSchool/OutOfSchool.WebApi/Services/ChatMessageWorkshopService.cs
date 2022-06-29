@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
@@ -126,7 +127,17 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var query = messageRepository.Get<DateTimeOffset>(skip: offsetFilter.From, take: offsetFilter.Size, where: x => x.ChatRoomId == chatRoomId, orderBy: x => x.CreatedDateTime, ascending: false);
+                var sortExpression = new Dictionary<Expression<Func<ChatMessageWorkshop, object>>, SortDirection>
+                {
+                    { x => x.CreatedDateTime, SortDirection.Descending },
+                };
+
+                var query = messageRepository.Get<DateTimeOffset>(
+                    skip: offsetFilter.From,
+                    take: offsetFilter.Size,
+                    where: x => x.ChatRoomId == chatRoomId,
+                    orderBy: sortExpression);
+
                 var chatMessages = await query.ToListAsync().ConfigureAwait(false);
 
                 logger.LogDebug(chatMessages.Count > 0

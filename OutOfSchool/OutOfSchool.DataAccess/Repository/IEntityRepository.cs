@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Repository
 {
@@ -125,8 +126,7 @@ namespace OutOfSchool.Services.Repository
         /// <param name="take">How many records we want to take.</param>
         /// <param name="includeProperties">What Properties we want to include to objects that we will receive.</param>
         /// <param name="where">Filter.</param>
-        /// <param name="orderBy">Filter that defines by wich property we want to order by.</param>
-        /// <param name="ascending">Ascending or descending ordering.</param>
+        /// <param name="orderBy">Filter that defines by wich properties we want to order by with ascending or descending ordering.</param>
         /// <param name="asNoTracking">Define if the result set will be tracked by the context.</param>
         /// <returns>An <see cref="IQueryable{TResult}"/> that contains elements from the input sequence that
         /// satisfy the condition specified by predicate. An ordered, filtered <see cref="IQueryable{T}"/>.</returns>
@@ -135,8 +135,7 @@ namespace OutOfSchool.Services.Repository
             int take = 0,
             string includeProperties = "",
             Expression<Func<TEntity, bool>> where = null,
-            Expression<Func<TEntity, TOrderKey>> orderBy = null,
-            bool ascending = true,
+            Dictionary<Expression<Func<TEntity, object>>, SortDirection> orderBy = null,
             bool asNoTracking = false);
     }
 

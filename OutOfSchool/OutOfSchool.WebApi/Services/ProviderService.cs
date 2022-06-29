@@ -113,8 +113,14 @@ namespace OutOfSchool.WebApi.Services
             var filterPredicate = PredicateBuild(filter);
 
             int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
+
+            var sortExpression = new Dictionary<Expression<Func<Provider, object>>, SortDirection>
+                {
+                    { x => x.User.FirstName, SortDirection.Ascending },
+                };
+
             var providers = await providerRepository
-                .Get<string>(filter.From, filter.Size, string.Empty, filterPredicate, x => x.User.FirstName, true)
+                .Get<Provider>(filter.From, filter.Size, string.Empty, filterPredicate, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
