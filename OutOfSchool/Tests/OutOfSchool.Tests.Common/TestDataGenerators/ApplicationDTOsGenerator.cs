@@ -65,7 +65,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             _ = application ?? throw new ArgumentNullException(nameof(application));
 
             application.Parent = parent;
-            application.ParentId = parent?.Id ?? default;
+            application.ParentId = parent?.Id ?? Guid.Empty;
 
             return application;
         }
@@ -78,7 +78,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
                 application =>
                 {
                     application.Parent = parent;
-                    application.ParentId = parent?.Id ?? default;
+                    application.ParentId = parent?.Id ?? Guid.Empty;
                 });
 
             return applications;
@@ -89,7 +89,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             _ = application ?? throw new ArgumentNullException(nameof(application));
 
             application.Child = child;
-            application.ChildId = child?.Id ?? default;
+            application.ChildId = child?.Id ?? Guid.Empty;
 
             return application;
         }
@@ -102,7 +102,7 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
                 application =>
                 {
                     application.Child = child;
-                    application.ChildId = child?.Id ?? default;
+                    application.ChildId = child?.Id ?? Guid.Empty;
                 });
 
             return applications;

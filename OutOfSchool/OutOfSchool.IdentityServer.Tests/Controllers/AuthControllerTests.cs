@@ -151,9 +151,14 @@ namespace OutOfSchool.IdentityServer.Tests.Controllers
         {
             // Arrange
             var authController = this.authController;
+            var user = new User();
             fakeSignInManager.Setup(manager =>
                     manager.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), false, false))
                 .ReturnsAsync(expectedResult.Key);
+            fakeUserManager.Setup(manager => manager.FindByEmailAsync(loginViewModel.Username))
+                .Returns(Task.FromResult<User>(user));
+            fakeUserManager.Setup(manager => manager.UpdateAsync(user))
+                .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
 
             // Act
             var result = await authController.Login(loginViewModel);
