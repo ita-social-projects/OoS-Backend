@@ -74,31 +74,31 @@ public interface IChildService
     /// <exception cref="SqlException">If the database cannot execute the query.</exception>
     Task<SearchResult<ChildDto>> GetByUserId(string userId, OffsetFilter offsetFilter);
 
-    /// <summary>
-    /// Get children by WorkshopId.
-    /// </summary>
-    /// <param name="workshopId">ParentId.</param>
-    /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-    /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
-    /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
-    /// <exception cref="SqlException">If the database cannot execute the query.</exception>
-    Task<SearchResult<ChildDto>> GetApprovedByWorkshopId(Guid workshopId, OffsetFilter offsetFilter);
+        /// <summary>
+        /// Get children by WorkshopId.
+        /// </summary>
+        /// <param name="workshopId">ParentId.</param>
+        /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
+        /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
+        /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
+        /// <exception cref="SqlException">If the database cannot execute the query.</exception>
+        Task<SearchResult<ChildDto>> GetApprovedByWorkshopId(Guid workshopId, OffsetFilter offsetFilter);
 
-    /// <summary>
-    /// Update a child of the specified user.
-    /// Child's property ParentId cannot be changed and uatomatically will be set to the old value.
-    /// </summary>
-    /// <param name="childDto">Child entity to update.</param>
-    /// <param name="userId">Key in the User table.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-    /// The result contains a <see cref="ChildDto"/> that was updated.</returns>
-    /// <exception cref="ArgumentNullException">If one of the entities was not initialized.</exception>
-    /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
-    /// <exception cref="UnauthorizedAccessException">If user is trying to update not his own child.</exception>
-    /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
-    Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId);
+        /// <summary>
+        /// Update a child of the specified user.
+        /// Child's property ParentId cannot be changed and uatomatically will be set to the old value.
+        /// </summary>
+        /// <param name="childDto">Child entity to update.</param>
+        /// <param name="userId">Key in the User table.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The result contains a <see cref="ChildDto"/> that was updated.</returns>
+        /// <exception cref="ArgumentNullException">If one of the entities was not initialized.</exception>
+        /// <exception cref="ArgumentException">If required child's properties are not set.</exception>
+        /// <exception cref="UnauthorizedAccessException">If user is trying to update not his own child.</exception>
+        /// <exception cref="DbUpdateException">If something wrong occurred while saving to the database.</exception>
+        Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId);
 
     /// <summary>
     /// Delete a child of the specified user.
