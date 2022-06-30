@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -19,10 +18,12 @@ namespace OutOfSchool.WebApi.Services
         Task<ProviderDto> Create(ProviderDto providerDto);
 
         /// <summary>
-        /// Get all entities.
+        /// Get entities from the database that match filter's parameters.
         /// </summary>
-        /// <returns>List of all providers.</returns>
-        Task<IEnumerable<ProviderDto>> GetAll();
+        /// <param name="filter">Filter with specified searching parameters.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The task result contains the <see cref="SearchResult{ProviderDto}"/> that contains found elements.</returns>
+        Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter = null);
 
         /// <summary>
         /// Get Provider objects from DB by filter.
@@ -51,7 +52,7 @@ namespace OutOfSchool.WebApi.Services
         /// Update entity.
         /// </summary>
         /// <param name="providerDto">Provider entity to add.</param>
-        /// <param name="userId">Id of user that request update.</param>
+        /// <param name="userId">Id of user that requests update.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         Task<ProviderDto> Update(ProviderDto providerDto, string userId);
 
@@ -68,5 +69,21 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="workshopId">Workshop's key.</param>
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         Task<Guid> GetProviderIdForWorkshopById(Guid workshopId);
+
+        /// <summary>
+        /// Update Provider Status.
+        /// </summary>
+        /// <param name="dto">Provider to update.</param>
+        /// <param name="userId">Id of user that requests update.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+        Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId);
+
+        /// <summary>
+        /// Updates Provider LicenseStatus.
+        /// </summary>
+        /// <param name="dto">Provider to update.</param>
+        /// <param name="userId">Id of user that requests update.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the asynchronous operation.</returns>
+        Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId);
     }
 }

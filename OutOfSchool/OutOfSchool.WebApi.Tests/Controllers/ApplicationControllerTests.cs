@@ -15,6 +15,7 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 
 
@@ -588,7 +589,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LastName = "Brown",
                         MiddleName = "SomeMiddleName",
                         Description = "Description",
-                        AvatarImageId = "Image",
+                        CoverImageId = "Image",
                         DateOfBirth = DateTime.Parse("2000-01-01"),
                         WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },
@@ -599,7 +600,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                         LastName = "Snow",
                         MiddleName = "SomeMiddleName",
                         Description = "Description",
-                        AvatarImageId = "Image",
+                        CoverImageId = "Image",
                         DateOfBirth = DateTime.Parse("1990-01-01"),
                         WorkshopId = new Guid("5e519d63-0cdd-48a8-81da-6365aa5ad8c3"),
                     },

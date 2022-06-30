@@ -15,6 +15,7 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Models.Workshop;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Tests.Extensions
@@ -292,7 +293,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                                 LastName = "Brown",
                                 MiddleName = "SomeMiddleName",
                                 Description = "Description",
-                                AvatarImageId = "Image",
+                                CoverImageId = "Image",
                                 DateOfBirth = DateTime.Parse("1990-01-01"),
                                 WorkshopId = new Guid("3a217d24-4945-477b-9381-e9ee8dc1f338"),
                             },
@@ -303,7 +304,7 @@ namespace OutOfSchool.WebApi.Tests.Extensions
                                 LastName = "Snow",
                                 MiddleName = "SomeMiddleName",
                                 Description = "Description",
-                                AvatarImageId = "Image",
+                                CoverImageId = "Image",
                                 DateOfBirth = DateTime.Parse("1990-01-01"),
                                 WorkshopId = new Guid("3a217d24-4945-477b-9381-e9ee8dc1f338"),
                             },

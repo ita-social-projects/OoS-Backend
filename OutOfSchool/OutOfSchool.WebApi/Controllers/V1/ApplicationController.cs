@@ -215,11 +215,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPost]
         public async Task<IActionResult> Create(ApplicationDto applicationDto)
         {
+            if (applicationDto == null)
+            {
+                return BadRequest("Application is null.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return this.BadRequest(this.ModelState);
+            }
+
             try
             {
                 await CheckUserRights(parentId: applicationDto.ParentId).ConfigureAwait(false);
 
-                applicationDto.Id = default;
+                applicationDto.Id = Guid.Empty;
 
                 applicationDto.CreationTime = DateTimeOffset.UtcNow;
 
@@ -405,7 +415,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             if (application.Status == ApplicationStatus.Completed || application.Status == ApplicationStatus.Rejected || application.Status == ApplicationStatus.Left)
             {
-                if (User.IsInRole("provider") == false)
+                if (!User.IsInRole("provider"))
                 {
                     throw new ArgumentException("Forbidden to update application.");
                 }

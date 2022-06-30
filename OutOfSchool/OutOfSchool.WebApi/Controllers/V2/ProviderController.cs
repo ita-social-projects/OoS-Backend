@@ -15,6 +15,7 @@ using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V2
@@ -41,19 +42,20 @@ namespace OutOfSchool.WebApi.Controllers.V2
         }
 
         /// <summary>
-        /// Get all Providers from the database.
+        /// Get Providers that match filter's parameters.
         /// </summary>
-        /// <returns>List of all Providers.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderDto>))]
+        /// <param name="filter">Entity that represents searching parameters.</param>
+        /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
         {
-            var providers = await providerService.GetAll().ConfigureAwait(false);
+            var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 
-            if (!providers.Any())
+            if (providers.TotalAmount < 1)
             {
                 return NoContent();
             }

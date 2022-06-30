@@ -81,8 +81,8 @@ namespace OutOfSchool.WebApi.Services.Images
                    && width <= options.MaxWidthPixels
                    && height >= options.MinHeightPixels
                    && height <= options.MaxHeightPixels
-                   && width / height < options.MaxWidthHeightRatio
-                   && height / width < options.MaxWidthHeightRatio;
+                   && (float)width / height <= options.MaxWidthHeightRatio
+                   && (float)width / height >= options.MinWidthHeightRatio;
         }
 
         /// <inheritdoc/>

@@ -9,7 +9,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services
@@ -27,8 +27,23 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopServicesCombiner workshopServiceCombiner,
             IProviderAdminRepository providerAdminRepository,
             IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
-            IChangesLogService changesLogService)
-                : base(providerRepository, usersRepository, ratingService, logger, localizer, mapper, addressRepository, workshopServiceCombiner, providerAdminRepository, providerImagesService, changesLogService)
+            IChangesLogService changesLogService,
+            INotificationService notificationService,
+            IProviderAdminService providerAdminService)
+            : base(
+                  providerRepository,
+                  usersRepository,
+                  ratingService,
+                  logger,
+                  localizer,
+                  mapper,
+                  addressRepository,
+                  workshopServiceCombiner,
+                  providerAdminRepository,
+                  providerImagesService,
+                  changesLogService,
+                  notificationService,
+                  providerAdminService)
         {
         }
 

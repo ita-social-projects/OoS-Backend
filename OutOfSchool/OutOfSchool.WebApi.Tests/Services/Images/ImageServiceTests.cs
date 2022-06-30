@@ -20,6 +20,7 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources.Codes;
+using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Tests.Services.Images
@@ -128,30 +129,28 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         }
 
         [Test]
-        public async Task
+        public void
             UploadManyImages_WhenImageListIsNull_ShouldReturnFailedImageUploadingResultWithNullSavedIds()
         {
             // Arrange & Act
-            var result = await imageService.UploadManyImagesAsync<It.IsAnyType>(null);
+            Func<Task<MultipleImageUploadingResult>> act = () => imageService.UploadManyImagesAsync<It.IsAnyType>(null);
 
             // Assert
-            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
-            result.SavedIds.Should().BeNull();
+            act.Should().Throw<ArgumentException>();
         }
 
         [Test]
-        public async Task
+        public void
             UploadManyImages_WhenImageListIsEmpty_ShouldReturnFailedImageUploadingResultWithNullSavedIds()
         {
             // Arrange
             var list = new List<IFormFile>();
 
             // Act
-            var result = await imageService.UploadManyImagesAsync<It.IsAnyType>(list);
+            Func<Task<MultipleImageUploadingResult>> act = () => imageService.UploadManyImagesAsync<It.IsAnyType>(list);
 
             // Assert
-            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
-            result.SavedIds.Should().BeNull();
+            act.Should().Throw<ArgumentException>();
         }
 
         [Test]
@@ -242,14 +241,14 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         }
 
         [Test]
-        public async Task
+        public void
             UploadImage_WhenImageIsNull_ShouldReturnFailedResult()
         {
             // Arrange & Act
-            var result = await imageService.UploadImageAsync<It.IsAnyType>(null);
+            Func<Task<Result<string>>> act = () => imageService.UploadImageAsync<It.IsAnyType>(null);
 
             // Assert
-            GenericResultShouldBeFailed(result);
+            act.Should().Throw<ArgumentException>();
         }
 
         [Test]
@@ -321,30 +320,28 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         }
 
         [Test]
-        public async Task
+        public void
             RemoveManyImages_WhenImageIdsListIsNull_ShouldReturnFailedImageRemovingResultWithNullRemovedIds()
         {
             // Arrange & Act
-            var result = await imageService.RemoveManyImagesAsync(null);
+            Func<Task<MultipleImageRemovingResult>> act = () => imageService.RemoveManyImagesAsync(null);
 
             // Assert
-            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
-            result.RemovedIds.Should().BeNull();
+            act.Should().Throw<ArgumentException>();
         }
 
         [Test]
-        public async Task
+        public void
             RemoveManyImages_WhenImageIdsListIsEmpty_ShouldReturnFailedImageRemovingResultWithNullRemovedIds()
         {
             // Arrange
             var list = new List<string>();
 
             // Act
-            var result = await imageService.RemoveManyImagesAsync(list);
+            Func<Task<MultipleImageRemovingResult>> act = () => imageService.RemoveManyImagesAsync(list);
 
             // Assert
-            result.MultipleKeyValueOperationResult.Succeeded.Should().BeFalse();
-            result.RemovedIds.Should().BeNull();
+            act.Should().Throw<ArgumentException>();
         }
 
         [Test]
@@ -387,26 +384,26 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
         }
 
         [Test]
-        public async Task RemoveImage_WhenImageIdIsNull_ShouldReturnFailedOperationResult()
+        public void RemoveImage_WhenImageIdIsNull_ShouldReturnFailedOperationResult()
         {
             // Arrange & Act
-            var result = await imageService.RemoveImageAsync(null);
+            Func<Task<OperationResult>> act = () => imageService.RemoveImageAsync(null);
 
             // Assert
-            result.Succeeded.Should().BeFalse();
+            act.Should().Throw<ArgumentException>();
         }
 
         [Test]
-        public async Task RemoveImage_WhenImageIdIsEmpty_ShouldReturnFailedOperationResult()
+        public void RemoveImage_WhenImageIdIsEmpty_ShouldReturnFailedOperationResult()
         {
             // Arrange
             var imageId = string.Empty;
 
             // Act
-            var result = await imageService.RemoveImageAsync(imageId);
+            Func<Task<OperationResult>> act = () => imageService.RemoveImageAsync(imageId);
 
             // Assert
-            result.Succeeded.Should().BeFalse();
+            act.Should().Throw<ArgumentException>();
         }
 
         [Test]

@@ -45,5 +45,8 @@
     <ItemGroup>
       <ProjectReference Include="..\OutOfSchool.Common\OutOfSchool.Common.csproj" />
     </ItemGroup>
-  
+  <Target Name="PostClean" AfterTargets="Clean">
+    <RemoveDir Directories="$(BaseIntermediateOutputPath)" /><!-- obj -->
+    <RemoveDir Directories="$(BaseOutputPath)" /><!-- bin -->
+  </Target>
 </Project>

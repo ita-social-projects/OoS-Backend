@@ -205,7 +205,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.GetAllByWorkshop(existingApplications.First().Id, applicationFilter).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+            result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
         }
 
         [Test]
@@ -256,7 +256,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.GetAllByProvider(existingApplications.First().Id, applicationFilter).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+            result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
         }
 
         [Test]
@@ -309,7 +309,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.GetAllByParent(existingApplications.First().ParentId, filter).ConfigureAwait(false);
 
             // Assert
-            result.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
+            result.Entities.Should().BeEquivalentTo(ExpectedApplicationsGetAll(existingApplications));
         }
 
         [Test]
@@ -330,7 +330,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var result = await service.GetAllByParent(Guid.NewGuid(), filter).ConfigureAwait(false);
 
             // Assert
-            Assert.That(result, Is.Null);
+            Assert.That(result.Entities, Is.Null);
         }
 
         [Test]
