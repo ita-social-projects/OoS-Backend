@@ -3,7 +3,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models.Providers
 {
-    public class ProviderFilter : OffsetFilter
+    public class ProviderFilter : SearchStringFilter
     {
         public IReadOnlyCollection<ProviderStatus> Status { get; set; } = new List<ProviderStatus>();
 

@@ -79,7 +79,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetByFilter([FromQuery] SearchStringFilter filter)
+        public async Task<IActionResult> GetByFilter([FromQuery] ProviderFilter filter)
         {
             var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 

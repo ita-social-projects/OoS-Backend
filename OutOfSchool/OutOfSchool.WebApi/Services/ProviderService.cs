@@ -94,36 +94,10 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter)
         {
-            logger.LogDebug("Getting Providers by filter started.");
+            logger.LogInformation("Getting all Providers started (by filter).");
 
             filter ??= new ProviderFilter();
             ModelValidationHelper.ValidateOffsetFilter(filter);
-
-            var where = GetQueryFilter(filter);
-            var (orderBy, ascending) = GetOrderParams();
-
-            var count = await providerRepository.Count(where).ConfigureAwait(false);
-            var entities = await providerRepository.Get(filter.From, filter.Size, string.Empty, where, orderBy, ascending, true)
-                .Select(x => mapper.Map<ProviderDto>(x))
-                .ToListAsync()
-                .ConfigureAwait(false);
-
-            // TODO: move ratings calculations out of getting all providers.
-            FillRatingsForProviders(providersDTO);
-            PopulateRatings(entities);
-
-            return providersDTO;
-        }
-
-        /// <inheritdoc/>
-        public async Task<SearchResult<ProviderDto>> GetByFilter(SearchStringFilter filter)
-        {
-            logger.LogInformation("Getting all Providers started (by filter).");
-
-            if (filter is null)
-            {
-                filter = new SearchStringFilter();
-            }
 
             var filterPredicate = PredicateBuild(filter);
 
@@ -159,11 +133,6 @@ namespace OutOfSchool.WebApi.Services
             };
 
             return result;
-            return new SearchResult<ProviderDto>
-            {
-                Entities = entities,
-                TotalAmount = count,
-            };
         }
 
         /// <inheritdoc/>
@@ -563,7 +532,7 @@ namespace OutOfSchool.WebApi.Services
             changesLogService.AddEntityChangesToDbContext(provider, userId);
         }
 
-        private Expression<Func<Provider, bool>> PredicateBuild(SearchStringFilter filter)
+        private Expression<Func<Provider, bool>> PredicateBuild(ProviderFilter filter)
         {
             var predicate = PredicateBuilder.True<Provider>();
 
@@ -584,6 +553,16 @@ namespace OutOfSchool.WebApi.Services
                 predicate = predicate.And(tempPredicate);
             }
 
+            if (filter.Status.Any())
+            {
+                predicate = predicate.And(x => filter.Status.Contains(x.Status));
+            }
+
+            if (filter.LicenseStatus.Any())
+            {
+                predicate = predicate.And(x => filter.LicenseStatus.Contains(x.LicenseStatus));
+            }
+
             return predicate;
         }
 
@@ -602,47 +581,6 @@ namespace OutOfSchool.WebApi.Services
                     provider.NumberOfRatings = numberOfVotes;
                 }
             }
-        }
-
-        private void PopulateRatings(List<ProviderDto> providersDTO)
-        {
-            var averageRatings =
-                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
-
-            foreach (var provider in providersDTO)
-            {
-                var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
-                if (averageRatingsForProvider.Key != Guid.Empty)
-                {
-                    var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
-                    provider.Rating = rating;
-                    provider.NumberOfRatings = numberOfVotes;
-                }
-            }
-        }
-
-        private Expression<Func<Provider, bool>> GetQueryFilter(ProviderFilter filter)
-        {
-            Expression<Func<Provider, bool>> expr = null;
-
-            if (filter.Status.Any())
-            {
-                expr = expr.And(x => filter.Status.Contains(x.Status));
-            }
-
-            if (filter.LicenseStatus.Any())
-            {
-                expr = expr.And(x => filter.LicenseStatus.Contains(x.LicenseStatus));
-            }
-
-            return expr;
-        }
-
-        private (Expression<Func<Provider, dynamic>> orderBy, bool ascending) GetOrderParams()
-        {
-            Expression<Func<Provider, dynamic>> orderBy = x => x.Id;
-
-            return (orderBy, true);
         }
 
         private async Task SendNotification(
