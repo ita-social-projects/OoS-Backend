@@ -299,6 +299,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .ReturnsAsync(new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
             mapper.Setup(m => m.Map<WorkshopDTO>(It.IsAny<Workshop>()))
                 .Returns(new WorkshopDTO() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
+            mapper.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopDTO>()))
+                .Returns(new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
+
         }
 
         private void SetupGetAll(IEnumerable<Workshop> workshops, Dictionary<Guid, Tuple<float, int>> ratings)
