@@ -185,6 +185,19 @@ namespace OutOfSchool.WebApi.Tests.Common
             Assert.False(connection.Contains("guidformat"));
         }
 
+        [Test]
+        public void IfConnectionDoesNotRequireGuidFormat_NoGuidFormatPresent_HandledWithoutError()
+        {
+            // Arrange
+            var configuration = Setup(connectionStringNoGuidFormat);
+
+            // Act
+            var connection = configuration.GetMySqlConnectionString<QuartzConnectionOptions>("Test");
+
+            // Assert
+            Assert.False(connection.Contains("guidformat"));
+        }
+
         private IConfiguration Setup(string json)
         {
             var builder = new ConfigurationBuilder();
