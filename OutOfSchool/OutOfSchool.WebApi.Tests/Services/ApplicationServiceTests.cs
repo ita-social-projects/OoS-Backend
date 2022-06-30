@@ -169,7 +169,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
 
             // Act and Assert
-            service.Invoking(w => w.Create(application)).Should().Throw<ArgumentException>();
+            service.Invoking(w => w.Create(application)).Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -184,7 +184,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
 
             // Act and Assert
-            service.Invoking(w => w.Create(application)).Should().Throw<ArgumentException>();
+            service.Invoking(w => w.Create(application)).Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -401,7 +401,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(applicationsMock.Object)
+                .Returns(applicationsMock)
                 .Verifiable();
 
             applicationRepositoryMock.Setup(a => a.Update(It.IsAny<Application>(), It.IsAny<Action<Application>>())).ReturnsAsync(changedEntity);
@@ -492,7 +492,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Child, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Child, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(childsMock.Object)
+                .Returns(childsMock)
                 .Verifiable();
             applicationRepositoryMock.Setup(
                     w => w.Create(It.IsAny<Application>()))
@@ -533,7 +533,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(applicationsMock.Object)
+                .Returns(applicationsMock)
                 .Verifiable();
             mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
         }
@@ -550,7 +550,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(emptyApplicationsList.Object)
+                .Returns(emptyApplicationsList)
                 .Verifiable();
             mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(emptyApplicationDtosList);
         }
@@ -568,7 +568,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(workshopsMock.Object)
+                .Returns(workshopsMock)
                 .Verifiable();
             applicationRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
@@ -577,7 +577,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(applicationsMock.Object)
+                .Returns(applicationsMock)
                 .Verifiable();
             mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(mappedDtos);
         }
@@ -595,7 +595,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(emptyWorkshopsList.Object)
+                .Returns(emptyWorkshopsList)
                 .Verifiable();
             applicationRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
@@ -604,7 +604,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(emptyApplicationsList.Object)
+                .Returns(emptyApplicationsList)
                 .Verifiable();
             mapper.Setup(m => m.Map<List<ApplicationDto>>(It.IsAny<List<Application>>())).Returns(emptyApplicationDtosList);
         }
@@ -631,7 +631,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(applicationsMock.Object)
+                .Returns(applicationsMock)
                 .Verifiable();
             applicationRepositoryMock.Setup(a => a.Delete(It.IsAny<Application>())).Returns(Task.CompletedTask);
         }

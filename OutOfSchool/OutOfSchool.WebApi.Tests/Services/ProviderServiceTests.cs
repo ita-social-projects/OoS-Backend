@@ -238,7 +238,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Provider, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(providersMock.Object);
+                .Returns(providersMock);
             ratingService.Setup(r => r.GetAverageRatingForRange(It.IsAny<IEnumerable<Guid>>(), RatingType.Provider))
                 .Returns(fakeRatings);
 

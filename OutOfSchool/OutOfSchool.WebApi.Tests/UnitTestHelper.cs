@@ -41,9 +41,9 @@ namespace OutOfSchool.Tests
 
             var parents = new List<Parent>
             {
-                new Parent { Id = Guid.NewGuid() },
-                new Parent { Id = Guid.NewGuid() },
-                new Parent { Id = Guid.NewGuid() },
+                new Parent { Id = Guid.NewGuid(), UserId = Guid.NewGuid().ToString() },
+                new Parent { Id = Guid.NewGuid(), UserId = Guid.NewGuid().ToString() },
+                new Parent { Id = Guid.NewGuid(), UserId = Guid.NewGuid().ToString() },
             };
 
             context.Parents.AddRange(parents);
