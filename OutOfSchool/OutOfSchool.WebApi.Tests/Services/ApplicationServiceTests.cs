@@ -115,12 +115,12 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task CreateApplication_WhenCalled_ShouldReturnApplication()
         {
             // Arrange
+            var workshopList = WithWorkshopsList();
+
             var newApplication = new Application()
             {
                 Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
-
-                // Workshop id with Status = Open
-                WorkshopId = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
+                WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id,
                 CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
                 Status = ApplicationStatus.Pending,
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var input = new ApplicationDto()
             {
                 Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
-                WorkshopId = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
+                WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Open).Id,
                 CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
                 Status = ApplicationStatus.Pending,
                 ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
@@ -193,66 +193,21 @@ namespace OutOfSchool.WebApi.Tests.Services
         [Test]
         public void CreateApplication_WhenStatusWorkshopIsClosed_ShouldReturnArgumentException()
         {
+            var workshopList = WithWorkshopsList();
+
             var input = new ApplicationDto()
             {
-                Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
-
-                // Workshop id with Status = Closed
-                WorkshopId = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
+                Id = Guid.NewGuid(),
+                WorkshopId = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Closed).Id,
             };
 
-            var mockWorkshop = new Workshop()
-            {
-                Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-                Status = WorkshopStatus.Closed,
-            };
+            var mockWorkshop = workshopList.FirstOrDefault(x => x.Status == WorkshopStatus.Closed);
 
             workshopRepositoryMock.Setup(x => x.GetById(input.WorkshopId)).ReturnsAsync(mockWorkshop);
 
             // Act and assert
             Assert.ThrowsAsync<ArgumentException>(
                 async () => await service.Create(input).ConfigureAwait(false));
-        }
-
-        [Test]
-        public async Task CreateApplication_WhenStatusWorkshopIsOpen_ShouldReturnApplication()
-        {
-            // Arrange
-            var newApplication = new Application()
-            {
-                Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
-
-                // Workshop id with Status = Open
-                WorkshopId = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
-                CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
-                Status = ApplicationStatus.Pending,
-                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-            };
-
-            var input = new ApplicationDto()
-            {
-                Id = new Guid("6d4caeae-f0c3-492e-99b0-c8c105693376"),
-                WorkshopId = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
-                CreationTime = new DateTimeOffset(2022, 01, 12, 12, 34, 15, TimeSpan.Zero),
-                Status = ApplicationStatus.Pending,
-                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-            };
-
-            SetupCreate(newApplication);
-
-            // Act
-            var result = await service.Create(input).ConfigureAwait(false);
-
-            // Assert
-            result.Should().BeEquivalentTo(
-            new ModelWithAdditionalData<ApplicationDto, int>
-            {
-                Model = ExpectedApplicationCreate(newApplication),
-                AdditionalData = 0,
-            });
         }
 
         [Test]
