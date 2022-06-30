@@ -215,7 +215,7 @@ namespace OutOfSchool.WebApi.Controllers.V2
 
                 return Ok(CreateUpdateResponse(updatingResult));
             }
-            catch (WorkshopUpdateStatusException e)
+            catch (ArgumentException e)
             {
                 return BadRequest(e.Message);
             }

@@ -14,6 +14,7 @@ using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1
@@ -229,41 +230,33 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return StatusCode(403, "Forbidden to update workshops, which are not related to you");
             }
 
-            try
-            {
-                return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
-            }
-            catch (WorkshopUpdateStatusException e)
-            {
-                return BadRequest(e.Message);
-            }
+            return Ok(await combinedWorkshopService.Update(dto).ConfigureAwait(false));
         }
 
         /// <summary>
         /// Update status field for workshop entity.
         /// </summary>
-        /// <param name="id">Workshop's id.</param>
-        /// /// <param name="status">Status to update.</param>
-        /// <returns>Updated <see cref="WorkshopDTO"/>.</returns>
+        /// <param name="request">Workshop id and status to update.</param>
+        /// <returns>Updated <see cref="WorkshopStatusDto"/>.</returns>
         /// <response code="200">Entity was updated and returned.</response>
         /// <response code="400">If the model is invalid, some properties are not set etc.</response>
         /// <response code="401">If the user is not authorized.</response>
         /// <response code="403">If the user has no rights to use this method, or sets some properties that are forbidden to change.</response>
         /// <response code="500">If any server error occures.</response>
         [HasPermission(Permissions.WorkshopEdit)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopDTO))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkshopStatusDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateStatus(Guid id, [FromQuery] WorkshopStatus status)
+        [HttpPut]
+        public async Task<IActionResult> UpdateStatus([FromBody] WorkshopStatusDto request)
         {
-            var workshop = await combinedWorkshopService.GetById(id).ConfigureAwait(false);
+            var workshop = await combinedWorkshopService.GetById(request.WorkshopId).ConfigureAwait(false);
 
             if (workshop is null)
             {
-                return NoContent();
+                return NotFound($"There is no Workshop in DB with Id - {request.WorkshopId}");
             }
 
             var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshop.ProviderId, workshop.Id).ConfigureAwait(false);
@@ -274,9 +267,9 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             try
             {
-                return Ok(await combinedWorkshopService.UpdateStatus(id, status).ConfigureAwait(false));
+                return Ok(await combinedWorkshopService.UpdateStatus(request).ConfigureAwait(false));
             }
-            catch (WorkshopUpdateStatusException e)
+            catch (ArgumentException e)
             {
                 return BadRequest(e.Message);
             }

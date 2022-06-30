@@ -230,11 +230,6 @@ namespace OutOfSchool.WebApi.Services
 
             var currentWorkshop = await workshopRepository.GetWithNavigations(dto!.Id).ConfigureAwait(false);
 
-            if (currentWorkshop.Status != dto.Status)
-            {
-                throw new WorkshopUpdateStatusException("Unable update workshop status. Please use UpdateStatus endpoint.");
-            }
-
             // In case if AddressId was changed. AddresId is one and unique for workshop.
             dto.AddressId = currentWorkshop.AddressId;
             dto.Address.Id = currentWorkshop.AddressId;
@@ -256,24 +251,33 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> UpdateStatus(Guid id, WorkshopStatus status)
+        public async Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto)
         {
-            logger.LogInformation($"Updating Workshop status with Id = {id} started.");
+            logger.LogInformation($"Updating Workshop status with Id = {dto.WorkshopId} started.");
 
-            var currentWorkshop = await workshopRepository.GetWithNavigations(id).ConfigureAwait(false);
+            var currentWorkshop = await workshopRepository.GetById(dto.WorkshopId).ConfigureAwait(false);
+
+            if (currentWorkshop is null)
+            {
+                logger.LogInformation($"Workshop(id) {dto.WorkshopId} not found.");
+
+                return null;
+            }
 
             if (currentWorkshop.ProviderOwnership == OwnershipType.Private)
             {
-                currentWorkshop.Status = status;
+                currentWorkshop.Status = dto.Status;
             }
             else
             {
-                throw new WorkshopUpdateStatusException("Unable to update status for workshop with state or common ownership type.");
+                logger.LogInformation($"Unable to update status for workshop(id) {dto.WorkshopId} with state or common ownership type.");
+                throw new ArgumentException("Unable to update status for workshop with state or common ownership type.");
             }
 
             try
             {
                 await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+                logger.LogInformation($"Workshop(id) {dto.WorkshopId} Status was changed to {dto.Status}");
             }
             catch (DbUpdateConcurrencyException exception)
             {
@@ -281,7 +285,7 @@ namespace OutOfSchool.WebApi.Services
                 throw;
             }
 
-            return mapper.Map<WorkshopDTO>(currentWorkshop);
+            return dto;
         }
 
         /// <inheritdoc/>
@@ -297,11 +301,6 @@ namespace OutOfSchool.WebApi.Services
             async Task<(Workshop updatedWorkshop, MultipleImageChangingResult multipleImageChangingResult, ImageChangingResult changingCoverImageResult)> UpdateWorkshopWithDependencies()
             {
                 var currentWorkshop = await workshopRepository.GetWithNavigations(dto.Id).ConfigureAwait(false);
-
-                if (currentWorkshop.Status != dto.Status)
-                {
-                    throw new WorkshopUpdateStatusException("Unable update workshop status. Please use UpdateStatus endpoint.");
-                }
 
                 dto.ImageIds ??= new List<string>();
                 var multipleImageChangingResult = await workshopImagesService.ChangeImagesAsync(currentWorkshop, dto.ImageIds, dto.ImageFiles)

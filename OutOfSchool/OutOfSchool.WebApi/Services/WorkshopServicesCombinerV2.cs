@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 
@@ -16,8 +17,9 @@ namespace OutOfSchool.WebApi.Services
             ILogger<WorkshopServicesCombiner> logger,
             IElasticsearchSynchronizationService elasticsearchSynchronizationService,
             INotificationService notificationService,
-            IFavoriteService favoriteService)
-            : base(workshopService, elasticsearchService, logger, elasticsearchSynchronizationService, notificationService, favoriteService)
+            IFavoriteService favoriteService,
+            IApplicationRepository applicationRepository)
+            : base(workshopService, elasticsearchService, logger, elasticsearchSynchronizationService, notificationService, favoriteService, applicationRepository)
         {
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +11,7 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
@@ -18,6 +20,7 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Images;
+using Ubiety.Dns.Core.Records.NotUsed;
 
 namespace OutOfSchool.WebApi.Services
 {
@@ -29,6 +32,7 @@ namespace OutOfSchool.WebApi.Services
         private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
         private readonly INotificationService notificationService;
         private readonly IFavoriteService favoriteService;
+        private readonly IApplicationRepository applicationRepository;
 
 
         public WorkshopServicesCombiner(
@@ -37,7 +41,8 @@ namespace OutOfSchool.WebApi.Services
             ILogger<WorkshopServicesCombiner> logger,
             IElasticsearchSynchronizationService elasticsearchSynchronizationService,
             INotificationService notificationService,
-            IFavoriteService favoriteService)
+            IFavoriteService favoriteService,
+            IApplicationRepository applicationRepository)
         {
             this.workshopService = workshopService;
             this.elasticsearchService = elasticsearchService;
@@ -45,6 +50,7 @@ namespace OutOfSchool.WebApi.Services
             this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
             this.notificationService = notificationService;
             this.favoriteService = favoriteService;
+            this.applicationRepository = applicationRepository;
         }
 
         /// <inheritdoc/>
@@ -84,23 +90,25 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<WorkshopDTO> UpdateStatus(Guid id, WorkshopStatus status)
+        public async Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto)
         {
-            var workshop = await workshopService.UpdateStatus(id, status).ConfigureAwait(false);
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            var workshopDto = await workshopService.UpdateStatus(dto).ConfigureAwait(false);
 
             var additionalData = new Dictionary<string, string>()
             {
-                { "Status", workshop.Status.ToString() },
+                { "Status", workshopDto.Status.ToString() },
             };
 
             await notificationService.Create(
                 NotificationType.Workshop,
                 NotificationAction.Update,
-                workshop.Id,
+                workshopDto.WorkshopId,
                 this,
                 additionalData).ConfigureAwait(false);
 
-            return workshop;
+            return dto;
         }
 
         /// <inheritdoc/>
@@ -199,22 +207,10 @@ namespace OutOfSchool.WebApi.Services
             return workshopCards.ToList();
         }
 
-        // <inheritdoc/>
+        /// <inheritdoc/>
         public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
             await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
 
-        private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
-        {
-            return source.Select(currentElement => currentElement.ToCardDto()).ToList();
-        }
-
-        private bool IsFilterValid(WorkshopFilter filter)
-        {
-            return filter != null && filter.MaxStartTime >= filter.MinStartTime
-                                  && filter.MaxAge >= filter.MinAge
-                                  && filter.MaxPrice >= filter.MinPrice;
-        } 
-        
         public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
         {
             var recipientIds = new List<string>();
@@ -222,9 +218,22 @@ namespace OutOfSchool.WebApi.Services
             var usersInFavoriteWorkshop = await favoriteService.GetAll().ConfigureAwait(false);
             var usersIds = usersInFavoriteWorkshop.Where(x => x.WorkshopId == objectId).Select(x => x.UserId);
 
+            Expression<Func<Application, bool>> predicate = x => x.Status != ApplicationStatus.Left && x.WorkshopId == objectId;
+
+            var applications = await applicationRepository.GetByFilter(predicate).ConfigureAwait(false);
+            var appliedUsersIds = applications.Select(x => x.Parent.UserId);
+
             recipientIds.AddRange(usersIds);
+            recipientIds.AddRange(appliedUsersIds);
 
             return recipientIds.Distinct();
+        }
+
+        private bool IsFilterValid(WorkshopFilter filter)
+        {
+            return filter != null && filter.MaxStartTime >= filter.MinStartTime
+                                  && filter.MaxAge >= filter.MinAge
+                                  && filter.MaxPrice >= filter.MinPrice;
         }
     }
 }
