@@ -79,9 +79,9 @@ namespace OutOfSchool.WebApi.Services
 
             ModelNullValidation(applicationDto);
 
-            var workshopStatus = await CheckWorkshopStatus(applicationDto.WorkshopId).ConfigureAwait(false);
+            var allowedNewApplication = await AllowedNewApplicationByWorkshopStatus(applicationDto.WorkshopId).ConfigureAwait(false);
 
-            if (workshopStatus == WorkshopStatus.Closed)
+            if (!allowedNewApplication)
             {
                 logger.LogInformation("Unable to create a new application for a workshop because workshop status is closed.");
                 throw new ArgumentException("Unable to create a new application for a workshop because workshop status is closed.");
@@ -484,18 +484,6 @@ namespace OutOfSchool.WebApi.Services
             return recipientIds.Distinct();
         }
 
-        private async Task<WorkshopStatus> CheckWorkshopStatus(Guid id)
-        {
-            var workshop = await workshopRepository.GetById(id).ConfigureAwait(false);
-            if (workshop is null)
-            {
-                logger.LogInformation("Operation failed. Workshop in Application dto is null");
-                throw new ArgumentException(localizer["Workshop in Application dto is null."], nameof(workshop));
-            }
-
-            return workshop.Status;
-        }
-
         public async Task<bool> AllowedNewApplicationByChildStatus(Guid workshopId, Guid childId)
         {
             var forbiddenStatuses = new[]
@@ -511,6 +499,19 @@ namespace OutOfSchool.WebApi.Services
                                                               && forbiddenStatuses.Contains(a.Status);
 
             return !await applicationRepository.Any(filter).ConfigureAwait(false);
+        }
+
+        private async Task<bool> AllowedNewApplicationByWorkshopStatus(Guid workshopId)
+        {
+            var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
+
+            if (workshop is null)
+            {
+                logger.LogInformation("Operation failed. Workshop in Application dto is null");
+                throw new ArgumentException(localizer["Workshop in Application dto is null."], nameof(workshopId));
+            }
+
+            return workshop.Status == WorkshopStatus.Open;
         }
 
         private void ModelNullValidation(ApplicationDto applicationDto)
