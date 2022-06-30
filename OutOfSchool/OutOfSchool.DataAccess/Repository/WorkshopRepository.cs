@@ -36,6 +36,14 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
             }
         }
 
+        if (entity.Images?.Count > 0)
+        {
+            foreach (var image in entity.Images)
+            {
+                db.Entry(image).State = EntityState.Deleted;
+            }
+        }
+
         db.Entry(entity).State = EntityState.Deleted;
         db.Entry(entity.Address).State = EntityState.Deleted;
 

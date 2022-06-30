@@ -1,0 +1,109 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common.TestDataGenerators;
+
+namespace OutOfSchool.WebApi.Tests.Services.Database
+{
+    [TestFixture]
+    public class WorkshopRepositoryTests
+    {
+        private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
+
+        private IReadOnlyCollection<Workshop> workshops;
+
+        [SetUp]
+        public async Task SetUp()
+        {
+            workshops = WorkshopGenerator.Generate(3)
+                .WithAddress()
+                .WithApplications()
+                .WithTeachers()
+                .WithImages();
+
+            dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+                .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+                .UseLazyLoadingProxies()
+                .EnableSensitiveDataLogging()
+                .Options;
+
+            await Seed();
+        }
+
+        #region Delete
+
+        [Test]
+        public async Task Delete_SoftDelete_Workshop_Applications_Teachers_HardDeleteImages()
+        {
+            // Arrange
+            using var context = GetContext();
+            var workshopRepository = GetWorkshopRepository(context);
+            var initialWorkshopsCount = context.Workshops.Count();
+            var workshop = context.Workshops.First();
+            var expectedWorkshopsCount = initialWorkshopsCount - 1;
+            var expectedApplicationsCount = context.Applications.Count() - workshop.Applications.Count();
+            var expectedTeachersCount = context.Teachers.Count() - workshop.Teachers.Count();
+            var expectedImagesCount = context.WorkshopImages.Count() - workshop.Images.Count();
+            var expectedAddressesCount = context.Addresses.Count() - 1;
+
+            // Act
+            await workshopRepository.Delete(workshop);
+            var applications = context.Applications
+                .IgnoreQueryFilters()
+                .Where(x => x.WorkshopId == workshop.Id)
+                .Select(x => context.Entry(x))
+                .ToList();
+            var teachers = context.Teachers
+                .IgnoreQueryFilters()
+                .Where(x => x.WorkshopId == workshop.Id)
+                .Select(x => context.Entry(x))
+                .ToList();
+            var images = context.WorkshopImages
+                .IgnoreQueryFilters()
+                .Where(x => x.EntityId == workshop.Id)
+                .ToList();
+
+            // Assert
+            Assert.AreEqual(initialWorkshopsCount, context.Workshops.IgnoreQueryFilters().Count());
+            Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count());
+            Assert.AreEqual(expectedApplicationsCount, context.Applications.Count());
+            Assert.AreEqual(expectedTeachersCount, context.Teachers.Count());
+            Assert.AreEqual(expectedImagesCount, context.WorkshopImages.Count());
+            Assert.AreEqual(expectedAddressesCount, context.Addresses.Count());
+            Assert.False(context.Workshops.Any(x => x.Id == workshop.Id));
+            Assert.True(context.Workshops.IgnoreQueryFilters().Any(x => x.Id == workshop.Id));
+            Assert.AreEqual(EntityState.Unchanged, context.Entry(workshop).State);
+            Assert.AreEqual(true, context.Entry(workshop).CurrentValues["IsDeleted"]);
+            Assert.True(applications.All(x => x.State == EntityState.Unchanged));
+            Assert.True(applications.All(x => (bool)x.CurrentValues["IsDeleted"] == true));
+            Assert.True(teachers.All(x => x.State == EntityState.Unchanged));
+            Assert.True(teachers.All(x => (bool)x.CurrentValues["IsDeleted"] == true));
+            Assert.IsEmpty(images);
+        }
+
+        #endregion
+
+        #region private
+
+        private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+
+        private IWorkshopRepository GetWorkshopRepository(OutOfSchoolDbContext dbContext)
+            => new WorkshopRepository(dbContext);
+
+        private async Task Seed()
+        {
+            using var context = GetContext();
+            context.Database.EnsureDeleted();
+            context.Database.EnsureCreated();
+            context.AddRange(workshops);
+            await context.SaveChangesAsync();
+        }
+
+        #endregion
+    }
+}
