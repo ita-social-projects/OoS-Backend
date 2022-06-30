@@ -415,7 +415,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         {
             if (application.Status == ApplicationStatus.Completed || application.Status == ApplicationStatus.Rejected || application.Status == ApplicationStatus.Left)
             {
-                if (User.IsInRole("provider") == false)
+                if (!User.IsInRole("provider"))
                 {
                     throw new ArgumentException("Forbidden to update application.");
                 }

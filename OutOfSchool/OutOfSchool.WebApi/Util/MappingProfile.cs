@@ -9,8 +9,8 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.SubordinationStructure;
-using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Achievement;
 using OutOfSchool.WebApi.Models.BlockedProviderParent;
 using OutOfSchool.WebApi.Models.Changes;
 using OutOfSchool.WebApi.Models.Codeficator;
@@ -148,9 +148,6 @@ namespace OutOfSchool.WebApi.Util
 
             CreateMap<Application, ApplicationDto>().ReverseMap();
 
-            //CreateMap<WorkshopCard, Workshop>()
-            //    .ForMember(dest => dest.Direction, opt => opt.Ignore());
-
             CreateMap<Workshop, WorkshopCard>()
                 .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
                 .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
@@ -164,7 +161,6 @@ namespace OutOfSchool.WebApi.Util
 
             CreateMap<Child, ChildDto>().ReverseMap()
                 .ForMember(c => c.Parent, m => m.Ignore());
-                //.ForMember(c => c.SocialGroups, m => m.Ignore());
 
             CreateMap<Parent, ParentDTO>().ReverseMap();
 
