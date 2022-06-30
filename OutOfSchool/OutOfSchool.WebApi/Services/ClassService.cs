@@ -133,7 +133,7 @@ namespace OutOfSchool.WebApi.Services
             var count = await repository.Count().ConfigureAwait(false);
 
             var classes = await repository
-                .Get<int>(filter.From, filter.Size)
+                .Get(filter.From, filter.Size)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -177,7 +177,7 @@ namespace OutOfSchool.WebApi.Services
             IdValidation(id);
 
             var classes = await repository
-                .Get<int>(where: x => x.DepartmentId == id)
+                .Get(where: x => x.DepartmentId == id)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -210,7 +210,7 @@ namespace OutOfSchool.WebApi.Services
 
         private void ModelValidation(ClassDto dto)
         {
-            if (repository.Get<int>(where: x => x.Title == dto.Title).Any())
+            if (repository.Get(where: x => x.Title == dto.Title).Any())
             {
                 throw new ArgumentException(localizer["There is already a Class with such a data."]);
             }

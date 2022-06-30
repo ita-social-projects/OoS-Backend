@@ -159,7 +159,7 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public virtual IQueryable<TValue> Get<TOrderKey>(
+        public virtual IQueryable<TValue> Get(
             int skip = 0,
             int take = 0,
             string includeProperties = "",

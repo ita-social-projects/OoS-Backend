@@ -109,7 +109,7 @@ namespace OutOfSchool.WebApi.Services
                 };
 
             var parents = await repositoryParent
-                .Get<string>(filter.From, filter.Size, string.Empty, filterPredicate, sortExpression)
+                .Get(filter.From, filter.Size, string.Empty, filterPredicate, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

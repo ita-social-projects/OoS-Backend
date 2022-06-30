@@ -76,7 +76,7 @@ namespace OutOfSchool.WebApi.Services
                     { x => x.Id, SortDirection.Ascending },
                 };
 
-            var children = await childRepository.Get<Child>(offsetFilter.From, offsetFilter.Size, $"{nameof(Child.SocialGroups)}", null, sortExpression)
+            var children = await childRepository.Get(offsetFilter.From, offsetFilter.Size, $"{nameof(Child.SocialGroups)}", null, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -128,7 +128,7 @@ namespace OutOfSchool.WebApi.Services
                 };
 
             var children = await childRepository
-                .Get<Child>(offsetFilter.From, offsetFilter.Size, "SocialGroup", x => x.ParentId == parentId, sortExpression)
+                .Get(offsetFilter.From, offsetFilter.Size, "SocialGroup", x => x.ParentId == parentId, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -161,7 +161,7 @@ namespace OutOfSchool.WebApi.Services
                 };
 
             var children = await childRepository
-                .Get<Child>(offsetFilter.From, offsetFilter.Size, string.Empty, x => x.Parent.UserId == userId, sortExpression)
+                .Get(offsetFilter.From, offsetFilter.Size, string.Empty, x => x.Parent.UserId == userId, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

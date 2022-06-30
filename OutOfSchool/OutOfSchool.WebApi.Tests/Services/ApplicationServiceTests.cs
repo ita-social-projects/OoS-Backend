@@ -297,7 +297,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             SetupGetAllBy(existingApplications);
             var filter = new ApplicationFilter();
             var mockQuery = existingApplications.AsTestAsyncEnumerableQuery();
-            applicationRepositoryMock.Setup(r => r.Get<Application>(
+            applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
@@ -317,7 +317,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var mockQuery = new List<Application>().AsTestAsyncEnumerableQuery();
-            applicationRepositoryMock.Setup(r => r.Get<Application>(
+            applicationRepositoryMock.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
@@ -394,7 +394,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
 
-            applicationRepositoryMock.Setup(r => r.Get<int>(
+            applicationRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -485,7 +485,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<string>()))
                 .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { application }));
-            childRepositoryMock.Setup(r => r.Get<int>(
+            childRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -526,7 +526,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
             var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
 
-            applicationRepositoryMock.Setup(r => r.Get<Application>(
+            applicationRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -543,7 +543,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var emptyApplicationsList = new List<Application>().AsQueryable().BuildMock();
             var emptyApplicationDtosList = new List<ApplicationDto>();
 
-            applicationRepositoryMock.Setup(r => r.Get<Application>(
+            applicationRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -561,7 +561,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var workshopsMock = WithWorkshopsList().AsQueryable().BuildMock();
             var mappedDtos = apps.Select(a => new ApplicationDto() { Id = a.Id }).ToList();
 
-            workshopRepositoryMock.Setup(w => w.Get<int>(
+            workshopRepositoryMock.Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -570,7 +570,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<bool>()))
                 .Returns(workshopsMock.Object)
                 .Verifiable();
-            applicationRepositoryMock.Setup(r => r.Get<Application>(
+            applicationRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -588,7 +588,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var emptyApplicationsList = new List<Application>().AsQueryable().BuildMock();
             var emptyApplicationDtosList = new List<ApplicationDto>();
 
-            workshopRepositoryMock.Setup(w => w.Get<Workshop>(
+            workshopRepositoryMock.Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -597,7 +597,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<bool>()))
                 .Returns(emptyWorkshopsList.Object)
                 .Verifiable();
-            applicationRepositoryMock.Setup(r => r.Get<Application>(
+            applicationRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -624,7 +624,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             var applicationsMock = WithApplicationsList().AsQueryable().BuildMock();
 
-            applicationRepositoryMock.Setup(r => r.Get<int>(
+            applicationRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),

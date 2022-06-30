@@ -71,7 +71,7 @@ namespace OutOfSchool.WebApi.Services
         {
             var (changesLog, count) = await GetChangesLogAsync(mapper.Map<ChangesLogFilter>(request))
                 .ConfigureAwait(false);
-            var providers = providerRepository.Get<int>();
+            var providers = providerRepository.Get();
 
             var query = from l in changesLog
                         join p in providers
@@ -105,7 +105,7 @@ namespace OutOfSchool.WebApi.Services
         {
             var (changesLog, count) = await GetChangesLogAsync(mapper.Map<ChangesLogFilter>(request))
                 .ConfigureAwait(false);
-            var applications = applicationRepository.Get<int>();
+            var applications = applicationRepository.Get();
 
             var query = from l in changesLog
                         join a in applications
@@ -144,7 +144,7 @@ namespace OutOfSchool.WebApi.Services
 
             var count = await providerAdminChangesLogRepository.Count(where).ConfigureAwait(false);
             var query = providerAdminChangesLogRepository
-                .Get<ProviderAdminChangesLog>(request.From, request.Size, string.Empty, where, sortExpression, true)
+                .Get(request.From, request.Size, string.Empty, where, sortExpression, true)
                 .Select(x => new ProviderAdminChangesLogDto
                 {
                     ProviderAdminId = x.ProviderAdminUserId,
@@ -176,7 +176,7 @@ namespace OutOfSchool.WebApi.Services
             var sortExpression = GetOrderParams();
 
             var count = await changesLogRepository.Count(where).ConfigureAwait(false);
-            var query = changesLogRepository.Get<ChangesLog>(filter.From, filter.Size, string.Empty, where, sortExpression, true);
+            var query = changesLogRepository.Get(filter.From, filter.Size, string.Empty, where, sortExpression, true);
 
             return (query, count);
         }

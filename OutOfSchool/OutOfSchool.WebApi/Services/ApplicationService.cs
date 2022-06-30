@@ -215,7 +215,7 @@ namespace OutOfSchool.WebApi.Services
 
             var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
 
-            var applications = await applicationRepository.Get<Application>(
+            var applications = await applicationRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 where: predicate,
@@ -264,7 +264,7 @@ namespace OutOfSchool.WebApi.Services
             var sortPredicate = SortExpressionBuild(filter);
 
             var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
-            var applications = await applicationRepository.Get<Application>(
+            var applications = await applicationRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 where: predicate,
@@ -292,7 +292,7 @@ namespace OutOfSchool.WebApi.Services
             FilterNullValidation(filter);
 
             Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
-            var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
+            var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
 
             var predicate = PredicateBuild(filter);
             predicate = predicate.And(a => workshops.Contains(a.WorkshopId));
@@ -301,7 +301,7 @@ namespace OutOfSchool.WebApi.Services
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
             var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
-            var applications = await applicationRepository.Get<Application>(
+            var applications = await applicationRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 where: predicate,
@@ -496,7 +496,7 @@ namespace OutOfSchool.WebApi.Services
 
         private void CheckApplicationExists(Guid id)
         {
-            var applications = applicationRepository.Get<int>(where: a => a.Id == id);
+            var applications = applicationRepository.Get(where: a => a.Id == id);
 
             if (!applications.Any())
             {
@@ -509,7 +509,7 @@ namespace OutOfSchool.WebApi.Services
         {
             Expression<Func<Child, bool>> filter = c => c.ParentId == parentId;
 
-            var children = childRepository.Get<int>(where: filter).Select(c => c.Id);
+            var children = childRepository.Get(where: filter).Select(c => c.Id);
 
             return await children.ContainsAsync(childId).ConfigureAwait(false);
         }

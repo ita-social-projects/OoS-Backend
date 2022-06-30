@@ -121,7 +121,7 @@ namespace OutOfSchool.WebApi.Services
                 };
 
             var providers = await providerRepository
-                .Get<Provider>(
+                .Get(
                     skip: filter.From,
                     take: filter.Size,
                     includeProperties: "ActualAddress,LegalAddress,Institution,ProviderSectionItems,Images",

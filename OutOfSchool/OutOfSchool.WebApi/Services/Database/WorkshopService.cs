@@ -156,7 +156,7 @@ namespace OutOfSchool.WebApi.Services
 
             var count = await workshopRepository.Count().ConfigureAwait(false);
             var workshops =
-                workshopRepository.Get<Workshop>(
+                workshopRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
                     includeProperties: includingPropertiesForMappingDtoModel,
@@ -380,7 +380,7 @@ namespace OutOfSchool.WebApi.Services
             var orderBy = GetOrderParameter(filter);
 
             var workshopsCount = await workshopRepository.Count(where: filterPredicate).ConfigureAwait(false);
-            var workshops = workshopRepository.Get<dynamic>(
+            var workshops = workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
@@ -417,7 +417,7 @@ namespace OutOfSchool.WebApi.Services
 
             var filterPredicate = PredicateBuild(filter);
 
-            var closestWorkshops = workshopRepository.Get<dynamic>(
+            var closestWorkshops = workshopRepository.Get(
                 skip: 0,
                 take: 0,
                 includeProperties: includingPropertiesForMappingWorkShopCard,

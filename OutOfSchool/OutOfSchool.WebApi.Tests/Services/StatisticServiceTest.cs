@@ -160,7 +160,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
 
             workshopRepository
-                .Setup(w => w.Get<int>(
+                .Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -177,7 +177,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var applicationsMock = WithApplications().AsQueryable().BuildMock();
             var directionsMock = WithDirections().AsQueryable().BuildMock();            
 
-            workshopRepository.Setup(w => w.Get<int>(
+            workshopRepository.Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -187,7 +187,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Returns(workshopsMock.Object)
                 .Verifiable();
 
-            applicationRepository.Setup(w => w.Get<int>(
+            applicationRepository.Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -197,7 +197,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Returns(applicationsMock.Object)
                 .Verifiable();
 
-            directionRepository.Setup(w => w.Get<int>(
+            directionRepository.Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),

@@ -132,7 +132,7 @@ namespace OutOfSchool.WebApi.Services
                     { x => x.CreatedDateTime, SortDirection.Descending },
                 };
 
-                var query = messageRepository.Get<DateTimeOffset>(
+                var query = messageRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
                     where: x => x.ChatRoomId == chatRoomId,

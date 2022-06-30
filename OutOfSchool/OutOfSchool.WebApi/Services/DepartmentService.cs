@@ -120,7 +120,7 @@ namespace OutOfSchool.WebApi.Services
             var count = await repository.Count().ConfigureAwait(false);
 
             var departments = await repository
-                .Get<int>(filter.From, filter.Size)
+                .Get(filter.From, filter.Size)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
@@ -163,7 +163,7 @@ namespace OutOfSchool.WebApi.Services
             IdValidation(id);
 
             var departments = await repository
-                .Get<int>(where: x => x.DirectionId == id)
+                .Get(where: x => x.DirectionId == id)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

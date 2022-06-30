@@ -48,7 +48,7 @@ namespace OutOfSchool.WebApi.Util
                     { orderBy, ascending ? SortDirection.Ascending : SortDirection.Descending },
                 };
 
-            var selectedPages = repository.Get<TOrderKey>(pageSize * (pageNumber - 1), pageSize, includeProperties, where, sortExpression).ToList();
+            var selectedPages = repository.Get(pageSize * (pageNumber - 1), pageSize, includeProperties, where, sortExpression).ToList();
             return selectedPages;
         }
 

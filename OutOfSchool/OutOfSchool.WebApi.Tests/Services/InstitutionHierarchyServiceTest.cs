@@ -106,7 +106,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 },
             }.AsTestAsyncEnumerableQuery();
 
-            repo.Setup(r => r.Get<InstitutionHierarchy>(
+            repo.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),

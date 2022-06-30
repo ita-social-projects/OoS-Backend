@@ -307,7 +307,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             var workshopGuids = workshops.Select(w => w.Id);
             var mappedDtos = workshops.Select(w => new WorkshopDTO() { Id = w.Id }).ToList();
 
-            workshopRepository.Setup(w => w.Get<Workshop>(
+            workshopRepository.Setup(w => w.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
@@ -384,7 +384,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     .Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
                 .ReturnsAsync(workshops.Count());
             workshopRepository.Setup(w => w
-                .Get<dynamic>(
+                .Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),

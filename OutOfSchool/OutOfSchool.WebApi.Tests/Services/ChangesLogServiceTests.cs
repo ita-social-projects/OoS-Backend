@@ -127,7 +127,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
                 .Returns(Task.FromResult(totalAmount));
             changesLogRepository
-                .Setup(repo => repo.Get<ChangesLog>(
+                .Setup(repo => repo.Get(
                     request.From,
                     request.Size,
                     string.Empty,
@@ -135,7 +135,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny< Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
-            providerRepository.Setup(repo => repo.Get<int>(
+            providerRepository.Setup(repo => repo.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -182,7 +182,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Setup(repo => repo.Count(It.IsAny<Expression<Func<ChangesLog, bool>>>()))
                 .Returns(Task.FromResult(totalAmount));
             changesLogRepository
-                .Setup(repo => repo.Get<ChangesLog>(
+                .Setup(repo => repo.Get(
                     request.From,
                     request.Size,
                     string.Empty,
@@ -190,7 +190,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny< Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
-            applicationRepository.Setup(repo => repo.Get<int>(
+            applicationRepository.Setup(repo => repo.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -241,7 +241,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Setup(repo => repo.Count(It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>()))
                 .Returns(Task.FromResult(totalAmount));
             providerAdminChangesLogRepository
-                .Setup(repo => repo.Get<ProviderAdminChangesLog>(
+                .Setup(repo => repo.Get(
                     request.From,
                     request.Size,
                     string.Empty,

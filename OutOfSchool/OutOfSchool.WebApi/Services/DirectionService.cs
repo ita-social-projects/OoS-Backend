@@ -187,7 +187,7 @@ namespace OutOfSchool.WebApi.Services
 
         private void DirectionValidation(DirectionDto dto)
         {
-            if (repository.Get<int>(where: x => x.Title == dto.Title).Any())
+            if (repository.Get(where: x => x.Title == dto.Title).Any())
             {
                 throw new ArgumentException(localizer["There is already a Direction with such a data."]);
             }

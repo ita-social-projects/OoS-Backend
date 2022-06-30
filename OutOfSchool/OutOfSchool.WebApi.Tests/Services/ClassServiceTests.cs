@@ -96,7 +96,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 },
             }.AsTestAsyncEnumerableQuery();
 
-            repo.Setup(r => r.Get<Class>(
+            repo.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
@@ -369,7 +369,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 },
             };
 
-            repo.Setup(r => r.Get<Class>(
+            repo.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
@@ -385,7 +385,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Assert
             repo.Verify(
-                r => r.Get<Class>(
+                r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),

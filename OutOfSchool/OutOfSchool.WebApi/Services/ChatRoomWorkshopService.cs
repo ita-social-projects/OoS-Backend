@@ -78,7 +78,7 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var query = roomRepository.Get<long>(includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}", where: x => x.Id == id);
+                var query = roomRepository.Get(includeProperties: $"{nameof(ChatRoomWorkshop.ChatMessages)}", where: x => x.Id == id);
                 var chatRooms = await query.ToListAsync().ConfigureAwait(false);
                 var chatRoom = chatRooms.Single();
 
