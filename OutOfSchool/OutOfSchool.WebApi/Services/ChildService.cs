@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
@@ -18,6 +20,7 @@ namespace OutOfSchool.WebApi.Services
     {
         private readonly IEntityRepository<Child> childRepository;
         private readonly IParentRepository parentRepository;
+        private readonly IApplicationRepository applicationRepository;
         private readonly ILogger<ChildService> logger;
 
         /// <summary>
@@ -26,10 +29,11 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="childRepository">Repository for the Child entity.</param>
         /// <param name="parentRepository">Repository for the Parent entity.</param>
         /// <param name="logger">Logger.</param>
-        public ChildService(IEntityRepository<Child> childRepository, IParentRepository parentRepository, ILogger<ChildService> logger)
+        public ChildService(IEntityRepository<Child> childRepository, IParentRepository parentRepository, IApplicationRepository applicationRepository, ILogger<ChildService> logger)
         {
             this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
             this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
+            this.applicationRepository = applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -150,6 +154,49 @@ namespace OutOfSchool.WebApi.Services
             logger.LogDebug(children.Any()
                 ? $"{children.Count} children for User:{userId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
                 : $"There is no child for User:{userId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
+
+            var searchResult = new SearchResult<ChildDto>()
+            {
+                TotalAmount = totalAmount,
+                Entities = children.Select(x => x.ToModel()).ToList(),
+            };
+
+            return searchResult;
+        }
+
+        /// <summary>
+        /// Get children by WorkshopId.
+        /// </summary>
+        /// <param name="workshopId">ParentId.</param>
+        /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+        /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
+        /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
+        /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
+        /// <exception cref="SqlException">If the database cannot execute the query.</exception>
+        public async Task<SearchResult<ChildDto>> GetApprovedByWorkshopId(Guid workshopId, OffsetFilter offsetFilter)
+        {
+            ValidateOffsetFilter(offsetFilter);
+
+            logger.LogDebug($"Getting Children by WorkshopId: {workshopId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
+
+            var applications = await applicationRepository.GetByFilter(p => p.WorkshopId == workshopId && p.Status == ApplicationStatus.Approved).ConfigureAwait(false);
+            HashSet<Guid> childrenGuids = new HashSet<Guid>();
+            foreach (var app in applications)
+            {
+                childrenGuids.Add(app.ChildId);
+            }
+
+            var totalAmount = childrenGuids.Count;
+
+            var children = await childRepository
+                .Get<string>(offsetFilter.From, offsetFilter.Size, string.Empty, x => childrenGuids.Contains(x.Id), x => x.FirstName, true)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            logger.LogDebug(children.Any()
+                ? $"{children.Count} approved children with WorkshopId: {workshopId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
+                : $"There is no approved child with WorkshopId: {workshopId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
 
             var searchResult = new SearchResult<ChildDto>()
             {

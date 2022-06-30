@@ -23,6 +23,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
     {
         private ChildController controller;
         private Mock<IChildService> service;
+        private Mock<IProviderService> providerService;
+        private Mock<IProviderAdminService> providerAdminService;
         private List<ChildDto> children;
         private ChildDto child;
         private string currentUserId;
@@ -33,7 +35,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public void Setup()
         {
             service = new Mock<IChildService>();
-            controller = new ChildController(service.Object);
+            providerService = new Mock<IProviderService>();
+            providerAdminService = new Mock<IProviderAdminService>();
+            controller = new ChildController(service.Object, providerService.Object, providerAdminService.Object);
 
             // TODO: find out why it is a string but not a GUID
             currentUserId = Guid.NewGuid().ToString();
