@@ -234,10 +234,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .Setup(repo => repo.Get(
                     filter.From,
                     filter.Size,
-                    string.Empty,
+                    It.IsAny<string>(),
                     It.IsAny<Expression<Func<Provider, bool>>>(),
-                    It.IsAny<Expression<Func<Provider, dynamic>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Provider, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(providersMock.Object);
             ratingService.Setup(r => r.GetAverageRatingForRange(It.IsAny<IEnumerable<Guid>>(), RatingType.Provider))
