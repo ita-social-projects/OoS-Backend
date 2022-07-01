@@ -509,10 +509,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<string>()))
                 .Returns(Task.FromResult<IEnumerable<Application>>(new List<Application> { application }));
-
             workshopRepositoryMock.Setup(x => x.GetById(application.WorkshopId)).ReturnsAsync(workshopMock);
-
-            childRepositoryMock.Setup(r => r.Get<It.IsAnyType>(
+            childRepositoryMock.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),

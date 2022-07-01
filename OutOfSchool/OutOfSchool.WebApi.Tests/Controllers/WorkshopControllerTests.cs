@@ -342,11 +342,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             // Arrange
             providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
 
-            var updateRequest = new WorkshopStatusDto()
-            {
-                WorkshopId = workshop.Id,
-                Status = WorkshopStatus.Open,
-            };
+            var updateRequest = FakeWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
 
             workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId))
                 .ReturnsAsync(workshop);
@@ -368,11 +364,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             var nonExistentId = Guid.NewGuid();
             var expected = new NotFoundObjectResult($"There is no Workshop in DB with Id - {nonExistentId}");
 
-            var updateRequest = new WorkshopStatusDto()
-            {
-                WorkshopId = nonExistentId,
-                Status = WorkshopStatus.Open,
-            };
+            var updateRequest = FakeWorkshopStatusDto(nonExistentId, WorkshopStatus.Open);
 
             workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId))
                 .ReturnsAsync(null as WorkshopDTO);
@@ -389,11 +381,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task UpdateStatus_WhenModelIsInvalid_ShouldReturnBadRequest()
         {
             // Arrange
-            var updateRequest = new WorkshopStatusDto()
-            {
-                WorkshopId = workshop.Id,
-                Status = WorkshopStatus.Closed,
-            };
+            var updateRequest = FakeWorkshopStatusDto(workshop.Id, WorkshopStatus.Closed);
 
             workshop.ProviderOwnership = OwnershipType.Common;
 
@@ -727,7 +715,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Description = $"test description text sentence for id: {id.ToString()}",
             };
         }
-        
-         
+
+        private WorkshopStatusDto FakeWorkshopStatusDto(Guid workshopDtoId, WorkshopStatus workshopStatus)
+        {
+            return new WorkshopStatusDto()
+            {
+                WorkshopId = workshopDtoId,
+                Status = workshopStatus,
+            };
+        }
+
     }
 }
