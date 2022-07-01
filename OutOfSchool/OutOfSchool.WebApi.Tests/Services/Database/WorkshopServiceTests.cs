@@ -187,7 +187,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             result.Should().BeEquivalentTo(ExpectedWorkshopsGetByProviderId());
         }
 
-
         [Test]
         public async Task GetByProviderId_WhenThereIsNoEntityWithId_ShouldReturnEmptyList()
         {
@@ -299,6 +298,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 .ReturnsAsync(new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
             mapper.Setup(m => m.Map<WorkshopDTO>(It.IsAny<Workshop>()))
                 .Returns(new WorkshopDTO() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
+            mapper.Setup(m => m.Map<Workshop>(It.IsAny<WorkshopDTO>()))
+                .Returns(new Workshop() { Id = new Guid("8f91783d-a68f-41fa-9ded-d879f187a94e") });
         }
 
         private void SetupGetAll(IEnumerable<Workshop> workshops, Dictionary<Guid, Tuple<float, int>> ratings)
@@ -312,8 +313,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 It.IsAny<int>(),
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<bool>(),
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>())).Returns(mockWorkshops.Object);
             workshopRepository.Setup(
                 w => w
@@ -335,7 +335,6 @@ namespace OutOfSchool.WebApi.Tests.Services
                     w => w.GetWithNavigations(workshopId))
                 .ReturnsAsync(workshop);
             mapper.Setup(m => m.Map<WorkshopDTO>(workshop)).Returns(new WorkshopDTO() { Id = workshop.Id });
-
         }
 
         private void SetupGetByProviderId(IEnumerable<Workshop> workshops)
@@ -385,13 +384,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                     .Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
                 .ReturnsAsync(workshops.Count());
             workshopRepository.Setup(w => w
-                .Get<dynamic>(
+                .Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<Expression<Func<Workshop, dynamic>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
             ratingService.Setup(r => r
                     .GetAverageRatingForRange(It.IsAny<IEnumerable<Guid>>(), RatingType.Workshop))
@@ -450,6 +448,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             {
                 dictionary.Add(guid, new Tuple<float, int>(4.2f, 5));
             }
+
             return dictionary;
         }
 

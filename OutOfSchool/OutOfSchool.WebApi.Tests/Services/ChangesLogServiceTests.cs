@@ -132,8 +132,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     request.Size,
                     string.Empty,
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                    It.IsAny<Expression<Func<ChangesLog, dynamic>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny< Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
             providerRepository.Setup(repo => repo.Get(
@@ -141,8 +140,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Provider, bool>>>(),
-                    It.IsAny<Expression<Func<Provider, It.IsAnyType>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(providersMock.Object);
 
@@ -189,8 +187,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     request.Size,
                     string.Empty,
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                    It.IsAny<Expression<Func<ChangesLog, dynamic>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny< Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
             applicationRepository.Setup(repo => repo.Get(
@@ -198,8 +195,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
-                    It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(applicationsMock.Object);
 
@@ -250,8 +246,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     request.Size,
                     string.Empty,
                     It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>(),
-                    It.IsAny<Expression<Func<ProviderAdminChangesLog, dynamic>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
 

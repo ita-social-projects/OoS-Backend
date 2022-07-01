@@ -10,7 +10,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models.SubordinationStructure;
 using OutOfSchool.WebApi.Util.JsonTools;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models.Providers
 {
     public class ProviderDto
     {
@@ -79,12 +79,18 @@ namespace OutOfSchool.WebApi.Models
         [Required]
         public ProviderType Type { get; set; }
 
-        public bool Status { get; set; }
+        [Required]
+        public ProviderStatus Status { get; set; }
+
+        [MaxLength(30)]
+        public string License { get; set; }
+
+        public ProviderLicenseStatus LicenseStatus { get; set; }
 
         [MaxLength(256)]
         public string CoverImageId { get; set; } = string.Empty;
 
-        [JsonProperty(NullValueHandling=NullValueHandling.Ignore)]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public IFormFile CoverImage { get; set; }
 
         [ModelBinder(BinderType = typeof(JsonModelBinder))]

@@ -32,15 +32,18 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.DataAccess;
 using OutOfSchool.WebApi.Config.Images;
+using OutOfSchool.WebApi.Config.Quartz;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Extensions.Startup;
 using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Communication;
+using OutOfSchool.WebApi.Services.Gcp;
 using OutOfSchool.WebApi.Services.GRPC;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Services.SubordinationStructure;
@@ -164,7 +167,7 @@ namespace OutOfSchool.WebApi
             // Image options
             services.Configure<GcpStorageImagesSourceConfig>(Configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
             services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
-            services.AddSingleton<MongoDb>();
+            //services.AddSingleton<MongoDb>();
             services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
             services.Configure<ImageOptions<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
             services.Configure<ImageOptions<Provider>>(Configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
@@ -206,10 +209,6 @@ namespace OutOfSchool.WebApi
             services.AddElasticsearch(elasticConfig);
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
-
-            services.AddElasticsearchSynchronization(
-                builder => builder.Bind(Configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName)),
-                Configuration);
 
             // entities services
             services.AddTransient<IAddressService, AddressService>();
@@ -253,6 +252,7 @@ namespace OutOfSchool.WebApi
             services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
+            services.AddTransient<ICodeficatorService, CodeficatorService>();
             services.AddTransient<IGRPCCommonService, GRPCCommonService>();
 
             // entities repositories
@@ -302,6 +302,8 @@ namespace OutOfSchool.WebApi
             services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
             services.AddTransient<ISensitiveEntityRepository<InstitutionFieldDescription>, SensitiveEntityRepository<InstitutionFieldDescription>>();
             services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
+
+            services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 
             services.Configure<ChangesLogConfig>(Configuration.GetSection(ChangesLogConfig.Name));
 
@@ -357,6 +359,16 @@ namespace OutOfSchool.WebApi
             services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddSignalR();
+
+            var quartzConfig = Configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
+            services.AddDefaultQuartz(
+                Configuration,
+                quartzConfig.ConnectionStringKey,
+                q =>
+            {
+                q.AddGcpSynchronization(services, quartzConfig);
+                q.AddElasticsearchSynchronization(services, Configuration);
+            });
 
             services.AddStackExchangeRedisCache(options =>
             {

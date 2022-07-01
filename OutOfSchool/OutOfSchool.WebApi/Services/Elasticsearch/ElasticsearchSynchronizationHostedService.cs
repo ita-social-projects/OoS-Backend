@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace OutOfSchool.WebApi.Services
 {
+    [Obsolete("Using Quartz as scheduler")]
     public class ElasticsearchSynchronizationHostedService : BackgroundService
     {
         private readonly ILogger<ElasticsearchSynchronizationHostedService> logger;

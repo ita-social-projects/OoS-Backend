@@ -96,13 +96,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                 },
             }.AsTestAsyncEnumerableQuery();
 
-            repo.Setup(r => r.Get<int>(
+            repo.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<Class, bool>>>(),
                 null,
-                true,
                 false))
                 .Returns(mockDbResponse);
 
@@ -370,13 +369,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                 },
             };
 
-            repo.Setup(r => r.Get<int>(
+            repo.Setup(r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Class, bool>>>(),
                     null,
-                    true,
                     false))
                 .Returns(expectedEntity.AsTestAsyncEnumerableQuery());
             repo.Setup(r => r.DepartmentExists(id)).Returns(true);
@@ -387,13 +385,12 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Assert
             repo.Verify(
-                r => r.Get<int>(
+                r => r.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Class, bool>>>(),
                     null,
-                    true,
                     false), Times.Once);
             Assert.That(entities.Count(), Is.EqualTo(expectedEntity.Count()));
         }

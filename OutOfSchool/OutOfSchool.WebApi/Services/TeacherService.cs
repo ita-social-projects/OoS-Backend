@@ -60,9 +60,9 @@ namespace OutOfSchool.WebApi.Services
             var newTeacher = await teacherRepository.Create(teacher).ConfigureAwait(false);
 
             Result<string> uploadingResult = null;
-            if (dto.AvatarImage != null)
+            if (dto.CoverImage != null)
             {
-                uploadingResult = await teacherImagesService.AddCoverImageAsync(newTeacher, dto.AvatarImage).ConfigureAwait(false);
+                uploadingResult = await teacherImagesService.AddCoverImageAsync(newTeacher, dto.CoverImage).ConfigureAwait(false);
                 if (uploadingResult.Succeeded)
                 {
                     teacher.CoverImageId = uploadingResult.Value;
@@ -122,7 +122,7 @@ namespace OutOfSchool.WebApi.Services
 
             mapper.Map(dto, teacher);
 
-            var changingAvatarResult = await teacherImagesService.ChangeCoverImageAsync(teacher, dto.AvatarImageId, dto.AvatarImage).ConfigureAwait(false);
+            var changingAvatarResult = await teacherImagesService.ChangeCoverImageAsync(teacher, dto.CoverImageId, dto.CoverImage).ConfigureAwait(false);
 
             await UpdateTeacher().ConfigureAwait(false);
 

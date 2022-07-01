@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.WebApi.Util
@@ -36,12 +37,18 @@ namespace OutOfSchool.WebApi.Util
 
         /// <inheritdoc/>
         public async Task<List<T>> GetPage<TOrderKey>(
-        int pageNumber, int pageSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, TOrderKey>> orderBy = null, bool ascending = true)
+        int pageNumber, int pageSize, string includeProperties = "", Expression<Func<T, bool>> where = null, Expression<Func<T, object>> orderBy = null, bool ascending = true)
         {
             PageSizeValidation(pageSize);
             int realAmount = await GetCountOfPages(pageSize).ConfigureAwait(false);
             PageNumberValidation(pageNumber, realAmount);
-            var selectedPages = repository.Get<TOrderKey>(pageSize * (pageNumber - 1), pageSize, includeProperties, where, orderBy, ascending).ToList();
+
+            var sortExpression = new Dictionary<Expression<Func<T, object>>, SortDirection>
+                {
+                    { orderBy, ascending ? SortDirection.Ascending : SortDirection.Descending },
+                };
+
+            var selectedPages = repository.Get(pageSize * (pageNumber - 1), pageSize, includeProperties, where, sortExpression).ToList();
             return selectedPages;
         }
 

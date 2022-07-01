@@ -1054,6 +1054,15 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Property<long>("LegalAddressId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("License")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<int>("LicenseStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<int>("Ownership")
                         .HasColumnType("int");
 
@@ -1067,8 +1076,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsUnicode(true)
                         .HasColumnType("varchar(60)");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("Type")
                         .HasColumnType("int");

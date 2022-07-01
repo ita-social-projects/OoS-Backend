@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Extensions;
 
 namespace OutOfSchool.Services.Repository
@@ -159,13 +159,12 @@ namespace OutOfSchool.Services.Repository
         }
 
         /// <inheritdoc/>
-        public virtual IQueryable<TValue> Get<TOrderKey>(
+        public virtual IQueryable<TValue> Get(
             int skip = 0,
             int take = 0,
             string includeProperties = "",
             Expression<Func<TValue, bool>> where = null,
-            Expression<Func<TValue, TOrderKey>> orderBy = null,
-            bool ascending = true,
+            Dictionary<Expression<Func<TValue, object>>, SortDirection> orderBy = null,
             bool asNoTracking = false)
         {
             IQueryable<TValue> query = (IQueryable<TValue>)dbSet;
@@ -174,16 +173,20 @@ namespace OutOfSchool.Services.Repository
                 query = query.Where(where);
             }
 
-            if (orderBy != null)
+            if ((orderBy != null) && orderBy.Any())
             {
-                if (ascending)
+                var orderedData = orderBy.Values.First() == SortDirection.Ascending
+                ? query.OrderBy(orderBy.Keys.First())
+                : query.OrderByDescending(orderBy.Keys.First());
+
+                foreach (var expression in orderBy.Skip(1))
                 {
-                    query = query.OrderBy(orderBy);
+                    orderedData = expression.Value == SortDirection.Ascending
+                        ? orderedData.ThenBy(expression.Key)
+                        : orderedData.ThenByDescending(expression.Key);
                 }
-                else
-                {
-                    query = query.OrderByDescending(orderBy);
-                }
+
+                query = orderedData;
             }
 
             if (skip > 0)

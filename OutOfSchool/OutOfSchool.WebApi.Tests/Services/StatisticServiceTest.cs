@@ -10,6 +10,7 @@ using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using OutOfSchool.Redis;
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Models;
@@ -101,7 +102,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             List<DirectionStatistic> expectedDirectionStatistic = ExpectedDirectionStatisticsNoCityFilter();
-            
+
             SetupGetPopularDirections();
 
             foreach (DirectionStatistic stat in expectedDirectionStatistic)
@@ -159,13 +160,12 @@ namespace OutOfSchool.WebApi.Tests.Services
             var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
 
             workshopRepository
-                .Setup(w => w.Get<It.IsAnyType>(
+                .Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(workshopsMock.Object)
                 .Verifiable();
@@ -177,35 +177,32 @@ namespace OutOfSchool.WebApi.Tests.Services
             var applicationsMock = WithApplications().AsQueryable().BuildMock();
             var directionsMock = WithDirections().AsQueryable().BuildMock();            
 
-            workshopRepository.Setup(w => w.Get<It.IsAnyType>(
+            workshopRepository.Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<Expression<Func<Workshop, It.IsAnyType>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(workshopsMock.Object)
                 .Verifiable();
 
-            applicationRepository.Setup(w => w.Get<It.IsAnyType>(
+            applicationRepository.Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Application, bool>>>(),
-                    It.IsAny<Expression<Func<Application, It.IsAnyType>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(applicationsMock.Object)
                 .Verifiable();
 
-            directionRepository.Setup(w => w.Get<It.IsAnyType>(
+            directionRepository.Setup(w => w.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Direction, bool>>>(),
-                    It.IsAny<Expression<Func<Direction, It.IsAnyType>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Direction, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(directionsMock.Object)
                 .Verifiable();

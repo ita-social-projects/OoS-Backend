@@ -72,8 +72,8 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<IEnumerable<DirectionStatistic>> GetPopularDirectionsFromDatabase(int limit, string city)
         {
-            var workshops = workshopRepository.Get<int>();
-            var applications = applicationRepository.Get<int>();
+            var workshops = workshopRepository.Get();
+            var applications = applicationRepository.Get();
 
             if (!string.IsNullOrWhiteSpace(city))
             {
@@ -116,7 +116,7 @@ namespace OutOfSchool.WebApi.Services
                         WorkshopsCount = x.directionWithWorkshop.WorkshopsCount,
                     });
 
-            var allDirections = directionRepository.Get<int>();
+            var allDirections = directionRepository.Get();
 
             var statistics = allDirections
                 .GroupJoin(
@@ -161,7 +161,7 @@ namespace OutOfSchool.WebApi.Services
         public async Task<IEnumerable<WorkshopCard>> GetPopularWorkshopsFromDatabase(int limit, string city)
         {
             var workshops = workshopRepository
-                    .Get<int>(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
+                    .Get(includeProperties: $"{nameof(Address)},{nameof(Direction)}");
 
             if (!string.IsNullOrWhiteSpace(city))
             {

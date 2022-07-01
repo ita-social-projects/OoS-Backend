@@ -2,8 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using MySqlConnector;
-using OutOfSchool.Common.Extensions.Startup;
+using OutOfSchool.WebApi.Common.QuartzConstants;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Elasticsearch;
@@ -13,11 +12,26 @@ namespace OutOfSchool.WebApi.Extensions
 {
     public static class ElasticsearchSynchronizationExtension
     {
-        public static IServiceCollection AddElasticsearchSynchronization(
-            this IServiceCollection services,
-            Action<OptionsBuilder<ElasticsearchSynchronizationSchedulerConfig>> elasticsearchSynchronizationSchedulerConfig,
-            IConfiguration configuration)
+        /// <summary>
+        /// Adds all essential methods to synchronize elasticsearch data with the main database.
+        /// </summary>
+        /// <param name="quartz">Quartz Configurator.</param>
+        /// <param name="services">Service collection.</param>
+        /// <param name="configuration">App configuration.</param>
+        /// <param name="elasticsearchSynchronizationSchedulerConfig">Scheduler config.</param>
+        /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
+        public static void AddElasticsearchSynchronization(
+            this IServiceCollectionQuartzConfigurator quartz,
+            IServiceCollection services,
+            IConfiguration configuration,
+            Action<OptionsBuilder<ElasticsearchSynchronizationSchedulerConfig>>
+                elasticsearchSynchronizationSchedulerConfig = null)
         {
+            _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
+            elasticsearchSynchronizationSchedulerConfig ??= builder =>
+                builder.Bind(configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName));
+
             services.AddTransient<IElasticsearchSynchronizationService, ElasticsearchSynchronizationService>();
 
             if (elasticsearchSynchronizationSchedulerConfig == null)
@@ -25,58 +39,25 @@ namespace OutOfSchool.WebApi.Extensions
                 throw new ArgumentNullException(nameof(elasticsearchSynchronizationSchedulerConfig));
             }
 
-            var elasticsearchSynchronizationSchedulerConfigBuilder = services.AddOptions<ElasticsearchSynchronizationSchedulerConfig>();
+            var elasticsearchSynchronizationSchedulerConfigBuilder =
+                services.AddOptions<ElasticsearchSynchronizationSchedulerConfig>();
             elasticsearchSynchronizationSchedulerConfig(elasticsearchSynchronizationSchedulerConfigBuilder);
 
-            var elasticSynchronizationSchedulerConfig = configuration.GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName).Get<ElasticsearchSynchronizationSchedulerConfig>();
+            var elasticSynchronizationSchedulerConfig = configuration
+                .GetSection(ElasticsearchSynchronizationSchedulerConfig.SectionName)
+                .Get<ElasticsearchSynchronizationSchedulerConfig>();
 
-            if (elasticSynchronizationSchedulerConfig.UseQuartz)
-            {
-                var jobKey = new JobKey("elasticsearchJob");
+            var jobKey = new JobKey(JobConstants.ElasticSearchSynchronization, GroupConstants.ElasticSearch);
 
-                services.AddQuartz(q =>
-                {
-                    q.SchedulerId = "Elasticsearch";
-                    q.SchedulerName = "Elasticsearch";
-                    q.SetProperty("quartz.serializer.type", "json");
-                    q.SetProperty("quartz.jobStore.type", "Quartz.Impl.AdoJobStore.JobStoreTX, Quartz");
-                    q.SetProperty("quartz.jobStore.dataSource", "default");
-                    q.SetProperty("quartz.dataSource.default.provider", "MySql");
-                    q.SetProperty(
-                        "quartz.dataSource.default.connectionString",
-                        configuration.GetMySqlConnectionString<QuartzConnectionOptions>(
-                            elasticSynchronizationSchedulerConfig.QuartzConnectionStringKey,
-                            options => new MySqlConnectionStringBuilder
-                            {
-                                Server = options.Server,
-                                Port = options.Port,
-                                UserID = options.UserId,
-                                Password = options.Password,
-                                Database = options.Database,
-                            }));
-                    q.SetProperty("quartz.jobStore.clustered", "true");
-                    q.SetProperty("quartz.jobStore.driverDelegateType", "Quartz.Impl.AdoJobStore.StdAdoDelegate, Quartz");
-                    q.SetProperty("quartz.jobStore.useProperties", "true");
-                    q.UseMicrosoftDependencyInjectionJobFactory();
-                    q.AddJob<ElasticsearchSynchronizationQuartz>(j => j.WithIdentity(jobKey));
-                    q.AddTrigger(t => t
-                       .WithIdentity("elasticsearchJobTrigger")
-                       .ForJob(jobKey)
-                       .StartNow()
-                       .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig.DelayBetweenTasksInMilliseconds)).RepeatForever()));
-                });
-
-                services.AddQuartzServer(options =>
-                {
-                    options.WaitForJobsToComplete = true;
-                });
-            }
-            else
-            {
-                services.AddHostedService<ElasticsearchSynchronizationHostedService>();
-            }
-
-            return services;
+            quartz.AddJob<ElasticsearchSynchronizationQuartz>(j => j.WithIdentity(jobKey));
+            // TODO: rewrite as a cron trigger
+            quartz.AddTrigger(t => t
+                .WithIdentity(JobTriggerConstants.ElasticSearchSynchronization, GroupConstants.ElasticSearch)
+                .ForJob(jobKey)
+                .StartNow()
+                .WithSimpleSchedule(x =>
+                    x.WithInterval(TimeSpan.FromMilliseconds(elasticSynchronizationSchedulerConfig
+                        .DelayBetweenTasksInMilliseconds)).RepeatForever()));
         }
     }
 }

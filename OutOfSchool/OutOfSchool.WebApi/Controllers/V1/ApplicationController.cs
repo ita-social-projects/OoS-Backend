@@ -219,7 +219,12 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpPost]
         public async Task<IActionResult> Create(ApplicationDto applicationDto)
         {
-            if (applicationDto == null || !ModelState.IsValid)
+            if (applicationDto == null)
+            {
+                return BadRequest("Application is null.");
+            }
+
+            if (!ModelState.IsValid)
             {
                 return this.BadRequest(this.ModelState);
             }
@@ -228,7 +233,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 await CheckUserRights(parentId: applicationDto.ParentId).ConfigureAwait(false);
 
-                applicationDto.Id = default;
+                applicationDto.Id = Guid.Empty;
 
                 applicationDto.CreationTime = DateTimeOffset.UtcNow;
 

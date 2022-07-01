@@ -1,6 +1,6 @@
 using OutOfSchool.Common.Config;
 
-namespace OutOfSchool.WebApi.Config
+namespace OutOfSchool.WebApi.Config.Quartz
 {
     public class QuartzConnectionOptions : IMySqlConnectionOptions
     {

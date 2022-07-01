@@ -9,6 +9,7 @@ using OutOfSchool.WebApi.Models;
 namespace OutOfSchool.WebApi.Extensions
 {
     // TODO: create a mapping profile instead of extensions
+    // TODO: Do it sooner then later as it leads to further inconsistencies
     public static class ElasticsearchMappingExtensions
     {
         private const char SEPARATOR = '¤';
@@ -41,6 +42,7 @@ namespace OutOfSchool.WebApi.Extensions
                 cfg.CreateMap<TeacherDTO, TeacherES>();
                 cfg.CreateMap<DateTimeRangeDto, DateTimeRangeES>()
                     .ForMember(dest => dest.Workdays, opt => opt.MapFrom(src => string.Join(' ', src.Workdays)));
+                cfg.CreateMap<DirectionDto, DirectionES>();
             });
         }
 

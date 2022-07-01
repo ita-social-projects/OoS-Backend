@@ -43,6 +43,7 @@ steps:
     - --set-env-vars=GoogleCloudPlatform__Storage__OosImages__BucketName=$_BUCKET
     - --set-env-vars=Redis__Server=$_REDIS_HOST
     - --set-env-vars=Redis__Port=$_REDIS_PORT
+    - --set-env-vars=AppDefaults__Version=$SHORT_SHA
     - --set-secrets=ConnectionStringsOverride__DefaultConnection__Password=$_DB_PASS,Elasticsearch__Password=$_ES_PASSWORD,Redis__Password=$_REDIS_PASS
     - --no-use-http2
 # Clean old versions except previous Cloud Run

@@ -166,12 +166,17 @@ namespace OutOfSchool.WebApi.Controllers.V1
             dto.Id = default;
             dto.Address.Id = default;
             dto.Status = WorkshopStatus.Open;
-            if (dto.Teachers.Any())
+            if (dto.Teachers != null)
             {
                 foreach (var teacher in dto.Teachers)
                 {
                     teacher.Id = default;
                 }
+            }
+
+            foreach (var dateTimeRangeDto in dto.DateTimeRanges)
+            {
+                dateTimeRangeDto.Id = default;
             }
 
             var workshop = await combinedWorkshopService.Create(dto).ConfigureAwait(false);

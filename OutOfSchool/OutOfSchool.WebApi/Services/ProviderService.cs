@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Images;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services
 {
     /// <summary>
     /// Implements the interface with CRUD functionality for Provider entity.
     /// </summary>
-    public class ProviderService : IProviderService
+    public class ProviderService : IProviderService, INotificationReciever
     {
         private readonly IProviderRepository providerRepository;
         private readonly IProviderAdminRepository providerAdminRepository;
@@ -31,6 +32,8 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Address> addressRepository;
         private readonly IWorkshopServicesCombiner workshopServiceCombiner;
         private readonly IChangesLogService changesLogService;
+        private readonly INotificationService notificationService;
+        private readonly IProviderAdminService providerAdminService;
 
         // TODO: It should be removed after models revision.
         //       Temporary instance to fill 'Provider' model 'User' property
@@ -50,6 +53,8 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="providerAdminRepository">Provider admin repository.</param>
         /// <param name="providerImagesService">Images service.</param>
         /// <param name="changesLogService">ChangesLogService.</param>
+        /// <param name="notificationService">Notification service.</param>
+        /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
         public ProviderService(
             IProviderRepository providerRepository,
             IEntityRepository<User> usersRepository,
@@ -61,7 +66,9 @@ namespace OutOfSchool.WebApi.Services
             IWorkshopServicesCombiner workshopServiceCombiner,
             IProviderAdminRepository providerAdminRepository,
             IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
-            IChangesLogService changesLogService)
+            IChangesLogService changesLogService,
+            INotificationService notificationService,
+            IProviderAdminService providerAdminService)
         {
             this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -73,7 +80,9 @@ namespace OutOfSchool.WebApi.Services
             this.workshopServiceCombiner = workshopServiceCombiner ?? throw new ArgumentNullException(nameof(workshopServiceCombiner));
             this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
             ProviderImagesService = providerImagesService ?? throw new ArgumentNullException(nameof(providerImagesService));
-            this.changesLogService = changesLogService;
+            this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
+            this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+            this.providerAdminService = providerAdminService;
         }
 
         private protected IImageDependentEntityImagesInteractionService<Provider> ProviderImagesService { get; }
@@ -83,34 +92,47 @@ namespace OutOfSchool.WebApi.Services
             => await CreateProviderWithActionAfterAsync(providerDto).ConfigureAwait(false);
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ProviderDto>> GetAll()
+        public async Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter)
         {
-            logger.LogDebug("Getting all Providers started.");
+            logger.LogInformation("Getting all Providers started (by filter).");
 
-            var providers = await providerRepository.GetAll().ConfigureAwait(false);
+            filter ??= new ProviderFilter();
+            ModelValidationHelper.ValidateOffsetFilter(filter);
+
+            var filterPredicate = PredicateBuild(filter);
+
+            int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
+
+            var sortExpression = new Dictionary<Expression<Func<Provider, object>>, SortDirection>
+                {
+                    { x => x.User.FirstName, SortDirection.Ascending },
+                };
+
+            var providers = await providerRepository
+                .Get(
+                    skip: filter.From,
+                    take: filter.Size,
+                    includeProperties: "ActualAddress,LegalAddress,Institution,ProviderSectionItems,Images",
+                    where: filterPredicate,
+                    orderBy: sortExpression,
+                    asNoTracking: true)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             logger.LogInformation(!providers.Any()
-                ? "Provider table is empty."
-                : $"All {providers.Count()} records were successfully received from the Provider table");
+                ? "Parents table is empty."
+                : $"All {providers.Count} records were successfully received from the Parent table");
 
             var providersDTO = providers.Select(provider => mapper.Map<ProviderDto>(provider)).ToList();
+            FillRatingsForProviders(providersDTO);
 
-            // TODO: move ratings calculations out of getting all providers.
-            var averageRatings =
-                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
-
-            foreach (var provider in providersDTO)
+            var result = new SearchResult<ProviderDto>()
             {
-                var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
-                if (averageRatingsForProvider.Key != Guid.Empty)
-                {
-                    var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
-                    provider.Rating = rating;
-                    provider.NumberOfRatings = numberOfVotes;
-                }
-            }
+                TotalAmount = count,
+                Entities = providersDTO,
+            };
 
-            return providersDTO;
+            return result;
         }
 
         /// <inheritdoc/>
@@ -178,6 +200,120 @@ namespace OutOfSchool.WebApi.Services
         public async Task<Guid> GetProviderIdForWorkshopById(Guid workshopId) =>
             await workshopServiceCombiner.GetWorkshopProviderId(workshopId).ConfigureAwait(false);
 
+        public async Task<ProviderStatusDto> UpdateStatus(ProviderStatusDto dto, string userId)
+        {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            var provider = await providerRepository.GetById(dto.ProviderId).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                logger.LogInformation($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
+
+                return null;
+            }
+
+            // TODO: validate if current user has permission to update the provider status
+            provider.Status = dto.Status;
+            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+
+            logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.Status}");
+
+            await SendNotification(provider, NotificationAction.Update, true, false).ConfigureAwait(false);
+
+            return dto;
+        }
+
+        public async Task<ProviderLicenseStatusDto> UpdateLicenseStatus(ProviderLicenseStatusDto dto, string userId)
+        {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            var provider = await providerRepository.GetById(dto.ProviderId).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                logger.LogInformation($"Provider(id) {dto.ProviderId} not found. User(id): {userId}");
+
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(provider.License) && dto.LicenseStatus != ProviderLicenseStatus.NotProvided)
+            {
+                logger.LogInformation($"Provider(id) {provider.Id} license is not provided. It cannot be approved. UserId: {userId}");
+                throw new ArgumentException("Provider license is not provided. It cannot be approved.");
+            }
+
+            if (!string.IsNullOrEmpty(provider.License) && dto.LicenseStatus == ProviderLicenseStatus.NotProvided)
+            {
+                logger.LogInformation("Cannot set NotProvided license status when license is provided. " +
+                    $"Provider: {provider.Id}. License: {provider.License}. UserId: {userId}");
+                throw new ArgumentException("Cannot set NotProvided license status when license is provided.");
+            }
+
+            // TODO: validate if current user has permission to update the provider status
+            provider.LicenseStatus = dto.LicenseStatus;
+            await providerRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+
+            logger.LogInformation($"Provider(id) {dto.ProviderId} Status was changed to {dto.LicenseStatus}");
+
+            await SendNotification(provider, NotificationAction.Update, false, true).ConfigureAwait(false);
+
+            return dto;
+        }
+
+        async Task<IEnumerable<string>> INotificationReciever.GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+        {
+            var recipientIds = new List<string>();
+
+            var provider = await providerRepository.GetById(objectId).ConfigureAwait(false);
+
+            if (provider is null)
+            {
+                return recipientIds;
+            }
+
+            if (action == NotificationAction.Create)
+            {
+                // TODO: approval request is sent to district admin
+                // AND Service provider waits until(district admin / ministry admin / tech admin) approves the profile
+            }
+            else if (action == NotificationAction.Update)
+            {
+                if (additionalData != null
+                    && additionalData.TryGetValue("Status", out var statusValue)
+                    && Enum.TryParse(statusValue, out ProviderStatus status))
+                {
+                    if (status == ProviderStatus.Pending)
+                    {
+                        // TODO: create a NEW approve request to District admin
+                    }
+                    else if (status == ProviderStatus.Editing
+                        || status == ProviderStatus.Approved)
+                    {
+                        recipientIds.Add(provider.UserId);
+                        recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                    }
+                }
+
+                if (additionalData != null
+                    && additionalData.TryGetValue("LicenseStatus", out var licenseStatusValue)
+                    && Enum.TryParse(licenseStatusValue, out ProviderLicenseStatus licenseStatus))
+                {
+                    if (licenseStatus == ProviderLicenseStatus.Pending)
+                    {
+                        // TODO: create a NEW approve request to District admin
+                    }
+                    else if (licenseStatus == ProviderLicenseStatus.Approved)
+                    {
+                        recipientIds.Add(provider.UserId);
+                        recipientIds.AddRange(await providerAdminService.GetProviderDeputiesIds(provider.Id).ConfigureAwait(false));
+                    }
+                }
+            }
+
+            return recipientIds.Distinct();
+        }
+
         private protected async Task<ProviderDto> CreateProviderWithActionAfterAsync(ProviderDto providerDto, Func<Provider, Task> actionAfterCreation = null)
         {
             _ = providerDto ?? throw new ArgumentNullException(nameof(providerDto));
@@ -207,6 +343,10 @@ namespace OutOfSchool.WebApi.Services
             var users = await usersRepository.GetByFilter(u => u.Id.Equals(providerDto.UserId)).ConfigureAwait(false);
             providerDomainModel.User = users.Single();
             providerDomainModel.User.IsRegistered = true;
+            providerDomainModel.Status = ProviderStatus.Pending;
+            providerDomainModel.LicenseStatus = providerDomainModel.License == null
+                ? ProviderLicenseStatus.NotProvided
+                : ProviderLicenseStatus.Pending;
 
             var newProvider = await providerRepository.Create(providerDomainModel).ConfigureAwait(false);
 
@@ -217,6 +357,8 @@ namespace OutOfSchool.WebApi.Services
             }
 
             logger.LogDebug("Provider with Id = {ProviderId} created successfully", newProvider?.Id);
+
+            await SendNotification(newProvider, NotificationAction.Create, true, true).ConfigureAwait(false);
 
             return mapper.Map<ProviderDto>(newProvider);
         }
@@ -233,14 +375,14 @@ namespace OutOfSchool.WebApi.Services
 
             try
             {
-                var checkProvider =
-                    (await providerRepository.GetByFilter(p => p.Id == providerDto.Id).ConfigureAwait(false))
-                    .FirstOrDefault();
+                var checkProvider = await providerRepository.GetById(providerDto.Id).ConfigureAwait(false);
 
                 if (checkProvider?.UserId != userId)
                 {
                     return null;
                 }
+
+                ChangeProviderStatusIfNeeded(providerDto, checkProvider, out var statusChanged, out var licenseChanged);
 
                 providerDto.LegalAddress.Id = checkProvider.LegalAddress.Id;
 
@@ -301,11 +443,42 @@ namespace OutOfSchool.WebApi.Services
 
                 logger.LogInformation("Provider with Id = {CheckProviderId} was updated successfully", checkProvider?.Id);
 
+                if (statusChanged || licenseChanged)
+                {
+                    await SendNotification(checkProvider, NotificationAction.Update, statusChanged, licenseChanged)
+                        .ConfigureAwait(false);
+                }
+
                 return mapper.Map<ProviderDto>(checkProvider);
             }
             finally
             {
                 logger.LogTrace("Updating Provider with Id = {Id} was finished", providerDto.Id);
+            }
+        }
+
+        private void ChangeProviderStatusIfNeeded(
+            ProviderDto providerDto,
+            Provider checkProvider,
+            out bool statusChanged,
+            out bool licenseChanged)
+        {
+            statusChanged = false;
+            licenseChanged = false;
+
+            if (!(checkProvider.FullTitle == providerDto.FullTitle
+                && checkProvider.EdrpouIpn == long.Parse(providerDto.EdrpouIpn)))
+            {
+                checkProvider.Status = ProviderStatus.Pending;
+                statusChanged = true;
+            }
+
+            if (!checkProvider.License.Equals(providerDto.License, StringComparison.Ordinal))
+            {
+                checkProvider.LicenseStatus = string.IsNullOrEmpty(providerDto.License)
+                    ? ProviderLicenseStatus.NotProvided
+                    : ProviderLicenseStatus.Pending;
+                licenseChanged = !string.IsNullOrEmpty(providerDto.License);
             }
         }
 
@@ -357,6 +530,87 @@ namespace OutOfSchool.WebApi.Services
         private void LogProviderChanges(Provider provider, string userId)
         {
             changesLogService.AddEntityChangesToDbContext(provider, userId);
+        }
+
+        private Expression<Func<Provider, bool>> PredicateBuild(ProviderFilter filter)
+        {
+            var predicate = PredicateBuilder.True<Provider>();
+
+            if (!string.IsNullOrWhiteSpace(filter.SearchString))
+            {
+                var tempPredicate = PredicateBuilder.False<Provider>();
+
+                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.Email.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            if (filter.Status.Any())
+            {
+                predicate = predicate.And(x => filter.Status.Contains(x.Status));
+            }
+
+            if (filter.LicenseStatus.Any())
+            {
+                predicate = predicate.And(x => filter.LicenseStatus.Contains(x.LicenseStatus));
+            }
+
+            return predicate;
+        }
+
+        private void FillRatingsForProviders(List<ProviderDto> providersDTO)
+        {
+            var averageRatings =
+                ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
+
+            foreach (var provider in providersDTO)
+            {
+                var averageRatingsForProvider = averageRatings.FirstOrDefault(r => r.Key == provider.Id);
+                if (averageRatingsForProvider.Key != Guid.Empty)
+                {
+                    var (_, (rating, numberOfVotes)) = averageRatingsForProvider;
+                    provider.Rating = rating;
+                    provider.NumberOfRatings = numberOfVotes;
+                }
+            }
+        }
+
+        private async Task SendNotification(
+            Provider provider,
+            NotificationAction notificationAction,
+            bool addStatusData,
+            bool addLicenseStatusData)
+        {
+            if (provider != null)
+            {
+                var additionalData = new Dictionary<string, string>();
+
+                if (addStatusData)
+                {
+                    additionalData.Add("Status", provider.Status.ToString());
+                }
+
+                if (addLicenseStatusData)
+                {
+                    additionalData.Add("LicenseStatus", provider.LicenseStatus.ToString());
+                }
+
+                await notificationService.Create(
+                    NotificationType.Provider,
+                    notificationAction,
+                    provider.Id,
+                    this,
+                    additionalData)
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

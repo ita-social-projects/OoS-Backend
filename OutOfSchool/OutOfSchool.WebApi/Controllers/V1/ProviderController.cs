@@ -15,6 +15,7 @@ using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1
@@ -45,22 +46,42 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Get all Provider from the database.
+        /// Get Providers that match filter's parameters.
         /// </summary>
-        /// <returns>List of all Providers.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProviderDto>))]
+        /// <param name="filter">Entity that represents searching parameters.</param>
+        /// <returns><see cref="SearchResult{ProviderDto}"/>, or no content.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] ProviderFilter filter)
         {
-            var providers = await providerService.GetAll().ConfigureAwait(false);
+            var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 
-            if (!providers.Any())
+            if (providers.TotalAmount < 1)
             {
                 return NoContent();
             }
+
+            return Ok(providers);
+        }
+
+        /// <summary>
+        /// Get all Providers from the database.
+        /// </summary>
+        /// <param name="filter">Filter to get a part of all providers that were found.</param>
+        /// <returns>The result is a <see cref="SearchResult{ProviderDto}"/> that contains the count of all found providers and a list of providers that were received.</returns>
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ProviderDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByFilter([FromQuery] ProviderFilter filter)
+        {
+            var providers = await providerService.GetByFilter(filter).ConfigureAwait(false);
 
             return Ok(providers);
         }
@@ -200,8 +221,6 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 return BadRequest(e);
             }
-
-
         }
 
         /// <summary>
@@ -216,7 +235,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [HttpDelete("{uid:guid}")]
         public async Task<IActionResult> Delete(Guid uid)
         {
-            try 
+            try
             {
                 await providerService.Delete(uid).ConfigureAwait(false);
             }
@@ -226,6 +245,65 @@ namespace OutOfSchool.WebApi.Controllers.V1
             }
 
             return NoContent();
+        }
+
+        /// <summary>
+        /// Update Provider status.
+        /// </summary>
+        /// <param name="request">Provider ID and status to update.</param>
+        /// <returns><see cref="ProviderStatusDto"/>.</returns>
+        [HttpPut]
+        [HasPermission(Permissions.SystemManagement)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderStatusDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> StatusUpdate([FromBody] ProviderStatusDto request)
+        {
+            var result = await providerService.UpdateStatus(request, GettingUserProperties.GetUserId(User))
+                .ConfigureAwait(false);
+
+            if (result is null)
+            {
+                return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Update Provider license status.
+        /// </summary>
+        /// <param name="request">Provider ID and license status to update.</param>
+        /// <returns><see cref="ProviderLicenseStatusDto"/>.</returns>
+        [HttpPut]
+        [HasPermission(Permissions.SystemManagement)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProviderLicenseStatusDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> LicenseStatusUpdate([FromBody] ProviderLicenseStatusDto request)
+        {
+            try
+            {
+                var result = await providerService.UpdateLicenseStatus(request, GettingUserProperties.GetUserId(User))
+                    .ConfigureAwait(false);
+
+                if (result is null)
+                {
+                    return NotFound($"There is no Provider in DB with Id - {request.ProviderId}");
+                }
+
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

@@ -9,5 +9,6 @@ namespace OutOfSchool.Services.Enums
         Application,
         Chat,
         Workshop,
+        Provider,
     }
 }

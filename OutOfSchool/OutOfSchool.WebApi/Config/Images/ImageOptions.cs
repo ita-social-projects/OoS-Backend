@@ -29,9 +29,14 @@ namespace OutOfSchool.WebApi.Config.Images
         public int MaxHeightPixels { get; set; }
 
         /// <summary>
-        /// Gets or sets the ration between width and height.
+        /// Gets or sets the min ratio between width and height.
         /// </summary>
-        public int MaxWidthHeightRatio { get; set; }
+        public float MinWidthHeightRatio { get; set; }
+
+        /// <summary>
+        /// Gets or sets the max ratio between width and height.
+        /// </summary>
+        public float MaxWidthHeightRatio { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum image size in bytes.
