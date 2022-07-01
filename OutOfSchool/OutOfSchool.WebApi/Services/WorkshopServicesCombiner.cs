@@ -31,7 +31,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ILogger<WorkshopServicesCombiner> logger;
         private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
         private readonly INotificationService notificationService;
-        private readonly IFavoriteService favoriteService;
+        private readonly IEntityRepository<Favorite> favoriteRepository;
         private readonly IApplicationRepository applicationRepository;
 
 
@@ -41,7 +41,7 @@ namespace OutOfSchool.WebApi.Services
             ILogger<WorkshopServicesCombiner> logger,
             IElasticsearchSynchronizationService elasticsearchSynchronizationService,
             INotificationService notificationService,
-            IFavoriteService favoriteService,
+            IEntityRepository<Favorite> favoriteRepository,
             IApplicationRepository applicationRepository)
         {
             this.workshopService = workshopService;
@@ -49,7 +49,7 @@ namespace OutOfSchool.WebApi.Services
             this.logger = logger;
             this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
             this.notificationService = notificationService;
-            this.favoriteService = favoriteService;
+            this.favoriteRepository = favoriteRepository;
             this.applicationRepository = applicationRepository;
         }
 
@@ -215,15 +215,16 @@ namespace OutOfSchool.WebApi.Services
         {
             var recipientIds = new List<string>();
 
-            var usersInFavoriteWorkshop = await favoriteService.GetAll().ConfigureAwait(false);
-            var usersIds = usersInFavoriteWorkshop.Where(x => x.WorkshopId == objectId).Select(x => x.UserId);
+            Expression<Func<Favorite, bool>> filter = x => x.WorkshopId == objectId;
+            var favoriteWorkshopUsersIds = favoriteRepository.Get(where: filter).Select(x => x.UserId).ToList();
 
-            Expression<Func<Application, bool>> predicate = x => x.Status != ApplicationStatus.Left && x.WorkshopId == objectId;
-
+            Expression<Func<Application, bool>> predicate =
+                x => x.Status != ApplicationStatus.Left &&
+                     x.WorkshopId == objectId;
             var applications = await applicationRepository.GetByFilter(predicate).ConfigureAwait(false);
             var appliedUsersIds = applications.Select(x => x.Parent.UserId);
 
-            recipientIds.AddRange(usersIds);
+            recipientIds.AddRange(favoriteWorkshopUsersIds);
             recipientIds.AddRange(appliedUsersIds);
 
             return recipientIds.Distinct();
