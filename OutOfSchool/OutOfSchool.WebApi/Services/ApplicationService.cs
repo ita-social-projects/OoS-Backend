@@ -269,7 +269,7 @@ namespace OutOfSchool.WebApi.Services
                 take: filter.Size,
                 where: predicate,
                 includeProperties: "Workshop,Child,Parent",
-                orderBy: sortPredicate).ToListAsync().ConfigureAwait(false); ;
+                orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
             logger.LogInformation(!applications.Any()
                 ? $"There is no applications in the Db with Workshop Id = {id}."
@@ -299,7 +299,6 @@ namespace OutOfSchool.WebApi.Services
 
             var sortPredicate = SortExpressionBuild(filter);
 
-            Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
             var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
             var applications = await applicationRepository.Get(
                 skip: filter.From,

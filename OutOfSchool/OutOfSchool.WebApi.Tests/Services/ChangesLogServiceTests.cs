@@ -132,7 +132,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     request.Size,
                     string.Empty,
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                    It.IsAny< Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
+                    It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
             providerRepository.Setup(repo => repo.Get(
@@ -187,7 +187,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     request.Size,
                     string.Empty,
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
-                    It.IsAny< Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
+                    It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(changesMock.Object);
             applicationRepository.Setup(repo => repo.Get(
