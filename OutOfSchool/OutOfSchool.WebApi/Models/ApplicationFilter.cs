@@ -17,5 +17,7 @@ namespace OutOfSchool.WebApi.Models
         public bool ShowBlocked { get; set; } = false;
 
         public IEnumerable<Guid> Workshops { get; set; } = null;
+
+        public IEnumerable<Guid> Children { get; set; } = null;
     }
 }
