@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,14 +24,12 @@ using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.GRPC;
 using OutOfSchool.Redis;
 using OutOfSchool.Services;
-using OutOfSchool.Services.Contexts;
 using OutOfSchool.Services.Contexts.Configuration;
 using OutOfSchool.Services.Extensions;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Models.SubordinationStructure;
 using OutOfSchool.Services.Repository;
-using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.DataAccess;
 using OutOfSchool.WebApi.Config.Images;
@@ -43,32 +40,25 @@ using OutOfSchool.WebApi.Hubs;
 using OutOfSchool.WebApi.Middlewares;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Communication;
-using OutOfSchool.WebApi.Services.Gcp;
 using OutOfSchool.WebApi.Services.GRPC;
 using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Services.SubordinationStructure;
 using OutOfSchool.WebApi.Services.ProviderAdminOperations;
+using OutOfSchool.WebApi.Services.SubordinationStructure;
 using OutOfSchool.WebApi.Util;
 using Serilog;
 
 namespace OutOfSchool.WebApi
 {
-    public class Startup
+    public static class Startup
     {
-        public Startup(IConfiguration configuration)
+        public static void Configure(this WebApplication app)
         {
-            Configuration = configuration;
-        }
+            var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
-        {
-            var proxyOptions = Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
+            var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
             app.UseProxy(proxyOptions);
 
-            if (env.IsDevelopment())
+            if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -94,14 +84,12 @@ namespace OutOfSchool.WebApi
 
             app.UseSwaggerWithVersioning(provider, proxyOptions);
 
-            if (!env.IsDevelopment())
+            if (!app.Environment.IsDevelopment())
             {
                 app.UseHttpsRedirection();
             }
 
             app.UseSerilogRequestLogging();
-
-            app.UseRouting();
 
             // Enable extracting token from QueryString for Hub-connection authorization
             app.UseMiddleware<AuthorizationTokenMiddleware>();
@@ -109,28 +97,27 @@ namespace OutOfSchool.WebApi
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapHub<ChatWorkshopHub>("/chathub/workshop");
-                endpoints.MapHub<NotificationHub>("/notificationhub");
-            });
+            app.MapControllers();
+            app.MapHub<ChatWorkshopHub>("/chathub/workshop");
+            app.MapHub<NotificationHub>("/notificationhub");
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public static void AddApplicationServices(this WebApplicationBuilder builder)
         {
-            services.Configure<AppDefaultsConfig>(Configuration.GetSection(AppDefaultsConfig.Name));
-            services.Configure<IdentityServerConfig>(Configuration.GetSection(IdentityServerConfig.Name));
-            services.Configure<ProviderAdminConfig>(Configuration.GetSection(ProviderAdminConfig.Name));
-            services.Configure<CommunicationConfig>(Configuration.GetSection(CommunicationConfig.Name));
+            var services = builder.Services;
+            var configuration = builder.Configuration;
+
+            services.Configure<AppDefaultsConfig>(configuration.GetSection(AppDefaultsConfig.Name));
+            services.Configure<IdentityServerConfig>(configuration.GetSection(IdentityServerConfig.Name));
+            services.Configure<ProviderAdminConfig>(configuration.GetSection(ProviderAdminConfig.Name));
+            services.Configure<CommunicationConfig>(configuration.GetSection(CommunicationConfig.Name));
 
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication("Bearer", options =>
                 {
                     options.ApiName = "outofschoolapi";
-                    options.Authority = Configuration["Identity:Authority"];
+                    options.Authority = configuration["Identity:Authority"];
 
                     options.RequireHttpsMetadata = false;
                 });
@@ -138,7 +125,7 @@ namespace OutOfSchool.WebApi
             services.AddCors(confg =>
                 confg.AddPolicy(
                     "AllowAll",
-                    p => p.WithOrigins(Configuration["AllowedCorsOrigins"].Split(','))
+                    p => p.WithOrigins(configuration["AllowedCorsOrigins"].Split(','))
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials()));
@@ -147,10 +134,10 @@ namespace OutOfSchool.WebApi
                 .AddJsonOptions(options =>
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-            services.AddHttpClient(Configuration["Communication:ClientName"])
+            services.AddHttpClient(configuration["Communication:ClientName"])
                 .AddHttpMessageHandler(handler =>
                     new RetryPolicyDelegatingHandler(
-                        int.Parse(Configuration["Communication:MaxNumberOfRetries"])))
+                        int.Parse(configuration["Communication:MaxNumberOfRetries"])))
                 .ConfigurePrimaryHttpMessageHandler(handler =>
                     new HttpClientHandler()
                     {
@@ -160,27 +147,27 @@ namespace OutOfSchool.WebApi
             services.AddScoped<IProviderAdminService, ProviderAdminService>();
 
             // Images limits options
-            services.Configure<ImagesLimits<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
-            services.Configure<ImagesLimits<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
-            services.Configure<ImagesLimits<Provider>>(Configuration.GetSection($"Images:{nameof(Provider)}:Limits"));
+            services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
+            services.Configure<ImagesLimits<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
+            services.Configure<ImagesLimits<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Limits"));
 
             // Image options
-            services.Configure<GcpStorageImagesSourceConfig>(Configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
-            services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
+            services.Configure<GcpStorageImagesSourceConfig>(configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
+            services.Configure<ExternalImageSourceConfig>(configuration.GetSection(ExternalImageSourceConfig.Name));
             //services.AddSingleton<MongoDb>();
-            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
-            services.Configure<ImageOptions<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
-            services.Configure<ImageOptions<Provider>>(Configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
+            services.Configure<ImageOptions<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
+            services.Configure<ImageOptions<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
+            services.Configure<ImageOptions<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
 
             // TODO: Move version check into an extension to reuse code across apps
-            var mySQLServerVersion = Configuration["MySQLServerVersion"];
+            var mySQLServerVersion = configuration["MySQLServerVersion"];
             var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
             if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
             {
                 throw new Exception("MySQL Server version should be 8 or higher.");
             }
 
-            var connectionString = Configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
+            var connectionString = configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
                 "DefaultConnection",
                 options => new MySqlConnectionStringBuilder
                 {
@@ -202,10 +189,10 @@ namespace OutOfSchool.WebApi
                 .AddCustomDataProtection("WebApi");
 
             // Add Elasticsearch client
-            var elasticConfig = Configuration
+            var elasticConfig = configuration
                 .GetSection(ElasticConfig.Name)
                 .Get<ElasticConfig>();
-            services.Configure<ElasticConfig>(Configuration.GetSection(ElasticConfig.Name));
+            services.Configure<ElasticConfig>(configuration.GetSection(ElasticConfig.Name));
             services.AddElasticsearch(elasticConfig);
             services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
             services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
@@ -285,7 +272,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IRatingRepository, RatingRepository>();
             services.AddTransient<IWorkshopRepository, WorkshopRepository>();
             //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
-            services.AddImagesStorage(turnOnFakeStorage: Configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
+            services.AddImagesStorage(turnOnFakeStorage: configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
 
             services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
             services.AddTransient<INotificationRepository, NotificationRepository>();
@@ -305,7 +292,7 @@ namespace OutOfSchool.WebApi
 
             services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
 
-            services.Configure<ChangesLogConfig>(Configuration.GetSection(ChangesLogConfig.Name));
+            services.Configure<ChangesLogConfig>(configuration.GetSection(ChangesLogConfig.Name));
 
             // Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
@@ -316,31 +303,31 @@ namespace OutOfSchool.WebApi
 
             services.AddSingleton(Log.Logger);
             services.AddVersioning();
-            var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
+            var swaggerConfig = configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
 
             // Add feature management
-            services.AddFeatureManagement(Configuration.GetSection(FeatureManagementConfig.Name));
-            services.Configure<FeatureManagementConfig>(Configuration.GetSection(FeatureManagementConfig.Name));
+            services.AddFeatureManagement(configuration.GetSection(FeatureManagementConfig.Name));
+            services.Configure<FeatureManagementConfig>(configuration.GetSection(FeatureManagementConfig.Name));
 
             // ApplicationsConstraints options
             services.AddOptions<ApplicationsConstraintsConfig>()
-                .Bind(Configuration.GetSection(ApplicationsConstraintsConfig.Name))
+                .Bind(configuration.GetSection(ApplicationsConstraintsConfig.Name))
                 .ValidateDataAnnotations();
 
             // Redis options
             services.AddOptions<RedisConfig>()
-                .Bind(Configuration.GetSection(RedisConfig.Name))
+                .Bind(configuration.GetSection(RedisConfig.Name))
                 .ValidateDataAnnotations();
 
             // Notification options
-            services.Configure<NotificationsConfig>(Configuration.GetSection(NotificationsConfig.Name));
+            services.Configure<NotificationsConfig>(configuration.GetSection(NotificationsConfig.Name));
 
             // GRPC
             services.AddOptions<GRPCConfig>()
-                .Bind(Configuration.GetSection(GRPCConfig.Name))
+                .Bind(configuration.GetSection(GRPCConfig.Name))
                 .ValidateDataAnnotations();
 
-            var gRPCConfig = Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
+            var gRPCConfig = configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
             if (gRPCConfig.Enabled)
             {
                 services.AddTransient<IProviderAdminOperationsService, ProviderAdminOperationsGRPCService>();
@@ -360,20 +347,20 @@ namespace OutOfSchool.WebApi
 
             services.AddSignalR();
 
-            var quartzConfig = Configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
+            var quartzConfig = configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
             services.AddDefaultQuartz(
-                Configuration,
+                configuration,
                 quartzConfig.ConnectionStringKey,
                 q =>
             {
                 q.AddGcpSynchronization(services, quartzConfig);
-                q.AddElasticsearchSynchronization(services, Configuration);
+                q.AddElasticsearchSynchronization(services, configuration);
             });
 
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration =
-                    $"{Configuration.GetValue<string>("Redis:Server")}:{Configuration.GetValue<int>("Redis:Port")},password={Configuration.GetValue<string>("Redis:Password")}";
+                    $"{configuration.GetValue<string>("Redis:Server")}:{configuration.GetValue<int>("Redis:Port")},password={configuration.GetValue<string>("Redis:Password")}";
             });
 
             services.AddSingleton<ICacheService, CacheService>();
