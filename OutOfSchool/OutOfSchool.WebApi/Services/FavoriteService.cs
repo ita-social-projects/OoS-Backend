@@ -86,7 +86,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Getting Favorites by User started. Looking UserId = {userId}.");
 
-            var favorites = await favoriteRepository.Get<int>(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
+            var favorites = await favoriteRepository.Get(where: x => x.UserId == userId).Select(x => x.WorkshopId).ToListAsync().ConfigureAwait(false);
 
             if (!favorites.Any())
             {

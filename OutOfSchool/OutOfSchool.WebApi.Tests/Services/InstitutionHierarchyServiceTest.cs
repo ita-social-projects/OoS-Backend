@@ -106,13 +106,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                 },
             }.AsTestAsyncEnumerableQuery();
 
-            repo.Setup(r => r.Get<int>(
+            repo.Setup(r => r.Get(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<InstitutionHierarchy, bool>>>(),
                 null,
-                true,
                 false))
                 .Returns(mockDbResponse);
 

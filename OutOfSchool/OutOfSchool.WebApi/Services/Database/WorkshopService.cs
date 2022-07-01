@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using AutoMapper;
 using Castle.Components.DictionaryAdapter;
 using H3Lib;
 using H3Lib.Extensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
@@ -17,13 +15,9 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Common.Resources;
-using OutOfSchool.WebApi.Common.Resources.Codes;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
-using OutOfSchool.WebApi.Models.Teachers;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
@@ -159,14 +153,18 @@ namespace OutOfSchool.WebApi.Services
 
             offsetFilter ??= new OffsetFilter();
 
+            var sortExpression = new Dictionary<Expression<Func<Workshop, object>>, SortDirection>
+                {
+                    { x => x.Id, SortDirection.Ascending },
+                };
+
             var count = await workshopRepository.Count().ConfigureAwait(false);
             var workshops =
                 workshopRepository.Get(
                     skip: offsetFilter.From,
                     take: offsetFilter.Size,
                     includeProperties: includingPropertiesForMappingDtoModel,
-                    orderBy: x => x.Id,
-                    ascending: true)
+                    orderBy: sortExpression)
                 .ToList();
 
             logger.LogInformation(!workshops.Any()
@@ -388,13 +386,12 @@ namespace OutOfSchool.WebApi.Services
             var orderBy = GetOrderParameter(filter);
 
             var workshopsCount = await workshopRepository.Count(where: filterPredicate).ConfigureAwait(false);
-            var workshops = workshopRepository.Get<dynamic>(
+            var workshops = workshopRepository.Get(
                 skip: filter.From,
                 take: filter.Size,
                 includeProperties: includingPropertiesForMappingDtoModel,
                 where: filterPredicate,
-                orderBy: orderBy.Item1,
-                ascending: orderBy.Item2)
+                orderBy: orderBy)
                 .ToList();
 
             logger.LogInformation(!workshops.Any()
@@ -426,13 +423,12 @@ namespace OutOfSchool.WebApi.Services
 
             var filterPredicate = PredicateBuild(filter);
 
-            var closestWorkshops = workshopRepository.Get<dynamic>(
+            var closestWorkshops = workshopRepository.Get(
                 skip: 0,
                 take: 0,
                 includeProperties: includingPropertiesForMappingWorkShopCard,
                 where: filterPredicate,
-                orderBy: null,
-                ascending: true)
+                orderBy: null)
                 .Where(w => neighbours
                     .Select(n => n.Value)
                     .Any(hash => hash == w.Address.GeoHash));
@@ -561,30 +557,30 @@ namespace OutOfSchool.WebApi.Services
             return predicate;
         }
 
-        private Tuple<Expression<Func<Workshop, dynamic>>, bool> GetOrderParameter(WorkshopFilter filter)
+        private Dictionary<Expression<Func<Workshop, object>>, SortDirection> GetOrderParameter(WorkshopFilter filter)
         {
+            var sortExpression = new Dictionary<Expression<Func<Workshop, object>>, SortDirection>();
+
             switch (filter.OrderByField)
             {
                 case nameof(OrderBy.Alphabet):
-                    Expression<Func<Workshop, dynamic>> orderByAlphabet = x => x.Title;
-                    var alphabetIsAscending = true;
-                    return Tuple.Create(orderByAlphabet, alphabetIsAscending);
+                    sortExpression.Add(x => x.Title, SortDirection.Ascending);
+                    break;
 
                 case nameof(OrderBy.PriceDesc):
-                    Expression<Func<Workshop, dynamic>> orderByPriceDesc = x => x.Price;
-                    var priceIsAsc = false;
-                    return Tuple.Create(orderByPriceDesc, priceIsAsc);
+                    sortExpression.Add(x => x.Price, SortDirection.Descending);
+                    break;
 
                 case nameof(OrderBy.PriceAsc):
-                    Expression<Func<Workshop, dynamic>> orderByPriceAsc = x => x.Price;
-                    var priceIsAsce = true;
-                    return Tuple.Create(orderByPriceAsc, priceIsAsce);
+                    sortExpression.Add(x => x.Price, SortDirection.Ascending);
+                    break;
 
                 default:
-                    Expression<Func<Workshop, dynamic>> orderBy = x => x.Id;
-                    var isAscending = true;
-                    return Tuple.Create(orderBy, isAscending);
+                    sortExpression.Add(x => x.Id, SortDirection.Ascending);
+                    break;
             }
+
+            return sortExpression;
         }
 
         /// <summary>

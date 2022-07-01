@@ -63,6 +63,25 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
+        /// Get all Parents from the database.
+        /// </summary>
+        /// <param name="filter">Filter to get a part of all parents that were found.</param>
+        /// <returns>The result is a <see cref="SearchResult{ParentDTO}"/> that contains the count of all found parents and a list of parents that were received.</returns>
+        [HasPermission(Permissions.SystemManagement)]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ParentDTO>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetByFilter([FromQuery] SearchStringFilter filter)
+{
+            var parents = await serviceParent.GetByFilter(filter).ConfigureAwait(false);
+
+            return Ok(parents);
+        }
+
+        /// <summary>
         /// To get information about workshops that parent applied child for.
         /// </summary>
         /// <returns>List of ParentCardDto.</returns>

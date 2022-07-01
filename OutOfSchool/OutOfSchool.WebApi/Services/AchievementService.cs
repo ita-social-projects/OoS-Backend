@@ -129,7 +129,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogInformation($"Deleting Achievement with Id = {id} started.");
 
-            var achievement = achievementRepository.Get<int>(where: a => a.Id == id);
+            var achievement = achievementRepository.Get(where: a => a.Id == id);
 
             if (!achievement.Any())
             {

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -207,21 +208,28 @@ namespace OutOfSchool.WebApi.Services
             logger.LogInformation($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
             FilterNullValidation(filter);
 
-            Expression<Func<Application, bool>> applicationFilter = a => a.ParentId == id;
+            var predicate = PredicateBuild(filter);
+            predicate = predicate.And(a => a.ParentId == id);
 
-            var totalAmount = await applicationRepository.Count(where: applicationFilter).ConfigureAwait(false);
+            var sortPredicate = SortExpressionBuild(filter);
 
-            var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
+            var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
 
-            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
-            logger.LogInformation(!filteredApplications.Any()
+            var applications = await applicationRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                where: predicate,
+                includeProperties: "Workshop,Child,Parent",
+                orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+
+            logger.LogInformation(!applications.Any()
                 ? $"There is no applications in the Db with Parent Id = {id}."
                 : $"Successfully got Applications with Parent Id = {id}.");
 
             var searchResult = new SearchResult<ApplicationDto>()
             {
                 TotalAmount = totalAmount,
-                Entities = mapper.Map<List<ApplicationDto>>(filteredApplications),
+                Entities = mapper.Map<List<ApplicationDto>>(applications),
             };
 
             return searchResult;
@@ -250,20 +258,27 @@ namespace OutOfSchool.WebApi.Services
 
             FilterNullValidation(filter);
 
-            Expression<Func<Application, bool>> applicationFilter = a => a.WorkshopId == id;
-            var totalAmount = await applicationRepository.Count(where: applicationFilter).ConfigureAwait(false);
-            var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
+            var predicate = PredicateBuild(filter);
+            predicate = predicate.And(a => a.WorkshopId == id);
 
-            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
+            var sortPredicate = SortExpressionBuild(filter);
 
-            logger.LogInformation(!filteredApplications.Any()
+            var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+            var applications = await applicationRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                where: predicate,
+                includeProperties: "Workshop,Child,Parent",
+                orderBy: sortPredicate).ToListAsync().ConfigureAwait(false); ;
+
+            logger.LogInformation(!applications.Any()
                 ? $"There is no applications in the Db with Workshop Id = {id}."
                 : $"Successfully got Applications with Workshop Id = {id}.");
 
             var searchResult = new SearchResult<ApplicationDto>()
             {
                 TotalAmount = totalAmount,
-                Entities = mapper.Map<List<ApplicationDto>>(filteredApplications),
+                Entities = mapper.Map<List<ApplicationDto>>(applications),
             };
 
             return searchResult;
@@ -277,22 +292,30 @@ namespace OutOfSchool.WebApi.Services
             FilterNullValidation(filter);
 
             Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
-            var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
+            var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
+
+            var predicate = PredicateBuild(filter);
+            predicate = predicate.And(a => workshops.Contains(a.WorkshopId));
+
+            var sortPredicate = SortExpressionBuild(filter);
 
             Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
-            var totalAmount = await applicationRepository.Count(where: applicationFilter).ConfigureAwait(false);
-            var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
+            var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+            var applications = await applicationRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                where: predicate,
+                includeProperties: "Workshop,Child,Parent",
+                orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
 
-            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
-
-            logger.LogInformation(!filteredApplications.Any()
+            logger.LogInformation(!applications.Any()
                 ? $"There is no applications in the Db with Provider Id = {id}."
                 : $"Successfully got Applications with Provider Id = {id}.");
 
             var searchResult = new SearchResult<ApplicationDto>()
             {
                 TotalAmount = totalAmount,
-                Entities = mapper.Map<List<ApplicationDto>>(filteredApplications),
+                Entities = mapper.Map<List<ApplicationDto>>(applications),
             };
 
             return searchResult;
@@ -473,7 +496,7 @@ namespace OutOfSchool.WebApi.Services
 
         private void CheckApplicationExists(Guid id)
         {
-            var applications = applicationRepository.Get<int>(where: a => a.Id == id);
+            var applications = applicationRepository.Get(where: a => a.Id == id);
 
             if (!applications.Any())
             {
@@ -486,7 +509,7 @@ namespace OutOfSchool.WebApi.Services
         {
             Expression<Func<Child, bool>> filter = c => c.ParentId == parentId;
 
-            var children = childRepository.Get<int>(where: filter).Select(c => c.Id);
+            var children = childRepository.Get(where: filter).Select(c => c.Id);
 
             return await children.ContainsAsync(childId).ConfigureAwait(false);
         }
@@ -521,17 +544,6 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return (IsCorrect: true, SecondsRetryAfter: 0);
-        }
-
-        private IQueryable<Application> GetFiltered(IQueryable<Application> applications, ApplicationFilter filter)
-        {
-            var filterPredicate = PredicateBuild(filter);
-            var filteredApplications = applications.Where(filterPredicate);
-
-            var sortPredicate = SortExpressionBuild(filter);
-            var sortedApplications = filteredApplications.DynamicOrderBy(sortPredicate);
-
-            return sortedApplications;
         }
 
         private Expression<Func<Application, bool>> PredicateBuild(

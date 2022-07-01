@@ -313,8 +313,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 It.IsAny<int>(),
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<Expression<Func<Workshop, bool>>>(),
-                It.IsAny<bool>(),
+                It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                 It.IsAny<bool>())).Returns(mockWorkshops.Object);
             workshopRepository.Setup(
                 w => w
@@ -385,13 +384,12 @@ namespace OutOfSchool.WebApi.Tests.Services
                     .Count(It.IsAny<Expression<Func<Workshop, bool>>>()))
                 .ReturnsAsync(workshops.Count());
             workshopRepository.Setup(w => w
-                .Get<dynamic>(
+                .Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny<Expression<Func<Workshop, dynamic>>>(),
-                    It.IsAny<bool>(),
+                    It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     It.IsAny<bool>())).Returns(queryableWorkshops).Verifiable();
             ratingService.Setup(r => r
                     .GetAverageRatingForRange(It.IsAny<IEnumerable<Guid>>(), RatingType.Workshop))

@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common.Extensions;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -93,27 +94,45 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<ProviderDto>> GetByFilter(ProviderFilter filter)
         {
-            logger.LogDebug("Getting Providers by filter started.");
+            logger.LogInformation("Getting all Providers started (by filter).");
 
             filter ??= new ProviderFilter();
             ModelValidationHelper.ValidateOffsetFilter(filter);
 
-            var where = GetQueryFilter(filter);
-            var (orderBy, ascending) = GetOrderParams();
+            var filterPredicate = PredicateBuild(filter);
 
-            var count = await providerRepository.Count(where).ConfigureAwait(false);
-            var entities = await providerRepository.Get(filter.From, filter.Size, string.Empty, where, orderBy, ascending, true)
-                .Select(x => mapper.Map<ProviderDto>(x))
+            int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
+
+            var sortExpression = new Dictionary<Expression<Func<Provider, object>>, SortDirection>
+                {
+                    { x => x.User.FirstName, SortDirection.Ascending },
+                };
+
+            var providers = await providerRepository
+                .Get(
+                    skip: filter.From,
+                    take: filter.Size,
+                    includeProperties: "ActualAddress,LegalAddress,Institution,ProviderSectionItems,Images",
+                    where: filterPredicate,
+                    orderBy: sortExpression,
+                    asNoTracking: true)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            PopulateRatings(entities);
+            logger.LogInformation(!providers.Any()
+                ? "Parents table is empty."
+                : $"All {providers.Count} records were successfully received from the Parent table");
 
-            return new SearchResult<ProviderDto>
+            var providersDTO = providers.Select(provider => mapper.Map<ProviderDto>(provider)).ToList();
+            FillRatingsForProviders(providersDTO);
+
+            var result = new SearchResult<ProviderDto>()
             {
-                Entities = entities,
                 TotalAmount = count,
+                Entities = providersDTO,
             };
+
+            return result;
         }
 
         /// <inheritdoc/>
@@ -513,7 +532,41 @@ namespace OutOfSchool.WebApi.Services
             changesLogService.AddEntityChangesToDbContext(provider, userId);
         }
 
-        private void PopulateRatings(List<ProviderDto> providersDTO)
+        private Expression<Func<Provider, bool>> PredicateBuild(ProviderFilter filter)
+        {
+            var predicate = PredicateBuilder.True<Provider>();
+
+            if (!string.IsNullOrWhiteSpace(filter.SearchString))
+            {
+                var tempPredicate = PredicateBuilder.False<Provider>();
+
+                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.Email.StartsWith(word, StringComparison.InvariantCulture)
+                            || x.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            if (filter.Status.Any())
+            {
+                predicate = predicate.And(x => filter.Status.Contains(x.Status));
+            }
+
+            if (filter.LicenseStatus.Any())
+            {
+                predicate = predicate.And(x => filter.LicenseStatus.Contains(x.LicenseStatus));
+            }
+
+            return predicate;
+        }
+
+        private void FillRatingsForProviders(List<ProviderDto> providersDTO)
         {
             var averageRatings =
                 ratingService.GetAverageRatingForRange(providersDTO.Select(p => p.Id), RatingType.Provider);
@@ -528,30 +581,6 @@ namespace OutOfSchool.WebApi.Services
                     provider.NumberOfRatings = numberOfVotes;
                 }
             }
-        }
-
-        private Expression<Func<Provider, bool>> GetQueryFilter(ProviderFilter filter)
-        {
-            Expression<Func<Provider, bool>> expr = null;
-
-            if (filter.Status.Any())
-            {
-                expr = expr.And(x => filter.Status.Contains(x.Status));
-            }
-
-            if (filter.LicenseStatus.Any())
-            {
-                expr = expr.And(x => filter.LicenseStatus.Contains(x.LicenseStatus));
-            }
-
-            return expr;
-        }
-
-        private (Expression<Func<Provider, dynamic>> orderBy, bool ascending) GetOrderParams()
-        {
-            Expression<Func<Provider, dynamic>> orderBy = x => x.Id;
-
-            return (orderBy, true);
         }
 
         private async Task SendNotification(
