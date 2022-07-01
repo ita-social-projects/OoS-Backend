@@ -322,7 +322,7 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false)
+        public async Task<SearchResult<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false)
         {
             logger.LogInformation($"Getting Applications by ProviderAdmin userId started. Looking ProviderAdmin userId = {userId}.");
 
@@ -341,18 +341,31 @@ namespace OutOfSchool.WebApi.Services
             }
 
             Expression<Func<Workshop, bool>> workshopFilter = w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
-            var workshops = workshopRepository.Get<int>(where: workshopFilter).Select(w => w.Id);
+            var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
 
-            Expression<Func<Application, bool>> applicationFilter = a => workshops.Contains(a.WorkshopId);
-            var applications = applicationRepository.Get<int>(skip: filter.From, take: filter.Size, where: applicationFilter, includeProperties: "Workshop,Child,Parent");
+            var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
+            var sortPredicate = SortExpressionBuild(filter);
 
-            var filteredApplications = await GetFiltered(applications, filter).ToListAsync().ConfigureAwait(false);
+            var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
 
-            logger.LogInformation(!filteredApplications.Any()
+            var applications = await applicationRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                where: predicate,
+                includeProperties: "Workshop,Child,Parent",
+                orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+
+            logger.LogInformation(!applications.Any()
                 ? $"There is no applications in the Db with AdminProvider Id = {userId}."
                 : $"Successfully got Applications with AdminProvider Id = {userId}.");
 
-            return mapper.Map<List<ApplicationDto>>(filteredApplications);
+            var searchResult = new SearchResult<ApplicationDto>()
+            {
+                TotalAmount = totalAmount,
+                Entities = mapper.Map<List<ApplicationDto>>(applications),
+            };
+
+            return searchResult;
         }
 
         /// <inheritdoc/>

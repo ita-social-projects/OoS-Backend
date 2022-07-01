@@ -62,7 +62,7 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="providerId">Key in the table.</param>
         /// <param name="isDeputy">True if provider admin is deputy.</param>
         /// <returns>List of applications.</returns>
-        Task<IEnumerable<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false);
+        Task<SearchResult<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false);
 
         /// <summary>
         /// Get applications by status.

@@ -192,7 +192,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 return BadRequest(ex.Message);
             }
 
-            if (!applications.Entities.Any())
+            if (applications == null || !applications.Entities.Any())
             {
                 return NoContent();
             }
@@ -380,7 +380,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return applications;
         }
 
-        private async Task<IEnumerable<ApplicationDto>> GetByProviderAdminId(string userId, ApplicationFilter filter)
+        private async Task<SearchResult<ApplicationDto>> GetByProviderAdminId(string userId, ApplicationFilter filter)
         {
             var providerAdmin = await providerAdminService.GetById(userId).ConfigureAwait(false);
 
