@@ -6,7 +6,7 @@ namespace OutOfSchool.WebApi.Models
 {
     public class ApplicationFilter : OffsetFilter
     {
-        public ApplicationStatus Status { get; set; }
+        public IEnumerable<ApplicationStatus> Statuses { get; set; } = null;
 
         public bool OrderByDateAscending { get; set; } = true;
 

@@ -539,9 +539,9 @@ namespace OutOfSchool.WebApi.Services
                 predicate = PredicateBuilder.True<Application>();
             }
 
-            if (filter.Status != 0)
+            if (filter.Statuses != null)
             {
-                predicate = predicate.And(a => a.Status == filter.Status);
+                predicate = predicate.And(a => filter.Statuses.Contains(a.Status));
             }
 
             if (filter.Workshops != null)
