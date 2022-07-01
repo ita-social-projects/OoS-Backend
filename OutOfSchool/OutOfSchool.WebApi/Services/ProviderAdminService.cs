@@ -28,6 +28,8 @@ namespace OutOfSchool.WebApi.Services
 {
     public class ProviderAdminService : CommunicationService, IProviderAdminService
     {
+        private readonly string includingPropertiesForMaping = $"{nameof(ProviderAdmin.ManagedWorkshops)}";
+
         private readonly IdentityServerConfig identityServerConfig;
         private readonly ProviderAdminConfig providerAdminConfig;
         private readonly IEntityRepository<User> userRepository;
@@ -37,6 +39,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly ResponseDto responseDto;
         private readonly IGRPCCommonService gRPCCommonService;
         private readonly IProviderAdminOperationsService providerAdminOperationsService;
+        private readonly IWorkshopService workshopService;
 
         public ProviderAdminService(
             IHttpClientFactory httpClientFactory,
@@ -48,7 +51,8 @@ namespace OutOfSchool.WebApi.Services
             IMapper mapper,
             ILogger<ProviderAdminService> logger,
             IGRPCCommonService gRPCCommonService,
-            IProviderAdminOperationsService providerAdminOperationsService)
+            IProviderAdminOperationsService providerAdminOperationsService,
+            IWorkshopService workshopService)
             : base(httpClientFactory, communicationConfig.Value)
         {
             this.identityServerConfig = identityServerConfig.Value;
@@ -59,6 +63,7 @@ namespace OutOfSchool.WebApi.Services
             this.logger = logger;
             this.gRPCCommonService = gRPCCommonService;
             this.providerAdminOperationsService = providerAdminOperationsService;
+            this.workshopService = workshopService;
             responseDto = new ResponseDto();
         }
 
@@ -255,7 +260,40 @@ namespace OutOfSchool.WebApi.Services
             return providersAdmins.SelectMany(admin => admin.ManagedWorkshops, (admin, workshops) => new { workshops }).Select(x => x.workshops.Id);
         }
 
-        public async Task<bool> CheckUserIsRelatedProviderAdmin(string userId, Guid providerId, Guid workshopId)
+        /// <inheritdoc/>
+        public async Task<IEnumerable<WorkshopCard>> GetWorkshopsThatProviderAdminCanManage(string userId, bool isProviderDeputy)
+        {
+            var providersAdmins = await providerAdminRepository.GetByFilter(p => p.UserId == userId && p.IsDeputy == isProviderDeputy, includingPropertiesForMaping).ConfigureAwait(false);
+
+            if (!providersAdmins.Any())
+            {
+                return new List<WorkshopCard>();
+            }
+
+            if (isProviderDeputy)
+            {
+                var providerAdmin = providersAdmins.SingleOrDefault(x => x.IsDeputy);
+
+                return await workshopService.GetByProviderId(providerAdmin.ProviderId).ConfigureAwait(false);
+            }
+
+            return providersAdmins.SingleOrDefault().ManagedWorkshops.Select(workshop => mapper.Map<WorkshopCard>(workshop));
+        }
+
+        /// <inheritdoc/>
+        public async Task<ProviderAdminProviderRelationDto> GetById(string userId)
+        {
+            var providerAdmin = (await providerAdminRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault();
+
+            if (providerAdmin == null)
+            {
+                return null;
+            }
+
+            return mapper.Map<ProviderAdminProviderRelationDto>(providerAdmin);
+        }
+
+        public async Task<bool> CheckUserIsRelatedProviderAdmin(string userId, Guid providerId, Guid workshopId = default)
         {
             var providerAdmin = await providerAdminRepository.GetByIdAsync(userId, providerId).ConfigureAwait(false);
 

@@ -22,8 +22,10 @@ namespace OutOfSchool.Common.Models
         [DataType(DataType.PhoneNumber)]
         [Required(ErrorMessage = "Phone number is required")]
         [RegularExpression(
-        @"([0-9]{2})([-]?)([0-9]{3})([-]?)([0-9]{2})([-]?)([0-9]{2})",
-        ErrorMessage = "Phone number format is incorrect. Example: +380XX-XXX-XX-XX")]
+            Constants.PhoneNumberRegexModel,
+            ErrorMessage = Constants.PhoneErrorMessage)]
+        [DisplayFormat(DataFormatString = Constants.PhoneNumberFormat)]
+        [MaxLength(Constants.UnifiedPhoneLength)]
         public string PhoneNumber { get; set; }
 
         [DataType(DataType.DateTime)]

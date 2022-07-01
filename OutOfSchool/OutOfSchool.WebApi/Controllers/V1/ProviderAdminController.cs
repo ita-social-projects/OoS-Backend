@@ -80,7 +80,7 @@ namespace OutOfSchool.WebApi.Controllers
                 return Ok(providerAdminDto);
             }
 
-            return StatusCode((int)response.HttpStatusCode);
+            return StatusCode((int)response.HttpStatusCode, response.Message);
         }
 
         /// <summary>
@@ -196,6 +196,34 @@ namespace OutOfSchool.WebApi.Controllers
             IActionResult result = Ok(relatedAdmins);
 
             return result;
+        }
+
+        /// <summary>
+        /// Method to Get data about managed Workshops.
+        /// </summary>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopCard>))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        public async Task<IActionResult> ManagedWorkshops()
+        {
+            var userSubrole = GettingUserProperties.GetUserSubrole(HttpContext);
+
+            if (userSubrole != OutOfSchool.Services.Enums.Subrole.ProviderDeputy && userSubrole != OutOfSchool.Services.Enums.Subrole.ProviderAdmin)
+            {
+                return BadRequest();
+            }
+
+            var relatedWorkshops = await providerAdminService.GetWorkshopsThatProviderAdminCanManage(userId, userSubrole == OutOfSchool.Services.Enums.Subrole.ProviderDeputy).ConfigureAwait(false);
+
+            if (!relatedWorkshops.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(relatedWorkshops);
         }
     }
 }

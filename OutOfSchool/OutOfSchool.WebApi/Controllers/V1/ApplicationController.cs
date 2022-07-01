@@ -153,10 +153,10 @@ namespace OutOfSchool.WebApi.Controllers.V1
         }
 
         /// <summary>
-        /// Get Applications by Provider or Workshop Id.
+        /// Get Applications by Provider, Workshop or ProviderAdmin Id.
         /// </summary>
-        /// <param name="property">Property to find by (workshop or provider).</param>
-        /// <param name="id">Provider or Workshop id.</param>
+        /// <param name="property">Property to find by (workshop, provider or provideradmin).</param>
+        /// <param name="id">Provider, Workshop or ProviderAdmin id.</param>
         /// <param name="filter">Application filter.</param>
         /// <returns>List of applications.</returns>
         /// <response code="200">Entities were found by given Id.</response>
@@ -167,7 +167,7 @@ namespace OutOfSchool.WebApi.Controllers.V1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{property:regex(^provider$|^workshop$)}/{id}")]
+        [HttpGet("{property:regex(^provider$|^workshop$|^provideradmin$)}/{id}")]
         public async Task<IActionResult> GetByPropertyId(string property, Guid id, [FromQuery] ApplicationFilter filter)
         {
             SearchResult<ApplicationDto> applications = default;
@@ -182,13 +182,17 @@ namespace OutOfSchool.WebApi.Controllers.V1
                 {
                     applications = await GetByWorkshopId(id, filter).ConfigureAwait(false);
                 }
+                else if (property.Equals("provideradmin", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    applications = await GetByProviderAdminId(id.ToString(), filter).ConfigureAwait(false);
+                }
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
 
-            if (!applications.Entities.Any())
+            if (applications == null || !applications.Entities.Any())
             {
                 return NoContent();
             }
@@ -376,7 +380,23 @@ namespace OutOfSchool.WebApi.Controllers.V1
             return applications;
         }
 
-        private async Task CheckUserRights(Guid parentId = default, Guid providerId = default, Guid workshopId = default)
+        private async Task<SearchResult<ApplicationDto>> GetByProviderAdminId(string userId, ApplicationFilter filter)
+        {
+            var providerAdmin = await providerAdminService.GetById(userId).ConfigureAwait(false);
+
+            if (providerAdmin is null)
+            {
+                throw new ArgumentException(localizer[$"There is no providerAdmin with userId = {userId}"]);
+            }
+
+            await CheckUserRights(providerAdminId: userId).ConfigureAwait(false);
+
+            var applications = await applicationService.GetAllByProviderAdmin(userId, filter, providerAdmin.ProviderId, providerAdmin.IsDeputy).ConfigureAwait(false);
+
+            return applications;
+        }
+
+        private async Task CheckUserRights(Guid parentId = default, Guid providerId = default, Guid workshopId = default, string providerAdminId = default)
         {
             var userId = GettingUserProperties.GetUserId(User);
 
@@ -384,24 +404,17 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
             if (User.IsInRole("parent"))
             {
-                var parent = await parentService.GetByUserId(userId).ConfigureAwait(false);
-
-                userHasRights = parent.Id == parentId;
+                userHasRights = await ParentHasRights(userId, parentId).ConfigureAwait(false);
             }
             else if (User.IsInRole("provider"))
             {
-                try
+                if (!string.IsNullOrEmpty(providerAdminId))
                 {
-                    var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                    userHasRights = provider.Id == providerId;
+                    userHasRights = await ProviderHasRights(userId, providerAdminId).ConfigureAwait(false);
                 }
-                catch (ArgumentException)
+                else
                 {
-                    var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
-                    if (!isUserRelatedAdmin)
-                    {
-                        userHasRights = false;
-                    }
+                    userHasRights = await ProviderAdminHasRights(userId, providerId, workshopId).ConfigureAwait(false);
                 }
             }
 
@@ -433,6 +446,39 @@ namespace OutOfSchool.WebApi.Controllers.V1
             {
                 application.ApprovedTime = DateTimeOffset.UtcNow;
             }
+        }
+
+        private async Task<bool> ParentHasRights(string userId, Guid parentId)
+        {
+            var parent = await parentService.GetByUserId(userId).ConfigureAwait(false);
+
+            return parent.Id == parentId;
+        }
+
+        private async Task<bool> ProviderHasRights(string userId, string providerAdminId)
+        {
+            var providerAdmin = await providerAdminService.GetById(userId).ConfigureAwait(false);
+
+            return providerAdmin.UserId == providerAdminId;
+        }
+
+        private async Task<bool> ProviderAdminHasRights(string userId, Guid providerId, Guid workshopId)
+        {
+            try
+            {
+                var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
+                return provider.Id == providerId;
+            }
+            catch (ArgumentException)
+            {
+                var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
+                if (!isUserRelatedAdmin)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

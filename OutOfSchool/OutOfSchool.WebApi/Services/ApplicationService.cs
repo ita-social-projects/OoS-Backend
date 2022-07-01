@@ -322,6 +322,53 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<SearchResult<ApplicationDto>> GetAllByProviderAdmin(string userId, ApplicationFilter filter, Guid providerId = default, bool isDeputy = false)
+        {
+            logger.LogInformation($"Getting Applications by ProviderAdmin userId started. Looking ProviderAdmin userId = {userId}.");
+
+            FilterNullValidation(filter);
+
+            if (providerId == Guid.Empty)
+            {
+                FillProviderAdminInfo(userId, out providerId, out isDeputy);
+            }
+
+            List<Guid> workshopIds = new List<Guid>();
+
+            if (!isDeputy)
+            {
+                workshopIds = (await providerAdminService.GetRelatedWorkshopIdsForProviderAdmins(userId).ConfigureAwait(false)).ToList();
+            }
+
+            Expression<Func<Workshop, bool>> workshopFilter = w => isDeputy ? w.ProviderId == providerId : workshopIds.Contains(w.Id);
+            var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
+
+            var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
+            var sortPredicate = SortExpressionBuild(filter);
+
+            var totalAmount = await applicationRepository.Count(where: predicate).ConfigureAwait(false);
+
+            var applications = await applicationRepository.Get(
+                skip: filter.From,
+                take: filter.Size,
+                where: predicate,
+                includeProperties: "Workshop,Child,Parent",
+                orderBy: sortPredicate).ToListAsync().ConfigureAwait(false);
+
+            logger.LogInformation(!applications.Any()
+                ? $"There is no applications in the Db with AdminProvider Id = {userId}."
+                : $"Successfully got Applications with AdminProvider Id = {userId}.");
+
+            var searchResult = new SearchResult<ApplicationDto>()
+            {
+                TotalAmount = totalAmount,
+                Entities = mapper.Map<List<ApplicationDto>>(applications),
+            };
+
+            return searchResult;
+        }
+
+        /// <inheritdoc/>
         public async Task<IEnumerable<ApplicationDto>> GetAllByStatus(int status)
         {
             logger.LogInformation($"Getting Applications by Status started. Looking Status = {status}.");
@@ -597,6 +644,21 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return sortExpression;
+        }
+
+        private void FillProviderAdminInfo(string userId, out Guid providerId, out bool isDeputy)
+        {
+            var providerAdmin = providerAdminService.GetById(userId).GetAwaiter().GetResult();
+
+            if (providerAdmin == null)
+            {
+                logger.LogInformation($"ProviderAdmin with userId = {userId} not exists.");
+
+                throw new ArgumentException(localizer[$"There is no providerAdmin with userId = {userId}"]);
+            }
+
+            providerId = providerAdmin.ProviderId;
+            isDeputy = providerAdmin.IsDeputy;
         }
     }
 }

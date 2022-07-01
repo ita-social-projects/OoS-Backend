@@ -303,6 +303,8 @@ namespace OutOfSchool.WebApi.Util
                 .ForMember(dest => dest.Workshop, opt => opt.Ignore())
                 .ForMember(dest => dest.AchievementType, opt => opt.Ignore())
                 .ForMember(dest => dest.Teachers, opt => opt.Ignore());
+
+            CreateMap<ProviderAdmin, ProviderAdminProviderRelationDto>();
         }
     }
 }
