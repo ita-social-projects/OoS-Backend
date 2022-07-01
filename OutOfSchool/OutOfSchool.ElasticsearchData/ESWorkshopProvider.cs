@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nest;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 using OutOfSchool.ElasticsearchData.Models;
 
@@ -155,14 +156,9 @@ namespace OutOfSchool.ElasticsearchData
                 };
             }
 
-            if (filter.Status.Any())
+            if (filter.Statuses.Any())
             {
-                var box = new List<object>();
-                foreach (var item in filter.Status)
-                {
-                    box.Add(item);
-                }
-
+                var box = filter.Statuses.Select(x => (object)x);
                 queryContainer &= new TermsQuery()
                 {
                     Field = Infer.Field<WorkshopES>(w => w.Status),
