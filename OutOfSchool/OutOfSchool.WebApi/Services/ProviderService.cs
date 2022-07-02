@@ -473,7 +473,7 @@ namespace OutOfSchool.WebApi.Services
                 statusChanged = true;
             }
 
-            if (!checkProvider.License.Equals(providerDto.License, StringComparison.Ordinal))
+            if (checkProvider.License != providerDto.License)
             {
                 checkProvider.LicenseStatus = string.IsNullOrEmpty(providerDto.License)
                     ? ProviderLicenseStatus.NotProvided
