@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using GrpcServiceServer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,7 +22,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MySqlConnector;
-using Microsoft.Extensions.Options;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Config;
 using OutOfSchool.Common.Extensions;
@@ -42,19 +43,13 @@ using Serilog;
 
 namespace OutOfSchool.IdentityServer
 {
-    public class Startup
+    public static class Startup
     {
-        private readonly IConfiguration config;
-        private readonly IWebHostEnvironment env;
-
-        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        public static void AddApplicationServices(this WebApplicationBuilder builder)
         {
-            this.env = env;
-            config = configuration;
-        }
+            var services = builder.Services;
+            var config = builder.Configuration;
 
-        public void ConfigureServices(IServiceCollection services)
-        {
             services.Configure<IdentityServerConfig>(config.GetSection(IdentityServerConfig.Name));
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
@@ -154,7 +149,7 @@ namespace OutOfSchool.IdentityServer
                 .GetSection(EmailOptions.SectionName)
                 .Get<EmailOptions>();
             services.AddEmailSender(
-                env.IsDevelopment(),
+                builder.Environment.IsDevelopment(),
                 mailConfig.SendGridKey,
                 builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
 
@@ -183,12 +178,12 @@ namespace OutOfSchool.IdentityServer
             services.AddGrpc();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public static void Configure(this WebApplication app)
         {
-            var proxyOptions = config.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
+            var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
             app.UseProxy(proxyOptions);
 
-            if (env.IsDevelopment())
+            if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -236,7 +231,7 @@ namespace OutOfSchool.IdentityServer
 
             app.UseRouting();
 
-            app.UseCookiePolicy(new CookiePolicyOptions {MinimumSameSitePolicy = SameSiteMode.Lax});
+            app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
             app.UseStaticFiles();
 
@@ -249,7 +244,7 @@ namespace OutOfSchool.IdentityServer
 
             app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
 
-            var gRPCConfig = config.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
+            var gRPCConfig = app.Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
 
             if (gRPCConfig.Enabled)
             {
@@ -257,6 +252,20 @@ namespace OutOfSchool.IdentityServer
                 {
                     endpoints.MapGrpcService<ProviderAdminServiceGRPC>().RequireHost($"*:{gRPCConfig.Port}");
                 });
+            }
+        }
+
+        public static void RolesInit(RoleManager<IdentityRole> manager)
+        {
+            var roles = new IdentityRole[]
+            {
+                new IdentityRole {Name = "parent"},
+                new IdentityRole {Name = "provider"},
+                new IdentityRole {Name = "admin"},
+            };
+            foreach (var role in roles)
+            {
+                manager.CreateAsync(role).Wait();
             }
         }
     }
