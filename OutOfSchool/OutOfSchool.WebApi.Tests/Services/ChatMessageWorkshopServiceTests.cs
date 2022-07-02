@@ -188,9 +188,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                     new ChatMessageWorkshop() { Id = Guid.NewGuid(), ChatRoomId = chatRoomId2, Text = "text5", SenderRoleIsProvider = false, CreatedDateTime = DateTimeOffset.UtcNow, ReadDateTime = DateTimeOffset.UtcNow },
                     new ChatMessageWorkshop() { Id = Guid.NewGuid(), ChatRoomId = chatRoomId2, Text = "text6", SenderRoleIsProvider = true, CreatedDateTime = DateTimeOffset.UtcNow, ReadDateTime = DateTimeOffset.UtcNow },
                 };
-                context.ChatMessageWorkshops.AddRangeAsync(messages);
+                context.ChatMessageWorkshops.AddRange(messages);
 
-                context.SaveChangesAsync();
+                context.SaveChanges();
             }
         }
     }

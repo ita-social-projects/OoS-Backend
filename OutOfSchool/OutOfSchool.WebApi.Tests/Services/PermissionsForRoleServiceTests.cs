@@ -150,8 +150,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureCreated();
 
                 var permissionsForRoles = PermissionsForRolesGenerator.GenerateForExistingRoles();
-                context.PermissionsForRoles.AddRangeAsync(permissionsForRoles);
-                context.SaveChangesAsync();
+                context.PermissionsForRoles.AddRange(permissionsForRoles);
+                context.SaveChanges();
             }
         }
     }

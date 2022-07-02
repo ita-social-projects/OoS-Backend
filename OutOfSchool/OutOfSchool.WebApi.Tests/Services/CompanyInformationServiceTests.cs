@@ -228,8 +228,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                    },
                 };
 
-            dbContext.CompanyInformation.AddRangeAsync(companyInformations);
-            dbContext.SaveChangesAsync();
+            dbContext.CompanyInformation.AddRange(companyInformations);
+            dbContext.SaveChanges();
         }
     }
 }

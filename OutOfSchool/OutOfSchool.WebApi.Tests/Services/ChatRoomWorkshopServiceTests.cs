@@ -12,6 +12,7 @@ using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.ChatWorkshop;
 using OutOfSchool.Services.Repository;
+using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Models.ChatWorkshop;
 using OutOfSchool.WebApi.Services;
 
@@ -20,40 +21,15 @@ namespace OutOfSchool.WebApi.Tests.Services
     [TestFixture]
     public class ChatRoomWorkshopServiceTests
     {
-        private static User[] users = new User[4]
-        {
-                    new User() { Id = "user1", Role = Role.Parent.ToString().ToLower() },
-                    new User() { Id = "user2", Role = Role.Parent.ToString().ToLower() },
-                    new User() { Id = "user3", Role = Role.Provider.ToString().ToLower() },
-                    new User() { Id = "user4", Role = Role.Provider.ToString().ToLower() },
-        };
+        private static User[] users;
 
-        private static Parent[] parents = new Parent[2]
-               {
-                    new Parent() { Id = Guid.NewGuid(), UserId = users[0].Id },
-                    new Parent() { Id = Guid.NewGuid(), UserId = users[1].Id },
-               };
+        private static Parent[] parents;
 
-        private static Provider[] providers = new Provider[2]
-                {
-                    new Provider() { Id = Guid.NewGuid(), UserId = users[2].Id },
-                    new Provider() { Id = Guid.NewGuid(), UserId = users[3].Id },
-                };
+        private static Provider[] providers;
 
-        private static Workshop[] workshops = new Workshop[3]
-                {
-                    new Workshop() { Id = Guid.NewGuid(), Title = "Title1", ProviderId = providers[0].Id, },
-                    new Workshop() { Id = Guid.NewGuid(), Title = "Title2", ProviderId = providers[0].Id, },
-                    new Workshop() { Id = Guid.NewGuid(), Title = "Title3", ProviderId = providers[1].Id, },
-                };
+        private static Workshop[] workshops;
 
-        private static ChatRoomWorkshop[] rooms = new ChatRoomWorkshop[4]
-                {
-                    new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[0].Id, ParentId = parents[0].Id, },
-                    new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[0].Id, ParentId = parents[1].Id, },
-                    new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[1].Id, ParentId = parents[0].Id, },
-                    new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[1].Id, ParentId = parents[1].Id, },
-                };
+        private static ChatRoomWorkshop[] rooms;
 
         private IEntityRepository<ChatRoomWorkshop> roomRepository;
         private Mock<IChatRoomWorkshopModelForChatListRepository> roomWithSpecialModelRepositoryMock;
@@ -67,6 +43,35 @@ namespace OutOfSchool.WebApi.Tests.Services
         [SetUp]
         public void SetUp()
         {
+            users = UserGenerator.Generate(4).ToArray();
+            users[0].Role = Role.Parent.ToString().ToLower();
+            users[1].Role = Role.Parent.ToString().ToLower();
+            users[2].Role = Role.Provider.ToString().ToLower();
+            users[3].Role = Role.Provider.ToString().ToLower();
+
+            parents = new Parent[2]
+            {
+                new Parent() { Id = Guid.NewGuid(), UserId = users[0].Id },
+                new Parent() { Id = Guid.NewGuid(), UserId = users[1].Id },
+            };
+
+            providers = ProvidersGenerator.Generate(2).ToArray();
+            providers[0].UserId = users[2].Id;
+            providers[1].UserId = users[3].Id;
+
+            workshops = WorkshopGenerator.Generate(3).ToArray();
+            workshops[0].ProviderId = providers[0].Id;
+            workshops[1].ProviderId = providers[0].Id;
+            workshops[2].ProviderId = providers[1].Id;
+
+            rooms = new ChatRoomWorkshop[4]
+            {
+                new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[0].Id, ParentId = parents[0].Id, },
+                new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[0].Id, ParentId = parents[1].Id, },
+                new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[1].Id, ParentId = parents[0].Id, },
+                new ChatRoomWorkshop() { Id = Guid.NewGuid(), WorkshopId = workshops[1].Id, ParentId = parents[1].Id, },
+            };
+
             var builder =
                 new DbContextOptionsBuilder<OutOfSchoolDbContext>()
                 .UseInMemoryDatabase(databaseName: "OutOfSchoolChatRoomTestDB")
@@ -407,13 +412,13 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                context.Users.AddRangeAsync(users);
-                context.Parents.AddRangeAsync(parents);
-                context.Providers.AddRangeAsync(providers);
-                context.Workshops.AddRangeAsync(workshops);
-                context.ChatRoomWorkshops.AddRangeAsync(rooms);
+                context.Users.AddRange(users);
+                context.Parents.AddRange(parents);
+                context.Providers.AddRange(providers);
+                context.Workshops.AddRange(workshops);
+                context.ChatRoomWorkshops.AddRange(rooms);
 
-                context.SaveChangesAsync();
+                context.SaveChanges();
             }
         }
     }

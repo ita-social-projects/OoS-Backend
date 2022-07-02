@@ -267,7 +267,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                    },
                 };
 
-                ctx.Directions.AddRangeAsync(directions);
+                ctx.Directions.AddRange(directions);
 
                 var departments = new List<Department>()
                 {
@@ -291,7 +291,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                    },
                 };
 
-                ctx.Departments.AddRangeAsync(departments);
+                ctx.Departments.AddRange(departments);
 
                 var workshops = new List<Workshop>()
                 {
@@ -302,9 +302,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                    },
                 };
 
-                ctx.Workshops.AddRangeAsync(workshops);
+                ctx.Workshops.AddRange(workshops);
 
-                ctx.SaveChangesAsync();
+                ctx.SaveChanges();
             }
         }
     }

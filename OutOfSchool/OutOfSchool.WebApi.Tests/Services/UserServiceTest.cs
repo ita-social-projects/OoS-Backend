@@ -254,8 +254,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                    },
                 };
 
-                context.Users.AddRangeAsync(users);
-                context.SaveChangesAsync();
+                context.Users.AddRange(users);
+                context.SaveChanges();
             }
         }
     }

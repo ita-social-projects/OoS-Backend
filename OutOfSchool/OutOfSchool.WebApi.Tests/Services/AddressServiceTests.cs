@@ -238,8 +238,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                 };
 
-                context.Addresses.AddRangeAsync(addresses);
-                context.SaveChangesAsync();
+                context.Addresses.AddRange(addresses);
+                context.SaveChanges();
             }
         }
     }
