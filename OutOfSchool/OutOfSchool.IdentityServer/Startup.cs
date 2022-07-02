@@ -1,162 +1,162 @@
-namespace OutOfSchool.IdentityServer
+namespace OutOfSchool.IdentityServer;
+
+public static class Startup
 {
-    public static class Startup
+    public static void AddApplicationServices(this WebApplicationBuilder builder)
     {
-        public static void AddApplicationServices(this WebApplicationBuilder builder)
+        var services = builder.Services;
+        var config = builder.Configuration;
+
+        services.Configure<IdentityServerConfig>(config.GetSection(IdentityServerConfig.Name));
+        var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
+        // TODO: Move version check into an extension to reuse code across apps
+        var mySQLServerVersion = config["MySQLServerVersion"];
+        var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
+        if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
         {
-            var services = builder.Services;
-            var config = builder.Configuration;
+            throw new Exception("MySQL Server version should be 8 or higher.");
+        }
 
-            services.Configure<IdentityServerConfig>(config.GetSection(IdentityServerConfig.Name));
-            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-
-            // TODO: Move version check into an extension to reuse code across apps
-            var mySQLServerVersion = config["MySQLServerVersion"];
-            var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
-            if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
+        var connectionString = config.GetMySqlConnectionString<IdentityConnectionOptions>(
+            "DefaultConnection",
+            options => new MySqlConnectionStringBuilder
             {
-                throw new Exception("MySQL Server version should be 8 or higher.");
-            }
+                Server = options.Server,
+                Port = options.Port,
+                UserID = options.UserId,
+                Password = options.Password,
+                Database = options.Database,
+                GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+            });
+        services
+            .AddDbContext<OutOfSchoolDbContext>(options => options
+                .UseMySql(
+                    connectionString,
+                    serverVersion,
+                    optionsBuilder =>
+                        optionsBuilder
+                            .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+                            .MigrationsAssembly("OutOfSchool.IdentityServer")));
 
-            var connectionString = config.GetMySqlConnectionString<IdentityConnectionOptions>(
-                "DefaultConnection",
-                options => new MySqlConnectionStringBuilder
-                {
-                    Server = options.Server,
-                    Port = options.Port,
-                    UserID = options.UserId,
-                    Password = options.Password,
-                    Database = options.Database,
-                    GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
-                });
-            services
-                .AddDbContext<OutOfSchoolDbContext>(options => options
-                    .UseMySql(
-                        connectionString,
-                        serverVersion,
-                        optionsBuilder =>
-                            optionsBuilder
-                                .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                                .MigrationsAssembly("OutOfSchool.IdentityServer")));
+        services.AddCustomDataProtection("IdentityServer");
 
-            services.AddCustomDataProtection("IdentityServer");
+        services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-            services.AddLocalization(options => options.ResourcesPath = "Resources");
-
-            services.AddAuthentication("Bearer")
-                .AddIdentityServerAuthentication("Bearer", options =>
-                {
-                    options.ApiName = "outofschoolapi";
-                    options.Authority = config["Identity:Authority"];
-
-                    options.RequireHttpsMetadata = false;
-                });
-
-            services.AddIdentity<User, IdentityRole>(options =>
+        services.AddAuthentication("Bearer")
+            .AddIdentityServerAuthentication("Bearer", options =>
             {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequiredLength = 8;
-            })
-                .AddEntityFrameworkStores<OutOfSchoolDbContext>()
-                .AddDefaultTokenProviders();
-            services.ConfigureApplicationCookie(c =>
-            {
-                c.Cookie.Name = "IdentityServer.Cookie";
-                c.LoginPath = "/Auth/Login";
-                c.LogoutPath = "/Auth/Logout";
+                options.ApiName = "outofschoolapi";
+                options.Authority = config["Identity:Authority"];
+
+                options.RequireHttpsMetadata = false;
             });
 
-            var issuerSection = config.GetSection(IssuerConfig.Name);
-            services.Configure<IssuerConfig>(issuerSection);
+        services.AddIdentity<User, IdentityRole>(options =>
+        {
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireNonAlphanumeric = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequiredLength = 8;
+        })
+            .AddEntityFrameworkStores<OutOfSchoolDbContext>()
+            .AddDefaultTokenProviders();
+        services.ConfigureApplicationCookie(c =>
+        {
+            c.Cookie.Name = "IdentityServer.Cookie";
+            c.LoginPath = "/Auth/Login";
+            c.LogoutPath = "/Auth/Logout";
+        });
 
-            // GRPC options
-            services.Configure<GRPCConfig>(config.GetSection(GRPCConfig.Name));
+        var issuerSection = config.GetSection(IssuerConfig.Name);
+        services.Configure<IssuerConfig>(issuerSection);
 
-            services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
-                .AddConfigurationStore(options =>
-                {
-                    options.ConfigureDbContext = builder =>
-                        builder.UseMySql(
-                            connectionString,
-                            serverVersion,
-                            sql => sql.MigrationsAssembly(migrationsAssembly));
-                })
-                .AddOperationalStore(options =>
-                {
-                    options.ConfigureDbContext = builder =>
-                        builder.UseMySql(
-                            connectionString,
-                            serverVersion,
-                            sql => sql.MigrationsAssembly(migrationsAssembly));
-                    options.EnableTokenCleanup = true;
-                    options.TokenCleanupInterval = 3600;
-                })
-                .AddAspNetIdentity<User>()
-                .AddProfileService<ProfileService>()
-                .AddCustomKeyManagement<CertificateDbContext>(builder =>
+        // GRPC options
+        services.Configure<GRPCConfig>(config.GetSection(GRPCConfig.Name));
+
+        services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
+            .AddConfigurationStore(options =>
+            {
+                options.ConfigureDbContext = builder =>
                     builder.UseMySql(
                         connectionString,
                         serverVersion,
-                        sql => sql.MigrationsAssembly(migrationsAssembly)));
+                        sql => sql.MigrationsAssembly(migrationsAssembly));
+            })
+            .AddOperationalStore(options =>
+            {
+                options.ConfigureDbContext = builder =>
+                    builder.UseMySql(
+                        connectionString,
+                        serverVersion,
+                        sql => sql.MigrationsAssembly(migrationsAssembly));
+                options.EnableTokenCleanup = true;
+                options.TokenCleanupInterval = 3600;
+            })
+            .AddAspNetIdentity<User>()
+            .AddProfileService<ProfileService>()
+            .AddCustomKeyManagement<CertificateDbContext>(builder =>
+                builder.UseMySql(
+                    connectionString,
+                    serverVersion,
+                    sql => sql.MigrationsAssembly(migrationsAssembly)));
 
-            var mailConfig = config
-                .GetSection(EmailOptions.SectionName)
-                .Get<EmailOptions>();
-            services.AddEmailSender(
-                builder.Environment.IsDevelopment(),
-                mailConfig.SendGridKey,
-                builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
+        var mailConfig = config
+            .GetSection(EmailOptions.SectionName)
+            .Get<EmailOptions>();
+        services.AddEmailSender(
+            builder.Environment.IsDevelopment(),
+            mailConfig.SendGridKey,
+            builder => builder.Bind(config.GetSection(EmailOptions.SectionName)));
 
-            services.AddControllersWithViews()
-                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-                .AddDataAnnotationsLocalization(options =>
-                {
-                    options.DataAnnotationLocalizerProvider = (type, factory) =>
-                        factory.Create(typeof(SharedResource));
-                });
-            services.AddProxy();
-            services.AddAutoMapper(typeof(MappingProfile));
-            services.AddTransient<IParentRepository, ParentRepository>();
-            services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
-            services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
-            services.AddTransient<IProviderAdminService, ProviderAdminService>();
+        services.AddControllersWithViews()
+            .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+            .AddDataAnnotationsLocalization(options =>
+            {
+                options.DataAnnotationLocalizerProvider = (type, factory) =>
+                    factory.Create(typeof(SharedResource));
+            });
+        services.AddProxy();
+        services.AddAutoMapper(typeof(MappingProfile));
+        services.AddTransient<IParentRepository, ParentRepository>();
+        services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
+        services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
+        services.AddTransient<IProviderAdminService, ProviderAdminService>();
 
-            services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
-            services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
+        services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
+        services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
 
-            // Register the Permission policy handlers
-            services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
-            services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+        // Register the Permission policy handlers
+        services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
+        services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
-            services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-            services.AddGrpc();
+        services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+        services.AddGrpc();
+    }
+
+    public static void Configure(this WebApplication app)
+    {
+        var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
+        app.UseProxy(proxyOptions);
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
         }
 
-        public static void Configure(this WebApplication app)
+        var supportedCultures = new[]
         {
-            var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
-            app.UseProxy(proxyOptions);
-
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            var supportedCultures = new[]
-            {
                 new CultureInfo("en"),
                 new CultureInfo("uk"),
             };
 
-            var requestLocalization = new RequestLocalizationOptions
-            {
-                DefaultRequestCulture = new RequestCulture("uk"),
-                SupportedCultures = supportedCultures,
-                SupportedUICultures = supportedCultures,
-                RequestCultureProviders = new List<IRequestCultureProvider>
+        var requestLocalization = new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture("uk"),
+            SupportedCultures = supportedCultures,
+            SupportedUICultures = supportedCultures,
+            RequestCultureProviders = new List<IRequestCultureProvider>
                 {
                     new CustomRequestCultureProvider(context =>
                     {
@@ -182,48 +182,47 @@ namespace OutOfSchool.IdentityServer
                             selectedUiCulture.FirstOrDefault()));
                     }),
                 },
-            };
+        };
 
-            app.UseRequestLocalization(requestLocalization);
+        app.UseRequestLocalization(requestLocalization);
 
-            app.UseRouting();
+        app.UseRouting();
 
-            app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
+        app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
-            app.UseStaticFiles();
+        app.UseStaticFiles();
 
-            app.UseSerilogRequestLogging();
+        app.UseSerilogRequestLogging();
 
-            app.UseIdentityServer();
+        app.UseIdentityServer();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
+        app.UseEndpoints(endpoints => { endpoints.MapDefaultControllerRoute(); });
 
-            var gRPCConfig = app.Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
+        var gRPCConfig = app.Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
 
-            if (gRPCConfig.Enabled)
-            {
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapGrpcService<ProviderAdminServiceGRPC>().RequireHost($"*:{gRPCConfig.Port}");
-                });
-            }
-        }
-
-        public static void RolesInit(RoleManager<IdentityRole> manager)
+        if (gRPCConfig.Enabled)
         {
-            var roles = new IdentityRole[]
+            app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGrpcService<ProviderAdminServiceGRPC>().RequireHost($"*:{gRPCConfig.Port}");
+            });
+        }
+    }
+
+    public static void RolesInit(RoleManager<IdentityRole> manager)
+    {
+        var roles = new IdentityRole[]
+        {
                 new IdentityRole {Name = "parent"},
                 new IdentityRole {Name = "provider"},
                 new IdentityRole {Name = "admin"},
-            };
-            foreach (var role in roles)
-            {
-                manager.CreateAsync(role).Wait();
-            }
+        };
+        foreach (var role in roles)
+        {
+            manager.CreateAsync(role).Wait();
         }
     }
 }
