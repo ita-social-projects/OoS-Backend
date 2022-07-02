@@ -1,22 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using IdentityServer4.EntityFramework.DbContexts;
-using IdentityServer4.EntityFramework.Mappers;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using OutOfSchool.IdentityServer;
-using OutOfSchool.IdentityServer.Config;
-using OutOfSchool.IdentityServer.KeyManagement;
-using OutOfSchool.Services;
-using OutOfSchool.Services.Extensions;
-using Serilog;
-using Serilog.Context;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, lc) => lc
