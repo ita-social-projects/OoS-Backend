@@ -121,7 +121,6 @@ namespace OutOfSchool.Services.Repository
         /// <summary>
         /// Get ordered, filtered list of elements.
         /// </summary>
-        /// <typeparam name="TOrderKey">The type that we want to order list with.</typeparam>
         /// <param name="skip">How many records we want tp skip.</param>
         /// <param name="take">How many records we want to take.</param>
         /// <param name="includeProperties">What Properties we want to include to objects that we will receive.</param>

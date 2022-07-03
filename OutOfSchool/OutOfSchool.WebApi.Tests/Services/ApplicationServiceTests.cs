@@ -593,7 +593,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<int>(),
                     It.IsAny<string>(),
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
-                    It.IsAny< Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
+                    It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
                 .Returns(emptyWorkshopsList.Object)
                 .Verifiable();
