@@ -426,14 +426,17 @@ namespace OutOfSchool.WebApi.Tests.Services
             TestHelper.AssertDtosAreEqual(expected, result);
         }
 
-        [TestCase(ProviderLicenseStatus.NotProvided)]
-        [TestCase(ProviderLicenseStatus.Pending)]
-        [TestCase(ProviderLicenseStatus.Approved)]
-        public async Task Update_UserChangesLicense_LicenseStatusIsChangedToPending(ProviderLicenseStatus initialStatus)
+        [TestCase(ProviderLicenseStatus.NotProvided, "1234512345")]
+        [TestCase(ProviderLicenseStatus.Pending, "1234512345")]
+        [TestCase(ProviderLicenseStatus.Approved, "1234512345")]
+        [TestCase(ProviderLicenseStatus.NotProvided, null)]
+        [TestCase(ProviderLicenseStatus.Pending, null)]
+        [TestCase(ProviderLicenseStatus.Approved, null)]
+        public async Task Update_UserChangesLicense_LicenseStatusIsChangedToPending(ProviderLicenseStatus initialStatus, string license)
         {
             // Arrange
             var provider = fakeProviders.RandomItem();
-            provider.License = "1234512345";
+            provider.License = license;
             var updatedLicense = "1234567890";
             provider.LicenseStatus = initialStatus;
 
