@@ -8,21 +8,21 @@ using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.IdentityServer.Services.Intefaces
 {
-    public interface IInstitutionAdminService
+    public interface IMinistryAdminService
     {
-        Task<ResponseDto> CreateInstitutionAdminAsync(
-            CreateInstitutionAdminDto institutionAdminDto,
+        Task<ResponseDto> CreateMinistryAdminAsync(
+            CreateMinistryAdminDto ministryAdminDto,
             IUrlHelper url,
             string userId,
             string requestId);
 
-        Task<ResponseDto> DeleteInstitutionAdminAsync(
-            string institutionAdminId,
+        Task<ResponseDto> DeleteMinistryAdminAsync(
+            string ministryAdminId,
             string userId,
             string requestId);
 
-        Task<ResponseDto> BlockInstitutionAdminAsync(
-            string institutionAdminId,
+        Task<ResponseDto> BlockMinistryAdminAsync(
+            string ministryAdminId,
             string userId,
             string requestId);
     }

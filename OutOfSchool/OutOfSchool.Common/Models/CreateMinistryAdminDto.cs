@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OutOfSchool.Common.Models
 {
-    public class CreateInstitutionAdminDto
+    public class CreateMinistryAdminDto
     {
         [Required(ErrorMessage = "FirstName is required")]
         public string FirstName { get; set; }

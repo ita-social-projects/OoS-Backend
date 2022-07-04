@@ -23,22 +23,21 @@ using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.IdentityServer.Services
 {
-    public class InstitutionAdminService : IInstitutionAdminService
+    public class MinistryAdminService : IMinistryAdminService
     {
         private readonly IEmailSender emailSender;
         private readonly IMapper mapper;
-        private readonly ILogger<InstitutionAdminService> logger;
-        private readonly IInstitutionAdminRepository institutionAdminRepository;
+        private readonly ILogger<MinistryAdminService> logger;
+        private readonly IMinistryAdminRepository ministryAdminRepository;
 
         private readonly UserManager<User> userManager;
         private readonly OutOfSchoolDbContext context;
         private readonly IRazorViewToStringRenderer renderer;
-        private readonly IProviderAdminChangesLogService institutionAdminChangesLogService;
 
-        public InstitutionAdminService(
+        public MinistryAdminService(
             IMapper mapper,
-            IInstitutionAdminRepository institutionAdminRepository,
-            ILogger<InstitutionAdminService> logger,
+            IMinistryAdminRepository ministryAdminRepository,
+            ILogger<MinistryAdminService> logger,
             IEmailSender emailSender,
             UserManager<User> userManager,
             OutOfSchoolDbContext context,
@@ -47,19 +46,19 @@ namespace OutOfSchool.IdentityServer.Services
             this.mapper = mapper;
             this.userManager = userManager;
             this.context = context;
-            this.institutionAdminRepository = institutionAdminRepository;
+            this.ministryAdminRepository = ministryAdminRepository;
             this.logger = logger;
             this.emailSender = emailSender;
             this.renderer = renderer;
         }
 
-        public async Task<ResponseDto> CreateInstitutionAdminAsync(
-            CreateInstitutionAdminDto institutionAdminDto,
+        public async Task<ResponseDto> CreateMinistryAdminAsync(
+            CreateMinistryAdminDto ministryAdminDto,
             IUrlHelper url,
             string userId,
             string requestId)
         {
-            var user = mapper.Map<User>(institutionAdminDto);
+            var user = mapper.Map<User>(ministryAdminDto);
 
             var password = PasswordGenerator
                 .GenerateRandomPassword(userManager.Options.Password);
@@ -74,7 +73,7 @@ namespace OutOfSchool.IdentityServer.Services
                     user.IsDerived = true;
                     user.IsRegistered = true;
                     user.IsBlocked = false;
-                    user.Role = nameof(Role.InstitutionAdmin).ToLower();
+                    user.Role = nameof(Role.MinistryAdmin).ToLower();
 
                     var result = await userManager.CreateAsync(user, password);
 
@@ -83,7 +82,7 @@ namespace OutOfSchool.IdentityServer.Services
                         await transaction.RollbackAsync();
 
                         logger.LogError(
-                            $"Error happened while creation InstitutionAdmin. Request(id): {requestId}" +
+                            $"Error happened while creation MinistryAdmin. Request(id): {requestId}" +
                             $"User(id): {userId}" +
                             $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
@@ -115,14 +114,14 @@ namespace OutOfSchool.IdentityServer.Services
                         return response;
                     }
 
-                    institutionAdminDto.UserId = user.Id;
+                    ministryAdminDto.UserId = user.Id;
 
-                    var institutionAdmin = mapper.Map<InstitutionAdmin>(institutionAdminDto);
-                    await institutionAdminRepository.Create(institutionAdmin)
+                    var ministryAdmin = mapper.Map<MinistryAdmin>(ministryAdminDto);
+                    await ministryAdminRepository.Create(ministryAdmin)
                         .ConfigureAwait(false);
 
                     logger.LogInformation(
-                        $"InstitutionAdmin(id):{institutionAdminDto.UserId} was successfully created by " +
+                        $"MinistryAdmin(id):{ministryAdminDto.UserId} was successfully created by " +
                         $"User(id): {userId}. Request(id): {requestId}");
 
                     // TODO:
@@ -152,7 +151,7 @@ namespace OutOfSchool.IdentityServer.Services
                     await transaction.CommitAsync();
                     response.IsSuccess = true;
                     response.HttpStatusCode = HttpStatusCode.OK;
-                    response.Result = institutionAdminDto;
+                    response.Result = ministryAdminDto;
 
                     return response;
                 }
@@ -171,8 +170,8 @@ namespace OutOfSchool.IdentityServer.Services
             return result;
         }
 
-        public async Task<ResponseDto> DeleteInstitutionAdminAsync(
-            string institutionAdminId,
+        public async Task<ResponseDto> DeleteMinistryAdminAsync(
+            string ministryAdminId,
             string userId,
             string requestId)
         {
@@ -183,30 +182,30 @@ namespace OutOfSchool.IdentityServer.Services
                 await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
                 try
                 {
-                    var institutionAdmin = GetInstitutionAdmin(institutionAdminId);
+                    var ministryAdmin = GetMinistryAdmin(ministryAdminId);
 
-                    if (institutionAdmin is null)
+                    if (ministryAdmin is null)
                     {
                         response.IsSuccess = false;
                         response.HttpStatusCode = HttpStatusCode.NotFound;
 
-                        logger.LogError($"InstitutionAdmin(id) {institutionAdminId} not found. " +
+                        logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. " +
                                         $"Request(id): {requestId}" +
                                         $"User(id): {userId}");
 
                         return response;
                     }
 
-                    context.InstitutionAdmins.Remove(institutionAdmin);
+                    context.MinistryAdmins.Remove(ministryAdmin);
 
-                    var user = await userManager.FindByIdAsync(institutionAdminId);
+                    var user = await userManager.FindByIdAsync(ministryAdminId);
                     var result = await userManager.DeleteAsync(user);
 
                     if (!result.Succeeded)
                     {
                         await transaction.RollbackAsync();
 
-                        logger.LogError($"Error happened while deleting InstitutionAdmin. Request(id): {requestId}" +
+                        logger.LogError($"Error happened while deleting MinistryAdmin. Request(id): {requestId}" +
                                         $"User(id): {userId}" +
                                         $"{string.Join(Environment.NewLine, result.Errors.Select(e => e.Description))}");
 
@@ -220,7 +219,7 @@ namespace OutOfSchool.IdentityServer.Services
                     response.IsSuccess = true;
                     response.HttpStatusCode = HttpStatusCode.OK;
 
-                    logger.LogInformation($"InstitutionAdmin(id):{institutionAdminId} was successfully deleted by " +
+                    logger.LogInformation($"MinistryAdmin(id):{ministryAdminId} was successfully deleted by " +
                                           $"User(id): {userId}. Request(id): {requestId}");
 
                     return response;
@@ -229,7 +228,7 @@ namespace OutOfSchool.IdentityServer.Services
                 {
                     await transaction.RollbackAsync();
 
-                    logger.LogError($"Error happened while deleting InstitutionAdmin. Request(id): {requestId}" +
+                    logger.LogError($"Error happened while deleting MinistryAdmin. Request(id): {requestId}" +
                                     $"User(id): {userId} {ex.Message}");
 
                     response.IsSuccess = false;
@@ -241,28 +240,28 @@ namespace OutOfSchool.IdentityServer.Services
             return result;
         }
 
-        public async Task<ResponseDto> BlockInstitutionAdminAsync(
-            string institutionAdminId,
+        public async Task<ResponseDto> BlockMinistryAdminAsync(
+            string ministryAdminId,
             string userId,
             string requestId)
         {
             var response = new ResponseDto();
 
-            var providerAdmin = GetInstitutionAdmin(institutionAdminId);
+            var providerAdmin = GetMinistryAdmin(ministryAdminId);
 
             if (providerAdmin is null)
             {
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.NotFound;
 
-                logger.LogError($"ProviderAdmin(id) {institutionAdminId} not found. " +
+                logger.LogError($"ProviderAdmin(id) {ministryAdminId} not found. " +
                                 $"Request(id): {requestId}" +
                                 $"User(id): {userId}");
 
                 return response;
             }
 
-            var user = await userManager.FindByIdAsync(institutionAdminId);
+            var user = await userManager.FindByIdAsync(ministryAdminId);
 
             var executionStrategy = context.Database.CreateExecutionStrategy();
             return await executionStrategy.Execute(BlockProviderAdminOperation).ConfigureAwait(false);
@@ -307,7 +306,7 @@ namespace OutOfSchool.IdentityServer.Services
 
                     await transaction.CommitAsync().ConfigureAwait(false);
 
-                    logger.LogInformation($"ProviderAdmin(id):{institutionAdminId} was successfully blocked by " +
+                    logger.LogInformation($"ProviderAdmin(id):{ministryAdminId} was successfully blocked by " +
                                 $"User(id): {userId}. Request(id): {requestId}");
 
                     response.IsSuccess = true;
@@ -330,7 +329,7 @@ namespace OutOfSchool.IdentityServer.Services
             }
         }
 
-        private InstitutionAdmin GetInstitutionAdmin(string institutionAdminId)
-            => context.InstitutionAdmins.SingleOrDefault(pa => pa.UserId == institutionAdminId);
+        private MinistryAdmin GetMinistryAdmin(string ministryAdminId)
+            => context.MinistryAdmins.SingleOrDefault(pa => pa.UserId == ministryAdminId);
     }
 }

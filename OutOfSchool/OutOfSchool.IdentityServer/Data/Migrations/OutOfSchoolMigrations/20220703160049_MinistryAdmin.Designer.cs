@@ -9,8 +9,8 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220627084219_InstitutionAdmin")]
-    partial class InstitutionAdmin
+    [Migration("20220703160049_MinistryAdmin")]
+    partial class MinistryAdmin
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -857,30 +857,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("WorkshopImages");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("CodeficatorId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("InstitutionId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CodeficatorId");
-
-                    b.HasIndex("InstitutionId");
-
-                    b.ToTable("InstitutionAdmins");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
                 {
                     b.Property<long>("Id")
@@ -911,6 +887,30 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                             Id = 3L,
                             Name = "Має намір на реорганізацію"
                         });
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.MinistryAdmin", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CodeficatorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("InstitutionId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodeficatorId");
+
+                    b.HasIndex("InstitutionId");
+
+                    b.ToTable("MinistryAdmins");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Notification", b =>
@@ -994,7 +994,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "admin permissions",
-                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\",
+                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rp",
                             RoleName = "Admin"
                         },
                         new
@@ -1017,6 +1017,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                             Description = "provider admin permissions",
                             PackedPermissions = "e\n26HGIFPQ[\\",
                             RoleName = "ProviderAdmin"
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            Description = "institution admin permissions",
+                            PackedPermissions = "e\n26HGIFPQ[\\",
+                            RoleName = "InstitutionAdmin"
                         });
                 });
 
@@ -1961,7 +1968,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.Navigation("Entity");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
+            modelBuilder.Entity("OutOfSchool.Services.Models.MinistryAdmin", b =>
                 {
                     b.HasOne("OutOfSchool.Services.Models.Codeficator", "Codeficator")
                         .WithMany()

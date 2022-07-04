@@ -10,32 +10,32 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Repository
 {
-    public class InstitutionAdminRepository : EntityRepository<InstitutionAdmin>, IInstitutionAdminRepository
+    public class MinistryAdminRepository : EntityRepository<MinistryAdmin>, IMinistryAdminRepository
     {
         private readonly OutOfSchoolDbContext db;
 
-        public InstitutionAdminRepository(OutOfSchoolDbContext dbContext)
+        public MinistryAdminRepository(OutOfSchoolDbContext dbContext)
          : base(dbContext)
         {
             db = dbContext;
         }
 
-        public async Task<InstitutionAdmin> GetByIdAsync(string id, Guid providerId)
+        public async Task<MinistryAdmin> GetByIdAsync(string id, Guid providerId)
         {
             // FIXME
-            return await db.InstitutionAdmins
+            return await db.MinistryAdmins
             // .Where(ia => ia.Id == providerId)
             .SingleOrDefaultAsync(pa => pa.UserId == id);
         }
 
-        public async Task<bool> IsExistInstitutionAdminDeputyWithUserIdAsync(Guid providerId, string userId)
+        public async Task<bool> IsExistMinistryAdminDeputyWithUserIdAsync(Guid providerId, string userId)
         {
             var InstitutionAdmin = await GetByIdAsync(userId, providerId);
 
             return InstitutionAdmin != null; // && InstitutionAdmin.IsDeputy == true;
         }
 
-        public async Task<bool> IsExistInstitutionWithUserIdAsync(string userId)
+        public async Task<bool> IsExistMinistryWithUserIdAsync(string userId)
         {
             var provider = await db.Providers
                 .SingleOrDefaultAsync(p => p.UserId == userId);

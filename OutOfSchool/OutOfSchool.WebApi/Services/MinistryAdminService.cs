@@ -23,43 +23,43 @@ using OutOfSchool.WebApi.Services.Communication;
 
 namespace OutOfSchool.WebApi.Services
 {
-    public class InstitutionAdminService : CommunicationService, IInstitutionAdminService
+    public class MinistryAdminService : CommunicationService, IMinistryAdminService
     {
         private readonly IdentityServerConfig identityServerConfig;
         private readonly IEntityRepository<User> userRepository;
-        private readonly IInstitutionAdminRepository InstitutionAdminRepository;
-        private readonly ILogger<InstitutionAdminService> logger;
+        private readonly IMinistryAdminRepository ministryAdminRepository;
+        private readonly ILogger<MinistryAdminService> logger;
         private readonly IMapper mapper;
         private readonly ResponseDto responseDto;
 
-        public InstitutionAdminService(
+        public MinistryAdminService(
             IHttpClientFactory httpClientFactory,
             IOptions<IdentityServerConfig> identityServerConfig,
             IOptions<CommunicationConfig> communicationConfig,
-            IInstitutionAdminRepository InstitutionAdminRepository,
+            IMinistryAdminRepository ministryAdminRepository,
             IEntityRepository<User> userRepository,
             IMapper mapper,
-            ILogger<InstitutionAdminService> logger)
+            ILogger<MinistryAdminService> logger)
             : base(httpClientFactory, communicationConfig.Value)
         {
             this.identityServerConfig = identityServerConfig.Value;
-            this.InstitutionAdminRepository = InstitutionAdminRepository;
+            this.ministryAdminRepository = ministryAdminRepository;
             this.userRepository = userRepository;
             this.mapper = mapper;
             this.logger = logger;
             responseDto = new ResponseDto();
         }
 
-        public async Task<ResponseDto> CreateInstitutionAdminAsync(string userId, CreateInstitutionAdminDto InstitutionAdminDto, string token)
+        public async Task<ResponseDto> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token)
         {
-            logger.LogDebug($"InstitutionAdmin creating was started. User(id): {userId}");
+            logger.LogDebug($"ministryAdmin creating was started. User(id): {userId}");
 
             var request = new Request()
             {
                 HttpMethodType = HttpMethodType.Post,
-                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateInstitutionAdmin),
+                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.CreateMinistryAdmin),
                 Token = token,
-                Data = InstitutionAdminDto,
+                Data = ministryAdminDto,
                 RequestId = Guid.NewGuid(),
             };
 
@@ -73,7 +73,7 @@ namespace OutOfSchool.WebApi.Services
             {
                 responseDto.IsSuccess = true;
                 responseDto.Result = JsonConvert
-                    .DeserializeObject<CreateInstitutionAdminDto>(response.Result.ToString());
+                    .DeserializeObject<CreateMinistryAdminDto>(response.Result.ToString());
 
                 return responseDto;
             }
@@ -81,9 +81,9 @@ namespace OutOfSchool.WebApi.Services
             return response;
         }
 
-        public async Task<ResponseDto> DeleteInstitutionAdminAsync(string InstitutionAdminId, string userId, Guid providerId, string token)
+        public async Task<ResponseDto> DeleteMinistryAdminAsync(string ministryAdminId, string userId, Guid providerId, string token)
         {
-            logger.LogDebug($"InstitutionAdmin(id): {InstitutionAdminId} deleting was started. User(id): {userId}");
+            logger.LogDebug($"MinistryAdmin(id): {ministryAdminId} deleting was started. User(id): {userId}");
 
             var hasAccess = await IsAllowedAsync(providerId, userId)
                 .ConfigureAwait(true);
@@ -98,12 +98,12 @@ namespace OutOfSchool.WebApi.Services
                 return responseDto;
             }
 
-            var InstitutionAdmin = await InstitutionAdminRepository.GetByIdAsync(InstitutionAdminId, providerId)
+            var ministryAdmin = await ministryAdminRepository.GetByIdAsync(ministryAdminId, providerId)
                 .ConfigureAwait(false);
 
-            if (InstitutionAdmin is null)
+            if (ministryAdmin is null)
             {
-                logger.LogError($"InstitutionAdmin(id) {InstitutionAdminId} not found. User(id): {userId}.");
+                logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. User(id): {userId}.");
 
                 responseDto.IsSuccess = false;
                 responseDto.HttpStatusCode = HttpStatusCode.NotFound;
@@ -114,7 +114,7 @@ namespace OutOfSchool.WebApi.Services
             var request = new Request()
             {
                 HttpMethodType = HttpMethodType.Delete,
-                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteInstitutionAdmin + InstitutionAdminId),
+                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.DeleteMinistryAdmin + ministryAdminId),
                 Token = token,
                 RequestId = Guid.NewGuid(),
             };
@@ -142,9 +142,9 @@ namespace OutOfSchool.WebApi.Services
             return response;
         }
 
-        public async Task<ResponseDto> BlockInstitutionAdminAsync(string InstitutionAdminId, string userId, Guid providerId, string token)
+        public async Task<ResponseDto> BlockMinistryAdminAsync(string ministryAdminId, string userId, Guid providerId, string token)
         {
-            logger.LogDebug($"InstitutionAdmin(id): {InstitutionAdminId} blocking was started. User(id): {userId}");
+            logger.LogDebug($"MinistryAdmin(id): {ministryAdminId} blocking was started. User(id): {userId}");
 
             var hasAccess = await IsAllowedAsync(providerId, userId)
                 .ConfigureAwait(true);
@@ -159,12 +159,12 @@ namespace OutOfSchool.WebApi.Services
                 return responseDto;
             }
 
-            var InstitutionAdmin = await InstitutionAdminRepository.GetByIdAsync(InstitutionAdminId, providerId)
+            var ministryAdmin = await ministryAdminRepository.GetByIdAsync(ministryAdminId, providerId)
                 .ConfigureAwait(false);
 
-            if (InstitutionAdmin is null)
+            if (ministryAdmin is null)
             {
-                logger.LogError($"InstitutionAdmin(id) {InstitutionAdminId} not found. User(id): {userId}.");
+                logger.LogError($"MinistryAdmin(id) {ministryAdminId} not found. User(id): {userId}.");
 
                 responseDto.IsSuccess = false;
                 responseDto.HttpStatusCode = HttpStatusCode.NotFound;
@@ -175,7 +175,7 @@ namespace OutOfSchool.WebApi.Services
             var request = new Request()
             {
                 HttpMethodType = HttpMethodType.Put,
-                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.BlockInstitutionAdmin + InstitutionAdminId),
+                Url = new Uri(identityServerConfig.Authority, CommunicationConstants.BlockMinistryAdmin + ministryAdminId),
                 Token = token,
                 RequestId = Guid.NewGuid(),
             };
@@ -205,7 +205,7 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task<bool> IsAllowedAsync(Guid providerId, string userId)
         {
-            bool provider = await InstitutionAdminRepository.IsExistInstitutionWithUserIdAsync(userId)
+            bool provider = await ministryAdminRepository.IsExistMinistryWithUserIdAsync(userId)
                 .ConfigureAwait(false);
 
             return provider;
@@ -213,25 +213,25 @@ namespace OutOfSchool.WebApi.Services
 
         public async Task GiveAssistantAccessToWorkshop(string userId, Guid workshopId)
         {
-            await InstitutionAdminRepository.AddRelatedWorkshopForAssistant(userId, workshopId).ConfigureAwait(false);
+            await ministryAdminRepository.AddRelatedWorkshopForAssistant(userId, workshopId).ConfigureAwait(false);
             logger.LogDebug($"Assistant provider admin(id): {userId} now is related to workshop(id): {workshopId}");
         }
 
-        public async Task<IEnumerable<InstitutionAdminDto>> GetRelatedInstitutionAdmins(string userId)
+        public async Task<IEnumerable<MinistryAdminDto>> GetRelatedMinistryAdmins(string userId)
         {
-            var provider = await InstitutionAdminRepository.GetInstitutionWithUserIdAsync(userId).ConfigureAwait(false);
-            List<InstitutionAdmin> InstitutionAdmins = new List<InstitutionAdmin>();
-            List<InstitutionAdminDto> dtos = new List<InstitutionAdminDto>();
+            var provider = await ministryAdminRepository.GetInstitutionWithUserIdAsync(userId).ConfigureAwait(false);
+            List<MinistryAdmin> ministryAdmins = new List<MinistryAdmin>();
+            List<MinistryAdminDto> dtos = new List<MinistryAdminDto>();
 
             if (provider != null)
             {
-                InstitutionAdmins = (await InstitutionAdminRepository.GetByFilter(pa => true).ConfigureAwait(false))
+                ministryAdmins = (await ministryAdminRepository.GetByFilter(pa => true).ConfigureAwait(false))
                 // InstitutionAdmins = (await InstitutionAdminRepository.GetByFilter(pa => pa.Id == provider.Id).ConfigureAwait(false)) //FIXME
                     .ToList();
             }
             else
             {
-                var InstitutionAdmin = (await InstitutionAdminRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault();
+                var InstitutionAdmin = (await ministryAdminRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault();
                 /*
                 if (InstitutionAdmin.IsDeputy)
                 {
@@ -242,12 +242,12 @@ namespace OutOfSchool.WebApi.Services
                 }*/
             }
 
-            if (InstitutionAdmins.Any())
+            if (ministryAdmins.Any())
             {
-                foreach (var pa in InstitutionAdmins)
+                foreach (var pa in ministryAdmins)
                 {
                     var user = (await userRepository.GetByFilter(u => u.Id == pa.UserId).ConfigureAwait(false)).Single();
-                    var dto = mapper.Map<InstitutionAdminDto>(user);
+                    var dto = mapper.Map<MinistryAdminDto>(user);
                     // dto.IsDeputy = pa.IsDeputy;
 
                     if (user.IsBlocked)

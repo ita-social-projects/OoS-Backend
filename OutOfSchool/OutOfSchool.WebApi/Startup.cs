@@ -158,7 +158,7 @@ namespace OutOfSchool.WebApi
                     });
 
             services.AddScoped<IProviderAdminService, ProviderAdminService>();
-            services.AddScoped<IInstitutionAdminService, InstitutionAdminService>();
+            services.AddScoped<IMinistryAdminService, MinistryAdminService>();
 
             // Images limits options
             services.Configure<ImagesLimits<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
@@ -271,7 +271,7 @@ namespace OutOfSchool.WebApi
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
 
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
-            services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
+            services.AddTransient<IMinistryAdminRepository, MinistryAdminRepository>();
             services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
             services.AddTransient<ISensitiveEntityRepository<CompanyInformationItem>, SensitiveEntityRepository<CompanyInformationItem>>();
 

@@ -3,7 +3,7 @@ using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
-    public class InstitutionAdminDto
+    public class MinistryAdminDto
     {
         public string Id { get; set; }
 

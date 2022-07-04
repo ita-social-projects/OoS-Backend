@@ -129,17 +129,17 @@ namespace OutOfSchool.Common.PermissionsModule
         AccessAll = short.MaxValue,
         #endregion
 
-        #region InstitutionAdmin Control permissions #12
+        #region MinistryAdmin Control permissions #12
         [Display(GroupName = "Institution", Name = "Read", Description = "Can read Provider")]
-        InstitutionAdminRead = 110,
+        MinistryAdminRead = 110,
         [Display(GroupName = "Institution", Name = "Edit", Description = "Can edit Provider item")]
-        InstitutionAdminEdit = 111,
+        MinistryAdminEdit = 111,
         [Display(GroupName = "Institution", Name = "Add new", Description = "Can add a new Provider item")]
-        InstitutionAdminAddNew = 112,
+        MinistryAdminAddNew = 112,
         [Display(GroupName = "Institution", Name = "Remove", Description = "Can remove Provider data")]
-        InstitutionAdminRemove = 113,
+        MinistryAdminRemove = 113,
         [Display(GroupName = "Institution", Name = "Provider Admins", Description = "Can create and manage provider admins")]
-        InstitutionAdmins = 114,
+        MinistryAdmins = 114,
         #endregion
     }
 }

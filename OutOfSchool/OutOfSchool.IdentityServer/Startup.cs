@@ -171,8 +171,8 @@ namespace OutOfSchool.IdentityServer
             services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
             services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
             services.AddTransient<IProviderAdminService, ProviderAdminService>();
-            services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
-            services.AddTransient<IInstitutionAdminService, InstitutionAdminService>();
+            services.AddTransient<IMinistryAdminRepository, MinistryAdminRepository>();
+            services.AddTransient<IMinistryAdminService, MinistryAdminService>();
 
             services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
             services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
