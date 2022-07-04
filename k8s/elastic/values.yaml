@@ -48,6 +48,12 @@ elasticsearch:
       xpack.security.http.ssl.key: /usr/share/elasticsearch/config/certs/tls.key
       xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/certs/tls.crt
       xpack.security.http.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.crt
+    elasticsearch-plugins.yml: |
+      plugins:
+        - id: analysis-icu
+        - id: analysis-ukrainian
+        - id: mapper-murmur3
+        - id: mapper-size
   #  log4j2.properties: |
   #    key = value
   secretMounts:
@@ -84,11 +90,23 @@ elasticsearch:
     resources:
       requests:
         storage: 100M
-  extraInitContainers:
-  - name: plugins
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
-    command: ['/bin/sh', '-c']
-    args: ['./bin/elasticsearch-plugin list | grep -q analysis-ukrainian || ./bin/elasticsearch-plugin install analysis-icu analysis-ukrainian mapper-murmur3 mapper-size']
+  # extraVolumes:
+  # - name: plugins
+  #   emptyDir: {}
+  # extraVolumeMounts:
+  # - name: plugins
+  #   mountPath: /plugins
+  # extraInitContainers:
+  # - name: plugins
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+  #   command:
+  #   - /bin/sh
+  #   - '-c'
+  #   - |
+  #     ./bin/elasticsearch-plugin list | grep -q analysis-ukrainian || ./bin/elasticsearch-plugin install --batch analysis-icu analysis-ukrainian mapper-murmur3 mapper-size
+  #   volumeMounts:
+  #   - name: plugins
+  #     mountPath: /plugins
 
   resources:
     requests:
