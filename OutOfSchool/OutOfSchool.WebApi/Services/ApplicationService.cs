@@ -79,9 +79,9 @@ namespace OutOfSchool.WebApi.Services
 
             ModelNullValidation(applicationDto);
 
-            var allowedNewApplication = await AllowedNewApplicationByWorkshopStatus(applicationDto.WorkshopId).ConfigureAwait(false);
+            var isNewApplicationAllowed = await IsNewApplicationAllowed(applicationDto.WorkshopId).ConfigureAwait(false);
 
-            if (!allowedNewApplication)
+            if (!isNewApplicationAllowed)
             {
                 logger.LogInformation("Unable to create a new application for a workshop because workshop status is closed.");
                 throw new ArgumentException("Unable to create a new application for a workshop because workshop status is closed.");
@@ -501,7 +501,7 @@ namespace OutOfSchool.WebApi.Services
             return !await applicationRepository.Any(filter).ConfigureAwait(false);
         }
 
-        private async Task<bool> AllowedNewApplicationByWorkshopStatus(Guid workshopId)
+        private async Task<bool> IsNewApplicationAllowed(Guid workshopId)
         {
             var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
 

@@ -10,6 +10,7 @@ namespace OutOfSchool.WebApi.Models.Workshop
         public Guid WorkshopId { get; set; }
 
         [Required]
+        [EnumDataType(typeof(WorkshopStatus))]
         public WorkshopStatus Status { get; set; }
     }
 }

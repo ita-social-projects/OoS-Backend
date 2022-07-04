@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Models;
@@ -215,14 +216,19 @@ namespace OutOfSchool.WebApi.Services
         {
             var recipientIds = new List<string>();
 
-            Expression<Func<Favorite, bool>> filter = x => x.WorkshopId == objectId;
-            var favoriteWorkshopUsersIds = favoriteRepository.Get(where: filter).Select(x => x.UserId).ToList();
+            var favoriteWorkshopUsersIds = await favoriteRepository.Get(where: x => x.WorkshopId == objectId)
+                .Select(x => x.UserId)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             Expression<Func<Application, bool>> predicate =
                 x => x.Status != ApplicationStatus.Left &&
                      x.WorkshopId == objectId;
-            var applications = await applicationRepository.GetByFilter(predicate).ConfigureAwait(false);
-            var appliedUsersIds = applications.Select(x => x.Parent.UserId);
+
+            var appliedUsersIds = await applicationRepository.Get(where: predicate)
+                .Select(x => x.Parent.UserId)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             recipientIds.AddRange(favoriteWorkshopUsersIds);
             recipientIds.AddRange(appliedUsersIds);

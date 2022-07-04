@@ -240,7 +240,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         #region UpdateStatus
         [Test]
-        public async Task UpdateStatus_FromOpenToClosed_WhenEntityIsValid_ShouldReturnUpdatedEntity([Random(1, 100, 1)] long classId)
+        public async Task UpdateStatus_FromOpenToClosed_WhenEntityIsValid_ShouldReturnUpdatedEntity()
         {
             // Arrange
             var workshopStatusDtoMock = WithWorkshopsList().
@@ -252,18 +252,20 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = WorkshopStatus.Closed,
             };
 
-            SetupUpdate(workshopStatusDtoMock, WithClassEntity(classId));
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshopStatusDtoMock);
+            workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
 
             // Act
             var result = await workshopService.UpdateStatus(workshopStatusDto).ConfigureAwait(false);
 
             // Assert
+            workshopRepository.VerifyAll();
             result.Status.Should().BeEquivalentTo(expectedStatus);
             result.Should().BeEquivalentTo(workshopStatusDto);
         }
 
         [Test]
-        public void UpdateStatus_WhenEntityIsInvalid_ShouldReturn_ArgumentException([Random(1, 100, 1)] long classId)
+        public void UpdateStatus_WhenEntityIsInvalid_ShouldReturn_ArgumentException()
         {
             // Arrange
             var workshopStatusDtoMock = WithWorkshopsList().
@@ -276,10 +278,11 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Status = WorkshopStatus.Closed,
             };
 
-            SetupUpdate(workshopStatusDtoMock, WithClassEntity(classId));
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshopStatusDtoMock);
 
             // Act and Assert
             workshopService.Invoking(w => w.UpdateStatus(workshopStatusDto)).Should().Throw<ArgumentException>();
+            workshopRepository.VerifyAll();
         }
 
         [Test]
@@ -291,12 +294,17 @@ namespace OutOfSchool.WebApi.Tests.Services
             var expectedStatus = WorkshopStatus.Open;
             var workshopDtoMock = WithWorkshop(Guid.NewGuid());
 
-            SetupUpdate(workshopDtoMock, WithClassEntity(classId));
+            classRepository.Setup(c => c.GetById(It.IsAny<long>())).ReturnsAsync(WithClassEntity(classId));
+            workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshopDtoMock);
+            workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
+            mapper.Setup(m => m.Map<WorkshopDTO>(workshopDtoMock))
+                .Returns(workshopDtoMock.ToModel());
 
             // Act
             var result = await workshopService.Update(inputWorkshopDto.ToModel()).ConfigureAwait(false);
 
             // Assert
+            workshopRepository.VerifyAll();
             result.Status.Should().BeEquivalentTo(expectedStatus);
         }
         #endregion
