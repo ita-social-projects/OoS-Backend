@@ -15,20 +15,20 @@ namespace OutOfSchool.IdentityServer.Controllers
     [ApiController]
     [Route("[controller]/[action]")]
     [Authorize(AuthenticationSchemes = Constants.BearerScheme)]
-    public class InstitutionAdminController : Controller
+    public class MinistryAdminController : Controller
     {
-        private readonly ILogger<InstitutionAdminController> logger;
-        private readonly IInstitutionAdminService institutionAdminService;
+        private readonly ILogger<MinistryAdminController> logger;
+        private readonly IMinistryAdminService ministryAdminService;
 
         private string path;
         private string userId;
 
-        public InstitutionAdminController(
-            ILogger<InstitutionAdminController> logger,
-            IInstitutionAdminService institutionAdminService)
+        public MinistryAdminController(
+            ILogger<MinistryAdminController> logger,
+            IMinistryAdminService ministryAdminService)
         {
             this.logger = logger;
-            this.institutionAdminService = institutionAdminService;
+            this.ministryAdminService = ministryAdminService;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -38,41 +38,41 @@ namespace OutOfSchool.IdentityServer.Controllers
         }
 
         [HttpPost]
-        // [HasPermission(Permissions.InstitutionAdmins)]
-        public async Task<ResponseDto> Create(CreateInstitutionAdminDto InstitutionAdminDto)
+        [HasPermission(Permissions.MinistryAdminAddNew)]
+        public async Task<ResponseDto> Create(CreateMinistryAdminDto ministryAdminDto)
         {
             logger.LogDebug($"Received request " +
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
-            return await institutionAdminService
-                .CreateInstitutionAdminAsync(InstitutionAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
+            return await ministryAdminService
+                .CreateMinistryAdminAsync(ministryAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
         }
 
-        [HttpDelete("{InstitutionAdminId}")]
+        [HttpDelete("{ministryAdminId}")]
         [HasPermission(Permissions.ProviderRemove)]
-        public async Task<ResponseDto> Delete(string InstitutionAdminId)
+        public async Task<ResponseDto> Delete(string ministryAdminId)
         {
-            if (InstitutionAdminId is null)
+            if (ministryAdminId is null)
             {
-                throw new ArgumentNullException(nameof(InstitutionAdminId));
+                throw new ArgumentNullException(nameof(ministryAdminId));
             }
 
             logger.LogDebug($"Received request " +
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
-            return await institutionAdminService
-                .DeleteInstitutionAdminAsync(InstitutionAdminId, userId, Request.Headers["X-Request-ID"]);
+            return await ministryAdminService
+                .DeleteMinistryAdminAsync(ministryAdminId, userId, Request.Headers["X-Request-ID"]);
         }
 
-        [HttpPut("{InstitutionAdminId}")]
+        [HttpPut("{ministryAdminId}")]
         [HasPermission(Permissions.ProviderRemove)]
-        public async Task<ResponseDto> Block(string InstitutionAdminId)
+        public async Task<ResponseDto> Block(string ministryAdminId)
         {
             logger.LogDebug($"Received request " +
                 $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
-            return await institutionAdminService
-                .BlockInstitutionAdminAsync(InstitutionAdminId, userId, Request.Headers["X-Request-ID"]);
+            return await ministryAdminService
+                .BlockMinistryAdminAsync(ministryAdminId, userId, Request.Headers["X-Request-ID"]);
         }
     }
 }

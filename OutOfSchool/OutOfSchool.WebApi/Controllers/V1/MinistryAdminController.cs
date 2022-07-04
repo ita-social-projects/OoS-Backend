@@ -20,19 +20,19 @@ namespace OutOfSchool.WebApi.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    // [HasPermission(Permissions.InstitutionAdmins)] FIXME
-    public class InstitutionAdminController : Controller
+    [HasPermission(Permissions.MinistryAdmins)]
+    public class MinistryAdminController : Controller
     {
-        private readonly IInstitutionAdminService institutionAdminService;
-        private readonly ILogger<InstitutionAdminController> logger;
+        private readonly IMinistryAdminService ministryAdminService;
+        private readonly ILogger<MinistryAdminController> logger;
         private string path;
         private string userId;
 
-        public InstitutionAdminController(
-            IInstitutionAdminService institutionAdminService,
-            ILogger<InstitutionAdminController> logger)
+        public MinistryAdminController(
+            IMinistryAdminService ministryAdminService,
+            ILogger<MinistryAdminController> logger)
         {
-            this.institutionAdminService = institutionAdminService;
+            this.ministryAdminService = ministryAdminService;
             this.logger = logger;
         }
 
@@ -45,16 +45,16 @@ namespace OutOfSchool.WebApi.Controllers
         /// <summary>
         /// Method for creating new InstitutionAdmin.
         /// </summary>
-        /// <param name="institutionAdmin">Entity to add.</param>
+        /// <param name="ministryAdmin">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateInstitutionAdminDto))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CreateMinistryAdminDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<ActionResult> Create(CreateInstitutionAdminDto institutionAdmin)
+        public async Task<ActionResult> Create(CreateMinistryAdminDto ministryAdmin)
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
@@ -65,19 +65,19 @@ namespace OutOfSchool.WebApi.Controllers
                 return StatusCode(StatusCodes.Status422UnprocessableEntity);
             }
 
-            var response = await institutionAdminService.CreateInstitutionAdminAsync(
+            var response = await ministryAdminService.CreateMinistryAdminAsync(
                     userId,
-                    institutionAdmin,
+                    ministryAdmin,
                     await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
                         .ConfigureAwait(false);
 
             if (response.IsSuccess)
             {
-                CreateInstitutionAdminDto institutionAdminDto = (CreateInstitutionAdminDto)response.Result;
+                CreateMinistryAdminDto ministryAdminDto = (CreateMinistryAdminDto)response.Result;
 
-                logger.LogInformation($"Succesfully created institutionAdmin(id): {institutionAdminDto.UserId} by User(id): {userId}.");
+                logger.LogInformation($"Succesfully created MinistryAdmin(id): {ministryAdminDto.UserId} by User(id): {userId}.");
 
-                return Ok(institutionAdminDto);
+                return Ok(ministryAdminDto);
             }
 
             return StatusCode((int)response.HttpStatusCode);
@@ -100,7 +100,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
-            var response = await institutionAdminService.DeleteInstitutionAdminAsync(
+            var response = await ministryAdminService.DeleteMinistryAdminAsync(
                     institutionAdminId,
                     userId,
                     providerId,
@@ -126,7 +126,7 @@ namespace OutOfSchool.WebApi.Controllers
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
-            var response = await institutionAdminService.BlockInstitutionAdminAsync(
+            var response = await ministryAdminService.BlockMinistryAdminAsync(
                     institutionAdminId,
                     userId,
                     providerId,
@@ -149,14 +149,14 @@ namespace OutOfSchool.WebApi.Controllers
         /// <param name="deputyOnly">Returns only deputy provider admins.</param>
         /// <param name="assistantsOnly">Returns only assistants (workshop) provider admins.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<InstitutionAdminDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<MinistryAdminDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HasPermission(Permissions.ProviderRead)]
         [HttpGet]
         public async Task<IActionResult> GetFilteredinstitutionAdminsAsync(bool deputyOnly, bool assistantsOnly)
         {
-            var relatedAdmins = await institutionAdminService.GetRelatedInstitutionAdmins(userId).ConfigureAwait(false);
+            var relatedAdmins = await ministryAdminService.GetRelatedMinistryAdmins(userId).ConfigureAwait(false);
 
             IActionResult result = Ok(relatedAdmins);
 
@@ -167,13 +167,13 @@ namespace OutOfSchool.WebApi.Controllers
         /// Method to Get data about related institutionAdmins.
         /// </summary>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<InstitutionAdminDto>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<MinistryAdminDto>))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> GetRelatedinstitutionAdmins()
         {
-            var relatedAdmins = await institutionAdminService.GetRelatedInstitutionAdmins(userId).ConfigureAwait(false);
+            var relatedAdmins = await ministryAdminService.GetRelatedMinistryAdmins(userId).ConfigureAwait(false);
 
             if (!relatedAdmins.Any())
             {

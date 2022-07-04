@@ -82,7 +82,7 @@ namespace OutOfSchool.Services
 
         public DbSet<InstitutionFieldDescription> InstitutionFieldDescriptions { get; set; }
 
-        public DbSet<InstitutionAdmin> InstitutionAdmins { get; set; }
+        public DbSet<MinistryAdmin> MinistryAdmins { get; set; }
 
         public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
 
