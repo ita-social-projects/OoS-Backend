@@ -296,7 +296,8 @@ spec:
             - --leader-elect=true
             - --configure-cloud-routes=true
             - --allocate-node-cidrs=false
-            - --cluster-cidr=${cluster_cidr}
+            - --cluster-cidr=10.42.0.0/16
+            # - --cluster-cidr=${cluster_cidr}
             - --controllers=*,-nodeipam
           livenessProbe:
             httpGet:

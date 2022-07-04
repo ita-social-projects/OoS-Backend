@@ -208,3 +208,29 @@ module "build" {
   sql_port            = var.sql_port
   redis_port          = var.redis_port
 }
+
+module "extralb" {
+  source        = "./extralb"
+  project       = var.project
+  random_number = random_integer.ri.result
+  ingress_name  = module.k8s.ingress_name
+  mig_url       = module.cluster.mig_url
+  network_name  = module.vpc.network_name
+  region        = var.region
+  cloud_run_lb = {
+    enable = true
+    # TODO: Move to variables
+    services = {
+      frontend = {
+        domain = "oos.dmytrominochkin.cloud"
+      }
+      apiservice = {
+        domain = "api.oos.dmytrominochkin.cloud"
+      }
+      authservice = {
+        domain = "auth.oos.dmytrominochkin.cloud"
+      }
+    }
+    ssl = true
+  }
+}
