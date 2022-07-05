@@ -492,6 +492,11 @@ public class ProviderService : IProviderService, INotificationReciever
         {
             var entity = await providerRepository.GetById(id).ConfigureAwait(false);
 
+            if (entity is null)
+            {
+                throw new ArgumentException($"There is no Provider in DB with Id - {id}");
+            }
+
             if (actionBeforeDeleting != null)
             {
                 await actionBeforeDeleting(entity).ConfigureAwait(false);
