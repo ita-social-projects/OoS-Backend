@@ -744,6 +744,5 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Status = workshopStatus,
             };
         }
-
     }
 }

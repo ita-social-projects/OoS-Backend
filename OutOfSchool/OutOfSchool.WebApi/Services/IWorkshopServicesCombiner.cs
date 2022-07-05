@@ -39,7 +39,7 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Update status field for existing entity in the database.
         /// </summary>
-        /// <param name="request">Workshop id and status to update.</param>
+        /// <param name="dto">Workshop to update.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="WorkshopStatusDto"/>.</returns>
         Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto);
 

@@ -14,7 +14,7 @@ namespace OutOfSchool.WebApi.Services
     {
         public WorkshopServicesCombinerV2(
             IWorkshopService workshopService,
-            IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService, 
+            IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
             ILogger<WorkshopServicesCombiner> logger,
             IElasticsearchSynchronizationService elasticsearchSynchronizationService,
             INotificationService notificationService,

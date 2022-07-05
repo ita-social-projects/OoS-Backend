@@ -243,8 +243,9 @@ namespace OutOfSchool.WebApi.Tests.Services
         public async Task UpdateStatus_FromOpenToClosed_WhenEntityIsValid_ShouldReturnUpdatedEntity()
         {
             // Arrange
-            var workshopStatusDtoMock = WithWorkshopsList().
-                FirstOrDefault(w => w.Status == WorkshopStatus.Open && w.ProviderOwnership == OwnershipType.Private);
+            var workshopStatusDtoMock = WithWorkshopsList()
+                .FirstOrDefault(w => w.Status == WorkshopStatus.Open
+                                     && w.ProviderOwnership == OwnershipType.Private);
             var expectedStatus = WorkshopStatus.Closed;
             var workshopStatusDto = new WorkshopStatusDto()
             {
@@ -268,10 +269,9 @@ namespace OutOfSchool.WebApi.Tests.Services
         public void UpdateStatus_WhenEntityIsInvalid_ShouldReturn_ArgumentException()
         {
             // Arrange
-            var workshopStatusDtoMock = WithWorkshopsList().
-                FirstOrDefault(w => w.Status == WorkshopStatus.Open &&
-                                    (w.ProviderOwnership == OwnershipType.Common ||
-                                     w.ProviderOwnership == OwnershipType.State));
+            var workshopStatusDtoMock = WithWorkshopsList()
+                .FirstOrDefault(w => w.Status == WorkshopStatus.Open
+                                     && (w.ProviderOwnership == OwnershipType.Common || w.ProviderOwnership == OwnershipType.State));
             var workshopStatusDto = new WorkshopStatusDto()
             {
                 WorkshopId = Guid.NewGuid(),

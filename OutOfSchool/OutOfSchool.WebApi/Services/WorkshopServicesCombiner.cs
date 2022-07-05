@@ -35,7 +35,6 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Favorite> favoriteRepository;
         private readonly IApplicationRepository applicationRepository;
 
-
         public WorkshopServicesCombiner(
             IWorkshopService workshopService,
             IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
@@ -222,8 +221,8 @@ namespace OutOfSchool.WebApi.Services
                 .ConfigureAwait(false);
 
             Expression<Func<Application, bool>> predicate =
-                x => x.Status != ApplicationStatus.Left &&
-                     x.WorkshopId == objectId;
+                x => x.Status != ApplicationStatus.Left
+                     && x.WorkshopId == objectId;
 
             var appliedUsersIds = await applicationRepository.Get(where: predicate)
                 .Select(x => x.Parent.UserId)
