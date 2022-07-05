@@ -195,7 +195,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             SetupGetAllByWorkshop(existingApplications);
             var applicationFilter = new ApplicationFilter
             {
-                Status = 0,
+                Statuses = null,
                 OrderByAlphabetically = false,
                 OrderByStatus = false,
                 OrderByDateAscending = false,
@@ -215,7 +215,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             SetupGetAllByWorkshopEmpty();
             var filter = new ApplicationFilter
             {
-                Status = 0,
+                Statuses = null,
                 OrderByAlphabetically = false,
                 OrderByStatus = false,
                 OrderByDateAscending = false,
@@ -246,7 +246,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             SetupGetAllByProvider(existingApplications);
             var applicationFilter = new ApplicationFilter
             {
-                Status = 0,
+                Statuses = null,
                 OrderByAlphabetically = false,
                 OrderByStatus = false,
                 OrderByDateAscending = false,
@@ -266,7 +266,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             SetupGetAllByProviderEmpty();
             var filter = new ApplicationFilter
             {
-                Status = 0,
+                Statuses = null,
                 OrderByAlphabetically = false,
                 OrderByStatus = false,
                 OrderByDateAscending = false,

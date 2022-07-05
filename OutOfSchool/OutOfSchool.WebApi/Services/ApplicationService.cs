@@ -60,28 +60,16 @@ namespace OutOfSchool.WebApi.Services
             IProviderAdminService providerAdminService,
             IChangesLogService changesLogService)
         {
-            this.applicationRepository = repository;
-            this.workshopRepository = workshopRepository;
-            this.logger = logger;
-            this.localizer = localizer;
-            this.childRepository = childRepository;
-            this.mapper = mapper;
-            this.notificationService = notificationService;
-            this.providerAdminService = providerAdminService;
-            this.changesLogService = changesLogService;
-            try
-            {
-                this.applicationsConstraintsConfig = applicationsConstraintsConfig.Value;
-            }
-            catch (OptionsValidationException ex)
-            {
-                foreach (var failure in ex.Failures)
-                {
-                    logger.LogError(failure);
-                }
-
-                throw;
-            }
+            applicationRepository = repository ?? throw new ArgumentNullException(nameof(repository));
+            this.workshopRepository = workshopRepository ?? throw new ArgumentNullException(nameof(workshopRepository));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+            this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this.notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+            this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
+            this.changesLogService = changesLogService ?? throw new ArgumentNullException(nameof(changesLogService));
+            this.applicationsConstraintsConfig = (applicationsConstraintsConfig ?? throw new ArgumentNullException(nameof(applicationsConstraintsConfig))).Value;
         }
 
         /// <inheritdoc/>
@@ -208,8 +196,7 @@ namespace OutOfSchool.WebApi.Services
             logger.LogInformation($"Getting Applications by Parent Id started. Looking Parent Id = {id}.");
             FilterNullValidation(filter);
 
-            var predicate = PredicateBuild(filter);
-            predicate = predicate.And(a => a.ParentId == id);
+            var predicate = PredicateBuild(filter, a => a.ParentId == id);
 
             var sortPredicate = SortExpressionBuild(filter);
 
@@ -258,8 +245,7 @@ namespace OutOfSchool.WebApi.Services
 
             FilterNullValidation(filter);
 
-            var predicate = PredicateBuild(filter);
-            predicate = predicate.And(a => a.WorkshopId == id);
+            var predicate = PredicateBuild(filter, a => a.WorkshopId == id);
 
             var sortPredicate = SortExpressionBuild(filter);
 
@@ -294,8 +280,7 @@ namespace OutOfSchool.WebApi.Services
             Expression<Func<Workshop, bool>> workshopFilter = w => w.ProviderId == id;
             var workshops = workshopRepository.Get(where: workshopFilter).Select(w => w.Id);
 
-            var predicate = PredicateBuild(filter);
-            predicate = predicate.And(a => workshops.Contains(a.WorkshopId));
+            var predicate = PredicateBuild(filter, a => workshops.Contains(a.WorkshopId));
 
             var sortPredicate = SortExpressionBuild(filter);
 
@@ -601,9 +586,9 @@ namespace OutOfSchool.WebApi.Services
                 predicate = PredicateBuilder.True<Application>();
             }
 
-            if (filter.Status != 0)
+            if (filter.Statuses != null)
             {
-                predicate = predicate.And(a => a.Status == filter.Status);
+                predicate = predicate.And(a => filter.Statuses.Contains(a.Status));
             }
 
             if (filter.Workshops != null)
@@ -613,6 +598,18 @@ namespace OutOfSchool.WebApi.Services
                 foreach (var workshop in filter.Workshops)
                 {
                     tempPredicate = tempPredicate.Or(a => a.WorkshopId == workshop);
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            if (filter.Children != null)
+            {
+                var tempPredicate = PredicateBuilder.False<Application>();
+
+                foreach (var child in filter.Children)
+                {
+                    tempPredicate = tempPredicate.Or(a => a.ChildId == child);
                 }
 
                 predicate = predicate.And(tempPredicate);
