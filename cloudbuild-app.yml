@@ -6,11 +6,11 @@ steps:
     - build
     - gcr.io/$PROJECT_ID/oos-api:$SHORT_SHA
     - --cache-image=gcr.io/$PROJECT_ID/oos-api:cache
-    - --builder=paketobuildpacks/builder:full
+    # - --builder=paketobuildpacks/builder:full
+    - --builder=paketobuildpacks/builder:0.2.0-full
     - --buildpack=fagiani/apt
-    # TODO: after paketo-buildpacks/dotnet-core buildpack fix revert to using latest version
     # - --buildpack=gcr.io/paketo-buildpacks/dotnet-core
-    - --buildpack=docker:///gcr.io/paketo-buildpacks/dotnet-core:0.16.1
+    - --buildpack=docker:///gcr.io/paketo-buildpacks/dotnet-core:0.11.3
     - --env=BP_DOTNET_PROJECT_PATH=./OutOfSchool/OutOfSchool.WebApi/
     - --publish
 # Deploy container image to Cloud Run
