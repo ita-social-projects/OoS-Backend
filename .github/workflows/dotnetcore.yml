@@ -65,7 +65,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.402
+        dotnet-version: 6.0.102
         
     - name: Clean
       run: dotnet clean ./OutOfSchool/OutOfSchool.sln --configuration Release && dotnet nuget locals all --clear
