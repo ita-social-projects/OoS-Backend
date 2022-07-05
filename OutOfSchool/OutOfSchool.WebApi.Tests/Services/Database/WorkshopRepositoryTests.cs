@@ -24,6 +24,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
                 .WithAddress()
                 .WithApplications()
                 .WithTeachers()
+                .WithProvider()
                 .WithImages();
 
             dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
@@ -38,7 +39,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
         #region Delete
 
         [Test]
-        public async Task Delete_SoftDelete_Workshop_Applications_Teachers_HardDeleteImages()
+        public async Task Delete_SoftDeletes_Workshop_DeletesRelatedEntities()
         {
             // Arrange
             using var context = GetContext();
@@ -71,6 +72,10 @@ namespace OutOfSchool.WebApi.Tests.Services.Database
             // Assert
             Assert.AreEqual(initialWorkshopsCount, context.Workshops.IgnoreQueryFilters().Count());
             Assert.AreEqual(expectedWorkshopsCount, context.Workshops.Count());
+            Assert.NotZero(expectedApplicationsCount);
+            Assert.NotZero(expectedTeachersCount);
+            Assert.NotZero(expectedImagesCount);
+            Assert.NotZero(expectedAddressesCount);
             Assert.AreEqual(expectedApplicationsCount, context.Applications.Count());
             Assert.AreEqual(expectedTeachersCount, context.Teachers.Count());
             Assert.AreEqual(expectedImagesCount, context.WorkshopImages.Count());

@@ -37,10 +37,13 @@ public static class WorkshopGenerator
 
     public static List<Workshop> Generate(int count) => faker.Generate(count);
 
-    public static Workshop WithProvider(this Workshop workshop, Provider provider)
-        => TestDataHelper.ApplyOnItem(workshop, (workshop, provider) => { workshop.Provider = provider; workshop.ProviderId = provider.Id; }, provider);
+    public static Workshop WithProvider(this Workshop workshop, Provider provider = null)
+    {
+        provider ??= ProvidersGenerator.Generate();
+        return TestDataHelper.ApplyOnItem(workshop, (workshop, provider) => { workshop.Provider = provider; workshop.ProviderId = provider.Id; }, provider);
+    }
 
-    public static List<Workshop> WithProvider(this List<Workshop> workshops, Provider provider)
+    public static List<Workshop> WithProvider(this List<Workshop> workshops, Provider provider = null)
         => TestDataHelper.ApplyOnCollection(workshops, (workshop, provider) => WithProvider(workshop, provider), provider);
 
     public static Workshop WithAddress(this Workshop workshop, Address address = null)
