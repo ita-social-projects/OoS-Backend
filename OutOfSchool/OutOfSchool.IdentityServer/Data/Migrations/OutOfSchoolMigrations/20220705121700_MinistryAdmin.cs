@@ -16,18 +16,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     UserId = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    InstitutionId = table.Column<Guid>(type: "binary(16)", nullable: false),
-                    CodeficatorId = table.Column<long>(type: "bigint", nullable: false)
+                    InstitutionId = table.Column<Guid>(type: "binary(16)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MinistryAdmins", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_MinistryAdmins_Codeficators_CodeficatorId",
-                        column: x => x.CodeficatorId,
-                        principalTable: "Codeficators",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_MinistryAdmins_Institutions_InstitutionId",
                         column: x => x.InstitutionId,
@@ -48,11 +41,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 table: "PermissionsForRoles",
                 columns: new[] { "Id", "Description", "PackedPermissions", "RoleName" },
                 values: new object[] { 5L, "institution admin permissions", "e\n2FPQ[\\", "MinistryAdmin" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MinistryAdmins_CodeficatorId",
-                table: "MinistryAdmins",
-                column: "CodeficatorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MinistryAdmins_InstitutionId",
