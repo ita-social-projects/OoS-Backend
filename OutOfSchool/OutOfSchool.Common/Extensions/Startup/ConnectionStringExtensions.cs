@@ -49,6 +49,11 @@ namespace OutOfSchool.Common.Extensions.Startup
                     throw new Exception("The connection string should have a key: 'guidformat' and a value: 'binary16'");
                 }
             }
+            else
+            {
+                // ensure guidformat is not set for Quartz
+                connectionStringBuilder.Remove("guidformat");
+            }
 
             return connectionStringBuilder.ConnectionString;
         }

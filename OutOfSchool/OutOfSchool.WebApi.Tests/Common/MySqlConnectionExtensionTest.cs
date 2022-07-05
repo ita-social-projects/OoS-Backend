@@ -8,6 +8,7 @@ using NUnit.Framework;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Config.Quartz;
 
 namespace OutOfSchool.WebApi.Tests.Common
 {
@@ -169,6 +170,32 @@ namespace OutOfSchool.WebApi.Tests.Common
             Assert.AreEqual(
                 ex?.Message,
                 "The connection string should have a key: 'guidformat' and a value: 'binary16'");
+        }
+
+        [Test]
+        public void IfConnectionDoesNotRequireGuidFormat_GuidOptionIsRemoved()
+        {
+            // Arrange
+            var configuration = Setup(connectionString);
+
+            // Act
+            var connection = configuration.GetMySqlConnectionString<QuartzConnectionOptions>("Test");
+
+            // Assert
+            Assert.False(connection.Contains("guidformat"));
+        }
+
+        [Test]
+        public void IfConnectionDoesNotRequireGuidFormat_NoGuidFormatPresent_HandledWithoutError()
+        {
+            // Arrange
+            var configuration = Setup(connectionStringNoGuidFormat);
+
+            // Act
+            var connection = configuration.GetMySqlConnectionString<QuartzConnectionOptions>("Test");
+
+            // Assert
+            Assert.False(connection.Contains("guidformat"));
         }
 
         private IConfiguration Setup(string json)
