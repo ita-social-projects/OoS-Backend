@@ -57,7 +57,12 @@ namespace OutOfSchool.WebApi.Extensions
             return child.Mapper<Child, ChildDto>(cfg =>
             {
                 cfg.CreateMap<Child, ChildDto>();
-                cfg.CreateMap<Parent, ParentDtoWithContactInfo>();
+                cfg.CreateMap<Parent, ParentDtoWithContactInfo>()
+                    .ForMember(dest => dest.Email, opt => opt.MapFrom(p => p.User.Email))
+                    .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(p => p.User.PhoneNumber))
+                    .ForMember(dest => dest.LastName, opt => opt.MapFrom(p => p.User.LastName))
+                    .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(p => p.User.MiddleName))
+                    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(p => p.User.FirstName));
                 cfg.CreateMap<SocialGroup, SocialGroupDto>();
             });
         }

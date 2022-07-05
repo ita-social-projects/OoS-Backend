@@ -543,10 +543,10 @@ namespace OutOfSchool.WebApi.Services
                 foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
                 {
                     tempPredicate = tempPredicate.Or(
-                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCulture)
-                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCulture)
-                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCulture)
-                            || x.Email.StartsWith(word, StringComparison.InvariantCulture)
+                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
                             || x.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
                 }
 

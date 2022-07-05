@@ -29,13 +29,13 @@ namespace OutOfSchool.WebApi.Services
         /// <summary>
         /// Get all children from the database.
         /// </summary>
-        /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
+        /// <param name="filter">Filter to get a part of all children that were found.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
         /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
         /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
         /// <exception cref="ArgumentException">If one of the offsetFilter's properties is negative.</exception>
         /// <exception cref="SqlException">If the database cannot execute the query.</exception>
-        Task<SearchResult<ChildDto>> GetAllWithOffsetFilterOrderedById(OffsetFilter offsetFilter);
+        Task<SearchResult<ChildDto>> GetByFilter(SearchStringFilter filter);
 
         /// <summary>
         /// Get a child by it's key and userId.

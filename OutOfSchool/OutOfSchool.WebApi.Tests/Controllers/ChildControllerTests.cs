@@ -63,8 +63,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
         {
             // Arrange
-            var filter = new OffsetFilter();
-            service.Setup(x => x.GetAllWithOffsetFilterOrderedById(filter)).ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
+            var filter = new SearchStringFilter();
+            service.Setup(x => x.GetByFilter(filter)).ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
 
             // Act
             var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);
@@ -77,8 +77,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         public async Task GetChildren_WhenThereIsNoChild_ShouldReturnOkObjectResult()
         {
             // Arrange
-            var filter = new OffsetFilter();
-            service.Setup(x => x.GetAllWithOffsetFilterOrderedById(filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = new List<ChildDto>() });
+            var filter = new SearchStringFilter();
+            service.Setup(x => x.GetByFilter(filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = new List<ChildDto>() });
 
             // Act
             var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);

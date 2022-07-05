@@ -63,26 +63,29 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
-        public async Task<SearchResult<ChildDto>> GetAllWithOffsetFilterOrderedById(OffsetFilter offsetFilter)
+        public async Task<SearchResult<ChildDto>> GetByFilter(SearchStringFilter filter)
         {
-            this.ValidateOffsetFilter(offsetFilter);
+            logger.LogDebug($"Getting all Children started. Amount of children to take: {filter.Size}, skip first: {filter.From}.");
 
-            logger.LogDebug($"Getting all Children started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
+            filter ??= new SearchStringFilter();
+            this.ValidateOffsetFilter(filter);
 
-            var totalAmount = await childRepository.Count().ConfigureAwait(false);
+            var filterPredicate = PredicateBuild(filter);
+
+            var totalAmount = await childRepository.Count(filterPredicate).ConfigureAwait(false);
 
             var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
                 {
                     { x => x.Id, SortDirection.Ascending },
                 };
 
-            var children = await childRepository.Get(offsetFilter.From, offsetFilter.Size, $"{nameof(Child.SocialGroups)}", null, sortExpression)
+            var children = await childRepository.Get(filter.From, filter.Size, $"{nameof(Child.SocialGroups)}", filterPredicate, sortExpression)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
             logger.LogDebug(children.Any()
-                ? $"{children.Count} children from {totalAmount} were successfully received. Skipped records: {offsetFilter.From}. Order: by Child.Id."
-                : $"There is no child in the Children table. Skipped records: {offsetFilter.From}. Order: by Child.Id.");
+                ? $"{children.Count} children from {totalAmount} were successfully received. Skipped records: {filter.From}. Order: by Child.Id."
+                : $"There is no child in the Children table. Skipped records: {filter.From}. Order: by Child.Id.");
 
             var searchResult = new SearchResult<ChildDto>()
             {
@@ -260,6 +263,30 @@ namespace OutOfSchool.WebApi.Services
             {
                 throw new ArgumentException($"The {nameof(id)} parameter has to be greater than zero.");
             }
+        }
+
+        private Expression<Func<Child, bool>> PredicateBuild(SearchStringFilter filter)
+        {
+            var predicate = PredicateBuilder.True<Child>();
+
+            if (!string.IsNullOrWhiteSpace(filter.SearchString))
+            {
+                var tempPredicate = PredicateBuilder.False<Child>();
+
+                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.Parent.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.Parent.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                }
+
+                predicate = predicate.And(tempPredicate);
+            }
+
+            return predicate;
         }
     }
 }
