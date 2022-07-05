@@ -1020,8 +1020,8 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 5L,
                             Description = "institution admin permissions",
-                            PackedPermissions = "e\n26HGIFPQ[\\",
-                            RoleName = "InstitutionAdmin"
+                            PackedPermissions = "e\n2FPQ[\\",
+                            RoleName = "MinistryAdmin"
                         });
                 });
 

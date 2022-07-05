@@ -130,15 +130,15 @@ namespace OutOfSchool.Common.PermissionsModule
         #endregion
 
         #region MinistryAdmin Control permissions #12
-        [Display(GroupName = "Institution", Name = "Read", Description = "Can read Provider")]
+        [Display(GroupName = "MinistryAdmin", Name = "Read", Description = "Can read ministry admin")]
         MinistryAdminRead = 110,
-        [Display(GroupName = "Institution", Name = "Edit", Description = "Can edit Provider item")]
+        [Display(GroupName = "MinistryAdmin", Name = "Edit", Description = "Can edit ministry admin")]
         MinistryAdminEdit = 111,
-        [Display(GroupName = "Institution", Name = "Add new", Description = "Can add a new Provider item")]
+        [Display(GroupName = "MinistryAdmin", Name = "Add new", Description = "Can add a new ministry admin")]
         MinistryAdminAddNew = 112,
-        [Display(GroupName = "Institution", Name = "Remove", Description = "Can remove Provider data")]
+        [Display(GroupName = "MinistryAdmin", Name = "Remove", Description = "Can remove ministry admin")]
         MinistryAdminRemove = 113,
-        [Display(GroupName = "Institution", Name = "Provider Admins", Description = "Can create and manage provider admins")]
+        [Display(GroupName = "MinistryAdmin", Name = "Ministry Admins", Description = "Can manage ministry admins")]
         MinistryAdmins = 114,
         #endregion
     }

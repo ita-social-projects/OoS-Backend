@@ -47,7 +47,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
             migrationBuilder.InsertData(
                 table: "PermissionsForRoles",
                 columns: new[] { "Id", "Description", "PackedPermissions", "RoleName" },
-                values: new object[] { 5L, "institution admin permissions", "e\n26HGIFPQ[\\", "InstitutionAdmin" });
+                values: new object[] { 5L, "institution admin permissions", "e\n2FPQ[\\", "MinistryAdmin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_MinistryAdmins_CodeficatorId",
