@@ -9,6 +9,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Extensions;
@@ -55,10 +56,10 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             httpContextMoq.Setup(x => x.User.IsInRole("provider"))
                 .Returns(true);
 
-            workshops = FakeWorkshops();
-            workshop = FakeWorkshop();
-            provider = FakeProvider();
-            workshopCards = FakeWorkshopCards();
+            workshops = WithWorkshops();
+            workshop = WithWorkshop();
+            provider = WithProvider();
+            workshopCards = WithWorkshopCards();
 
             var config = new AppDefaultsConfig();
             config.City = "Київ";
@@ -73,6 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             providerServiceMoq = new Mock<IProviderService>();
             providerAdminService = new Mock<IProviderAdminService>();
             localizer = new Mock<IStringLocalizer<SharedResource>>();
+            providerAdminService = new Mock<IProviderAdminService>();
 
             controller = new WorkshopController(workshopServiceMoq.Object, providerServiceMoq.Object, providerAdminService.Object, localizer.Object, options.Object)
             {
@@ -333,6 +335,91 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         //}
         #endregion
 
+        #region UpdateStatus
+        [Test]
+        public async Task UpdateStatus_WhenModelIsValid_ShouldReturnOkObjectResult()
+        {
+            // Arrange
+            providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+
+            var updateRequest = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
+
+            workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId))
+                .ReturnsAsync(workshop);
+            workshopServiceMoq.Setup(x => x.UpdateStatus(updateRequest))
+                .ReturnsAsync(updateRequest);
+
+            // Act
+            var result = await controller.UpdateStatus(updateRequest).ConfigureAwait(false) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(Ok, result.StatusCode);
+        }
+
+        [Test]
+        public async Task UpdateStatus_WhenIdDoesNotExist_ReturnsNotFoundResult()
+        {
+            // Arrange
+            var nonExistentId = Guid.NewGuid();
+            var expected = new NotFoundObjectResult($"There is no Workshop in DB with Id - {nonExistentId}");
+
+            var updateRequest = WithWorkshopStatusDto(nonExistentId, WorkshopStatus.Open);
+
+            workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId))
+                .ReturnsAsync(null as WorkshopDTO);
+
+            // Act
+            var result = await controller.UpdateStatus(updateRequest).ConfigureAwait(false) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(expected.Value, result.Value);
+        }
+
+        [Test]
+        public async Task UpdateStatus_WhenModelIsInvalid_ShouldReturnBadRequest()
+        {
+            // Arrange
+            var updateRequest = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Closed);
+
+            workshop.ProviderOwnership = OwnershipType.Common;
+
+            providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(provider);
+            workshopServiceMoq.Setup(x => x.GetById(updateRequest.WorkshopId))
+                .ReturnsAsync(workshop);
+            workshopServiceMoq.Setup(x => x.UpdateStatus(updateRequest)).
+                ThrowsAsync(new ArgumentException(It.IsAny<string>()));
+
+            // Act
+            var result = await controller.UpdateStatus(updateRequest).ConfigureAwait(false) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual(BadRequest, result.StatusCode);
+        }
+
+        [Test]
+        public async Task UpdateStatus_WhenProviderHasNoRights_ShouldReturn403ObjectResult()
+        {
+            // Arrange
+            var workShopStatusDto = WithWorkshopStatusDto(workshop.Id, WorkshopStatus.Open);
+            var notAuthorProvider = new ProviderDto() { Id = It.IsAny<Guid>(), UserId = userId };
+            workshopServiceMoq.Setup(x => x.GetById(workShopStatusDto.WorkshopId))
+                .ReturnsAsync(workshop);
+            providerServiceMoq.Setup(x => x.GetByUserId(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(notAuthorProvider);
+
+            // Act
+            var result = await controller.UpdateStatus(workShopStatusDto) as ObjectResult;
+
+            // Assert
+            workshopServiceMoq.Verify(x => x.Create(workshop), Times.Never);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(Forbidden, result.StatusCode);
+        }
+
+        #endregion
+
         #region DeleteWorkshop
         //[Test]
         //[TestCase(1)]
@@ -400,7 +487,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
         //}
         #endregion
 
-        private WorkshopDTO FakeWorkshop()
+        private WorkshopDTO WithWorkshop()
         {
             return new WorkshopDTO()
             {
@@ -409,11 +496,12 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Phone = "1111111111",
                 WorkshopDescriptionItems = new[]
                 {
-                    FakeWorkshopDescriptionItem(),
-                    FakeWorkshopDescriptionItem(),
+                    WithWorkshopDescriptionItem(),
+                    WithWorkshopDescriptionItem(),
                 },
                 Price = 6000,
                 WithDisabilityOptions = true,
+                Status = WorkshopStatus.Open,
                 ProviderTitle = "ProviderTitle",
                 DisabilityOptionsDesc = "Desc6",
                 Website = "website6",
@@ -467,7 +555,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private List<WorkshopDTO> FakeWorkshops()
+        private List<WorkshopDTO> WithWorkshops()
         {
             return new List<WorkshopDTO>()
             {
@@ -478,7 +566,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Phone = "1111111111",
                     WorkshopDescriptionItems = new[]
                     {
-                        FakeWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
                     },
                     Price = 1000,
                     WithDisabilityOptions = true,
@@ -507,9 +595,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Phone = "1111111111",
                     WorkshopDescriptionItems = new[]
                     {
-                        FakeWorkshopDescriptionItem(),
-                        FakeWorkshopDescriptionItem(),
-                        FakeWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
                     },
                     Price = 2000,
                     WithDisabilityOptions = true,
@@ -538,9 +626,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Phone = "1111111111",
                     WorkshopDescriptionItems = new[]
                     {
-                        FakeWorkshopDescriptionItem(),
-                        FakeWorkshopDescriptionItem(),
-                        FakeWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
                     },
                     Price = 3000,
                     WithDisabilityOptions = true,
@@ -565,8 +653,8 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Phone = "1111111111",
                     WorkshopDescriptionItems = new[]
                     {
-                        FakeWorkshopDescriptionItem(),
-                        FakeWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
                     },
                     Price = 4000,
                     WithDisabilityOptions = true,
@@ -591,7 +679,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                     Phone = "1111111111",
                     WorkshopDescriptionItems = new[]
                     {
-                        FakeWorkshopDescriptionItem(),
+                        WithWorkshopDescriptionItem(),
                     },
                     Price = 5000,
                     WithDisabilityOptions = true,
@@ -616,7 +704,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private ProviderDto FakeProvider()
+        private ProviderDto WithProvider()
         {
             return new ProviderDto()
             {
@@ -625,9 +713,9 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             };
         }
 
-        private List<WorkshopCard> FakeWorkshopCards()
+        private List<WorkshopCard> WithWorkshopCards()
         {
-            var list = FakeWorkshops();
+            var list = WithWorkshops();
             var eSlist = new List<WorkshopCard>();
             foreach (var item in list)
             {
@@ -637,7 +725,7 @@ namespace OutOfSchool.WebApi.Tests.Controllers
             return eSlist;
         }
 
-        private WorkshopDescriptionItemDto FakeWorkshopDescriptionItem()
+        private WorkshopDescriptionItemDto WithWorkshopDescriptionItem()
         {
             var id = Guid.NewGuid();
             return new WorkshopDescriptionItemDto
@@ -645,6 +733,15 @@ namespace OutOfSchool.WebApi.Tests.Controllers
                 Id = id,
                 SectionName = "test heading",
                 Description = $"test description text sentence for id: {id.ToString()}",
+            };
+        }
+
+        private WorkshopStatusDto WithWorkshopStatusDto(Guid workshopDtoId, WorkshopStatus workshopStatus)
+        {
+            return new WorkshopStatusDto()
+            {
+                WorkshopId = workshopDtoId,
+                Status = workshopStatus,
             };
         }
     }

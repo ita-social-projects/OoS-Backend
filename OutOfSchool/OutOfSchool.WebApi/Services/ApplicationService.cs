@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
@@ -78,6 +78,14 @@ namespace OutOfSchool.WebApi.Services
             logger.LogInformation("Application creating started.");
 
             ModelNullValidation(applicationDto);
+
+            var isNewApplicationAllowed = await IsNewApplicationAllowed(applicationDto.WorkshopId).ConfigureAwait(false);
+
+            if (!isNewApplicationAllowed)
+            {
+                logger.LogInformation("Unable to create a new application for a workshop because workshop status is closed.");
+                throw new ArgumentException("Unable to create a new application for a workshop because workshop status is closed.");
+            }
 
             var allowedNewApplicationForChild = await AllowedNewApplicationByChildStatus(applicationDto.WorkshopId, applicationDto.ChildId).ConfigureAwait(false);
 
@@ -491,6 +499,19 @@ namespace OutOfSchool.WebApi.Services
                                                               && forbiddenStatuses.Contains(a.Status);
 
             return !await applicationRepository.Any(filter).ConfigureAwait(false);
+        }
+
+        private async Task<bool> IsNewApplicationAllowed(Guid workshopId)
+        {
+            var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
+
+            if (workshop is null)
+            {
+                logger.LogInformation("Operation failed. Workshop in Application dto is null");
+                throw new ArgumentException(localizer["Workshop in Application dto is null."], nameof(workshopId));
+            }
+
+            return workshop.Status == WorkshopStatus.Open;
         }
 
         private void ModelNullValidation(ApplicationDto applicationDto)

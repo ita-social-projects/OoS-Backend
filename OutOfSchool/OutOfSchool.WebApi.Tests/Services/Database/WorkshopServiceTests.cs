@@ -11,12 +11,15 @@ using MockQueryable.Moq;
 using Moq;
 using Nest;
 using NUnit.Framework;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
+using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 using OutOfSchool.WebApi.Services.Images;
 using OutOfSchool.WebApi.Util;
@@ -235,6 +238,77 @@ namespace OutOfSchool.WebApi.Tests.Services
 
         #endregion
 
+        #region UpdateStatus
+        [Test]
+        public async Task UpdateStatus_FromOpenToClosed_WhenEntityIsValid_ShouldReturnUpdatedEntity()
+        {
+            // Arrange
+            var workshopStatusDtoMock = WithWorkshopsList()
+                .FirstOrDefault(w => w.Status == WorkshopStatus.Open
+                                     && w.ProviderOwnership == OwnershipType.Private);
+            var expectedStatus = WorkshopStatus.Closed;
+            var workshopStatusDto = new WorkshopStatusDto()
+            {
+                WorkshopId = Guid.NewGuid(),
+                Status = WorkshopStatus.Closed,
+            };
+
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshopStatusDtoMock);
+            workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
+
+            // Act
+            var result = await workshopService.UpdateStatus(workshopStatusDto).ConfigureAwait(false);
+
+            // Assert
+            workshopRepository.VerifyAll();
+            result.Status.Should().BeEquivalentTo(expectedStatus);
+            result.Should().BeEquivalentTo(workshopStatusDto);
+        }
+
+        [Test]
+        public void UpdateStatus_WhenEntityIsInvalid_ShouldReturn_ArgumentException()
+        {
+            // Arrange
+            var workshopStatusDtoMock = WithWorkshopsList()
+                .FirstOrDefault(w => w.Status == WorkshopStatus.Open
+                                     && (w.ProviderOwnership == OwnershipType.Common || w.ProviderOwnership == OwnershipType.State));
+            var workshopStatusDto = new WorkshopStatusDto()
+            {
+                WorkshopId = Guid.NewGuid(),
+                Status = WorkshopStatus.Closed,
+            };
+
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshopStatusDtoMock);
+
+            // Act and Assert
+            workshopService.Invoking(w => w.UpdateStatus(workshopStatusDto)).Should().Throw<ArgumentException>();
+            workshopRepository.VerifyAll();
+        }
+
+        [Test]
+        public async Task Update_WhenTryUpdateStatus_ShouldReturnEntityWithOldStatus([Random(1, 100, 1)] long classId)
+        {
+            // Arrange
+            var inputWorkshopDto = WithWorkshop(Guid.NewGuid());
+            inputWorkshopDto.Status = WorkshopStatus.Closed;
+            var expectedStatus = WorkshopStatus.Open;
+            var workshopDtoMock = WithWorkshop(Guid.NewGuid());
+
+            classRepository.Setup(c => c.GetById(It.IsAny<long>())).ReturnsAsync(WithClassEntity(classId));
+            workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshopDtoMock);
+            workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
+            mapper.Setup(m => m.Map<WorkshopDTO>(workshopDtoMock))
+                .Returns(workshopDtoMock.ToModel());
+
+            // Act
+            var result = await workshopService.Update(inputWorkshopDto.ToModel()).ConfigureAwait(false);
+
+            // Assert
+            workshopRepository.VerifyAll();
+            result.Status.Should().BeEquivalentTo(expectedStatus);
+        }
+        #endregion
+
         #region Delete
 
         [Test]
@@ -362,9 +436,10 @@ namespace OutOfSchool.WebApi.Tests.Services
             mapper.Setup(m => m.Map<List<WorkshopCard>>(It.IsAny<List<Workshop>>())).Returns(emptylistWorkshopCards);
         }
 
-        private void SetupUpdate(Workshop workshop, Class classentity)
+        private void SetupUpdate(Workshop workshop,  Class classentity)
         {
             classRepository.Setup(c => c.GetById(It.IsAny<long>())).ReturnsAsync(classentity);
+            workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshop);
             workshopRepository.Setup(w => w.GetWithNavigations(It.IsAny<Guid>())).ReturnsAsync(workshop);
             workshopRepository.Setup(w => w.UnitOfWork.CompleteAsync()).ReturnsAsync(It.IsAny<int>());
             mapper.Setup(m => m.Map<WorkshopDTO>(workshop))
@@ -427,11 +502,15 @@ namespace OutOfSchool.WebApi.Tests.Services
                 {
                     Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
                     ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                    ProviderOwnership = OwnershipType.Private,
+                    Status = WorkshopStatus.Open,
                 },
                 new Workshop()
                 {
                     Id = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
                     ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+                    ProviderOwnership = OwnershipType.State,
+                    Status = WorkshopStatus.Open,
                 },
                 new Workshop()
                 {
@@ -469,6 +548,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                 Email = "email1@gmail.com",
                 MaxAge = 10,
                 MinAge = 4,
+                ProviderOwnership = OwnershipType.Private,
+                Status = WorkshopStatus.Open,
                 CoverImageId = "image1",
                 ProviderId = new Guid("65eb933f-6502-4e89-a7cb-65901e51d119"),
                 DirectionId = 1,

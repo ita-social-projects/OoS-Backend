@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using OutOfSchool.Common.Enums;
+using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.WebApi.Models
 {
@@ -55,5 +56,9 @@ namespace OutOfSchool.WebApi.Models
         public Guid ProviderId { get; set; }
 
         public AddressDto Address { get; set; }
+
+        public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
+
+        public bool WithDisabilityOptions { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Enums;
 
 namespace OutOfSchool.ElasticsearchData.Models
@@ -42,5 +42,7 @@ namespace OutOfSchool.ElasticsearchData.Models
         public decimal Latitude { get; set; } = 0;
 
         public decimal Longitude { get; set; } = 0;
+
+        public IReadOnlyCollection<WorkshopStatus> Statuses { get; set; } = new List<WorkshopStatus>();
     }
 }

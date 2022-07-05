@@ -62,7 +62,8 @@ namespace OutOfSchool.WebApi.Util
 
                 .ForMember(dest => dest.Images, opt => opt.Ignore())
                 .ForMember(dest => dest.CoverImageId, opt => opt.Ignore())
-                .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore());
+                .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore());
 
             CreateMap<Workshop, WorkshopDTO>()
                 .ForMember(

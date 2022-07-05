@@ -209,9 +209,16 @@ namespace OutOfSchool.WebApi.Controllers.V2
                 return StatusCode(StatusCodes.Status403Forbidden, "Forbidden to update workshops for another providers.");
             }
 
-            var updatingResult = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
+            try
+            {
+                var updatingResult = await combinedWorkshopService.Update(dto).ConfigureAwait(false);
 
-            return Ok(CreateUpdateResponse(updatingResult));
+                return Ok(CreateUpdateResponse(updatingResult));
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         /// <summary>

@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.ElasticsearchData.Models;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
@@ -17,26 +21,36 @@ using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Images;
+using Ubiety.Dns.Core.Records.NotUsed;
 
 namespace OutOfSchool.WebApi.Services
 {
-    public class WorkshopServicesCombiner : IWorkshopServicesCombiner
+    public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotificationReciever
     {
         private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
         private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
         private readonly ILogger<WorkshopServicesCombiner> logger;
         private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
+        private readonly INotificationService notificationService;
+        private readonly IEntityRepository<Favorite> favoriteRepository;
+        private readonly IApplicationRepository applicationRepository;
 
         public WorkshopServicesCombiner(
             IWorkshopService workshopService,
             IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
             ILogger<WorkshopServicesCombiner> logger,
-            IElasticsearchSynchronizationService elasticsearchSynchronizationService)
+            IElasticsearchSynchronizationService elasticsearchSynchronizationService,
+            INotificationService notificationService,
+            IEntityRepository<Favorite> favoriteRepository,
+            IApplicationRepository applicationRepository)
         {
             this.workshopService = workshopService;
             this.elasticsearchService = elasticsearchService;
             this.logger = logger;
             this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
+            this.notificationService = notificationService;
+            this.favoriteRepository = favoriteRepository;
+            this.applicationRepository = applicationRepository;
         }
 
         /// <inheritdoc/>
@@ -73,6 +87,28 @@ namespace OutOfSchool.WebApi.Services
                 .ConfigureAwait(false);
 
             return workshop;
+        }
+
+        /// <inheritdoc/>
+        public async Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto)
+        {
+            _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+            var workshopDto = await workshopService.UpdateStatus(dto).ConfigureAwait(false);
+
+            var additionalData = new Dictionary<string, string>()
+            {
+                { "Status", workshopDto.Status.ToString() },
+            };
+
+            await notificationService.Create(
+                NotificationType.Workshop,
+                NotificationAction.Update,
+                workshopDto.WorkshopId,
+                this,
+                additionalData).ConfigureAwait(false);
+
+            return dto;
         }
 
         /// <inheritdoc/>
@@ -171,13 +207,32 @@ namespace OutOfSchool.WebApi.Services
             return workshopCards.ToList();
         }
 
-        // <inheritdoc/>
+        /// <inheritdoc/>
         public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
             await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
 
-        private List<WorkshopCard> DtoModelsToWorkshopCards(IEnumerable<WorkshopDTO> source)
+        public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
         {
-            return source.Select(currentElement => currentElement.ToCardDto()).ToList();
+            var recipientIds = new List<string>();
+
+            var favoriteWorkshopUsersIds = await favoriteRepository.Get(where: x => x.WorkshopId == objectId)
+                .Select(x => x.UserId)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            Expression<Func<Application, bool>> predicate =
+                x => x.Status != ApplicationStatus.Left
+                     && x.WorkshopId == objectId;
+
+            var appliedUsersIds = await applicationRepository.Get(where: predicate)
+                .Select(x => x.Parent.UserId)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            recipientIds.AddRange(favoriteWorkshopUsersIds);
+            recipientIds.AddRange(appliedUsersIds);
+
+            return recipientIds.Distinct();
         }
 
         private bool IsFilterValid(WorkshopFilter filter)

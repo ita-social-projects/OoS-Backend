@@ -10,6 +10,7 @@ using H3Lib.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Common;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
@@ -250,6 +251,44 @@ namespace OutOfSchool.WebApi.Services
         }
 
         /// <inheritdoc/>
+        public async Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto)
+        {
+            logger.LogInformation($"Updating Workshop status with Id = {dto.WorkshopId} started.");
+
+            var currentWorkshop = await workshopRepository.GetById(dto.WorkshopId).ConfigureAwait(false);
+
+            if (currentWorkshop is null)
+            {
+                logger.LogInformation($"Workshop(id) {dto.WorkshopId} not found.");
+
+                return null;
+            }
+
+            if (currentWorkshop.ProviderOwnership == OwnershipType.Private)
+            {
+                currentWorkshop.Status = dto.Status;
+            }
+            else
+            {
+                logger.LogInformation($"Unable to update status for workshop(id) {dto.WorkshopId} with state or common ownership type.");
+                throw new ArgumentException("Unable to update status for workshop with state or common ownership type.");
+            }
+
+            try
+            {
+                await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
+                logger.LogInformation($"Workshop(id) {dto.WorkshopId} Status was changed to {dto.Status}");
+            }
+            catch (DbUpdateConcurrencyException exception)
+            {
+                logger.LogError($"Updating failed. Exception: {exception.Message}");
+                throw;
+            }
+
+            return dto;
+        }
+
+        /// <inheritdoc/>
         /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
         public async Task<WorkshopUpdateResultDto> UpdateV2(WorkshopDTO dto)
         {
@@ -316,7 +355,6 @@ namespace OutOfSchool.WebApi.Services
             logger.LogInformation($"Deleting Workshop with Id = {id} started.");
 
             var entity = await workshopRepository.GetById(id).ConfigureAwait(false);
-
             try
             {
                 await workshopRepository.Delete(entity).ConfigureAwait(false);
@@ -552,6 +590,11 @@ namespace OutOfSchool.WebApi.Services
             if (!string.IsNullOrWhiteSpace(filter.City))
             {
                 predicate = predicate.And(x => x.Address.City == filter.City);
+            }
+
+            if (filter.Statuses.Any())
+            {
+                predicate = predicate.And(x => filter.Statuses.Contains(x.Status));
             }
 
             return predicate;
