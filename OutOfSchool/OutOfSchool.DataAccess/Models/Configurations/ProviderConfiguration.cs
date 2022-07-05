@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Services.Enums;
@@ -73,16 +72,6 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
         builder.Property(x => x.LicenseStatus)
             .IsRequired()
             .HasDefaultValue(ProviderLicenseStatus.NotProvided);
-
-        // builder.HasOne(x => x.LegalAddress)
-        //    .WithOne()
-        //    .OnDelete(DeleteBehavior.NoAction)
-        //    .HasForeignKey(x => x.)
-        //    .IsRequired();
-
-        // builder.HasOne(x => x.ActualAddress)
-        //    .WithMany()
-        //    .OnDelete(DeleteBehavior.Cascade)
-        //    .HasForeignKey(x => x.ActualAddressId);
     }
+}
 }
