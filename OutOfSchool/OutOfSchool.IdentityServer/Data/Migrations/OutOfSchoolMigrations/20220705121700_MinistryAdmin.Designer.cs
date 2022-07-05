@@ -9,7 +9,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220704122314_MinistryAdmin")]
+    [Migration("20220705121700_MinistryAdmin")]
     partial class MinistryAdmin
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -895,9 +895,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<long>("CodeficatorId")
-                        .HasColumnType("bigint");
-
                     b.Property<Guid>("InstitutionId")
                         .HasColumnType("binary(16)");
 
@@ -905,8 +902,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CodeficatorId");
 
                     b.HasIndex("InstitutionId");
 
@@ -1981,19 +1976,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 
             modelBuilder.Entity("OutOfSchool.Services.Models.MinistryAdmin", b =>
                 {
-                    b.HasOne("OutOfSchool.Services.Models.Codeficator", "Codeficator")
-                        .WithMany()
-                        .HasForeignKey("CodeficatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
                         .WithMany()
                         .HasForeignKey("InstitutionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Codeficator");
 
                     b.Navigation("Institution");
                 });

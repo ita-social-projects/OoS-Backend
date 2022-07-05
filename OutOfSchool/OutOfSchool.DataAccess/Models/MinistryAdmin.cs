@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services.Models
 {
-    public class MinistryAdmin : IKeyedEntity<long>
+    public class MinistryAdmin
     {
         public long Id { get; set; }
 
@@ -15,9 +15,5 @@ namespace OutOfSchool.Services.Models
         public Guid InstitutionId { get; set; }
 
         public virtual Institution Institution { get; set; }
-
-        public long CodeficatorId { get; set; }
-
-        public virtual Codeficator Codeficator { get; set; }
     }
 }

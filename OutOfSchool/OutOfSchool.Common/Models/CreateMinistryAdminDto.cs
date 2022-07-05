@@ -31,8 +31,6 @@ namespace OutOfSchool.Common.Models
 
         public Guid InstitutionId { get; set; }
 
-        public long CodificatorId { get; set; }
-
         public string UserId { get; set; }
     }
 }
