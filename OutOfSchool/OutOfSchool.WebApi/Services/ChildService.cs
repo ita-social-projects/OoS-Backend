@@ -65,9 +65,10 @@ namespace OutOfSchool.WebApi.Services
         /// <inheritdoc/>
         public async Task<SearchResult<ChildDto>> GetByFilter(SearchStringFilter filter)
         {
+            filter ??= new SearchStringFilter();
+
             logger.LogDebug($"Getting all Children started. Amount of children to take: {filter.Size}, skip first: {filter.From}.");
 
-            filter ??= new SearchStringFilter();
             this.ValidateOffsetFilter(filter);
 
             var filterPredicate = PredicateBuild(filter);
