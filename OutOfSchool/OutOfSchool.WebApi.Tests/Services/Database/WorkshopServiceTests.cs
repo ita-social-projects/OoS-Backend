@@ -121,7 +121,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             };
 
             // Act and Assert
-            workshopService.Invoking(w => w.Create(newWorkshop.ToModel())).Should().Throw<ArgumentException>();
+            workshopService.Invoking(w => w.Create(newWorkshop.ToModel())).Should().ThrowAsync<ArgumentException>();
         }
         #endregion
 
@@ -233,7 +233,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             SetupUpdate(changedEntity, WithNullClassEntity());
 
             // Act and Assert
-            workshopService.Invoking(w => w.Update(changedEntity.ToModel())).Should().Throw<ArgumentException>();
+            workshopService.Invoking(w => w.Update(changedEntity.ToModel())).Should().ThrowAsync<ArgumentException>();
         }
 
         #endregion
@@ -388,7 +388,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                 It.IsAny<string>(),
                 It.IsAny<Expression<Func<Workshop, bool>>>(),
                 It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
-                It.IsAny<bool>())).Returns(mockWorkshops.Object);
+                It.IsAny<bool>())).Returns(mockWorkshops);
             workshopRepository.Setup(
                 w => w
                     .Count(It.IsAny<Expression<Func<Workshop, bool>>>())).ReturnsAsync(workshops.Count());

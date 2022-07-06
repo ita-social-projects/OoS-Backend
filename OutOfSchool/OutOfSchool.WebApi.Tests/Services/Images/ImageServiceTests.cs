@@ -74,7 +74,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
 
             // Assert
             GenericResultShouldBeSuccess(result);
-            result.Value.ContentStream.Should().BeEquivalentTo(externalImageModel.ContentStream);
+            Assert.That(result.Value.ContentStream, Is.EqualTo(externalImageModel.ContentStream));
             result.Value.ContentType.Should().BeEquivalentTo(externalImageModel.ContentType);
         }
 
@@ -136,7 +136,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             Func<Task<MultipleImageUploadingResult>> act = () => imageService.UploadManyImagesAsync<It.IsAnyType>(null);
 
             // Assert
-            act.Should().Throw<ArgumentException>();
+            act.Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -150,7 +150,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             Func<Task<MultipleImageUploadingResult>> act = () => imageService.UploadManyImagesAsync<It.IsAnyType>(list);
 
             // Assert
-            act.Should().Throw<ArgumentException>();
+            act.Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -163,7 +163,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
 
             // Act & Assert
             imageService.Invoking(x => x.UploadManyImagesAsync<It.IsAnyType>(images)).Should()
-                .Throw<NullReferenceException>();
+                .ThrowAsync<NullReferenceException>();
         }
 
         [Test]
@@ -248,7 +248,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             Func<Task<Result<string>>> act = () => imageService.UploadImageAsync<It.IsAnyType>(null);
 
             // Assert
-            act.Should().Throw<ArgumentException>();
+            act.Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -295,7 +295,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
 
             // Act & Assert
             imageService.Invoking(x => x.UploadImageAsync<It.IsAnyType>(image)).Should()
-                .Throw<NullReferenceException>();
+                .ThrowAsync<NullReferenceException>();
         }
 
         #endregion
@@ -327,7 +327,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             Func<Task<MultipleImageRemovingResult>> act = () => imageService.RemoveManyImagesAsync(null);
 
             // Assert
-            act.Should().Throw<ArgumentException>();
+            act.Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -341,7 +341,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             Func<Task<MultipleImageRemovingResult>> act = () => imageService.RemoveManyImagesAsync(list);
 
             // Assert
-            act.Should().Throw<ArgumentException>();
+            act.Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -390,7 +390,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             Func<Task<OperationResult>> act = () => imageService.RemoveImageAsync(null);
 
             // Assert
-            act.Should().Throw<ArgumentException>();
+            act.Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -403,7 +403,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Images
             Func<Task<OperationResult>> act = () => imageService.RemoveImageAsync(imageId);
 
             // Assert
-            act.Should().Throw<ArgumentException>();
+            act.Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]

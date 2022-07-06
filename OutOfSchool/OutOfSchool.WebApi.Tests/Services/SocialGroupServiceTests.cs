@@ -156,25 +156,13 @@ namespace OutOfSchool.WebApi.Tests.Services
 
                 var socialGroups = new List<SocialGroup>()
                 {
-                    new SocialGroup()
-                    {
-                    Id = 1,
-                    Name = "NoName",
-                    },
-                    new SocialGroup()
-                    {
-                    Id = 2,
-                    Name = "HaveName",
-                    },
-                    new SocialGroup()
-                    {
-                    Id = 3,
-                    Name = "MissName",
-                    },
+                    new SocialGroup { Name = "NoName", },
+                    new SocialGroup { Name = "HaveName", },
+                    new SocialGroup { Name = "MissName", },
                 };
 
-                context.SocialGroups.AddRangeAsync(socialGroups);
-                context.SaveChangesAsync();
+                context.SocialGroups.AddRange(socialGroups);
+                context.SaveChanges();
             }
         }
     }

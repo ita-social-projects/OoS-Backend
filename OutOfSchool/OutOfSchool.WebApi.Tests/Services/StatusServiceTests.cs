@@ -151,14 +151,13 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             // Arrange
             var notExistingId = TestDataHelper.GetPositiveInt(
-                (int)(await repository.GetAll()).Last().Id
-                , int.MaxValue);
+                (int)(await repository.GetAll()).Last().Id,
+                int.MaxValue);
 
             // Act and Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 async () => await service.Delete(notExistingId).ConfigureAwait(false));
         }
-
 
         private void SeedDatabase()
         {
@@ -168,9 +167,9 @@ namespace OutOfSchool.WebApi.Tests.Services
                 context.Database.EnsureCreated();
 
                 var institutionStatuses = InstitutionStatusGenerator.Generate(5);
-                context.InstitutionStatuses.AddRangeAsync(institutionStatuses);
+                context.InstitutionStatuses.AddRange(institutionStatuses);
 
-                context.SaveChangesAsync();
+                context.SaveChanges();
             }
         }
     }

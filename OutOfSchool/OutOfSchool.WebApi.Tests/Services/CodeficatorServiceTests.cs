@@ -207,8 +207,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                        NeedCheck = false,
                    },
                 };
-            context.Codeficators.AddRangeAsync(codeficators);
-            context.SaveChangesAsync();
+            context.Codeficators.AddRange(codeficators);
+            context.SaveChanges();
         }
     }
 }

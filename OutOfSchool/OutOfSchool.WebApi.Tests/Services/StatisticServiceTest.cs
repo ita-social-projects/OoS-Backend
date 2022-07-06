@@ -167,7 +167,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(workshopsMock.Object)
+                .Returns(workshopsMock)
                 .Verifiable();
         }
 
@@ -175,7 +175,7 @@ namespace OutOfSchool.WebApi.Tests.Services
         {
             var workshopsMock = WithWorkshops().AsQueryable().BuildMock();
             var applicationsMock = WithApplications().AsQueryable().BuildMock();
-            var directionsMock = WithDirections().AsQueryable().BuildMock();            
+            var directionsMock = WithDirections().AsQueryable().BuildMock();
 
             workshopRepository.Setup(w => w.Get(
                     It.IsAny<int>(),
@@ -184,7 +184,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Workshop, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Workshop, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(workshopsMock.Object)
+                .Returns(workshopsMock)
                 .Verifiable();
 
             applicationRepository.Setup(w => w.Get(
@@ -194,7 +194,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(applicationsMock.Object)
+                .Returns(applicationsMock)
                 .Verifiable();
 
             directionRepository.Setup(w => w.Get(
@@ -204,7 +204,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Direction, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Direction, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(directionsMock.Object)
+                .Returns(directionsMock)
                 .Verifiable();
         }
 

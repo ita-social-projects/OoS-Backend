@@ -6,6 +6,7 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
     using System.Linq;
     using System.Threading.Tasks;
     using AutoMapper;
+    using FluentAssertions;
     using FluentAssertions.Common;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Localization;
@@ -95,7 +96,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 .ConfigureAwait(false);
 
             // Assert
-            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
             Assert.IsNotNull(result.LegalAddress);
             Assert.IsNull(result.ActualAddress);
         }
@@ -119,7 +119,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 .ConfigureAwait(false);
 
             // Assert
-            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
             Assert.IsNotNull(result.LegalAddress);
             Assert.IsNull(result.ActualAddress);
         }
@@ -144,7 +143,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 .ConfigureAwait(false);
 
             // Assert
-            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
             Assert.IsNotNull(result.LegalAddress);
             Assert.IsNull(result.ActualAddress);
         }
@@ -168,7 +166,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 .ConfigureAwait(false);
 
             // Assert
-            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
             Assert.IsNotNull(result.LegalAddress);
             Assert.IsNotNull(result.ActualAddress);
         }
@@ -187,7 +184,6 @@ namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests
                 .ConfigureAwait(false);
 
             // Assert
-            Assert.IsFalse(result.ActualAddress.IsSameOrEqualTo(result.LegalAddress));
             Assert.IsNotNull(result.LegalAddress);
             Assert.IsNull(result.ActualAddress);
         }

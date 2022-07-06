@@ -134,7 +134,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(changesMock.Object);
+                .Returns(changesMock);
             providerRepository.Setup(repo => repo.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
@@ -142,7 +142,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Provider, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Provider, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(providersMock.Object);
+                .Returns(providersMock);
 
             // Act
             var result = await changesLogService.GetProviderChangesLogAsync(request);
@@ -189,7 +189,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<ChangesLog, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<ChangesLog, dynamic>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(changesMock.Object);
+                .Returns(changesMock);
             applicationRepository.Setup(repo => repo.Get(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
@@ -197,7 +197,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<Application, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<Application, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(applicationsMock.Object);
+                .Returns(applicationsMock);
 
             // Act
             var result = await changesLogService.GetApplicationChangesLogAsync(request);
@@ -248,7 +248,7 @@ namespace OutOfSchool.WebApi.Tests.Services
                     It.IsAny<Expression<Func<ProviderAdminChangesLog, bool>>>(),
                     It.IsAny<Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>>(),
                     It.IsAny<bool>()))
-                .Returns(changesMock.Object);
+                .Returns(changesMock);
 
             // Act
             var result = await changesLogService.GetProviderAdminChangesLogAsync(request);

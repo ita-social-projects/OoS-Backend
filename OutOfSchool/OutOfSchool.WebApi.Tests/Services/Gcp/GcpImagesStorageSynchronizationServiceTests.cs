@@ -144,7 +144,7 @@ namespace OutOfSchool.WebApi.Tests.Services.Gcp
             Func<Task> act = () => gcpStorageSynchronizationService.SynchronizeAsync();
 
             // Assert
-            act.Should().NotThrow();
+            act.Should().NotThrowAsync();
             gcpObjects.Items.Should().BeNull();
         }
 

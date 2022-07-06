@@ -211,8 +211,8 @@ namespace OutOfSchool.WebApi.Tests.Services
                     },
                 };
 
-                context.Cities.AddRangeAsync(cities);
-                context.SaveChangesAsync();
+                context.Cities.AddRange(cities);
+                context.SaveChanges();
             }
         }
     }
