@@ -92,7 +92,7 @@ namespace OutOfSchool.Services.Extensions
                     Id = 5,
                     RoleName = Role.MinistryAdmin.ToString(),
                     PackedPermissions = PermissionsSeeder.SeedPermissions(Role.MinistryAdmin.ToString()),
-                    Description = "institution admin permissions",
+                    Description = "ministry admin permissions",
                 }
                 );
 

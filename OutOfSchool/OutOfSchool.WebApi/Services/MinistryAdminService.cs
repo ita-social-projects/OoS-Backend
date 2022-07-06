@@ -81,24 +81,11 @@ namespace OutOfSchool.WebApi.Services
             return response;
         }
 
-        public async Task<ResponseDto> DeleteMinistryAdminAsync(string ministryAdminId, string userId, Guid providerId, string token)
+        public async Task<ResponseDto> DeleteMinistryAdminAsync(string ministryAdminId, string userId, string token)
         {
             logger.LogDebug($"MinistryAdmin(id): {ministryAdminId} deleting was started. User(id): {userId}");
 
-            var hasAccess = await IsAllowedAsync(providerId, userId)
-                .ConfigureAwait(true);
-
-            if (!hasAccess)
-            {
-                logger.LogError($"User(id): {userId} doesn't have permission to delete provider admin.");
-
-                responseDto.IsSuccess = false;
-                responseDto.HttpStatusCode = HttpStatusCode.Forbidden;
-
-                return responseDto;
-            }
-
-            var ministryAdmin = await ministryAdminRepository.GetByIdAsync(ministryAdminId, providerId)
+            var ministryAdmin = await ministryAdminRepository.GetByIdAsync(ministryAdminId)
                 .ConfigureAwait(false);
 
             if (ministryAdmin is null)
@@ -146,20 +133,7 @@ namespace OutOfSchool.WebApi.Services
         {
             logger.LogDebug($"MinistryAdmin(id): {ministryAdminId} blocking was started. User(id): {userId}");
 
-            var hasAccess = await IsAllowedAsync(providerId, userId)
-                .ConfigureAwait(true);
-
-            if (!hasAccess)
-            {
-                logger.LogError($"User(id): {userId} doesn't have permission to block provider admin.");
-
-                responseDto.IsSuccess = false;
-                responseDto.HttpStatusCode = HttpStatusCode.Forbidden;
-
-                return responseDto;
-            }
-
-            var ministryAdmin = await ministryAdminRepository.GetByIdAsync(ministryAdminId, providerId)
+            var ministryAdmin = await ministryAdminRepository.GetByIdAsync(ministryAdminId)
                 .ConfigureAwait(false);
 
             if (ministryAdmin is null)
@@ -201,14 +175,6 @@ namespace OutOfSchool.WebApi.Services
             }
 
             return response;
-        }
-
-        public async Task<bool> IsAllowedAsync(Guid providerId, string userId)
-        {
-            bool provider = await ministryAdminRepository.IsExistMinistryWithUserIdAsync(userId)
-                .ConfigureAwait(false);
-
-            return provider;
         }
 
         public async Task GiveAssistantAccessToWorkshop(string userId, Guid workshopId)

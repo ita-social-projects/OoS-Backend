@@ -13,7 +13,7 @@ namespace OutOfSchool.WebApi.Services
     {
         Task<ResponseDto> CreateMinistryAdminAsync(string userId, CreateMinistryAdminDto ministryAdminDto, string token);
 
-        Task<ResponseDto> DeleteMinistryAdminAsync(string ministryAdminId, string userId, Guid InstitutionId, string token);
+        Task<ResponseDto> DeleteMinistryAdminAsync(string ministryAdminId, string userId, string token);
 
         Task<ResponseDto> BlockMinistryAdminAsync(string ministryAdminId, string userId, Guid InstitutionId, string token);
 

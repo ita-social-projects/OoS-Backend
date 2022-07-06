@@ -20,29 +20,6 @@ namespace OutOfSchool.Services.Repository
             db = dbContext;
         }
 
-        public async Task<MinistryAdmin> GetByIdAsync(string id, Guid providerId)
-        {
-            // FIXME
-            return await db.MinistryAdmins
-            // .Where(ia => ia.Id == providerId)
-            .SingleOrDefaultAsync(pa => pa.UserId == id);
-        }
-
-        public async Task<bool> IsExistMinistryAdminDeputyWithUserIdAsync(Guid providerId, string userId)
-        {
-            var InstitutionAdmin = await GetByIdAsync(userId, providerId);
-
-            return InstitutionAdmin != null; // && InstitutionAdmin.IsDeputy == true;
-        }
-
-        public async Task<bool> IsExistMinistryWithUserIdAsync(string userId)
-        {
-            var provider = await db.Providers
-                .SingleOrDefaultAsync(p => p.UserId == userId);
-
-            return provider != null;
-        }
-
         public async Task<Institution> GetInstitutionWithUserIdAsync(string userId)
         {
             // FIXME
@@ -62,6 +39,12 @@ namespace OutOfSchool.Services.Repository
             db.Update(workshopToUpdate);
             await db.SaveChangesAsync();
             */ 
+        }
+
+        public async Task<MinistryAdmin> GetByIdAsync(string userId)
+        {
+            return await db.MinistryAdmins
+                .SingleOrDefaultAsync(pa => pa.UserId == userId);
         }
     }
 }
