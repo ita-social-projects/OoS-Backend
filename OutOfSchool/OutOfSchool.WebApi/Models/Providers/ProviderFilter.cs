@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.WebApi.Models.Providers
-{
-    public class ProviderFilter : SearchStringFilter
-    {
-        public IReadOnlyCollection<ProviderStatus> Status { get; set; } = new List<ProviderStatus>();
+namespace OutOfSchool.WebApi.Models.Providers;
 
-        public IReadOnlyCollection<ProviderLicenseStatus> LicenseStatus { get; set; } = new List<ProviderLicenseStatus>();
-    }
+public class ProviderFilter : SearchStringFilter
+{
+    public IReadOnlyCollection<ProviderStatus> Status { get; set; } = new List<ProviderStatus>();
+
+    public IReadOnlyCollection<ProviderLicenseStatus> LicenseStatus { get; set; } = new List<ProviderLicenseStatus>();
 }

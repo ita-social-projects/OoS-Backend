@@ -1,9 +1,8 @@
-﻿namespace OutOfSchool.WebApi.Config
-{
-    public class ProviderAdminConfig
-    {
-        public const string Name = "ProviderAdmin";
+﻿namespace OutOfSchool.WebApi.Config;
 
-        public int MaxNumberAdmins { get; set; }
-    }
+public class ProviderAdminConfig
+{
+    public const string Name = "ProviderAdmin";
+
+    public int MaxNumberAdmins { get; set; }
 }

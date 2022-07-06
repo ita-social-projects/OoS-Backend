@@ -4,13 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OutOfSchool.WebApi.Models
-{
-    public class InstitutionStatusDTO
-    {
-        public long Id { get; set; }
+namespace OutOfSchool.WebApi.Models;
 
-        [MaxLength(100)]
-        public string Name { get; set; } = string.Empty;
-    }
+public class InstitutionStatusDTO
+{
+    public long Id { get; set; }
+
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
 }

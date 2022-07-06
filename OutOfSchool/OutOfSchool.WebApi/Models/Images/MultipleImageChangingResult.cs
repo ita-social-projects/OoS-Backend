@@ -1,11 +1,10 @@
 ﻿using OutOfSchool.WebApi.Common;
 
-namespace OutOfSchool.WebApi.Models.Images
-{
-    public class MultipleImageChangingResult
-    {
-        public MultipleImageRemovingResult RemovedMultipleResult { get; set; }
+namespace OutOfSchool.WebApi.Models.Images;
 
-        public MultipleImageUploadingResult UploadedMultipleResult { get; set; }
-    }
+public class MultipleImageChangingResult
+{
+    public MultipleImageRemovingResult RemovedMultipleResult { get; set; }
+
+    public MultipleImageUploadingResult UploadedMultipleResult { get; set; }
 }

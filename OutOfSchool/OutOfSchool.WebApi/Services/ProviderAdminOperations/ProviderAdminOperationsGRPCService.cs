@@ -9,83 +9,82 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Services.GRPC;
 
-namespace OutOfSchool.WebApi.Services.ProviderAdminOperations
+namespace OutOfSchool.WebApi.Services.ProviderAdminOperations;
+
+/// <summary>
+/// Implements the interface for creating ProviderAdmin.
+/// </summary>
+public class ProviderAdminOperationsGRPCService : IProviderAdminOperationsService
 {
+    private readonly ILogger<ProviderAdminService> logger;
+    private readonly IMapper mapper;
+    private readonly IGRPCCommonService gRPCCommonService;
+
     /// <summary>
-    /// Implements the interface for creating ProviderAdmin.
+    /// Initializes a new instance of the <see cref="ProviderAdminOperationsGRPCService"/> class.
     /// </summary>
-    public class ProviderAdminOperationsGRPCService : IProviderAdminOperationsService
+    /// <param name="mapper">Mapper.</param>
+    /// <param name="logger">Logger.</param>
+    /// <param name="gRPCCommonService">GRPCCommonService.</param>
+    public ProviderAdminOperationsGRPCService(
+        IMapper mapper,
+        ILogger<ProviderAdminService> logger,
+        IGRPCCommonService gRPCCommonService)
     {
-        private readonly ILogger<ProviderAdminService> logger;
-        private readonly IMapper mapper;
-        private readonly IGRPCCommonService gRPCCommonService;
+        this.mapper = mapper;
+        this.logger = logger;
+        this.gRPCCommonService = gRPCCommonService;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ProviderAdminOperationsGRPCService"/> class.
-        /// </summary>
-        /// <param name="mapper">Mapper.</param>
-        /// <param name="logger">Logger.</param>
-        /// <param name="gRPCCommonService">GRPCCommonService.</param>
-        public ProviderAdminOperationsGRPCService(
-            IMapper mapper,
-            ILogger<ProviderAdminService> logger,
-            IGRPCCommonService gRPCCommonService)
+    /// <inheritdoc/>
+    public async Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+    {
+        using var channel = gRPCCommonService.CreateAuthenticatedChannel(token);
+        var client = new GRPCProviderAdmin.GRPCProviderAdminClient(channel);
+
+        var createProviderAdminRequest = mapper.Map<CreateProviderAdminRequest>(providerAdminDto);
+
+        var response = new ResponseDto()
         {
-            this.mapper = mapper;
-            this.logger = logger;
-            this.gRPCCommonService = gRPCCommonService;
-        }
+            IsSuccess = true,
+            HttpStatusCode = HttpStatusCode.OK,
+        };
 
-        /// <inheritdoc/>
-        public async Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token)
+        string requestId = Guid.NewGuid().ToString();
+        createProviderAdminRequest.RequestId = requestId;
+
+        logger.LogDebug($"GRPC: Request(id): {requestId} was sent. " +
+                        $"User(id): {userId}. Method: CreateProviderAdminAsync.");
+
+        try
         {
-            using var channel = gRPCCommonService.CreateAuthenticatedChannel(token);
-            var client = new GRPCProviderAdmin.GRPCProviderAdminClient(channel);
+            var reply = await client.CreateProviderAdminAsync(createProviderAdminRequest);
 
-            var createProviderAdminRequest = mapper.Map<CreateProviderAdminRequest>(providerAdminDto);
-
-            var response = new ResponseDto()
+            if (reply.IsSuccess)
             {
-                IsSuccess = true,
-                HttpStatusCode = HttpStatusCode.OK,
-            };
+                var providerAdminDtoGRPC = mapper.Map<CreateProviderAdminDto>(reply);
 
-            string requestId = Guid.NewGuid().ToString();
-            createProviderAdminRequest.RequestId = requestId;
+                response.IsSuccess = true;
+                response.Result = providerAdminDtoGRPC;
 
-            logger.LogDebug($"GRPC: Request(id): {requestId} was sent. " +
-                $"User(id): {userId}. Method: CreateProviderAdminAsync.");
-
-            try
-            {
-                var reply = await client.CreateProviderAdminAsync(createProviderAdminRequest);
-
-                if (reply.IsSuccess)
-                {
-                    var providerAdminDtoGRPC = mapper.Map<CreateProviderAdminDto>(reply);
-
-                    response.IsSuccess = true;
-                    response.Result = providerAdminDtoGRPC;
-
-                    return response;
-                }
-                else
-                {
-                    response.IsSuccess = false;
-                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
-                }
+                return response;
             }
-            catch (RpcException ex)
+            else
             {
-                logger.LogError($"GRPC: Request(id): {requestId}. " +
-                    $"Admin was not created by User(id): {userId}. {ex.Message}");
-
                 response.IsSuccess = false;
                 response.HttpStatusCode = HttpStatusCode.InternalServerError;
-                response.Message = ex.Message;
             }
-
-            return response;
         }
+        catch (RpcException ex)
+        {
+            logger.LogError($"GRPC: Request(id): {requestId}. " +
+                            $"Admin was not created by User(id): {userId}. {ex.Message}");
+
+            response.IsSuccess = false;
+            response.HttpStatusCode = HttpStatusCode.InternalServerError;
+            response.Message = ex.Message;
+        }
+
+        return response;
     }
 }

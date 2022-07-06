@@ -1,11 +1,10 @@
-namespace OutOfSchool.WebApi.Config.Quartz
+namespace OutOfSchool.WebApi.Config.Quartz;
+
+public class QuartzConfig
 {
-    public class QuartzConfig
-    {
-        public const string Name = "Quartz";
+    public const string Name = "Quartz";
 
-        public string ConnectionStringKey { get; set; }
+    public string ConnectionStringKey { get; set; }
 
-        public QuartzCronScheduleConfig CronSchedules { get; set; }
-    }
+    public QuartzCronScheduleConfig CronSchedules { get; set; }
 }

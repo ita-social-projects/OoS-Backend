@@ -5,16 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace OutOfSchool.Tests.Common.TestDataGenerators
-{
-    /// <summary>
-    /// Contains methods to generate fake <see cref="User"/> objects.
-    /// </summary>
-    public static class UserGenerator
-    {
-        private static readonly string PhoneFormat = "##########";
+namespace OutOfSchool.Tests.Common.TestDataGenerators;
 
-        private static readonly Faker<User> faker = new Faker<User>()
+/// <summary>
+/// Contains methods to generate fake <see cref="User"/> objects.
+/// </summary>
+public static class UserGenerator
+{
+    private static readonly string PhoneFormat = "##########";
+
+    private static readonly Faker<User> faker = new Faker<User>()
             .RuleFor(x => x.Id, _ => Guid.NewGuid().ToString())
             .RuleFor(x => x.CreatingTime, f => f.Date.PastOffset())
             .RuleFor(x => x.LastLogin, f => f.Date.PastOffset())
@@ -31,30 +31,27 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.TwoFactorEnabled, _ => false)
             .RuleFor(x => x.LockoutEnabled, _ => true)
             .RuleFor(x => x.AccessFailedCount, _ => 0)
-            ;
+        ;
 
-        /// <summary>
-        /// Creates new instance of the <see cref="User"/> class with random data.
-        /// </summary>
-        /// <returns><see cref="User"/> object.</returns>
-        public static User Generate()
-        {
-            var email = TestDataHelper.GetRandomEmail();
-            var normalisedEmail = email.ToUpper();
-            return faker
-                .RuleFor(x => x.UserName, _ => email)
-                .RuleFor(x => x.Email, _ => email)
-                .RuleFor(x => x.NormalizedUserName,_ => normalisedEmail)
-                .RuleFor(x => x.NormalizedEmail,_ => normalisedEmail)
-                .Generate();
-        }
-
-        /// <summary>
-        /// Generates a list of the <see cref="User"/> objects.
-        /// </summary>
-        /// <param name="count">count of instances to generate.</param>
-        public static List<User> Generate(int count) => faker.Generate(count);
+    /// <summary>
+    /// Creates new instance of the <see cref="User"/> class with random data.
+    /// </summary>
+    /// <returns><see cref="User"/> object.</returns>
+    public static User Generate()
+    {
+        var email = TestDataHelper.GetRandomEmail();
+        var normalisedEmail = email.ToUpper();
+        return faker
+            .RuleFor(x => x.UserName, _ => email)
+            .RuleFor(x => x.Email, _ => email)
+            .RuleFor(x => x.NormalizedUserName,_ => normalisedEmail)
+            .RuleFor(x => x.NormalizedEmail,_ => normalisedEmail)
+            .Generate();
     }
+
+    /// <summary>
+    /// Generates a list of the <see cref="User"/> objects.
+    /// </summary>
+    /// <param name="count">count of instances to generate.</param>
+    public static List<User> Generate(int count) => faker.Generate(count);
 }
-
-

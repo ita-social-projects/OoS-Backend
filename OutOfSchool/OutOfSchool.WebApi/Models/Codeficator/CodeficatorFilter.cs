@@ -1,7 +1,6 @@
-﻿namespace OutOfSchool.WebApi.Models.Codeficator
+﻿namespace OutOfSchool.WebApi.Models.Codeficator;
+
+public class CodeficatorFilter : SizeFilter
 {
-    public class CodeficatorFilter : SizeFilter
-    {
-        public string Name { get; set; } = string.Empty;
-    }
+    public string Name { get; set; } = string.Empty;
 }

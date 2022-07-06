@@ -2,22 +2,21 @@
 using System.Collections.Generic;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models;
+
+public class ApplicationFilter : OffsetFilter
 {
-    public class ApplicationFilter : OffsetFilter
-    {
-        public IEnumerable<ApplicationStatus> Statuses { get; set; } = null;
+    public IEnumerable<ApplicationStatus> Statuses { get; set; } = null;
 
-        public bool OrderByDateAscending { get; set; } = true;
+    public bool OrderByDateAscending { get; set; } = true;
 
-        public bool OrderByAlphabetically { get; set; } = true;
+    public bool OrderByAlphabetically { get; set; } = true;
 
-        public bool OrderByStatus { get; set; } = true;
+    public bool OrderByStatus { get; set; } = true;
 
-        public bool ShowBlocked { get; set; } = false;
+    public bool ShowBlocked { get; set; } = false;
 
-        public IEnumerable<Guid> Workshops { get; set; } = null;
+    public IEnumerable<Guid> Workshops { get; set; } = null;
 
-        public IEnumerable<Guid> Children { get; set; } = null;
-    }
+    public IEnumerable<Guid> Children { get; set; } = null;
 }

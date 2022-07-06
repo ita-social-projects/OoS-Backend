@@ -1,18 +1,17 @@
 using Google.Apis.Auth.OAuth2;
 using OutOfSchool.Services.Contexts.Configuration;
 
-namespace OutOfSchool.Services.Extensions
-{
-    public static class GcpExtension
-    {
-        public static GoogleCredential RetrieveGoogleCredential(this GcpStorageSourceConfig config)
-        {
-            if (string.IsNullOrEmpty(config.CredentialFilePath))
-            {
-                return GoogleCredential.GetApplicationDefault();
-            }
+namespace OutOfSchool.Services.Extensions;
 
-            return GoogleCredential.FromFile(config.CredentialFilePath);
+public static class GcpExtension
+{
+    public static GoogleCredential RetrieveGoogleCredential(this GcpStorageSourceConfig config)
+    {
+        if (string.IsNullOrEmpty(config.CredentialFilePath))
+        {
+            return GoogleCredential.GetApplicationDefault();
         }
+
+        return GoogleCredential.FromFile(config.CredentialFilePath);
     }
 }

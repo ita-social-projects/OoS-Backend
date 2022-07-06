@@ -1,13 +1,12 @@
 ﻿using System;
 
-namespace OutOfSchool.WebApi.Models.Changes
+namespace OutOfSchool.WebApi.Models.Changes;
+
+public class ProviderChangesLogDto : ChangesLogDtoBase
 {
-    public class ProviderChangesLogDto : ChangesLogDtoBase
-    {
-        public Guid ProviderId { get; set; }
+    public Guid ProviderId { get; set; }
 
-        public string ProviderTitle { get; set; }
+    public string ProviderTitle { get; set; }
 
-        public string ProviderCity { get; set; }
-    }
+    public string ProviderCity { get; set; }
 }

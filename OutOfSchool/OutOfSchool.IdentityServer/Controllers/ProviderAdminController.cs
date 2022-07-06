@@ -10,69 +10,68 @@ using OutOfSchool.Common.Models;
 using OutOfSchool.Common.PermissionsModule;
 using OutOfSchool.IdentityServer.Services.Intefaces;
 
-namespace OutOfSchool.IdentityServer.Controllers
+namespace OutOfSchool.IdentityServer.Controllers;
+
+[ApiController]
+[Route("[controller]/[action]")]
+[Authorize(AuthenticationSchemes = Constants.BearerScheme)]
+public class ProviderAdminController : Controller
 {
-    [ApiController]
-    [Route("[controller]/[action]")]
-    [Authorize(AuthenticationSchemes = Constants.BearerScheme)]
-    public class ProviderAdminController : Controller
+    private readonly ILogger<ProviderAdminController> logger;
+    private readonly IProviderAdminService providerAdminService;
+
+    private string path;
+    private string userId;
+
+    public ProviderAdminController(
+        ILogger<ProviderAdminController> logger,
+        IProviderAdminService providerAdminService)
     {
-        private readonly ILogger<ProviderAdminController> logger;
-        private readonly IProviderAdminService providerAdminService;
+        this.logger = logger;
+        this.providerAdminService = providerAdminService;
+    }
 
-        private string path;
-        private string userId;
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
+        userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
+    }
 
-        public ProviderAdminController(
-            ILogger<ProviderAdminController> logger,
-            IProviderAdminService providerAdminService)
+    [HttpPost]
+    [HasPermission(Permissions.ProviderAdmins)]
+    public async Task<ResponseDto> Create(CreateProviderAdminDto providerAdminDto)
+    {
+        logger.LogDebug($"Received request " +
+                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+
+        return await providerAdminService
+            .CreateProviderAdminAsync(providerAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
+    }
+
+    [HttpDelete("{providerAdminId}")]
+    [HasPermission(Permissions.ProviderRemove)]
+    public async Task<ResponseDto> Delete(string providerAdminId)
+    {
+        if (providerAdminId is null)
         {
-            this.logger = logger;
-            this.providerAdminService = providerAdminService;
+            throw new ArgumentNullException(nameof(providerAdminId));
         }
 
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            path = $"{context.HttpContext.Request.Path.Value}[{context.HttpContext.Request.Method}]";
-            userId = User.GetUserPropertyByClaimType(IdentityResourceClaimsTypes.Sub);
-        }
+        logger.LogDebug($"Received request " +
+                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
-        [HttpPost]
-        [HasPermission(Permissions.ProviderAdmins)]
-        public async Task<ResponseDto> Create(CreateProviderAdminDto providerAdminDto)
-        {
-            logger.LogDebug($"Received request " +
-                $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
+        return await providerAdminService
+            .DeleteProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
+    }
 
-            return await providerAdminService
-                .CreateProviderAdminAsync(providerAdminDto, Url, userId, Request.Headers["X-Request-ID"]);
-        }
+    [HttpPut("{providerAdminId}")]
+    [HasPermission(Permissions.ProviderRemove)]
+    public async Task<ResponseDto> Block(string providerAdminId)
+    {
+        logger.LogDebug($"Received request " +
+                        $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
 
-        [HttpDelete("{providerAdminId}")]
-        [HasPermission(Permissions.ProviderRemove)]
-        public async Task<ResponseDto> Delete(string providerAdminId)
-        {
-            if (providerAdminId is null)
-            {
-                throw new ArgumentNullException(nameof(providerAdminId));
-            }
-
-            logger.LogDebug($"Received request " +
-                $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
-
-            return await providerAdminService
-                .DeleteProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
-        }
-
-        [HttpPut("{providerAdminId}")]
-        [HasPermission(Permissions.ProviderRemove)]
-        public async Task<ResponseDto> Block(string providerAdminId)
-        {
-            logger.LogDebug($"Received request " +
-                $"{Request.Headers["X-Request-ID"]}. {path} started. User(id): {userId}");
-
-            return await providerAdminService
-                .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
-        }
+        return await providerAdminService
+            .BlockProviderAdminAsync(providerAdminId, userId, Request.Headers["X-Request-ID"]);
     }
 }

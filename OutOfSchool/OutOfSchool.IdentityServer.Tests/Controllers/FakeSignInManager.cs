@@ -6,19 +6,18 @@ using Microsoft.Extensions.Options;
 using Moq;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.IdentityServer.Tests.Controllers
+namespace OutOfSchool.IdentityServer.Tests.Controllers;
+
+public class FakeSignInManager : SignInManager<User>
 {
-    public class FakeSignInManager : SignInManager<User>
-    {
-        public FakeSignInManager()
-            : base(new Mock<FakeUserManager>().Object,
-                new HttpContextAccessor(),
-                new Mock<IUserClaimsPrincipalFactory<User>>().Object,
-                new Mock<IOptions<IdentityOptions>>().Object,
-                new Mock<ILogger<SignInManager<User>>>().Object,
-                new Mock<IAuthenticationSchemeProvider>().Object,
-                new Mock<IUserConfirmation<User>>().Object
-                )
-        { }
-    }
+    public FakeSignInManager()
+        : base(new Mock<FakeUserManager>().Object,
+            new HttpContextAccessor(),
+            new Mock<IUserClaimsPrincipalFactory<User>>().Object,
+            new Mock<IOptions<IdentityOptions>>().Object,
+            new Mock<ILogger<SignInManager<User>>>().Object,
+            new Mock<IAuthenticationSchemeProvider>().Object,
+            new Mock<IUserConfirmation<User>>().Object
+        )
+    { }
 }

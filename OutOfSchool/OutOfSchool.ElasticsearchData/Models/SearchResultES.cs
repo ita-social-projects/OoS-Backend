@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace OutOfSchool.ElasticsearchData.Models
-{
-    public class SearchResultES<TEntity>
-    {
-        public int TotalAmount { get; set; }
+namespace OutOfSchool.ElasticsearchData.Models;
 
-        public IReadOnlyCollection<TEntity> Entities { get; set; }
-    }
+public class SearchResultES<TEntity>
+{
+    public int TotalAmount { get; set; }
+
+    public IReadOnlyCollection<TEntity> Entities { get; set; }
 }

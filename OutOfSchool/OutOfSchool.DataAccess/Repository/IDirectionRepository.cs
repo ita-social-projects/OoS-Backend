@@ -4,10 +4,9 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.Services.Repository
+namespace OutOfSchool.Services.Repository;
+
+public interface IDirectionRepository : IEntityRepository<Direction>
 {
-    public interface IDirectionRepository : IEntityRepository<Direction>
-    {
-        Task<IEnumerable<Direction>> GetPagedByFilter(int skip, int take, Expression<Func<Direction, bool>> predicate);
-    }
+    Task<IEnumerable<Direction>> GetPagedByFilter(int skip, int take, Expression<Func<Direction, bool>> predicate);
 }

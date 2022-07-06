@@ -1,22 +1,22 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class CompanyInformation : Migration
 {
-    public partial class CompanyInformation : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "AboutPortalItems");
+        migrationBuilder.DropTable(
+            name: "AboutPortalItems");
 
-            migrationBuilder.DropTable(
-                name: "SupportInformation");
+        migrationBuilder.DropTable(
+            name: "SupportInformation");
 
-            migrationBuilder.DropTable(
-                name: "AboutPortal");
+        migrationBuilder.DropTable(
+            name: "AboutPortal");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompanyInformation",
                 columns: table => new
                 {
@@ -29,9 +29,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_CompanyInformation", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "CompanyInformationItems",
                 columns: table => new
                 {
@@ -52,23 +52,23 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CompanyInformationItems_CompanyInformationId",
-                table: "CompanyInformationItems",
-                column: "CompanyInformationId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_CompanyInformationItems_CompanyInformationId",
+            table: "CompanyInformationItems",
+            column: "CompanyInformationId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "CompanyInformationItems");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "CompanyInformationItems");
 
-            migrationBuilder.DropTable(
-                name: "CompanyInformation");
+        migrationBuilder.DropTable(
+            name: "CompanyInformation");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AboutPortal",
                 columns: table => new
                 {
@@ -80,9 +80,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_AboutPortal", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "SupportInformation",
                 columns: table => new
                 {
@@ -98,9 +98,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_SupportInformation", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AboutPortalItems",
                 columns: table => new
                 {
@@ -121,12 +121,11 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AboutPortalItems_AboutPortalId",
-                table: "AboutPortalItems",
-                column: "AboutPortalId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_AboutPortalItems_AboutPortalId",
+            table: "AboutPortalItems",
+            column: "AboutPortalId");
     }
 }

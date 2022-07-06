@@ -1,14 +1,13 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace OutOfSchool.Services.Extensions
+namespace OutOfSchool.Services.Extensions;
+
+public static class DataProtectionExtensions
 {
-    public static class DataProtectionExtensions
+    public static IDataProtectionBuilder AddCustomDataProtection(this IServiceCollection services, string applicationName)
     {
-        public static IDataProtectionBuilder AddCustomDataProtection(this IServiceCollection services, string applicationName)
-        {
-            return services.AddDataProtection().SetApplicationName(applicationName).PersistKeysToDbContext<OutOfSchoolDbContext>()
-                ;
-        }
+        return services.AddDataProtection().SetApplicationName(applicationName).PersistKeysToDbContext<OutOfSchoolDbContext>()
+            ;
     }
 }

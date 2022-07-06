@@ -1,7 +1,6 @@
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models;
+
+public class DirectionFilter : OffsetFilter
 {
-    public class DirectionFilter : OffsetFilter
-    {
-        public string Name { get; set; } = string.Empty;
-    }
+    public string Name { get; set; } = string.Empty;
 }

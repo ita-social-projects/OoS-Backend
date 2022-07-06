@@ -1,7 +1,6 @@
-﻿namespace OutOfSchool.WebApi.Models.Notifications
+﻿namespace OutOfSchool.WebApi.Models.Notifications;
+
+public class NotificationAmount
 {
-    public class NotificationAmount
-    {
-        public int Amount { get; set; }
-    }
+    public int Amount { get; set; }
 }

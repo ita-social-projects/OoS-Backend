@@ -1,9 +1,8 @@
-namespace OutOfSchool.WebApi.Config.Quartz
-{
-    public class QuartzCronScheduleConfig
-    {
-        public const string Name = "CronSchedules";
+namespace OutOfSchool.WebApi.Config.Quartz;
 
-        public string GcpImagesSyncCronScheduleString { get; set; }
-    }
+public class QuartzCronScheduleConfig
+{
+    public const string Name = "CronSchedules";
+
+    public string GcpImagesSyncCronScheduleString { get; set; }
 }

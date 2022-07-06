@@ -1,12 +1,11 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace OutOfSchool.Common.Enums
+namespace OutOfSchool.Common.Enums;
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum WorkshopStatus
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum WorkshopStatus
-    {
-        Open = 1,
-        Closed,
-    }
+    Open = 1,
+    Closed,
 }
