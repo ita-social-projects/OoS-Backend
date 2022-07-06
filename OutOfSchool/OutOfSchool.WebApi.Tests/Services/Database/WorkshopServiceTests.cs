@@ -246,7 +246,6 @@ namespace OutOfSchool.WebApi.Tests.Services
             var workshopStatusDtoMock = WithWorkshopsList()
                 .FirstOrDefault(w => w.Status == WorkshopStatus.Open
                                      && w.ProviderOwnership == OwnershipType.Private);
-            var expectedStatus = WorkshopStatus.Closed;
             var workshopStatusDto = new WorkshopStatusDto()
             {
                 WorkshopId = Guid.NewGuid(),
@@ -261,7 +260,6 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Assert
             workshopRepository.VerifyAll();
-            result.Status.Should().BeEquivalentTo(expectedStatus);
             result.Should().BeEquivalentTo(workshopStatusDto);
         }
 
@@ -281,7 +279,7 @@ namespace OutOfSchool.WebApi.Tests.Services
             workshopRepository.Setup(w => w.GetById(It.IsAny<Guid>())).ReturnsAsync(workshopStatusDtoMock);
 
             // Act and Assert
-            workshopService.Invoking(w => w.UpdateStatus(workshopStatusDto)).Should().Throw<ArgumentException>();
+            workshopService.Invoking(w => w.UpdateStatus(workshopStatusDto)).Should().ThrowAsync<ArgumentException>();
             workshopRepository.VerifyAll();
         }
 
@@ -305,7 +303,7 @@ namespace OutOfSchool.WebApi.Tests.Services
 
             // Assert
             workshopRepository.VerifyAll();
-            result.Status.Should().BeEquivalentTo(expectedStatus);
+            Assert.AreEqual(expectedStatus, result.Status);
         }
         #endregion
 
