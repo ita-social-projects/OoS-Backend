@@ -17,4 +17,3 @@ internal class ApplicationConfiguration : IEntityTypeConfiguration<Application>
             .IsRequired();
     }
 }
-}

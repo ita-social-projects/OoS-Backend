@@ -21,4 +21,3 @@ internal class WorkshopConfiguration : IEntityTypeConfiguration<Workshop>
             .HasForeignKey(x => x.WorkshopId);
     }
 }
-}

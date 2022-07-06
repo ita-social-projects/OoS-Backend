@@ -13,4 +13,3 @@ internal class AchievementConfiguration : IEntityTypeConfiguration<Achievement>
             .WithMany(x => x.Achievements);
     }
 }
-}

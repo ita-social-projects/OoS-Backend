@@ -185,4 +185,3 @@ public static class ModelBuilderExtension
         return builder;
     }
 }
-}

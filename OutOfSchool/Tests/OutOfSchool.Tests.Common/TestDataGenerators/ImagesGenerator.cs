@@ -72,4 +72,3 @@ public static class ImagesGenerator
         .Select(x => Generate(entity))
         .ToList();
 }
-}

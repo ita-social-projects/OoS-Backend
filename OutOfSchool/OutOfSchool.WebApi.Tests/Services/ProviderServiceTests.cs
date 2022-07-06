@@ -25,13 +25,13 @@ public class ProviderServiceTests
 {
     private ProviderService providerService;
 
-        private Mock<IProviderRepository> providersRepositoryMock;
-        private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
-        private Mock<IEntityRepository<string, User>> usersRepositoryMock;
-        private Mock<IRatingService> ratingService;
-        private IMapper mapper;
-        private Mock<INotificationService> notificationService;
-        private Mock<IProviderAdminService> providerAdminService;
+    private Mock<IProviderRepository> providersRepositoryMock;
+    private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
+    private Mock<IEntityRepository<string, User>> usersRepositoryMock;
+    private Mock<IRatingService> ratingService;
+    private IMapper mapper;
+    private Mock<INotificationService> notificationService;
+    private Mock<IProviderAdminService> providerAdminService;
 
     private List<Provider> fakeProviders;
     private User fakeUser;
@@ -44,18 +44,18 @@ public class ProviderServiceTests
 
         providersRepositoryMock = CreateProvidersRepositoryMock(fakeProviders);
 
-            // TODO: configure mock and writer tests for provider admins
-            providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
-            usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
-            var addressRepo = new Mock<IEntityRepository<long, Address>>();
-            ratingService = new Mock<IRatingService>();
-            var localizer = new Mock<IStringLocalizer<SharedResource>>();
-            var logger = new Mock<ILogger<ProviderService>>();
-            var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
-            var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
-            var changesLogService = new Mock<IChangesLogService>();
-            notificationService = new Mock<INotificationService>(MockBehavior.Strict);
-            providerAdminService = new Mock<IProviderAdminService>();
+        // TODO: configure mock and writer tests for provider admins
+        providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
+        usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
+        var addressRepo = new Mock<IEntityRepository<long, Address>>();
+        ratingService = new Mock<IRatingService>();
+        var localizer = new Mock<IStringLocalizer<SharedResource>>();
+        var logger = new Mock<ILogger<ProviderService>>();
+        var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
+        var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
+        var changesLogService = new Mock<IChangesLogService>();
+        notificationService = new Mock<INotificationService>(MockBehavior.Strict);
+        providerAdminService = new Mock<IProviderAdminService>();
 
         var config = new MapperConfiguration(cfg => cfg.AddProfile<Util.MappingProfile>());
         mapper = config.CreateMapper();
@@ -810,11 +810,11 @@ public class ProviderServiceTests
 
     #endregion
 
-        private static Mock<IEntityRepository<string, User>> CreateUsersRepositoryMock(User fakeUser)
-        {
-            var usersRepository = new Mock<IEntityRepository<string, User>>();
-            usersRepository.Setup(r => r.GetAll()).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
-            usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty)).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
+    private static Mock<IEntityRepository<string, User>> CreateUsersRepositoryMock(User fakeUser)
+    {
+        var usersRepository = new Mock<IEntityRepository<string, User>>();
+        usersRepository.Setup(r => r.GetAll()).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
+        usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty)).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
 
         return usersRepository;
     }

@@ -96,4 +96,3 @@ public static class WorkshopGenerator
     public static List<Workshop> WithImages(this List<Workshop> workshops)
         => workshops.Select(x => x.WithImages()).ToList();
 }
-}

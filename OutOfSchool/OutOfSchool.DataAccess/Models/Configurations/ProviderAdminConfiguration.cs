@@ -19,4 +19,3 @@ internal class ProviderAdminConfiguration : IEntityTypeConfiguration<ProviderAdm
             .WithMany(x => x.ProviderAdmins);
     }
 }
-}

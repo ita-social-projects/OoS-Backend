@@ -55,4 +55,3 @@ public static class ProvidersGenerator
     public static List<Provider> WithWorkshops(this List<Provider> providers)
         => providers.Select(x => x.WithWorkshops()).ToList();
 }
-}

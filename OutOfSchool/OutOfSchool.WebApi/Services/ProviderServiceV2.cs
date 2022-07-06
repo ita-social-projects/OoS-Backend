@@ -9,8 +9,8 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
-using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Services.Images;
 
 namespace OutOfSchool.WebApi.Services;

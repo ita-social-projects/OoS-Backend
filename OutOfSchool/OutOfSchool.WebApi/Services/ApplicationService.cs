@@ -488,11 +488,11 @@ public class ApplicationService : IApplicationService, INotificationReciever
     {
         var forbiddenStatuses = new[]
         {
-        ApplicationStatus.Pending,
-        ApplicationStatus.AcceptedForSelection,
-        ApplicationStatus.Approved,
-        ApplicationStatus.StudyingForYears,
-    };
+            ApplicationStatus.Pending,
+            ApplicationStatus.AcceptedForSelection,
+            ApplicationStatus.Approved,
+            ApplicationStatus.StudyingForYears,
+        };
 
         Expression<Func<Application, bool>> filter = a => a.ChildId == childId
                                                           && a.WorkshopId == workshopId

@@ -74,4 +74,3 @@ internal class ProviderConfiguration : IEntityTypeConfiguration<Provider>
             .HasDefaultValue(ProviderLicenseStatus.NotProvided);
     }
 }
-}

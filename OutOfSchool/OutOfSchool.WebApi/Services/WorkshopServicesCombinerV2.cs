@@ -1,10 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.ElasticsearchData.Models;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
+﻿using OutOfSchool.Services.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Workshop;
 
@@ -18,7 +12,7 @@ public class WorkshopServicesCombinerV2 : WorkshopServicesCombiner, IWorkshopSer
         ILogger<WorkshopServicesCombiner> logger,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
         INotificationService notificationService,
-        IEntityRepository<Favorite> favoriteRepository,
+        IEntityRepository<long, Favorite> favoriteRepository,
         IApplicationRepository applicationRepository)
         : base(workshopService, elasticsearchService, logger, elasticsearchSynchronizationService, notificationService, favoriteRepository, applicationRepository)
     {

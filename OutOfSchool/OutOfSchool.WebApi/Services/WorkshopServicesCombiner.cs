@@ -1,27 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common.Enums;
-using OutOfSchool.ElasticsearchData.Models;
+﻿using System.Linq.Expressions;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Common.Resources;
 using OutOfSchool.WebApi.Enums;
-using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
-using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Services.Images;
-using Ubiety.Dns.Core.Records.NotUsed;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -32,7 +13,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
     private readonly ILogger<WorkshopServicesCombiner> logger;
     private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
     private readonly INotificationService notificationService;
-    private readonly IEntityRepository<Favorite> favoriteRepository;
+    private readonly IEntityRepository<long, Favorite> favoriteRepository;
     private readonly IApplicationRepository applicationRepository;
 
     public WorkshopServicesCombiner(
@@ -41,7 +22,7 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         ILogger<WorkshopServicesCombiner> logger,
         IElasticsearchSynchronizationService elasticsearchSynchronizationService,
         INotificationService notificationService,
-        IEntityRepository<Favorite> favoriteRepository,
+        IEntityRepository<long, Favorite> favoriteRepository,
         IApplicationRepository applicationRepository)
     {
         this.workshopService = workshopService;
@@ -97,9 +78,9 @@ public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotification
         var workshopDto = await workshopService.UpdateStatus(dto).ConfigureAwait(false);
 
         var additionalData = new Dictionary<string, string>()
-        {
-            { "Status", workshopDto.Status.ToString() },
-        };
+    {
+        { "Status", workshopDto.Status.ToString() },
+    };
 
         await notificationService.Create(
             NotificationType.Workshop,
