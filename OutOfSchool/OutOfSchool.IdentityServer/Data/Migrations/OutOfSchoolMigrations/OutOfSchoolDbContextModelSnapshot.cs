@@ -987,7 +987,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "admin permissions",
-                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rp",
+                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rpq",
                             RoleName = "Admin"
                         },
                         new
@@ -1014,7 +1014,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 5L,
-                            Description = "institution admin permissions",
+                            Description = "ministry admin permissions",
                             PackedPermissions = "e\n2FPQ[\\",
                             RoleName = "MinistryAdmin"
                         });

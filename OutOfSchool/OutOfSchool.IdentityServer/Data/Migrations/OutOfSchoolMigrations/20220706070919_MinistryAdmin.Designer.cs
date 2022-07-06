@@ -9,7 +9,7 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    [Migration("20220705121700_MinistryAdmin")]
+    [Migration("20220706070919_MinistryAdmin")]
     partial class MinistryAdmin
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -989,7 +989,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "admin permissions",
-                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rp",
+                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rpq",
                             RoleName = "Admin"
                         },
                         new
@@ -1016,7 +1016,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         new
                         {
                             Id = 5L,
-                            Description = "institution admin permissions",
+                            Description = "ministry admin permissions",
                             PackedPermissions = "e\n2FPQ[\\",
                             RoleName = "MinistryAdmin"
                         });

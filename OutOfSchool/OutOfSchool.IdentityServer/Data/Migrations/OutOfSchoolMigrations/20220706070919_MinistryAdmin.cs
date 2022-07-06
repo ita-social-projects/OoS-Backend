@@ -35,17 +35,22 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 keyColumn: "Id",
                 keyValue: 1L,
                 column: "PackedPermissions",
-                value: "de\n\r !()+4325>=<?HGIFPQ[]\\rp");
+                value: "de\n\r !()+4325>=<?HGIFPQ[]\\rpq");
 
             migrationBuilder.InsertData(
                 table: "PermissionsForRoles",
                 columns: new[] { "Id", "Description", "PackedPermissions", "RoleName" },
-                values: new object[] { 5L, "institution admin permissions", "e\n2FPQ[\\", "MinistryAdmin" });
+                values: new object[] { 5L, "ministry admin permissions", "e\n2FPQ[\\", "MinistryAdmin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_MinistryAdmins_InstitutionId",
                 table: "MinistryAdmins",
                 column: "InstitutionId");
+            
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
+                values: new object[] { "9995f142-9a03-4cc5-b806-c52fd6932760", "ministryadmin", "MINISTRYADMIN", "44fb0a97-3cfd-49e2-bd04-e60e3a3758ab" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -57,7 +62,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 table: "PermissionsForRoles",
                 keyColumn: "Id",
                 keyValue: 5L);
-
+            
+            migrationBuilder.DeleteData(
+                table: "AspNetRoles",
+                keyColumn: "Id",
+                keyValue: "9995f142-9a03-4cc5-b806-c52fd6932760");
+            
             migrationBuilder.UpdateData(
                 table: "PermissionsForRoles",
                 keyColumn: "Id",

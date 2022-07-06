@@ -43,7 +43,7 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Method for creating new InstitutionAdmin.
+        /// Method for creating new MinistryAdmin.
         /// </summary>
         /// <param name="ministryAdmin">Entity to add.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
@@ -53,6 +53,7 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HasPermission(Permissions.MinistryAdminAddNew)]
         [HttpPost]
         public async Task<ActionResult> Create(CreateMinistryAdminDto ministryAdmin)
         {
@@ -84,9 +85,9 @@ namespace OutOfSchool.WebApi.Controllers
         }
 
         /// <summary>
-        /// Method for deleting institutionAdmin.
+        /// Method for deleting MinistryAdmin.
         /// </summary>
-        /// <param name="institutionAdminId">Entity's id to delete.</param>
+        /// <param name="ministryAdminId">Entity's id to delete.</param>
         /// <param name="providerId">Provider's id for which operation perform.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -95,21 +96,21 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HasPermission(Permissions.MinistryAdminRemove)]
         [HttpDelete]
-        public async Task<ActionResult> Delete(string institutionAdminId, Guid providerId)
+        public async Task<ActionResult> Delete(string ministryAdminId)
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
             var response = await ministryAdminService.DeleteMinistryAdminAsync(
-                    institutionAdminId,
+                    ministryAdminId,
                     userId,
-                    providerId,
                     await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
                         .ConfigureAwait(false);
 
             if (response.IsSuccess)
             {
-                logger.LogInformation($"Succesfully deleted institutionAdmin(id): {institutionAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Succesfully deleted ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
 
                 return Ok();
             }
