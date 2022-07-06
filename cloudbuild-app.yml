@@ -36,7 +36,7 @@ steps:
     - --service-account
     - $_SERVICE_ACCOUNT
     - --cpu=2
-    - --memory=512Mi
+    - --memory=1Gi
     - --max-instances=3
     - --concurrency=200
     - --timeout=120
