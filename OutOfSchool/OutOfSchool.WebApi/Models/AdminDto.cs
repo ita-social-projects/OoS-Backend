@@ -1,14 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models;
+
+public class AdminDto
 {
-    public class AdminDto
-    {
-        public string Id { get; set; }
+    public string Id { get; set; }
 
-        public string Role { get; set; }
+    public string Role { get; set; }
 
-        public bool IsRegistered { get; set; }
-    }
+    public bool IsRegistered { get; set; }
 }

@@ -1,9 +1,8 @@
-namespace OutOfSchool.WebApi.Config
-{
-    public class AppDefaultsConfig
-    {
-        public const string Name = "AppDefaults";
+namespace OutOfSchool.WebApi.Config;
 
-        public string City { get; set; }
-    }
+public class AppDefaultsConfig
+{
+    public const string Name = "AppDefaults";
+
+    public string City { get; set; }
 }

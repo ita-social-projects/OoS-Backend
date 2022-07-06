@@ -4,33 +4,32 @@ using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
-namespace OutOfSchool.IdentityServer.KeyManagement
+namespace OutOfSchool.IdentityServer.KeyManagement;
+
+public class SigningCredentialsStore : ISigningCredentialStore
 {
-    public class SigningCredentialsStore : ISigningCredentialStore
+    private readonly IKeyManager keyManager;
+    private readonly ILogger<SigningCredentialsStore> logger;
+
+    public SigningCredentialsStore(IKeyManager manager, ILogger<SigningCredentialsStore> logger)
     {
-        private readonly IKeyManager keyManager;
-        private readonly ILogger<SigningCredentialsStore> logger;
+        keyManager = manager;
+        this.logger = logger;
+    }
 
-        public SigningCredentialsStore(IKeyManager manager, ILogger<SigningCredentialsStore> logger)
+    /// <inheritdoc />
+    public async Task<SigningCredentials> GetSigningCredentialsAsync()
+    {
+        try
         {
-            keyManager = manager;
-            this.logger = logger;
+            var certificate = await keyManager.Get();
+
+            return certificate.ConvertToCredentials();
         }
-
-        /// <inheritdoc />
-        public async Task<SigningCredentials> GetSigningCredentialsAsync()
+        catch (Exception e)
         {
-            try
-            {
-                var certificate = await keyManager.Get();
-
-                return certificate.ConvertToCredentials();
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Failed to get signing credentials");
-                return null;
-            }
+            logger.LogError(e, "Failed to get signing credentials");
+            return null;
         }
     }
 }

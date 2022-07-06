@@ -1,17 +1,17 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
-{
-    public partial class AddressH3Add : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "Description",
-                table: "Workshops");
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
 
-            migrationBuilder.CreateTable(
+public partial class AddressH3Add : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "Description",
+            table: "Workshops");
+
+        migrationBuilder.CreateTable(
                 name: "WorkshopDescriptionItems",
                 columns: table => new
                 {
@@ -32,27 +32,26 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkshopDescriptionItems_WorkshopId",
-                table: "WorkshopDescriptionItems",
-                column: "WorkshopId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_WorkshopDescriptionItems_WorkshopId",
+            table: "WorkshopDescriptionItems",
+            column: "WorkshopId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "WorkshopDescriptionItems");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "WorkshopDescriptionItems");
 
-            migrationBuilder.AddColumn<string>(
+        migrationBuilder.AddColumn<string>(
                 name: "Description",
                 table: "Workshops",
                 type: "varchar(500)",
                 maxLength: 500,
                 nullable: false,
                 defaultValue: "")
-                .Annotation("MySql:CharSet", "utf8mb4");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4");
     }
 }

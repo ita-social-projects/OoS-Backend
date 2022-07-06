@@ -5,22 +5,21 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.Services.Repository
+namespace OutOfSchool.Services.Repository;
+
+public class ChildRepository : EntityRepository<Child>, IEntityRepository<Child>
 {
-    public class ChildRepository : EntityRepository<Child>, IEntityRepository<Child>
+    private readonly OutOfSchoolDbContext db;
+
+    public ChildRepository(OutOfSchoolDbContext dbContext)
+        : base(dbContext)
     {
-        private readonly OutOfSchoolDbContext db;
+        db = dbContext;
+    }
 
-        public ChildRepository(OutOfSchoolDbContext dbContext)
-         : base(dbContext)
-        {
-            db = dbContext;
-        }
-
-        public override Task<Child> Create(Child child)
-        {
-            db.SocialGroups.AttachRange(child.SocialGroups);
-            return base.Create(child);
-        }
+    public override Task<Child> Create(Child child)
+    {
+        db.SocialGroups.AttachRange(child.SocialGroups);
+        return base.Create(child);
     }
 }

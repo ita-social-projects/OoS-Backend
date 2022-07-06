@@ -2,13 +2,13 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class ChangesLog : Migration
 {
-    public partial class ChangesLog : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ChangesLog",
                 columns: table => new
                 {
@@ -38,9 +38,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ProviderAdminChangesLog",
                 columns: table => new
                 {
@@ -83,41 +83,40 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ChangesLog_UserId",
-                table: "ChangesLog",
-                column: "UserId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ChangesLog_UserId",
+            table: "ChangesLog",
+            column: "UserId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ProviderAdminChangesLog_ManagedWorkshopId",
-                table: "ProviderAdminChangesLog",
-                column: "ManagedWorkshopId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ProviderAdminChangesLog_ManagedWorkshopId",
+            table: "ProviderAdminChangesLog",
+            column: "ManagedWorkshopId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ProviderAdminChangesLog_ProviderAdminUserId",
-                table: "ProviderAdminChangesLog",
-                column: "ProviderAdminUserId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ProviderAdminChangesLog_ProviderAdminUserId",
+            table: "ProviderAdminChangesLog",
+            column: "ProviderAdminUserId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ProviderAdminChangesLog_ProviderId",
-                table: "ProviderAdminChangesLog",
-                column: "ProviderId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ProviderAdminChangesLog_ProviderId",
+            table: "ProviderAdminChangesLog",
+            column: "ProviderId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ProviderAdminChangesLog_UserId",
-                table: "ProviderAdminChangesLog",
-                column: "UserId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_ProviderAdminChangesLog_UserId",
+            table: "ProviderAdminChangesLog",
+            column: "UserId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "ChangesLog");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "ChangesLog");
 
-            migrationBuilder.DropTable(
-                name: "ProviderAdminChangesLog");
-        }
+        migrationBuilder.DropTable(
+            name: "ProviderAdminChangesLog");
     }
 }

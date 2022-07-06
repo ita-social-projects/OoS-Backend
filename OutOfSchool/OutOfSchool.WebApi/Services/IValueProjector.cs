@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace OutOfSchool.WebApi.Services
+namespace OutOfSchool.WebApi.Services;
+
+public interface IValueProjector
 {
-    public interface IValueProjector
-    {
-        string ProjectValue(Type type, object value);
-    }
+    string ProjectValue(Type type, object value);
 }

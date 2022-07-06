@@ -1,6 +1,5 @@
-﻿namespace OutOfSchool.WebApi.Models.Changes
+﻿namespace OutOfSchool.WebApi.Models.Changes;
+
+public class ApplicationChangesLogRequest : ChangesLogFilterBase
 {
-    public class ApplicationChangesLogRequest : ChangesLogFilterBase
-    {
-    }
 }

@@ -1,13 +1,12 @@
-﻿namespace OutOfSchool.WebApi.Enums
+﻿namespace OutOfSchool.WebApi.Enums;
+
+public enum OrderBy
 {
-    public enum OrderBy
-    {
-        Id,
-        Statistic,
-        Rating,
-        PriceDesc,
-        PriceAsc,
-        Alphabet,
-        Nearest,
-    }
+    Id,
+    Statistic,
+    Rating,
+    PriceDesc,
+    PriceAsc,
+    Alphabet,
+    Nearest,
 }

@@ -9,281 +9,280 @@ using OutOfSchool.Services.Repository;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Tests.Services.Database
+namespace OutOfSchool.WebApi.Tests.Services.Database;
+
+[TestFixture]
+public class ChangesLogRepositoryTests
 {
-    [TestFixture]
-    public class ChangesLogRepositoryTests
+    private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
+    private ValueProjector valueProjector = new ValueProjector();
+
+    private Provider provider;
+    private User user;
+
+    [SetUp]
+    public async Task SetUp()
     {
-        private DbContextOptions<OutOfSchoolDbContext> dbContextOptions;
-        private ValueProjector valueProjector = new ValueProjector();
+        provider = ProvidersGenerator.Generate();
+        provider.LegalAddress.Id = 6;
+        provider.LegalAddressId = 6;
+        user = UserGenerator.Generate();
 
-        private Provider provider;
-        private User user;
+        dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
+            .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
+            .EnableSensitiveDataLogging()
+            .Options;
 
-        [SetUp]
-        public async Task SetUp()
-        {
-            provider = ProvidersGenerator.Generate();
-            provider.LegalAddress.Id = 6;
-            provider.LegalAddressId = 6;
-            user = UserGenerator.Generate();
+        await Seed();
+    }
 
-            dbContextOptions = new DbContextOptionsBuilder<OutOfSchoolDbContext>()
-                .UseInMemoryDatabase(databaseName: "OutOfSchoolTestDB")
-                .EnableSensitiveDataLogging()
-                .Options;
+    #region AddChangesLogToDbContext
+    [Test]
+    public async Task AddChangesLogToDbContext_WhenEntityIsModified_AddsLogToDbContext()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
+        var provider = await context.Providers.FirstAsync();
 
-            await Seed();
-        }
+        var oldFullTitle = provider.FullTitle;
+        var oldDirector = provider.Director;
 
-        #region AddChangesLogToDbContext
-        [Test]
-        public async Task AddChangesLogToDbContext_WhenEntityIsModified_AddsLogToDbContext()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
-            var provider = await context.Providers.FirstAsync();
+        // Act
+        provider.FullTitle += "new";
+        provider.Director += "new";
 
-            var oldFullTitle = provider.FullTitle;
-            var oldDirector = provider.Director;
+        var newFullTitle = provider.FullTitle;
+        var newDirector = provider.Director;
 
-            // Act
-            provider.FullTitle += "new";
-            provider.Director += "new";
+        var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
 
-            var newFullTitle = provider.FullTitle;
-            var newDirector = provider.Director;
+        // Assert
+        var fullTitleChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
+        var directorChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.Director));
 
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
+        Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
+        Assert.AreEqual(2, context.ChangesLog.Local.Count);
+        Assert.AreEqual(oldFullTitle, fullTitleChanges.OldValue);
+        Assert.AreEqual(newFullTitle, fullTitleChanges.NewValue);
+        Assert.AreEqual(user.Id, fullTitleChanges.UserId);
+        Assert.AreEqual(oldDirector, directorChanges.OldValue);
+        Assert.AreEqual(newDirector, directorChanges.NewValue);
+        Assert.AreEqual(user.Id, directorChanges.UserId);
+    }
 
-            // Assert
-            var fullTitleChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
-            var directorChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.Director));
+    [Test]
+    public async Task AddChangesLogToDbContext_LongValues_AreLimited()
+    {
+        // Arrange
+        const int maxLength = 500;
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "FullTitle" };
+        var provider = await context.Providers.FirstAsync();
 
-            Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
-            Assert.AreEqual(2, context.ChangesLog.Local.Count);
-            Assert.AreEqual(oldFullTitle, fullTitleChanges.OldValue);
-            Assert.AreEqual(newFullTitle, fullTitleChanges.NewValue);
-            Assert.AreEqual(user.Id, fullTitleChanges.UserId);
-            Assert.AreEqual(oldDirector, directorChanges.OldValue);
-            Assert.AreEqual(newDirector, directorChanges.NewValue);
-            Assert.AreEqual(user.Id, directorChanges.UserId);
-        }
+        var oldFullTitle = provider.FullTitle;
 
-        [Test]
-        public async Task AddChangesLogToDbContext_LongValues_AreLimited()
-        {
-            // Arrange
-            const int maxLength = 500;
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            var trackedProperties = new[] { "FullTitle" };
-            var provider = await context.Providers.FirstAsync();
+        // Act
+        provider.FullTitle += new string('-', maxLength * 2);
 
-            var oldFullTitle = provider.FullTitle;
+        var newFullTitle = provider.FullTitle;
 
-            // Act
-            provider.FullTitle += new string('-', maxLength * 2);
+        var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
 
-            var newFullTitle = provider.FullTitle;
+        // Assert
+        var fullTitleChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
 
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
+        Assert.True(oldFullTitle.StartsWith(fullTitleChanges.OldValue));
+        Assert.True(newFullTitle.StartsWith(fullTitleChanges.NewValue));
+        Assert.AreEqual(Math.Min(maxLength, oldFullTitle.Length), fullTitleChanges.OldValue.Length);
+        Assert.AreEqual(Math.Min(maxLength, newFullTitle.Length), fullTitleChanges.NewValue.Length);
+    }
 
-            // Assert
-            var fullTitleChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
+    [Test]
+    public async Task AddChangesLogToDbContext_WhenEntityIsNotModified_DoesNotAddLogToDbContext()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
+        var provider = await context.Providers.FirstAsync();
 
-            Assert.True(oldFullTitle.StartsWith(fullTitleChanges.OldValue));
-            Assert.True(newFullTitle.StartsWith(fullTitleChanges.NewValue));
-            Assert.AreEqual(Math.Min(maxLength, oldFullTitle.Length), fullTitleChanges.OldValue.Length);
-            Assert.AreEqual(Math.Min(maxLength, newFullTitle.Length), fullTitleChanges.NewValue.Length);
-        }
+        // Act
+        var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
 
-        [Test]
-        public async Task AddChangesLogToDbContext_WhenEntityIsNotModified_DoesNotAddLogToDbContext()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" };
-            var provider = await context.Providers.FirstAsync();
+        // Assert
+        Assert.IsEmpty(added);
+        Assert.IsEmpty(context.ChangesLog.Local);
+    }
 
-            // Act
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
+    [Test]
+    public async Task AddChangesLogToDbContext_WhenEntityIsModified_LogsOnlyTrackedProperties()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "LegalAddress" };
+        var provider = await context.Providers.FirstAsync();
 
-            // Assert
-            Assert.IsEmpty(added);
-            Assert.IsEmpty(context.ChangesLog.Local);
-        }
+        var oldFullTitle = provider.FullTitle;
 
-        [Test]
-        public async Task AddChangesLogToDbContext_WhenEntityIsModified_LogsOnlyTrackedProperties()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            var trackedProperties = new[] { "FullTitle", "EdrpouIpn", "LegalAddress" };
-            var provider = await context.Providers.FirstAsync();
+        // Act
+        provider.FullTitle += "new";
+        provider.Director += "new";
 
-            var oldFullTitle = provider.FullTitle;
+        var newFullTitle = provider.FullTitle;
 
-            // Act
-            provider.FullTitle += "new";
-            provider.Director += "new";
+        var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
 
-            var newFullTitle = provider.FullTitle;
+        // Assert
+        var fullTitleChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
 
-            var added = changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue);
+        Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
+        Assert.AreEqual(1, context.ChangesLog.Local.Count);
+        Assert.AreEqual(oldFullTitle, fullTitleChanges.OldValue);
+        Assert.AreEqual(newFullTitle, fullTitleChanges.NewValue);
+        Assert.AreEqual(user.Id, fullTitleChanges.UserId);
+    }
 
-            // Assert
-            var fullTitleChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.FullTitle));
+    [Test]
+    public void AddChangesLogToDbContext_InvalidEntityType_ThrowsException()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "FullTitle" };
 
-            Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
-            Assert.AreEqual(1, context.ChangesLog.Local.Count);
-            Assert.AreEqual(oldFullTitle, fullTitleChanges.OldValue);
-            Assert.AreEqual(newFullTitle, fullTitleChanges.NewValue);
-            Assert.AreEqual(user.Id, fullTitleChanges.UserId);
-        }
+        // Act
+        var provider = new ProviderTest { FullTitle = "Full Title" };
 
-        [Test]
-        public void AddChangesLogToDbContext_InvalidEntityType_ThrowsException()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            var trackedProperties = new[] { "FullTitle" };
+        // Assert
+        Assert.Throws(
+            typeof(InvalidOperationException),
+            () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue));
+    }
 
-            // Act
-            var provider = new ProviderTest { FullTitle = "Full Title" };
+    [Test]
+    public void AddChangesLogToDbContext_TrackedPropertiesIsNull_ThrowsException()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        string[] trackedProperties = null;
 
-            // Assert
-            Assert.Throws(
-                typeof(InvalidOperationException),
-                () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue));
-        }
+        // Act
+        var provider = new Provider();
 
-        [Test]
-        public void AddChangesLogToDbContext_TrackedPropertiesIsNull_ThrowsException()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            string[] trackedProperties = null;
+        // Assert
+        var ex = Assert.Throws(
+            typeof(ArgumentNullException),
+            () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue));
+        Assert.AreEqual("Value cannot be null. (Parameter 'trackedProperties')", ex.Message);
+    }
 
-            // Act
-            var provider = new Provider();
+    [Test]
+    public void AddChangesLogToDbContext_ValueProjectorIsNull_ThrowsException()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "FullTitle" };
 
-            // Assert
-            var ex = Assert.Throws(
-                typeof(ArgumentNullException),
-                () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, valueProjector.ProjectValue));
-            Assert.AreEqual("Value cannot be null. (Parameter 'trackedProperties')", ex.Message);
-        }
+        // Act
+        var provider = new Provider();
 
-        [Test]
-        public void AddChangesLogToDbContext_ValueProjectorIsNull_ThrowsException()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            var trackedProperties = new[] { "FullTitle" };
+        // Assert
+        var ex = Assert.Throws(
+            typeof(ArgumentNullException),
+            () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, null));
+        Assert.AreEqual("Value cannot be null. (Parameter 'valueProjector')", ex.Message);
+    }
 
-            // Act
-            var provider = new Provider();
+    [Test]
+    public async Task AddChangesLogToDbContext_WhenAddressIsModified_AddsLogToDbContext()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "LegalAddress" };
+        var provider = await context.Providers.Include(p => p.LegalAddress).FirstAsync();
 
-            // Assert
-            var ex = Assert.Throws(
-                typeof(ArgumentNullException),
-                () => changesLogRepository.AddChangesLogToDbContext(provider, user.Id, trackedProperties, null));
-            Assert.AreEqual("Value cannot be null. (Parameter 'valueProjector')", ex.Message);
-        }
+        var oldLegalAddress = ProjectAddress(provider.LegalAddress);
 
-        [Test]
-        public async Task AddChangesLogToDbContext_WhenAddressIsModified_AddsLogToDbContext()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            var trackedProperties = new[] { "LegalAddress" };
-            var provider = await context.Providers.Include(p => p.LegalAddress).FirstAsync();
+        // Act
+        provider.LegalAddress.City += "new";
+        provider.LegalAddress.BuildingNumber += "X";
 
-            var oldLegalAddress = ProjectAddress(provider.LegalAddress);
+        var newLegalAddress = ProjectAddress(provider.LegalAddress);
 
-            // Act
-            provider.LegalAddress.City += "new";
-            provider.LegalAddress.BuildingNumber += "X";
+        var added = changesLogRepository.AddChangesLogToDbContext(
+            provider,
+            user.Id,
+            trackedProperties,
+            valueProjector.ProjectValue);
 
-            var newLegalAddress = ProjectAddress(provider.LegalAddress);
+        // Assert
+        var legalAddressChanges = context.ChangesLog.Local
+            .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.LegalAddress));
 
-            var added = changesLogRepository.AddChangesLogToDbContext(
-                provider,
-                user.Id,
-                trackedProperties,
-                valueProjector.ProjectValue);
+        Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
+        Assert.AreEqual(1, context.ChangesLog.Local.Count);
+        Assert.AreEqual(oldLegalAddress, legalAddressChanges.OldValue);
+        Assert.AreEqual(newLegalAddress, legalAddressChanges.NewValue);
+        Assert.AreEqual(user.Id, legalAddressChanges.UserId);
+    }
 
-            // Assert
-            var legalAddressChanges = context.ChangesLog.Local
-                .Single(x => x.EntityType == nameof(Provider) && x.PropertyName == nameof(Provider.LegalAddress));
+    [Test]
+    public async Task AddChangesLogToDbContext_WhenAddressIsNotModified_DoesNotAddLogToDbContext()
+    {
+        // Arrange
+        using var context = GetContext();
+        var changesLogRepository = GetChangesLogRepository(context);
+        var trackedProperties = new[] { "LegalAddress" };
+        var provider = await context.Providers.Include(p => p.LegalAddress).FirstAsync();
 
-            Assert.AreEqual(added.ToList(), context.ChangesLog.Local.ToList());
-            Assert.AreEqual(1, context.ChangesLog.Local.Count);
-            Assert.AreEqual(oldLegalAddress, legalAddressChanges.OldValue);
-            Assert.AreEqual(newLegalAddress, legalAddressChanges.NewValue);
-            Assert.AreEqual(user.Id, legalAddressChanges.UserId);
-        }
+        // Act
+        var added = changesLogRepository.AddChangesLogToDbContext(
+            provider,
+            user.Id,
+            trackedProperties,
+            valueProjector.ProjectValue);
 
-        [Test]
-        public async Task AddChangesLogToDbContext_WhenAddressIsNotModified_DoesNotAddLogToDbContext()
-        {
-            // Arrange
-            using var context = GetContext();
-            var changesLogRepository = GetChangesLogRepository(context);
-            var trackedProperties = new[] { "LegalAddress" };
-            var provider = await context.Providers.Include(p => p.LegalAddress).FirstAsync();
+        // Assert
+        Assert.IsEmpty(added);
+        Assert.IsEmpty(context.ChangesLog.Local);
+    }
+    #endregion
 
-            // Act
-            var added = changesLogRepository.AddChangesLogToDbContext(
-                provider,
-                user.Id,
-                trackedProperties,
-                valueProjector.ProjectValue);
+    private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
 
-            // Assert
-            Assert.IsEmpty(added);
-            Assert.IsEmpty(context.ChangesLog.Local);
-        }
-        #endregion
+    private IChangesLogRepository GetChangesLogRepository(OutOfSchoolDbContext dbContext)
+        => new ChangesLogRepository(dbContext);
 
-        private OutOfSchoolDbContext GetContext() => new OutOfSchoolDbContext(dbContextOptions);
+    private async Task Seed()
+    {
+        using var context = GetContext();
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+        context.Add(provider);
+        context.Add(user);
+        await context.SaveChangesAsync();
+    }
 
-        private IChangesLogRepository GetChangesLogRepository(OutOfSchoolDbContext dbContext)
-            => new ChangesLogRepository(dbContext);
-
-        private async Task Seed()
-        {
-            using var context = GetContext();
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-            context.Add(provider);
-            context.Add(user);
-            await context.SaveChangesAsync();
-        }
-
-        private string ProjectAddress(Address address) =>
-            address == null
+    private string ProjectAddress(Address address) =>
+        address == null
             ? null
             : $"{address.District}, {address.City}, {address.Region}, {address.Street}, {address.BuildingNumber}";
 
-        public class ProviderTest : IKeyedEntity
-        {
-            public string FullTitle { get; set; }
+    public class ProviderTest : IKeyedEntity
+    {
+        public string FullTitle { get; set; }
 
-            public Address LegalAddress { get; set; }
-        }
+        public Address LegalAddress { get; set; }
     }
 }

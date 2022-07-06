@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace OutOfSchool.WebApi.Config
-{
-    public class ChangesLogConfig
-    {
-        public const string Name = "ChangesLog";
+namespace OutOfSchool.WebApi.Config;
 
-        public IReadOnlyDictionary<string, string[]> TrackedProperties { get; set; }
-    }
+public class ChangesLogConfig
+{
+    public const string Name = "ChangesLog";
+
+    public IReadOnlyDictionary<string, string[]> TrackedProperties { get; set; }
 }

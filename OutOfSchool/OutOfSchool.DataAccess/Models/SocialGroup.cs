@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.Services.Models;
+
+public class SocialGroup : IKeyedEntity<long>
 {
-    public class SocialGroup : IKeyedEntity<long>
-    {
-        public long Id { get; set; }
+    public long Id { get; set; }
 
-        [MaxLength(100)]
-        public string Name { get; set; } = string.Empty;
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
 
-        public virtual IReadOnlyCollection<Child> Children { get; set; }
+    public virtual IReadOnlyCollection<Child> Children { get; set; }
 
-        public virtual List<ChildSocialGroup> ChildSocialGroups { get; set; }
-    }
+    public virtual List<ChildSocialGroup> ChildSocialGroups { get; set; }
 }

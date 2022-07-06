@@ -2,13 +2,13 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class Achievements : Migration
 {
-    public partial class Achievements : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AchievementTypes",
                 columns: table => new
                 {
@@ -21,9 +21,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_AchievementTypes", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Achievements",
                 columns: table => new
                 {
@@ -49,9 +49,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AchievementChild",
                 columns: table => new
                 {
@@ -74,9 +74,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AchievementTeachers",
                 columns: table => new
                 {
@@ -96,56 +96,55 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.InsertData(
-                table: "AchievementTypes",
-                columns: new[] { "Id", "Title" },
-                values: new object[,]
-                {
-                    { 1L, "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)" },
-                    { 2L, "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів" },
-                    { 3L, "Реципієнти міжнародних грантів" },
-                    { 4L, "Призери міжнародних культурних конкурсів та фестивалів" },
-                    { 5L, "Соціально активні категорії учнів" },
-                    { 6L, "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти" },
-                    { 7L, "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів" }
-                });
+        migrationBuilder.InsertData(
+            table: "AchievementTypes",
+            columns: new[] { "Id", "Title" },
+            values: new object[,]
+            {
+                { 1L, "Переможці міжнародних та всеукраїнських спортивних змагань (індивідуальних та командних)" },
+                { 2L, "Призери та учасники міжнародних, всеукраїнських та призери регіональних конкурсів і виставок наукових, технічних, дослідницьких, інноваційних, ІТ проектів" },
+                { 3L, "Реципієнти міжнародних грантів" },
+                { 4L, "Призери міжнародних культурних конкурсів та фестивалів" },
+                { 5L, "Соціально активні категорії учнів" },
+                { 6L, "Цифрові інструменти Google для закладів вищої та фахової передвищої освіти" },
+                { 7L, "Переможці та учасники олімпіад міжнародного та всеукраїнського рівнів" }
+            });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AchievementChild_ChildrenId",
-                table: "AchievementChild",
-                column: "ChildrenId");
+        migrationBuilder.CreateIndex(
+            name: "IX_AchievementChild_ChildrenId",
+            table: "AchievementChild",
+            column: "ChildrenId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Achievements_AchievementTypeId",
-                table: "Achievements",
-                column: "AchievementTypeId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Achievements_AchievementTypeId",
+            table: "Achievements",
+            column: "AchievementTypeId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Achievements_WorkshopId",
-                table: "Achievements",
-                column: "WorkshopId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Achievements_WorkshopId",
+            table: "Achievements",
+            column: "WorkshopId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AchievementTeachers_AchievementId",
-                table: "AchievementTeachers",
-                column: "AchievementId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_AchievementTeachers_AchievementId",
+            table: "AchievementTeachers",
+            column: "AchievementId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "AchievementChild");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "AchievementChild");
 
-            migrationBuilder.DropTable(
-                name: "AchievementTeachers");
+        migrationBuilder.DropTable(
+            name: "AchievementTeachers");
 
-            migrationBuilder.DropTable(
-                name: "Achievements");
+        migrationBuilder.DropTable(
+            name: "Achievements");
 
-            migrationBuilder.DropTable(
-                name: "AchievementTypes");
-        }
+        migrationBuilder.DropTable(
+            name: "AchievementTypes");
     }
 }

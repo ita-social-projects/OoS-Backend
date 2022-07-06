@@ -1,14 +1,13 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace OutOfSchool.Services.Enums
+namespace OutOfSchool.Services.Enums;
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum NotificationType
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum NotificationType
-    {
-        Application,
-        Chat,
-        Workshop,
-        Provider,
-    }
+    Application,
+    Chat,
+    Workshop,
+    Provider,
 }

@@ -1,9 +1,8 @@
-﻿namespace OutOfSchool.WebApi.Config
-{
-    public class IdentityServerConfig
-    {
-        public const string Name = "Identity";
+﻿namespace OutOfSchool.WebApi.Config;
 
-        public System.Uri Authority { get; set; }
-    }
+public class IdentityServerConfig
+{
+    public const string Name = "Identity";
+
+    public System.Uri Authority { get; set; }
 }

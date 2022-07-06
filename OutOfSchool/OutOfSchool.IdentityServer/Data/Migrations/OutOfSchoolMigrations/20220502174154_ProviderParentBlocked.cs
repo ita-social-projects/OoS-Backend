@@ -1,27 +1,27 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class ProviderParentBlocked : Migration
 {
-    public partial class ProviderParentBlocked : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsBlocked",
-                table: "ChatRoomWorkshops",
-                type: "tinyint(1)",
-                nullable: false,
-                defaultValue: false);
+        migrationBuilder.AddColumn<bool>(
+            name: "IsBlocked",
+            table: "ChatRoomWorkshops",
+            type: "tinyint(1)",
+            nullable: false,
+            defaultValue: false);
 
-            migrationBuilder.AddColumn<bool>(
-                name: "IsBlocked",
-                table: "Applications",
-                type: "tinyint(1)",
-                nullable: false,
-                defaultValue: false);
+        migrationBuilder.AddColumn<bool>(
+            name: "IsBlocked",
+            table: "Applications",
+            type: "tinyint(1)",
+            nullable: false,
+            defaultValue: false);
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "BlockedProviderParents",
                 columns: table => new
                 {
@@ -53,31 +53,30 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_BlockedProviderParents_ParentId",
-                table: "BlockedProviderParents",
-                column: "ParentId");
+        migrationBuilder.CreateIndex(
+            name: "IX_BlockedProviderParents_ParentId",
+            table: "BlockedProviderParents",
+            column: "ParentId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_BlockedProviderParents_ProviderId",
-                table: "BlockedProviderParents",
-                column: "ProviderId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_BlockedProviderParents_ProviderId",
+            table: "BlockedProviderParents",
+            column: "ProviderId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "BlockedProviderParents");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "BlockedProviderParents");
 
-            migrationBuilder.DropColumn(
-                name: "IsBlocked",
-                table: "ChatRoomWorkshops");
+        migrationBuilder.DropColumn(
+            name: "IsBlocked",
+            table: "ChatRoomWorkshops");
 
-            migrationBuilder.DropColumn(
-                name: "IsBlocked",
-                table: "Applications");
-        }
+        migrationBuilder.DropColumn(
+            name: "IsBlocked",
+            table: "Applications");
     }
 }

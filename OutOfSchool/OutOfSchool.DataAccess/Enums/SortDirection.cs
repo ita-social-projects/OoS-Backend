@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OutOfSchool.Services.Enums
+namespace OutOfSchool.Services.Enums;
+
+public enum SortDirection
 {
-    public enum SortDirection
-    {
-        Ascending,
-        Descending,
-    }
+    Ascending,
+    Descending,
 }

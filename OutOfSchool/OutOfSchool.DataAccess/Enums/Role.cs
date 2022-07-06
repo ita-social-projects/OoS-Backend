@@ -1,9 +1,8 @@
-﻿namespace OutOfSchool.Services.Enums
+﻿namespace OutOfSchool.Services.Enums;
+
+public enum Role
 {
-    public enum Role
-    {
-        Provider,
-        Parent,
-        Admin,
-    }
+    Provider,
+    Parent,
+    Admin,
 }

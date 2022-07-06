@@ -3,28 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using OutOfSchool.WebApi.Common;
 
-namespace OutOfSchool.WebApi.Util
+namespace OutOfSchool.WebApi.Util;
+
+public static class OperationResultHelper
 {
-    public static class OperationResultHelper
+    public static IEnumerable<OperationResult> GetFailedResults(this IEnumerable<OperationResult> results)
     {
-        public static IEnumerable<OperationResult> GetFailedResults(this IEnumerable<OperationResult> results)
+        if (results == null)
         {
-            if (results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
-
-            return results.Where(x => !x.Succeeded);
+            throw new ArgumentNullException(nameof(results));
         }
 
-        public static IDictionary<TKey, OperationResult> GetFailedResults<TKey>(this IDictionary<TKey, OperationResult> results)
-        {
-            if (results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
+        return results.Where(x => !x.Succeeded);
+    }
 
-            return results.Where(x => !x.Value.Succeeded).ToDictionary(x => x.Key, x => x.Value);
+    public static IDictionary<TKey, OperationResult> GetFailedResults<TKey>(this IDictionary<TKey, OperationResult> results)
+    {
+        if (results == null)
+        {
+            throw new ArgumentNullException(nameof(results));
         }
+
+        return results.Where(x => !x.Value.Succeeded).ToDictionary(x => x.Key, x => x.Value);
     }
 }

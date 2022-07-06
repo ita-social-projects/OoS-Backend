@@ -6,70 +6,69 @@ using Bogus;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.Tests.Common.TestDataGenerators
+namespace OutOfSchool.Tests.Common.TestDataGenerators;
+
+/// <summary>
+/// Contains methods to generate fake <see cref="Child"/> objects.
+/// </summary>
+public static class ChildGenerator
 {
+    private static readonly Faker<Child> faker = new Faker<Child>()
+        .RuleFor(x => x.Id, _ => Guid.NewGuid())
+        .RuleFor(x => x.FirstName, f => f.Person.FirstName)
+        .RuleFor(x => x.MiddleName, f => f.Name.FirstName())
+        .RuleFor(x => x.LastName, f => f.Person.LastName)
+        .RuleFor(x => x.DateOfBirth, f => f.Person.DateOfBirth)
+        .RuleFor(x => x.Gender, f => f.PickRandom<Gender>())
+        .RuleFor(x => x.PlaceOfStudy, f => f.Company.CompanyName());
+
     /// <summary>
-    /// Contains methods to generate fake <see cref="Child"/> objects.
+    /// Creates new instance of the <see cref="Child"/> class with random data.
     /// </summary>
-    public static class ChildGenerator
+    /// <returns><see cref="Child"/> object.</returns>
+    public static Child Generate() => faker.Generate();
+
+    /// <summary>
+    /// Generates a list of the <see cref="Child"/> objects.
+    /// </summary>
+    /// <param name="count">count of instances to generate.</param>
+    /// <returns>A <see cref="List{T}"/> of <see cref="Child"/> objects.</returns>
+    public static List<Child> Generate(int count) => faker.Generate(count);
+
+    public static Child WithParent(this Child child, Parent parent)
     {
-        private static readonly Faker<Child> faker = new Faker<Child>()
-            .RuleFor(x => x.Id, _ => Guid.NewGuid())
-            .RuleFor(x => x.FirstName, f => f.Person.FirstName)
-            .RuleFor(x => x.MiddleName, f => f.Name.FirstName())
-            .RuleFor(x => x.LastName, f => f.Person.LastName)
-            .RuleFor(x => x.DateOfBirth, f => f.Person.DateOfBirth)
-            .RuleFor(x => x.Gender, f => f.PickRandom<Gender>())
-            .RuleFor(x => x.PlaceOfStudy, f => f.Company.CompanyName());
+        _ = child ?? throw new ArgumentNullException(nameof(child));
 
-        /// <summary>
-        /// Creates new instance of the <see cref="Child"/> class with random data.
-        /// </summary>
-        /// <returns><see cref="Child"/> object.</returns>
-        public static Child Generate() => faker.Generate();
+        child.Parent = parent;
+        child.ParentId = parent?.Id ?? default;
 
-        /// <summary>
-        /// Generates a list of the <see cref="Child"/> objects.
-        /// </summary>
-        /// <param name="count">count of instances to generate.</param>
-        /// <returns>A <see cref="List{T}"/> of <see cref="Child"/> objects.</returns>
-        public static List<Child> Generate(int count) => faker.Generate(count);
+        return child;
+    }
 
-        public static Child WithParent(this Child child, Parent parent)
-        {
-            _ = child ?? throw new ArgumentNullException(nameof(child));
+    public static List<Child> WithParent(this List<Child> children, Parent parent)
+    {
+        _ = children ?? throw new ArgumentNullException(nameof(children));
 
-            child.Parent = parent;
-            child.ParentId = parent?.Id ?? default;
+        children.ForEach(x => x.WithParent(parent));
 
-            return child;
-        }
+        return children;
+    }
 
-        public static List<Child> WithParent(this List<Child> children, Parent parent)
-        {
-            _ = children ?? throw new ArgumentNullException(nameof(children));
+    public static Child WithSocial(this Child child, SocialGroup socialGroup)
+    {
+        _ = child ?? throw new ArgumentNullException(nameof(child));
 
-            children.ForEach(x => x.WithParent(parent));
+        child.SocialGroups?.Add(socialGroup);
 
-            return children;
-        }
+        return child;
+    }
 
-        public static Child WithSocial(this Child child, SocialGroup socialGroup)
-        {
-            _ = child ?? throw new ArgumentNullException(nameof(child));
+    public static List<Child> WithSocial(this List<Child> children, SocialGroup socialGroup)
+    {
+        _ = children ?? throw new ArgumentNullException(nameof(children));
 
-            child.SocialGroups?.Add(socialGroup);
+        children.ForEach(x => x.WithSocial(socialGroup));
 
-            return child;
-        }
-
-        public static List<Child> WithSocial(this List<Child> children, SocialGroup socialGroup)
-        {
-            _ = children ?? throw new ArgumentNullException(nameof(children));
-
-            children.ForEach(x => x.WithSocial(socialGroup));
-
-            return children;
-        }
+        return children;
     }
 }

@@ -2,16 +2,16 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.CertificateDb
-{
-    public partial class InitialIdentityServerCertificateDbMigration : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
+namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.CertificateDb;
 
-            migrationBuilder.CreateTable(
+public partial class InitialIdentityServerCertificateDbMigration : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AlterDatabase()
+            .Annotation("MySql:CharSet", "utf8mb4");
+
+        migrationBuilder.CreateTable(
                 name: "Certificates",
                 columns: table => new
                 {
@@ -27,13 +27,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.CertificateD
                 {
                     table.PrimaryKey("PK_Certificates", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "Certificates");
-        }
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "Certificates");
     }
 }

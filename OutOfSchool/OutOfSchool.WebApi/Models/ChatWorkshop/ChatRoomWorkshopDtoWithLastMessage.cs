@@ -1,9 +1,8 @@
-﻿namespace OutOfSchool.WebApi.Models.ChatWorkshop
-{
-    public class ChatRoomWorkshopDtoWithLastMessage : ChatRoomWorkshopDto
-    {
-        public int NotReadByCurrentUserMessagesCount { get; set; }
+﻿namespace OutOfSchool.WebApi.Models.ChatWorkshop;
 
-        public ChatMessageWorkshopDto LastMessage { get; set; }
-    }
+public class ChatRoomWorkshopDtoWithLastMessage : ChatRoomWorkshopDto
+{
+    public int NotReadByCurrentUserMessagesCount { get; set; }
+
+    public ChatMessageWorkshopDto LastMessage { get; set; }
 }

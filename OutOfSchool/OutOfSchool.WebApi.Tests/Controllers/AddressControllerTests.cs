@@ -10,263 +10,262 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Tests.Controllers
+namespace OutOfSchool.WebApi.Tests.Controllers;
+
+[TestFixture]
+public class AddressControllerTests
 {
-    [TestFixture]
-    public class AddressControllerTests
+    private AddressController controller;
+    private Mock<IAddressService> service;
+    private Mock<IStringLocalizer<SharedResource>> localizer;
+
+    private IEnumerable<AddressDto> addresses;
+    private AddressDto address;
+
+    [SetUp]
+    public void Setup()
     {
-        private AddressController controller;
-        private Mock<IAddressService> service;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
+        service = new Mock<IAddressService>();
+        localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-        private IEnumerable<AddressDto> addresses;
-        private AddressDto address;
+        controller = new AddressController(service.Object, localizer.Object);
 
-        [SetUp]
-        public void Setup()
+        addresses = FakeAddresses();
+        address = FakeAddress();
+    }
+
+    [Test]
+    public async Task GetAddresses_WhenCalled_ReturnsOkResultObject()
+    {
+        // Arrange
+        service.Setup(x => x.GetAll()).ReturnsAsync(addresses);
+
+        // Act
+        var result = await controller.GetAddresses().ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(result.StatusCode, 200);
+    }
+
+    [Test]
+    [TestCase(1)]
+    public async Task GetAddressById_WhenIdIsValid_ReturnsOkObjectResult(long id)
+    {
+        // Arrange
+        service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
+
+        // Act
+        var result = await controller.GetAddressById(id).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(result.StatusCode, 200);
+    }
+
+    [Test]
+    [TestCase(0)]
+    public void GetAddressById_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+    {
+        // Arrange
+        service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            async () => await controller.GetAddressById(id).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase(10)]
+    public async Task GetAddressById_WhenIdIsTooBig_ReturnsEmptyObject(long id)
+    {
+        // Arrange
+        service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
+
+        // Act
+        var result = await controller.GetAddressById(id).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result.Value, Is.Null);
+        Assert.AreEqual(result.StatusCode, 200);
+    }
+
+    [Test]
+    public async Task CreateAddress_WhenModelIsValid_ReturnsCreatedAtActionResult()
+    {
+        // Arrange
+        service.Setup(x => x.Create(address)).ReturnsAsync(address);
+
+        // Act
+        var result = await controller.Create(address).ConfigureAwait(false) as CreatedAtActionResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(result.StatusCode, 201);
+    }
+
+    [Test]
+    public async Task CreateAddress_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        controller.ModelState.AddModelError("CreateAddress", "Invalid model state.");
+
+        // Act
+        var result = await controller.Create(address).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task UpdateAddress_WhenModelIsValid_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var changedAddress = new AddressDto()
         {
-            service = new Mock<IAddressService>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
+            Id = 1,
+            City = "ChangedCity",
+        };
+        service.Setup(x => x.Update(changedAddress)).ReturnsAsync(changedAddress);
 
-            controller = new AddressController(service.Object, localizer.Object);
+        // Act
+        var result = await controller.Update(changedAddress).ConfigureAwait(false) as OkObjectResult;
 
-            addresses = FakeAddresses();
-            address = FakeAddress();
-        }
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(result.StatusCode, 200);
+    }
 
-        [Test]
-        public async Task GetAddresses_WhenCalled_ReturnsOkResultObject()
+    [Test]
+    public async Task UpdateAddress_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        controller.ModelState.AddModelError("UpdateAddress", "Invalid model state.");
+
+        // Act
+        var result = await controller.Update(address).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    [TestCase(1)]
+    public async Task DeleteAddress_WhenIdIsValid_ReturnsNoContentResult(long id)
+    {
+        // Arrange
+        service.Setup(x => x.Delete(id));
+
+        // Act
+        var result = await controller.Delete(id) as NoContentResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(result.StatusCode, 204);
+    }
+
+    [Test]
+    [TestCase(0)]
+    public void DeleteAddress_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+    {
+        // Arrange
+        service.Setup(x => x.Delete(id));
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            async () => await controller.Delete(id).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase(10)]
+    public async Task DeleteAddress_WhenIdIsInvalid_ReturnsNull(long id)
+    {
+        // Arrange
+        service.Setup(x => x.Delete(id));
+
+        // Act
+        var result = await controller.Delete(id) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
+
+    private AddressDto FakeAddress()
+    {
+        return new AddressDto()
         {
-            // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(addresses);
+            Id = 6,
+            Region = "Region6",
+            District = "District6",
+            City = "City6",
+            Street = "Street6",
+            BuildingNumber = "BuildingNumber6",
+            Latitude = 60.45383,
+            Longitude = 65.56765,
+        };
+    }
 
-            // Act
-            var result = await controller.GetAddresses().ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
-        }
-
-        [Test]
-        [TestCase(1)]
-        public async Task GetAddressById_WhenIdIsValid_ReturnsOkObjectResult(long id)
+    private IEnumerable<AddressDto> FakeAddresses()
+    {
+        return new List<AddressDto>()
         {
-            // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
-
-            // Act
-            var result = await controller.GetAddressById(id).ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 200);
-        }
-
-        [Test]
-        [TestCase(0)]
-        public void GetAddressById_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
-        {
-            // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
-
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await controller.GetAddressById(id).ConfigureAwait(false));
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task GetAddressById_WhenIdIsTooBig_ReturnsEmptyObject(long id)
-        {
-            // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(addresses.SingleOrDefault(x => x.Id == id));
-
-            // Act
-            var result = await controller.GetAddressById(id).ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-            Assert.That(result.Value, Is.Null);
-            Assert.AreEqual(result.StatusCode, 200);
-        }
-
-        [Test]
-        public async Task CreateAddress_WhenModelIsValid_ReturnsCreatedAtActionResult()
-        {
-            // Arrange
-            service.Setup(x => x.Create(address)).ReturnsAsync(address);
-
-            // Act
-            var result = await controller.Create(address).ConfigureAwait(false) as CreatedAtActionResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 201);
-        }
-
-        [Test]
-        public async Task CreateAddress_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-        {
-            // Arrange
-            controller.ModelState.AddModelError("CreateAddress", "Invalid model state.");
-
-            // Act
-            var result = await controller.Create(address).ConfigureAwait(false);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-        }
-
-        [Test]
-        public async Task UpdateAddress_WhenModelIsValid_ReturnsOkObjectResult()
-        {
-           // Arrange
-           var changedAddress = new AddressDto()
-           {
-               Id = 1,
-               City = "ChangedCity",
-           };
-           service.Setup(x => x.Update(changedAddress)).ReturnsAsync(changedAddress);
-
-            // Act
-           var result = await controller.Update(changedAddress).ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-           Assert.That(result, Is.Not.Null);
-           Assert.AreEqual(result.StatusCode, 200);
-        }
-
-        [Test]
-        public async Task UpdateAddress_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-        {
-            // Arrange
-            controller.ModelState.AddModelError("UpdateAddress", "Invalid model state.");
-
-            // Act
-            var result = await controller.Update(address).ConfigureAwait(false);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-        }
-
-        [Test]
-        [TestCase(1)]
-        public async Task DeleteAddress_WhenIdIsValid_ReturnsNoContentResult(long id)
-        {
-            // Arrange
-            service.Setup(x => x.Delete(id));
-
-            // Act
-            var result = await controller.Delete(id) as NoContentResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(result.StatusCode, 204);
-        }
-
-        [Test]
-        [TestCase(0)]
-        public void DeleteAddress_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
-        {
-            // Arrange
-            service.Setup(x => x.Delete(id));
-
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await controller.Delete(id).ConfigureAwait(false));
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task DeleteAddress_WhenIdIsInvalid_ReturnsNull(long id)
-        {
-            // Arrange
-            service.Setup(x => x.Delete(id));
-
-            // Act
-            var result = await controller.Delete(id) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Null);
-        }
-
-        private AddressDto FakeAddress()
-        {
-            return new AddressDto()
+            new AddressDto()
             {
-                Id = 6,
-                Region = "Region6",
-                District = "District6",
-                City = "City6",
-                Street = "Street6",
-                BuildingNumber = "BuildingNumber6",
-                Latitude = 60.45383,
-                Longitude = 65.56765,
-            };
-        }
-
-        private IEnumerable<AddressDto> FakeAddresses()
-        {
-            return new List<AddressDto>()
+                Id = 1,
+                Region = "Region1",
+                District = "District1",
+                City = "City1",
+                Street = "Street1",
+                BuildingNumber = "BuildingNumber1",
+                Latitude = 41.45383,
+                Longitude = 51.56765,
+            },
+            new AddressDto()
             {
-               new AddressDto()
-               {
-                     Id = 1,
-                     Region = "Region1",
-                     District = "District1",
-                     City = "City1",
-                     Street = "Street1",
-                     BuildingNumber = "BuildingNumber1",
-                     Latitude = 41.45383,
-                     Longitude = 51.56765,
-               },
-               new AddressDto()
-               {
-                      Id = 2,
-                      Region = "Region2",
-                      District = "District2",
-                      City = "City2",
-                      Street = "Street2",
-                      BuildingNumber = "BuildingNumber2",
-                      Latitude = 42.45383,
-                      Longitude = 52.56765,
-               },
-               new AddressDto()
-               {
-                      Id = 3,
-                      Region = "Region3",
-                      District = "District3",
-                      City = "City3",
-                      Street = "Street3",
-                      BuildingNumber = "BuildingNumber3",
-                      Latitude = 43.45383,
-                      Longitude = 53.56765,
-               },
-               new AddressDto()
-               {
-                      Id = 4,
-                      Region = "Region4",
-                      District = "District4",
-                      City = "City4",
-                      Street = "Street4",
-                      BuildingNumber = "BuildingNumber4",
-                      Latitude = 44.45383,
-                      Longitude = 54.56765,
-               },
-               new AddressDto()
-               {
-                       Id = 5,
-                       Region = "Region5",
-                       District = "District5",
-                       City = "City5",
-                       Street = "Street5",
-                       BuildingNumber = "BuildingNumber5",
-                       Latitude = 45.45383,
-                       Longitude = 55.56765,
-               },
-            };
-        }
+                Id = 2,
+                Region = "Region2",
+                District = "District2",
+                City = "City2",
+                Street = "Street2",
+                BuildingNumber = "BuildingNumber2",
+                Latitude = 42.45383,
+                Longitude = 52.56765,
+            },
+            new AddressDto()
+            {
+                Id = 3,
+                Region = "Region3",
+                District = "District3",
+                City = "City3",
+                Street = "Street3",
+                BuildingNumber = "BuildingNumber3",
+                Latitude = 43.45383,
+                Longitude = 53.56765,
+            },
+            new AddressDto()
+            {
+                Id = 4,
+                Region = "Region4",
+                District = "District4",
+                City = "City4",
+                Street = "Street4",
+                BuildingNumber = "BuildingNumber4",
+                Latitude = 44.45383,
+                Longitude = 54.56765,
+            },
+            new AddressDto()
+            {
+                Id = 5,
+                Region = "Region5",
+                District = "District5",
+                City = "City5",
+                Street = "Street5",
+                BuildingNumber = "BuildingNumber5",
+                Latitude = 45.45383,
+                Longitude = 55.56765,
+            },
+        };
     }
 }

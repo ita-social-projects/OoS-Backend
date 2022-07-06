@@ -1,7 +1,6 @@
-﻿namespace OutOfSchool.WebApi.Models.Codeficator
+﻿namespace OutOfSchool.WebApi.Models.Codeficator;
+
+public class CodeficatorWithParentDto : CodeficatorDto
 {
-    public class CodeficatorWithParentDto : CodeficatorDto
-    {
-        public CodeficatorWithParentDto Parent { get; set; }
-    }
+    public CodeficatorWithParentDto Parent { get; set; }
 }

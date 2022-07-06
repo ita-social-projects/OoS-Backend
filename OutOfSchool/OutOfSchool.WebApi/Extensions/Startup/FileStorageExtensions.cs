@@ -19,69 +19,68 @@ using OutOfSchool.WebApi.Util;
 using OutOfSchool.WebApi.Util.FakeImplementations;
 using Quartz;
 
-namespace OutOfSchool.WebApi.Extensions.Startup
+namespace OutOfSchool.WebApi.Extensions.Startup;
+
+public static class FileStorageExtensions
 {
-    public static class FileStorageExtensions
+    /// <summary>
+    /// Adds images storage into the services.
+    /// </summary>
+    /// <param name="services">Service collection.</param>
+    /// <param name="turnOnFakeStorage">Parameter that checks whether we should use fake storage.</param>
+    /// <returns><see cref="IServiceCollection"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
+    public static IServiceCollection AddImagesStorage(this IServiceCollection services, bool turnOnFakeStorage = false)
     {
-        /// <summary>
-        /// Adds images storage into the services.
-        /// </summary>
-        /// <param name="services">Service collection.</param>
-        /// <param name="turnOnFakeStorage">Parameter that checks whether we should use fake storage.</param>
-        /// <returns><see cref="IServiceCollection"/> instance.</returns>
-        /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-        public static IServiceCollection AddImagesStorage(this IServiceCollection services, bool turnOnFakeStorage = false)
+        _ = services ?? throw new ArgumentNullException(nameof(services));
+
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Development;
+
+        if (turnOnFakeStorage && isDevelopment)
         {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-
-            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Development;
-
-            if (turnOnFakeStorage && isDevelopment)
-            {
-                return services.AddTransient<IImageFilesStorage, FakeImagesStorage>();
-            }
-
-            services.AddSingleton(provider =>
-            {
-                var config = provider.GetRequiredService<IOptions<GcpStorageImagesSourceConfig>>();
-                var googleCredential = config.Value.RetrieveGoogleCredential();
-                return StorageClient.Create(googleCredential);
-            });
-
-            services.AddSingleton<IGcpStorageContext, GcpStorageContext>(provider =>
-            {
-                var config = provider.GetRequiredService<IOptions<GcpStorageImagesSourceConfig>>();
-                var storageClient = provider.GetRequiredService<StorageClient>();
-                return new GcpStorageContext(storageClient, config.Value.BucketName);
-            });
-
-            return services.AddScoped<IImageFilesStorage, GcpImagesStorage>(provider
-                => new GcpImagesStorage(provider.GetRequiredService<IGcpStorageContext>()));
+            return services.AddTransient<IImageFilesStorage, FakeImagesStorage>();
         }
 
-        /// <summary>
-        /// Adds all essential methods to synchronize gcp files with the main database.
-        /// </summary>
-        /// <param name="quartz">Quartz Configurator.</param>
-        /// <param name="services">Service collection.</param>
-        /// <param name="quartzConfig">Quartz configuration.</param>
-        /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
-        public static void AddGcpSynchronization(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
+        services.AddSingleton(provider =>
         {
-            _ = services ?? throw new ArgumentNullException(nameof(services));
-            _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));
+            var config = provider.GetRequiredService<IOptions<GcpStorageImagesSourceConfig>>();
+            var googleCredential = config.Value.RetrieveGoogleCredential();
+            return StorageClient.Create(googleCredential);
+        });
 
-            services.AddScoped<IGcpImagesSyncDataRepository, GcpImagesSyncDataRepository>();
-            services.AddScoped<IGcpStorageSynchronizationService, GcpImagesStorageSynchronizationService>();
+        services.AddSingleton<IGcpStorageContext, GcpStorageContext>(provider =>
+        {
+            var config = provider.GetRequiredService<IOptions<GcpStorageImagesSourceConfig>>();
+            var storageClient = provider.GetRequiredService<StorageClient>();
+            return new GcpStorageContext(storageClient, config.Value.BucketName);
+        });
 
-            var gcpImagesJobKey = new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp);
+        return services.AddScoped<IImageFilesStorage, GcpImagesStorage>(provider
+            => new GcpImagesStorage(provider.GetRequiredService<IGcpStorageContext>()));
+    }
 
-            quartz.AddJob<GcpStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
-            quartz.AddTrigger(t => t
-                .WithIdentity(JobTriggerConstants.GcpImagesSynchronization, GroupConstants.Gcp)
-                .ForJob(gcpImagesJobKey)
-                .StartNow()
-                .WithCronSchedule(quartzConfig.CronSchedules.GcpImagesSyncCronScheduleString));
-        }
+    /// <summary>
+    /// Adds all essential methods to synchronize gcp files with the main database.
+    /// </summary>
+    /// <param name="quartz">Quartz Configurator.</param>
+    /// <param name="services">Service collection.</param>
+    /// <param name="quartzConfig">Quartz configuration.</param>
+    /// <exception cref="ArgumentNullException">Whenever the services collection is null.</exception>
+    public static void AddGcpSynchronization(this IServiceCollectionQuartzConfigurator quartz, IServiceCollection services, QuartzConfig quartzConfig)
+    {
+        _ = services ?? throw new ArgumentNullException(nameof(services));
+        _ = quartzConfig ?? throw new ArgumentNullException(nameof(quartzConfig));
+
+        services.AddScoped<IGcpImagesSyncDataRepository, GcpImagesSyncDataRepository>();
+        services.AddScoped<IGcpStorageSynchronizationService, GcpImagesStorageSynchronizationService>();
+
+        var gcpImagesJobKey = new JobKey(JobConstants.GcpImagesSynchronization, GroupConstants.Gcp);
+
+        quartz.AddJob<GcpStorageSynchronizationQuartzJob>(j => j.WithIdentity(gcpImagesJobKey));
+        quartz.AddTrigger(t => t
+            .WithIdentity(JobTriggerConstants.GcpImagesSynchronization, GroupConstants.Gcp)
+            .ForJob(gcpImagesJobKey)
+            .StartNow()
+            .WithCronSchedule(quartzConfig.CronSchedules.GcpImagesSyncCronScheduleString));
     }
 }

@@ -1,9 +1,8 @@
-﻿namespace OutOfSchool.Services.Enums
+﻿namespace OutOfSchool.Services.Enums;
+
+public enum ElasticsearchSyncOperation
 {
-    public enum ElasticsearchSyncOperation
-    {
-        Create,
-        Update,
-        Delete,
-    }
+    Create,
+    Update,
+    Delete,
 }

@@ -1,20 +1,20 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
-{
-    public partial class AddSupportInformation : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<ulong>(
-                name: "GeoHash",
-                table: "Cities",
-                type: "bigint unsigned",
-                nullable: false,
-                defaultValue: 0ul);
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
 
-            migrationBuilder.CreateTable(
+public partial class AddSupportInformation : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AddColumn<ulong>(
+            name: "GeoHash",
+            table: "Cities",
+            type: "bigint unsigned",
+            nullable: false,
+            defaultValue: 0ul);
+
+        migrationBuilder.CreateTable(
                 name: "SupportInformation",
                 columns: table => new
                 {
@@ -30,17 +30,16 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_SupportInformation", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "SupportInformation");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "SupportInformation");
 
-            migrationBuilder.DropColumn(
-                name: "GeoHash",
-                table: "Cities");
-        }
+        migrationBuilder.DropColumn(
+            name: "GeoHash",
+            table: "Cities");
     }
 }

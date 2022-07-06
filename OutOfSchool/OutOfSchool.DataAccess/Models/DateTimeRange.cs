@@ -3,19 +3,18 @@ using System.ComponentModel.DataAnnotations;
 
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.Services.Models;
+
+public class DateTimeRange : IKeyedEntity<long>
 {
-    public class DateTimeRange : IKeyedEntity<long>
-    {
-        public long Id { get; set; }
+    public long Id { get; set; }
 
-        public TimeSpan StartTime { get; set; }
+    public TimeSpan StartTime { get; set; }
 
-        public TimeSpan EndTime { get; set; }
+    public TimeSpan EndTime { get; set; }
 
-        public Guid WorkshopId { get; set; }
+    public Guid WorkshopId { get; set; }
 
-        [Required]
-        public DaysBitMask Workdays { get; set; }
-    }
+    [Required]
+    public DaysBitMask Workdays { get; set; }
 }

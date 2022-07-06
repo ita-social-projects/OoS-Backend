@@ -1,11 +1,10 @@
 ﻿using OutOfSchool.WebApi.Common;
 
-namespace OutOfSchool.WebApi.Models.Images
-{
-    public class ImageChangingResult
-    {
-        public OperationResult RemovingResult { get; set; }
+namespace OutOfSchool.WebApi.Models.Images;
 
-        public Result<string> UploadingResult { get; set; }
-    }
+public class ImageChangingResult
+{
+    public OperationResult RemovingResult { get; set; }
+
+    public Result<string> UploadingResult { get; set; }
 }

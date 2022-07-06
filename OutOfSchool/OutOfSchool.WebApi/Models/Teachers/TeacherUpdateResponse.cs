@@ -1,11 +1,10 @@
 ﻿using OutOfSchool.WebApi.Models.Images;
 
-namespace OutOfSchool.WebApi.Models.Teachers
-{
-    public class TeacherUpdateResponse
-    {
-        public TeacherDTO Teacher { get; set; }
+namespace OutOfSchool.WebApi.Models.Teachers;
 
-        public SingleImageUploadingResponse UploadingAvatarImageResult { get; set; }
-    }
+public class TeacherUpdateResponse
+{
+    public TeacherDTO Teacher { get; set; }
+
+    public SingleImageUploadingResponse UploadingAvatarImageResult { get; set; }
 }

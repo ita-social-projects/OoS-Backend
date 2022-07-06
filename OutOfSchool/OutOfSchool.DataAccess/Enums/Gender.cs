@@ -1,8 +1,7 @@
-﻿namespace OutOfSchool.Services.Enums
+﻿namespace OutOfSchool.Services.Enums;
+
+public enum Gender
 {
-    public enum Gender
-    {
-        Male,
-        Female,
-    }
+    Male,
+    Female,
 }

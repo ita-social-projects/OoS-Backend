@@ -23,223 +23,222 @@ using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services.Images;
 using Ubiety.Dns.Core.Records.NotUsed;
 
-namespace OutOfSchool.WebApi.Services
+namespace OutOfSchool.WebApi.Services;
+
+public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotificationReciever
 {
-    public class WorkshopServicesCombiner : IWorkshopServicesCombiner, INotificationReciever
+    private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
+    private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
+    private readonly ILogger<WorkshopServicesCombiner> logger;
+    private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
+    private readonly INotificationService notificationService;
+    private readonly IEntityRepository<Favorite> favoriteRepository;
+    private readonly IApplicationRepository applicationRepository;
+
+    public WorkshopServicesCombiner(
+        IWorkshopService workshopService,
+        IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
+        ILogger<WorkshopServicesCombiner> logger,
+        IElasticsearchSynchronizationService elasticsearchSynchronizationService,
+        INotificationService notificationService,
+        IEntityRepository<Favorite> favoriteRepository,
+        IApplicationRepository applicationRepository)
     {
-        private protected readonly IWorkshopService workshopService; // make it private after removing v2 version
-        private readonly IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService;
-        private readonly ILogger<WorkshopServicesCombiner> logger;
-        private protected readonly IElasticsearchSynchronizationService elasticsearchSynchronizationService; // make it private after removing v2 version
-        private readonly INotificationService notificationService;
-        private readonly IEntityRepository<Favorite> favoriteRepository;
-        private readonly IApplicationRepository applicationRepository;
+        this.workshopService = workshopService;
+        this.elasticsearchService = elasticsearchService;
+        this.logger = logger;
+        this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
+        this.notificationService = notificationService;
+        this.favoriteRepository = favoriteRepository;
+        this.applicationRepository = applicationRepository;
+    }
 
-        public WorkshopServicesCombiner(
-            IWorkshopService workshopService,
-            IElasticsearchService<WorkshopES, WorkshopFilterES> elasticsearchService,
-            ILogger<WorkshopServicesCombiner> logger,
-            IElasticsearchSynchronizationService elasticsearchSynchronizationService,
-            INotificationService notificationService,
-            IEntityRepository<Favorite> favoriteRepository,
-            IApplicationRepository applicationRepository)
+    /// <inheritdoc/>
+    public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+    {
+        var workshop = await workshopService.Create(dto).ConfigureAwait(false);
+
+        await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                ElasticsearchSyncEntity.Workshop,
+                workshop.Id,
+                ElasticsearchSyncOperation.Create)
+            .ConfigureAwait(false);
+
+        return workshop;
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorkshopDTO> GetById(Guid id)
+    {
+        var workshop = await workshopService.GetById(id).ConfigureAwait(false);
+
+        return workshop;
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorkshopDTO> Update(WorkshopDTO dto)
+    {
+        var workshop = await workshopService.Update(dto).ConfigureAwait(false);
+
+        await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                ElasticsearchSyncEntity.Workshop,
+                workshop.Id,
+                ElasticsearchSyncOperation.Update)
+            .ConfigureAwait(false);
+
+        return workshop;
+    }
+
+    /// <inheritdoc/>
+    public async Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto)
+    {
+        _ = dto ?? throw new ArgumentNullException(nameof(dto));
+
+        var workshopDto = await workshopService.UpdateStatus(dto).ConfigureAwait(false);
+
+        var additionalData = new Dictionary<string, string>()
         {
-            this.workshopService = workshopService;
-            this.elasticsearchService = elasticsearchService;
-            this.logger = logger;
-            this.elasticsearchSynchronizationService = elasticsearchSynchronizationService;
-            this.notificationService = notificationService;
-            this.favoriteRepository = favoriteRepository;
-            this.applicationRepository = applicationRepository;
-        }
+            { "Status", workshopDto.Status.ToString() },
+        };
 
-        /// <inheritdoc/>
-        public async Task<WorkshopDTO> Create(WorkshopDTO dto)
+        await notificationService.Create(
+            NotificationType.Workshop,
+            NotificationAction.Update,
+            workshopDto.WorkshopId,
+            this,
+            additionalData).ConfigureAwait(false);
+
+        return dto;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+    {
+        var workshops = await workshopService.PartialUpdateByProvider(provider).ConfigureAwait(false);
+
+        foreach (var workshop in workshops)
         {
-            var workshop = await workshopService.Create(dto).ConfigureAwait(false);
-
-            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
-                    ElasticsearchSyncEntity.Workshop,
-                    workshop.Id,
-                    ElasticsearchSyncOperation.Create)
-                .ConfigureAwait(false);
-
-            return workshop;
-        }
-
-        /// <inheritdoc/>
-        public async Task<WorkshopDTO> GetById(Guid id)
-        {
-            var workshop = await workshopService.GetById(id).ConfigureAwait(false);
-
-            return workshop;
-        }
-
-        /// <inheritdoc/>
-        public async Task<WorkshopDTO> Update(WorkshopDTO dto)
-        {
-            var workshop = await workshopService.Update(dto).ConfigureAwait(false);
-
             await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
                     ElasticsearchSyncEntity.Workshop,
                     workshop.Id,
                     ElasticsearchSyncOperation.Update)
                 .ConfigureAwait(false);
-
-            return workshop;
         }
 
-        /// <inheritdoc/>
-        public async Task<WorkshopStatusDto> UpdateStatus(WorkshopStatusDto dto)
+        return workshops;
+    }
+
+    /// <inheritdoc/>
+    public async Task Delete(Guid id)
+    {
+        await workshopService.Delete(id).ConfigureAwait(false);
+
+        await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
+                ElasticsearchSyncEntity.Workshop,
+                id,
+                ElasticsearchSyncOperation.Delete)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task<SearchResult<WorkshopCard>> GetAll(OffsetFilter offsetFilter)
+    {
+        if (offsetFilter == null)
         {
-            _ = dto ?? throw new ArgumentNullException(nameof(dto));
-
-            var workshopDto = await workshopService.UpdateStatus(dto).ConfigureAwait(false);
-
-            var additionalData = new Dictionary<string, string>()
-            {
-                { "Status", workshopDto.Status.ToString() },
-            };
-
-            await notificationService.Create(
-                NotificationType.Workshop,
-                NotificationAction.Update,
-                workshopDto.WorkshopId,
-                this,
-                additionalData).ConfigureAwait(false);
-
-            return dto;
+            offsetFilter = new OffsetFilter();
         }
 
-        /// <inheritdoc/>
-        public async Task<IEnumerable<Workshop>> PartialUpdateByProvider(Provider provider)
+        var filter = new WorkshopFilter()
         {
-            var workshops = await workshopService.PartialUpdateByProvider(provider).ConfigureAwait(false);
+            Size = offsetFilter.Size,
+            From = offsetFilter.From,
+            OrderByField = OrderBy.Id.ToString(),
+        };
 
-            foreach (var workshop in workshops)
+        if (elasticsearchService.IsElasticAlive)
+        {
+            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
+            if (result.TotalAmount <= 0)
             {
-                await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
-                    ElasticsearchSyncEntity.Workshop,
-                    workshop.Id,
-                    ElasticsearchSyncOperation.Update)
-                    .ConfigureAwait(false);
+                logger.LogInformation($"Result was {result.TotalAmount}");
             }
 
-            return workshops;
+            return result.ToSearchResult();
+        }
+        else
+        {
+            var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
+
+            return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter)
+    {
+        if (!IsFilterValid(filter))
+        {
+            return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
         }
 
-        /// <inheritdoc/>
-        public async Task Delete(Guid id)
+        if (elasticsearchService.IsElasticAlive)
         {
-            await workshopService.Delete(id).ConfigureAwait(false);
-
-            await elasticsearchSynchronizationService.AddNewRecordToElasticsearchSynchronizationTable(
-                    ElasticsearchSyncEntity.Workshop,
-                    id,
-                    ElasticsearchSyncOperation.Delete)
-                .ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopCard>> GetAll(OffsetFilter offsetFilter)
-        {
-            if (offsetFilter == null)
+            var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
+            if (result.TotalAmount <= 0)
             {
-                offsetFilter = new OffsetFilter();
+                logger.LogInformation($"Result was {result.TotalAmount}");
             }
 
-            var filter = new WorkshopFilter()
-            {
-                Size = offsetFilter.Size,
-                From = offsetFilter.From,
-                OrderByField = OrderBy.Id.ToString(),
-            };
-
-            if (elasticsearchService.IsElasticAlive)
-            {
-                var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
-                if (result.TotalAmount <= 0)
-                {
-                    logger.LogInformation($"Result was {result.TotalAmount}");
-                }
-
-                return result.ToSearchResult();
-            }
-            else
-            {
-                var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
-
-                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
-            }
+            return result.ToSearchResult();
         }
-
-        /// <inheritdoc/>
-        public async Task<SearchResult<WorkshopCard>> GetByFilter(WorkshopFilter filter)
+        else
         {
-            if (!IsFilterValid(filter))
-            {
-                return new SearchResult<WorkshopCard> { TotalAmount = 0, Entities = new List<WorkshopCard>() };
-            }
+            var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
 
-            if (elasticsearchService.IsElasticAlive)
-            {
-                var result = await elasticsearchService.Search(filter.ToESModel()).ConfigureAwait(false);
-                if (result.TotalAmount <= 0)
-                {
-                    logger.LogInformation($"Result was {result.TotalAmount}");
-                }
-
-                return result.ToSearchResult();
-            }
-            else
-            {
-                var databaseResult = await workshopService.GetByFilter(filter).ConfigureAwait(false);
-
-                return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
-            }
+            return new SearchResult<WorkshopCard>() { TotalAmount = databaseResult.TotalAmount, Entities = databaseResult.Entities };
         }
+    }
 
-        /// <inheritdoc/>
-        public async Task<List<WorkshopCard>> GetByProviderId(Guid id)
-        {
-            var workshopCards = await workshopService.GetByProviderId(id).ConfigureAwait(false);
+    /// <inheritdoc/>
+    public async Task<List<WorkshopCard>> GetByProviderId(Guid id)
+    {
+        var workshopCards = await workshopService.GetByProviderId(id).ConfigureAwait(false);
 
-            return workshopCards.ToList();
-        }
+        return workshopCards.ToList();
+    }
 
-        /// <inheritdoc/>
-        public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
-            await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
+    /// <inheritdoc/>
+    public async Task<Guid> GetWorkshopProviderId(Guid workshopId) =>
+        await workshopService.GetWorkshopProviderOwnerIdAsync(workshopId).ConfigureAwait(false);
 
-        public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
-        {
-            var recipientIds = new List<string>();
+    public async Task<IEnumerable<string>> GetNotificationsRecipientIds(NotificationAction action, Dictionary<string, string> additionalData, Guid objectId)
+    {
+        var recipientIds = new List<string>();
 
-            var favoriteWorkshopUsersIds = await favoriteRepository.Get(where: x => x.WorkshopId == objectId)
-                .Select(x => x.UserId)
-                .ToListAsync()
-                .ConfigureAwait(false);
+        var favoriteWorkshopUsersIds = await favoriteRepository.Get(where: x => x.WorkshopId == objectId)
+            .Select(x => x.UserId)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
-            Expression<Func<Application, bool>> predicate =
-                x => x.Status != ApplicationStatus.Left
-                     && x.WorkshopId == objectId;
+        Expression<Func<Application, bool>> predicate =
+            x => x.Status != ApplicationStatus.Left
+                 && x.WorkshopId == objectId;
 
-            var appliedUsersIds = await applicationRepository.Get(where: predicate)
-                .Select(x => x.Parent.UserId)
-                .ToListAsync()
-                .ConfigureAwait(false);
+        var appliedUsersIds = await applicationRepository.Get(where: predicate)
+            .Select(x => x.Parent.UserId)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
-            recipientIds.AddRange(favoriteWorkshopUsersIds);
-            recipientIds.AddRange(appliedUsersIds);
+        recipientIds.AddRange(favoriteWorkshopUsersIds);
+        recipientIds.AddRange(appliedUsersIds);
 
-            return recipientIds.Distinct();
-        }
+        return recipientIds.Distinct();
+    }
 
-        private bool IsFilterValid(WorkshopFilter filter)
-        {
-            return filter != null && filter.MaxStartTime >= filter.MinStartTime
-                                  && filter.MaxAge >= filter.MinAge
-                                  && filter.MaxPrice >= filter.MinPrice;
-        }
+    private bool IsFilterValid(WorkshopFilter filter)
+    {
+        return filter != null && filter.MaxStartTime >= filter.MinStartTime
+                              && filter.MaxAge >= filter.MinAge
+                              && filter.MaxPrice >= filter.MinPrice;
     }
 }

@@ -2,20 +2,19 @@
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 
-namespace OutOfSchool.WebApi.Services.ProviderAdminOperations
+namespace OutOfSchool.WebApi.Services.ProviderAdminOperations;
+
+/// <summary>
+/// Defines interface for creating ProviderAdmin.
+/// </summary>
+public interface IProviderAdminOperationsService
 {
     /// <summary>
-    /// Defines interface for creating ProviderAdmin.
+    /// Create ProviderAdmin in IdentityServer.
     /// </summary>
-    public interface IProviderAdminOperationsService
-    {
-        /// <summary>
-        /// Create ProviderAdmin in IdentityServer.
-        /// </summary>
-        /// <param name="userId">User's identificator.</param>
-        /// <param name="providerAdminDto">Entity for creation.</param>
-        /// <param name="token">User's security token.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        public Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token);
-    }
+    /// <param name="userId">User's identificator.</param>
+    /// <param name="providerAdminDto">Entity for creation.</param>
+    /// <param name="token">User's security token.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    public Task<ResponseDto> CreateProviderAdminAsync(string userId, CreateProviderAdminDto providerAdminDto, string token);
 }

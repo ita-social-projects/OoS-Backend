@@ -1,18 +1,17 @@
 ﻿using System;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.WebApi.Models
+namespace OutOfSchool.WebApi.Models;
+
+public class ElasticsearchSyncRecordDto
 {
-    public class ElasticsearchSyncRecordDto
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        public ElasticsearchSyncEntity Entity { get; set; }
+    public ElasticsearchSyncEntity Entity { get; set; }
 
-        public Guid RecordId { get; set; }
+    public Guid RecordId { get; set; }
 
-        public DateTimeOffset OperationDate { get; set; }
+    public DateTimeOffset OperationDate { get; set; }
 
-        public ElasticsearchSyncOperation Operation { get; set; }
-    }
+    public ElasticsearchSyncOperation Operation { get; set; }
 }

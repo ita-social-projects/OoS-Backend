@@ -1,8 +1,7 @@
 using OutOfSchool.Services.Models.Images;
 
-namespace OutOfSchool.Services.Repository.Files
+namespace OutOfSchool.Services.Repository.Files;
+
+public interface IImageFilesStorage : IFilesStorage<ImageFileModel, string>
 {
-    public interface IImageFilesStorage : IFilesStorage<ImageFileModel, string>
-    {
-    }
 }

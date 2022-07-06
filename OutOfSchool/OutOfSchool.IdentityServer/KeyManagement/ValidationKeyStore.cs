@@ -5,41 +5,40 @@ using IdentityServer4.Models;
 using IdentityServer4.Stores;
 using Microsoft.Extensions.Logging;
 
-namespace OutOfSchool.IdentityServer.KeyManagement
+namespace OutOfSchool.IdentityServer.KeyManagement;
+
+public class ValidationKeyStore : IValidationKeysStore
 {
-    public class ValidationKeyStore : IValidationKeysStore
+    private readonly IKeyManager keyManager;
+    private readonly ILogger<ValidationKeyStore> logger;
+
+    public ValidationKeyStore(IKeyManager manager, ILogger<ValidationKeyStore> logger)
     {
-        private readonly IKeyManager keyManager;
-        private readonly ILogger<ValidationKeyStore> logger;
+        keyManager = manager;
+        this.logger = logger;
+    }
 
-        public ValidationKeyStore(IKeyManager manager, ILogger<ValidationKeyStore> logger)
+    /// <inheritdoc />
+    public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
+    {
+        try
         {
-            keyManager = manager;
-            this.logger = logger;
+            var certificate = await keyManager.Get();
+
+            var credential = certificate.ConvertToCredentials();
+
+            var keyInfo = new SecurityKeyInfo
+            {
+                Key = credential.Key,
+                SigningAlgorithm = credential.Algorithm,
+            };
+
+            return new[] {keyInfo};
         }
-
-        /// <inheritdoc />
-        public async Task<IEnumerable<SecurityKeyInfo>> GetValidationKeysAsync()
+        catch (Exception e)
         {
-            try
-            {
-                var certificate = await keyManager.Get();
-
-                var credential = certificate.ConvertToCredentials();
-
-                var keyInfo = new SecurityKeyInfo
-                {
-                    Key = credential.Key,
-                    SigningAlgorithm = credential.Algorithm,
-                };
-
-                return new[] {keyInfo};
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Failed to get validation keys");
-                return Array.Empty<SecurityKeyInfo>();
-            }
+            logger.LogError(e, "Failed to get validation keys");
+            return Array.Empty<SecurityKeyInfo>();
         }
     }
 }

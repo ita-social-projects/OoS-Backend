@@ -1,9 +1,8 @@
-﻿namespace OutOfSchool.Services.Enums
+﻿namespace OutOfSchool.Services.Enums;
+
+public enum CompanyInformationType
 {
-    public enum CompanyInformationType
-    {
-        AboutPortal,
-        SupportInformation,
-        LawsAndRegulations,
-    }
+    AboutPortal,
+    SupportInformation,
+    LawsAndRegulations,
 }

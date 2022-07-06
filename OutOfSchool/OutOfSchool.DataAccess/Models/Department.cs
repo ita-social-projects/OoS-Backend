@@ -1,26 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.Services.Models;
+
+public class Department : IKeyedEntity<long>
 {
-    public class Department : IKeyedEntity<long>
-    {
-        public long Id { get; set; }
+    public long Id { get; set; }
 
-        [Required(ErrorMessage = "Title is required")]
-        [DataType(DataType.Text)]
-        [MaxLength(150)]
-        [MinLength(1)]
-        public string Title { get; set; }
+    [Required(ErrorMessage = "Title is required")]
+    [DataType(DataType.Text)]
+    [MaxLength(150)]
+    [MinLength(1)]
+    public string Title { get; set; }
 
-        [MaxLength(500)]
-        public string Description { get; set; } = string.Empty;
+    [MaxLength(500)]
+    public string Description { get; set; } = string.Empty;
 
-        [Required]
-        public long DirectionId { get; set; }
+    [Required]
+    public long DirectionId { get; set; }
 
-        public virtual Direction Direction { get; set; }
+    public virtual Direction Direction { get; set; }
 
-        public virtual List<Class> Classes { get; set; }
-    }
+    public virtual List<Class> Classes { get; set; }
 }
