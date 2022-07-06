@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OutOfSchool.Services.Enums;
@@ -22,6 +23,7 @@ namespace OutOfSchool.WebApi.Services
         private readonly IEntityRepository<Child> childRepository;
         private readonly IParentRepository parentRepository;
         private readonly ILogger<ChildService> logger;
+        private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChildService"/> class.
@@ -29,11 +31,17 @@ namespace OutOfSchool.WebApi.Services
         /// <param name="childRepository">Repository for the Child entity.</param>
         /// <param name="parentRepository">Repository for the Parent entity.</param>
         /// <param name="logger">Logger.</param>
-        public ChildService(IEntityRepository<Child> childRepository, IParentRepository parentRepository, ILogger<ChildService> logger)
+        /// <param name="mapper">Automapper DI service.</param>
+        public ChildService(
+            IEntityRepository<Child> childRepository,
+            IParentRepository parentRepository,
+            ILogger<ChildService> logger,
+            IMapper mapper)
         {
             this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
             this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         /// <inheritdoc/>
@@ -55,11 +63,11 @@ namespace OutOfSchool.WebApi.Services
 
             childDto.Id = default;
 
-            var newChild = await childRepository.Create(childDto.ToDomain()).ConfigureAwait(false);
+            var newChild = await childRepository.Create(mapper.Map<Child>(childDto)).ConfigureAwait(false);
 
             logger.LogDebug($"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
-            return newChild.ToModel();
+            return mapper.Map<ChildDto>(newChild);
         }
 
         /// <inheritdoc/>
@@ -91,7 +99,7 @@ namespace OutOfSchool.WebApi.Services
             var searchResult = new SearchResult<ChildDto>()
             {
                 TotalAmount = totalAmount,
-                Entities = children.Select(x => x.ToModel()).ToList(),
+                Entities = mapper.Map<List<ChildDto>>(children),
             };
 
             return searchResult;
@@ -114,7 +122,7 @@ namespace OutOfSchool.WebApi.Services
 
             logger.LogDebug($"User:{userId} successfully got the child with id: {id}.");
 
-            return child.ToModel();
+            return mapper.Map<ChildDto>(child);
         }
 
         /// <inheritdoc/>
@@ -143,7 +151,7 @@ namespace OutOfSchool.WebApi.Services
             var searchResult = new SearchResult<ChildDto>()
             {
                 TotalAmount = totalAmount,
-                Entities = children.Select(x => x.ToModel()).ToList(),
+                Entities = mapper.Map<List<ChildDto>>(children),
             };
 
             return searchResult;
@@ -176,7 +184,7 @@ namespace OutOfSchool.WebApi.Services
             var searchResult = new SearchResult<ChildDto>()
             {
                 TotalAmount = totalAmount,
-                Entities = children.Select(x => x.ToModel()).ToList(),
+                Entities = mapper.Map<List<ChildDto>>(children),
             };
 
             return searchResult;
@@ -206,11 +214,11 @@ namespace OutOfSchool.WebApi.Services
                 childDto.ParentId = child.ParentId;
             }
 
-            var updatedChild = await childRepository.Update(childDto.ToDomain()).ConfigureAwait(false);
+            var updatedChild = await childRepository.Update(mapper.Map<Child>(childDto)).ConfigureAwait(false);
 
             logger.LogDebug($"Child with Id = {updatedChild.Id} was updated succesfully.");
 
-            return updatedChild.ToModel();
+            return mapper.Map<ChildDto>(updatedChild);
         }
 
         /// <inheritdoc/>

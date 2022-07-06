@@ -52,21 +52,6 @@ namespace OutOfSchool.WebApi.Extensions
             });
         }
 
-        public static ChildDto ToModel(this Child child)
-        {
-            return child.Mapper<Child, ChildDto>(cfg =>
-            {
-                cfg.CreateMap<Child, ChildDto>();
-                cfg.CreateMap<Parent, ParentDtoWithContactInfo>()
-                    .ForMember(dest => dest.Email, opt => opt.MapFrom(p => p.User.Email))
-                    .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(p => p.User.PhoneNumber))
-                    .ForMember(dest => dest.LastName, opt => opt.MapFrom(p => p.User.LastName))
-                    .ForMember(dest => dest.MiddleName, opt => opt.MapFrom(p => p.User.MiddleName))
-                    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(p => p.User.FirstName));
-                cfg.CreateMap<SocialGroup, SocialGroupDto>();
-            });
-        }
-
         public static CityDto ToModel(this City city)
         {
             return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
@@ -177,16 +162,6 @@ namespace OutOfSchool.WebApi.Extensions
         public static ChatMessageWorkshop ToDomain(this ChatMessageWorkshopDto chatMessageDTO)
         {
             return Mapper<ChatMessageWorkshopDto, ChatMessageWorkshop>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageWorkshopDto, ChatMessageWorkshop>(); });
-        }
-
-        public static Child ToDomain(this ChildDto childDto)
-        {
-            return Mapper<ChildDto, Child>(childDto, cfg =>
-            {
-                cfg.CreateMap<ChildDto, Child>();
-                cfg.CreateMap<SocialGroupDto, SocialGroup>();
-                cfg.CreateMap<ParentDTO, Parent>();
-            });
         }
 
         public static City ToDomain(this CityDto cityDto)
