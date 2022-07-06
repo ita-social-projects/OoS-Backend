@@ -37,15 +37,13 @@ public class ProviderServiceUpdate
     {
         this.unitTestDbOptions = UnitTestHelper.GetUnitTestDbOptions();
 
-        await using (var context = this.GetContext())
-        {
-            await context.SaveChangesAsync();
-            var fakeProvider = ProvidersGenerator.Generate();
-            fakeProvider.ActualAddress.Id = 5;
-            fakeProvider.LegalAddress.Id = 6;
-            context.Add(fakeProvider);
-            await context.SaveChangesAsync();
-        }
+            await using (var context = this.GetContext())
+            {
+                await context.SaveChangesAsync();
+                var fakeProvider = ProvidersGenerator.Generate();
+                context.Add(fakeProvider);
+                await context.SaveChangesAsync();
+            }
 
         this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
 

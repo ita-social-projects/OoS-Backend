@@ -1,6 +1,4 @@
-﻿
-using Bogus;
-
+﻿using Bogus;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Tests.Common.TestDataGenerators;
@@ -10,15 +8,22 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators;
 /// </summary>
 public static class AddressGenerator
 {
-    private static readonly Faker<Address> faker = new Faker<Address>()
-        .RuleFor(x => x.Id, f => f.IndexFaker++)
-        .RuleFor(x => x.Region, f => f.Address.State())
-        .RuleFor(x => x.District, f => f.Address.County())
-        .RuleFor(x => x.City, f => f.Address.City())
-        .RuleFor(x => x.Street, f => f.Address.StreetName())
-        .RuleFor(x => x.BuildingNumber, f => f.Address.BuildingNumber())
-        .RuleFor(x => x.Latitude, f => f.Address.Latitude())
-        .RuleFor(x => x.Longitude, f => f.Address.Longitude());
+    static AddressGenerator()
+    {
+        faker = new Faker<Address>()
+            .RuleFor(x => x.Id, f => f.IndexFaker)
+            .RuleFor(x => x.Region, f => f.Address.State())
+            .RuleFor(x => x.District, f => f.Address.County())
+            .RuleFor(x => x.City, f => f.Address.City())
+            .RuleFor(x => x.Street, f => f.Address.StreetName())
+            .RuleFor(x => x.BuildingNumber, f => f.Address.BuildingNumber())
+            .RuleFor(x => x.Latitude, f => f.Address.Latitude())
+            .RuleFor(x => x.Longitude, f => f.Address.Longitude());
+
+        (faker as IFakerTInternal).FakerHub.IndexFaker++;
+    }
+
+    private static readonly Faker<Address> faker;
 
     /// <summary>
     /// Generates new instance of the <see cref="Address"/> class.
