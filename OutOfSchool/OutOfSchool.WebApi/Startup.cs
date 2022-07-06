@@ -1,321 +1,384 @@
+using System;
+using System.Globalization;
+using System.Net;
+using System.Net.Http;
 using System.Text.Json.Serialization;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.FeatureManagement;
+using MySqlConnector;
+using OutOfSchool.Common;
+using OutOfSchool.Common.Config;
+using OutOfSchool.Common.Extensions;
+using OutOfSchool.Common.Extensions.Startup;
+using OutOfSchool.Common.PermissionsModule;
+using OutOfSchool.ElasticsearchData;
+using OutOfSchool.ElasticsearchData.Models;
+using OutOfSchool.GRPC;
+using OutOfSchool.Redis;
+using OutOfSchool.Services;
+using OutOfSchool.Services.Contexts;
+using OutOfSchool.Services.Contexts.Configuration;
+using OutOfSchool.Services.Extensions;
+using OutOfSchool.Services.Models;
+using OutOfSchool.Services.Models.ChatWorkshop;
+using OutOfSchool.Services.Models.SubordinationStructure;
+using OutOfSchool.Services.Repository;
+using OutOfSchool.Services.Repository.Files;
+using OutOfSchool.WebApi.Config;
+using OutOfSchool.WebApi.Config.DataAccess;
+using OutOfSchool.WebApi.Config.Images;
+using OutOfSchool.WebApi.Config.Quartz;
+using OutOfSchool.WebApi.Extensions;
+using OutOfSchool.WebApi.Extensions.Startup;
+using OutOfSchool.WebApi.Hubs;
+using OutOfSchool.WebApi.Middlewares;
+using OutOfSchool.WebApi.Services;
+using OutOfSchool.WebApi.Services.Communication;
+using OutOfSchool.WebApi.Services.Gcp;
+using OutOfSchool.WebApi.Services.GRPC;
+using OutOfSchool.WebApi.Services.Images;
+using OutOfSchool.WebApi.Services.SubordinationStructure;
+using OutOfSchool.WebApi.Services.ProviderAdminOperations;
+using OutOfSchool.WebApi.Util;
+using Serilog;
 
-namespace OutOfSchool.WebApi;
-
-public static class Startup
+namespace OutOfSchool.WebApi
 {
-    public static void Configure(this WebApplication app)
+    public class Startup
     {
-        var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-
-        var proxyOptions = app.Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
-        app.UseProxy(proxyOptions);
-
-        if (app.Environment.IsDevelopment())
+        public Startup(IConfiguration configuration)
         {
-            app.UseDeveloperExceptionPage();
+            Configuration = configuration;
         }
 
-        var supportedCultures = new[]
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
-            new CultureInfo("en"),
-            new CultureInfo("uk"),
-        };
+            var proxyOptions = Configuration.GetSection(ReverseProxyOptions.Name).Get<ReverseProxyOptions>();
+            app.UseProxy(proxyOptions);
 
-        var requestLocalization = new RequestLocalizationOptions
-        {
-            DefaultRequestCulture = new RequestCulture("uk"),
-            SupportedCultures = supportedCultures,
-            SupportedUICultures = supportedCultures,
-        };
-
-        app.UseRequestLocalization(requestLocalization);
-
-        app.UseCors("AllowAll");
-
-        app.UseMiddleware<ExceptionMiddlewareExtension>();
-
-        app.UseSwaggerWithVersioning(provider, proxyOptions);
-
-        if (!app.Environment.IsDevelopment())
-        {
-            app.UseHttpsRedirection();
-        }
-
-        app.UseSerilogRequestLogging();
-
-        // Enable extracting token from QueryString for Hub-connection authorization
-        app.UseMiddleware<AuthorizationTokenMiddleware>();
-
-        app.UseAuthentication();
-        app.UseAuthorization();
-
-        app.MapControllers();
-        app.MapHub<ChatWorkshopHub>("/chathub/workshop");
-        app.MapHub<NotificationHub>("/notificationhub");
-    }
-
-    public static void AddApplicationServices(this WebApplicationBuilder builder)
-    {
-        var services = builder.Services;
-        var configuration = builder.Configuration;
-
-        services.Configure<AppDefaultsConfig>(configuration.GetSection(AppDefaultsConfig.Name));
-        services.Configure<IdentityServerConfig>(configuration.GetSection(IdentityServerConfig.Name));
-        services.Configure<ProviderAdminConfig>(configuration.GetSection(ProviderAdminConfig.Name));
-        services.Configure<CommunicationConfig>(configuration.GetSection(CommunicationConfig.Name));
-
-        services.AddLocalization(options => options.ResourcesPath = "Resources");
-        services.AddAuthentication("Bearer")
-            .AddIdentityServerAuthentication("Bearer", options =>
+            if (env.IsDevelopment())
             {
-                options.ApiName = "outofschoolapi";
-                options.Authority = configuration["Identity:Authority"];
+                app.UseDeveloperExceptionPage();
+            }
 
-                options.RequireHttpsMetadata = false;
+            var supportedCultures = new[]
+            {
+                new CultureInfo("en"),
+                new CultureInfo("uk"),
+            };
+
+            var requestLocalization = new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("uk"),
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures,
+            };
+
+            app.UseRequestLocalization(requestLocalization);
+
+            app.UseCors("AllowAll");
+
+            app.UseMiddleware<ExceptionMiddlewareExtension>();
+
+            app.UseSwaggerWithVersioning(provider, proxyOptions);
+
+            if (!env.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
+
+            app.UseSerilogRequestLogging();
+
+            app.UseRouting();
+
+            // Enable extracting token from QueryString for Hub-connection authorization
+            app.UseMiddleware<AuthorizationTokenMiddleware>();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<ChatWorkshopHub>("/chathub/workshop");
+                endpoints.MapHub<NotificationHub>("/notificationhub");
             });
+        }
 
-        services.AddCors(confg =>
-            confg.AddPolicy(
-                "AllowAll",
-                p => p.WithOrigins(configuration["AllowedCorsOrigins"].Split(','))
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials()));
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.Configure<AppDefaultsConfig>(Configuration.GetSection(AppDefaultsConfig.Name));
+            services.Configure<IdentityServerConfig>(Configuration.GetSection(IdentityServerConfig.Name));
+            services.Configure<ProviderAdminConfig>(Configuration.GetSection(ProviderAdminConfig.Name));
+            services.Configure<CommunicationConfig>(Configuration.GetSection(CommunicationConfig.Name));
 
-        services.AddControllers().AddNewtonsoftJson()
-            .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-        services.AddHttpClient(configuration["Communication:ClientName"])
-            .AddHttpMessageHandler(handler =>
-                new RetryPolicyDelegatingHandler(
-                    int.Parse(configuration["Communication:MaxNumberOfRetries"])))
-            .ConfigurePrimaryHttpMessageHandler(handler =>
-                new HttpClientHandler()
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
+            services.AddAuthentication("Bearer")
+                .AddIdentityServerAuthentication("Bearer", options =>
                 {
-                    AutomaticDecompression = DecompressionMethods.GZip,
+                    options.ApiName = "outofschoolapi";
+                    options.Authority = Configuration["Identity:Authority"];
+
+                    options.RequireHttpsMetadata = false;
                 });
 
-        services.AddScoped<IProviderAdminService, ProviderAdminService>();
+            services.AddCors(confg =>
+                confg.AddPolicy(
+                    "AllowAll",
+                    p => p.WithOrigins(Configuration["AllowedCorsOrigins"].Split(','))
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials()));
 
-        // Images limits options
-        services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
-        services.Configure<ImagesLimits<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
-        services.Configure<ImagesLimits<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Limits"));
+            services.AddControllers().AddNewtonsoftJson()
+                .AddJsonOptions(options =>
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-        // Image options
-        services.Configure<GcpStorageImagesSourceConfig>(configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
-        services.Configure<ExternalImageSourceConfig>(configuration.GetSection(ExternalImageSourceConfig.Name));
-        //services.AddSingleton<MongoDb>();
-        services.Configure<ImageOptions<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
-        services.Configure<ImageOptions<Teacher>>(configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
-        services.Configure<ImageOptions<Provider>>(configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
+            services.AddHttpClient(Configuration["Communication:ClientName"])
+                .AddHttpMessageHandler(handler =>
+                    new RetryPolicyDelegatingHandler(
+                        int.Parse(Configuration["Communication:MaxNumberOfRetries"])))
+                .ConfigurePrimaryHttpMessageHandler(handler =>
+                    new HttpClientHandler()
+                    {
+                        AutomaticDecompression = DecompressionMethods.GZip,
+                    });
 
-        // TODO: Move version check into an extension to reuse code across apps
-        var mySQLServerVersion = configuration["MySQLServerVersion"];
-        var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
-        if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
-        {
-            throw new Exception("MySQL Server version should be 8 or higher.");
-        }
+            services.AddScoped<IProviderAdminService, ProviderAdminService>();
+            services.AddScoped<IMinistryAdminService, MinistryAdminService>();
 
-        var connectionString = configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
-            "DefaultConnection",
-            options => new MySqlConnectionStringBuilder
+            // Images limits options
+            services.Configure<ImagesLimits<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
+            services.Configure<ImagesLimits<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Limits"));
+            services.Configure<ImagesLimits<Provider>>(Configuration.GetSection($"Images:{nameof(Provider)}:Limits"));
+
+            // Image options
+            services.Configure<GcpStorageImagesSourceConfig>(Configuration.GetSection(GcpStorageConfigConstants.GcpStorageImagesConfig));
+            services.Configure<ExternalImageSourceConfig>(Configuration.GetSection(ExternalImageSourceConfig.Name));
+            //services.AddSingleton<MongoDb>();
+            services.Configure<ImageOptions<Workshop>>(Configuration.GetSection($"Images:{nameof(Workshop)}:Specs"));
+            services.Configure<ImageOptions<Teacher>>(Configuration.GetSection($"Images:{nameof(Teacher)}:Specs"));
+            services.Configure<ImageOptions<Provider>>(Configuration.GetSection($"Images:{nameof(Provider)}:Specs"));
+
+            // TODO: Move version check into an extension to reuse code across apps
+            var mySQLServerVersion = Configuration["MySQLServerVersion"];
+            var serverVersion = new MySqlServerVersion(new Version(mySQLServerVersion));
+            if (serverVersion.Version.Major < Constants.MySQLServerMinimalMajorVersion)
             {
-                Server = options.Server,
-                Port = options.Port,
-                UserID = options.UserId,
-                Password = options.Password,
-                Database = options.Database,
-                GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+                throw new Exception("MySQL Server version should be 8 or higher.");
+            }
+
+            var connectionString = Configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
+                "DefaultConnection",
+                options => new MySqlConnectionStringBuilder
+                {
+                    Server = options.Server,
+                    Port = options.Port,
+                    UserID = options.UserId,
+                    Password = options.Password,
+                    Database = options.Database,
+                    GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+                });
+
+            services.AddDbContext<OutOfSchoolDbContext>(builder =>
+                    builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
+                    {
+                        mySqlOptions
+                            .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
+                            .EnableStringComparisonTranslations();
+                    }))
+                .AddCustomDataProtection("WebApi");
+
+            // Add Elasticsearch client
+            var elasticConfig = Configuration
+                .GetSection(ElasticConfig.Name)
+                .Get<ElasticConfig>();
+            services.Configure<ElasticConfig>(Configuration.GetSection(ElasticConfig.Name));
+            services.AddElasticsearch(elasticConfig);
+            services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
+            services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
+
+            // entities services
+            services.AddTransient<IAddressService, AddressService>();
+            services.AddTransient<IApplicationService, ApplicationService>();
+            services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
+            services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
+            services.AddTransient<IChildService, ChildService>();
+            services.AddTransient<ICityService, CityService>();
+            services.AddTransient<IClassService, ClassService>();
+            services.AddTransient<IDepartmentService, DepartmentService>();
+            services.AddTransient<IDirectionService, DirectionService>();
+            services.AddTransient<IFavoriteService, FavoriteService>();
+            services.AddTransient<IParentService, ParentService>();
+            services.AddTransient<IProviderService, ProviderService>();
+            services.AddTransient<IProviderServiceV2, ProviderServiceV2>();
+            services.AddTransient<IRatingService, RatingService>();
+            services.AddTransient<ISocialGroupService, SocialGroupService>();
+            services.AddTransient<IStatusService, StatusService>();
+            services.AddTransient<IStatisticService, StatisticService>();
+            services.AddTransient<ITeacherService, TeacherService>();
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IValidationService, ValidationService>();
+            services.AddTransient<IWorkshopService, WorkshopService>();
+            services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
+            services.AddTransient<IChangesLogService, ChangesLogService>();
+            services.AddTransient<IValueProjector, ValueProjector>();
+
+            services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
+            services.AddTransient<IInstitutionService, InstitutionService>();
+            services.AddTransient<IInstitutionFieldDescriptionService, InstitutionFieldDescriptionService>();
+
+            services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
+            services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
+            services.AddScoped<IImageService, ImageService>();
+            services.AddScoped<IImageValidator, ImageValidator<Workshop>>();
+            services.AddScoped<IImageValidator, ImageValidator<Teacher>>();
+            services.AddTransient<ICompanyInformationService, CompanyInformationService>();
+
+            services.AddScoped<IImageDependentEntityImagesInteractionService<Workshop>, ImageDependentEntityImagesInteractionService<Workshop>>();
+            services.AddScoped<IImageDependentEntityImagesInteractionService<Provider>, ImageDependentEntityImagesInteractionService<Provider>>();
+            services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
+            services.AddTransient<INotificationService, NotificationService>();
+            services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
+            services.AddTransient<ICodeficatorService, CodeficatorService>();
+            services.AddTransient<IGRPCCommonService, GRPCCommonService>();
+
+            // entities repositories
+            services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
+            services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
+            services.AddTransient<IEntityRepository<ChatMessageWorkshop>, EntityRepository<ChatMessageWorkshop>>();
+            services.AddTransient<IEntityRepository<ChatRoomWorkshop>, EntityRepository<ChatRoomWorkshop>>();
+            services.AddTransient<IEntityRepository<Child>, ChildRepository>();
+            services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
+            services.AddTransient<IEntityRepository<Favorite>, EntityRepository<Favorite>>();
+            services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
+            services.AddTransient<IEntityRepository<InstitutionStatus>, EntityRepository<InstitutionStatus>>();
+            services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
+            services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
+            services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
+
+            services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
+            services.AddTransient<IMinistryAdminRepository, MinistryAdminRepository>();
+            services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
+            services.AddTransient<ISensitiveEntityRepository<CompanyInformationItem>, SensitiveEntityRepository<CompanyInformationItem>>();
+
+            services.AddTransient<IApplicationRepository, ApplicationRepository>();
+            services
+                .AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository
+                >();
+            services.AddTransient<IClassRepository, ClassRepository>();
+            services.AddTransient<IDepartmentRepository, DepartmentRepository>();
+            services.AddTransient<IDirectionRepository, DirectionRepository>();
+            services.AddTransient<IParentRepository, ParentRepository>();
+            services.AddTransient<IProviderRepository, ProviderRepository>();
+            services.AddTransient<IRatingRepository, RatingRepository>();
+            services.AddTransient<IWorkshopRepository, WorkshopRepository>();
+            //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
+            services.AddImagesStorage(turnOnFakeStorage: Configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
+
+            services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
+            services.AddTransient<INotificationRepository, NotificationRepository>();
+            services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
+            services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
+            services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
+
+            services.AddTransient<IEntityRepository<AchievementType>, EntityRepository<AchievementType>>();
+            services.AddTransient<IEntityRepository<AchievementTeacher>, EntityRepository<AchievementTeacher>>();
+            services.AddTransient<IAchievementRepository, AchievementRepository>();
+            services.AddTransient<IAchievementService, AchievementService>();
+
+            // Institution hierarchy
+            services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
+            services.AddTransient<ISensitiveEntityRepository<InstitutionFieldDescription>, SensitiveEntityRepository<InstitutionFieldDescription>>();
+            services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
+
+            services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
+
+            services.Configure<ChangesLogConfig>(Configuration.GetSection(ChangesLogConfig.Name));
+
+            // Register the Permission policy handlers
+            services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
+            services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+
+            services.AddSingleton<ElasticPinger>();
+            services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
+
+            services.AddSingleton(Log.Logger);
+            services.AddVersioning();
+            var swaggerConfig = Configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
+
+            // Add feature management
+            services.AddFeatureManagement(Configuration.GetSection(FeatureManagementConfig.Name));
+            services.Configure<FeatureManagementConfig>(Configuration.GetSection(FeatureManagementConfig.Name));
+
+            // ApplicationsConstraints options
+            services.AddOptions<ApplicationsConstraintsConfig>()
+                .Bind(Configuration.GetSection(ApplicationsConstraintsConfig.Name))
+                .ValidateDataAnnotations();
+
+            // Redis options
+            services.AddOptions<RedisConfig>()
+                .Bind(Configuration.GetSection(RedisConfig.Name))
+                .ValidateDataAnnotations();
+
+            // Notification options
+            services.Configure<NotificationsConfig>(Configuration.GetSection(NotificationsConfig.Name));
+
+            // GRPC
+            services.AddOptions<GRPCConfig>()
+                .Bind(Configuration.GetSection(GRPCConfig.Name))
+                .ValidateDataAnnotations();
+
+            var gRPCConfig = Configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
+            if (gRPCConfig.Enabled)
+            {
+                services.AddTransient<IProviderAdminOperationsService, ProviderAdminOperationsGRPCService>();
+            }
+            else
+            {
+                services.AddTransient<IProviderAdminOperationsService, ProviderAdminOperationsRESTService>();
+            }
+
+            // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
+            services.AddSingleton(swaggerConfig);
+            services.AddSwagger(swaggerConfig);
+
+            services.AddProxy();
+
+            services.AddAutoMapper(typeof(MappingProfile));
+
+            services.AddSignalR();
+
+            var quartzConfig = Configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
+            services.AddDefaultQuartz(
+                Configuration,
+                quartzConfig.ConnectionStringKey,
+                q =>
+            {
+                q.AddGcpSynchronization(services, quartzConfig);
+                q.AddElasticsearchSynchronization(services, Configuration);
             });
 
-        services.AddDbContext<OutOfSchoolDbContext>(builder =>
-                builder.UseLazyLoadingProxies().UseMySql(connectionString, serverVersion, mySqlOptions =>
-                {
-                    mySqlOptions
-                        .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)
-                        .EnableStringComparisonTranslations();
-                }))
-            .AddCustomDataProtection("WebApi");
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration =
+                    $"{Configuration.GetValue<string>("Redis:Server")}:{Configuration.GetValue<int>("Redis:Port")},password={Configuration.GetValue<string>("Redis:Password")}";
+            });
 
-        // Add Elasticsearch client
-        var elasticConfig = configuration
-            .GetSection(ElasticConfig.Name)
-            .Get<ElasticConfig>();
-        services.Configure<ElasticConfig>(configuration.GetSection(ElasticConfig.Name));
-        services.AddElasticsearch(elasticConfig);
-        services.AddTransient<IElasticsearchProvider<WorkshopES, WorkshopFilterES>, ESWorkshopProvider>();
-        services.AddTransient<IElasticsearchService<WorkshopES, WorkshopFilterES>, ESWorkshopService>();
-
-        // entities services
-        services.AddTransient<IAddressService, AddressService>();
-        services.AddTransient<IApplicationService, ApplicationService>();
-        services.AddTransient<IChatMessageWorkshopService, ChatMessageWorkshopService>();
-        services.AddTransient<IChatRoomWorkshopService, ChatRoomWorkshopService>();
-        services.AddTransient<IChildService, ChildService>();
-        services.AddTransient<ICityService, CityService>();
-        services.AddTransient<IClassService, ClassService>();
-        services.AddTransient<IDepartmentService, DepartmentService>();
-        services.AddTransient<IDirectionService, DirectionService>();
-        services.AddTransient<IFavoriteService, FavoriteService>();
-        services.AddTransient<IParentService, ParentService>();
-        services.AddTransient<IProviderService, ProviderService>();
-        services.AddTransient<IProviderServiceV2, ProviderServiceV2>();
-        services.AddTransient<IRatingService, RatingService>();
-        services.AddTransient<ISocialGroupService, SocialGroupService>();
-        services.AddTransient<IStatusService, StatusService>();
-        services.AddTransient<IStatisticService, StatisticService>();
-        services.AddTransient<ITeacherService, TeacherService>();
-        services.AddTransient<IUserService, UserService>();
-        services.AddTransient<IValidationService, ValidationService>();
-        services.AddTransient<IWorkshopService, WorkshopService>();
-        services.AddTransient<IWorkshopServicesCombiner, WorkshopServicesCombiner>();
-        services.AddTransient<IChangesLogService, ChangesLogService>();
-        services.AddTransient<IValueProjector, ValueProjector>();
-
-        services.AddTransient<IInstitutionHierarchyService, InstitutionHierarchyService>();
-        services.AddTransient<IInstitutionService, InstitutionService>();
-        services.AddTransient<IInstitutionFieldDescriptionService, InstitutionFieldDescriptionService>();
-
-        services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
-        services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
-        services.AddScoped<IImageService, ImageService>();
-        services.AddScoped<IImageValidator, ImageValidator<Workshop>>();
-        services.AddScoped<IImageValidator, ImageValidator<Teacher>>();
-        services.AddTransient<ICompanyInformationService, CompanyInformationService>();
-
-        services.AddScoped<IImageDependentEntityImagesInteractionService<Workshop>, ImageDependentEntityImagesInteractionService<Workshop>>();
-        services.AddScoped<IImageDependentEntityImagesInteractionService<Provider>, ImageDependentEntityImagesInteractionService<Provider>>();
-        services.AddScoped<IEntityCoverImageInteractionService<Teacher>, ImageDependentEntityImagesInteractionService<Teacher>>();
-        services.AddTransient<INotificationService, NotificationService>();
-        services.AddTransient<IBlockedProviderParentService, BlockedProviderParentService>();
-        services.AddTransient<ICodeficatorService, CodeficatorService>();
-        services.AddTransient<IGRPCCommonService, GRPCCommonService>();
-
-        // entities repositories
-        services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
-        services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
-        services.AddTransient<IEntityRepository<ChatMessageWorkshop>, EntityRepository<ChatMessageWorkshop>>();
-        services.AddTransient<IEntityRepository<ChatRoomWorkshop>, EntityRepository<ChatRoomWorkshop>>();
-        services.AddTransient<IEntityRepository<Child>, ChildRepository>();
-        services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
-        services.AddTransient<IEntityRepository<Favorite>, EntityRepository<Favorite>>();
-        services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
-        services.AddTransient<IEntityRepository<InstitutionStatus>, EntityRepository<InstitutionStatus>>();
-        services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
-        services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
-        services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
-
-        services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
-        services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
-        services.AddTransient<ISensitiveEntityRepository<CompanyInformationItem>, SensitiveEntityRepository<CompanyInformationItem>>();
-
-        services.AddTransient<IApplicationRepository, ApplicationRepository>();
-        services
-            .AddTransient<IChatRoomWorkshopModelForChatListRepository, ChatRoomWorkshopModelForChatListRepository
-            >();
-        services.AddTransient<IClassRepository, ClassRepository>();
-        services.AddTransient<IDepartmentRepository, DepartmentRepository>();
-        services.AddTransient<IDirectionRepository, DirectionRepository>();
-        services.AddTransient<IParentRepository, ParentRepository>();
-        services.AddTransient<IProviderRepository, ProviderRepository>();
-        services.AddTransient<IRatingRepository, RatingRepository>();
-        services.AddTransient<IWorkshopRepository, WorkshopRepository>();
-        //services.AddTransient<IExternalImageStorage, ExternalImageStorage>();
-        services.AddImagesStorage(turnOnFakeStorage: configuration.GetValue<bool>("TurnOnFakeImagesStorage"));
-
-        services.AddTransient<IElasticsearchSyncRecordRepository, ElasticsearchSyncRecordRepository>();
-        services.AddTransient<INotificationRepository, NotificationRepository>();
-        services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
-        services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
-        services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
-
-        services.AddTransient<IEntityRepository<AchievementType>, EntityRepository<AchievementType>>();
-        services.AddTransient<IEntityRepository<AchievementTeacher>, EntityRepository<AchievementTeacher>>();
-        services.AddTransient<IAchievementRepository, AchievementRepository>();
-        services.AddTransient<IAchievementService, AchievementService>();
-
-        // Institution hierarchy
-        services.AddTransient<ISensitiveEntityRepository<Institution>, SensitiveEntityRepository<Institution>>();
-        services.AddTransient<ISensitiveEntityRepository<InstitutionFieldDescription>, SensitiveEntityRepository<InstitutionFieldDescription>>();
-        services.AddTransient<ISensitiveEntityRepository<InstitutionHierarchy>, SensitiveEntityRepository<InstitutionHierarchy>>();
-
-        services.AddTransient<ICodeficatorRepository, CodeficatorRepository>();
-
-        services.Configure<ChangesLogConfig>(configuration.GetSection(ChangesLogConfig.Name));
-
-        // Register the Permission policy handlers
-        services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
-        services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
-
-        services.AddSingleton<ElasticPinger>();
-        services.AddHostedService<ElasticPinger>(provider => provider.GetService<ElasticPinger>());
-
-        services.AddSingleton(Log.Logger);
-        services.AddVersioning();
-        var swaggerConfig = configuration.GetSection(SwaggerConfig.Name).Get<SwaggerConfig>();
-
-        // Add feature management
-        services.AddFeatureManagement(configuration.GetSection(FeatureManagementConfig.Name));
-        services.Configure<FeatureManagementConfig>(configuration.GetSection(FeatureManagementConfig.Name));
-
-        // ApplicationsConstraints options
-        services.AddOptions<ApplicationsConstraintsConfig>()
-            .Bind(configuration.GetSection(ApplicationsConstraintsConfig.Name))
-            .ValidateDataAnnotations();
-
-        // Redis options
-        services.AddOptions<RedisConfig>()
-            .Bind(configuration.GetSection(RedisConfig.Name))
-            .ValidateDataAnnotations();
-
-        // Notification options
-        services.Configure<NotificationsConfig>(configuration.GetSection(NotificationsConfig.Name));
-
-        // GRPC
-        services.AddOptions<GRPCConfig>()
-            .Bind(configuration.GetSection(GRPCConfig.Name))
-            .ValidateDataAnnotations();
-
-        var gRPCConfig = configuration.GetSection(GRPCConfig.Name).Get<GRPCConfig>();
-        if (gRPCConfig.Enabled)
-        {
-            services.AddTransient<IProviderAdminOperationsService, ProviderAdminOperationsGRPCService>();
+            services.AddSingleton<ICacheService, CacheService>();
         }
-        else
-        {
-            services.AddTransient<IProviderAdminOperationsService, ProviderAdminOperationsRESTService>();
-        }
-
-        // Required to inject it in OutOfSchool.WebApi.Extensions.Startup.CustomSwaggerOptions class
-        services.AddSingleton(swaggerConfig);
-        services.AddSwagger(swaggerConfig);
-
-        services.AddProxy();
-
-        services.AddAutoMapper(typeof(MappingProfile));
-
-        services.AddSignalR();
-
-        var quartzConfig = configuration.GetSection(QuartzConfig.Name).Get<QuartzConfig>();
-        services.AddDefaultQuartz(
-            configuration,
-            quartzConfig.ConnectionStringKey,
-            q =>
-        {
-            q.AddGcpSynchronization(services, quartzConfig);
-            q.AddElasticsearchSynchronization(services, configuration);
-        });
-
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration =
-                $"{configuration.GetValue<string>("Redis:Server")}:{configuration.GetValue<int>("Redis:Port")},password={configuration.GetValue<string>("Redis:Password")}";
-        });
-
-        services.AddSingleton<ICacheService, CacheService>();
     }
 }
