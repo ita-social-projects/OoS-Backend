@@ -4,24 +4,23 @@ using System.ComponentModel.DataAnnotations;
 
 using OutOfSchool.Services.Models.ChatWorkshop;
 
-namespace OutOfSchool.Services.Models
+namespace OutOfSchool.Services.Models;
+
+public class Parent : IKeyedEntity<Guid>
 {
-    public class Parent : IKeyedEntity<Guid>
+    public Parent()
     {
-        public Parent()
-        {
-            Children = new List<Child>();
-        }
-
-        public Guid Id { get; set; }
-
-        public virtual IReadOnlyCollection<Child> Children { get; set; }
-
-        [Required]
-        public string UserId { get; set; }
-
-        public virtual User User { get; set; }
-
-        public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
+        Children = new List<Child>();
     }
+
+    public Guid Id { get; set; }
+
+    public virtual IReadOnlyCollection<Child> Children { get; set; }
+
+    [Required]
+    public string UserId { get; set; }
+
+    public virtual User User { get; set; }
+
+    public virtual ICollection<ChatRoomWorkshop> ChatRooms { get; set; }
 }

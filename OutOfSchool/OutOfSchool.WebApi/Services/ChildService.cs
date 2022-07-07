@@ -44,28 +44,28 @@ namespace OutOfSchool.WebApi.Services
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        /// <inheritdoc/>
-        public async Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId)
+    /// <inheritdoc/>
+    public async Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId)
+    {
+        ValidateChildDto(childDto);
+        ValidateUserId(userId);
+
+        logger.LogDebug($"Started creation of a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}.");
+
+        var parent = (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault()
+                     ?? throw new UnauthorizedAccessException($"Trying to create a new child the Parent with {nameof(userId)}:{userId} was not found.");
+
+        if (childDto.ParentId != parent.Id)
         {
-            ValidateChildDto(childDto);
-            ValidateUserId(userId);
+            logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{parent.Id} was trying to create a new child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
+            childDto.ParentId = parent.Id;
+        }
 
-            logger.LogDebug($"Started creation of a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}.");
-
-            var parent = (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault()
-                ?? throw new UnauthorizedAccessException($"Trying to create a new child the Parent with {nameof(userId)}:{userId} was not found.");
-
-            if (childDto.ParentId != parent.Id)
-            {
-                logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{parent.Id} was trying to create a new child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
-                childDto.ParentId = parent.Id;
-            }
-
-            childDto.Id = default;
+        childDto.Id = default;
 
             var newChild = await childRepository.Create(mapper.Map<Child>(childDto)).ConfigureAwait(false);
 
-            logger.LogDebug($"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
+        logger.LogDebug($"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
             return mapper.Map<ChildDto>(newChild);
         }
@@ -102,51 +102,51 @@ namespace OutOfSchool.WebApi.Services
                 Entities = mapper.Map<List<ChildDto>>(children),
             };
 
-            return searchResult;
+        return searchResult;
+    }
+
+    /// <inheritdoc/>
+    public async Task<ChildDto> GetByIdAndUserId(Guid id, string userId)
+    {
+        this.ValidateUserId(userId);
+
+        logger.LogDebug($"User:{userId} is trying to get the child with id: {id}.");
+
+        var child = (await childRepository.GetByFilter(child => child.Id == id, $"{nameof(Child.Parent)}").ConfigureAwait(false)).SingleOrDefault()
+                    ?? throw new UnauthorizedAccessException($"User:{userId} is trying to get an unexisting child with id: {id}.");
+
+        if (child.Parent.UserId != userId)
+        {
+            throw new UnauthorizedAccessException($"User{userId} is trying to get not his/her own child with id: {id}.");
         }
 
-        /// <inheritdoc/>
-        public async Task<ChildDto> GetByIdAndUserId(Guid id, string userId)
-        {
-            this.ValidateUserId(userId);
-
-            logger.LogDebug($"User:{userId} is trying to get the child with id: {id}.");
-
-            var child = (await childRepository.GetByFilter(child => child.Id == id, $"{nameof(Child.Parent)}").ConfigureAwait(false)).SingleOrDefault()
-                ?? throw new UnauthorizedAccessException($"User:{userId} is trying to get an unexisting child with id: {id}.");
-
-            if (child.Parent.UserId != userId)
-            {
-                throw new UnauthorizedAccessException($"User{userId} is trying to get not his/her own child with id: {id}.");
-            }
-
-            logger.LogDebug($"User:{userId} successfully got the child with id: {id}.");
+        logger.LogDebug($"User:{userId} successfully got the child with id: {id}.");
 
             return mapper.Map<ChildDto>(child);
         }
 
-        /// <inheritdoc/>
-        public async Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(Guid parentId, OffsetFilter offsetFilter)
+    /// <inheritdoc/>
+    public async Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(Guid parentId, OffsetFilter offsetFilter)
+    {
+        ValidateOffsetFilter(offsetFilter);
+
+        logger.LogDebug($"Getting Children with ParentId: {parentId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
+
+        var totalAmount = await childRepository.Count(x => x.ParentId == parentId).ConfigureAwait(false);
+
+        var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
         {
-            ValidateOffsetFilter(offsetFilter);
+            { x => x.FirstName, SortDirection.Ascending },
+        };
 
-            logger.LogDebug($"Getting Children with ParentId: {parentId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
+        var children = await childRepository
+            .Get(offsetFilter.From, offsetFilter.Size, "SocialGroup", x => x.ParentId == parentId, sortExpression)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
-            var totalAmount = await childRepository.Count(x => x.ParentId == parentId).ConfigureAwait(false);
-
-            var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
-                {
-                    { x => x.FirstName, SortDirection.Ascending },
-                };
-
-            var children = await childRepository
-                .Get(offsetFilter.From, offsetFilter.Size, "SocialGroup", x => x.ParentId == parentId, sortExpression)
-                .ToListAsync()
-                .ConfigureAwait(false);
-
-            logger.LogDebug(children.Any()
-                ? $"{children.Count} children with ParentId: {parentId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
-                : $"There is no child with ParentId: {parentId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
+        logger.LogDebug(children.Any()
+            ? $"{children.Count} children with ParentId: {parentId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
+            : $"There is no child with ParentId: {parentId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
 
             var searchResult = new SearchResult<ChildDto>()
             {
@@ -154,32 +154,32 @@ namespace OutOfSchool.WebApi.Services
                 Entities = mapper.Map<List<ChildDto>>(children),
             };
 
-            return searchResult;
-        }
+        return searchResult;
+    }
 
-        /// <inheritdoc/>
-        public async Task<SearchResult<ChildDto>> GetByUserId(string userId, OffsetFilter offsetFilter)
+    /// <inheritdoc/>
+    public async Task<SearchResult<ChildDto>> GetByUserId(string userId, OffsetFilter offsetFilter)
+    {
+        this.ValidateUserId(userId);
+        this.ValidateOffsetFilter(offsetFilter);
+
+        logger.LogDebug($"Getting Child's for User started. Looking UserId = {userId}.");
+
+        var totalAmount = await childRepository.Count(x => x.Parent.UserId == userId).ConfigureAwait(false);
+
+        var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
         {
-            this.ValidateUserId(userId);
-            this.ValidateOffsetFilter(offsetFilter);
+            { x => x.FirstName, SortDirection.Ascending },
+        };
 
-            logger.LogDebug($"Getting Child's for User started. Looking UserId = {userId}.");
+        var children = await childRepository
+            .Get(offsetFilter.From, offsetFilter.Size, string.Empty, x => x.Parent.UserId == userId, sortExpression)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
-            var totalAmount = await childRepository.Count(x => x.Parent.UserId == userId).ConfigureAwait(false);
-
-            var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
-                {
-                    { x => x.FirstName, SortDirection.Ascending },
-                };
-
-            var children = await childRepository
-                .Get(offsetFilter.From, offsetFilter.Size, string.Empty, x => x.Parent.UserId == userId, sortExpression)
-                .ToListAsync()
-                .ConfigureAwait(false);
-
-            logger.LogDebug(children.Any()
-                ? $"{children.Count} children for User:{userId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
-                : $"There is no child for User:{userId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
+        logger.LogDebug(children.Any()
+            ? $"{children.Count} children for User:{userId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
+            : $"There is no child for User:{userId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
 
             var searchResult = new SearchResult<ChildDto>()
             {
@@ -187,84 +187,84 @@ namespace OutOfSchool.WebApi.Services
                 Entities = mapper.Map<List<ChildDto>>(children),
             };
 
-            return searchResult;
-        }
+        return searchResult;
+    }
 
-        /// <inheritdoc/>
-        public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId)
-        {
-            this.ValidateChildDto(childDto);
-            this.ValidateUserId(userId);
+    /// <inheritdoc/>
+    public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId)
+    {
+        this.ValidateChildDto(childDto);
+        this.ValidateUserId(userId);
 
-            logger.LogDebug($"Updating the child with Id: {childDto.Id} and {nameof(userId)}: {userId} started.");
+        logger.LogDebug($"Updating the child with Id: {childDto.Id} and {nameof(userId)}: {userId} started.");
 
-            var child = await childRepository.GetByFilterNoTracking(c => c.Id == childDto.Id, $"{nameof(Child.Parent)}")
-                                             .SingleOrDefaultAsync()
-                                             .ConfigureAwait(false)
+        var child = await childRepository.GetByFilterNoTracking(c => c.Id == childDto.Id, $"{nameof(Child.Parent)}")
+                        .SingleOrDefaultAsync()
+                        .ConfigureAwait(false)
                     ?? throw new UnauthorizedAccessException($"User: {userId} is trying to update not existing Child (Id = {childDto.Id}).");
 
-            if (child.Parent.UserId != userId)
-            {
-                throw new UnauthorizedAccessException($"User: {userId} is trying to update not his own child. Child Id = {childDto.Id}");
-            }
+        if (child.Parent.UserId != userId)
+        {
+            throw new UnauthorizedAccessException($"User: {userId} is trying to update not his own child. Child Id = {childDto.Id}");
+        }
 
-            if (childDto.ParentId != child.ParentId)
-            {
-                logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
-                childDto.ParentId = child.ParentId;
-            }
+        if (childDto.ParentId != child.ParentId)
+        {
+            logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
+            childDto.ParentId = child.ParentId;
+        }
 
             var updatedChild = await childRepository.Update(mapper.Map<Child>(childDto)).ConfigureAwait(false);
 
-            logger.LogDebug($"Child with Id = {updatedChild.Id} was updated succesfully.");
+        logger.LogDebug($"Child with Id = {updatedChild.Id} was updated succesfully.");
 
             return mapper.Map<ChildDto>(updatedChild);
         }
 
-        /// <inheritdoc/>
-        public async Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId)
+    /// <inheritdoc/>
+    public async Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId)
+    {
+        this.ValidateUserId(userId);
+
+        logger.LogDebug($"Deleting the child with Id: {id} and {nameof(userId)}: {userId} started.");
+
+        var child = await childRepository.GetByFilterNoTracking(c => c.Id == id, $"{nameof(Child.Parent)}")
+                        .SingleOrDefaultAsync()
+                        .ConfigureAwait(false)
+                    ?? throw new UnauthorizedAccessException($"User: {userId} is trying to delete not existing Child (Id = {id}).");
+
+        if (child.Parent.UserId != userId)
         {
-            this.ValidateUserId(userId);
-
-            logger.LogDebug($"Deleting the child with Id: {id} and {nameof(userId)}: {userId} started.");
-
-            var child = await childRepository.GetByFilterNoTracking(c => c.Id == id, $"{nameof(Child.Parent)}")
-                                             .SingleOrDefaultAsync()
-                                             .ConfigureAwait(false)
-                ?? throw new UnauthorizedAccessException($"User: {userId} is trying to delete not existing Child (Id = {id}).");
-
-            if (child.Parent.UserId != userId)
-            {
-                throw new UnauthorizedAccessException($"User: {userId} is not authorized to delete not his own child. Child Id = {id}");
-            }
-
-            await childRepository.Delete(child).ConfigureAwait(false);
-
-            logger.LogDebug($"Child with Id = {id} succesfully deleted.");
+            throw new UnauthorizedAccessException($"User: {userId} is not authorized to delete not his own child. Child Id = {id}");
         }
 
-        private void ValidateChildDto(ChildDto childDto)
-        {
-            if (childDto == null)
-            {
-                throw new ArgumentNullException(nameof(childDto));
-            }
+        await childRepository.Delete(child).ConfigureAwait(false);
 
-            if (childDto.DateOfBirth > DateTime.Now)
-            {
-                throw new ArgumentException($"{nameof(ChildDto.DateOfBirth)}: {childDto.DateOfBirth} is bigger than current date.");
-            }
+        logger.LogDebug($"Child with Id = {id} succesfully deleted.");
+    }
+
+    private void ValidateChildDto(ChildDto childDto)
+    {
+        if (childDto == null)
+        {
+            throw new ArgumentNullException(nameof(childDto));
         }
 
-        private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
-
-        private void ValidateUserId(string userId)
+        if (childDto.DateOfBirth > DateTime.Now)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                throw new ArgumentException($"The {nameof(userId)} parameter cannot be null, empty or white space.");
-            }
+            throw new ArgumentException($"{nameof(ChildDto.DateOfBirth)}: {childDto.DateOfBirth} is bigger than current date.");
         }
+    }
+
+    private void ValidateOffsetFilter(OffsetFilter offsetFilter) => ModelValidationHelper.ValidateOffsetFilter(offsetFilter);
+
+    private void ValidateUserId(string userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new ArgumentException($"The {nameof(userId)} parameter cannot be null, empty or white space.");
+        }
+    }
 
         private void ValidateId(long id)
         {

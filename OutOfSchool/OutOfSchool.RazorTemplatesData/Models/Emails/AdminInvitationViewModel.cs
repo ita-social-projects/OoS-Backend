@@ -1,9 +1,8 @@
-namespace OutOfSchool.RazorTemplatesData.Models.Emails
+namespace OutOfSchool.RazorTemplatesData.Models.Emails;
+
+public class AdminInvitationViewModel
 {
-    public class AdminInvitationViewModel
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string ConfirmationUrl { get; set; }
-    }
+    public string Email { get; set; }
+    public string Password { get; set; }
+    public string ConfirmationUrl { get; set; }
 }

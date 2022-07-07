@@ -13,239 +13,238 @@ using OutOfSchool.WebApi.Controllers.V1;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Tests.Controllers
+namespace OutOfSchool.WebApi.Tests.Controllers;
+
+[TestFixture]
+public class DirectionControllerTests
 {
-    [TestFixture]
-    public class DirectionControllerTests
+    private DirectionController controller;
+    private Mock<IDirectionService> service;
+    private ClaimsPrincipal user;
+    private Mock<IStringLocalizer<SharedResource>> localizer;
+
+    private IEnumerable<DirectionDto> directions;
+    private DirectionDto direction;
+
+    [SetUp]
+    public void Setup()
     {
-        private DirectionController controller;
-        private Mock<IDirectionService> service;
-        private ClaimsPrincipal user;
-        private Mock<IStringLocalizer<SharedResource>> localizer;
+        service = new Mock<IDirectionService>();
+        localizer = new Mock<IStringLocalizer<SharedResource>>();
 
-        private IEnumerable<DirectionDto> directions;
-        private DirectionDto direction;
+        controller = new DirectionController(service.Object, localizer.Object);
+        user = new ClaimsPrincipal(new ClaimsIdentity());
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
-        [SetUp]
-        public void Setup()
+        directions = FakeDirections();
+        direction = FakeDirection();
+    }
+
+    [Test]
+    public async Task Get_WhenCalled_ReturnsOkResultObject()
+    {
+        // Arrange
+        service.Setup(x => x.GetAll()).ReturnsAsync(directions);
+
+        // Act
+        var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(200, result.StatusCode);
+    }
+
+    [Test]
+    [TestCase(1)]
+    public async Task GetById_WhenIdIsValid_ReturnsOkObjectResult(long id)
+    {
+        // Arrange
+        service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
+
+        // Act
+        var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(200, result.StatusCode);
+    }
+
+    [Test]
+    [TestCase(-1)]
+    public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
+    {
+        // Arrange
+        service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            async () => await controller.GetById(id).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase(10)]
+    public async Task GetById_WhenIdIsInvalid_ReturnsNull(long id)
+    {
+        // Arrange
+        service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
+
+        // Act
+        var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(200, result.StatusCode);
+    }
+
+    [Test]
+    public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
+    {
+        // Arrange
+        service.Setup(x => x.Create(direction)).ReturnsAsync(direction);
+
+        // Act
+        var result = await controller.Create(direction).ConfigureAwait(false) as CreatedAtActionResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(201, result.StatusCode);
+    }
+
+    [Test]
+    public async Task Create_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        controller.ModelState.AddModelError("CreateDirection", "Invalid model state.");
+
+        // Act
+        var result = await controller.Create(direction).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    public async Task Update_WhenModelIsValid_ReturnsOkObjectResult()
+    {
+        // Arrange
+        var changedDirection = new DirectionDto()
         {
-            service = new Mock<IDirectionService>();
-            localizer = new Mock<IStringLocalizer<SharedResource>>();
+            Id = 1,
+            Title = "ChangedTitle",
+        };
+        service.Setup(x => x.Update(changedDirection)).ReturnsAsync(changedDirection);
 
-            controller = new DirectionController(service.Object, localizer.Object);
-            user = new ClaimsPrincipal(new ClaimsIdentity());
-            controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+        // Act
+        var result = await controller.Update(changedDirection).ConfigureAwait(false) as OkObjectResult;
 
-            directions = FakeDirections();
-            direction = FakeDirection();
-        }
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(200, result.StatusCode);
+    }
 
-        [Test]
-        public async Task Get_WhenCalled_ReturnsOkResultObject()
+    [Test]
+    public async Task Update_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        controller.ModelState.AddModelError("UpdateDirection", "Invalid model state.");
+
+        // Act
+        var result = await controller.Update(direction).ConfigureAwait(false);
+
+        // Assert
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+    }
+
+    [Test]
+    [TestCase(1)]
+    public async Task Delete_WhenIdIsValid_ReturnsNoContentResult(long id)
+    {
+        // Arrange
+        service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
+
+        // Act
+        var result = await controller.Delete(id) as NoContentResult;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.AreEqual(204, result.StatusCode);
+    }
+
+    [Test]
+    [TestCase(0)]
+    public void Delete_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
+    {
+        // Arrange
+        service.Setup(x => x.Delete(id));
+
+        // Act and Assert
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            async () => await controller.Delete(id).ConfigureAwait(false));
+    }
+
+    [Test]
+    [TestCase(10)]
+    public async Task Delete_WhenIdIsInvalid_ReturnsNull(long id)
+    {
+        // Arrange
+        service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
+
+        // Act
+        var result = await controller.Delete(id) as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    [TestCase(10)]
+    public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
+    {
+        // Arrange
+        service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Failed(new OperationError
         {
-            // Arrange
-            service.Setup(x => x.GetAll()).ReturnsAsync(directions);
+            Code = "400",
+            Description = "Some workshops assosiated with this direction. Deletion prohibited.",
+        }));
 
-            // Act
-            var result = await controller.Get().ConfigureAwait(false) as OkObjectResult;
+        // Act
+        var result = await controller.Delete(id);
 
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
-        }
+        // Assert
+        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
+    }
 
-        [Test]
-        [TestCase(1)]
-        public async Task GetById_WhenIdIsValid_ReturnsOkObjectResult(long id)
+    private DirectionDto FakeDirection()
+    {
+        return new DirectionDto()
         {
-            // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
+            Title = "Test1",
+            Description = "Test1",
+        };
+    }
 
-            // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
-        }
-
-        [Test]
-        [TestCase(-1)]
-        public void GetById_WhenIdIsInvalid_ThrowsArgumentOutOfRangeException(long id)
+    private IEnumerable<DirectionDto> FakeDirections()
+    {
+        return new List<DirectionDto>()
         {
-            // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
-
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await controller.GetById(id).ConfigureAwait(false));
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task GetById_WhenIdIsInvalid_ReturnsNull(long id)
-        {
-            // Arrange
-            service.Setup(x => x.GetById(id)).ReturnsAsync(directions.SingleOrDefault(x => x.Id == id));
-
-            // Act
-            var result = await controller.GetById(id).ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
-        }
-
-        [Test]
-        public async Task Create_WhenModelIsValid_ReturnsCreatedAtActionResult()
-        {
-            // Arrange
-            service.Setup(x => x.Create(direction)).ReturnsAsync(direction);
-
-            // Act
-            var result = await controller.Create(direction).ConfigureAwait(false) as CreatedAtActionResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(201, result.StatusCode);
-        }
-
-        [Test]
-        public async Task Create_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-        {
-            // Arrange
-            controller.ModelState.AddModelError("CreateDirection", "Invalid model state.");
-
-            // Act
-            var result = await controller.Create(direction).ConfigureAwait(false);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-        }
-
-        [Test]
-        public async Task Update_WhenModelIsValid_ReturnsOkObjectResult()
-        {
-            // Arrange
-            var changedDirection = new DirectionDto()
-            {
-                Id = 1,
-                Title = "ChangedTitle",
-            };
-            service.Setup(x => x.Update(changedDirection)).ReturnsAsync(changedDirection);
-
-            // Act
-            var result = await controller.Update(changedDirection).ConfigureAwait(false) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(200, result.StatusCode);
-        }
-
-        [Test]
-        public async Task Update_WhenModelIsInvalid_ReturnsBadRequestObjectResult()
-        {
-            // Arrange
-            controller.ModelState.AddModelError("UpdateDirection", "Invalid model state.");
-
-            // Act
-            var result = await controller.Update(direction).ConfigureAwait(false);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-        }
-
-        [Test]
-        [TestCase(1)]
-        public async Task Delete_WhenIdIsValid_ReturnsNoContentResult(long id)
-        {
-            // Arrange
-            service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
-
-            // Act
-            var result = await controller.Delete(id) as NoContentResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.AreEqual(204, result.StatusCode);
-        }
-
-        [Test]
-        [TestCase(0)]
-        public void Delete_WhenIdIsInvalid_ReturnsBadRequestObjectResult(long id)
-        {
-            // Arrange
-            service.Setup(x => x.Delete(id));
-
-            // Act and Assert
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                async () => await controller.Delete(id).ConfigureAwait(false));
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task Delete_WhenIdIsInvalid_ReturnsNull(long id)
-        {
-            // Arrange
-            service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Success(direction));
-
-            // Act
-            var result = await controller.Delete(id) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Null);
-        }
-
-        [Test]
-        [TestCase(10)]
-        public async Task Delete_WhenThereAreRelatedWorkshops_ReturnsBadRequestObjectResult(long id)
-        {
-            // Arrange
-            service.Setup(x => x.Delete(id)).ReturnsAsync(Result<DirectionDto>.Failed(new OperationError
-            {
-                Code = "400",
-                Description = "Some workshops assosiated with this direction. Deletion prohibited.",
-            }));
-
-            // Act
-            var result = await controller.Delete(id);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            Assert.That((result as BadRequestObjectResult).StatusCode, Is.EqualTo(400));
-        }
-
-        private DirectionDto FakeDirection()
-        {
-            return new DirectionDto()
+            new DirectionDto()
             {
                 Title = "Test1",
                 Description = "Test1",
-            };
-        }
-
-        private IEnumerable<DirectionDto> FakeDirections()
-        {
-            return new List<DirectionDto>()
+            },
+            new DirectionDto
             {
-                   new DirectionDto()
-                   {
-                       Title = "Test1",
-                       Description = "Test1",
-                   },
-                   new DirectionDto
-                   {
-                       Title = "Test2",
-                       Description = "Test2",
-                   },
-                   new DirectionDto
-                   {
-                       Title = "Test3",
-                       Description = "Test3",
-                   },
-            };
-        }
+                Title = "Test2",
+                Description = "Test2",
+            },
+            new DirectionDto
+            {
+                Title = "Test3",
+                Description = "Test3",
+            },
+        };
     }
 }

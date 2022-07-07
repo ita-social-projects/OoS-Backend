@@ -1,20 +1,20 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class InstitutionHierarchyAndProviderImages : Migration
 {
-    public partial class InstitutionHierarchyAndProviderImages : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<string>(
+        migrationBuilder.AddColumn<string>(
                 name: "CoverImageId",
                 table: "Providers",
                 type: "longtext",
                 nullable: true)
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Institutions",
                 columns: table => new
                 {
@@ -27,9 +27,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Institutions", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ProviderImages",
                 columns: table => new
                 {
@@ -47,9 +47,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "InstitutionFieldDescriptions",
                 columns: table => new
                 {
@@ -69,9 +69,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "InstitutionHierarchies",
                 columns: table => new
                 {
@@ -98,9 +98,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "DirectionInstitutionHierarchy",
                 columns: table => new
                 {
@@ -123,49 +123,48 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_DirectionInstitutionHierarchy_InstitutionHierarchiesId",
-                table: "DirectionInstitutionHierarchy",
-                column: "InstitutionHierarchiesId");
+        migrationBuilder.CreateIndex(
+            name: "IX_DirectionInstitutionHierarchy_InstitutionHierarchiesId",
+            table: "DirectionInstitutionHierarchy",
+            column: "InstitutionHierarchiesId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionFieldDescriptions_InstitutionId",
-                table: "InstitutionFieldDescriptions",
-                column: "InstitutionId");
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionFieldDescriptions_InstitutionId",
+            table: "InstitutionFieldDescriptions",
+            column: "InstitutionId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionHierarchies_InstitutionId",
-                table: "InstitutionHierarchies",
-                column: "InstitutionId");
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionHierarchies_InstitutionId",
+            table: "InstitutionHierarchies",
+            column: "InstitutionId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_InstitutionHierarchies_ParentId",
-                table: "InstitutionHierarchies",
-                column: "ParentId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_InstitutionHierarchies_ParentId",
+            table: "InstitutionHierarchies",
+            column: "ParentId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "DirectionInstitutionHierarchy");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "DirectionInstitutionHierarchy");
 
-            migrationBuilder.DropTable(
-                name: "InstitutionFieldDescriptions");
+        migrationBuilder.DropTable(
+            name: "InstitutionFieldDescriptions");
 
-            migrationBuilder.DropTable(
-                name: "ProviderImages");
+        migrationBuilder.DropTable(
+            name: "ProviderImages");
 
-            migrationBuilder.DropTable(
-                name: "InstitutionHierarchies");
+        migrationBuilder.DropTable(
+            name: "InstitutionHierarchies");
 
-            migrationBuilder.DropTable(
-                name: "Institutions");
+        migrationBuilder.DropTable(
+            name: "Institutions");
 
-            migrationBuilder.DropColumn(
-                name: "CoverImageId",
-                table: "Providers");
-        }
+        migrationBuilder.DropColumn(
+            name: "CoverImageId",
+            table: "Providers");
     }
 }

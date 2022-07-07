@@ -1,12 +1,11 @@
-﻿namespace OutOfSchool.Services.Enums
+﻿namespace OutOfSchool.Services.Enums;
+
+public enum ProviderType
 {
-    public enum ProviderType
-    {
-        FOP,
-        Social,
-        TOV,
-        Private,
-        EducationalInstitution,
-        Other,
-    }
+    FOP,
+    Social,
+    TOV,
+    Private,
+    EducationalInstitution,
+    Other,
 }

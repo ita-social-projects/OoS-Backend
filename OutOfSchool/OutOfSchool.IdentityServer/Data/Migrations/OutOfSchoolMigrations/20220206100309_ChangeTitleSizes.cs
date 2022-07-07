@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class ChangeTitleSizes : Migration
 {
-    public partial class ChangeTitleSizes : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "Title",
                 table: "Directions",
                 type: "varchar(100)",
@@ -15,10 +15,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "varchar(60)",
                 oldMaxLength: 60)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "Title",
                 table: "Departments",
                 type: "varchar(150)",
@@ -27,10 +27,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "varchar(60)",
                 oldMaxLength: 60)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "Title",
                 table: "Classes",
                 type: "varchar(150)",
@@ -39,13 +39,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "varchar(60)",
                 oldMaxLength: 60)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AlterColumn<string>(
                 name: "Title",
                 table: "Directions",
                 type: "varchar(60)",
@@ -54,10 +54,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "varchar(100)",
                 oldMaxLength: 100)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "Title",
                 table: "Departments",
                 type: "varchar(60)",
@@ -66,10 +66,10 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "varchar(150)",
                 oldMaxLength: 150)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.AlterColumn<string>(
+        migrationBuilder.AlterColumn<string>(
                 name: "Title",
                 table: "Classes",
                 type: "varchar(60)",
@@ -78,8 +78,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 oldClrType: typeof(string),
                 oldType: "varchar(150)",
                 oldMaxLength: 150)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4")
+            .OldAnnotation("MySql:CharSet", "utf8mb4");
     }
 }

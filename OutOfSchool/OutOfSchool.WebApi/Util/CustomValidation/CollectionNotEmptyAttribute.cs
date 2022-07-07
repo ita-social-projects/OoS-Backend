@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections;
 
-namespace OutOfSchool.WebApi.Util.CustomValidation
+namespace OutOfSchool.WebApi.Util.CustomValidation;
+
+[AttributeUsage(AttributeTargets.Property)]
+public class CollectionNotEmptyAttribute : System.ComponentModel.DataAnnotations.ValidationAttribute
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public class CollectionNotEmptyAttribute : System.ComponentModel.DataAnnotations.ValidationAttribute
+    public override bool IsValid(object value)
     {
-        public override bool IsValid(object value)
+        return value switch
         {
-            return value switch
-            {
-                ICollection collection => collection.Count > 0,
-                IEnumerable enumerable => enumerable.GetEnumerator().MoveNext(),
-                _ => false
-            };
-        }
+            ICollection collection => collection.Count > 0,
+            IEnumerable enumerable => enumerable.GetEnumerator().MoveNext(),
+            _ => false
+        };
     }
 }

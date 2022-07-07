@@ -4,60 +4,59 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.Services.Repository
+namespace OutOfSchool.Services.Repository;
+
+public class BlockedProviderParentRepository : SensitiveEntityRepository<BlockedProviderParent>, IBlockedProviderParentRepository
 {
-    public class BlockedProviderParentRepository : SensitiveEntityRepository<BlockedProviderParent>, IBlockedProviderParentRepository
+    private readonly OutOfSchoolDbContext db;
+
+    public BlockedProviderParentRepository(OutOfSchoolDbContext dbContext)
+        : base(dbContext)
     {
-        private readonly OutOfSchoolDbContext db;
+        db = dbContext;
+    }
 
-        public BlockedProviderParentRepository(OutOfSchoolDbContext dbContext)
-            : base(dbContext)
-        {
-            db = dbContext;
-        }
+    /// <inheritdoc/>
+    public async Task<BlockedProviderParent> Block(BlockedProviderParent blockedProviderParent)
+    {
+        await SetApplicationsAndChatRoomsBlock(
+            blockedProviderParent.ParentId,
+            blockedProviderParent.ProviderId,
+            true);
 
-        /// <inheritdoc/>
-        public async Task<BlockedProviderParent> Block(BlockedProviderParent blockedProviderParent)
-        {
-            await SetApplicationsAndChatRoomsBlock(
-                blockedProviderParent.ParentId,
-                blockedProviderParent.ProviderId,
-                true);
+        var currentBlockedProviderParent = db.BlockedProviderParents.Add(blockedProviderParent);
 
-            var currentBlockedProviderParent = db.BlockedProviderParents.Add(blockedProviderParent);
+        await db.SaveChangesAsync();
 
-            await db.SaveChangesAsync();
+        return await Task.FromResult(currentBlockedProviderParent.Entity);
+    }
 
-            return await Task.FromResult(currentBlockedProviderParent.Entity);
-        }
+    /// <inheritdoc/>
+    public async Task<BlockedProviderParent> UnBlock(BlockedProviderParent blockedProviderParent)
+    {
+        await SetApplicationsAndChatRoomsBlock(
+            blockedProviderParent.ParentId,
+            blockedProviderParent.ProviderId,
+            false);
 
-        /// <inheritdoc/>
-        public async Task<BlockedProviderParent> UnBlock(BlockedProviderParent blockedProviderParent)
-        {
-            await SetApplicationsAndChatRoomsBlock(
-                blockedProviderParent.ParentId,
-                blockedProviderParent.ProviderId,
-                false);
+        var currentBlock = dbSet.Find(blockedProviderParent.Id);
 
-            var currentBlock = dbSet.Find(blockedProviderParent.Id);
+        dbContext.Entry(currentBlock).CurrentValues.SetValues(blockedProviderParent);
+        dbContext.Entry(currentBlock).State = EntityState.Modified;
 
-            dbContext.Entry(currentBlock).CurrentValues.SetValues(blockedProviderParent);
-            dbContext.Entry(currentBlock).State = EntityState.Modified;
+        await db.SaveChangesAsync();
 
-            await db.SaveChangesAsync();
+        return await Task.FromResult(blockedProviderParent);
+    }
 
-            return await Task.FromResult(blockedProviderParent);
-        }
+    private async Task SetApplicationsAndChatRoomsBlock(Guid parentId, Guid providerId, bool block)
+    {
+        var applications = db.Applications.Where(a => a.ParentId == parentId
+                                                      && a.Workshop.ProviderId == providerId);
+        await applications.ForEachAsync(a => a.IsBlocked = block);
 
-        private async Task SetApplicationsAndChatRoomsBlock(Guid parentId, Guid providerId, bool block)
-        {
-            var applications = db.Applications.Where(a => a.ParentId == parentId
-                                                        && a.Workshop.ProviderId == providerId);
-            await applications.ForEachAsync(a => a.IsBlocked = block);
-
-            var chatRooms = db.ChatRoomWorkshops.Where(c => c.ParentId == parentId
+        var chatRooms = db.ChatRoomWorkshops.Where(c => c.ParentId == parentId
                                                         && c.Workshop.ProviderId == providerId);
-            await chatRooms.ForEachAsync(a => a.IsBlocked = block);
-        }
+        await chatRooms.ForEachAsync(a => a.IsBlocked = block);
     }
 }

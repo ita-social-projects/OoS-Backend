@@ -1,21 +1,20 @@
 ﻿using System;
 
-namespace OutOfSchool.WebApi.Models.ChatWorkshop
+namespace OutOfSchool.WebApi.Models.ChatWorkshop;
+
+public class ChatMessageWorkshopDto
 {
-    public class ChatMessageWorkshopDto
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        public Guid ChatRoomId { get; set; }
+    public Guid ChatRoomId { get; set; }
 
-        public string Text { get; set; }
+    public string Text { get; set; }
 
-        public bool SenderRoleIsProvider { get; set; }
+    public bool SenderRoleIsProvider { get; set; }
 
-        public DateTimeOffset CreatedDateTime { get; set; }
+    public DateTimeOffset CreatedDateTime { get; set; }
 
-        public DateTimeOffset? ReadDateTime { get; set; }
+    public DateTimeOffset? ReadDateTime { get; set; }
 
-        public bool IsBlocked { get; set; }
-    }
+    public bool IsBlocked { get; set; }
 }

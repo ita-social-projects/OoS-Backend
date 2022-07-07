@@ -6,43 +6,42 @@ using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models;
 
-namespace OutOfSchool.Tests.Common.TestDataGenerators
+namespace OutOfSchool.Tests.Common.TestDataGenerators;
+
+/// <summary>
+/// Contains methods to generate fake <see cref="Provider"/> objects.
+/// </summary>
+public static class ProvidersGenerator
 {
+    private static readonly Faker<Provider> faker = new Faker<Provider>()
+        .RuleFor(x => x.Id, _ => Guid.NewGuid())
+        .RuleFor(x => x.FullTitle, f => f.Company.CompanyName())
+        .RuleFor(x => x.ShortTitle, f => f.Company.CompanySuffix())
+        .RuleFor(x => x.Website, f => f.Internet.Url())
+        .RuleFor(x => x.Facebook, f => f.Internet.Url())
+        .RuleFor(x => x.Instagram, f => f.Internet.Url())
+        .RuleFor(x => x.DirectorDateOfBirth, f => f.Person.DateOfBirth)
+        .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnNumber)
+        .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)
+        .RuleFor(x => x.Founder, f => f.Person.FullName)
+        .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))
+        .RuleFor(x => x.Type, f => f.Random.ArrayElement((ProviderType[])Enum.GetValues(typeof(ProviderType))))
+        .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
+        .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
+        .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
+        .RuleFor(x => x.LegalAddress, _ => AddressGenerator.Generate())
+        .RuleFor(x => x.ActualAddress, _ => AddressGenerator.Generate())
+        .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>());
+
     /// <summary>
-    /// Contains methods to generate fake <see cref="Provider"/> objects.
+    /// Creates new instance of the <see cref="Provider"/> class with random data.
     /// </summary>
-    public static class ProvidersGenerator
-    {
-        private static readonly Faker<Provider> faker = new Faker<Provider>()
-            .RuleFor(x => x.Id, _ => Guid.NewGuid())
-            .RuleFor(x => x.FullTitle, f => f.Company.CompanyName())
-            .RuleFor(x => x.ShortTitle, f => f.Company.CompanySuffix())
-            .RuleFor(x => x.Website, f => f.Internet.Url())
-            .RuleFor(x => x.Facebook, f => f.Internet.Url())
-            .RuleFor(x => x.Instagram, f => f.Internet.Url())
-            .RuleFor(x => x.DirectorDateOfBirth, f => f.Person.DateOfBirth)
-            .RuleFor(x => x.EdrpouIpn, _ => TestDataHelper.EdrpouIpnNumber)
-            .RuleFor(x => x.PhoneNumber, f => f.Person.Phone)
-            .RuleFor(x => x.Founder, f => f.Person.FullName)
-            .RuleFor(x => x.Ownership, f => f.Random.ArrayElement((OwnershipType[])Enum.GetValues(typeof(OwnershipType))))
-            .RuleFor(x => x.Type, f => f.Random.ArrayElement((ProviderType[])Enum.GetValues(typeof(ProviderType))))
-            .RuleFor(x => x.Status, f => f.Random.ArrayElement((ProviderStatus[])Enum.GetValues(typeof(ProviderStatus))))
-            .RuleFor(x => x.License, f => f.Random.AlphaNumeric(15))
-            .RuleFor(x => x.UserId, f => f.Random.Guid().ToString())
-            .RuleFor(x => x.LegalAddress, _ => AddressGenerator.Generate())
-            .RuleFor(x => x.ActualAddress, _ => AddressGenerator.Generate())
-            .RuleFor(x => x.InstitutionType, f => f.PickRandom<InstitutionType>());
+    /// <returns><see cref="Provider"/> object.</returns>
+    public static Provider Generate() => faker.Generate();
 
-        /// <summary>
-        /// Creates new instance of the <see cref="Provider"/> class with random data.
-        /// </summary>
-        /// <returns><see cref="Provider"/> object.</returns>
-        public static Provider Generate() => faker.Generate();
-
-        /// <summary>
-        /// Generates a list of the <see cref="Provider"/> objects.
-        /// </summary>
-        /// <param name="count">count of instances to generate.</param>
-        public static List<Provider> Generate(int count) => faker.Generate(count);
-    }
+    /// <summary>
+    /// Generates a list of the <see cref="Provider"/> objects.
+    /// </summary>
+    /// <param name="count">count of instances to generate.</param>
+    public static List<Provider> Generate(int count) => faker.Generate(count);
 }

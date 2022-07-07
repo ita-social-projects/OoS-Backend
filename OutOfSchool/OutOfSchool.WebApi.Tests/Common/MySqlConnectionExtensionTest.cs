@@ -10,18 +10,18 @@ using OutOfSchool.Common.Extensions.Startup;
 using OutOfSchool.WebApi.Config;
 using OutOfSchool.WebApi.Config.Quartz;
 
-namespace OutOfSchool.WebApi.Tests.Common
+namespace OutOfSchool.WebApi.Tests.Common;
+
+[TestFixture]
+public class MySqlConnectionExtensionTest
 {
-    [TestFixture]
-    public class MySqlConnectionExtensionTest
-    {
-        private readonly string connectionStringNoGuidFormat = @"{""ConnectionStrings"": {
+    private readonly string connectionStringNoGuidFormat = @"{""ConnectionStrings"": {
         ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school""}}";
 
-        private readonly string connectionString = @"{""ConnectionStrings"": {
+    private readonly string connectionString = @"{""ConnectionStrings"": {
         ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;guidformat=binary16""}}";
 
-        private readonly string overrides = @"{""ConnectionStringsOverride"": {
+    private readonly string overrides = @"{""ConnectionStringsOverride"": {
         ""Test"": {
             ""UseOverride"": true,
             ""Server"": ""localhost"",
@@ -33,7 +33,7 @@ namespace OutOfSchool.WebApi.Tests.Common
         }
         }}";
 
-        private readonly string overridesNoGuidFormat = @"{""ConnectionStringsOverride"": {
+    private readonly string overridesNoGuidFormat = @"{""ConnectionStringsOverride"": {
         ""Test"": {
             ""UseOverride"": true,
             ""Server"": ""localhost"",
@@ -44,7 +44,7 @@ namespace OutOfSchool.WebApi.Tests.Common
         }
         }}";
 
-        private readonly string overridesConnectionString = @"{""ConnectionStringsOverride"": {
+    private readonly string overridesConnectionString = @"{""ConnectionStringsOverride"": {
         ""Test"": {
             ""UseOverride"": false,
             ""Server"": ""localhost"",
@@ -58,51 +58,79 @@ namespace OutOfSchool.WebApi.Tests.Common
         ""ConnectionStrings"": {
         ""Test"": ""server=localhost;user=root;password=rootPassword;database=out_of_school;guidformat=binary16""}}";
 
-        [Test]
-        public void IfNoOverrides_UseConnectionString()
+    [Test]
+    public void IfNoOverrides_UseConnectionString()
+    {
+        // Arrange
+        var configuration = Setup(connectionString);
+
+        // Act
+        var connection = configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test");
+
+        // Assert
+        Assert.AreEqual(connection, configuration.GetConnectionString("Test"));
+    }
+
+    [Test]
+    public void IfUseOverridesFalse_UseConnectionString()
+    {
+        // Arrange
+        var configuration = Setup(overridesConnectionString);
+
+        // Act
+        var connection = configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test");
+
+        // Assert
+        Assert.AreEqual(connection, configuration.GetConnectionString("Test"));
+    }
+
+    [Test]
+    public void IfUseOverridesTrue_CheckOptionsConverter()
+    {
+        // Arrange
+        var configuration = Setup(overrides);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+            configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test"));
+    }
+
+    [Test]
+    public void IfUseOverridesTrue_Override()
+    {
+        // Arrange
+        var configuration = Setup(overrides);
+
+        // Act
+        var connection = configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
+            "Test",
+            options => new MySqlConnectionStringBuilder
+            {
+                Server = options.Server,
+                Port = options.Port,
+                UserID = options.UserId,
+                Password = options.Password,
+                Database = options.Database,
+                GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
+            });
+        var builder = new DbConnectionStringBuilder()
         {
-            // Arrange
-            var configuration = Setup(connectionString);
+            ConnectionString = connection,
+        };
 
-            // Act
-            var connection = configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test");
+        // Assert
+        Assert.AreEqual("test", builder["database"]);
+    }
 
-            // Assert
-            Assert.AreEqual(connection, configuration.GetConnectionString("Test"));
-        }
+    [Test]
+    public void IfUseOverridesTrue_NoGuidFormat_Throw()
+    {
+        // Arrange
+        var configuration = Setup(overridesNoGuidFormat);
 
-        [Test]
-        public void IfUseOverridesFalse_UseConnectionString()
-        {
-            // Arrange
-            var configuration = Setup(overridesConnectionString);
-
-            // Act
-            var connection = configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test");
-
-            // Assert
-            Assert.AreEqual(connection, configuration.GetConnectionString("Test"));
-        }
-
-        [Test]
-        public void IfUseOverridesTrue_CheckOptionsConverter()
-        {
-            // Arrange
-            var configuration = Setup(overrides);
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() =>
-                configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test"));
-        }
-
-        [Test]
-        public void IfUseOverridesTrue_Override()
-        {
-            // Arrange
-            var configuration = Setup(overrides);
-
-            // Act
-            var connection = configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
+        // Act & Assert
+        var ex = Assert.Throws<Exception>(() =>
+            configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
                 "Test",
                 options => new MySqlConnectionStringBuilder
                 {
@@ -112,97 +140,68 @@ namespace OutOfSchool.WebApi.Tests.Common
                     Password = options.Password,
                     Database = options.Database,
                     GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
-                });
-            var builder = new DbConnectionStringBuilder()
-            {
-                ConnectionString = connection,
-            };
+                }));
+        Assert.AreEqual(
+            ex?.Message,
+            "The connection string should have a key: 'guidformat' and a value: 'binary16'");
+    }
 
-            // Assert
-            Assert.AreEqual("test", builder["database"]);
-        }
+    [Test]
+    public void IfNoOverrides_NoConnectionString_Throw()
+    {
+        // Arrange
+        var configuration = Setup(connectionString);
 
-        [Test]
-        public void IfUseOverridesTrue_NoGuidFormat_Throw()
-        {
-            // Arrange
-            var configuration = Setup(overridesNoGuidFormat);
+        // Act & Assert
+        var ex = Assert.Throws<Exception>(() =>
+            configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Something"));
+        Assert.AreEqual(ex?.Message, "Provide a valid connection string or options");
+    }
 
-            // Act & Assert
-            var ex = Assert.Throws<Exception>(() =>
-                configuration.GetMySqlConnectionString<WebApiConnectionOptions>(
-                    "Test",
-                    options => new MySqlConnectionStringBuilder
-                    {
-                        Server = options.Server,
-                        Port = options.Port,
-                        UserID = options.UserId,
-                        Password = options.Password,
-                        Database = options.Database,
-                        GuidFormat = options.GuidFormat.ToEnum(MySqlGuidFormat.Default),
-                    }));
-            Assert.AreEqual(
-                ex?.Message,
-                "The connection string should have a key: 'guidformat' and a value: 'binary16'");
-        }
+    [Test]
+    public void IfNoOverrides_ConnectionStringHasNoGuidFormat_Throw()
+    {
+        // Arrange
+        var configuration = Setup(connectionStringNoGuidFormat);
 
-        [Test]
-        public void IfNoOverrides_NoConnectionString_Throw()
-        {
-            // Arrange
-            var configuration = Setup(connectionString);
+        // Act & Assert
+        var ex = Assert.Throws<Exception>(() =>
+            configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test"));
+        Assert.AreEqual(
+            ex?.Message,
+            "The connection string should have a key: 'guidformat' and a value: 'binary16'");
+    }
 
-            // Act & Assert
-            var ex = Assert.Throws<Exception>(() =>
-                configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Something"));
-            Assert.AreEqual(ex?.Message, "Provide a valid connection string or options");
-        }
+    [Test]
+    public void IfConnectionDoesNotRequireGuidFormat_GuidOptionIsRemoved()
+    {
+        // Arrange
+        var configuration = Setup(connectionString);
 
-        [Test]
-        public void IfNoOverrides_ConnectionStringHasNoGuidFormat_Throw()
-        {
-            // Arrange
-            var configuration = Setup(connectionStringNoGuidFormat);
+        // Act
+        var connection = configuration.GetMySqlConnectionString<QuartzConnectionOptions>("Test");
 
-            // Act & Assert
-            var ex = Assert.Throws<Exception>(() =>
-                configuration.GetMySqlConnectionString<WebApiConnectionOptions>("Test"));
-            Assert.AreEqual(
-                ex?.Message,
-                "The connection string should have a key: 'guidformat' and a value: 'binary16'");
-        }
+        // Assert
+        Assert.False(connection.Contains("guidformat"));
+    }
 
-        [Test]
-        public void IfConnectionDoesNotRequireGuidFormat_GuidOptionIsRemoved()
-        {
-            // Arrange
-            var configuration = Setup(connectionString);
+    [Test]
+    public void IfConnectionDoesNotRequireGuidFormat_NoGuidFormatPresent_HandledWithoutError()
+    {
+        // Arrange
+        var configuration = Setup(connectionStringNoGuidFormat);
 
-            // Act
-            var connection = configuration.GetMySqlConnectionString<QuartzConnectionOptions>("Test");
+        // Act
+        var connection = configuration.GetMySqlConnectionString<QuartzConnectionOptions>("Test");
 
-            // Assert
-            Assert.False(connection.Contains("guidformat"));
-        }
+        // Assert
+        Assert.False(connection.Contains("guidformat"));
+    }
 
-        [Test]
-        public void IfConnectionDoesNotRequireGuidFormat_NoGuidFormatPresent_HandledWithoutError()
-        {
-            // Arrange
-            var configuration = Setup(connectionStringNoGuidFormat);
-
-            // Act
-            var connection = configuration.GetMySqlConnectionString<QuartzConnectionOptions>("Test");
-
-            // Assert
-            Assert.False(connection.Contains("guidformat"));
-        }
-
-        private IConfiguration Setup(string json)
-        {
-            var builder = new ConfigurationBuilder();
-            builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)));
-            return builder.Build();
-        }
+    private IConfiguration Setup(string json)
+    {
+        var builder = new ConfigurationBuilder();
+        builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)));
+        return builder.Build();
     }
 }

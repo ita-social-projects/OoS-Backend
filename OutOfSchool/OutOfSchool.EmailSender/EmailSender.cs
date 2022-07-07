@@ -5,58 +5,57 @@ using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
-namespace OutOfSchool.EmailSender
+namespace OutOfSchool.EmailSender;
+
+public class EmailSender : IEmailSender
 {
-    public class EmailSender : IEmailSender
+    private readonly IOptions<EmailOptions> emailOptions;
+    private readonly ISendGridClient sendGridClient;
+    private readonly ILogger<EmailSender> logger;
+
+    public EmailSender(
+        IOptions<EmailOptions> emailOptions,
+        ISendGridClient sendGridClient,
+        ILogger<EmailSender> logger)
     {
-        private readonly IOptions<EmailOptions> emailOptions;
-        private readonly ISendGridClient sendGridClient;
-        private readonly ILogger<EmailSender> logger;
+        this.emailOptions = emailOptions;
+        this.sendGridClient = sendGridClient;
+        this.logger = logger;
+    }
 
-        public EmailSender(
-            IOptions<EmailOptions> emailOptions,
-            ISendGridClient sendGridClient,
-            ILogger<EmailSender> logger)
+    public Task SendAsync(string email, string subject, string htmlMessage)
+    {
+        var message = new SendGridMessage()
         {
-            this.emailOptions = emailOptions;
-            this.sendGridClient = sendGridClient;
-            this.logger = logger;
+            From = new EmailAddress()
+            {
+                Email = emailOptions.Value.AddressFrom,
+                Name = emailOptions.Value.NameFrom,
+            },
+            Subject = subject,
+            //TODO: Add plaintext message fallback
+            HtmlContent = htmlMessage
+        };
+        message.AddTo(new EmailAddress(email));
+
+        return SendAsync(message);
+    }
+
+    private async Task SendAsync(SendGridMessage message)
+    {
+        if (!emailOptions.Value.Enabled)
+        {
+            return;
         }
 
-        public Task SendAsync(string email, string subject, string htmlMessage)
+        try
         {
-            var message = new SendGridMessage()
-            {
-                From = new EmailAddress()
-                {
-                    Email = emailOptions.Value.AddressFrom,
-                    Name = emailOptions.Value.NameFrom,
-                },
-                Subject = subject,
-                //TODO: Add plaintext message fallback
-                HtmlContent = htmlMessage
-            };
-            message.AddTo(new EmailAddress(email));
-
-            return SendAsync(message);
+            var response = await sendGridClient.SendEmailAsync(message).ConfigureAwait(false);
+            //TODO: Do Something with success?
         }
-
-        private async Task SendAsync(SendGridMessage message)
+        catch (Exception e)
         {
-            if (!emailOptions.Value.Enabled)
-            {
-                return;
-            }
-
-            try
-            {
-                var response = await sendGridClient.SendEmailAsync(message).ConfigureAwait(false);
-                //TODO: Do Something with success?
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e.Message);
-            }
+            logger.LogError(e.Message);
         }
     }
 }

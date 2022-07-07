@@ -1,12 +1,13 @@
 ﻿using Bogus;
-
 using OutOfSchool.WebApi.Models;
 
-namespace OutOfSchool.Tests.Common.TestDataGenerators
+namespace OutOfSchool.Tests.Common.TestDataGenerators;
+
+public static class AddressDtoGenerator
 {
-    public static class AddressDtoGenerator
+    static AddressDtoGenerator()
     {
-        private static readonly Faker<AddressDto> faker = new Faker<AddressDto>()
+        faker = new Faker<AddressDto>()
             .RuleFor(x => x.Id, f => f.IndexFaker)
             .RuleFor(x => x.Region, f => f.Address.State())
             .RuleFor(x => x.District, f => f.Address.County())
@@ -16,10 +17,16 @@ namespace OutOfSchool.Tests.Common.TestDataGenerators
             .RuleFor(x => x.Latitude, f => f.Address.Latitude())
             .RuleFor(x => x.Longitude, f => f.Address.Longitude());
 
-        /// <summary>
-        /// Generates new instance of the <see cref="Address"/> class.
-        /// </summary>
-        /// <returns><see cref="Address"/> object with random data.</returns>
-        public static AddressDto Generate() => faker.Generate();
+        // Increment initial value of IndexFaker to have first created entity with Id=1
+        // and prevent System.InvalidOperationException when it is added to the DbContext
+        (faker as IFakerTInternal).FakerHub.IndexFaker++;
     }
+
+    private static readonly Faker<AddressDto> faker;
+
+    /// <summary>
+    /// Generates new instance of the <see cref="Address"/> class.
+    /// </summary>
+    /// <returns><see cref="Address"/> object with random data.</returns>
+    public static AddressDto Generate() => faker.Generate();
 }

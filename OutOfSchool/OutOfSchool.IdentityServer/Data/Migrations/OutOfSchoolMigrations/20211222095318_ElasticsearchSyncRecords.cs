@@ -1,13 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class ElasticsearchSyncRecords : Migration
 {
-    public partial class ElasticsearchSyncRecords : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ElasticsearchSyncRecords",
                 columns: table => new
                 {
@@ -21,13 +21,12 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_ElasticsearchSyncRecords", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
-        }
+            .Annotation("MySql:CharSet", "utf8mb4");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "ElasticsearchSyncRecords");
-        }
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "ElasticsearchSyncRecords");
     }
 }

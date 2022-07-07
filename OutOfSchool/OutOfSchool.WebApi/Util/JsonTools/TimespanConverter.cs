@@ -1,10 +1,10 @@
 using System;
 using Newtonsoft.Json;
 
-namespace OutOfSchool.WebApi.Util.JsonTools
+namespace OutOfSchool.WebApi.Util.JsonTools;
+
+public class TimespanConverter : JsonConverter<TimeSpan>
 {
-    public class TimespanConverter : JsonConverter<TimeSpan>
-    {
     /// <summary>
     /// Format: Hours:Minutes
     /// </summary>
@@ -20,6 +20,5 @@ namespace OutOfSchool.WebApi.Util.JsonTools
     {
         TimeSpan.TryParseExact((string)reader.Value, TimeSpanFormatString, null, out var parsedTimeSpan);
         return parsedTimeSpan;
-    }
     }
 }

@@ -1,7 +1,6 @@
-﻿namespace OutOfSchool.WebApi.Models
+﻿namespace OutOfSchool.WebApi.Models;
+
+public class SearchStringFilter : OffsetFilter
 {
-    public class SearchStringFilter : OffsetFilter
-    {
-        public string SearchString { get; set; } = string.Empty;
-    }
+    public string SearchString { get; set; } = string.Empty;
 }

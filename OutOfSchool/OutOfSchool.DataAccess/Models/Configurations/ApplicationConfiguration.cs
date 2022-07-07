@@ -2,24 +2,23 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OutOfSchool.Services.Enums;
 
-namespace OutOfSchool.Services.Models.Configurations
+namespace OutOfSchool.Services.Models.Configurations;
+
+internal class ApplicationConfiguration : IEntityTypeConfiguration<Application>
 {
-    internal class ApplicationConfiguration : IEntityTypeConfiguration<Application>
+    public void Configure(EntityTypeBuilder<Application> builder)
     {
-        public void Configure(EntityTypeBuilder<Application> builder)
-        {
-            builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Status)
-                .HasDefaultValue(ApplicationStatus.Pending);
+        builder.Property(x => x.Status)
+            .HasDefaultValue(ApplicationStatus.Pending);
 
-            builder.Property(x => x.CreationTime)
-                .IsRequired();
+        builder.Property(x => x.CreationTime)
+            .IsRequired();
 
-            builder.HasOne(x => x.Parent)
-                .WithMany()
-                // Note: cascade delete causes circular dependency issue
-                .OnDelete(DeleteBehavior.NoAction);
-        }
+        builder.HasOne(x => x.Parent)
+            .WithMany()
+            // Note: cascade delete causes circular dependency issue
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

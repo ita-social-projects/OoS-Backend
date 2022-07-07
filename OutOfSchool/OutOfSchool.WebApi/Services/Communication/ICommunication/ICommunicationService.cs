@@ -2,10 +2,9 @@
 
 using OutOfSchool.Common;
 
-namespace OutOfSchool.WebApi.Services.Communication.ICommunication
+namespace OutOfSchool.WebApi.Services.Communication.ICommunication;
+
+public interface ICommunicationService
 {
-    public interface ICommunicationService
-    {
-        Task<ResponseDto> SendRequest(Request request);
-    }
+    Task<ResponseDto> SendRequest(Request request);
 }

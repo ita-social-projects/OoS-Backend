@@ -1,13 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace OutOfSchool.WebApi.Config
+namespace OutOfSchool.WebApi.Config;
+
+public class ElasticsearchSynchronizationSchedulerConfig
 {
-    public class ElasticsearchSynchronizationSchedulerConfig
-    {
-        public static string SectionName { get; } = ElasticConfig.Name + ConfigurationPath.KeyDelimiter + "SynchronizationScheduler";
+    public static string SectionName { get; } = ElasticConfig.Name + ConfigurationPath.KeyDelimiter + "SynchronizationScheduler";
 
-        public int OperationsPerTask { get; set; }
+    public int OperationsPerTask { get; set; }
 
-        public int DelayBetweenTasksInMilliseconds { get; set; }
-    }
+    public int DelayBetweenTasksInMilliseconds { get; set; }
 }

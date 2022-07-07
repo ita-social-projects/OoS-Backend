@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OutOfSchool.RazorTemplatesData.Models.Emails
+namespace OutOfSchool.RazorTemplatesData.Models.Emails;
+
+public class UserActionViewModel
 {
-    public class UserActionViewModel
-    {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string ActionUrl { get; set; }
-    }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string ActionUrl { get; set; }
 }

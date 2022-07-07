@@ -8,86 +8,86 @@ using Microsoft.EntityFrameworkCore;
 
 using OutOfSchool.Services.Models.ChatWorkshop;
 
-namespace OutOfSchool.Services.Repository
+namespace OutOfSchool.Services.Repository;
+
+public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModelForChatListRepository
 {
-    public class ChatRoomWorkshopModelForChatListRepository : IChatRoomWorkshopModelForChatListRepository
+    private readonly DbSet<ChatRoomWorkshop> dbSet;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatRoomWorkshopModelForChatListRepository"/> class.
+    /// </summary>
+    /// <param name="dbContext">OutOfSchoolDbContext.</param>
+    public ChatRoomWorkshopModelForChatListRepository(OutOfSchoolDbContext dbContext)
     {
-        private readonly DbSet<ChatRoomWorkshop> dbSet;
+        dbSet = dbContext.Set<ChatRoomWorkshop>() ?? throw new ArgumentNullException(nameof(dbContext));
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChatRoomWorkshopModelForChatListRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">OutOfSchoolDbContext.</param>
-        public ChatRoomWorkshopModelForChatListRepository(OutOfSchoolDbContext dbContext)
-        {
-            dbSet = dbContext.Set<ChatRoomWorkshop>() ?? throw new ArgumentNullException(nameof(dbContext));
-        }
+    public async Task<ChatRoomWorkshopForChatList> GetByChatRoomIdAsync(Guid chatRoomId, bool searchMessagesForProvider = true)
+    {
+        Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.Id == chatRoomId;
 
-        public async Task<ChatRoomWorkshopForChatList> GetByChatRoomIdAsync(Guid chatRoomId, bool searchMessagesForProvider = true)
-        {
-            Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.Id == chatRoomId;
+        var chatRooms = await this.GetByParametersAsync(condition, searchMessagesForProvider).ConfigureAwait(false);
 
-            var chatRooms = await this.GetByParametersAsync(condition, searchMessagesForProvider).ConfigureAwait(false);
+        return chatRooms.SingleOrDefault();
+    }
 
-            return chatRooms.SingleOrDefault();
-        }
+    public Task<List<ChatRoomWorkshopForChatList>> GetByParentIdAsync(Guid parentId, bool searchMessagesForProvider = false)
+    {
+        Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.ParentId == parentId;
 
-        public Task<List<ChatRoomWorkshopForChatList>> GetByParentIdAsync(Guid parentId, bool searchMessagesForProvider = false)
-        {
-            Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.ParentId == parentId;
+        return this.GetByParametersAsync(condition, searchMessagesForProvider);
+    }
 
-            return this.GetByParametersAsync(condition, searchMessagesForProvider);
-        }
+    public Task<List<ChatRoomWorkshopForChatList>> GetByProviderIdAsync(Guid providerId, bool searchMessagesForProvider = true)
+    {
+        Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.Workshop.ProviderId == providerId;
 
-        public Task<List<ChatRoomWorkshopForChatList>> GetByProviderIdAsync(Guid providerId, bool searchMessagesForProvider = true)
-        {
-            Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.Workshop.ProviderId == providerId;
+        return this.GetByParametersAsync(condition, searchMessagesForProvider);
+    }
 
-            return this.GetByParametersAsync(condition, searchMessagesForProvider);
-        }
+    public Task<List<ChatRoomWorkshopForChatList>> GetByWorkshopIdAsync(Guid workshopId, bool searchMessagesForProvider = true)
+    {
+        Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.WorkshopId == workshopId;
 
-        public Task<List<ChatRoomWorkshopForChatList>> GetByWorkshopIdAsync(Guid workshopId, bool searchMessagesForProvider = true)
-        {
-            Expression<Func<ChatRoomWorkshop, bool>> condition = x => x.WorkshopId == workshopId;
+        return this.GetByParametersAsync(condition, searchMessagesForProvider);
+    }
 
-            return this.GetByParametersAsync(condition, searchMessagesForProvider);
-        }
+    /// <inheritdoc/>
+    public Task<List<ChatRoomWorkshopForChatList>> GetByWorkshopIdsAsync(IEnumerable<Guid> workshopIds, bool searchMessagesForProvider = true)
+    {
+        Expression<Func<ChatRoomWorkshop, bool>> condition = x => workshopIds.Contains(x.WorkshopId);
 
-        /// <inheritdoc/>
-        public Task<List<ChatRoomWorkshopForChatList>> GetByWorkshopIdsAsync(IEnumerable<Guid> workshopIds, bool searchMessagesForProvider = true)
-        {
-            Expression<Func<ChatRoomWorkshop, bool>> condition = x => workshopIds.Contains(x.WorkshopId);
+        return this.GetByParametersAsync(condition, searchMessagesForProvider);
+    }
 
-            return this.GetByParametersAsync(condition, searchMessagesForProvider);
-        }
-
-        private Task<List<ChatRoomWorkshopForChatList>> GetByParametersAsync(Expression<Func<ChatRoomWorkshop, bool>> condition, bool searchMessagesForProvider)
-        {
-            var query = dbSet
-                .Where(condition)
-                .Select(item => new ChatRoomWorkshopForChatList()
+    private Task<List<ChatRoomWorkshopForChatList>> GetByParametersAsync(Expression<Func<ChatRoomWorkshop, bool>> condition, bool searchMessagesForProvider)
+    {
+        var query = dbSet
+            .Where(condition)
+            .Select(item => new ChatRoomWorkshopForChatList()
+            {
+                Id = item.Id,
+                WorkshopId = item.WorkshopId,
+                Workshop = new WorkshopInfoForChatList()
                 {
-                    Id = item.Id,
-                    WorkshopId = item.WorkshopId,
-                    Workshop = new WorkshopInfoForChatList()
-                    {
-                        Id = item.Workshop.Id,
-                        Title = item.Workshop.Title,
-                        ProviderId = item.Workshop.ProviderId,
-                        ProviderTitle = item.Workshop.ProviderTitle,
-                    },
-                    ParentId = item.ParentId,
-                    Parent = new ParentInfoForChatList()
-                    {
-                        Id = item.Parent.Id,
-                        UserId = item.Parent.UserId,
-                        FirstName = item.Parent.User.FirstName,
-                        MiddleName = item.Parent.User.MiddleName,
-                        LastName = item.Parent.User.LastName,
-                        Email = item.Parent.User.Email,
-                        PhoneNumber = item.Parent.User.PhoneNumber,
-                    },
-                    LastMessage = item.ChatMessages.Where(mess => mess.CreatedDateTime == item.ChatMessages.Max(m => m.CreatedDateTime))
+                    Id = item.Workshop.Id,
+                    Title = item.Workshop.Title,
+                    ProviderId = item.Workshop.ProviderId,
+                    ProviderTitle = item.Workshop.ProviderTitle,
+                },
+                ParentId = item.ParentId,
+                Parent = new ParentInfoForChatList()
+                {
+                    Id = item.Parent.Id,
+                    UserId = item.Parent.UserId,
+                    FirstName = item.Parent.User.FirstName,
+                    MiddleName = item.Parent.User.MiddleName,
+                    LastName = item.Parent.User.LastName,
+                    Email = item.Parent.User.Email,
+                    PhoneNumber = item.Parent.User.PhoneNumber,
+                },
+                LastMessage = item.ChatMessages.Where(mess => mess.CreatedDateTime == item.ChatMessages.Max(m => m.CreatedDateTime))
                     .Select(message => new ChatMessageInfoForChatList()
                     {
                         Id = message.Id,
@@ -98,9 +98,8 @@ namespace OutOfSchool.Services.Repository
                         ReadDateTime = message.ReadDateTime,
                     })
                     .FirstOrDefault(),
-                    NotReadByCurrentUserMessagesCount = item.ChatMessages.Count(mess => mess.ReadDateTime == null && (mess.SenderRoleIsProvider != searchMessagesForProvider)),
-                });
-            return query.ToListAsync();
-        }
+                NotReadByCurrentUserMessagesCount = item.ChatMessages.Count(mess => mess.ReadDateTime == null && (mess.SenderRoleIsProvider != searchMessagesForProvider)),
+            });
+        return query.ToListAsync();
     }
 }

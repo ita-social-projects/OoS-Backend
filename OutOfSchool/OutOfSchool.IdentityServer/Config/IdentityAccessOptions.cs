@@ -1,9 +1,8 @@
-namespace OutOfSchool.IdentityServer.Config
-{
-    public class IdentityAccessOptions
-    {
-        public readonly string Name = "IdentityAccessConfig";
+namespace OutOfSchool.IdentityServer.Config;
 
-        public AdditionalIdentityClients[] AdditionalIdentityClients { get; set; }
-    }
+public class IdentityAccessOptions
+{
+    public readonly string Name = "IdentityAccessConfig";
+
+    public AdditionalIdentityClients[] AdditionalIdentityClients { get; set; }
 }

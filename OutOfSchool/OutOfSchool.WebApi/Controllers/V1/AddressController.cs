@@ -10,133 +10,132 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Services;
 
-namespace OutOfSchool.WebApi.Controllers.V1
+namespace OutOfSchool.WebApi.Controllers.V1;
+
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]/[action]")]
+public class AddressController : ControllerBase
 {
-    [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/[controller]/[action]")]
-    public class AddressController : ControllerBase
+    private readonly IAddressService addressService;
+    private readonly IStringLocalizer<SharedResource> localizer;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AddressController"/> class.
+    /// </summary>
+    /// <param name="addressService">Service for Address model.</param>
+    /// <param name="localizer">Localizer.</param>
+    public AddressController(IAddressService addressService, IStringLocalizer<SharedResource> localizer)
     {
-        private readonly IAddressService addressService;
-        private readonly IStringLocalizer<SharedResource> localizer;
+        this.localizer = localizer;
+        this.addressService = addressService;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AddressController"/> class.
-        /// </summary>
-        /// <param name="addressService">Service for Address model.</param>
-        /// <param name="localizer">Localizer.</param>
-        public AddressController(IAddressService addressService, IStringLocalizer<SharedResource> localizer)
+    /// <summary>
+    /// Get all addresses from the database.
+    /// </summary>
+    /// <returns>List of all addresses.</returns>
+    [HttpGet]
+    // TODO: who needs to use this endpoint, what level of it's access we should do?
+    [HasPermission(Permissions.AddressRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AddressDto>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetAddresses()
+    {
+        return Ok(await addressService.GetAll().ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Get address by it's key.
+    /// </summary>
+    /// <param name="id">The key in the database.</param>
+    /// <returns>Address element with some id.</returns>
+    [HttpGet("{id}")]
+    [HasPermission(Permissions.AddressRead)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetAddressById(long id)
+    {
+        this.ValidateId(id, localizer);
+
+        return Ok(await addressService.GetById(id).ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Create new address.
+    /// </summary>
+    /// <param name="addressDto">Element which must be added.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [HttpPost]
+    [HasPermission(Permissions.AddressAddNew)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Create(AddressDto addressDto)
+    {
+        if (!ModelState.IsValid)
         {
-            this.localizer = localizer;
-            this.addressService = addressService;
+            return BadRequest(ModelState);
         }
 
-        /// <summary>
-        /// Get all addresses from the database.
-        /// </summary>
-        /// <returns>List of all addresses.</returns>
-        [HttpGet]
-        // TODO: who needs to use this endpoint, what level of it's access we should do?
-        [HasPermission(Permissions.AddressRead)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AddressDto>))]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> GetAddresses()
+        if (addressDto == null)
         {
-            return Ok(await addressService.GetAll().ConfigureAwait(false));
+            return BadRequest("Address is null.");
         }
 
-        /// <summary>
-        /// Get address by it's key.
-        /// </summary>
-        /// <param name="id">The key in the database.</param>
-        /// <returns>Address element with some id.</returns>
-        [HttpGet("{id}")]
-        [HasPermission(Permissions.AddressRead)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> GetAddressById(long id)
+        try
         {
-            this.ValidateId(id, localizer);
+            AddressDto address = await addressService.Create(addressDto).ConfigureAwait(false);
+            return CreatedAtAction(
+                nameof(GetAddressById),
+                new
+                {
+                    id = address.Id,
+                }, address);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 
-            return Ok(await addressService.GetById(id).ConfigureAwait(false));
+    /// <summary>
+    /// Update info about some address in database.
+    /// </summary>
+    /// <param name="addressDto">Entity.</param>
+    /// <returns>Address key.</returns>
+    [HttpPut]
+    [HasPermission(Permissions.AddressEdit)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
+    public async Task<IActionResult> Update(AddressDto addressDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
         }
 
-        /// <summary>
-        /// Create new address.
-        /// </summary>
-        /// <param name="addressDto">Element which must be added.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [HttpPost]
-        [HasPermission(Permissions.AddressAddNew)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Create(AddressDto addressDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        return Ok(await addressService.Update(addressDto).ConfigureAwait(false));
+    }
 
-            if (addressDto == null)
-            {
-                return BadRequest("Address is null.");
-            }
+    /// <summary>
+    /// Delete a specific Address entity from the database.
+    /// </summary>
+    /// <param name="id">Address key.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    [HttpDelete("{id}")]
+    [HasPermission(Permissions.AddressRemove)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Delete(long id)
+    {
+        this.ValidateId(id, localizer);
 
-            try
-            {
-                AddressDto address = await addressService.Create(addressDto).ConfigureAwait(false);
-                return CreatedAtAction(
-                    nameof(GetAddressById),
-                    new
-                    {
-                        id = address.Id,
-                    }, address);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        await addressService.Delete(id).ConfigureAwait(false);
 
-        /// <summary>
-        /// Update info about some address in database.
-        /// </summary>
-        /// <param name="addressDto">Entity.</param>
-        /// <returns>Address key.</returns>
-        [HttpPut]
-        [HasPermission(Permissions.AddressEdit)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
-        public async Task<IActionResult> Update(AddressDto addressDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            return Ok(await addressService.Update(addressDto).ConfigureAwait(false));
-        }
-
-        /// <summary>
-        /// Delete a specific Address entity from the database.
-        /// </summary>
-        /// <param name="id">Address key.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [HttpDelete("{id}")]
-        [HasPermission(Permissions.AddressRemove)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> Delete(long id)
-        {
-            this.ValidateId(id, localizer);
-
-            await addressService.Delete(id).ConfigureAwait(false);
-
-            return NoContent();
-        }
+        return NoContent();
     }
 }

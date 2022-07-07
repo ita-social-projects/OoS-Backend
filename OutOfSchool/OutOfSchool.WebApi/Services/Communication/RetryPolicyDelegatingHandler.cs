@@ -5,40 +5,39 @@ using System.Threading.Tasks;
 
 using OutOfSchool.WebApi.Config;
 
-namespace OutOfSchool.WebApi.Services.Communication
+namespace OutOfSchool.WebApi.Services.Communication;
+
+public class RetryPolicyDelegatingHandler : DelegatingHandler
 {
-    public class RetryPolicyDelegatingHandler : DelegatingHandler
+    private readonly int maximumAmountOfRetries = 3;
+
+    public RetryPolicyDelegatingHandler(int maximumAmountOfRetries)
+        : base()
     {
-        private readonly int maximumAmountOfRetries = 3;
+        this.maximumAmountOfRetries = maximumAmountOfRetries;
+    }
 
-        public RetryPolicyDelegatingHandler(int maximumAmountOfRetries)
-            : base()
+    public RetryPolicyDelegatingHandler(HttpMessageHandler innerHandler, int maximumAmountOfRetries)
+        : base(innerHandler)
+    {
+        this.maximumAmountOfRetries = maximumAmountOfRetries;
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        HttpResponseMessage response = null;
+
+        for (int i = 0; i < maximumAmountOfRetries; i++)
         {
-            this.maximumAmountOfRetries = maximumAmountOfRetries;
-        }
+            response = await base.SendAsync(request, cancellationToken)
+                .ConfigureAwait(false);
 
-        public RetryPolicyDelegatingHandler(HttpMessageHandler innerHandler, int maximumAmountOfRetries)
-            : base(innerHandler)
-        {
-            this.maximumAmountOfRetries = maximumAmountOfRetries;
-        }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            HttpResponseMessage response = null;
-
-            for (int i = 0; i < maximumAmountOfRetries; i++)
+            if (response.IsSuccessStatusCode)
             {
-                response = await base.SendAsync(request, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return response;
-                }
+                return response;
             }
-
-            return response;
         }
+
+        return response;
     }
 }

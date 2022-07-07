@@ -1,13 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class AddProviderSectionItem : Migration
 {
-    public partial class AddProviderSectionItem : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ProviderSectionItems",
                 columns: table => new
                 {
@@ -28,18 +28,17 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ProviderSectionItems_ProviderId",
-                table: "ProviderSectionItems",
-                column: "ProviderId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_ProviderSectionItems_ProviderId",
+            table: "ProviderSectionItems",
+            column: "ProviderId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "ProviderSectionItems");
-        }
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "ProviderSectionItems");
     }
 }

@@ -1,25 +1,25 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
+
+public partial class AddChildSocialGroups : Migration
 {
-    public partial class AddChildSocialGroups : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Children_SocialGroups_SocialGroupId",
-                table: "Children");
+        migrationBuilder.DropForeignKey(
+            name: "FK_Children_SocialGroups_SocialGroupId",
+            table: "Children");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Children_SocialGroupId",
-                table: "Children");
+        migrationBuilder.DropIndex(
+            name: "IX_Children_SocialGroupId",
+            table: "Children");
 
-            migrationBuilder.DropColumn(
-                name: "SocialGroupId",
-                table: "Children");
+        migrationBuilder.DropColumn(
+            name: "SocialGroupId",
+            table: "Children");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ChildrenSocialGroups",
                 columns: table => new
                 {
@@ -42,37 +42,36 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ChildrenSocialGroups_SocialGroupId",
-                table: "ChildrenSocialGroups",
-                column: "SocialGroupId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_ChildrenSocialGroups_SocialGroupId",
+            table: "ChildrenSocialGroups",
+            column: "SocialGroupId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "ChildrenSocialGroups");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "ChildrenSocialGroups");
 
-            migrationBuilder.AddColumn<long>(
-                name: "SocialGroupId",
-                table: "Children",
-                type: "bigint",
-                nullable: true);
+        migrationBuilder.AddColumn<long>(
+            name: "SocialGroupId",
+            table: "Children",
+            type: "bigint",
+            nullable: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Children_SocialGroupId",
-                table: "Children",
-                column: "SocialGroupId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Children_SocialGroupId",
+            table: "Children",
+            column: "SocialGroupId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Children_SocialGroups_SocialGroupId",
-                table: "Children",
-                column: "SocialGroupId",
-                principalTable: "SocialGroups",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-        }
+        migrationBuilder.AddForeignKey(
+            name: "FK_Children_SocialGroups_SocialGroupId",
+            table: "Children",
+            column: "SocialGroupId",
+            principalTable: "SocialGroups",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Restrict);
     }
 }

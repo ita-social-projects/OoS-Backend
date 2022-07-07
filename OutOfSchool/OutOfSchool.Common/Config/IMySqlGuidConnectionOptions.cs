@@ -1,7 +1,6 @@
-namespace OutOfSchool.Common.Config
+namespace OutOfSchool.Common.Config;
+
+public interface IMySqlGuidConnectionOptions : IMySqlConnectionOptions
 {
-    public interface IMySqlGuidConnectionOptions : IMySqlConnectionOptions
-    {
-        public string GuidFormat { get; set; }
-    }
+    public string GuidFormat { get; set; }
 }

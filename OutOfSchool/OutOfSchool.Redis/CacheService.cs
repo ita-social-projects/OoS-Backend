@@ -7,159 +7,158 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OutOfSchool.Redis
+namespace OutOfSchool.Redis;
+
+public class CacheService : ICacheService, IDisposable
 {
-    public class CacheService : ICacheService, IDisposable
+    private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
+    private readonly IDistributedCache cache;
+    private readonly RedisConfig redisConfig;
+
+    private bool isWorking = true;
+    private readonly bool isEnabled = false;
+
+    private readonly object lockObject = new object();
+
+    public CacheService(
+        IDistributedCache cache, 
+        IOptions<RedisConfig> redisConfig
+    )
     {
-        private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
-        private readonly IDistributedCache cache;
-        private readonly RedisConfig redisConfig;
-
-        private bool isWorking = true;
-        private readonly bool isEnabled = false;
-
-        private readonly object lockObject = new object();
-
-        public CacheService(
-            IDistributedCache cache, 
-            IOptions<RedisConfig> redisConfig
-        )
-        {
-            this.cache = cache;
+        this.cache = cache;
             
+        try
+        {
+            this.redisConfig = redisConfig.Value;
+            isEnabled = this.redisConfig.Enabled;
+        }
+        catch (OptionsValidationException)
+        {
+            isEnabled = false;
+        }
+    }
+
+    public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> newValueFactory)
+    {
+        T returnValue = default;
+
+        await ExecuteRedisMethod(() =>
+        {
+            string value = null;
+            cacheLock.EnterReadLock();
             try
             {
-                this.redisConfig = redisConfig.Value;
-                isEnabled = this.redisConfig.Enabled;
+                value = cache.GetString(key);
             }
-            catch (OptionsValidationException)
+            finally
             {
-                isEnabled = false;
+                cacheLock.ExitReadLock();
             }
-        }
 
-        public async Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> newValueFactory)
+            if (value != null)
+            {
+                returnValue = JsonConvert.DeserializeObject<T>(value);
+            }
+        });
+
+        if (EqualityComparer<T>.Default.Equals(returnValue, default))
         {
-            T returnValue = default;
-
-            await ExecuteRedisMethod(() =>
-            {
-                string value = null;
-                cacheLock.EnterReadLock();
-                try
-                {
-                    value = cache.GetString(key);
-                }
-                finally
-                {
-                    cacheLock.ExitReadLock();
-                }
-
-                if (value != null)
-                {
-                    returnValue = JsonConvert.DeserializeObject<T>(value);
-                }
-            });
-
-            if (EqualityComparer<T>.Default.Equals(returnValue, default))
-            {
-                returnValue = await newValueFactory();
-                await SetAsync(key, returnValue);
-            }
-
-            return returnValue;
+            returnValue = await newValueFactory();
+            await SetAsync(key, returnValue);
         }
 
-        public Task SetAsync<T>(string key, T value)
-            => ExecuteRedisMethod(() => {
-                var options = new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = redisConfig.AbsoluteExpirationRelativeToNowInterval,
-                    SlidingExpiration = redisConfig.SlidingExpirationInterval
-                };
+        return returnValue;
+    }
 
-                cacheLock.EnterWriteLock();
-                try
-                {
-                    cache.SetString(key, JsonConvert.SerializeObject(value), options);
-                }
-                finally
-                {
-                    cacheLock.ExitWriteLock();
-                }
-            });
+    public Task SetAsync<T>(string key, T value)
+        => ExecuteRedisMethod(() => {
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = redisConfig.AbsoluteExpirationRelativeToNowInterval,
+                SlidingExpiration = redisConfig.SlidingExpirationInterval
+            };
+
+            cacheLock.EnterWriteLock();
+            try
+            {
+                cache.SetString(key, JsonConvert.SerializeObject(value), options);
+            }
+            finally
+            {
+                cacheLock.ExitWriteLock();
+            }
+        });
         
-        public Task ClearCacheAsync(string key)
-            => ExecuteRedisMethod(() => {
-                cacheLock.EnterWriteLock();
-                try
-                {
-                    cache.Remove(key);
-                }
-                finally
-                {
-                    cacheLock.ExitWriteLock();
-                }
-            });
-
-        public Task RefreshAsync(string key)
-            => ExecuteRedisMethod(() => {
-                cacheLock.EnterWriteLock();
-                try
-                {
-                    cache.Refresh(key);
-                }
-                finally
-                {
-                    cacheLock.ExitWriteLock();
-                }
-            });
-
-        public void Dispose()
-        {
-            cacheLock?.Dispose();
-        }
-
-        private async Task RedisIsBrokenStartCheck()
-        {
-            if (Monitor.TryEnter(lockObject))
+    public Task ClearCacheAsync(string key)
+        => ExecuteRedisMethod(() => {
+            cacheLock.EnterWriteLock();
+            try
             {
-                isWorking = false;
+                cache.Remove(key);
+            }
+            finally
+            {
+                cacheLock.ExitWriteLock();
+            }
+        });
 
-                try
+    public Task RefreshAsync(string key)
+        => ExecuteRedisMethod(() => {
+            cacheLock.EnterWriteLock();
+            try
+            {
+                cache.Refresh(key);
+            }
+            finally
+            {
+                cacheLock.ExitWriteLock();
+            }
+        });
+
+    public void Dispose()
+    {
+        cacheLock?.Dispose();
+    }
+
+    private async Task RedisIsBrokenStartCheck()
+    {
+        if (Monitor.TryEnter(lockObject))
+        {
+            isWorking = false;
+
+            try
+            {
+                while (!isWorking)
                 {
-                    while (!isWorking)
+                    try
                     {
-                        try
-                        {
-                            cache.GetString("_");
-                            isWorking = true;
-                        }
-                        catch (RedisConnectionException)
-                        {
-                            await Task.Delay(redisConfig.CheckAlivePollingInterval);
-                        }
+                        cache.GetString("_");
+                        isWorking = true;
+                    }
+                    catch (RedisConnectionException)
+                    {
+                        await Task.Delay(redisConfig.CheckAlivePollingInterval);
                     }
                 }
-                finally
-                {
-                    Monitor.Exit(lockObject);
-                }
+            }
+            finally
+            {
+                Monitor.Exit(lockObject);
             }
         }
+    }
 
-        private async Task ExecuteRedisMethod(Action redisMethod)
+    private async Task ExecuteRedisMethod(Action redisMethod)
+    {
+        if (isEnabled && isWorking)
         {
-            if (isEnabled && isWorking)
+            try
             {
-                try
-                {
-                    await Task.Run(redisMethod);
-                }
-                catch (RedisConnectionException)
-                {
-                    _ = Task.Run(RedisIsBrokenStartCheck);
-                }
+                await Task.Run(redisMethod);
+            }
+            catch (RedisConnectionException)
+            {
+                _ = Task.Run(RedisIsBrokenStartCheck);
             }
         }
     }

@@ -2,16 +2,16 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
-{
-    public partial class InitialMigration : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
+namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations;
 
-            migrationBuilder.CreateTable(
+public partial class InitialMigration : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AlterDatabase()
+            .Annotation("MySql:CharSet", "utf8mb4");
+
+        migrationBuilder.CreateTable(
                 name: "Addresses",
                 columns: table => new
                 {
@@ -34,9 +34,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Addresses", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
@@ -53,9 +53,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUsers",
                 columns: table => new
                 {
@@ -99,9 +99,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Cities",
                 columns: table => new
                 {
@@ -120,9 +120,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Cities", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "DataProtectionKeys",
                 columns: table => new
                 {
@@ -137,9 +137,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_DataProtectionKeys", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Directions",
                 columns: table => new
                 {
@@ -154,9 +154,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_Directions", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "InstitutionStatuses",
                 columns: table => new
                 {
@@ -169,9 +169,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_InstitutionStatuses", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "PermissionsForRoles",
                 columns: table => new
                 {
@@ -188,9 +188,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_PermissionsForRoles", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "SocialGroups",
                 columns: table => new
                 {
@@ -203,9 +203,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                 {
                     table.PrimaryKey("PK_SocialGroups", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -228,9 +228,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
@@ -253,9 +253,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
@@ -278,9 +278,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
@@ -305,9 +305,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
@@ -330,9 +330,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Parents",
                 columns: table => new
                 {
@@ -350,9 +350,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Departments",
                 columns: table => new
                 {
@@ -374,9 +374,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Providers",
                 columns: table => new
                 {
@@ -440,9 +440,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Children",
                 columns: table => new
                 {
@@ -476,9 +476,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Ratings",
                 columns: table => new
                 {
@@ -500,9 +500,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Classes",
                 columns: table => new
                 {
@@ -524,9 +524,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Workshops",
                 columns: table => new
                 {
@@ -593,9 +593,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalTable: "Providers",
                         principalColumn: "Id");
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Applications",
                 columns: table => new
                 {
@@ -627,9 +627,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ChatRoomWorkshops",
                 columns: table => new
                 {
@@ -653,9 +653,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "DateTimeRanges",
                 columns: table => new
                 {
@@ -677,9 +677,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Favorites",
                 columns: table => new
                 {
@@ -705,9 +705,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Teachers",
                 columns: table => new
                 {
@@ -735,9 +735,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ChatMessageWorkshops",
                 columns: table => new
                 {
@@ -759,280 +759,279 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.InsertData(
-                table: "InstitutionStatuses",
-                columns: new[] { "Id", "Name" },
-                values: new object[,]
-                {
-                    { 1L, "Працює" },
-                    { 2L, "Перебуває в стані реорганізації" },
-                    { 3L, "Має намір на реорганізацію" }
-                });
+        migrationBuilder.InsertData(
+            table: "InstitutionStatuses",
+            columns: new[] { "Id", "Name" },
+            values: new object[,]
+            {
+                { 1L, "Працює" },
+                { 2L, "Перебуває в стані реорганізації" },
+                { 3L, "Має намір на реорганізацію" }
+            });
 
-            migrationBuilder.InsertData(
-                table: "PermissionsForRoles",
-                columns: new[] { "Id", "Description", "PackedPermissions", "RoleName" },
-                values: new object[,]
-                {
-                    { 1L, "admin permissions", "de\n\r !()+4325>=<?HGIFPQ[]\\", "Admin" },
-                    { 2L, "provider permissions", "e\n4325HGIFPQ[]\\", "Provider" },
-                    { 3L, "parent permissions", "e\n !()+>=<PQ", "Parent" }
-                });
+        migrationBuilder.InsertData(
+            table: "PermissionsForRoles",
+            columns: new[] { "Id", "Description", "PackedPermissions", "RoleName" },
+            values: new object[,]
+            {
+                { 1L, "admin permissions", "de\n\r !()+4325>=<?HGIFPQ[]\\", "Admin" },
+                { 2L, "provider permissions", "e\n4325HGIFPQ[]\\", "Provider" },
+                { 3L, "parent permissions", "e\n !()+>=<PQ", "Parent" }
+            });
 
-            migrationBuilder.InsertData(
-                table: "SocialGroups",
-                columns: new[] { "Id", "Name" },
-                values: new object[,]
-                {
-                    { 1L, "Діти із багатодітних сімей" },
-                    { 2L, "Діти із малозабезпечених сімей" },
-                    { 3L, "Діти з інвалідністю" },
-                    { 4L, "Діти-сироти" },
-                    { 5L, "Діти, позбавлені батьківського піклування" }
-                });
+        migrationBuilder.InsertData(
+            table: "SocialGroups",
+            columns: new[] { "Id", "Name" },
+            values: new object[,]
+            {
+                { 1L, "Діти із багатодітних сімей" },
+                { 2L, "Діти із малозабезпечених сімей" },
+                { 3L, "Діти з інвалідністю" },
+                { 4L, "Діти-сироти" },
+                { 5L, "Діти, позбавлені батьківського піклування" }
+            });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Applications_ChildId",
-                table: "Applications",
-                column: "ChildId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Applications_ChildId",
+            table: "Applications",
+            column: "ChildId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Applications_ParentId",
-                table: "Applications",
-                column: "ParentId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Applications_ParentId",
+            table: "Applications",
+            column: "ParentId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Applications_WorkshopId",
-                table: "Applications",
-                column: "WorkshopId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Applications_WorkshopId",
+            table: "Applications",
+            column: "WorkshopId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetRoleClaims_RoleId",
-                table: "AspNetRoleClaims",
-                column: "RoleId");
+        migrationBuilder.CreateIndex(
+            name: "IX_AspNetRoleClaims_RoleId",
+            table: "AspNetRoleClaims",
+            column: "RoleId");
 
-            migrationBuilder.CreateIndex(
-                name: "RoleNameIndex",
-                table: "AspNetRoles",
-                column: "NormalizedName",
-                unique: true);
+        migrationBuilder.CreateIndex(
+            name: "RoleNameIndex",
+            table: "AspNetRoles",
+            column: "NormalizedName",
+            unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserClaims_UserId",
-                table: "AspNetUserClaims",
-                column: "UserId");
+        migrationBuilder.CreateIndex(
+            name: "IX_AspNetUserClaims_UserId",
+            table: "AspNetUserClaims",
+            column: "UserId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserLogins_UserId",
-                table: "AspNetUserLogins",
-                column: "UserId");
+        migrationBuilder.CreateIndex(
+            name: "IX_AspNetUserLogins_UserId",
+            table: "AspNetUserLogins",
+            column: "UserId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserRoles_RoleId",
-                table: "AspNetUserRoles",
-                column: "RoleId");
+        migrationBuilder.CreateIndex(
+            name: "IX_AspNetUserRoles_RoleId",
+            table: "AspNetUserRoles",
+            column: "RoleId");
 
-            migrationBuilder.CreateIndex(
-                name: "EmailIndex",
-                table: "AspNetUsers",
-                column: "NormalizedEmail");
+        migrationBuilder.CreateIndex(
+            name: "EmailIndex",
+            table: "AspNetUsers",
+            column: "NormalizedEmail");
 
-            migrationBuilder.CreateIndex(
-                name: "UserNameIndex",
-                table: "AspNetUsers",
-                column: "NormalizedUserName",
-                unique: true);
+        migrationBuilder.CreateIndex(
+            name: "UserNameIndex",
+            table: "AspNetUsers",
+            column: "NormalizedUserName",
+            unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatMessageWorkshops_ChatRoomId",
-                table: "ChatMessageWorkshops",
-                column: "ChatRoomId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ChatMessageWorkshops_ChatRoomId",
+            table: "ChatMessageWorkshops",
+            column: "ChatRoomId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatRoomWorkshops_ParentId",
-                table: "ChatRoomWorkshops",
-                column: "ParentId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ChatRoomWorkshops_ParentId",
+            table: "ChatRoomWorkshops",
+            column: "ParentId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatRoomWorkshops_WorkshopId",
-                table: "ChatRoomWorkshops",
-                column: "WorkshopId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ChatRoomWorkshops_WorkshopId",
+            table: "ChatRoomWorkshops",
+            column: "WorkshopId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Children_ParentId",
-                table: "Children",
-                column: "ParentId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Children_ParentId",
+            table: "Children",
+            column: "ParentId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Children_SocialGroupId",
-                table: "Children",
-                column: "SocialGroupId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Children_SocialGroupId",
+            table: "Children",
+            column: "SocialGroupId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Classes_DepartmentId",
-                table: "Classes",
-                column: "DepartmentId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Classes_DepartmentId",
+            table: "Classes",
+            column: "DepartmentId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_DateTimeRanges_WorkshopId",
-                table: "DateTimeRanges",
-                column: "WorkshopId");
+        migrationBuilder.CreateIndex(
+            name: "IX_DateTimeRanges_WorkshopId",
+            table: "DateTimeRanges",
+            column: "WorkshopId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Departments_DirectionId",
-                table: "Departments",
-                column: "DirectionId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Departments_DirectionId",
+            table: "Departments",
+            column: "DirectionId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Favorites_UserId",
-                table: "Favorites",
-                column: "UserId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Favorites_UserId",
+            table: "Favorites",
+            column: "UserId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Favorites_WorkshopId",
-                table: "Favorites",
-                column: "WorkshopId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Favorites_WorkshopId",
+            table: "Favorites",
+            column: "WorkshopId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Parents_UserId",
-                table: "Parents",
-                column: "UserId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Parents_UserId",
+            table: "Parents",
+            column: "UserId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_ActualAddressId",
-                table: "Providers",
-                column: "ActualAddressId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_ActualAddressId",
+            table: "Providers",
+            column: "ActualAddressId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_InstitutionStatusId",
-                table: "Providers",
-                column: "InstitutionStatusId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_InstitutionStatusId",
+            table: "Providers",
+            column: "InstitutionStatusId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_LegalAddressId",
-                table: "Providers",
-                column: "LegalAddressId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_LegalAddressId",
+            table: "Providers",
+            column: "LegalAddressId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_UserId",
-                table: "Providers",
-                column: "UserId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Providers_UserId",
+            table: "Providers",
+            column: "UserId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Ratings_ParentId",
-                table: "Ratings",
-                column: "ParentId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Ratings_ParentId",
+            table: "Ratings",
+            column: "ParentId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Teachers_WorkshopId",
-                table: "Teachers",
-                column: "WorkshopId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Teachers_WorkshopId",
+            table: "Teachers",
+            column: "WorkshopId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_AddressId",
-                table: "Workshops",
-                column: "AddressId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_AddressId",
+            table: "Workshops",
+            column: "AddressId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_ClassId",
-                table: "Workshops",
-                column: "ClassId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_ClassId",
+            table: "Workshops",
+            column: "ClassId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_DirectionId",
-                table: "Workshops",
-                column: "DirectionId");
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_DirectionId",
+            table: "Workshops",
+            column: "DirectionId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Workshops_ProviderId",
-                table: "Workshops",
-                column: "ProviderId");
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_Workshops_ProviderId",
+            table: "Workshops",
+            column: "ProviderId");
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "Applications");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "Applications");
 
-            migrationBuilder.DropTable(
-                name: "AspNetRoleClaims");
+        migrationBuilder.DropTable(
+            name: "AspNetRoleClaims");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUserClaims");
+        migrationBuilder.DropTable(
+            name: "AspNetUserClaims");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUserLogins");
+        migrationBuilder.DropTable(
+            name: "AspNetUserLogins");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUserRoles");
+        migrationBuilder.DropTable(
+            name: "AspNetUserRoles");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUserTokens");
+        migrationBuilder.DropTable(
+            name: "AspNetUserTokens");
 
-            migrationBuilder.DropTable(
-                name: "ChatMessageWorkshops");
+        migrationBuilder.DropTable(
+            name: "ChatMessageWorkshops");
 
-            migrationBuilder.DropTable(
-                name: "Cities");
+        migrationBuilder.DropTable(
+            name: "Cities");
 
-            migrationBuilder.DropTable(
-                name: "DataProtectionKeys");
+        migrationBuilder.DropTable(
+            name: "DataProtectionKeys");
 
-            migrationBuilder.DropTable(
-                name: "DateTimeRanges");
+        migrationBuilder.DropTable(
+            name: "DateTimeRanges");
 
-            migrationBuilder.DropTable(
-                name: "Favorites");
+        migrationBuilder.DropTable(
+            name: "Favorites");
 
-            migrationBuilder.DropTable(
-                name: "PermissionsForRoles");
+        migrationBuilder.DropTable(
+            name: "PermissionsForRoles");
 
-            migrationBuilder.DropTable(
-                name: "Ratings");
+        migrationBuilder.DropTable(
+            name: "Ratings");
 
-            migrationBuilder.DropTable(
-                name: "Teachers");
+        migrationBuilder.DropTable(
+            name: "Teachers");
 
-            migrationBuilder.DropTable(
-                name: "Children");
+        migrationBuilder.DropTable(
+            name: "Children");
 
-            migrationBuilder.DropTable(
-                name: "AspNetRoles");
+        migrationBuilder.DropTable(
+            name: "AspNetRoles");
 
-            migrationBuilder.DropTable(
-                name: "ChatRoomWorkshops");
+        migrationBuilder.DropTable(
+            name: "ChatRoomWorkshops");
 
-            migrationBuilder.DropTable(
-                name: "SocialGroups");
+        migrationBuilder.DropTable(
+            name: "SocialGroups");
 
-            migrationBuilder.DropTable(
-                name: "Parents");
+        migrationBuilder.DropTable(
+            name: "Parents");
 
-            migrationBuilder.DropTable(
-                name: "Workshops");
+        migrationBuilder.DropTable(
+            name: "Workshops");
 
-            migrationBuilder.DropTable(
-                name: "Classes");
+        migrationBuilder.DropTable(
+            name: "Classes");
 
-            migrationBuilder.DropTable(
-                name: "Providers");
+        migrationBuilder.DropTable(
+            name: "Providers");
 
-            migrationBuilder.DropTable(
-                name: "Departments");
+        migrationBuilder.DropTable(
+            name: "Departments");
 
-            migrationBuilder.DropTable(
-                name: "Addresses");
+        migrationBuilder.DropTable(
+            name: "Addresses");
 
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
+        migrationBuilder.DropTable(
+            name: "AspNetUsers");
 
-            migrationBuilder.DropTable(
-                name: "InstitutionStatuses");
+        migrationBuilder.DropTable(
+            name: "InstitutionStatuses");
 
-            migrationBuilder.DropTable(
-                name: "Directions");
-        }
+        migrationBuilder.DropTable(
+            name: "Directions");
     }
 }

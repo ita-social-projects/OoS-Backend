@@ -1,6 +1,5 @@
-﻿namespace OutOfSchool.IdentityServer
+﻿namespace OutOfSchool.IdentityServer;
+
+public class SharedResource
 {
-    public class SharedResource
-    {
-    }
 }

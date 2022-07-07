@@ -1,7 +1,6 @@
-﻿namespace OutOfSchool.Services.Enums
+﻿namespace OutOfSchool.Services.Enums;
+
+public enum ElasticsearchSyncEntity
 {
-    public enum ElasticsearchSyncEntity
-    {
-        Workshop,
-    }
+    Workshop,
 }

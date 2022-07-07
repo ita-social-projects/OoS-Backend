@@ -3,40 +3,39 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using OutOfSchool.Common.Config;
 
-namespace OutOfSchool.Common.Extensions.Startup
+namespace OutOfSchool.Common.Extensions.Startup;
+
+public static class ReverseProxyExtensions
 {
-    public static class ReverseProxyExtensions
+    public static IServiceCollection AddProxy(this IServiceCollection services)
     {
-        public static IServiceCollection AddProxy(this IServiceCollection services)
+        services.Configure<ForwardedHeadersOptions>(options =>
         {
-            services.Configure<ForwardedHeadersOptions>(options =>
+            options.ForwardedHeaders =
+                ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
+
+        return services;
+    }
+
+    public static IApplicationBuilder UseProxy(this IApplicationBuilder app, ReverseProxyOptions options)
+    {
+        var basePath = options.BasePath;
+
+        app.UseForwardedHeaders();
+
+        if (!string.IsNullOrEmpty(basePath))
+        {
+            app.Use(async (context, next) =>
             {
-                options.ForwardedHeaders =
-                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                options.KnownNetworks.Clear();
-                options.KnownProxies.Clear();
+                context.Request.PathBase = basePath;
+                await next.Invoke()
+                    .ConfigureAwait(false);
             });
-
-            return services;
         }
 
-        public static IApplicationBuilder UseProxy(this IApplicationBuilder app, ReverseProxyOptions options)
-        {
-            var basePath = options.BasePath;
-
-            app.UseForwardedHeaders();
-
-            if (!string.IsNullOrEmpty(basePath))
-            {
-                app.Use(async (context, next) =>
-                {
-                    context.Request.PathBase = basePath;
-                    await next.Invoke()
-                        .ConfigureAwait(false);
-                });
-            }
-
-            return app;
-        }
+        return app;
     }
 }

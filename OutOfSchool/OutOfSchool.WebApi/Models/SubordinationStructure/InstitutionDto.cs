@@ -1,17 +1,16 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace OutOfSchool.WebApi.Models.SubordinationStructure
+namespace OutOfSchool.WebApi.Models.SubordinationStructure;
+
+public class InstitutionDto
 {
-    public class InstitutionDto
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        [MinLength(1)]
-        [MaxLength(100)]
-        public string Title { get; set; }
+    [MinLength(1)]
+    [MaxLength(100)]
+    public string Title { get; set; }
 
-        [Range(1, int.MaxValue)]
-        public int NumberOfHierarchyLevels { get; set; }
-    }
+    [Range(1, int.MaxValue)]
+    public int NumberOfHierarchyLevels { get; set; }
 }

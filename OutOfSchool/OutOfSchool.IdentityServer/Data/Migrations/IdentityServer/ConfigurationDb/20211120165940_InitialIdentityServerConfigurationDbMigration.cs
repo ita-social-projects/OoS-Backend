@@ -2,16 +2,16 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.ConfigurationDb
-{
-    public partial class InitialIdentityServerConfigurationDbMigration : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
+namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.ConfigurationDb;
 
-            migrationBuilder.CreateTable(
+public partial class InitialIdentityServerConfigurationDbMigration : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AlterDatabase()
+            .Annotation("MySql:CharSet", "utf8mb4");
+
+        migrationBuilder.CreateTable(
                 name: "ApiResources",
                 columns: table => new
                 {
@@ -36,9 +36,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                 {
                     table.PrimaryKey("PK_ApiResources", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ApiScopes",
                 columns: table => new
                 {
@@ -59,9 +59,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                 {
                     table.PrimaryKey("PK_ApiScopes", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "Clients",
                 columns: table => new
                 {
@@ -127,9 +127,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                 {
                     table.PrimaryKey("PK_Clients", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "IdentityResources",
                 columns: table => new
                 {
@@ -153,9 +153,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                 {
                     table.PrimaryKey("PK_IdentityResources", x => x.Id);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ApiResourceClaims",
                 columns: table => new
                 {
@@ -175,9 +175,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ApiResourceProperties",
                 columns: table => new
                 {
@@ -199,9 +199,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ApiResourceScopes",
                 columns: table => new
                 {
@@ -221,9 +221,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ApiResourceSecrets",
                 columns: table => new
                 {
@@ -249,9 +249,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ApiScopeClaims",
                 columns: table => new
                 {
@@ -271,9 +271,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ApiScopeProperties",
                 columns: table => new
                 {
@@ -295,9 +295,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ClientClaims",
                 columns: table => new
                 {
@@ -319,9 +319,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ClientCorsOrigins",
                 columns: table => new
                 {
@@ -341,9 +341,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ClientGrantTypes",
                 columns: table => new
                 {
@@ -363,9 +363,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ClientIdPRestrictions",
                 columns: table => new
                 {
@@ -385,9 +385,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ClientPostLogoutRedirectUris",
                 columns: table => new
                 {
@@ -407,9 +407,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ClientProperties",
                 columns: table => new
                 {
@@ -431,9 +431,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ClientRedirectUris",
                 columns: table => new
                 {
@@ -453,9 +453,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ClientScopes",
                 columns: table => new
                 {
@@ -475,9 +475,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "ClientSecrets",
                 columns: table => new
                 {
@@ -503,9 +503,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "IdentityResourceClaims",
                 columns: table => new
                 {
@@ -525,9 +525,9 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
+        migrationBuilder.CreateTable(
                 name: "IdentityResourceProperties",
                 columns: table => new
                 {
@@ -549,182 +549,181 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.IdentityServer.Configuratio
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ApiResourceClaims_ApiResourceId",
-                table: "ApiResourceClaims",
-                column: "ApiResourceId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ApiResourceClaims_ApiResourceId",
+            table: "ApiResourceClaims",
+            column: "ApiResourceId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ApiResourceProperties_ApiResourceId",
-                table: "ApiResourceProperties",
-                column: "ApiResourceId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ApiResourceProperties_ApiResourceId",
+            table: "ApiResourceProperties",
+            column: "ApiResourceId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ApiResources_Name",
-                table: "ApiResources",
-                column: "Name",
-                unique: true);
+        migrationBuilder.CreateIndex(
+            name: "IX_ApiResources_Name",
+            table: "ApiResources",
+            column: "Name",
+            unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ApiResourceScopes_ApiResourceId",
-                table: "ApiResourceScopes",
-                column: "ApiResourceId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ApiResourceScopes_ApiResourceId",
+            table: "ApiResourceScopes",
+            column: "ApiResourceId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ApiResourceSecrets_ApiResourceId",
-                table: "ApiResourceSecrets",
-                column: "ApiResourceId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ApiResourceSecrets_ApiResourceId",
+            table: "ApiResourceSecrets",
+            column: "ApiResourceId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ApiScopeClaims_ScopeId",
-                table: "ApiScopeClaims",
-                column: "ScopeId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ApiScopeClaims_ScopeId",
+            table: "ApiScopeClaims",
+            column: "ScopeId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ApiScopeProperties_ScopeId",
-                table: "ApiScopeProperties",
-                column: "ScopeId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ApiScopeProperties_ScopeId",
+            table: "ApiScopeProperties",
+            column: "ScopeId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ApiScopes_Name",
-                table: "ApiScopes",
-                column: "Name",
-                unique: true);
+        migrationBuilder.CreateIndex(
+            name: "IX_ApiScopes_Name",
+            table: "ApiScopes",
+            column: "Name",
+            unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientClaims_ClientId",
-                table: "ClientClaims",
-                column: "ClientId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ClientClaims_ClientId",
+            table: "ClientClaims",
+            column: "ClientId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientCorsOrigins_ClientId",
-                table: "ClientCorsOrigins",
-                column: "ClientId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ClientCorsOrigins_ClientId",
+            table: "ClientCorsOrigins",
+            column: "ClientId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientGrantTypes_ClientId",
-                table: "ClientGrantTypes",
-                column: "ClientId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ClientGrantTypes_ClientId",
+            table: "ClientGrantTypes",
+            column: "ClientId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientIdPRestrictions_ClientId",
-                table: "ClientIdPRestrictions",
-                column: "ClientId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ClientIdPRestrictions_ClientId",
+            table: "ClientIdPRestrictions",
+            column: "ClientId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientPostLogoutRedirectUris_ClientId",
-                table: "ClientPostLogoutRedirectUris",
-                column: "ClientId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ClientPostLogoutRedirectUris_ClientId",
+            table: "ClientPostLogoutRedirectUris",
+            column: "ClientId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientProperties_ClientId",
-                table: "ClientProperties",
-                column: "ClientId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ClientProperties_ClientId",
+            table: "ClientProperties",
+            column: "ClientId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientRedirectUris_ClientId",
-                table: "ClientRedirectUris",
-                column: "ClientId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ClientRedirectUris_ClientId",
+            table: "ClientRedirectUris",
+            column: "ClientId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Clients_ClientId",
-                table: "Clients",
-                column: "ClientId",
-                unique: true);
+        migrationBuilder.CreateIndex(
+            name: "IX_Clients_ClientId",
+            table: "Clients",
+            column: "ClientId",
+            unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientScopes_ClientId",
-                table: "ClientScopes",
-                column: "ClientId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ClientScopes_ClientId",
+            table: "ClientScopes",
+            column: "ClientId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientSecrets_ClientId",
-                table: "ClientSecrets",
-                column: "ClientId");
+        migrationBuilder.CreateIndex(
+            name: "IX_ClientSecrets_ClientId",
+            table: "ClientSecrets",
+            column: "ClientId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_IdentityResourceClaims_IdentityResourceId",
-                table: "IdentityResourceClaims",
-                column: "IdentityResourceId");
+        migrationBuilder.CreateIndex(
+            name: "IX_IdentityResourceClaims_IdentityResourceId",
+            table: "IdentityResourceClaims",
+            column: "IdentityResourceId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_IdentityResourceProperties_IdentityResourceId",
-                table: "IdentityResourceProperties",
-                column: "IdentityResourceId");
+        migrationBuilder.CreateIndex(
+            name: "IX_IdentityResourceProperties_IdentityResourceId",
+            table: "IdentityResourceProperties",
+            column: "IdentityResourceId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_IdentityResources_Name",
-                table: "IdentityResources",
-                column: "Name",
-                unique: true);
-        }
+        migrationBuilder.CreateIndex(
+            name: "IX_IdentityResources_Name",
+            table: "IdentityResources",
+            column: "Name",
+            unique: true);
+    }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "ApiResourceClaims");
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(
+            name: "ApiResourceClaims");
 
-            migrationBuilder.DropTable(
-                name: "ApiResourceProperties");
+        migrationBuilder.DropTable(
+            name: "ApiResourceProperties");
 
-            migrationBuilder.DropTable(
-                name: "ApiResourceScopes");
+        migrationBuilder.DropTable(
+            name: "ApiResourceScopes");
 
-            migrationBuilder.DropTable(
-                name: "ApiResourceSecrets");
+        migrationBuilder.DropTable(
+            name: "ApiResourceSecrets");
 
-            migrationBuilder.DropTable(
-                name: "ApiScopeClaims");
+        migrationBuilder.DropTable(
+            name: "ApiScopeClaims");
 
-            migrationBuilder.DropTable(
-                name: "ApiScopeProperties");
+        migrationBuilder.DropTable(
+            name: "ApiScopeProperties");
 
-            migrationBuilder.DropTable(
-                name: "ClientClaims");
+        migrationBuilder.DropTable(
+            name: "ClientClaims");
 
-            migrationBuilder.DropTable(
-                name: "ClientCorsOrigins");
+        migrationBuilder.DropTable(
+            name: "ClientCorsOrigins");
 
-            migrationBuilder.DropTable(
-                name: "ClientGrantTypes");
+        migrationBuilder.DropTable(
+            name: "ClientGrantTypes");
 
-            migrationBuilder.DropTable(
-                name: "ClientIdPRestrictions");
+        migrationBuilder.DropTable(
+            name: "ClientIdPRestrictions");
 
-            migrationBuilder.DropTable(
-                name: "ClientPostLogoutRedirectUris");
+        migrationBuilder.DropTable(
+            name: "ClientPostLogoutRedirectUris");
 
-            migrationBuilder.DropTable(
-                name: "ClientProperties");
+        migrationBuilder.DropTable(
+            name: "ClientProperties");
 
-            migrationBuilder.DropTable(
-                name: "ClientRedirectUris");
+        migrationBuilder.DropTable(
+            name: "ClientRedirectUris");
 
-            migrationBuilder.DropTable(
-                name: "ClientScopes");
+        migrationBuilder.DropTable(
+            name: "ClientScopes");
 
-            migrationBuilder.DropTable(
-                name: "ClientSecrets");
+        migrationBuilder.DropTable(
+            name: "ClientSecrets");
 
-            migrationBuilder.DropTable(
-                name: "IdentityResourceClaims");
+        migrationBuilder.DropTable(
+            name: "IdentityResourceClaims");
 
-            migrationBuilder.DropTable(
-                name: "IdentityResourceProperties");
+        migrationBuilder.DropTable(
+            name: "IdentityResourceProperties");
 
-            migrationBuilder.DropTable(
-                name: "ApiResources");
+        migrationBuilder.DropTable(
+            name: "ApiResources");
 
-            migrationBuilder.DropTable(
-                name: "ApiScopes");
+        migrationBuilder.DropTable(
+            name: "ApiScopes");
 
-            migrationBuilder.DropTable(
-                name: "Clients");
+        migrationBuilder.DropTable(
+            name: "Clients");
 
-            migrationBuilder.DropTable(
-                name: "IdentityResources");
-        }
+        migrationBuilder.DropTable(
+            name: "IdentityResources");
     }
 }
