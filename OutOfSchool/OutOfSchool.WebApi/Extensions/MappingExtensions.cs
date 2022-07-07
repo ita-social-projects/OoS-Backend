@@ -52,20 +52,10 @@ public static class MappingExtensions
         });
     }
 
-    public static ChildDto ToModel(this Child child)
-    {
-        return child.Mapper<Child, ChildDto>(cfg =>
+        public static CityDto ToModel(this City city)
         {
-            cfg.CreateMap<Child, ChildDto>();
-            cfg.CreateMap<Parent, ParentDtoWithContactInfo>();
-            cfg.CreateMap<SocialGroup, SocialGroupDto>();
-        });
-    }
-
-    public static CityDto ToModel(this City city)
-    {
-        return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
-    }
+            return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
+        }
 
     public static FavoriteDto ToModel(this Favorite favorite)
     {
@@ -174,20 +164,10 @@ public static class MappingExtensions
         return Mapper<ChatMessageWorkshopDto, ChatMessageWorkshop>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageWorkshopDto, ChatMessageWorkshop>(); });
     }
 
-    public static Child ToDomain(this ChildDto childDto)
-    {
-        return Mapper<ChildDto, Child>(childDto, cfg =>
+        public static City ToDomain(this CityDto cityDto)
         {
-            cfg.CreateMap<ChildDto, Child>();
-            cfg.CreateMap<SocialGroupDto, SocialGroup>();
-            cfg.CreateMap<ParentDTO, Parent>();
-        });
-    }
-
-    public static City ToDomain(this CityDto cityDto)
-    {
-        return Mapper<CityDto, City>(cityDto, cfg => { cfg.CreateMap<CityDto, City>(); });
-    }
+            return Mapper<CityDto, City>(cityDto, cfg => { cfg.CreateMap<CityDto, City>(); });
+        }
 
     public static Favorite ToDomain(this FavoriteDto favoriteDto)
     {

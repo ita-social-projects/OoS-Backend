@@ -28,22 +28,22 @@ public class ChildController : ControllerBase
         this.service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
-    /// <summary>
-    /// Get all children from the database.
-    /// </summary>
-    /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
-    /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-    [HasPermission(Permissions.SystemManagement)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet]
-    public async Task<IActionResult> GetAllForAdmin([FromQuery] OffsetFilter offsetFilter)
-    {
-        return Ok(await service.GetAllWithOffsetFilterOrderedById(offsetFilter).ConfigureAwait(false));
-    }
+        /// <summary>
+        /// Get all children from the database.
+        /// </summary>
+        /// <param name="filter">Filter to get a part of all children that were found.</param>
+        /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
+        [HasPermission(Permissions.SystemManagement)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet]
+        public async Task<IActionResult> GetAllForAdmin([FromQuery] SearchStringFilter filter)
+        {
+            return Ok(await service.GetByFilter(filter).ConfigureAwait(false));
+        }
 
     /// <summary>
     /// Get all children from the database by parent's id.

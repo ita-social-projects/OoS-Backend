@@ -12,6 +12,7 @@ using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
 using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
@@ -94,10 +95,7 @@ public class ParentService : IParentService
     {
         logger.LogInformation("Getting all Parents started (by filter).");
 
-        if (filter is null)
-        {
-            filter = new SearchStringFilter();
-        }
+            filter ??= new SearchStringFilter();
 
         var filterPredicate = PredicateBuild(filter);
 
@@ -196,15 +194,15 @@ public class ParentService : IParentService
         {
             var tempPredicate = PredicateBuilder.False<Parent>();
 
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
-            {
-                tempPredicate = tempPredicate.Or(
-                    x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCulture)
-                         || x.User.LastName.StartsWith(word, StringComparison.InvariantCulture)
-                         || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCulture)
-                         || x.User.Email.StartsWith(word, StringComparison.InvariantCulture)
-                         || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
-            }
+                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    tempPredicate = tempPredicate.Or(
+                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                            || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+                }
 
             predicate = predicate.And(tempPredicate);
         }
