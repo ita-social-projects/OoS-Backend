@@ -146,9 +146,9 @@ public class ProviderController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            const string message = "Unable to create a new provider";
-            logger.LogError(ex, message);
-            return BadRequest(message);
+            var errorMessage = $"Unable to create a new provider: {ex.Message}";
+            logger.LogError(ex, errorMessage);
+            return BadRequest(errorMessage);
         }
     }
 
