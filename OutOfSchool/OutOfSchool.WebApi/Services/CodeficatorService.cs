@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using AutoMapper;
+using OutOfSchool.Common.Models;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
-using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
 
 namespace OutOfSchool.WebApi.Services;
@@ -65,16 +59,14 @@ public class CodeficatorService : ICodeficatorService
     }
 
     /// <inheritdoc/>
-    public async Task<Dictionary<long, string>> GetFullAddressesByPartOfName(CodeficatorFilter filter)
+    public async Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(CodeficatorFilter filter)
     {
-        var fullAddresses = await codeficatorRepository.GetFullAddressesByPartOfName(filter.Name, filter.Size).ConfigureAwait(false);
-
-        return fullAddresses.ToDictionary(key => key.Id, value => value.FullName);
+        return await codeficatorRepository.GetFullAddressesByPartOfName(filter?.Name, filter?.Categories).ConfigureAwait(false);
     }
 
     #region privateMethods
 
-    private Expression<Func<Codeficator, bool>> GetFilter(long? parentId, CodeficatorCategory level)
+    private static Expression<Func<Codeficator, bool>> GetFilter(long? parentId, CodeficatorCategory level)
     {
         if (parentId.HasValue)
         {

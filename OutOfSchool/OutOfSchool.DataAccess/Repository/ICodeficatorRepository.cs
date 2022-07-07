@@ -21,7 +21,7 @@ public interface ICodeficatorRepository : IEntityRepository<Codeficator>
     /// Get elements' list by a part of name.
     /// </summary>
     /// <param name="namePart">Part of name for search.</param>
-    /// <param name="take">Size of returned collection.</param>
+    /// <param name="categories">Categories for search.</param>
     /// <returns>The task result contains a <see cref="List{CodeficatorAddressDto}"/> that contains elements' full addresses.</returns>
-    public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, int take);
+    public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(string namePart, string categories = default);
 }

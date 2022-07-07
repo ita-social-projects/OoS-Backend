@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using OutOfSchool.WebApi.Models;
+﻿using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
 
 namespace OutOfSchool.WebApi.Services;
@@ -37,6 +35,6 @@ public interface ICodeficatorService
     /// Get full addresses' names from the database.
     /// </summary>
     /// <param name="filter">Filter for the search.</param>
-    /// <returns>The task result contains the <see cref="Task{Dictionary}"/>.</returns>
-    public Task<Dictionary<long, string>> GetFullAddressesByPartOfName(CodeficatorFilter filter);
+    /// <returns>The task result contains the list of <see cref="Task{CodeficatorAddressDto}"/>.</returns>
+    public Task<List<CodeficatorAddressDto>> GetFullAddressesByPartOfName(CodeficatorFilter filter);
 }
