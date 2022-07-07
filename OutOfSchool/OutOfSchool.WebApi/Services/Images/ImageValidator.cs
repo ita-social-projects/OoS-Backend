@@ -1,13 +1,7 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources.Codes;
-using OutOfSchool.WebApi.Config.Images;
-using OutOfSchool.WebApi.Extensions;
+using SkiaSharp;
 
 namespace OutOfSchool.WebApi.Services.Images;
 
@@ -43,18 +37,17 @@ public class ImageValidator<TEntity> : IImageValidator
                 return OperationResult.Failed(ImagesOperationErrorCode.InvalidSizeError.GetOperationError());
             }
 
-            using var image = Image.FromStream(stream); // check disposing, using memory
-            if (!FileFormatValid(image.RawFormat.ToString()))
+            using var skData = SKData.Create(stream) ?? throw new InvalidOperationException("Unable to create SKData from the stream");
+            using var skCodec = SKCodec.Create(skData);
+
+            if (!FileFormatValid(skCodec.EncodedFormat.ToString()))
             {
                 return OperationResult.Failed(ImagesOperationErrorCode.InvalidFormatError.GetOperationError());
             }
 
-            if (!ImageResolutionValid(image.Width, image.Height))
-            {
-                return OperationResult.Failed(ImagesOperationErrorCode.InvalidResolutionError.GetOperationError());
-            }
-
-            return OperationResult.Success;
+            return !ImageResolutionValid(skCodec.Info.Width, skCodec.Info.Height)
+                ? OperationResult.Failed(ImagesOperationErrorCode.InvalidResolutionError.GetOperationError())
+                : OperationResult.Success;
         }
         catch (ArgumentException ex)
         {
