@@ -13,36 +13,36 @@ using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Util;
 
-namespace OutOfSchool.WebApi.Services
-{
-    /// <summary>
-    /// Implements the interface with CRUD functionality for Child entity.
-    /// </summary>
-    public class ChildService : IChildService
-    {
-        private readonly IEntityRepository<Child> childRepository;
-        private readonly IParentRepository parentRepository;
-        private readonly ILogger<ChildService> logger;
-        private readonly IMapper mapper;
+namespace OutOfSchool.WebApi.Services;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChildService"/> class.
-        /// </summary>
-        /// <param name="childRepository">Repository for the Child entity.</param>
-        /// <param name="parentRepository">Repository for the Parent entity.</param>
-        /// <param name="logger">Logger.</param>
-        /// <param name="mapper">Automapper DI service.</param>
-        public ChildService(
-            IEntityRepository<Child> childRepository,
-            IParentRepository parentRepository,
-            ILogger<ChildService> logger,
-            IMapper mapper)
-        {
-            this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
-            this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        }
+/// <summary>
+/// Implements the interface with CRUD functionality for Child entity.
+/// </summary>
+public class ChildService : IChildService
+{
+    private readonly IEntityRepository<Child> childRepository;
+    private readonly IParentRepository parentRepository;
+    private readonly ILogger<ChildService> logger;
+    private readonly IMapper mapper;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChildService"/> class.
+    /// </summary>
+    /// <param name="childRepository">Repository for the Child entity.</param>
+    /// <param name="parentRepository">Repository for the Parent entity.</param>
+    /// <param name="logger">Logger.</param>
+    /// <param name="mapper">Automapper DI service.</param>
+    public ChildService(
+        IEntityRepository<Child> childRepository,
+        IParentRepository parentRepository,
+        ILogger<ChildService> logger,
+        IMapper mapper)
+    {
+        this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
+        this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+    }
 
     /// <inheritdoc/>
     public async Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId)
@@ -63,44 +63,44 @@ namespace OutOfSchool.WebApi.Services
 
         childDto.Id = default;
 
-            var newChild = await childRepository.Create(mapper.Map<Child>(childDto)).ConfigureAwait(false);
+        var newChild = await childRepository.Create(mapper.Map<Child>(childDto)).ConfigureAwait(false);
 
         logger.LogDebug($"Child with Id:{newChild.Id} ({nameof(Child.ParentId)}:{newChild.ParentId}, {nameof(userId)}:{userId}) was created successfully.");
 
-            return mapper.Map<ChildDto>(newChild);
-        }
+        return mapper.Map<ChildDto>(newChild);
+    }
 
-        /// <inheritdoc/>
-        public async Task<SearchResult<ChildDto>> GetByFilter(SearchStringFilter filter)
-        {
-            filter ??= new SearchStringFilter();
+    /// <inheritdoc/>
+    public async Task<SearchResult<ChildDto>> GetByFilter(SearchStringFilter filter)
+    {
+        filter ??= new SearchStringFilter();
 
-            logger.LogDebug($"Getting all Children started. Amount of children to take: {filter.Size}, skip first: {filter.From}.");
+        logger.LogDebug($"Getting all Children started. Amount of children to take: {filter.Size}, skip first: {filter.From}.");
 
-            this.ValidateOffsetFilter(filter);
+        this.ValidateOffsetFilter(filter);
 
-            var filterPredicate = PredicateBuild(filter);
+        var filterPredicate = PredicateBuild(filter);
 
-            var totalAmount = await childRepository.Count(filterPredicate).ConfigureAwait(false);
+        var totalAmount = await childRepository.Count(filterPredicate).ConfigureAwait(false);
 
-            var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
+        var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
                 {
                     { x => x.Id, SortDirection.Ascending },
                 };
 
-            var children = await childRepository.Get(filter.From, filter.Size, $"{nameof(Child.SocialGroups)}", filterPredicate, sortExpression)
-                .ToListAsync()
-                .ConfigureAwait(false);
+        var children = await childRepository.Get(filter.From, filter.Size, $"{nameof(Child.SocialGroups)}", filterPredicate, sortExpression)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
-            logger.LogDebug(children.Any()
-                ? $"{children.Count} children from {totalAmount} were successfully received. Skipped records: {filter.From}. Order: by Child.Id."
-                : $"There is no child in the Children table. Skipped records: {filter.From}. Order: by Child.Id.");
+        logger.LogDebug(children.Any()
+            ? $"{children.Count} children from {totalAmount} were successfully received. Skipped records: {filter.From}. Order: by Child.Id."
+            : $"There is no child in the Children table. Skipped records: {filter.From}. Order: by Child.Id.");
 
-            var searchResult = new SearchResult<ChildDto>()
-            {
-                TotalAmount = totalAmount,
-                Entities = mapper.Map<List<ChildDto>>(children),
-            };
+        var searchResult = new SearchResult<ChildDto>()
+        {
+            TotalAmount = totalAmount,
+            Entities = mapper.Map<List<ChildDto>>(children),
+        };
 
         return searchResult;
     }
@@ -122,8 +122,8 @@ namespace OutOfSchool.WebApi.Services
 
         logger.LogDebug($"User:{userId} successfully got the child with id: {id}.");
 
-            return mapper.Map<ChildDto>(child);
-        }
+        return mapper.Map<ChildDto>(child);
+    }
 
     /// <inheritdoc/>
     public async Task<SearchResult<ChildDto>> GetByParentIdOrderedByFirstName(Guid parentId, OffsetFilter offsetFilter)
@@ -148,11 +148,11 @@ namespace OutOfSchool.WebApi.Services
             ? $"{children.Count} children with ParentId: {parentId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
             : $"There is no child with ParentId: {parentId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
 
-            var searchResult = new SearchResult<ChildDto>()
-            {
-                TotalAmount = totalAmount,
-                Entities = mapper.Map<List<ChildDto>>(children),
-            };
+        var searchResult = new SearchResult<ChildDto>()
+        {
+            TotalAmount = totalAmount,
+            Entities = mapper.Map<List<ChildDto>>(children),
+        };
 
         return searchResult;
     }
@@ -181,11 +181,11 @@ namespace OutOfSchool.WebApi.Services
             ? $"{children.Count} children for User:{userId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
             : $"There is no child for User:{userId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
 
-            var searchResult = new SearchResult<ChildDto>()
-            {
-                TotalAmount = totalAmount,
-                Entities = mapper.Map<List<ChildDto>>(children),
-            };
+        var searchResult = new SearchResult<ChildDto>()
+        {
+            TotalAmount = totalAmount,
+            Entities = mapper.Map<List<ChildDto>>(children),
+        };
 
         return searchResult;
     }
@@ -214,12 +214,12 @@ namespace OutOfSchool.WebApi.Services
             childDto.ParentId = child.ParentId;
         }
 
-            var updatedChild = await childRepository.Update(mapper.Map<Child>(childDto)).ConfigureAwait(false);
+        var updatedChild = await childRepository.Update(mapper.Map<Child>(childDto)).ConfigureAwait(false);
 
         logger.LogDebug($"Child with Id = {updatedChild.Id} was updated succesfully.");
 
-            return mapper.Map<ChildDto>(updatedChild);
-        }
+        return mapper.Map<ChildDto>(updatedChild);
+    }
 
     /// <inheritdoc/>
     public async Task DeleteChildCheckingItsUserIdProperty(Guid id, string userId)
@@ -266,36 +266,35 @@ namespace OutOfSchool.WebApi.Services
         }
     }
 
-        private void ValidateId(long id)
+    private void ValidateId(long id)
+    {
+        if (id < 1)
         {
-            if (id < 1)
-            {
-                throw new ArgumentException($"The {nameof(id)} parameter has to be greater than zero.");
-            }
+            throw new ArgumentException($"The {nameof(id)} parameter has to be greater than zero.");
         }
+    }
 
-        private Expression<Func<Child, bool>> PredicateBuild(SearchStringFilter filter)
+    private Expression<Func<Child, bool>> PredicateBuild(SearchStringFilter filter)
+    {
+        var predicate = PredicateBuilder.True<Child>();
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
         {
-            var predicate = PredicateBuilder.True<Child>();
+            var tempPredicate = PredicateBuilder.False<Child>();
 
-            if (!string.IsNullOrWhiteSpace(filter.SearchString))
+            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
             {
-                var tempPredicate = PredicateBuilder.False<Child>();
-
-                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
-                {
-                    tempPredicate = tempPredicate.Or(
-                        x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.Parent.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.Parent.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
-                }
-
-                predicate = predicate.And(tempPredicate);
+                tempPredicate = tempPredicate.Or(
+                    x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.Parent.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.Parent.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
             }
 
-            return predicate;
+            predicate = predicate.And(tempPredicate);
         }
+
+        return predicate;
     }
 }
