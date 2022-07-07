@@ -21,7 +21,11 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
     public new async Task Delete(Workshop entity)
     {
         db.Entry(entity).State = EntityState.Deleted;
-        db.Entry(entity.Address).State = EntityState.Deleted;
+
+        if (entity.Address != null)
+        {
+            db.Entry(entity.Address).State = EntityState.Deleted;
+        }
 
         await db.SaveChangesAsync();
     }
