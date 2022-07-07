@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using OutOfSchool.Common.Models;
 using OutOfSchool.WebApi.Models.Codeficator;
-using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Controllers.V1;
 
@@ -102,16 +96,21 @@ public class CodeficatorController : ControllerBase
     /// <param name="filter">Filter for the search.</param>
     /// <returns> All address parts for the codeficator. </returns>
     [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AllAddressPartsDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<CodeficatorAddressDto>))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("search")]
     public async Task<IActionResult> SerchByPartOfName([FromQuery] CodeficatorFilter filter)
     {
-        if (filter == null || string.IsNullOrEmpty(filter.Name))
+        if (filter == null)
         {
-            return BadRequest();
+            return BadRequest("CodeficatorFilter is null.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(this.ModelState);
         }
 
         var fullAddressNames = await codeficatorService.GetFullAddressesByPartOfName(filter).ConfigureAwait(false);
