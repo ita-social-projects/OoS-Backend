@@ -149,6 +149,29 @@ public class MappingProfile : Profile
 
         CreateMap<Application, ApplicationDto>().ReverseMap();
 
+        CreateMap<WorkshopCard, Workshop>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.Phone, opt => opt.Ignore())
+            .ForMember(dest => dest.Email, opt => opt.Ignore())
+            .ForMember(dest => dest.Website, opt => opt.Ignore())
+            .ForMember(dest => dest.Facebook, opt => opt.Ignore())
+            .ForMember(dest => dest.Instagram, opt => opt.Ignore())
+            .ForMember(dest => dest.Direction, opt => opt.Ignore())
+            .ForMember(dest => dest.WorkshopDescriptionItems, opt => opt.Ignore())
+            .ForMember(dest => dest.DisabilityOptionsDesc, opt => opt.Ignore())
+            .ForMember(dest => dest.Keywords, opt => opt.Ignore())
+            .ForMember(dest => dest.DepartmentId, opt => opt.Ignore())
+            .ForMember(dest => dest.ClassId, opt => opt.Ignore())
+            .ForMember(dest => dest.InstitutionHierarchy, opt => opt.Ignore())
+            .ForMember(dest => dest.Class, opt => opt.Ignore())
+            .ForMember(dest => dest.Teachers, opt => opt.Ignore())
+            .ForMember(dest => dest.Applications, opt => opt.Ignore())
+            .ForMember(dest => dest.DateTimeRanges, opt => opt.Ignore())
+            .ForMember(dest => dest.ChatRooms, opt => opt.Ignore())
+            .ForMember(dest => dest.Images, opt => opt.Ignore())
+            .ForMember(dest => dest.Provider, opt => opt.Ignore())
+            .ForMember(dest => dest.ProviderAdmins, opt => opt.Ignore());
+
         CreateMap<Workshop, WorkshopCard>()
             .ForMember(dest => dest.WorkshopId, opt => opt.MapFrom(s => s.Id))
             .ForMember(dest => dest.CoverImageId, opt => opt.MapFrom(s => s.CoverImageId))
