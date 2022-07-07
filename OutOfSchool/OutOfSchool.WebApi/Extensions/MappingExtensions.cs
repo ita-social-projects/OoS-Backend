@@ -52,10 +52,10 @@ public static class MappingExtensions
         });
     }
 
-        public static CityDto ToModel(this City city)
-        {
-            return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
-        }
+    public static CityDto ToModel(this City city)
+    {
+        return Mapper<City, CityDto>(city, cfg => { cfg.CreateMap<City, CityDto>(); });
+    }
 
     public static FavoriteDto ToModel(this Favorite favorite)
     {
@@ -164,10 +164,10 @@ public static class MappingExtensions
         return Mapper<ChatMessageWorkshopDto, ChatMessageWorkshop>(chatMessageDTO, cfg => { cfg.CreateMap<ChatMessageWorkshopDto, ChatMessageWorkshop>(); });
     }
 
-        public static City ToDomain(this CityDto cityDto)
-        {
-            return Mapper<CityDto, City>(cityDto, cfg => { cfg.CreateMap<CityDto, City>(); });
-        }
+    public static City ToDomain(this CityDto cityDto)
+    {
+        return Mapper<CityDto, City>(cityDto, cfg => { cfg.CreateMap<CityDto, City>(); });
+    }
 
     public static Favorite ToDomain(this FavoriteDto favoriteDto)
     {
