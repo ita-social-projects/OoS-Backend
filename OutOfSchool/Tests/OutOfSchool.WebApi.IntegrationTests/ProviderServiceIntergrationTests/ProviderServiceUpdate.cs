@@ -1,13 +1,9 @@
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.WebApi.Services.Images;
-
 namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests;
 
+using OutOfSchool.WebApi.Services.Images;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using FluentAssertions;
-using FluentAssertions.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -41,8 +37,6 @@ public class ProviderServiceUpdate
         {
             await context.SaveChangesAsync();
             var fakeProvider = ProvidersGenerator.Generate();
-            fakeProvider.ActualAddress.Id = 5;
-            fakeProvider.LegalAddress.Id = 6;
             context.Add(fakeProvider);
             await context.SaveChangesAsync();
         }
