@@ -122,13 +122,14 @@ namespace OutOfSchool.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HasPermission(Permissions.MinistryAdminEdit)]
         [HttpPut]
-        public async Task<ActionResult> Block(string institutionAdminId, Guid providerId)
+        public async Task<ActionResult> Block(string ministryAdminId, Guid providerId)
         {
             logger.LogDebug($"{path} started. User(id): {userId}.");
 
             var response = await ministryAdminService.BlockMinistryAdminAsync(
-                    institutionAdminId,
+                    ministryAdminId,
                     userId,
                     providerId,
                     await HttpContext.GetTokenAsync("access_token").ConfigureAwait(false))
@@ -136,54 +137,12 @@ namespace OutOfSchool.WebApi.Controllers
 
             if (response.IsSuccess)
             {
-                logger.LogInformation($"Succesfully blocked institutionAdmin(id): {institutionAdminId} by User(id): {userId}.");
+                logger.LogInformation($"Succesfully blocked ministryAdmin(id): {ministryAdminId} by User(id): {userId}.");
 
                 return Ok();
             }
 
             return StatusCode((int)response.HttpStatusCode);
-        }
-
-        /// <summary>
-        /// Method to Get filtered data about related institutionAdmins.
-        /// </summary>
-        /// <param name="deputyOnly">Returns only deputy provider admins.</param>
-        /// <param name="assistantsOnly">Returns only assistants (workshop) provider admins.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<MinistryAdminDto>))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HasPermission(Permissions.ProviderRead)]
-        [HttpGet]
-        public async Task<IActionResult> GetFilteredinstitutionAdminsAsync(bool deputyOnly, bool assistantsOnly)
-        {
-            var relatedAdmins = await ministryAdminService.GetRelatedMinistryAdmins(userId).ConfigureAwait(false);
-
-            IActionResult result = Ok(relatedAdmins);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Method to Get data about related institutionAdmins.
-        /// </summary>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<MinistryAdminDto>))]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet]
-        public async Task<IActionResult> GetRelatedinstitutionAdmins()
-        {
-            var relatedAdmins = await ministryAdminService.GetRelatedMinistryAdmins(userId).ConfigureAwait(false);
-
-            if (!relatedAdmins.Any())
-            {
-                return NoContent();
-            }
-
-            IActionResult result = Ok(relatedAdmins);
-
-            return result;
         }
     }
 }

@@ -17,7 +17,7 @@ namespace OutOfSchool.Common.PermissionsModule
             Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
             Permissions.UserRead, Permissions.UserEdit,
             Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
-            Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove,
+            Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove, Permissions.MinistryAdminEdit, Permissions.MinistryAdminRemove,
         };
 
         private static readonly IEnumerable<Permissions> SeedProviderPermissions = new List<Permissions>
