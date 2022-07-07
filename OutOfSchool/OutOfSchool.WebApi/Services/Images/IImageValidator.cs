@@ -6,7 +6,8 @@ namespace OutOfSchool.WebApi.Services.Images;
 /// <summary>
 /// Provides APIs for validating images by their options.
 /// </summary>
-public interface IImageValidator : IFileValidator
+/// <typeparam name="TEntity">The entity type for validating images.</typeparam>
+public interface IImageValidator<TEntity> : IFileValidator
 {
     /// <summary>
     /// Determines if the given resolution is valid.

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources.Codes;
 using SkiaSharp;
@@ -9,7 +10,7 @@ namespace OutOfSchool.WebApi.Services.Images;
 /// Provides APIs for validating images by their options.
 /// </summary>
 /// <typeparam name="TEntity">This type encapsulates data for which should get validating options.</typeparam>
-public class ImageValidator<TEntity> : IImageValidator
+public class ImageValidator<TEntity> : IImageValidator<TEntity>
 {
     private readonly ImageOptions<TEntity> options;
 
@@ -38,14 +39,15 @@ public class ImageValidator<TEntity> : IImageValidator
             }
 
             using var skData = SKData.Create(stream) ?? throw new InvalidOperationException("Unable to create SKData from the stream");
-            using var skCodec = SKCodec.Create(skData);
+            using var skCodec = SKCodec.Create(skData) ?? throw new InvalidOperationException("Error while creating an instance of SKCodec. Possibly invalid format of the data stream");
 
             if (!FileFormatValid(skCodec.EncodedFormat.ToString()))
             {
                 return OperationResult.Failed(ImagesOperationErrorCode.InvalidFormatError.GetOperationError());
             }
 
-            return !ImageResolutionValid(skCodec.Info.Width, skCodec.Info.Height)
+            var skCodecInfo = skCodec.Info;
+            return !ImageResolutionValid(skCodecInfo.Width, skCodecInfo.Height)
                 ? OperationResult.Failed(ImagesOperationErrorCode.InvalidResolutionError.GetOperationError())
                 : OperationResult.Success;
         }
