@@ -20,6 +20,8 @@ public static class AddressGenerator
             .RuleFor(x => x.Latitude, f => f.Address.Latitude())
             .RuleFor(x => x.Longitude, f => f.Address.Longitude());
 
+        // Increment initial value of IndexFaker to have first created entity with Id=1
+        // and prevent System.InvalidOperationException when it is added to the DbContext
         (faker as IFakerTInternal).FakerHub.IndexFaker++;
     }
 

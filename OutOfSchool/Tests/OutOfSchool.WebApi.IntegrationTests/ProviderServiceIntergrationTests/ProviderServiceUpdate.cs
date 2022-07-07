@@ -1,13 +1,9 @@
-using OutOfSchool.Services.Models.Images;
-using OutOfSchool.WebApi.Services.Images;
-
 namespace OutOfSchool.WebApi.IntegrationTests.ProviderServiceIntergrationTests;
 
+using OutOfSchool.WebApi.Services.Images;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using FluentAssertions;
-using FluentAssertions.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -37,13 +33,13 @@ public class ProviderServiceUpdate
     {
         this.unitTestDbOptions = UnitTestHelper.GetUnitTestDbOptions();
 
-            await using (var context = this.GetContext())
-            {
-                await context.SaveChangesAsync();
-                var fakeProvider = ProvidersGenerator.Generate();
-                context.Add(fakeProvider);
-                await context.SaveChangesAsync();
-            }
+        await using (var context = this.GetContext())
+        {
+            await context.SaveChangesAsync();
+            var fakeProvider = ProvidersGenerator.Generate();
+            context.Add(fakeProvider);
+            await context.SaveChangesAsync();
+        }
 
         this.mapper = new Mapper(new MapperConfiguration(cfg => cfg.AddProfile(typeof(MappingProfile))));
 
