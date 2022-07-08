@@ -2,24 +2,17 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Google.Apis.Util;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Moq.Language.Flow;
 using NUnit.Framework;
 using OutOfSchool.Services.Common.Exceptions;
 using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.Services.Repository.Files;
 using OutOfSchool.WebApi.Common;
-using OutOfSchool.WebApi.Common.Resources.Codes;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Services.Images;
 
@@ -159,7 +152,7 @@ internal class ImageServiceTests
     {
         // Arrange
         var images = CreateMockedFormFiles(2);
-        serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator))).Returns(null);
+        serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator<It.IsAnyType>))).Returns((IImageValidator<It.IsAnyType>)null);
 
         // Act & Assert
         imageService.Invoking(x => x.UploadManyImagesAsync<It.IsAnyType>(images)).Should()
@@ -174,13 +167,13 @@ internal class ImageServiceTests
         const byte countOfImages = 4, countOfValidImages = 2;
         var images = CreateMockedFormFiles(countOfImages);
         var imageIds = TakeFromTestData(ImageIdsTestDataSource, countOfValidImages);
-        var validator = new Mock<IImageValidator>();
+        var validator = new Mock<IImageValidator<It.IsAnyType>>();
         validator.SetupSequence(x => x.Validate(It.IsAny<Stream>()))
             .Returns(OperationResult.Success)
             .Returns(OperationResult.Failed())
             .Returns(OperationResult.Failed())
             .Returns(OperationResult.Success);
-        serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator))).Returns(validator.Object);
+        serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator<It.IsAnyType>))).Returns(validator.Object);
         var queue = new Queue<string>(imageIds);
         externalStorageMock
             .Setup(x => x.UploadAsync(It.IsAny<ImageFileModel>(), It.IsAny<CancellationToken>()))
@@ -291,7 +284,7 @@ internal class ImageServiceTests
     {
         // Arrange
         var image = new Mock<IFormFile>().Object;
-        serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator))).Returns(null);
+        serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator<It.IsAnyType>))).Returns((IImageValidator<It.IsAnyType>)null);
 
         // Act & Assert
         imageService.Invoking(x => x.UploadImageAsync<It.IsAnyType>(image)).Should()
@@ -533,8 +526,8 @@ internal class ImageServiceTests
             result = () => OperationResult.Failed();
         }
 
-        var validator = new Mock<IImageValidator>();
+        var validator = new Mock<IImageValidator<It.IsAnyType>>();
         validator.Setup(x => x.Validate(It.IsAny<Stream>())).Returns(result);
-        serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator))).Returns(validator.Object);
+        serviceProviderMock.Setup(x => x.GetService(typeof(IImageValidator<It.IsAnyType>))).Returns(validator.Object);
     }
 }
