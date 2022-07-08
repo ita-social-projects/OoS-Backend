@@ -95,7 +95,7 @@ public class ParentService : IParentService
     {
         logger.LogInformation("Getting all Parents started (by filter).");
 
-            filter ??= new SearchStringFilter();
+        filter ??= new SearchStringFilter();
 
         var filterPredicate = PredicateBuild(filter);
 
@@ -194,15 +194,15 @@ public class ParentService : IParentService
         {
             var tempPredicate = PredicateBuilder.False<Parent>();
 
-                foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
-                {
-                    tempPredicate = tempPredicate.Or(
-                        x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                            || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
-                }
+            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempPredicate = tempPredicate.Or(
+                    x => x.User.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+            }
 
             predicate = predicate.And(tempPredicate);
         }

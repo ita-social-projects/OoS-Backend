@@ -59,12 +59,12 @@ public class ChildControllerTests
         child = ChildDtoGenerator.Generate();
     }
 
-        [Test]
-        public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
-        {
-            // Arrange
-            var filter = new SearchStringFilter();
-            service.Setup(x => x.GetByFilter(filter)).ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
+    [Test]
+    public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
+    {
+        // Arrange
+        var filter = new SearchStringFilter();
+        service.Setup(x => x.GetByFilter(filter)).ReturnsAsync(new SearchResult<ChildDto>() { TotalAmount = children.Count(), Entities = children });
 
         // Act
         var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);
@@ -73,12 +73,12 @@ public class ChildControllerTests
         Assert.IsInstanceOf<OkObjectResult>(result);
     }
 
-        [Test]
-        public async Task GetChildren_WhenThereIsNoChild_ShouldReturnOkObjectResult()
-        {
-            // Arrange
-            var filter = new SearchStringFilter();
-            service.Setup(x => x.GetByFilter(filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = new List<ChildDto>() });
+    [Test]
+    public async Task GetChildren_WhenThereIsNoChild_ShouldReturnOkObjectResult()
+    {
+        // Arrange
+        var filter = new SearchStringFilter();
+        service.Setup(x => x.GetByFilter(filter)).ReturnsAsync(new SearchResult<ChildDto>() { Entities = new List<ChildDto>() });
 
         // Act
         var result = await controller.GetAllForAdmin(filter).ConfigureAwait(false);

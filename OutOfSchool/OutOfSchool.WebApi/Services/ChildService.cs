@@ -243,6 +243,30 @@ public class ChildService : IChildService
         logger.LogDebug($"Child with Id = {id} succesfully deleted.");
     }
 
+    private static Expression<Func<Child, bool>> PredicateBuild(SearchStringFilter filter)
+    {
+        var predicate = PredicateBuilder.True<Child>();
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchString))
+        {
+            var tempPredicate = PredicateBuilder.False<Child>();
+
+            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                tempPredicate = tempPredicate.Or(
+                    x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.Parent.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
+                        || x.Parent.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
+            }
+
+            predicate = predicate.And(tempPredicate);
+        }
+
+        return predicate;
+    }
+
     private void ValidateChildDto(ChildDto childDto)
     {
         if (childDto == null)
@@ -272,29 +296,5 @@ public class ChildService : IChildService
         {
             throw new ArgumentException($"The {nameof(id)} parameter has to be greater than zero.");
         }
-    }
-
-    private Expression<Func<Child, bool>> PredicateBuild(SearchStringFilter filter)
-    {
-        var predicate = PredicateBuilder.True<Child>();
-
-        if (!string.IsNullOrWhiteSpace(filter.SearchString))
-        {
-            var tempPredicate = PredicateBuilder.False<Child>();
-
-            foreach (var word in filter.SearchString.Split(' ', ',', StringSplitOptions.RemoveEmptyEntries))
-            {
-                tempPredicate = tempPredicate.Or(
-                    x => x.FirstName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.LastName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.MiddleName.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.Parent.User.Email.StartsWith(word, StringComparison.InvariantCultureIgnoreCase)
-                        || x.Parent.User.PhoneNumber.Contains(word, StringComparison.InvariantCulture));
-            }
-
-            predicate = predicate.And(tempPredicate);
-        }
-
-        return predicate;
     }
 }
