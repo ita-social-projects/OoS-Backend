@@ -81,6 +81,8 @@ public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtec
 
     public DbSet<InstitutionFieldDescription> InstitutionFieldDescriptions { get; set; }
 
+    public DbSet<InstitutionAdmin> InstitutionAdmins { get; set; }
+
     public DbSet<ElasticsearchSyncRecord> ElasticsearchSyncRecords { get; set; }
 
     public DbSet<ProviderSectionItem> ProviderSectionItems { get; set; }

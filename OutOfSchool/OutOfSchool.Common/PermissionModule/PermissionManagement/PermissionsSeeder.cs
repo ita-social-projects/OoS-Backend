@@ -17,6 +17,7 @@ public static class PermissionsSeeder
         Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
         Permissions.UserRead, Permissions.UserEdit,
         Permissions.WorkshopEdit, Permissions.WorkshopRemove, Permissions.WorkshopAddNew,
+        Permissions.MinistryAdmins, Permissions.MinistryAdminAddNew, Permissions.MinistryAdminRemove, Permissions.MinistryAdminEdit,
     };
 
     private static readonly IEnumerable<Permissions> SeedProviderPermissions = new List<Permissions>
@@ -31,6 +32,18 @@ public static class PermissionsSeeder
     };
 
     private static readonly IEnumerable<Permissions> SeedProviderAdminPermissions = new List<Permissions>
+    {
+        Permissions.ImpersonalDataRead,
+        Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
+        Permissions.ApplicationRead, Permissions.ApplicationEdit,
+        Permissions.ProviderRead,
+        Permissions.ProviderAdmins,
+        Permissions.TeacherAddNew, Permissions.TeacherEdit, Permissions.TeacherRemove, Permissions.TeacherRead,
+        Permissions.UserRead, Permissions.UserEdit,
+        Permissions.WorkshopEdit, Permissions.WorkshopAddNew,
+    };
+
+    private static readonly IEnumerable<Permissions> SeedMinistryAdminPermissions = new List<Permissions>
     {
         Permissions.ImpersonalDataRead,
         Permissions.AddressAddNew, Permissions.AddressEdit, Permissions.AddressRead, Permissions.AddressRemove,
@@ -67,8 +80,12 @@ public static class PermissionsSeeder
             case "provideradmin":
                 return SeedProviderAdminPermissions.PackPermissionsIntoString();
 
+            case "ministryadmin":
+                return SeedMinistryAdminPermissions.PackPermissionsIntoString();
+
             case "parent":
                 return SeedParentPermissions.PackPermissionsIntoString();
+
             default:
                 break;
         }

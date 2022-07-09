@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
-using OutOfSchool.IdentityServer.Services.Intefaces;
 
 namespace GrpcServiceServer;
 

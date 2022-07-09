@@ -98,6 +98,7 @@ public static class Startup
                 });
 
         services.AddScoped<IProviderAdminService, ProviderAdminService>();
+        services.AddScoped<IMinistryAdminService, MinistryAdminService>();
 
         // Images limits options
         services.Configure<ImagesLimits<Workshop>>(configuration.GetSection($"Images:{nameof(Workshop)}:Limits"));
@@ -211,6 +212,7 @@ public static class Startup
         services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
 
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
+        services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
         services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
         services.AddTransient<ISensitiveEntityRepository<CompanyInformationItem>, SensitiveEntityRepository<CompanyInformationItem>>();
 

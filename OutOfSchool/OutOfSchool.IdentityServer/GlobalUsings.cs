@@ -29,7 +29,6 @@ global using OutOfSchool.IdentityServer;
 global using OutOfSchool.IdentityServer.Config;
 global using OutOfSchool.IdentityServer.KeyManagement;
 global using OutOfSchool.IdentityServer.Services;
-global using OutOfSchool.IdentityServer.Services.Intefaces;
 global using OutOfSchool.IdentityServer.Services.Interfaces;
 global using OutOfSchool.IdentityServer.Util;
 global using OutOfSchool.RazorTemplatesData.Services;

@@ -123,6 +123,8 @@ public static class Startup
         services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IProviderAdminService, ProviderAdminService>();
+        services.AddTransient<IInstitutionAdminRepository, InstitutionAdminRepository>();
+        services.AddTransient<IMinistryAdminService, MinistryAdminService>();
 
         services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();

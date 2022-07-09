@@ -128,4 +128,17 @@ public enum Permissions : short
     [Display(GroupName = "SystemManaging", Name = "SuperAdmin", Description = "access to all actions covered with [HasPermission] attribute")]
     AccessAll = short.MaxValue,
     #endregion
+
+    #region MinistryAdmin Control permissions #12
+    [Display(GroupName = "MinistryAdmin", Name = "Read", Description = "Can read ministry admin")]
+    MinistryAdminRead = 110,
+    [Display(GroupName = "MinistryAdmin", Name = "Edit", Description = "Can edit ministry admin")]
+    MinistryAdminEdit = 111,
+    [Display(GroupName = "MinistryAdmin", Name = "Add new", Description = "Can add a new ministry admin")]
+    MinistryAdminAddNew = 112,
+    [Display(GroupName = "MinistryAdmin", Name = "Remove", Description = "Can remove ministry admin")]
+    MinistryAdminRemove = 113,
+    [Display(GroupName = "MinistryAdmin", Name = "Ministry Admins", Description = "Can manage ministry admins")]
+    MinistryAdmins = 114,
+    #endregion
 }

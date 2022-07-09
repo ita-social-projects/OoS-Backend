@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 
-namespace OutOfSchool.IdentityServer.Services.Intefaces;
+namespace OutOfSchool.IdentityServer.Services.Interfaces;
 
 public interface IProviderAdminService
 {
