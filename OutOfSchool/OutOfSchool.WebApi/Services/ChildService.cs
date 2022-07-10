@@ -181,11 +181,7 @@ namespace OutOfSchool.WebApi.Services
             logger.LogDebug($"Getting Children by WorkshopId: {workshopId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
 
             var applications = await applicationRepository.GetByFilter(p => p.WorkshopId == workshopId && p.Status == ApplicationStatus.Approved).ConfigureAwait(false);
-            HashSet<Guid> childrenGuids = new HashSet<Guid>();
-            foreach (var app in applications)
-            {
-                childrenGuids.Add(app.ChildId);
-            }
+            var childrenGuids = new HashSet<Guid>(applications.Select(app => app.ChildId));
 
             var totalAmount = childrenGuids.Count;
 

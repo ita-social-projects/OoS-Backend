@@ -134,31 +134,21 @@ namespace OutOfSchool.WebApi.Controllers.V1
 
         private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid workshopId)
         {
-            Guid providerId = await providerService.GetProviderIdForWorkshopById(workshopId);
-
             if (User.IsInRole(nameof(Role.Provider).ToLower()))
             {
-                var userId = User.FindFirst("sub")?.Value;
+                Guid workshopProviderId = await providerService.GetProviderIdForWorkshopById(workshopId);
+                var userId = GettingUserProperties.GetUserId(User);
                 try
                 {
-
                     var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                    if (providerId != provider.Id)
-                    {
-                        return false;
-                    }
+                    return workshopProviderId == provider.Id;
                 }
                 catch (ArgumentException)
                 {
-                    var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
-                    if (!isUserRelatedAdmin)
-                    {
-                        return false;
-                    }
+                    return await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, workshopProviderId, workshopId).ConfigureAwait(false);
                 }
             }
-
-            return true;
+            return false;
         }
 
         /// <summary>
