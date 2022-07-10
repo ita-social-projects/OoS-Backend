@@ -50,23 +50,18 @@ public class ChildService : IChildService
     /// <inheritdoc/>
     public async Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId)
     {
-        private readonly IEntityRepository<Child> childRepository;
-        private readonly IParentRepository parentRepository;
-        private readonly IApplicationRepository applicationRepository;
-        private readonly ILogger<ChildService> logger;
+        ValidateChildDto(childDto);
+        ValidateUserId(userId);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChildService"/> class.
-        /// </summary>
-        /// <param name="childRepository">Repository for the Child entity.</param>
-        /// <param name="parentRepository">Repository for the Parent entity.</param>
-        /// <param name="logger">Logger.</param>
-        public ChildService(IEntityRepository<Child> childRepository, IParentRepository parentRepository, IApplicationRepository applicationRepository, ILogger<ChildService> logger)
+        logger.LogDebug($"Started creation of a new child with {nameof(Child.ParentId)}:{childDto.ParentId}, {nameof(userId)}:{userId}.");
+
+        var parent = (await parentRepository.GetByFilter(p => p.UserId == userId).ConfigureAwait(false)).SingleOrDefault()
+                     ?? throw new UnauthorizedAccessException($"Trying to create a new child the Parent with {nameof(userId)}:{userId} was not found.");
+
+        if (childDto.ParentId != parent.Id)
         {
-            this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
-            this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
-            this.applicationRepository = applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{parent.Id} was trying to create a new child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
+            childDto.ParentId = parent.Id;
         }
 
         childDto.Id = default;
@@ -189,6 +184,15 @@ public class ChildService : IChildService
             ? $"{children.Count} children for User:{userId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
             : $"There is no child for User:{userId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
 
+        var searchResult = new SearchResult<ChildDto>()
+        {
+            TotalAmount = totalAmount,
+            Entities = mapper.Map<List<ChildDto>>(children),
+        };
+
+        return searchResult;
+    }
+
     /// <inheritdoc/>
     public async Task<SearchResult<ChildDto>> GetApprovedByWorkshopId(Guid workshopId, OffsetFilter offsetFilter)
     {
@@ -230,15 +234,6 @@ public class ChildService : IChildService
         this.ValidateChildDto(childDto);
         this.ValidateUserId(userId);
 
-        return searchResult;
-    }
-
-    /// <inheritdoc/>
-    public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId)
-    {
-        this.ValidateChildDto(childDto);
-        this.ValidateUserId(userId);
-
         logger.LogDebug($"Updating the child with Id: {childDto.Id} and {nameof(userId)}: {userId} started.");
 
         var child = await childRepository.GetByFilterNoTracking(c => c.Id == childDto.Id, $"{nameof(Child.Parent)}")
@@ -251,51 +246,7 @@ public class ChildService : IChildService
             throw new UnauthorizedAccessException($"User: {userId} is trying to update not his own child. Child Id = {childDto.Id}");
         }
 
-        /// <summary>
-        /// Get children by WorkshopId.
-        /// </summary>
-        /// <param name="workshopId">ParentId.</param>
-        /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
-        /// The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-        /// <exception cref="ArgumentNullException">If one of the parameters was null.</exception>
-        /// <exception cref="ArgumentException">If one of the parameters was not valid.</exception>
-        /// <exception cref="SqlException">If the database cannot execute the query.</exception>
-        public async Task<SearchResult<ChildDto>> GetApprovedByWorkshopId(Guid workshopId, OffsetFilter offsetFilter)
-        {
-            ValidateOffsetFilter(offsetFilter);
-
-            logger.LogDebug($"Getting Children by WorkshopId: {workshopId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
-
-            var applications = await applicationRepository.GetByFilter(p => p.WorkshopId == workshopId && p.Status == ApplicationStatus.Approved).ConfigureAwait(false);
-            HashSet<Guid> childrenGuids = new HashSet<Guid>();
-            foreach (var app in applications)
-            {
-                childrenGuids.Add(app.ChildId);
-            }
-
-            var totalAmount = childrenGuids.Count;
-
-            var children = await childRepository
-                .Get<string>(offsetFilter.From, offsetFilter.Size, string.Empty, x => childrenGuids.Contains(x.Id), x => x.FirstName, true)
-                .ToListAsync()
-                .ConfigureAwait(false);
-
-            logger.LogDebug(children.Any()
-                ? $"{children.Count} approved children with WorkshopId: {workshopId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
-                : $"There is no approved child with WorkshopId: {workshopId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
-
-            var searchResult = new SearchResult<ChildDto>()
-            {
-                TotalAmount = totalAmount,
-                Entities = children.Select(x => x.ToModel()).ToList(),
-            };
-
-            return searchResult;
-        }
-
-        /// <inheritdoc/>
-        public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId)
+        if (childDto.ParentId != child.ParentId)
         {
             logger.LogWarning($"Prevented action! User:{userId} with {nameof(Child.ParentId)}:{child.ParentId} was trying to update his child with not his own {nameof(Child.ParentId)}:{childDto.ParentId}.");
             childDto.ParentId = child.ParentId;

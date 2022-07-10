@@ -103,22 +103,7 @@ public class ChildController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUsersChildById(Guid id)
     {
-        private readonly IChildService service;
-        private readonly IProviderService providerService;
-        private readonly IProviderAdminService providerAdminService;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChildController"/> class.
-        /// </summary>
-        /// <param name="service">Service for Child model.</param>
-        /// <param name="providerService">Service for Provider model.</param>
-        /// <param name="providerAdminService">Service for ProviderAdmin model.</param>
-        public ChildController(IChildService service, IProviderService providerService, IProviderAdminService providerAdminService)
-        {
-            this.service = service ?? throw new ArgumentNullException(nameof(service));
-            this.providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
-            this.providerAdminService = providerAdminService ?? throw new ArgumentNullException(nameof(providerAdminService));
-        }
+        string userId = GettingUserProperties.GetUserId(User);
 
         return Ok(await service.GetByIdAndUserId(id, userId).ConfigureAwait(false));
     }
@@ -166,74 +151,21 @@ public class ChildController : ControllerBase
         return false;
     }
 
-        /// <summary>
-        /// Get approved children from the database by workshop id.
-        /// </summary>
-        /// <param name="workshopId">Id of the parent.</param>
-        /// <param name="offsetFilter">Filter to get a part of all children that were found.</param>
-        /// <returns>The result is a <see cref="SearchResult{ChildDto}"/> that contains the count of all found children and a list of children that were received.</returns>
-        [HasPermission(Permissions.WorkshopEdit)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchResult<ChildDto>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{workshopId}")]
-        public async Task<IActionResult> GetApprovedByWorkshopId(Guid workshopId, [FromQuery] OffsetFilter offsetFilter)
-        {
-            var userHasRights = await this.IsUserProvidersOwnerOrAdmin(workshopId).ConfigureAwait(false);
-            if (!userHasRights)
-            {
-                return StatusCode(403, "Forbidden for another providers.");
-            }
-
-            return Ok(await service.GetApprovedByWorkshopId(workshopId, offsetFilter).ConfigureAwait(false));
-        }
-
-        private async Task<bool> IsUserProvidersOwnerOrAdmin(Guid workshopId)
-        {
-            Guid providerId = await providerService.GetProviderIdForWorkshopById(workshopId);
-
-            if (User.IsInRole(nameof(Role.Provider).ToLower()))
-            {
-                var userId = User.FindFirst("sub")?.Value;
-                try
-                {
-
-                    var provider = await providerService.GetByUserId(userId).ConfigureAwait(false);
-                    if (providerId != provider.Id)
-                    {
-                        return false;
-                    }
-                }
-                catch (ArgumentException)
-                {
-                    var isUserRelatedAdmin = await providerAdminService.CheckUserIsRelatedProviderAdmin(userId, providerId, workshopId).ConfigureAwait(false);
-                    if (!isUserRelatedAdmin)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Method for creating a new user's child.
-        /// </summary>
-        /// <param name="childDto">Child entity to add.</param>
-        /// <returns>The child that was created.</returns>
-        [HasPermission(Permissions.ChildAddNew)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpPost]
-        public async Task<IActionResult> Create(ChildDto childDto)
-        {
-            string userId = GettingUserProperties.GetUserId(User);
+    /// <summary>
+    /// Method for creating a new user's child.
+    /// </summary>
+    /// <param name="childDto">Child entity to add.</param>
+    /// <returns>The child that was created.</returns>
+    [HasPermission(Permissions.ChildAddNew)]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ChildDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPost]
+    public async Task<IActionResult> Create(ChildDto childDto)
+    {
+        string userId = GettingUserProperties.GetUserId(User);
 
         var child = await service.CreateChildForUser(childDto, userId).ConfigureAwait(false);
 
