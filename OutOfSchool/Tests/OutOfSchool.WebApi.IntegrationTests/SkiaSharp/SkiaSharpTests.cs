@@ -1,6 +1,7 @@
 using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 using SkiaSharp;
 
 namespace OutOfSchool.WebApi.IntegrationTests.SkiaSharp;
@@ -8,6 +9,8 @@ namespace OutOfSchool.WebApi.IntegrationTests.SkiaSharp;
 [TestFixture]
 public class SkiaSharpTests
 {
+    private static readonly string SkiaSharpDirectoryAbsolutePathValue = GetSkiaSharpDirectoryAbsolutePath();
+
     [Test]
     public void CreateSkData_WhenStreamIsValidImage_ShouldBeNotNullSKDataInstance()
     {
@@ -66,7 +69,7 @@ public class SkiaSharpTests
     }
 
     private static string GetAbsoluteFilePathFromSkiaSharpDirectory(string filename)
-        => Path.Combine(GetSkiaSharpDirectoryAbsolutePath(), filename);
+        => Path.Combine(SkiaSharpDirectoryAbsolutePathValue, filename);
 
     private static string GetSkiaSharpDirectoryAbsolutePath()
     {
