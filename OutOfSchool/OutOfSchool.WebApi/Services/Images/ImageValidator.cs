@@ -1,13 +1,8 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Common.Resources.Codes;
-using OutOfSchool.WebApi.Config.Images;
-using OutOfSchool.WebApi.Extensions;
+using SkiaSharp;
 
 namespace OutOfSchool.WebApi.Services.Images;
 
@@ -15,7 +10,7 @@ namespace OutOfSchool.WebApi.Services.Images;
 /// Provides APIs for validating images by their options.
 /// </summary>
 /// <typeparam name="TEntity">This type encapsulates data for which should get validating options.</typeparam>
-public class ImageValidator<TEntity> : IImageValidator
+public class ImageValidator<TEntity> : IImageValidator<TEntity>
 {
     private readonly ImageOptions<TEntity> options;
 
@@ -43,18 +38,18 @@ public class ImageValidator<TEntity> : IImageValidator
                 return OperationResult.Failed(ImagesOperationErrorCode.InvalidSizeError.GetOperationError());
             }
 
-            using var image = Image.FromStream(stream); // check disposing, using memory
-            if (!FileFormatValid(image.RawFormat.ToString()))
+            using var skData = SKData.Create(stream) ?? throw new InvalidOperationException("Unable to create SKData from the stream");
+            using var skCodec = SKCodec.Create(skData) ?? throw new InvalidOperationException("Error while creating an instance of SKCodec. Possibly invalid format of the data stream");
+
+            if (!FileFormatValid(skCodec.EncodedFormat.ToString()))
             {
                 return OperationResult.Failed(ImagesOperationErrorCode.InvalidFormatError.GetOperationError());
             }
 
-            if (!ImageResolutionValid(image.Width, image.Height))
-            {
-                return OperationResult.Failed(ImagesOperationErrorCode.InvalidResolutionError.GetOperationError());
-            }
-
-            return OperationResult.Success;
+            var skCodecInfo = skCodec.Info;
+            return !ImageResolutionValid(skCodecInfo.Width, skCodecInfo.Height)
+                ? OperationResult.Failed(ImagesOperationErrorCode.InvalidResolutionError.GetOperationError())
+                : OperationResult.Success;
         }
         catch (ArgumentException ex)
         {

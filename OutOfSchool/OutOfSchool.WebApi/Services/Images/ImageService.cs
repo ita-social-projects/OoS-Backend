@@ -247,9 +247,9 @@ public class ImageService : IImageService
         }
     }
 
-    private IImageValidator GetValidator<T>()
+    private IImageValidator<T> GetValidator<T>()
     {
-        return (IImageValidator)serviceProvider.GetService(typeof(IImageValidator)) ??
+        return serviceProvider.GetService<IImageValidator<T>>() ??
                throw new NullReferenceException($"Unable to receive ImageValidatorService of type {nameof(T)}");
     }
 }

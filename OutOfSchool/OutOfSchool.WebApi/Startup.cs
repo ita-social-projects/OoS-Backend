@@ -183,8 +183,9 @@ public static class Startup
         services.AddTransient<IWorkshopServicesCombinerV2, WorkshopServicesCombinerV2>();
         services.AddTransient<IPermissionsForRoleService, PermissionsForRoleService>();
         services.AddScoped<IImageService, ImageService>();
-        services.AddScoped<IImageValidator, ImageValidator<Workshop>>();
-        services.AddScoped<IImageValidator, ImageValidator<Teacher>>();
+        services.AddScoped<IImageValidator<Workshop>, ImageValidator<Workshop>>();
+        services.AddScoped<IImageValidator<Teacher>, ImageValidator<Teacher>>();
+        services.AddScoped<IImageValidator<Provider>, ImageValidator<Provider>>();
         services.AddTransient<ICompanyInformationService, CompanyInformationService>();
 
         services.AddScoped<IImageDependentEntityImagesInteractionService<Workshop>, ImageDependentEntityImagesInteractionService<Workshop>>();
