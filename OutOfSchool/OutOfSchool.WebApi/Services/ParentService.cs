@@ -23,7 +23,7 @@ namespace OutOfSchool.WebApi.Services;
 public class ParentService : IParentService
 {
     private readonly IParentRepository repositoryParent;
-    private readonly IEntityRepository<User> repositoryUser;
+    private readonly IEntityRepository<string, User> repositoryUser;
     private readonly ILogger<ParentService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -34,7 +34,7 @@ public class ParentService : IParentService
     /// <param name="repositoryUser">Repository for user entity.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public ParentService(IParentRepository repositoryParent, IEntityRepository<User> repositoryUser, ILogger<ParentService> logger, IStringLocalizer<SharedResource> localizer)
+    public ParentService(IParentRepository repositoryParent, IEntityRepository<string, User> repositoryUser, ILogger<ParentService> logger, IStringLocalizer<SharedResource> localizer)
     {
         this.localizer = localizer;
         this.repositoryParent = repositoryParent;
@@ -102,9 +102,9 @@ public class ParentService : IParentService
         int count = await repositoryParent.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Parent, object>>, SortDirection>
-        {
-            { x => x.User.FirstName, SortDirection.Ascending },
-        };
+    {
+        { x => x.User.FirstName, SortDirection.Ascending },
+    };
 
         var parents = await repositoryParent
             .Get(filter.From, filter.Size, string.Empty, filterPredicate, sortExpression)

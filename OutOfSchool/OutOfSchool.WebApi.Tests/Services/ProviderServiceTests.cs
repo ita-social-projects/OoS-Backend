@@ -27,7 +27,7 @@ public class ProviderServiceTests
 
     private Mock<IProviderRepository> providersRepositoryMock;
     private Mock<IProviderAdminRepository> providerAdminRepositoryMock;
-    private Mock<IEntityRepository<User>> usersRepositoryMock;
+    private Mock<IEntityRepository<string, User>> usersRepositoryMock;
     private Mock<IRatingService> ratingService;
     private IMapper mapper;
     private Mock<INotificationService> notificationService;
@@ -47,7 +47,7 @@ public class ProviderServiceTests
         // TODO: configure mock and writer tests for provider admins
         providerAdminRepositoryMock = new Mock<IProviderAdminRepository>();
         usersRepositoryMock = CreateUsersRepositoryMock(fakeUser);
-        var addressRepo = new Mock<IEntityRepository<Address>>();
+        var addressRepo = new Mock<IEntityRepository<long, Address>>();
         ratingService = new Mock<IRatingService>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
@@ -810,9 +810,9 @@ public class ProviderServiceTests
 
     #endregion
 
-    private static Mock<IEntityRepository<User>> CreateUsersRepositoryMock(User fakeUser)
+    private static Mock<IEntityRepository<string, User>> CreateUsersRepositoryMock(User fakeUser)
     {
-        var usersRepository = new Mock<IEntityRepository<User>>();
+        var usersRepository = new Mock<IEntityRepository<string, User>>();
         usersRepository.Setup(r => r.GetAll()).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
         usersRepository.Setup(r => r.GetByFilter(It.IsAny<Expression<Func<User, bool>>>(), string.Empty)).Returns(Task.FromResult<IEnumerable<User>>(new List<User> { fakeUser }));
 

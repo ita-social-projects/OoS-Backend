@@ -174,4 +174,14 @@ public static class ModelBuilderExtension
         //        .IsRequired(true);
         //});
     }
+
+    public static ModelBuilder ApplySoftDelete<T>(this ModelBuilder builder)
+        where T : class, IKeyedEntity, new()
+    {
+        builder.Entity<T>().Property<bool>("IsDeleted")
+            .ValueGeneratedOnAdd();
+        builder.Entity<T>().HasQueryFilter(m => EF.Property<bool>(m, "IsDeleted") == false);
+
+        return builder;
+    }
 }

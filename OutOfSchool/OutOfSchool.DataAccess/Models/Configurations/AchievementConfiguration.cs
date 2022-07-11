@@ -9,12 +9,6 @@ internal class AchievementConfiguration : IEntityTypeConfiguration<Achievement>
     {
         builder.HasKey(x => x.Id);
 
-        builder.HasOne(x => x.AchievementType)
-            .WithMany()
-            .IsRequired()
-            .HasForeignKey(x => x.AchievementTypeId)
-            .OnDelete(DeleteBehavior.NoAction);
-
         builder.HasMany(x => x.Children)
             .WithMany(x => x.Achievements);
     }

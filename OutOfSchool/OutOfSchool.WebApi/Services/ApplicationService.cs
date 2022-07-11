@@ -26,7 +26,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
 {
     private readonly IApplicationRepository applicationRepository;
     private readonly IWorkshopRepository workshopRepository;
-    private readonly IEntityRepository<Child> childRepository;
+    private readonly IEntityRepository<Guid, Child> childRepository;
     private readonly ILogger<ApplicationService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
@@ -53,7 +53,7 @@ public class ApplicationService : IApplicationService, INotificationReciever
         ILogger<ApplicationService> logger,
         IStringLocalizer<SharedResource> localizer,
         IWorkshopRepository workshopRepository,
-        IEntityRepository<Child> childRepository,
+        IEntityRepository<Guid, Child> childRepository,
         IMapper mapper,
         IOptions<ApplicationsConstraintsConfig> applicationsConstraintsConfig,
         INotificationService notificationService,
@@ -123,9 +123,9 @@ public class ApplicationService : IApplicationService, INotificationReciever
         if (newApplication != null)
         {
             var additionalData = new Dictionary<string, string>()
-            {
-                { "Status", newApplication.Status.ToString() },
-            };
+        {
+            { "Status", newApplication.Status.ToString() },
+        };
 
             string groupedData = newApplication.Status.ToString();
 
@@ -419,9 +419,9 @@ public class ApplicationService : IApplicationService, INotificationReciever
             if (currentApplication.Status != updatedApplication.Status)
             {
                 var additionalData = new Dictionary<string, string>()
-                {
-                    { "Status", updatedApplication.Status.ToString() },
-                };
+            {
+                { "Status", updatedApplication.Status.ToString() },
+            };
 
                 string groupedData = updatedApplication.Status.ToString();
 

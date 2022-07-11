@@ -15,10 +15,6 @@ internal class ProviderAdminConfiguration : IEntityTypeConfiguration<ProviderAdm
         builder.Property(x => x.IsDeputy)
             .IsRequired();
 
-        builder.HasOne(x => x.Provider)
-            .WithMany(x => x.ProviderAdmins)
-            .OnDelete(DeleteBehavior.NoAction);
-
         builder.HasMany(x => x.ManagedWorkshops)
             .WithMany(x => x.ProviderAdmins);
     }

@@ -20,24 +20,12 @@ public class WorkshopRepository : SensitiveEntityRepository<Workshop>, IWorkshop
     /// <inheritdoc/>
     public new async Task Delete(Workshop entity)
     {
-        if (entity.Applications?.Count > 0)
-        {
-            foreach (var app in entity.Applications)
-            {
-                db.Entry(app).State = EntityState.Deleted;
-            }
-        }
-
-        if (entity.Teachers?.Count > 0)
-        {
-            foreach (var teacher in entity.Teachers)
-            {
-                db.Entry(teacher).State = EntityState.Deleted;
-            }
-        }
-
         db.Entry(entity).State = EntityState.Deleted;
-        db.Entry(entity.Address).State = EntityState.Deleted;
+
+        if (entity.Address != null)
+        {
+            db.Entry(entity.Address).State = EntityState.Deleted;
+        }
 
         await db.SaveChangesAsync();
     }

@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ChildRepository : EntityRepository<Child>, IEntityRepository<Child>
+public class ChildRepository : EntityRepository<Guid, Child>, IEntityRepository<Guid, Child>
 {
     private readonly OutOfSchoolDbContext db;
 

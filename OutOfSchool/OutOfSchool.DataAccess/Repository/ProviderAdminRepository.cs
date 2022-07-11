@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Microsoft.EntityFrameworkCore;
-
 using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ProviderAdminRepository : EntityRepository<ProviderAdmin>, IProviderAdminRepository
+public class ProviderAdminRepository : EntityRepository<(string, Guid), ProviderAdmin>, IProviderAdminRepository
 {
     private readonly OutOfSchoolDbContext db;
 

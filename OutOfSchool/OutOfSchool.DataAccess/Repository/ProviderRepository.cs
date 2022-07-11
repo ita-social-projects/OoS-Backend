@@ -57,14 +57,16 @@ public class ProviderRepository : SensitiveEntityRepository<Provider>, IProvider
     public new async Task Delete(Provider entity)
     {
         db.Entry(entity).State = EntityState.Deleted;
-
-        // TODO: Q: why we are using new entity instead of Provider.LegalAddress here and belowe ?
-        db.Entry(new Address { Id = entity.LegalAddressId }).State = EntityState.Deleted;
+        if (entity.LegalAddress != null)
+        {
+            db.Entry(entity.LegalAddress).State = EntityState.Deleted;
+        }
 
         if (entity.ActualAddressId.HasValue
-            && entity.ActualAddressId.Value != entity.LegalAddressId)
+            && entity.ActualAddressId.Value != entity.LegalAddressId
+            && entity.ActualAddress != null)
         {
-            db.Entry(new Address { Id = entity.ActualAddressId.Value }).State = EntityState.Deleted;
+            db.Entry(entity.ActualAddress).State = EntityState.Deleted;
         }
 
         await db.SaveChangesAsync();

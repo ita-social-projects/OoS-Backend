@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models.ChatWorkshop;
 
-public class ChatRoomWorkshop
+public class ChatRoomWorkshop : IKeyedEntity<Guid>
 {
     public Guid Id { get; set; }
 

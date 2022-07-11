@@ -6,7 +6,7 @@ using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.Services.Models;
 
-public class User : IdentityUser
+public class User : IdentityUser, IKeyedEntity<string>
 {
     [DataType(DataType.DateTime)]
     public DateTimeOffset CreatingTime { get; set; }

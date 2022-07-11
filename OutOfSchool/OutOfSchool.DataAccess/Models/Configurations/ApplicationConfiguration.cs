@@ -15,10 +15,5 @@ internal class ApplicationConfiguration : IEntityTypeConfiguration<Application>
 
         builder.Property(x => x.CreationTime)
             .IsRequired();
-
-        builder.HasOne(x => x.Parent)
-            .WithMany()
-            // Note: cascade delete causes circular dependency issue
-            .OnDelete(DeleteBehavior.NoAction);
     }
 }

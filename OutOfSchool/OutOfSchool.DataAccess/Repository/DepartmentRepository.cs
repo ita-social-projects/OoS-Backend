@@ -3,10 +3,10 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class DepartmentRepository : EntityRepository<Department>, IDepartmentRepository
+public class DepartmentRepository : EntityRepository<long, Department>, IDepartmentRepository
 {
     public DepartmentRepository(OutOfSchoolDbContext dbContext)
-        : base(dbContext)
+     : base(dbContext)
     {
     }
 

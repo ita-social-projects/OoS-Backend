@@ -10,9 +10,9 @@ namespace OutOfSchool.IdentityServer.Services;
 
 public class ProviderAdminChangesLogService : IProviderAdminChangesLogService
 {
-    private readonly IEntityRepository<ProviderAdminChangesLog> providerAdminChangesLogRepository;
+    private readonly IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository;
 
-    public ProviderAdminChangesLogService(IEntityRepository<ProviderAdminChangesLog> providerAdminChangesLogRepository)
+    public ProviderAdminChangesLogService(IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository)
     {
         this.providerAdminChangesLogRepository = providerAdminChangesLogRepository;
     }

@@ -67,7 +67,7 @@ public class AchievementRepository : EntityRepositoryBase<Guid, Achievement>, IA
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     public async Task<Achievement> Update(Achievement achievement, List<Guid> childrenIDs, List<string> teachers)
     {
-        var newAchievement = dbSet.Find(achievement.Id);
+        var newAchievement = await GetById(achievement.Id);
 
         dbContext.Entry(newAchievement).CurrentValues.SetValues(achievement);
 

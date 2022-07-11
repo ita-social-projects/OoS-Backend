@@ -4,7 +4,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public interface IChangesLogRepository : IEntityRepository<ChangesLog>
+public interface IChangesLogRepository : IEntityRepository<long, ChangesLog>
 {
     /// <summary>
     /// Create and add ChangesLog records for the entity.

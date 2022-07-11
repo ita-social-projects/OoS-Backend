@@ -28,7 +28,7 @@ public class ChangesLogServiceTests
     private Mock<IChangesLogRepository> changesLogRepository;
     private Mock<IProviderRepository> providerRepository;
     private Mock<IApplicationRepository> applicationRepository;
-    private Mock<IEntityRepository<ProviderAdminChangesLog>> providerAdminChangesLogRepository;
+    private Mock<IEntityRepository<long, ProviderAdminChangesLog>> providerAdminChangesLogRepository;
     private Mock<IValueProjector> valueProjector;
 
     private User user;
@@ -61,7 +61,7 @@ public class ChangesLogServiceTests
         changesLogRepository = new Mock<IChangesLogRepository>(MockBehavior.Strict);
         providerRepository = new Mock<IProviderRepository>(MockBehavior.Strict);
         applicationRepository = new Mock<IApplicationRepository>(MockBehavior.Strict);
-        providerAdminChangesLogRepository = new Mock<IEntityRepository<ProviderAdminChangesLog>>(MockBehavior.Strict);
+        providerAdminChangesLogRepository = new Mock<IEntityRepository<long, ProviderAdminChangesLog>>(MockBehavior.Strict);
         valueProjector = new Mock<IValueProjector>();
     }
 
@@ -267,7 +267,7 @@ public class ChangesLogServiceTests
         {
             TrackedProperties = new Dictionary<string, string[]>
             {
-                { "Provider", new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" } },
+            { "Provider", new[] { "FullTitle", "EdrpouIpn", "Director", "LegalAddress" } },
             },
         });
 

@@ -28,7 +28,7 @@ public class ApplicationServiceTests
     private IApplicationService service;
     private Mock<IApplicationRepository> applicationRepositoryMock;
     private Mock<IWorkshopRepository> workshopRepositoryMock;
-    private Mock<IEntityRepository<Child>> childRepositoryMock;
+    private Mock<IEntityRepository<Guid, Child>> childRepositoryMock;
     private Mock<IStringLocalizer<SharedResource>> localizer;
     private Mock<ILogger<ApplicationService>> logger;
     private Mock<IMapper> mapper;
@@ -43,7 +43,7 @@ public class ApplicationServiceTests
     {
         applicationRepositoryMock = new Mock<IApplicationRepository>();
         workshopRepositoryMock = new Mock<IWorkshopRepository>();
-        childRepositoryMock = new Mock<IEntityRepository<Child>>();
+        childRepositoryMock = new Mock<IEntityRepository<Guid, Child>>();
         notificationService = new Mock<INotificationService>();
         providerAdminService = new Mock<IProviderAdminService>();
         changesLogService = new Mock<IChangesLogService>();
@@ -667,56 +667,56 @@ public class ApplicationServiceTests
     private IEnumerable<Application> WithApplicationsList()
     {
         return new List<Application>()
+    {
+        new Application()
         {
-            new Application()
+            Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
+            Status = ApplicationStatus.Pending,
+            WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            Parent = new Parent()
             {
-                Id = new Guid("1745d16a-6181-43d7-97d0-a1d6cc34a8db"),
-                Status = ApplicationStatus.Pending,
-                WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                Parent = new Parent()
+                Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                User = new User()
                 {
-                    Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                    User = new User()
-                    {
-                        LastName = "Petroffski",
-                    },
+                    LastName = "Petroffski",
                 },
             },
-            new Application()
+        },
+        new Application()
+        {
+            Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
+            Status = ApplicationStatus.Rejected,
+            WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            Parent = new Parent()
             {
-                Id = new Guid("7c5f8f7c-d850-44d0-8d4e-fd2de99453be"),
-                Status = ApplicationStatus.Rejected,
-                WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                Parent = new Parent()
+                Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                User = new User()
                 {
-                    Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                    User = new User()
-                    {
-                        LastName = "Petroffski",
-                    },
+                    LastName = "Petroffski",
                 },
             },
-            new Application()
+        },
+        new Application()
+        {
+            Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
+            Status = ApplicationStatus.Pending,
+            WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
+            ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
+            ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+            Parent = new Parent()
             {
-                Id = new Guid("0083633f-4e5b-4c09-a89d-52d8a9b89cdb"),
-                Status = ApplicationStatus.Pending,
-                WorkshopId = new Guid("953708d7-8c35-4607-bd9b-f034e853bb89"),
-                ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"),
-                ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                Parent = new Parent()
+                Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
+                User = new User()
                 {
-                    Id = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"),
-                    User = new User()
-                    {
-                        LastName = "Petroffski",
-                    },
+                    LastName = "Petroffski",
                 },
             },
-        };
+        },
+    };
     }
 
     private Application WithApplication(Guid id)
@@ -732,46 +732,46 @@ public class ApplicationServiceTests
     private IEnumerable<Workshop> WithWorkshopsList()
     {
         return new List<Workshop>()
+    {
+        new Workshop()
         {
-            new Workshop()
-            {
-                Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-                Status = WorkshopStatus.Closed,
-            },
-            new Workshop()
-            {
-                Id = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-                Status = WorkshopStatus.Open,
-            },
-            new Workshop()
-            {
-                Id = new Guid("3e8845a8-1359-4676-b6d6-5a6b29c122ea"),
-                ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
-            },
-        };
+            Id = new Guid("b94f1989-c4e7-4878-ac86-21c4a402fb43"),
+            ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+            Status = WorkshopStatus.Closed,
+        },
+        new Workshop()
+        {
+            Id = new Guid("8c14044b-e30d-4b14-a18b-5b3b859ad676"),
+            ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+            Status = WorkshopStatus.Open,
+        },
+        new Workshop()
+        {
+            Id = new Guid("3e8845a8-1359-4676-b6d6-5a6b29c122ea"),
+            ProviderId = new Guid("1aa8e8e0-d35f-45cb-b66d-a01faa8fe174"),
+        },
+    };
     }
 
     private IEnumerable<Child> WithChildList()
     {
         var fakeSocialGroups = new List<SocialGroup>() {
-            new SocialGroup() { Id = 1, Name = "FakeSocialGroup1" },
-            new SocialGroup() { Id = 2, Name = "FakeSocialGroup2" },
-        };
+        new SocialGroup() { Id = 1, Name = "FakeSocialGroup1" },
+        new SocialGroup() { Id = 2, Name = "FakeSocialGroup2" },
+    };
 
         var fakeChildSocialGroups = new List<ChildSocialGroup>()
-        {
-            new ChildSocialGroup() { ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"), SocialGroupId = 1 },
-            new ChildSocialGroup() { ChildId = new Guid("f29d0e07-e4f2-440b-b0fe-eaa11e31ddae"), SocialGroupId = 2 },
-        };
+    {
+        new ChildSocialGroup() { ChildId = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"), SocialGroupId = 1 },
+        new ChildSocialGroup() { ChildId = new Guid("f29d0e07-e4f2-440b-b0fe-eaa11e31ddae"), SocialGroupId = 2 },
+    };
 
         return new List<Child>()
-        {
-            new Child { Id = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"), FirstName = "fn1", LastName = "ln1", MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups, ChildSocialGroups = fakeChildSocialGroups },
-            new Child { Id = new Guid("f29d0e07-e4f2-440b-b0fe-eaa11e31ddae"), FirstName = "fn2", LastName = "ln2", MiddleName = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups, ChildSocialGroups = fakeChildSocialGroups },
-            new Child { Id = new Guid("6ddd21d0-2f2e-48a0-beec-fefcb44cd3f0"), FirstName = "fn3", LastName = "ln3", MiddleName = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups, ChildSocialGroups = fakeChildSocialGroups },
-        };
+    {
+        new Child { Id = new Guid("64988abc-776a-4ff8-961c-ba73c7db1986"), FirstName = "fn1", LastName = "ln1", MiddleName = "mn1", DateOfBirth = new DateTime(2003, 11, 9), Gender = Gender.Male, ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups, ChildSocialGroups = fakeChildSocialGroups },
+        new Child { Id = new Guid("f29d0e07-e4f2-440b-b0fe-eaa11e31ddae"), FirstName = "fn2", LastName = "ln2", MiddleName = "mn2", DateOfBirth = new DateTime(2004, 11, 8), Gender = Gender.Female, ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups, ChildSocialGroups = fakeChildSocialGroups },
+        new Child { Id = new Guid("6ddd21d0-2f2e-48a0-beec-fefcb44cd3f0"), FirstName = "fn3", LastName = "ln3", MiddleName = "mn3", DateOfBirth = new DateTime(2006, 11, 2), Gender = Gender.Male, ParentId = new Guid("cce7dcbf-991b-4c8e-ba30-4e3cc9e952f3"), SocialGroups = fakeSocialGroups, ChildSocialGroups = fakeChildSocialGroups },
+    };
     }
 
     #endregion

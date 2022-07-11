@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Bogus;
 using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
@@ -44,4 +44,14 @@ public static class ProvidersGenerator
     /// </summary>
     /// <param name="count">count of instances to generate.</param>
     public static List<Provider> Generate(int count) => faker.Generate(count);
+
+    public static Provider WithWorkshops(this Provider provider)
+    {
+        provider.Workshops = WorkshopGenerator.Generate(new Random().Next(1, 4))
+            .WithProvider(provider);
+        return provider;
+    }
+
+    public static List<Provider> WithWorkshops(this List<Provider> providers)
+        => providers.Select(x => x.WithWorkshops()).ToList();
 }

@@ -239,9 +239,14 @@ public class ProviderController : ControllerBase
         {
             await providerService.Delete(uid).ConfigureAwait(false);
         }
-        catch (ArgumentNullException ex)
+        catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            if (ex is ArgumentException || ex is ArgumentNullException)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            throw;
         }
 
         return NoContent();

@@ -6,7 +6,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class RatingRepository : EntityRepository<Rating>, IRatingRepository
+public class RatingRepository : EntityRepository<long, Rating>, IRatingRepository
 {
     private readonly OutOfSchoolDbContext db;
 

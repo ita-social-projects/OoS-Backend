@@ -120,11 +120,11 @@ public static class Startup
         services.AddProxy();
         services.AddAutoMapper(typeof(MappingProfile));
         services.AddTransient<IParentRepository, ParentRepository>();
-        services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
+        services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<IProviderAdminService, ProviderAdminService>();
 
-        services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
+        services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
         services.AddTransient<IProviderAdminChangesLogService, ProviderAdminChangesLogService>();
 
         // Register the Permission policy handlers

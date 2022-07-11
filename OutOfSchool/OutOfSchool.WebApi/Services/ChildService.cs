@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class ChildService : IChildService
 {
-    private readonly IEntityRepository<Child> childRepository;
+    private readonly IEntityRepository<Guid, Child> childRepository;
     private readonly IParentRepository parentRepository;
     private readonly ILogger<ChildService> logger;
     private readonly IMapper mapper;
@@ -33,7 +33,7 @@ public class ChildService : IChildService
     /// <param name="logger">Logger.</param>
     /// <param name="mapper">Automapper DI service.</param>
     public ChildService(
-        IEntityRepository<Child> childRepository,
+        IEntityRepository<Guid, Child> childRepository,
         IParentRepository parentRepository,
         ILogger<ChildService> logger,
         IMapper mapper)
@@ -84,9 +84,9 @@ public class ChildService : IChildService
         var totalAmount = await childRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
-                {
-                    { x => x.Id, SortDirection.Ascending },
-                };
+        {
+            { x => x.Id, SortDirection.Ascending },
+        };
 
         var children = await childRepository.Get(filter.From, filter.Size, $"{nameof(Child.SocialGroups)}", filterPredicate, sortExpression)
             .ToListAsync()

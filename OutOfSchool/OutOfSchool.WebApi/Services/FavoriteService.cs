@@ -17,13 +17,13 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class FavoriteService : IFavoriteService
 {
-    private readonly IEntityRepository<Favorite> favoriteRepository;
+    private readonly IEntityRepository<long, Favorite> favoriteRepository;
     private readonly IWorkshopService workshopService;
     private readonly ILogger<FavoriteService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
 
     public FavoriteService(
-        IEntityRepository<Favorite> favoriteRepository,
+        IEntityRepository<long, Favorite> favoriteRepository,
         ILogger<FavoriteService> logger,
         IStringLocalizer<SharedResource> localizer,
         IWorkshopService worshopService)

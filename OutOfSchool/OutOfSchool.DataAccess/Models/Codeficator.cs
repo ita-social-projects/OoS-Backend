@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OutOfSchool.Services.Models;
 
-public class Codeficator
+public class Codeficator : IKeyedEntity<long>
 {
     public long Id { get; set; }
 

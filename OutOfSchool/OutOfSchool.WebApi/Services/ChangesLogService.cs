@@ -23,7 +23,7 @@ public class ChangesLogService : IChangesLogService
     private readonly IChangesLogRepository changesLogRepository;
     private readonly IProviderRepository providerRepository;
     private readonly IApplicationRepository applicationRepository;
-    private readonly IEntityRepository<ProviderAdminChangesLog> providerAdminChangesLogRepository;
+    private readonly IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository;
     private readonly ILogger<ChangesLogService> logger;
     private readonly IMapper mapper;
     private readonly IValueProjector valueProjector;
@@ -33,7 +33,7 @@ public class ChangesLogService : IChangesLogService
         IChangesLogRepository changesLogRepository,
         IProviderRepository providerRepository,
         IApplicationRepository applicationRepository,
-        IEntityRepository<ProviderAdminChangesLog> providerAdminChangesLogRepository,
+        IEntityRepository<long, ProviderAdminChangesLog> providerAdminChangesLogRepository,
         ILogger<ChangesLogService> logger,
         IMapper mapper,
         IValueProjector valueProjector)
@@ -74,23 +74,23 @@ public class ChangesLogService : IChangesLogService
         var providers = providerRepository.Get();
 
         var query = from l in changesLog
-            join p in providers
-                on l.EntityIdGuid equals p.Id into pg
-            from provider in pg.DefaultIfEmpty()
-            select new ProviderChangesLogDto
-            {
-                FieldName = l.PropertyName,
-                OldValue = l.OldValue,
-                NewValue = l.NewValue,
-                UpdatedDate = l.UpdatedDate,
-                User = mapper.Map<ShortUserDto>(l.User),
-                ProviderId = l.EntityIdGuid.Value,
-                ProviderTitle = provider == null ? null : provider.FullTitle,
-                ProviderCity = provider == null || provider.LegalAddress == null
-                    ? null : provider.LegalAddress.City,
-                InstitutionTitle = provider == null || provider.Institution == null
-                    ? null : provider.Institution.Title,
-            };
+                    join p in providers
+                        on l.EntityIdGuid equals p.Id into pg
+                    from provider in pg.DefaultIfEmpty()
+                    select new ProviderChangesLogDto
+                    {
+                        FieldName = l.PropertyName,
+                        OldValue = l.OldValue,
+                        NewValue = l.NewValue,
+                        UpdatedDate = l.UpdatedDate,
+                        User = mapper.Map<ShortUserDto>(l.User),
+                        ProviderId = l.EntityIdGuid.Value,
+                        ProviderTitle = provider == null ? null : provider.FullTitle,
+                        ProviderCity = provider == null || provider.LegalAddress == null
+                            ? null : provider.LegalAddress.City,
+                        InstitutionTitle = provider == null || provider.Institution == null
+                            ? null : provider.Institution.Title,
+                    };
 
         var entities = await query.ToListAsync().ConfigureAwait(false);
 
@@ -108,23 +108,23 @@ public class ChangesLogService : IChangesLogService
         var applications = applicationRepository.Get();
 
         var query = from l in changesLog
-            join a in applications
-                on l.EntityIdGuid equals a.Id into ag
-            from app in ag.DefaultIfEmpty()
-            select new ApplicationChangesLogDto
-            {
-                FieldName = l.PropertyName,
-                OldValue = l.OldValue,
-                NewValue = l.NewValue,
-                UpdatedDate = l.UpdatedDate,
-                User = mapper.Map<ShortUserDto>(l.User),
-                ApplicationId = l.EntityIdGuid.Value,
-                WorkshopTitle = app == null ? null : app.Workshop.Title,
-                WorkshopCity = app == null ? null : app.Workshop.Address.City,
-                ProviderTitle = app == null ? null : app.Workshop.ProviderTitle,
-                InstitutionTitle = app == null || app.Workshop.Provider.Institution == null
-                    ? null : app.Workshop.Provider.Institution.Title,
-            };
+                    join a in applications
+                        on l.EntityIdGuid equals a.Id into ag
+                    from app in ag.DefaultIfEmpty()
+                    select new ApplicationChangesLogDto
+                    {
+                        FieldName = l.PropertyName,
+                        OldValue = l.OldValue,
+                        NewValue = l.NewValue,
+                        UpdatedDate = l.UpdatedDate,
+                        User = mapper.Map<ShortUserDto>(l.User),
+                        ApplicationId = l.EntityIdGuid.Value,
+                        WorkshopTitle = app == null ? null : app.Workshop.Title,
+                        WorkshopCity = app == null ? null : app.Workshop.Address.City,
+                        ProviderTitle = app == null ? null : app.Workshop.ProviderTitle,
+                        InstitutionTitle = app == null || app.Workshop.Provider.Institution == null
+                            ? null : app.Workshop.Provider.Institution.Title,
+                    };
 
         var entities = await query.ToListAsync().ConfigureAwait(false);
 
@@ -252,9 +252,9 @@ public class ChangesLogService : IChangesLogService
     {
         // Returns default ordering so far...
         var sortExpression = new Dictionary<Expression<Func<ChangesLog, object>>, SortDirection>
-        {
-            { x => x.UpdatedDate, SortDirection.Descending },
-        };
+    {
+        { x => x.UpdatedDate, SortDirection.Descending },
+    };
 
         return sortExpression;
     }
@@ -263,9 +263,9 @@ public class ChangesLogService : IChangesLogService
     {
         // Returns default ordering so far...
         var sortExpression = new Dictionary<Expression<Func<ProviderAdminChangesLog, object>>, SortDirection>
-        {
-            { x => x.OperationDate, SortDirection.Descending },
-        };
+    {
+        { x => x.OperationDate, SortDirection.Descending },
+    };
 
         return sortExpression;
     }

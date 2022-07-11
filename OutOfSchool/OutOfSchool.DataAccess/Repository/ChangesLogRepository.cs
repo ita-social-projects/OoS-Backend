@@ -9,7 +9,7 @@ using OutOfSchool.Services.Models;
 
 namespace OutOfSchool.Services.Repository;
 
-public class ChangesLogRepository : EntityRepository<ChangesLog>, IChangesLogRepository
+public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChangesLogRepository
 {
     public ChangesLogRepository(OutOfSchoolDbContext dbContext)
         : base(dbContext)

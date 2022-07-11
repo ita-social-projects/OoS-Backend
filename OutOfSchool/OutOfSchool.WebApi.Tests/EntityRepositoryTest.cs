@@ -20,7 +20,7 @@ public class EntityRepositoryTest
     {
         using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
-            var repository = new EntityRepository<SocialGroup>(context);
+            var repository = new EntityRepository<long, SocialGroup>(context);
 
             // Act
             var group = repository.GetById(1).Result;
@@ -103,7 +103,7 @@ public class EntityRepositoryTest
     {
         using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
-            var repository = new EntityRepository<SocialGroup>(context);
+            var repository = new EntityRepository<long, SocialGroup>(context);
             SocialGroup socialGroup = new SocialGroup { Id = 1, Name = "sg1" };
 
             // Act
@@ -120,7 +120,7 @@ public class EntityRepositoryTest
     {
         using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
-            var repository = new EntityRepository<SocialGroup>(context);
+            var repository = new EntityRepository<long, SocialGroup>(context);
 
             // Act
             var socialGroups = repository.GetAll();
@@ -135,7 +135,7 @@ public class EntityRepositoryTest
     {
         using var context = new OutOfSchoolDbContext(UnitTestHelper.GetUnitTestDbOptions());
         {
-            var repository = new EntityRepository<SocialGroup>(context);
+            var repository = new EntityRepository<long, SocialGroup>(context);
 
             // Act
             SocialGroup socialGroup = new SocialGroup { Id = 2, Name = "sg22" };

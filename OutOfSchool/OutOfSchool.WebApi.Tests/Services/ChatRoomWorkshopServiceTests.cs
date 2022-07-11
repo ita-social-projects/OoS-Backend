@@ -31,7 +31,7 @@ public class ChatRoomWorkshopServiceTests
 
     private static ChatRoomWorkshop[] rooms;
 
-    private IEntityRepository<ChatRoomWorkshop> roomRepository;
+    private IEntityRepository<Guid, ChatRoomWorkshop> roomRepository;
     private Mock<IChatRoomWorkshopModelForChatListRepository> roomWithSpecialModelRepositoryMock;
     private Mock<ILogger<ChatRoomWorkshopService>> loggerMock;
 
@@ -80,7 +80,7 @@ public class ChatRoomWorkshopServiceTests
         options = builder.Options;
         dbContext = new OutOfSchoolDbContext(options);
 
-        roomRepository = new EntityRepository<ChatRoomWorkshop>(dbContext);
+        roomRepository = new EntityRepository<Guid, ChatRoomWorkshop>(dbContext);
         roomWithSpecialModelRepositoryMock = new Mock<IChatRoomWorkshopModelForChatListRepository>();
         loggerMock = new Mock<ILogger<ChatRoomWorkshopService>>();
 

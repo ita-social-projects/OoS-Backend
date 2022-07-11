@@ -17,7 +17,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class SocialGroupService : ISocialGroupService
 {
-    private readonly IEntityRepository<SocialGroup> repository;
+    private readonly IEntityRepository<long, SocialGroup> repository;
     private readonly ILogger<SocialGroupService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -27,7 +27,7 @@ public class SocialGroupService : ISocialGroupService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public SocialGroupService(IEntityRepository<SocialGroup> repository, ILogger<SocialGroupService> logger, IStringLocalizer<SharedResource> localizer)
+    public SocialGroupService(IEntityRepository<long, SocialGroup> repository, ILogger<SocialGroupService> logger, IStringLocalizer<SharedResource> localizer)
     {
         this.localizer = localizer;
         this.repository = repository;

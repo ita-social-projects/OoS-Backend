@@ -17,12 +17,12 @@ namespace OutOfSchool.IdentityServer.Services;
 public class ProfileService : IProfileService
 {
     private readonly UserManager<User> userManager;
-    private readonly IEntityRepository<PermissionsForRole> permissionsForRolesRepository;
+    private readonly IEntityRepository<long, PermissionsForRole> permissionsForRolesRepository;
     private readonly IProviderAdminRepository providerAdminRepository;
 
     public ProfileService(
         UserManager<User> userManager,
-        IEntityRepository<PermissionsForRole> permissionsForRolesRepository,
+        IEntityRepository<long, PermissionsForRole> permissionsForRolesRepository,
         IProviderAdminRepository providerAdminRepository)
     {
         this.userManager = userManager;
@@ -43,12 +43,12 @@ public class ProfileService : IProfileService
         var subRoleClaim = new Claim(IdentityResourceClaimsTypes.Subrole, subrole.ToString());
 
         var claims = new List<Claim>
-        {
-            nameClaim,
-            roleClaim,
-            permissionsClaim,
-            subRoleClaim,
-        };
+    {
+        nameClaim,
+        roleClaim,
+        permissionsClaim,
+        subRoleClaim,
+    };
 
         context.IssuedClaims.AddRange(claims);
     }

@@ -46,10 +46,10 @@ public class ProviderServiceUpdate
         var ratingService = new Mock<IRatingService>();
         var localizer = new Mock<IStringLocalizer<SharedResource>>();
         var logger = new Mock<ILogger<ProviderService>>();
-        var addressRepository = new Mock<IEntityRepository<Address>>();
-        var providerRepository = new ProviderRepository(this.GetContext());
+        var addressRepository = new Mock<IEntityRepository<long, Address>>();
+        var providerRepository = new ProviderRepository(GetContext());
         var providerAdminRepository = new Mock<IProviderAdminRepository>();
-        var userRepository = new Mock<IEntityRepository<User>>();
+        var userRepository = new Mock<IEntityRepository<string, User>>();
         var workshopServicesCombiner = new Mock<IWorkshopServicesCombiner>();
         var providerImagesService = new Mock<IImageDependentEntityImagesInteractionService<Provider>>();
         var changesLogService = new Mock<IChangesLogService>();

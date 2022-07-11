@@ -44,7 +44,7 @@ public class ApplicationRepository : EntityRepositoryBase<Guid, Application>, IA
     /// <exception cref="DbUpdateConcurrencyException">If a concurrency violation is encountered while saving to database.</exception>
     public async Task<Application> Update(Application entity, Action<Application> onSaveChanges)
     {
-        var application = await dbSet.FindAsync(entity.Id);
+        var application = await GetById(entity.Id);
 
         dbContext.Entry(application).CurrentValues.SetValues(entity);
 

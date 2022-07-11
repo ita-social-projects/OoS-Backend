@@ -18,7 +18,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class AddressService : IAddressService
 {
-    private readonly IEntityRepository<Address> repository;
+    private readonly IEntityRepository<long, Address> repository;
     private readonly ILogger<AddressService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -29,7 +29,7 @@ public class AddressService : IAddressService
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
     public AddressService(
-        IEntityRepository<Address> repository,
+        IEntityRepository<long, Address> repository,
         ILogger<AddressService> logger,
         IStringLocalizer<SharedResource> localizer)
     {

@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,7 @@ using OutOfSchool.Services.Models.SubordinationStructure;
 
 namespace OutOfSchool.Services;
 
-public class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyContext, IUnitOfWork
+public partial class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyContext, IUnitOfWork
 {
     public OutOfSchoolDbContext(DbContextOptions<OutOfSchoolDbContext> options)
         : base(options)
@@ -123,6 +122,8 @@ public class OutOfSchoolDbContext : IdentityDbContext<User>, IDataProtectionKeyC
         builder.ApplyConfiguration(new EntityImagesConfiguration<Workshop>());
         builder.ApplyConfiguration(new NotificationConfiguration());
         builder.ApplyConfiguration(new AchievementConfiguration());
+
+        ApplySoftDelete(builder);
 
         builder.Seed();
         builder.UpdateIdentityTables();

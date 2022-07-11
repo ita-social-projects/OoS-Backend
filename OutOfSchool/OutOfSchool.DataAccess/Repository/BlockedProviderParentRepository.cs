@@ -39,7 +39,7 @@ public class BlockedProviderParentRepository : SensitiveEntityRepository<Blocked
             blockedProviderParent.ProviderId,
             false);
 
-        var currentBlock = dbSet.Find(blockedProviderParent.Id);
+        var currentBlock = await GetById(blockedProviderParent.Id);
 
         dbContext.Entry(currentBlock).CurrentValues.SetValues(blockedProviderParent);
         dbContext.Entry(currentBlock).State = EntityState.Modified;

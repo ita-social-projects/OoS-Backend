@@ -20,7 +20,7 @@ namespace OutOfSchool.WebApi.Services;
 /// </summary>
 public class CityService : ICityService
 {
-    private readonly IEntityRepository<City> repository;
+    private readonly IEntityRepository<long, City> repository;
     private readonly ILogger<CityService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
 
@@ -30,7 +30,7 @@ public class CityService : ICityService
     /// <param name="repository">Repository.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
-    public CityService(IEntityRepository<City> repository, ILogger<CityService> logger, IStringLocalizer<SharedResource> localizer)
+    public CityService(IEntityRepository<long, City> repository, ILogger<CityService> logger, IStringLocalizer<SharedResource> localizer)
     {
         this.localizer = localizer;
         this.repository = repository;

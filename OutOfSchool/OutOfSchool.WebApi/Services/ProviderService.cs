@@ -29,7 +29,7 @@ public class ProviderService : IProviderService, INotificationReciever
     private readonly ILogger<ProviderService> logger;
     private readonly IStringLocalizer<SharedResource> localizer;
     private readonly IMapper mapper;
-    private readonly IEntityRepository<Address> addressRepository;
+    private readonly IEntityRepository<long, Address> addressRepository;
     private readonly IWorkshopServicesCombiner workshopServiceCombiner;
     private readonly IChangesLogService changesLogService;
     private readonly INotificationService notificationService;
@@ -37,13 +37,13 @@ public class ProviderService : IProviderService, INotificationReciever
 
     // TODO: It should be removed after models revision.
     //       Temporary instance to fill 'Provider' model 'User' property
-    private readonly IEntityRepository<User> usersRepository;
+    private readonly IEntityRepository<string, User> usersRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProviderService"/> class.
     /// </summary>
     /// <param name="providerRepository">Provider repository.</param>
-    /// <param name="usersRepository"><see cref="IEntityRepository{User}"/> repository object.</param>
+    /// <param name="usersRepository">UsersRepository.</param>
     /// <param name="ratingService">Rating service.</param>
     /// <param name="logger">Logger.</param>
     /// <param name="localizer">Localizer.</param>
@@ -57,12 +57,12 @@ public class ProviderService : IProviderService, INotificationReciever
     /// <param name="providerAdminService">Service for getting provider admins and deputies.</param>
     public ProviderService(
         IProviderRepository providerRepository,
-        IEntityRepository<User> usersRepository,
+        IEntityRepository<string, User> usersRepository,
         IRatingService ratingService,
         ILogger<ProviderService> logger,
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper,
-        IEntityRepository<Address> addressRepository,
+        IEntityRepository<long, Address> addressRepository,
         IWorkshopServicesCombiner workshopServiceCombiner,
         IProviderAdminRepository providerAdminRepository,
         IImageDependentEntityImagesInteractionService<Provider> providerImagesService,
@@ -104,9 +104,9 @@ public class ProviderService : IProviderService, INotificationReciever
         int count = await providerRepository.Count(filterPredicate).ConfigureAwait(false);
 
         var sortExpression = new Dictionary<Expression<Func<Provider, object>>, SortDirection>
-        {
-            { x => x.User.FirstName, SortDirection.Ascending },
-        };
+    {
+        { x => x.User.FirstName, SortDirection.Ascending },
+    };
 
         var providers = await providerRepository
             .Get(
@@ -491,6 +491,11 @@ public class ProviderService : IProviderService, INotificationReciever
         try
         {
             var entity = await providerRepository.GetById(id).ConfigureAwait(false);
+
+            if (entity is null)
+            {
+                throw new ArgumentException($"There is no Provider in DB with Id - {id}");
+            }
 
             if (actionBeforeDeleting != null)
             {

@@ -196,18 +196,18 @@ public static class Startup
         services.AddTransient<IGRPCCommonService, GRPCCommonService>();
 
         // entities repositories
-        services.AddTransient<IEntityRepository<Address>, EntityRepository<Address>>();
-        services.AddTransient<IEntityRepository<Application>, EntityRepository<Application>>();
-        services.AddTransient<IEntityRepository<ChatMessageWorkshop>, EntityRepository<ChatMessageWorkshop>>();
-        services.AddTransient<IEntityRepository<ChatRoomWorkshop>, EntityRepository<ChatRoomWorkshop>>();
-        services.AddTransient<IEntityRepository<Child>, ChildRepository>();
-        services.AddTransient<IEntityRepository<City>, EntityRepository<City>>();
-        services.AddTransient<IEntityRepository<Favorite>, EntityRepository<Favorite>>();
-        services.AddTransient<IEntityRepository<SocialGroup>, EntityRepository<SocialGroup>>();
-        services.AddTransient<IEntityRepository<InstitutionStatus>, EntityRepository<InstitutionStatus>>();
+        services.AddTransient<IEntityRepository<long, Address>, EntityRepository<long, Address>>();
+        services.AddTransient<IEntityRepository<Guid, Application>, EntityRepository<Guid, Application>>();
+        services.AddTransient<IEntityRepository<Guid, ChatMessageWorkshop>, EntityRepository<Guid, ChatMessageWorkshop>>();
+        services.AddTransient<IEntityRepository<Guid, ChatRoomWorkshop>, EntityRepository<Guid, ChatRoomWorkshop>>();
+        services.AddTransient<IEntityRepository<Guid, Child>, ChildRepository>();
+        services.AddTransient<IEntityRepository<long, City>, EntityRepository<long, City>>();
+        services.AddTransient<IEntityRepository<long, Favorite>, EntityRepository<long, Favorite>>();
+        services.AddTransient<IEntityRepository<long, SocialGroup>, EntityRepository<long, SocialGroup>>();
+        services.AddTransient<IEntityRepository<long, InstitutionStatus>, EntityRepository<long, InstitutionStatus>>();
         services.AddTransient<ISensitiveEntityRepository<Teacher>, SensitiveEntityRepository<Teacher>>();
-        services.AddTransient<IEntityRepository<User>, EntityRepository<User>>();
-        services.AddTransient<IEntityRepository<PermissionsForRole>, EntityRepository<PermissionsForRole>>();
+        services.AddTransient<IEntityRepository<string, User>, EntityRepository<string, User>>();
+        services.AddTransient<IEntityRepository<long, PermissionsForRole>, EntityRepository<long, PermissionsForRole>>();
 
         services.AddTransient<IProviderAdminRepository, ProviderAdminRepository>();
         services.AddTransient<ISensitiveEntityRepository<CompanyInformation>, SensitiveEntityRepository<CompanyInformation>>();
@@ -231,10 +231,10 @@ public static class Startup
         services.AddTransient<INotificationRepository, NotificationRepository>();
         services.AddTransient<IBlockedProviderParentRepository, BlockedProviderParentRepository>();
         services.AddTransient<IChangesLogRepository, ChangesLogRepository>();
-        services.AddTransient<IEntityRepository<ProviderAdminChangesLog>, EntityRepository<ProviderAdminChangesLog>>();
+        services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
 
-        services.AddTransient<IEntityRepository<AchievementType>, EntityRepository<AchievementType>>();
-        services.AddTransient<IEntityRepository<AchievementTeacher>, EntityRepository<AchievementTeacher>>();
+        services.AddTransient<IEntityRepository<long, AchievementType>, EntityRepository<long, AchievementType>>();
+        services.AddTransient<IEntityRepository<long, AchievementTeacher>, EntityRepository<long, AchievementTeacher>>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
 
