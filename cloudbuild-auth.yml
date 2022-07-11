@@ -5,7 +5,8 @@ steps:
   args:
     - build
     - gcr.io/$PROJECT_ID/oos-auth:$SHORT_SHA
-    - --cache-image=gcr.io/$PROJECT_ID/oos-auth:cache
+    # TODO: some weird behaviour with old .Net buildpack & layer caches. Comment for now
+    # - --cache-image=gcr.io/$PROJECT_ID/oos-auth:cache
 # There is a bug in later versions of .Net 6 SDK 6.0.200 or higher (or rather Nuget toolset) [https://github.com/dotnet/sdk/issues/23461].
 # It works fine if you are using MSBuild, but sometimes it fails to restore packages if you are using dotnet CLI.
 # There are 2 workarounds - either use older build tools version does not have this bug yet or compile the code
