@@ -12,7 +12,7 @@ public class RatingDto
     public int Rate { get; set; }
 
     [Required]
-    [Range(1, 2, ErrorMessage = "The type field should be 1 or 2")]
+    [EnumDataType(typeof(RatingType), ErrorMessage = "Type should be in enum range")]
     public RatingType Type { get; set; }
 
     [Required]

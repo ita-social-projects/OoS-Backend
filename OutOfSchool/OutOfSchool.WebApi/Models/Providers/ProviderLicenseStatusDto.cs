@@ -10,5 +10,6 @@ public class ProviderLicenseStatusDto
     public Guid ProviderId { get; set; }
 
     [Required]
+    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = "LicenseStatus should be in enum range")]
     public ProviderLicenseStatus LicenseStatus { get; set; }
 }

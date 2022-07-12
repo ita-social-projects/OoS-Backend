@@ -29,7 +29,7 @@ public class TeacherDTO
     public string MiddleName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Gender is required")]
-    [Range(0, 1)]
+    [EnumDataType(typeof(Gender), ErrorMessage = "Gender should be in enum range")]
     public Gender Gender { get; set; } = default;
 
     [Required(ErrorMessage = "Date of birth is required")]
