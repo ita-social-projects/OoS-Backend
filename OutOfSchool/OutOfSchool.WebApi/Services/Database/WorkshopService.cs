@@ -1,27 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using Castle.Components.DictionaryAdapter;
 using H3Lib;
 using H3Lib.Extensions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
 using OutOfSchool.Services.Models.Images;
-using OutOfSchool.Services.Repository;
 using OutOfSchool.WebApi.Common;
 using OutOfSchool.WebApi.Enums;
 using OutOfSchool.WebApi.Models;
 using OutOfSchool.WebApi.Models.Images;
 using OutOfSchool.WebApi.Models.Workshop;
-using OutOfSchool.WebApi.Services.Images;
-using OutOfSchool.WebApi.Util;
 
 namespace OutOfSchool.WebApi.Services;
 
@@ -265,25 +252,28 @@ public class WorkshopService : IWorkshopService
             return null;
         }
 
-        if (currentWorkshop.ProviderOwnership == OwnershipType.Private)
+        if (currentWorkshop.Status != dto.Status)
         {
-            currentWorkshop.Status = dto.Status;
-        }
-        else
-        {
-            logger.LogInformation($"Unable to update status for workshop(id) {dto.WorkshopId} with state or common ownership type.");
-            throw new ArgumentException("Unable to update status for workshop with state or common ownership type.");
-        }
+            if (currentWorkshop.AvailableSeats != uint.MaxValue)
+            {
+                currentWorkshop.Status = dto.Status;
+            }
+            else
+            {
+                logger.LogInformation($"Unable to update status for workshop(id) {dto.WorkshopId}. Number of seats has not restriction.");
+                throw new ArgumentException("Unable to update status for workshop because of number of seats has not restriction.");
+            }
 
-        try
-        {
-            await workshopRepository.UnitOfWork.CompleteAsync().ConfigureAwait(false);
-            logger.LogInformation($"Workshop(id) {dto.WorkshopId} Status was changed to {dto.Status}");
-        }
-        catch (DbUpdateConcurrencyException exception)
-        {
-            logger.LogError($"Updating failed. Exception: {exception.Message}");
-            throw;
+            try
+            {
+                await workshopRepository.Update(currentWorkshop).ConfigureAwait(false);
+                logger.LogInformation($"Workshop(id) {dto.WorkshopId} Status was changed to {dto.Status}");
+            }
+            catch (DbUpdateConcurrencyException exception)
+            {
+                logger.LogError($"Updating failed. Exception: {exception.Message}");
+                throw;
+            }
         }
 
         return dto;
