@@ -74,7 +74,7 @@ public class WorkshopController : ControllerBase
 
         if (workshop is null)
         {
-            return NotFound();
+            return NoContent();
         }
 
         return Ok(workshop);
