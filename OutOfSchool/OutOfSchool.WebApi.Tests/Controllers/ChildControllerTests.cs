@@ -9,11 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 
 using Moq;
 using NUnit.Framework;
-
+using OutOfSchool.Services.Enums;
 using OutOfSchool.Tests.Common;
 using OutOfSchool.Tests.Common.TestDataGenerators;
 using OutOfSchool.WebApi.Controllers.V1;
+using OutOfSchool.WebApi.Extensions;
 using OutOfSchool.WebApi.Models;
+using OutOfSchool.WebApi.Models.Providers;
+using OutOfSchool.WebApi.Models.Workshop;
 using OutOfSchool.WebApi.Services;
 
 namespace OutOfSchool.WebApi.Tests.Controllers;
@@ -23,6 +26,8 @@ public class ChildControllerTests
 {
     private ChildController controller;
     private Mock<IChildService> service;
+    private Mock<IProviderService> providerService;
+    private Mock<IProviderAdminService> providerAdminService;
     private List<ChildDto> children;
     private ChildDto child;
     private string currentUserId;
@@ -33,7 +38,9 @@ public class ChildControllerTests
     public void Setup()
     {
         service = new Mock<IChildService>();
-        controller = new ChildController(service.Object);
+        providerService = new Mock<IProviderService>();
+        providerAdminService = new Mock<IProviderAdminService>();
+        controller = new ChildController(service.Object, providerService.Object, providerAdminService.Object);
 
         // TODO: find out why it is a string but not a GUID
         currentUserId = Guid.NewGuid().ToString();
@@ -60,6 +67,15 @@ public class ChildControllerTests
     }
 
     [Test]
+        public void ChildController_WhenServicesIsNull_ThrowsArgumentNullException()
+        {
+            // Act and Assert
+            Assert.Throws<ArgumentNullException>(() => new ChildController(null, providerService.Object, providerAdminService.Object));
+            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, null, providerAdminService.Object));
+            Assert.Throws<ArgumentNullException>(() => new ChildController(service.Object, providerService.Object, null));            
+        }
+
+        [Test]
     public async Task GetChildren_WhenThereAreChildren_ShouldReturnOkResultObject()
     {
         // Arrange
@@ -200,5 +216,74 @@ public class ChildControllerTests
 
         // Assert
         Assert.IsInstanceOf<NoContentResult>(result);
+    }
+
+    [Test]
+    public async Task GetApprovedByWorkshopId_WhenThereAreChildren_ShouldReturnOkResultObject()
+    {
+        // Arrange
+        ChildDto child = children.First();
+        WorkshopDTO existingWorkshop = new WorkshopDTO()
+        {
+            Id = Guid.NewGuid(),
+            Title = "Title1",
+            Phone = "1111111111",
+            WorkshopDescriptionItems = new[]
+                {
+                    new WorkshopDescriptionItemDto
+                    {
+                        Id = Guid.NewGuid(),
+                        SectionName = "test heading",
+                        Description = "test description",
+                    },
+                },
+            Price = 1000,
+            WithDisabilityOptions = true,
+            ProviderId = Guid.NewGuid(),
+            ProviderTitle = "ProviderTitle",
+            DisabilityOptionsDesc = "Desc1",
+            Website = "website1",
+            Instagram = "insta1",
+            Facebook = "facebook1",
+            Email = "email1@gmail.com",
+            MaxAge = 10,
+            MinAge = 4,
+            CoverImageId = "image1",
+            DirectionId = 1,
+            DepartmentId = 1,
+            ClassId = 1,
+            Address = new AddressDto
+            {
+                City = "Київ",
+            },
+        };
+
+        ProviderDto existingProvider = ProviderDtoGenerator.Generate().WithUserId(existingWorkshop.ProviderId.ToString());
+
+        ApplicationDto existingApplication = ApplicationDTOsGenerator.Generate().WithWorkshopCard(existingWorkshop.ToESModel().ToCardDto()).WithChild(child);
+
+        providerService.Setup(s => s.GetProviderIdForWorkshopById(existingWorkshop.Id)).ReturnsAsync(existingProvider.Id);
+        providerService.Setup(s => s.GetByUserId(It.IsAny<string>(), false)).ReturnsAsync(existingProvider);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new Claim[] { new Claim(ClaimTypes.Role, nameof(Role.Provider).ToLower()),
+                            new Claim("sub", currentUserId)}));
+
+        controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        var filter = new OffsetFilter();
+        service.Setup(x => x.GetApprovedByWorkshopId(existingWorkshop.Id, filter))
+            .ReturnsAsync(
+            new SearchResult<ChildDto>()
+            {
+                TotalAmount = children.Where(p => p.Id == child.Id).Count(),
+                Entities = children.Where(p => p.Id == child.Id).ToList(),
+            });
+
+        // Act
+        var result = await controller.GetApprovedByWorkshopId(existingWorkshop.Id, filter).ConfigureAwait(false);
+
+        // Assert
+        Assert.IsInstanceOf<OkObjectResult>(result);
     }
 }
