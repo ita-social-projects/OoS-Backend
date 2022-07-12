@@ -251,12 +251,8 @@ public class ProviderAdminService : IProviderAdminService
                     return response;
                 }
 
-                // TODO: enable logging of changes when soft delete for Users is added
-                if (false)
-                {
-                    await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Delete)
-                        .ConfigureAwait(false);
-                }
+                await providerAdminChangesLogService.SaveChangesLogAsync(providerAdmin, userId, OperationType.Delete)
+                    .ConfigureAwait(false);
 
                 await transaction.CommitAsync();
                 response.IsSuccess = true;
