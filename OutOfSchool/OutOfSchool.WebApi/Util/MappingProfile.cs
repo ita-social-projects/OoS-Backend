@@ -311,6 +311,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.EntityType, opt => opt.Ignore())
             .AfterMap((src, dest) => dest.EntityType = "Application");
 
+        CreateMap<AchievementType, AchievementTypeDto>();
+
         CreateMap<Achievement, AchievementDto>();
 
         CreateMap<AchievementDto, Achievement>()
