@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutOfSchool.Services;
 
@@ -10,9 +11,10 @@ using OutOfSchool.Services;
 namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
 {
     [DbContext(typeof(OutOfSchoolDbContext))]
-    partial class OutOfSchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220712104419_AddAvailableSeatsToWorkshop")]
+    partial class AddAvailableSeatsToWorkshop
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -929,25 +931,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("WorkshopImages");
                 });
 
-            modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("InstitutionId")
-                        .HasColumnType("binary(16)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InstitutionId");
-
-                    b.ToTable("InstitutionAdmins");
-                });
-
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
                 {
                     b.Property<long>("Id")
@@ -1074,7 +1057,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "admin permissions",
-                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rpqo",
+                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\",
                             RoleName = "Admin"
                         },
                         new
@@ -1097,13 +1080,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                             Description = "provider admin permissions",
                             PackedPermissions = "e\n26HGIFPQ[\\",
                             RoleName = "ProviderAdmin"
-                        },
-                        new
-                        {
-                            Id = 5L,
-                            Description = "ministry admin permissions",
-                            PackedPermissions = "e\n26HGIFPQ[\\",
-                            RoleName = "MinistryAdmin"
                         });
                 });
 
@@ -2108,17 +2084,6 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("Entity");
-                });
-
-            modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
-                {
-                    b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
-                        .WithMany()
-                        .HasForeignKey("InstitutionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Institution");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>
