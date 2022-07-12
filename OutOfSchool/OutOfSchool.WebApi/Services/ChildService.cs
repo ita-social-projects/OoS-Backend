@@ -22,6 +22,7 @@ public class ChildService : IChildService
 {
     private readonly IEntityRepository<Guid, Child> childRepository;
     private readonly IParentRepository parentRepository;
+    private readonly IApplicationRepository applicationRepository;
     private readonly ILogger<ChildService> logger;
     private readonly IMapper mapper;
 
@@ -35,8 +36,19 @@ public class ChildService : IChildService
     public ChildService(
         IEntityRepository<Guid, Child> childRepository,
         IParentRepository parentRepository,
+        IApplicationRepository applicationRepository,
         ILogger<ChildService> logger,
         IMapper mapper)
+    {
+        this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
+        this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
+            this.applicationRepository = applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+    }
+
+    /// <inheritdoc/>
+    public async Task<ChildDto> CreateChildForUser(ChildDto childDto, string userId)
     {
         this.childRepository = childRepository ?? throw new ArgumentNullException(nameof(childRepository));
         this.parentRepository = parentRepository ?? throw new ArgumentNullException(nameof(parentRepository));
@@ -181,11 +193,46 @@ public class ChildService : IChildService
             ? $"{children.Count} children for User:{userId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
             : $"There is no child for User:{userId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
 
+    /// <inheritdoc/>
+    public async Task<SearchResult<ChildDto>> GetApprovedByWorkshopId(Guid workshopId, OffsetFilter offsetFilter)
+    {
+        ValidateOffsetFilter(offsetFilter);
+
+        logger.LogDebug($"Getting Children by WorkshopId: {workshopId} started. Amount of children to take: {offsetFilter.Size}, skip first: {offsetFilter.From}.");
+
+        var applications = await applicationRepository.GetByFilter(p => p.WorkshopId == workshopId && p.Status == ApplicationStatus.Approved).ConfigureAwait(false);
+        var childrenGuids = new HashSet<Guid>(applications.Select(app => app.ChildId));
+
+        var totalAmount = childrenGuids.Count;
+
+        var sortExpression = new Dictionary<Expression<Func<Child, object>>, SortDirection>
+        {
+            { x => x.FirstName, SortDirection.Ascending },
+        };
+
+        var children = await childRepository
+            .Get(offsetFilter.From, offsetFilter.Size, string.Empty, x => childrenGuids.Contains(x.Id), sortExpression)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        logger.LogDebug(children.Any()
+            ? $"{children.Count} approved children with WorkshopId: {workshopId} were successfully received. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}."
+            : $"There is no approved child with WorkshopId: {workshopId}. Skipped records: {offsetFilter.From}. Order: by {nameof(Child.FirstName)}.");
+
         var searchResult = new SearchResult<ChildDto>()
         {
             TotalAmount = totalAmount,
             Entities = mapper.Map<List<ChildDto>>(children),
         };
+
+        return searchResult;
+    }
+
+    /// <inheritdoc/>
+    public async Task<ChildDto> UpdateChildCheckingItsUserIdProperty(ChildDto childDto, string userId)
+    {
+        this.ValidateChildDto(childDto);
+        this.ValidateUserId(userId);
 
         return searchResult;
     }
