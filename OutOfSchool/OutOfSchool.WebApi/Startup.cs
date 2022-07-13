@@ -235,6 +235,7 @@ public static class Startup
         services.AddTransient<IEntityRepository<long, ProviderAdminChangesLog>, EntityRepository<long, ProviderAdminChangesLog>>();
 
         services.AddTransient<IEntityRepository<long, AchievementType>, EntityRepository<long, AchievementType>>();
+        services.AddTransient<IAchievementTypeService, AchievementTypeService>();
         services.AddTransient<IEntityRepository<long, AchievementTeacher>, EntityRepository<long, AchievementTeacher>>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
         services.AddTransient<IAchievementService, AchievementService>();
