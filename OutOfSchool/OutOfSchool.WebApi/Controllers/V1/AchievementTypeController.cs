@@ -19,7 +19,7 @@ public class AchievementTypeController : Controller
     /// <param name="service">Service for Achievement Type entity.</param>
     public AchievementTypeController(IAchievementTypeService service)
     {
-        this.achievementTypeService = service;
+        this.achievementTypeService = service ?? throw new ArgumentNullException(nameof(service));
     }
 
     /// <summary>

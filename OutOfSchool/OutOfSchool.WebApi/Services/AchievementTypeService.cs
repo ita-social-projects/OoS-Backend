@@ -24,10 +24,10 @@ public class AchievementTypeService : IAchievementTypeService
         IStringLocalizer<SharedResource> localizer,
         IMapper mapper)
     {
-        this.localizer = localizer;
-        this.achievementTypeRepository = repository;
-        this.logger = logger;
-        this.mapper = mapper;
+        this.localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+        this.achievementTypeRepository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
