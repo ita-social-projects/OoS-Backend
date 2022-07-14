@@ -10,5 +10,6 @@ public class ProviderLicenseStatusDto
     public Guid ProviderId { get; set; }
 
     [Required]
+    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus LicenseStatus { get; set; }
 }

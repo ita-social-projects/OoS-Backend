@@ -10,5 +10,6 @@ public class ProviderStatusDto
     public Guid ProviderId { get; set; }
 
     [Required]
+    [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; }
 }

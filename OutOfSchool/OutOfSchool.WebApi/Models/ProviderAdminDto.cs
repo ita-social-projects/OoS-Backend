@@ -1,4 +1,5 @@
-﻿using OutOfSchool.WebApi.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using OutOfSchool.WebApi.Enums;
 
 namespace OutOfSchool.WebApi.Models;
 
@@ -18,5 +19,6 @@ public class ProviderAdminDto
 
     public bool IsDeputy { get; set; }
 
+    [EnumDataType(typeof(AccountStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public AccountStatus AccountStatus { get; set; }
 }

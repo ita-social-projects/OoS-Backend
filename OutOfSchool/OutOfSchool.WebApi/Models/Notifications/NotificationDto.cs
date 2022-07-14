@@ -15,9 +15,11 @@ public class NotificationDto
     public Dictionary<string, string> Data { get; set; } = new Dictionary<string, string>();
 
     [Required]
+    [EnumDataType(typeof(NotificationType), ErrorMessage = Constants.EnumErrorMessage)]
     public NotificationType Type { get; set; }
 
     [Required]
+    [EnumDataType(typeof(NotificationAction), ErrorMessage = Constants.EnumErrorMessage)]
     public NotificationAction Action { get; set; }
 
     [Required]

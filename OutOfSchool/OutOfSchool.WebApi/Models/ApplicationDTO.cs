@@ -12,7 +12,7 @@ public class ApplicationDto
 {
     public Guid Id { get; set; }
 
-    [JsonConverter(typeof(StringEnumConverter))]
+    [EnumDataType(typeof(ApplicationStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
     [MaxLength(500)]

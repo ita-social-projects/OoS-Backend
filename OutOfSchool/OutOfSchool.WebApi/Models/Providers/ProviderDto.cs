@@ -71,20 +71,22 @@ public class ProviderDto
     [MaxLength(30)]
     public string Founder { get; set; } = string.Empty;
 
-    // TODO: validation of the enum fields ?
     [Required]
+    [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
     public OwnershipType Ownership { get; set; }
 
-    // TODO: validation of the enum fields ?
     [Required]
+    [EnumDataType(typeof(ProviderType), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderType Type { get; set; }
 
     [Required]
+    [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; }
 
     [MaxLength(30)]
     public string License { get; set; }
 
+    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus LicenseStatus { get; set; }
 
     [MaxLength(256)]
@@ -121,6 +123,7 @@ public class ProviderDto
     public InstitutionDto Institution { get; set; }
 
     [Required]
+    [EnumDataType(typeof(InstitutionType), ErrorMessage = Constants.EnumErrorMessage)]
     public InstitutionType InstitutionType { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]

@@ -83,19 +83,21 @@ public class WorkshopDTO : IValidatableObject
     [MaxLength(60)]
     public string ProviderTitle { get; set; } = string.Empty;
 
+    [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
     public OwnershipType ProviderOwnership { get; set; } = OwnershipType.State;
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]
     public IEnumerable<string> Keywords { get; set; } = default;
 
     [Required]
+    [EnumDataType(typeof(PayRateType), ErrorMessage = Constants.EnumErrorMessage)]
     public PayRateType PayRate { get; set; }
 
     public float Rating { get; set; }
 
     public int NumberOfRatings { get; set; }
 
-    [JsonConverter(typeof(StringEnumConverter))]
+    [EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public WorkshopStatus Status { get; set; } = WorkshopStatus.Open;
 
     [Required]

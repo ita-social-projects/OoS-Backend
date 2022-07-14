@@ -167,7 +167,7 @@ public class WorkshopController : ControllerBase
 
         dto.Id = default;
         dto.Address.Id = default;
-        dto.Status = WorkshopStatus.Open;
+
         if (dto.Teachers != null)
         {
             foreach (var teacher in dto.Teachers)

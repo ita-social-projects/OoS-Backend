@@ -10,8 +10,7 @@ public class ShortApplicationDto
     public Guid Id { get; set; }
 
     [Required]
-    // TODO: remove range and use IsDefined instead
-    [Range(1, 7, ErrorMessage = "Status should be from 1 to 7")]
+    [EnumDataType(typeof(ApplicationStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
     [MaxLength(500)]
