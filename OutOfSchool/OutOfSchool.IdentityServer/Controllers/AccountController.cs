@@ -205,7 +205,7 @@ public class AccountController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> EmailConfirmation(string userId, string token)
+    public async Task<IActionResult> EmailConfirmation(string userId, string token, string redirectUrl = null)
     {
         logger.LogDebug($"{path} started. User(id): {userId}.");
 
@@ -235,7 +235,7 @@ public class AccountController : Controller
 
         logger.LogInformation($"{path} Email was confirmed. User(id): {userId}.");
 
-        return Ok();
+        return string.IsNullOrEmpty(redirectUrl) ? Ok() : Redirect(redirectUrl);
     }
 
     [HttpGet]

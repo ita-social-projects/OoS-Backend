@@ -1,3 +1,5 @@
+using OutOfSchool.IdentityServer.Config.ExternalUriModels;
+
 namespace OutOfSchool.IdentityServer;
 
 public static class Startup
@@ -74,6 +76,9 @@ public static class Startup
 
         // GRPC options
         services.Configure<GRPCConfig>(config.GetSection(GRPCConfig.Name));
+
+        // ExternalUris options
+        services.Configure<EmailScopeExternalUrisConfig>(config.GetSection(EmailScopeExternalUrisConfig.Name));
 
         services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
             .AddConfigurationStore(options =>

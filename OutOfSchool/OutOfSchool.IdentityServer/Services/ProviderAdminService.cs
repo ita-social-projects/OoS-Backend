@@ -13,6 +13,8 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
 using OutOfSchool.EmailSender;
 using OutOfSchool.IdentityServer.Config;
+using OutOfSchool.IdentityServer.Config.ExternalUriModels;
+using OutOfSchool.IdentityServer.Services.Intefaces;
 using OutOfSchool.IdentityServer.Services.Interfaces;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
@@ -31,6 +33,7 @@ public class ProviderAdminService : IProviderAdminService
     private readonly ILogger<ProviderAdminService> logger;
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly GRPCConfig gPRCConfig;
+    private readonly EmailScopeExternalUrisConfig externalUrisConfig;
 
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
@@ -46,17 +49,20 @@ public class ProviderAdminService : IProviderAdminService
         OutOfSchoolDbContext context,
         IRazorViewToStringRenderer renderer,
         IProviderAdminChangesLogService providerAdminChangesLogService,
-        IOptions<GRPCConfig> gRPCConfig)
+        IOptions<GRPCConfig> gRPCConfig,
+        IOptions<EmailScopeExternalUrisConfig> externalUrisConfig)
     {
-        this.mapper = mapper;
-        this.userManager = userManager;
-        this.context = context;
-        this.providerAdminRepository = providerAdminRepository;
-        this.logger = logger;
-        this.emailSender = emailSender;
-        this.renderer = renderer;
-        this.providerAdminChangesLogService = providerAdminChangesLogService;
-        this.gPRCConfig = gRPCConfig.Value;
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        this.context = context ?? throw new ArgumentNullException(nameof(context));
+        this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
+        this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+        this.providerAdminChangesLogService = providerAdminChangesLogService ?? throw new ArgumentNullException(nameof(providerAdminChangesLogService));
+        this.gPRCConfig = gRPCConfig.Value ?? throw new ArgumentNullException(nameof(gRPCConfig));
+        this.externalUrisConfig =
+            externalUrisConfig.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
     }
 
     public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -162,11 +168,11 @@ public class ProviderAdminService : IProviderAdminService
 
                 string confirmationLink =
                     url is null
-                        ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}"
+                        ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.EmailConfirmationRedirectToLogin}"
                         : url.Action(
                             "EmailConfirmation",
                             "Account",
-                            new { userId = user.Id, token },
+                            new { userId = user.Id, token, redirectUrl = externalUrisConfig.EmailConfirmationRedirectToLogin },
                             "https");
 
                 var subject = "Запрошення!";
