@@ -60,15 +60,15 @@ public class ChangesLogRepository : EntityRepository<long, ChangesLog>, IChanges
     {
         var properties = entityEntry.Properties
             .Where(p => p.IsModified
-                        && trackedProperties.Contains(p.Metadata.PropertyInfo.Name))
-            .Select(x => (x.Metadata.PropertyInfo.Name,
+                        && trackedProperties.Contains(p.Metadata.Name))
+            .Select(x => (x.Metadata.Name,
                 valueProjector(x.Metadata.ClrType, x.OriginalValue),
                 valueProjector(x.Metadata.ClrType, x.CurrentValue)));
 
         var references = entityEntry.References
-            .Where(x => trackedProperties.Contains(x.Metadata.PropertyInfo.Name)
+            .Where(x => trackedProperties.Contains(x.Metadata.Name)
                         && x.TargetEntry?.State == EntityState.Modified)
-            .Select(x => (x.Metadata.PropertyInfo.Name,
+            .Select(x => (x.Metadata.Name,
                 valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.OriginalValues.ToObject()),
                 valueProjector(x.TargetEntry.Metadata.ClrType, x.TargetEntry.CurrentValues.ToObject())));
 
