@@ -81,6 +81,7 @@ public class WorkshopService : IWorkshopService
 
         var workshop = mapper.Map<Workshop>(dto);
         workshop.Teachers = dto.Teachers.Select(dtoTeacher => mapper.Map<Teacher>(dtoTeacher)).ToList();
+        workshop.Status = WorkshopStatus.Open;
 
         Func<Task<Workshop>> operation = async () =>
             await workshopRepository.Create(workshop).ConfigureAwait(false);
