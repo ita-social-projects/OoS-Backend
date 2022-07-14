@@ -10,7 +10,7 @@ public class ShortApplicationDto
     public Guid Id { get; set; }
 
     [Required]
-    [EnumDataType(typeof(ApplicationStatus), ErrorMessage = "Status should be in enum range")]
+    [EnumDataType(typeof(ApplicationStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
 
     [MaxLength(500)]

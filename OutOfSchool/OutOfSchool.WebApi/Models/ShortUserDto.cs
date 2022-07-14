@@ -31,7 +31,7 @@ public class ShortUserDto
     public string FirstName { get; set; }
 
     [Required(ErrorMessage = "Gender is required")]
-    [Range(0, 1)]
+    [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
     public Gender Gender { get; set; } = default;
 
     public string Role { get; set; }

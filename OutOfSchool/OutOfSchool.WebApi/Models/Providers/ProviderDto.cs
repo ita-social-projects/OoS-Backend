@@ -72,21 +72,21 @@ public class ProviderDto
     public string Founder { get; set; } = string.Empty;
 
     [Required]
-    [EnumDataType(typeof(OwnershipType), ErrorMessage = "Ownership should be in enum range")]
+    [EnumDataType(typeof(OwnershipType), ErrorMessage = Constants.EnumErrorMessage)]
     public OwnershipType Ownership { get; set; }
 
     [Required]
-    [EnumDataType(typeof(ProviderType), ErrorMessage = "Type should be in enum range")]
+    [EnumDataType(typeof(ProviderType), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderType Type { get; set; }
 
     [Required]
-    [EnumDataType(typeof(ProviderStatus), ErrorMessage = "Status should be in enum range")]
+    [EnumDataType(typeof(ProviderStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderStatus Status { get; set; }
 
     [MaxLength(30)]
     public string License { get; set; }
 
-    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = "LicenseStatus should be in enum range")]
+    [EnumDataType(typeof(ProviderLicenseStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public ProviderLicenseStatus LicenseStatus { get; set; }
 
     [MaxLength(256)]
@@ -123,7 +123,7 @@ public class ProviderDto
     public InstitutionDto Institution { get; set; }
 
     [Required]
-    [EnumDataType(typeof(InstitutionType), ErrorMessage = "InstitutionType should be in enum range")]
+    [EnumDataType(typeof(InstitutionType), ErrorMessage = Constants.EnumErrorMessage)]
     public InstitutionType InstitutionType { get; set; }
 
     [ModelBinder(BinderType = typeof(JsonModelBinder))]

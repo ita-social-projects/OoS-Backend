@@ -29,7 +29,7 @@ public class ChildDto
     public DateTime DateOfBirth { get; set; } = default;
 
     [Required(ErrorMessage = "Gender is required")]
-    [EnumDataType(typeof(Gender), ErrorMessage = "Gender should be in enum range")]
+    [EnumDataType(typeof(Gender), ErrorMessage = Constants.EnumErrorMessage)]
     public Gender Gender { get; set; } = default;
 
     [MaxLength(500)]

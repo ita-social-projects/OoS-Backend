@@ -10,6 +10,6 @@ public class WorkshopStatusDto
     public Guid WorkshopId { get; set; }
 
     [Required]
-    [EnumDataType(typeof(WorkshopStatus))]
+    [EnumDataType(typeof(WorkshopStatus), ErrorMessage = Constants.EnumErrorMessage)]
     public WorkshopStatus Status { get; set; }
 }
