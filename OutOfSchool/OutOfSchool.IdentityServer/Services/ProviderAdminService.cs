@@ -60,9 +60,9 @@ public class ProviderAdminService : IProviderAdminService
         this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
         this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         this.providerAdminChangesLogService = providerAdminChangesLogService ?? throw new ArgumentNullException(nameof(providerAdminChangesLogService));
-        this.gPRCConfig = gRPCConfig.Value ?? throw new ArgumentNullException(nameof(gRPCConfig));
+        this.gPRCConfig = gRPCConfig?.Value ?? throw new ArgumentNullException(nameof(gRPCConfig));
         this.externalUrisConfig =
-            externalUrisConfig.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
+            externalUrisConfig?.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
     }
 
     public async Task<ResponseDto> CreateProviderAdminAsync(
