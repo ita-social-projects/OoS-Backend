@@ -78,7 +78,7 @@ public static class Startup
         services.Configure<GRPCConfig>(config.GetSection(GRPCConfig.Name));
 
         // ExternalUris options
-        services.Configure<EmailScopeExternalUrisConfig>(config.GetSection(EmailScopeExternalUrisConfig.Name));
+        services.Configure<AngularClientScopeExternalUrisConfig>(config.GetSection(AngularClientScopeExternalUrisConfig.Name));
 
         services.AddIdentityServer(options => { options.IssuerUri = issuerSection["Uri"]; })
             .AddConfigurationStore(options =>

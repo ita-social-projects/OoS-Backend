@@ -33,7 +33,7 @@ public class ProviderAdminService : IProviderAdminService
     private readonly ILogger<ProviderAdminService> logger;
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly GRPCConfig gPRCConfig;
-    private readonly EmailScopeExternalUrisConfig externalUrisConfig;
+    private readonly AngularClientScopeExternalUrisConfig externalUrisConfig;
 
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
@@ -50,7 +50,7 @@ public class ProviderAdminService : IProviderAdminService
         IRazorViewToStringRenderer renderer,
         IProviderAdminChangesLogService providerAdminChangesLogService,
         IOptions<GRPCConfig> gRPCConfig,
-        IOptions<EmailScopeExternalUrisConfig> externalUrisConfig)
+        IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig)
     {
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -168,11 +168,11 @@ public class ProviderAdminService : IProviderAdminService
 
                 string confirmationLink =
                     url is null
-                        ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.EmailConfirmationRedirectToLogin}"
+                        ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
                         : url.Action(
                             "EmailConfirmation",
                             "Account",
-                            new { userId = user.Id, token, redirectUrl = externalUrisConfig.EmailConfirmationRedirectToLogin },
+                            new { userId = user.Id, token, redirectUrl = externalUrisConfig.Login },
                             "https");
 
                 var subject = "Запрошення!";
