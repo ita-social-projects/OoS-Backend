@@ -47,5 +47,10 @@ public class MappingProfile : Profile
 
                 return managedWorkshopIds;
             }));
+
+        CreateMap<CreateMinistryAdminDto, User>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+
+        CreateMap<CreateMinistryAdminDto, InstitutionAdmin>();
     }
 }

@@ -929,6 +929,25 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                     b.ToTable("WorkshopImages");
                 });
 
+            modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("InstitutionId")
+                        .HasColumnType("binary(16)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InstitutionId");
+
+                    b.ToTable("InstitutionAdmins");
+                });
+
             modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionStatus", b =>
                 {
                     b.Property<long>("Id")
@@ -1055,7 +1074,7 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         {
                             Id = 1L,
                             Description = "admin permissions",
-                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\",
+                            PackedPermissions = "de\n\r !()+4325>=<?HGIFPQ[]\\rpqo",
                             RoleName = "Admin"
                         },
                         new
@@ -1078,6 +1097,13 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                             Description = "provider admin permissions",
                             PackedPermissions = "e\n26HGIFPQ[\\",
                             RoleName = "ProviderAdmin"
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            Description = "ministry admin permissions",
+                            PackedPermissions = "e\n26HGIFPQ[\\",
+                            RoleName = "MinistryAdmin"
                         });
                 });
 
@@ -2079,6 +2105,17 @@ namespace OutOfSchool.IdentityServer.Data.Migrations.OutOfSchoolMigrations
                         .IsRequired();
 
                     b.Navigation("Entity");
+                });
+
+            modelBuilder.Entity("OutOfSchool.Services.Models.InstitutionAdmin", b =>
+                {
+                    b.HasOne("OutOfSchool.Services.Models.SubordinationStructure.Institution", "Institution")
+                        .WithMany()
+                        .HasForeignKey("InstitutionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Institution");
                 });
 
             modelBuilder.Entity("OutOfSchool.Services.Models.Parent", b =>

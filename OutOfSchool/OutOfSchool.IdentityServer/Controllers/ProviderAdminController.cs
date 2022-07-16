@@ -8,7 +8,6 @@ using OutOfSchool.Common;
 using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
 using OutOfSchool.Common.PermissionsModule;
-using OutOfSchool.IdentityServer.Services.Intefaces;
 
 namespace OutOfSchool.IdentityServer.Controllers;
 
