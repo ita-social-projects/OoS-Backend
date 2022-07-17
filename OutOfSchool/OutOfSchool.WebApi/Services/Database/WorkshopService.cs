@@ -2,6 +2,7 @@
 using AutoMapper;
 using H3Lib;
 using H3Lib.Extensions;
+using OutOfSchool.Common.Enums;
 using OutOfSchool.Services.Enums;
 using OutOfSchool.Services.Models.Images;
 using OutOfSchool.WebApi.Common;
