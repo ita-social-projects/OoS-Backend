@@ -192,7 +192,6 @@ public class MappingProfile : Profile
         CreateMap<InstitutionFieldDescription, InstitutionFieldDescriptionDto>().ReverseMap();
 
         CreateMap<Codeficator, CodeficatorDto>();
-        CreateMap<Codeficator, CodeficatorWithParentDto>();
 
         CreateMap<Notification, NotificationDto>().ReverseMap()
             .ForMember(n => n.Id, n => n.Ignore());
