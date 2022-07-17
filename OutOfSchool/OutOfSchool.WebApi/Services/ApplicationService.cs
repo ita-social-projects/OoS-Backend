@@ -501,6 +501,14 @@ public class ApplicationService : IApplicationService, INotificationReciever
         return !await applicationRepository.Any(filter).ConfigureAwait(false);
     }
 
+    public async Task<bool> AllowedToReview(Guid parentId)
+    {
+        Expression<Func<Application, bool>> filter = a => a.ParentId == parentId
+                                                          && a.Status == ApplicationStatus.Approved;
+
+        return await applicationRepository.Any(filter).ConfigureAwait(false);
+    }
+
     private async Task<bool> IsNewApplicationAllowed(Guid workshopId)
     {
         var workshop = await workshopRepository.GetById(workshopId).ConfigureAwait(false);
