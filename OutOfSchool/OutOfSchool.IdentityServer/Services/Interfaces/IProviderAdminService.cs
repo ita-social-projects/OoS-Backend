@@ -1,9 +1,4 @@
-﻿using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-
-using OutOfSchool.Common;
+﻿using Microsoft.AspNetCore.Mvc;
 using OutOfSchool.Common.Models;
 
 namespace OutOfSchool.IdentityServer.Services.Interfaces;

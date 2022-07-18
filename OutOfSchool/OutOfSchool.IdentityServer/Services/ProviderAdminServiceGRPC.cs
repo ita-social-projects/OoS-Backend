@@ -1,10 +1,6 @@
-using System.Threading.Tasks;
 using AutoMapper;
 using Grpc.Core;
 using GrpcService;
-using Microsoft.AspNetCore.Authorization;
-using OutOfSchool.Common;
-using OutOfSchool.Common.Extensions;
 using OutOfSchool.Common.Models;
 
 namespace GrpcServiceServer;

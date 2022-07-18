@@ -1,26 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using OutOfSchool.EmailSender;
-using OutOfSchool.IdentityServer.Config;
-using OutOfSchool.IdentityServer.Services.Interfaces;
+using OutOfSchool.IdentityServer.Config.ExternalUriModels;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
-using OutOfSchool.RazorTemplatesData.Services;
-using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.IdentityServer.Services;
 
@@ -31,6 +16,7 @@ public class ProviderAdminService : IProviderAdminService
     private readonly ILogger<ProviderAdminService> logger;
     private readonly IProviderAdminRepository providerAdminRepository;
     private readonly GRPCConfig gPRCConfig;
+    private readonly AngularClientScopeExternalUrisConfig externalUrisConfig;
 
     private readonly UserManager<User> userManager;
     private readonly OutOfSchoolDbContext context;
@@ -46,17 +32,20 @@ public class ProviderAdminService : IProviderAdminService
         OutOfSchoolDbContext context,
         IRazorViewToStringRenderer renderer,
         IProviderAdminChangesLogService providerAdminChangesLogService,
-        IOptions<GRPCConfig> gRPCConfig)
+        IOptions<GRPCConfig> gRPCConfig,
+        IOptions<AngularClientScopeExternalUrisConfig> externalUrisConfig)
     {
-        this.mapper = mapper;
-        this.userManager = userManager;
-        this.context = context;
-        this.providerAdminRepository = providerAdminRepository;
-        this.logger = logger;
-        this.emailSender = emailSender;
-        this.renderer = renderer;
-        this.providerAdminChangesLogService = providerAdminChangesLogService;
-        this.gPRCConfig = gRPCConfig.Value;
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        this.context = context ?? throw new ArgumentNullException(nameof(context));
+        this.providerAdminRepository = providerAdminRepository ?? throw new ArgumentNullException(nameof(providerAdminRepository));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
+        this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+        this.providerAdminChangesLogService = providerAdminChangesLogService ?? throw new ArgumentNullException(nameof(providerAdminChangesLogService));
+        this.gPRCConfig = gRPCConfig?.Value ?? throw new ArgumentNullException(nameof(gRPCConfig));
+        this.externalUrisConfig =
+            externalUrisConfig?.Value ?? throw new ArgumentNullException(nameof(externalUrisConfig));
     }
 
     public async Task<ResponseDto> CreateProviderAdminAsync(
@@ -162,11 +151,11 @@ public class ProviderAdminService : IProviderAdminService
 
                 string confirmationLink =
                     url is null
-                        ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}"
+                        ? $"{gPRCConfig.ProviderAdminConfirmationLink}?userId={user.Id}&token={token}?redirectUrl={externalUrisConfig.Login}"
                         : url.Action(
                             "EmailConfirmation",
                             "Account",
-                            new { userId = user.Id, token },
+                            new { userId = user.Id, token, redirectUrl = externalUrisConfig.Login },
                             "https");
 
                 var subject = "Запрошення!";
