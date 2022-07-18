@@ -110,4 +110,13 @@ public interface IApplicationService
     /// The task result contains <see langword="true" /> if allowed to create a new application by the child status;
     /// otherwise, <see langword="false" />.</returns>
     Task<bool> AllowedNewApplicationByChildStatus(Guid workshopId, Guid childId);
+
+    /// <summary>
+    /// Check if exists an any application with approve status in workshop for parent.
+    /// </summary>
+    /// <param name="parentId">Parent's key.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.
+    /// The task result contains <see langword="true" /> if exists an any application with approve status in workshop for parent;
+    /// otherwise, <see langword="false" />.</returns>
+    Task<bool> AllowedToReview(Guid parentId);
 }
