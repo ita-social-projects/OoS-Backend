@@ -1,28 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OutOfSchool.Common;
 using OutOfSchool.Common.Models;
-using OutOfSchool.EmailSender;
-using OutOfSchool.IdentityServer.Config;
 using OutOfSchool.IdentityServer.Config.ExternalUriModels;
-using OutOfSchool.IdentityServer.Services.Intefaces;
-using OutOfSchool.IdentityServer.Services.Interfaces;
 using OutOfSchool.IdentityServer.Services.Password;
 using OutOfSchool.RazorTemplatesData.Models.Emails;
-using OutOfSchool.RazorTemplatesData.Services;
-using OutOfSchool.Services;
 using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
-using OutOfSchool.Services.Repository;
 
 namespace OutOfSchool.IdentityServer.Services;
 

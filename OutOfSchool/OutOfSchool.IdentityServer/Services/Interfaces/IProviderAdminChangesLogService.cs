@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using OutOfSchool.Services.Enums;
-using OutOfSchool.Services.Models;
+﻿using OutOfSchool.Services.Enums;
 
 namespace OutOfSchool.IdentityServer.Services.Interfaces;
 
