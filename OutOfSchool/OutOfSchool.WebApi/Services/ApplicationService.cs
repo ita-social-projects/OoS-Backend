@@ -503,8 +503,15 @@ public class ApplicationService : IApplicationService, INotificationReciever
 
     public async Task<bool> AllowedToReview(Guid parentId)
     {
+        var statuses = new[]
+        {
+            ApplicationStatus.Completed,
+            ApplicationStatus.Approved,
+            ApplicationStatus.StudyingForYears,
+        };
+
         Expression<Func<Application, bool>> filter = a => a.ParentId == parentId
-                                                          && a.Status == ApplicationStatus.Approved;
+                                                          && statuses.Contains(a.Status);
 
         return await applicationRepository.Any(filter).ConfigureAwait(false);
     }
