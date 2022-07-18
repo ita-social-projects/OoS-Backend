@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: curl
-        image: cfmanteiga/alpine-bash-curl-jq
+        image: ellerbrock/alpine-bash-curl-ssl
         command:
         - /bin/bash
         - /etc/script/setup.sh
@@ -29,27 +29,12 @@ spec:
                 name: {{ .Values.elasticConfigJob.secret }}
                 key: password
         volumeMounts:
-        - mountPath: /workdir
-          name: workdir
         - name: script-vol
           mountPath: /etc/script
-      initContainers:
-      - name: yq
-        image: mikefarah/yq
-        command:
-          - sh
-          - -c
-          - |
-            yq eval -o=json /etc/roles/roles.yml | tee /workdir/roles.json
-        volumeMounts:
-        - mountPath: /workdir
-          name: workdir
         - name: roles-vol
           mountPath: /etc/roles
       restartPolicy: OnFailure
       volumes:
-      - name: workdir
-        emptyDir: {}
       - name: roles-vol
         configMap:
           name: {{ include "elastic.fullname" . }}-es-roles

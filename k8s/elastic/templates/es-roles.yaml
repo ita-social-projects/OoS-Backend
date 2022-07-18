@@ -4,5 +4,7 @@ metadata:
   name: {{ include "elastic.fullname" . }}-es-roles
   namespace: {{ .Release.Namespace }}
 data:
-  roles.yml: |
-{{- toYaml .Values.elasticConfigJob.roles | nindent 4 }}
+{{- range $key, $value := .Values.elasticConfigJob.roles }}
+  {{ $key }}.json: |
+{{- toJson $value | nindent 4 }}
+{{- end }}

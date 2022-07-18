@@ -2,7 +2,6 @@
 # This is a YAML-formatted file.
 
 # TODO: Think how to make it simpler so it can be moved to Elastic PostStart
-# TODO: Obvious fuckup - using toyaml instead of to json in configmap
 elasticConfigJob:
   roles:
     outofschool:
